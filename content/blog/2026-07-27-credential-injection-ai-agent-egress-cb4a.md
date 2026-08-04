@@ -9,8 +9,6 @@ toc: false
 
 {{< reuse-image src="img/blog/cb4a/cb4a.gif" alt="CB4A flow" >}}
 
-_A version of this post first appeared on [blog.christianposta.com](https://blog.christianposta.com/credential-brokering-patterns-for-ai-agent-egress/). This one focuses on the agentgateway implementation._
-
 Your AI agent needs to call APIs, LLMs, databases, and SaaS services, MCP etc. Every one of those calls has to authenticate somehow. So before you get to sandboxing, egress rules, or where the agent runs, there's a more basic question: at the moment the agent makes a call, where does the credential live? If the answer is anywhere the agent can read, e.g. its environment, its config, its context window etc then you've decided to trust the agent with a reusable secret.
 
 That decision deserves more scrutiny than it tends to get. Especially in sensitive enterprise environments.
@@ -145,4 +143,8 @@ The CB4A draft doesn't sugarcoat where this leaves you. Its threat model rates b
 
 > The broker (CDP) is the highest-value target in the architecture. It MUST be hardened with no shell access, restricted network, and credential zeroing after minting (TM-1).
 
-So before going down this path you need a real answer for hardening the component holding the credentials, and for removing any standing decrypt permission from it. In part 2, coming early next week, I get specific about how we do that in Solo Enterprise for agentgateway: envelope encryption with KEK/DEK wrapping, the master key in KMS rather than the cluster, and a separate broker that must authorize every individual unwrap, so the component holding the ciphertext cannot decrypt it with its own credentials. Including where it still leaks. Follow along / [connect on LinkedIn](https://linkedin.com/in/ceposta) if you are working through credential isolation for agent egress in your own stack.
+So before going down this path you need a real answer for hardening the component holding the credentials, and for removing any standing decrypt permission from it. In [part 2](/blog/2026-08-03-protecting-token-vault-kms-credential-injection/), I get specific about how we do that in Solo Enterprise for agentgateway: envelope encryption with KEK/DEK wrapping, the master key in KMS rather than the cluster, and a separate broker that must authorize every individual unwrap, so the component holding the ciphertext cannot decrypt it with its own credentials. Including where it still leaks. Follow along / [connect on LinkedIn](https://linkedin.com/in/ceposta) if you are working through credential isolation for agent egress in your own stack.
+
+---
+
+_A version of this post first appeared on [blog.christianposta.com](https://blog.christianposta.com/credential-brokering-patterns-for-ai-agent-egress/). This one focuses on the agentgateway implementation._
