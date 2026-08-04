@@ -54,6 +54,83 @@ controller:
   disableLeaderElection: true
 ```
 
+{{< version include-if="1.4.x,1.5.x" >}}
+## Multiple control planes {#multiple-control-planes}
+
+You can run multiple independent {{< reuse "agw-docs/snippets/kgateway.md" >}} control planes in the same cluster. This setup is different from running multiple replicas of one control plane for high availability. Each independent control plane manages its own GatewayClass and set of Gateways.
+
+Use the following configuration for each additional control plane.
+
+* Install the control plane in a separate namespace. The namespace separates namespaced Helm resources and leader election leases.
+* Set a unique `gatewayClassName`. GatewayClasses are cluster-scoped, so their names must be unique across the cluster.
+* Set a unique `controllerName`. The controller reconciles only GatewayClasses whose `spec.controllerName` matches this value.
+* Optionally, set `discoveryNamespaceSelectors` to limit the namespaces that the control plane watches for gateway configuration.
+
+{{< callout type="warning" >}}
+Change `gatewayClassName` and `controllerName` together. If an additional installation changes only `controllerName`, both installations try to manage the default `agentgateway` GatewayClass. Installing the control planes in separate namespaces does not prevent this conflict because GatewayClasses are cluster-scoped.
+{{< /callout >}}
+
+For example, label the workload namespaces that the second control plane manages.
+
+```sh
+kubectl label namespace tenant-b gateway-controller=tenant-b
+```
+
+Create a `secondary-values.yaml` file for the second control plane.
+
+```yaml
+gatewayClassName: agentgateway-tenant-b
+controllerName: agentgateway.dev/agentgateway-tenant-b
+
+discoveryNamespaceSelectors:
+- matchExpressions:
+  - key: kubernetes.io/metadata.name
+    operator: In
+    values:
+    - agentgateway-tenant-b-system
+- matchLabels:
+    gateway-controller: tenant-b
+```
+
+Include the control plane's own namespace when you configure namespace discovery. The controller watches resources in that namespace, including the certificate that secures its xDS connection.
+
+Install the second control plane. Install the {{< reuse "agw-docs/snippets/kgateway.md" >}} and Kubernetes Gateway API custom resource definitions (CRDs) only once per cluster.
+
+```sh
+helm upgrade --install agentgateway-tenant-b \
+  {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+  --create-namespace \
+  --namespace agentgateway-tenant-b-system \
+  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+  --values secondary-values.yaml
+```
+
+Gateways for the second control plane must reference its GatewayClass.
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: tenant-b-gateway
+  namespace: tenant-b
+spec:
+  gatewayClassName: agentgateway-tenant-b
+  listeners:
+  - name: http
+    protocol: HTTP
+    port: 80
+```
+
+Verify that each GatewayClass has the expected controller name.
+
+```sh
+kubectl get gatewayclass \
+  -o custom-columns='NAME:.metadata.name,CONTROLLER:.spec.controllerName'
+```
+
+If you do not configure `discoveryNamespaceSelectors`, each control plane watches gateway configuration in all namespaces. The unique controller and GatewayClass names still separate ownership, but they do not provide namespace-level discovery isolation. If you enable proxy monitoring, also add the custom GatewayClass to `monitoring.proxy.gatewayClassNames` for that installation.
+{{< /version >}}
+
 {{< version exclude-if="2.2.x,1.0.x,1.1.x" >}}
 ## Namespace discovery {#namespace-discovery}
 
