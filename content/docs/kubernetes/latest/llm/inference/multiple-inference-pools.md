@@ -10,7 +10,7 @@ Route requests to multiple Gateway API Inference Extension `InferencePool`
 backends based on the `model` field in the request body.
 
 This guide extends the [inference routing
-quickstart]({{< link-hextra path="/inference/#quickstart" >}}). In the
+quickstart]({{< link-hextra path="/llm/inference/inference-routing/#setup" >}}). In the
 quickstart, one `HTTPRoute` sends all inference requests to one simulated
 Qwen3 `InferencePool`. In this guide, you add a second simulated model server
 and `InferencePool`, then use an {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -72,7 +72,7 @@ graph LR
 
 ## Before you begin
 
-Complete the [inference routing quickstart]({{< link-hextra path="/inference/#quickstart" >}}). The quickstart creates:
+Complete the [inference routing quickstart]({{< link-hextra path="/llm/inference/inference-routing/#setup" >}}). The quickstart creates:
 
 - A `vllm-qwen3-32b` simulator deployment.
 - A `vllm-qwen3-32b` `InferencePool`.
@@ -281,7 +281,7 @@ EOF
 > route the `HTTPRoute` to {{< reuse "agw-docs/snippets/backend.md" >}}
 > resources that use custom providers with `InferencePool` `backendRef` targets.
 > For more information, see [Use AI policies with
-> InferencePools]({{< link-hextra path="/inference/#ai-policies" >}}).
+> InferencePools]({{< link-hextra path="/llm/inference/inference-routing/#ai-policies" >}}).
 
 ## Try it out
 

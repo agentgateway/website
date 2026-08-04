@@ -105,7 +105,7 @@ Azure supports two endpoint types:
    {{% /tab %}}
    {{< /tabs >}}
 
-   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#azureconfig" >}}).
+   {{% reuse "agw-docs/snippets/review-table.md" %}}{{< version exclude-if="1.1.x" >}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#azureconfig" >}}).{{< /version >}}
 
    | Setting     | Description |
    |-------------|-------------|
