@@ -1,18 +1,22 @@
 Track and monitor LLM costs per request using token usage metrics.
 
+{{< version exclude-if="1.1.x" >}}
 > [!NOTE]
 > This guide *estimates* cost from token usage metrics by applying your own pricing model in PromQL. To have {{< reuse "agw-docs/snippets/agentgateway.md" >}} compute the *realized* USD cost of each request from a model cost catalog and expose it in logs, traces, metrics, and CEL, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
+{{< /version >}}
 
 ## About
 
-Cost tracking (also known as spend monitoring or usage tracking) helps you monitor and control expenses from LLM API calls. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} automatically tracks token consumption for every request and response, which you can turn into cost in two ways.
+Cost tracking (also known as spend monitoring or usage tracking) helps you monitor and control expenses from LLM API calls. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} automatically tracks token consumption for every request and response,{{< version exclude-if="1.1.x" >}} which you can turn into cost in two ways.{{< /version >}}{{< version include-if="1.1.x" >}} which you can turn into an estimated cost by applying your own per-token pricing in PromQL.{{< /version >}}
 
+{{< version exclude-if="1.1.x" >}}
 | Approach | What it does | When to use it |
 |----------|--------------|----------------|
 | **Realized cost (recommended)** | {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the exact USD cost of each request from a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) and exposes it in logs, traces, metrics, and CEL as `agw.ai.usage.cost.*`, `llm.cost`, and `llm.costRates`. | You want per-request dollar cost, accurate cache and tiered pricing, and cost available to policies and access logs. |
 | **Estimated cost (this guide)** | You apply your own per-token pricing to the `agentgateway_gen_ai_client_token_usage` metric in PromQL to estimate aggregate cost. | You have no catalog configured, or you want ad hoc aggregate cost math and alerts in Prometheus without changing gateway config. |
 
 For most deployments, configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) first so that cost is computed for you. Use the PromQL approach in this guide when you need aggregate spend estimates, dashboards, or alerts on top of the raw token metrics.
+{{< /version >}}
 
 You can use the token metrics in this guide to:
 - Estimate costs per request, per user, or per model
@@ -73,8 +77,10 @@ For more information about the token usage metric, see the [Semantic conventions
 
 ## Calculate costs from token metrics
 
+{{< version exclude-if="1.1.x" >}}
 > [!NOTE]
 > This section estimates cost by applying pricing that you maintain by hand. If you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the realized USD cost for you and exposes `agw.ai.usage.cost.total` in access logs and `llm.cost` in CEL, so you do not need the manual formulas below.
+{{< /version >}}
 
 To estimate costs, multiply token counts by your provider's pricing. Most LLM providers charge separately for input tokens and output tokens.
 
@@ -173,8 +179,10 @@ OpenTelemetry traces include token usage as span attributes. You can view per-re
 
 3. Calculate costs using the same formula as above, using the token counts from trace attributes.
 
+{{< version exclude-if="1.1.x" >}}
 > [!NOTE]
 > With a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) configured, traces also include the realized cost breakdown directly (`agw.ai.usage.cost.total`, `agw.ai.usage.cost.input`, `agw.ai.usage.cost.output`, `agw.ai.usage.cost.cache_read`, and so on), so you can view per-request dollar cost in your tracing backend without calculating it.
+{{< /version >}}
 
 ## Enforce spending limits
 

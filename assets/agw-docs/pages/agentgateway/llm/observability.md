@@ -42,6 +42,7 @@ PROXY_POD_IP=$(kubectl get ${PROXY_POD} -n agentgateway-system -o jsonpath='{.st
 kubectl run metrics-check -n agentgateway-system --rm -i --restart=Never --image=curlimages/curl -- -s "http://${PROXY_POD_IP}:15020/metrics" 2>/dev/null | grep "agentgateway_gen_ai_client_token_usage"
 {{< /doc-test >}}
 
+{{< version exclude-if="1.1.x" >}}
 ## View realized costs
 
 When you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the realized USD cost of each LLM request and exposes it across the observability surface:
@@ -51,6 +52,7 @@ When you configure a [model cost catalog]({{< link-hextra path="/llm/cost-contro
 * **Traces**: cost attributes are attached to the request span.
 
 For catalog configuration and the full list of cost fields, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
+{{< /version >}}
 
 ## Track per-user metrics
 
