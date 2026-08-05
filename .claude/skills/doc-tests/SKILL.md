@@ -25,6 +25,7 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
    > **Critical**: Most Kubernetes topic pages (e.g. `content/docs/kubernetes/latest/resiliency/timeouts/request.md`) are thin wrappers that only contain `{{< reuse "agw-docs/pages/..." >}}`. **Always place doc-test blocks in the reuse file** (`assets/agw-docs/pages/...`), never in the content wrapper. This way both `latest` and `main` versions automatically inherit the tests — you only need to add them once.
 3. **Extractor** resolves `{{< reuse "..." >}}` from `assets/`, so the script is built from the expanded content. Reference the **content file** in `test:` sources; the extractor will follow reuse.
 4. **Block order**: Selected blocks are emitted in document order (by file and `start_line`). Hidden blocks (e.g. "start server in background") must appear *before* any visible block that depends on them (e.g. curl). The extractor sorts selected blocks by `(file_path, start_line)` so hidden blocks are not deferred to the end.
+5. **Byte-identical blocks are silently dropped**: `build_script()` in `scripts/doc_test_extract.py` keeps a `seen` set of block contents and skips any block whose content (after stripping leading and trailing newlines) exactly matches an earlier selected block. Only the **first** copy reaches the generated script — there is no warning. See [Repeated commands across sections](#repeated-commands-across-sections) for what this breaks and how to avoid it.
 
 ---
 
@@ -50,6 +51,38 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
 - **Multiple paths must be comma-separated** — both in fenced block info strings (`{paths="a,b"}`) and in `{{< doc-test paths="a,b" >}}` shortcodes. The extractor splits on `,`, so space-separated values (e.g. `paths="a b"`) are treated as a single path name and will never match — causing the block to be silently excluded from the generated script. This is especially dangerous for shared setup blocks (e.g. "install binary") that need to run for multiple scenarios.
 - **Display-only YAML blocks**: Some pages show YAML configs as plain display blocks (no `cat <<'EOF'` shell wrapper), unlike LLM guides that wrap configs in shell commands. You can't tag a display-only YAML block with `paths=` because it isn't a runnable shell command. Instead, add a **hidden** `{{< doc-test >}}` block that writes the config with `cat <<'EOF' > config.yaml`. See `content/docs/standalone/main/mcp/mcp-authz.md` for an example.
 - **External service dependencies**: When a config example depends on an external service that can't be trivially stood up in the test (e.g. Keycloak on port 9000, a custom OIDC provider), skip that example and only test self-contained ones. It's better to test one example well than to skip the entire page.
+
+#### Repeated commands across sections
+
+The extractor drops any block whose content is byte-identical to a block it already selected, keeping only the first. Nothing is logged, so the remaining copies just quietly do not run.
+
+This bites on multi-section pages where each section repeats the same command. For example, a page with four sections that each write a config and then validate it:
+
+```
+{{< doc-test paths="my-test" >}}
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
+```
+
+Four blocks like that collapse to **one**, so three of the four configs are never validated even though the test passes. The visible config-writing blocks survive because each one contains a different config.
+
+Give each repeated block distinguishing content — a comment naming the section is enough, and it makes the generated script easier to read:
+
+```
+{{< doc-test paths="my-test" >}}
+# Multi-level delegation: validate the config written by step 1
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
+```
+
+To confirm nothing was dropped, count the commands in the generated script and compare against the source:
+
+```sh
+grep -c "validate-only" content/docs/standalone/main/<page>.md
+grep -c "validate-only" out/tests/generated/<script-name>.sh
+```
+
+The same trap applies to any repeated command, such as an identical `start_gateway`, `sleep 3`, or curl warmup loop used in more than one section.
 
 ### 4. Long-running processes (standalone binary)
 
