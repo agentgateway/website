@@ -1,7 +1,7 @@
 ---
 name: doc-test-guides
 description: Add executable doc tests to agentgateway documentation guides using the doc test framework. Use when the user asks to "add doc tests", "add tests to a guide", "add tests to a topic", mentions "YAMLTest", or is working on quickstart guides, standalone binary guides, or Kubernetes doc pages that should generate runnable scripts from code blocks.
-version: 1.0.0
+version: 1.1.0
 ---
 
 # Doc test guides skill
