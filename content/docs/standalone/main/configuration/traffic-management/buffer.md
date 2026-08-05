@@ -125,10 +125,17 @@ EOF
 python3 backend.py &
 BACKEND_PID=$!
 trap 'kill $BACKEND_PID 2>/dev/null' EXIT
+# Wait for the echo backend, and confirm the responder is actually this backend
+# rather than some other process already holding 8080 -- otherwise the POST
+# assertion below fails in a way that looks like a buffering bug.
 for i in $(seq 1 30); do
-  curl -sf -o /dev/null http://127.0.0.1:8080/ && break
+  [ "$(curl -sf --max-time 5 -X POST -d probe http://127.0.0.1:8080/ 2>/dev/null)" = "probe" ] && break
   sleep 1
 done
+if [ "$(curl -sf --max-time 5 -X POST -d probe http://127.0.0.1:8080/ 2>/dev/null)" != "probe" ]; then
+  echo "FAIL: the echo backend did not come up on 127.0.0.1:8080 (is the port already in use?)"
+  exit 1
+fi
 {{< /doc-test >}}
 
 {{< doc-test paths="buffer" >}}
