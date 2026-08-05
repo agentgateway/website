@@ -27,12 +27,24 @@ Attaches to: {{< badge content="Frontend" path="/configuration/overview/">}}
 #     Configuration example loaded, a connection from localhost matches no `allow`
 #     rule, so the connection is rejected at L4 before any HTTP response is sent
 #     (the client sees a connection reset, not a status code).
+#   * Evaluation order rule 4 (allow match): a variant of the Configuration
+#     example with an `allow` rule that matches the test client's own address
+#     (`127.0.0.1`) lets the connection reach HTTP routing - observed as a `503`
+#     from the placeholder backend rather than a connection failure, confirming
+#     network authorization is the thing that let it through.
 #
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The other five evaluation-order rules (no rules, `deny` match, `require`
-#     match, `allow` match, denylist semantics) - requires config the page omits;
-#     the page documents the order in a table but ships only one runnable rule
-#     set, and the test asserts the case that set produces.
+#   * Evaluation order rules for `deny` match and denylist semantics - requires
+#     spoofing the test client's own source IP/port, which isn't controllable
+#     from userspace without a second host or network namespace.
+#   * Evaluation order rule for `require` match/no-match - the test client's
+#     ephemeral source port is always > 1024, so a `require: source.port > 1024`
+#     rule always trivially passes; forcing a low source port isn't controllable
+#     from userspace either.
+#   * Evaluation order rule 1 (no rules): trivial by definition (no
+#     `networkAuthorization` config at all behaves like any other page's
+#     unauthenticated route), so a dedicated example would add no signal beyond
+#     what every other doc test on this site already demonstrates.
 #   * `source.tls.identity` and `source.tls.subject_alt_names` at runtime -
 #     requires config/traffic the page omits; the page shows no TLS listener or
 #     client certificate setup, so the mTLS example is only validated as config.
@@ -95,7 +107,7 @@ agentgateway -f config.yaml --validate-only
 # asserted with curl rather than YAMLTest.
 agentgateway -f config.yaml &
 AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
+trap 'kill $AGW_PID 2>/dev/null || true' EXIT
 sleep 3
 
 if curl -s -o /dev/null --max-time 5 http://localhost:3000/; then
@@ -103,6 +115,47 @@ if curl -s -o /dev/null --max-time 5 http://localhost:3000/; then
   exit 1
 fi
 echo "✓ Network authorization rejected a connection from a non-allowlisted source address"
+
+kill $AGW_PID 2>/dev/null || true
+wait $AGW_PID 2>/dev/null || true
+{{< /doc-test >}}
+
+{{< doc-test paths="network-authz" >}}
+# Evaluation order rule 4 (allow match): the same shape as the Configuration
+# example, but with an allow rule that matches the test client's own address
+# (127.0.0.1) instead of the page's example addresses. If network authorization
+# is what's gating the connection, it should now reach HTTP routing -- observed
+# as a 503 from the placeholder backend at localhost:8080, not a connection
+# failure.
+cat <<'EOF' > config-allow-match.yaml
+frontendPolicies:
+  networkAuthorization:
+    rules:
+    - allow: 'source.address == "127.0.0.1"'
+    - deny: 'source.address == "192.168.1.100"'
+    - require: 'source.port > 1024'
+
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8080
+EOF
+agentgateway -f config-allow-match.yaml --validate-only
+
+agentgateway -f config-allow-match.yaml &
+AGW_PID=$!
+sleep 3
+
+STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 http://127.0.0.1:3000/)
+kill $AGW_PID 2>/dev/null || true
+wait $AGW_PID 2>/dev/null || true
+if [ "$STATUS" != "503" ]; then
+  echo "FAIL: expected a 503 from the placeholder backend once network authorization allowed the connection, got $STATUS"
+  exit 1
+fi
+echo "✓ Network authorization allowed a connection matching an allow rule through to HTTP routing"
 {{< /doc-test >}}
 
 ## Rules

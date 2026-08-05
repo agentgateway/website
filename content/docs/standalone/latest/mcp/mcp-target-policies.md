@@ -29,16 +29,15 @@ Apply policies at the MCP target level to control behavior for individual MCP se
 #   * "Policy inheritance": a config that sets a policy at both the backend group
 #     level and the target level is accepted, so the documented two-level shape is
 #     valid.
+#   * All three unsupported policies from the note (`mcpAuthorization`, `ai`, `a2a`)
+#     are rejected as unknown fields at the target level, same as
+#     `responseHeaderModifier`.
 #
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That target-level policies actually override backend-level ones at request
 #     time - requires config/traffic the page omits; both example targets point at
 #     placeholder MCP servers (service-a.example.com) that the test cannot stand up,
 #     and the page shows no request to inspect.
-#   * That the unsupported policies (`mcpAuthorization`, `ai`, `a2a`) are
-#     rejected at the target level - the page states this in a note but ships no
-#     example, so there is nothing on this page to run. A negative test would need a
-#     config the page does not contain.
 #   * The "Best practices" bullets - prose guidance, not runnable.
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 
@@ -208,4 +207,24 @@ if agentgateway -f config-bad-target-policy.yaml --validate-only >/dev/null 2>&1
   exit 1
 fi
 echo "✓ responseHeaderModifier is rejected at the MCP target level, as the note states"
+
+# The note also lists mcpAuthorization, ai, and a2a as unsupported at the target
+# level. Confirm all three are rejected the same way responseHeaderModifier is.
+for policy in mcpAuthorization ai a2a; do
+  cat <<EOF > "config-bad-$policy.yaml"
+mcp:
+  port: 3000
+  targets:
+  - name: service-a
+    mcp:
+      host: https://service-a.example.com/mcp
+    policies:
+      $policy: {}
+EOF
+  if agentgateway -f "config-bad-$policy.yaml" --validate-only >/dev/null 2>&1; then
+    echo "FAIL: $policy was accepted at the MCP target level, so the unsupported note is now wrong"
+    exit 1
+  fi
+  echo "✓ $policy is rejected at the MCP target level, as the note states"
+done
 {{< /doc-test >}}

@@ -30,19 +30,23 @@ Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 #     is not in `allowOrigins` still returns 200 but with no
 #     access-control-allow-origin header, which is what causes the browser to
 #     block the response.
+#   * The actual (non-preflight) cross-origin request: the Routing-based config is
+#     rerun with its placeholder backend (`api.example.com:443`) swapped for a
+#     local echo backend, and a GET with an `Origin` header is asserted to reach
+#     the backend AND come back with the CORS response headers attached - not
+#     just the preflight the earlier assertion covers.
+#   * The Simplified (MCP) config at runtime: rerun with a real npx-launched MCP
+#     server (the same server used by the mcp/connect guides), and an OPTIONS
+#     preflight against the MCP port asserts the CORS headers the settings list
+#     documents, including `maxAge: 10m` resolving to a `600`-second header.
 #
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That a browser enforces the policy - different layer; as the page's own tip
 #     notes, curl and other HTTP clients ignore CORS headers, so the test can only
 #     assert the headers agentgateway returns.
-#   * The actual (non-preflight) cross-origin request being forwarded with CORS
-#     headers - requires config/traffic the page omits; the Routing-based example
-#     points at a placeholder backend (`api.example.com:443`) that the test cannot
-#     stand up. The preflight is answered by agentgateway itself, so it is
-#     assertable.
-#   * The Simplified LLM and MCP configs at runtime - external dependency; they
-#     need an OpenAI API key and an npx-launched MCP server respectively, so they
-#     are only validated as config.
+#   * The Simplified (LLM) config at runtime - external dependency; it needs a
+#     real OpenAI API key to reach a provider that could return CORS headers on
+#     an actual completion, so it is only validated as config.
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 
 # The Simplified (LLM) example reads the API key from the environment.
@@ -261,7 +265,7 @@ agentgateway -f config.yaml --validate-only
 {{< doc-test paths="cors" >}}
 agentgateway -f config.yaml &
 AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
+trap 'kill $AGW_PID 2>/dev/null || true' EXIT
 sleep 3
 {{< /doc-test >}}
 
@@ -316,4 +320,90 @@ if grep -qi '^access-control-allow-origin' <<<"$DISALLOWED_HEADERS"; then
   exit 1
 fi
 echo "✓ Preflight from a disallowed origin returned no access-control-allow-origin header"
+{{< /doc-test >}}
+
+{{< doc-test paths="cors" >}}
+# Confirm CORS headers reach an actual (non-preflight) cross-origin request, not
+# just the preflight asserted above. Rerun the Routing-based config with its
+# placeholder backend (api.example.com:443) swapped for a local echo backend, so
+# a GET with an Origin header has something to forward to.
+kill $AGW_PID 2>/dev/null || true
+wait $AGW_PID 2>/dev/null || true
+
+cat <<'PYEOF' > backend.py
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+class Echo(BaseHTTPRequestHandler):
+    def do_GET(self):
+        body = b"ok"
+        self.send_response(200)
+        self.send_header("content-type", "text/plain")
+        self.send_header("content-length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *args):
+        pass
+
+HTTPServer(("127.0.0.1", 8081), Echo).serve_forever()
+PYEOF
+python3 backend.py &
+BACKEND_PID=$!
+trap 'kill $AGW_PID $BACKEND_PID 2>/dev/null || true' EXIT
+for i in $(seq 1 30); do
+  curl -sf -o /dev/null http://127.0.0.1:8081/ && break
+  sleep 1
+done
+
+sed 's#api.example.com:443#localhost:8081#' config.yaml > config-cors-local.yaml
+agentgateway -f config-cors-local.yaml &
+AGW_PID=$!
+sleep 3
+
+RESPONSE=$(curl -s -i http://localhost:3000/ -H "Origin: https://app.example.com")
+if ! grep -qi '^access-control-allow-origin: https://app.example.com' <<<"$RESPONSE"; then
+  echo "FAIL: an actual cross-origin GET did not come back with access-control-allow-origin"
+  echo "$RESPONSE"
+  exit 1
+fi
+if ! grep -q '^ok$' <<<"$RESPONSE"; then
+  echo "FAIL: the request was not actually forwarded to the backend"
+  echo "$RESPONSE"
+  exit 1
+fi
+echo "✓ An actual cross-origin request reached the backend and came back with CORS headers"
+
+kill $AGW_PID $BACKEND_PID 2>/dev/null || true
+wait $AGW_PID $BACKEND_PID 2>/dev/null || true
+{{< /doc-test >}}
+
+{{< doc-test paths="cors" >}}
+# Confirm the Simplified (MCP) config's CORS policy works at runtime, using a
+# real npx-launched MCP server (the same server the mcp/connect guides use) so
+# no external dependency is needed.
+agentgateway -f config-mcp.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null || true' EXIT
+for i in $(seq 1 30); do
+  curl -sf -o /dev/null --max-time 5 http://localhost:15021/healthz/ready && break
+  sleep 2
+done
+
+MCP_HEADERS=$(curl -s -i -X OPTIONS http://127.0.0.1:3000/mcp \
+  -H "Origin: https://chat.example.com" \
+  -H "Access-Control-Request-Method: POST")
+if ! grep -qi '^access-control-allow-origin: https://chat.example.com' <<<"$MCP_HEADERS"; then
+  echo "FAIL: MCP port preflight did not return access-control-allow-origin"
+  echo "$MCP_HEADERS"
+  exit 1
+fi
+if ! grep -qi '^access-control-max-age: 600' <<<"$MCP_HEADERS"; then
+  echo "FAIL: MCP port preflight's access-control-max-age was not 600 (maxAge: 10m)"
+  echo "$MCP_HEADERS"
+  exit 1
+fi
+echo "✓ The Simplified (MCP) CORS policy answers a real preflight against the MCP port"
+
+kill $AGW_PID 2>/dev/null || true
+wait $AGW_PID 2>/dev/null || true
 {{< /doc-test >}}
