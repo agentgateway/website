@@ -43,7 +43,7 @@ Reuse provider configuration to avoid duplicating connection and authentication 
 llm:
   providers:
   - name: openai-prod
-    provider: openai
+    provider: openAI
     params:
       apiKey: "$OPENAI_API_KEY"
 
@@ -65,7 +65,7 @@ cat <<'EOF' > config.yaml
 llm:
   providers:
   - name: openai-prod
-    provider: openai
+    provider: openAI
     params:
       apiKey: "$OPENAI_API_KEY"
 
