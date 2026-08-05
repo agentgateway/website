@@ -25,7 +25,7 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
    > **Critical**: Most Kubernetes topic pages (e.g. `content/docs/kubernetes/latest/resiliency/timeouts/request.md`) are thin wrappers that only contain `{{< reuse "agw-docs/pages/..." >}}`. **Always place doc-test blocks in the reuse file** (`assets/agw-docs/pages/...`), never in the content wrapper. This way both `latest` and `main` versions automatically inherit the tests — you only need to add them once.
 3. **Extractor** resolves `{{< reuse "..." >}}` from `assets/`, so the script is built from the expanded content. Reference the **content file** in `test:` sources; the extractor will follow reuse.
 4. **Block order**: Selected blocks are emitted in document order (by file and `start_line`). Hidden blocks (e.g. "start server in background") must appear *before* any visible block that depends on them (e.g. curl). The extractor sorts selected blocks by `(file_path, start_line)` so hidden blocks are not deferred to the end.
-5. **Byte-identical blocks are silently dropped**: `build_script()` in `scripts/doc_test_extract.py` keeps a `seen` set of block contents and skips any block whose content (after stripping leading and trailing newlines) exactly matches an earlier selected block. Only the **first** copy reaches the generated script — there is no warning. See [Repeated commands across sections](#repeated-commands-across-sections) for what this breaks and how to avoid it.
+5. **Byte-identical blocks are silently dropped**: `build_script()` in `scripts/doc_test_extract.py` keeps a `seen` set of block contents and skips any block whose content (after stripping leading and trailing newlines) exactly matches an earlier selected block. Only the **first** copy reaches the generated script — there is no warning. See "Repeated commands across sections" under step 3 for what this breaks and how to avoid it.
 
 ---
 
@@ -93,6 +93,27 @@ The same trap applies to any repeated command, such as an identical `start_gatew
   - `trap 'kill $AGW_PID 2>/dev/null' EXIT`
   - `sleep 3`
 - Do **not** add a path to the visible "run agentgateway" block so it is not included in the script; only the hidden block is.
+- **Helper backends: pick a port no documented config uses.** When a test needs a local backend to forward to, remember that doc tests run sequentially within a CI shard, so a helper process that outlives its script can collide with the next test. Port `8080` is the one documented configs use most (for example, the body-buffering page's `host: localhost:8080`), so choose something else (`8081`, `8082`) for a backend you invented, and keep the documented port for the test whose page actually specifies it.
+- **Make readiness checks identity-aware.** A loop like `curl -sf http://127.0.0.1:8080/ && break` passes as soon as *anything* answers on that port, so a stale process from an earlier test satisfies it and the real assertion then fails for a misleading reason. Probe for a response only your backend produces, and fail with a clear message if it never appears:
+  ```sh
+  for i in $(seq 1 30); do
+    [ "$(curl -sf --max-time 5 -X POST -d probe http://127.0.0.1:8080/ 2>/dev/null)" = "probe" ] && break
+    sleep 1
+  done
+  if [ "$(curl -sf --max-time 5 -X POST -d probe http://127.0.0.1:8080/ 2>/dev/null)" != "probe" ]; then
+    echo "FAIL: the echo backend did not come up on 127.0.0.1:8080 (is the port already in use?)"
+    exit 1
+  fi
+  ```
+- **Cleanup runs under `set -e`.** Generated scripts start with `set -euo pipefail`, so a failing command inside an `EXIT` trap aborts the handler and the script exits non-zero even when every assertion passed. Guard cleanup with `|| true`, and guard unset variables for `set -u`:
+  ```sh
+  stop_gateway() {
+    [ -n "${AGW_PID:-}" ] || return 0
+    kill "$AGW_PID" 2>/dev/null || true
+    wait "$AGW_PID" 2>/dev/null || true
+    AGW_PID=""
+  }
+  ```
 
 ### 5. Env vars and placeholders
 
@@ -338,6 +359,8 @@ When in doubt, flag the failure to the user rather than silently adjusting the t
 
 - [ ] Path tags and `{{< doc-test >}}` blocks added in the **asset** file(s) (`assets/agw-docs/...`), **not** in the content wrapper files — even if multiple content files (e.g. `latest/` and `main/`) reuse the same asset.
 - [ ] Multiple paths in `paths="..."` are **comma-separated**, not space-separated — `paths="a,b"` ✓, `paths="a b"` ✗ (spaces make the whole string a single path, silently excluding the block).
+- [ ] No two selected blocks are **byte-identical** — the extractor keeps only the first and silently drops the rest, so a repeated `--validate-only` (or `start_gateway`, or warmup loop) across sections leaves later sections untested. Add a comment naming the section, then verify with `grep -c` on the source vs. the generated script. See "Repeated commands across sections" under step 3.
+- [ ] A helper backend the test invents uses a port **no documented config uses** (avoid `8080`), its readiness check probes for a response only that backend produces, and cleanup is guarded with `|| true` so a failing `kill` in an `EXIT` trap does not fail the script under `set -e`.
 - [ ] If the guide has a long-running server, a **hidden** doc-test block starts it in the background (and optional trap/sleep); visible "start server" block has **no** path.
 - [ ] Placeholders in shell blocks are quoted or use `${VAR:-default}` so the script has no syntax errors.
 - [ ] `test:` front matter on the **content** page lists the right `file` and `path`; file path is the content path (extractor follows reuse). For pages with no testable content (index pages, no code blocks), use `test: skip` instead — counts toward coverage without generating test cases.
