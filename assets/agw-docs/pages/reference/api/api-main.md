@@ -1544,8 +1544,8 @@ _Appears in:_
 | Field | Description |
 | --- | --- |
 | `None` | BodySendModeNone does not send the body to the external processor.<br /> |
-| `Buffered` | BodySendModeBuffered buffers the full body before sending it to the<br />external processor. It returns an error if the body exceeds 8KB.<br /> |
-| `BufferedPartial` | BodySendModeBufferedPartial buffers up to 8KB. If the body exceeds that<br />limit, it sends the buffered prefix instead of returning an error.<br /> |
+| `Buffered` | BodySendModeBuffered buffers the full body before sending it to the<br />external processor. Returns an error if the body exceeds the<br />configured body buffer limit.<br /> |
+| `BufferedPartial` | BodySendModeBufferedPartial buffers up to the configured body buffer limit.<br />If the body exceeds that limit, it sends the buffered prefix instead of<br />returning an error.<br /> |
 | `FullDuplexStreamed` | BodySendModeFullDuplexStreamed streams the body to the external processor.<br /> |
 
 
@@ -2895,11 +2895,33 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `signingKeyRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Secret providing the `signingKey` key with a PEM-encoded RSA or EC private key. |  | Required: \{\} <br /> |
-| `alg` _[OAuthPrivateKeyJWTSigningAlgorithm](#oauthprivatekeyjwtsigningalgorithm)_ | JWS signing algorithm. Defaults to RS256. |  | Optional: \{\} <br /> |
+| `alg` _[JwtSigningAlg](#jwtsigningalg)_ | JWS signing algorithm. Defaults to RS256. |  | Optional: \{\} <br /> |
 | `kid` _string_ | Optional JWS key ID header. |  | Optional: \{\} <br /> |
-| `claims` _object (keys:string, values:[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#json-v1-apiextensions-k8s-io))_ | Static claims added to every token (e.g. iss, sub, aud). Values may be<br />any JSON value (e.g. a string, number, bool, or array). iat, exp, and<br />nbf are reserved for the signer and cannot be configured here; the<br />controller rejects them at translation time. (CEL admission validation<br />cannot inspect this map: JSON-valued fields are excluded from CEL type<br />declarations.) |  | MinProperties: 1 <br />Required: \{\} <br /> |
+| `claims` _object (keys:string, values:[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#json-v1-apiextensions-k8s-io))_ | Static claims added to every token (e.g. iss, sub, aud). Values may be<br />any JSON value (e.g. a string, number, bool, or array). iat, exp, and<br />nbf are reserved for the signer and cannot be configured here; the<br />controller rejects them at translation time. |  | Optional: \{\} <br /> |
 | `ttl` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Token lifetime used for exp. Defaults to 300s. |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where the signed token is written on the backend request.<br />Defaults to the Authorization header with a "Bearer " prefix. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
+
+
+#### JwtSigningAlg
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [JwtSignAuth](#jwtsignauth)
+- [OAuthPrivateKeyJWT](#oauthprivatekeyjwt)
+
+| Field | Description |
+| --- | --- |
+| `RS256` |  |
+| `RS384` |  |
+| `RS512` |  |
+| `PS256` |  |
+| `ES256` |  |
+| `ES384` |  |
 
 
 #### Keepalive
@@ -3843,7 +3865,7 @@ _Appears in:_
 | `signingKeyRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | PEM-encoded RSA or EC private key; key defaults to `signingKey`. |  | Required: \{\} <br /> |
 | `certificateRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | PEM-encoded X.509 certificate chain, leaf first, for certificateHeader. The<br />leaf public key should match signingKeyRef; a mismatch only logs a warning<br />but the token endpoint will reject the assertions. Required when<br />certificateHeader is set. The key defaults to `certificate`. |  | Optional: \{\} <br /> |
 | `certificateHeader` _[OAuthPrivateKeyJWTCertificateHeader](#oauthprivatekeyjwtcertificateheader)_ | JWS certificate header. Required when certificateRef is set. |  | Optional: \{\} <br /> |
-| `alg` _[OAuthPrivateKeyJWTSigningAlgorithm](#oauthprivatekeyjwtsigningalgorithm)_ | JWS signing algorithm. Defaults to RS256. |  | Optional: \{\} <br /> |
+| `alg` _[JwtSigningAlg](#jwtsigningalg)_ | JWS signing algorithm. Defaults to RS256. |  | Optional: \{\} <br /> |
 | `kid` _string_ | Optional JWS key ID header. |  | Optional: \{\} <br /> |
 | `assertionAudience` _string_ | Audience for the client assertion, typically the token endpoint URL. |  | MinLength: 1 <br />Required: \{\} <br /> |
 
@@ -3863,28 +3885,6 @@ _Appears in:_
 | --- | --- |
 | `x5c` |  |
 | `x5t#S256` |  |
-
-
-#### OAuthPrivateKeyJWTSigningAlgorithm
-
-_Underlying type:_ _string_
-
-
-
-
-
-_Appears in:_
-- [JwtSignAuth](#jwtsignauth)
-- [OAuthPrivateKeyJWT](#oauthprivatekeyjwt)
-
-| Field | Description |
-| --- | --- |
-| `RS256` |  |
-| `RS384` |  |
-| `RS512` |  |
-| `PS256` |  |
-| `ES256` |  |
-| `ES384` |  |
 
 
 #### OAuthTokenCache
@@ -4024,6 +4024,74 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `model` _[ShortString](#shortstring)_ | Model name override, such as `gpt-4o-mini`.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `moderation` _[OpenAIInlineModeration](#openaiinlinemoderation)_ | Inline moderation configuration to inject into OpenAI chat completions<br />and responses requests.<br />If unset, the OpenAI inline moderation parameter is not injected. |  | Optional: \{\} <br /> |
+
+
+#### OpenAIInlineModeration
+
+
+
+
+
+
+
+_Appears in:_
+- [OpenAIConfig](#openaiconfig)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `model` _[ShortString](#shortstring)_ | The moderation model to use, such as `omni-moderation-latest`.<br />Defaults to `omni-moderation-latest` if not specified. | omni-moderation-latest | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `policy` _[OpenAIInlineModerationPolicy](#openaiinlinemoderationpolicy)_ | Policies to apply to request input and generated output. |  | Optional: \{\} <br /> |
+
+
+#### OpenAIInlineModerationConfig
+
+
+
+
+
+
+
+_Appears in:_
+- [OpenAIInlineModerationPolicy](#openaiinlinemoderationpolicy)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `mode` _[OpenAIInlineModerationMode](#openaiinlinemoderationmode)_ | Mode controls whether moderation only returns scores or blocks flagged content. |  | Required: \{\} <br /> |
+
+
+#### OpenAIInlineModerationMode
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [OpenAIInlineModerationConfig](#openaiinlinemoderationconfig)
+
+| Field | Description |
+| --- | --- |
+| `Score` | OpenAIInlineModerationModeScore returns moderation scores without blocking.<br /> |
+| `Block` | OpenAIInlineModerationModeBlock blocks flagged content.<br /> |
+
+
+#### OpenAIInlineModerationPolicy
+
+
+
+
+
+
+
+_Appears in:_
+- [OpenAIInlineModeration](#openaiinlinemoderation)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `input` _[OpenAIInlineModerationConfig](#openaiinlinemoderationconfig)_ | Policy for request input moderation. |  | Optional: \{\} <br /> |
+| `output` _[OpenAIInlineModerationConfig](#openaiinlinemoderationconfig)_ | Policy for generated output moderation. |  | Optional: \{\} <br /> |
 
 
 #### OpenAIModeration
@@ -4226,8 +4294,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `requestBodyMode` _[BodySendMode](#bodysendmode)_ | How request bodies are sent to the external processor.<br />`Buffered` buffers the full body and returns an error if it exceeds 8KB.<br />`BufferedPartial` buffers up to 8KB and sends the buffered prefix if the<br />body exceeds that limit. Defaults to `FullDuplexStreamed`. | FullDuplexStreamed | Optional: \{\} <br /> |
-| `responseBodyMode` _[BodySendMode](#bodysendmode)_ | How response bodies are sent to the external processor.<br />`Buffered` buffers the full body and returns an error if it exceeds 8KB.<br />`BufferedPartial` buffers up to 8KB and sends the buffered prefix if the<br />body exceeds that limit. Defaults to `FullDuplexStreamed`. | FullDuplexStreamed | Optional: \{\} <br /> |
+| `requestBodyMode` _[BodySendMode](#bodysendmode)_ | How request bodies are sent to the external processor.<br />Defaults to `FullDuplexStreamed`. | FullDuplexStreamed | Optional: \{\} <br /> |
+| `responseBodyMode` _[BodySendMode](#bodysendmode)_ | How response bodies are sent to the external processor.<br />Defaults to `FullDuplexStreamed`. | FullDuplexStreamed | Optional: \{\} <br /> |
 | `requestHeaderMode` _[HeaderSendMode](#headersendmode)_ | Whether request headers are sent to the external processor.<br />Defaults to `Send`. | Send | Optional: \{\} <br /> |
 | `responseHeaderMode` _[HeaderSendMode](#headersendmode)_ | Whether response headers are sent to the external processor.<br />Defaults to `Send`. | Send | Optional: \{\} <br /> |
 | `requestTrailerMode` _[TrailerSendMode](#trailersendmode)_ | Whether request trailers are sent to the external processor.<br />Defaults to `Send`. | Send | Optional: \{\} <br /> |
