@@ -45,9 +45,11 @@ By default, agentgateway calls `POST /request` and `POST /response` on the webho
 
 ## Customize the request path and headers
 
-Use the `headers` field to set headers on the outgoing webhook request with [CEL expressions]({{< link-hextra path="/reference/cel/" >}}). Keys can be regular header names or the `:path`, `:method`, and `:authority` pseudo-headers; setting `:path` overrides the default `/request` or `/response` path. This is useful when your webhook service hosts other endpoints and can't dedicate its root path to the guardrail API, or when you want to forward context such as JWT claims to the webhook.
+Use the `headers` field to set headers on the outgoing webhook request from [CEL expressions]({{< link-hextra path="/reference/cel/" >}}). Set this field when your webhook service hosts other endpoints and cannot dedicate its root path to the guardrail API, or when you want to forward context such as JWT claims to the webhook.
 
-Expressions are evaluated against the original incoming request, so `request.*` and `jwt.*` refer to the client's request:
+Keys are either regular header names or the `:path`, `:method`, and `:authority` pseudo-headers. Setting `:path` overrides the default `/request` or `/response` path.
+
+Expressions are evaluated against the original client request, not against the webhook request, so `request.*`, `jwt.*`, and `llmRequest.*` all refer to the request that the client sent to the gateway.
 
 ```yaml
 cat <<EOF > config.yaml
@@ -68,9 +70,14 @@ llm:
             ":path": '"/api/guardrails/request"'
             x-user: jwt.sub
             x-tenant: request.headers["x-tenant"]
+            x-model: llmRequest.model
 EOF
 ```
 
 | Setting | Description |
 | -- | -- |
-| `headers` | A map of header names (or the `:path`, `:method`, `:authority` pseudo-headers) to CEL expressions, evaluated against the original client request. Setting `:path` replaces the default `/request` or `/response` path sent to the webhook target. |
+| `headers` | A map of header names, or the `:path`, `:method`, and `:authority` pseudo-headers, to CEL expressions. Each expression is evaluated against the original client request. |
+| `:path` | Replaces the default `/request` or `/response` path that agentgateway sends to the webhook target. Your webhook service must serve the path that you set. The value is a CEL expression, so a literal path is a quoted string within single quotes, such as `'"/api/guardrails/request"'`. |
+
+> [!NOTE]
+> An expression that cannot be evaluated, such as `jwt.sub` on a request with no JWT, omits that header instead of failing the request. A `:path` expression that cannot be evaluated leaves the default `/request` or `/response` path in place. The `llmRequest.*` variables are available on request-phase webhooks only.
