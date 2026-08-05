@@ -2,11 +2,53 @@
 title: CORS
 weight: 11
 description: Configure Cross-Origin Resource Sharing policies to control cross-domain requests.
+test:
+  cors:
+  - file: ${versionRoot}/configuration/security/cors.md
+    path: cors
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
+{{< doc-test paths="cors" >}}
+# ============================================================================
+# Doc test coverage for this guide (these comments are not rendered on the page)
+# ============================================================================
+# WHAT THIS TEST VALIDATES:
+#   * All three example configs (Simplified LLM, Simplified MCP, and
+#     Routing-based) are accepted by agentgateway (--validate-only), covering
+#     `allowOrigins`, `allowMethods`, `allowHeaders`, `exposeHeaders`,
+#     `allowCredentials`, and `maxAge` in both duration (`10m`, `100s`) forms.
+#   * The "Origin Allowed" branch of the CORS preflight diagram: with the
+#     Routing-based config loaded, an OPTIONS preflight from
+#     https://app.example.com returns 200 with access-control-allow-origin,
+#     -allow-methods, -allow-headers, -allow-credentials, -expose-headers, and
+#     -max-age set to the configured values (maxAge 100s is emitted as `100`).
+#   * The "Origin NOT Allowed" branch: an OPTIONS preflight from an origin that
+#     is not in `allowOrigins` still returns 200 but with no
+#     access-control-allow-origin header, which is what causes the browser to
+#     block the response.
+#
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * That a browser enforces the policy - different layer; as the page's own tip
+#     notes, curl and other HTTP clients ignore CORS headers, so the test can only
+#     assert the headers agentgateway returns.
+#   * The actual (non-preflight) cross-origin request being forwarded with CORS
+#     headers - requires config/traffic the page omits; the Routing-based example
+#     points at a placeholder backend (`api.example.com:443`) that the test cannot
+#     stand up. The preflight is answered by agentgateway itself, so it is
+#     assertable.
+#   * The Simplified LLM and MCP configs at runtime - external dependency; they
+#     need an OpenAI API key and an npx-launched MCP server respectively, so they
+#     are only validated as config.
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+
+# The Simplified (LLM) example reads the API key from the environment.
+# --validate-only still resolves env vars, so a placeholder is enough here.
+export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
+{{< /doc-test >}}
 
 ## About CORS
 
@@ -136,3 +178,142 @@ routes:
 ```
 {{< /tab >}}
 {{< /tabs >}}
+
+{{< doc-test paths="cors" >}}
+cat <<'EOF' > config-llm.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    cors:
+      allowOrigins:
+      - https://chat.example.com
+      allowMethods:
+      - POST
+      - OPTIONS
+      allowHeaders:
+      - authorization
+      - content-type
+      exposeHeaders:
+      - x-request-id
+      allowCredentials: true
+      maxAge: 10m
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+EOF
+agentgateway -f config-llm.yaml --validate-only
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    cors:
+      allowOrigins:
+      - https://chat.example.com
+      allowMethods:
+      - POST
+      - OPTIONS
+      allowHeaders:
+      - authorization
+      - content-type
+      exposeHeaders:
+      - x-request-id
+      allowCredentials: true
+      maxAge: 10m
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
+
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: api.example.com:443
+  policies:
+    cors:
+      allowOrigins:
+      - https://app.example.com
+      allowMethods:
+      - GET
+      - POST
+      - OPTIONS
+      allowHeaders:
+      - authorization
+      - content-type
+      exposeHeaders:
+      - x-request-id
+      allowCredentials: true
+      maxAge: 100s
+EOF
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
+
+{{< doc-test paths="cors" >}}
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null' EXIT
+sleep 3
+{{< /doc-test >}}
+
+{{< doc-test paths="cors" >}}
+YAMLTest -f - <<'EOF'
+- name: Preflight from an allowed origin returns the configured CORS headers
+  retries: 3
+  http:
+    url: "http://localhost:3000"
+    path: /
+    method: OPTIONS
+    headers:
+      origin: "https://app.example.com"
+      access-control-request-method: GET
+      access-control-request-headers: authorization
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    headers:
+      - name: access-control-allow-origin
+        comparator: equals
+        value: "https://app.example.com"
+      - name: access-control-allow-methods
+        comparator: contains
+        value: GET
+      - name: access-control-allow-headers
+        comparator: contains
+        value: authorization
+      - name: access-control-expose-headers
+        comparator: contains
+        value: x-request-id
+      - name: access-control-allow-credentials
+        comparator: equals
+        value: "true"
+      - name: access-control-max-age
+        comparator: equals
+        value: "100"
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="cors" >}}
+# The "Origin NOT Allowed" branch of the diagram: agentgateway still answers the
+# preflight, but omits access-control-allow-origin, which is what makes the
+# browser block the response.
+DISALLOWED_HEADERS=$(curl -s -i -X OPTIONS http://localhost:3000/ \
+  -H "Origin: https://not-allowed.example.com" \
+  -H "Access-Control-Request-Method: GET")
+if grep -qi '^access-control-allow-origin' <<<"$DISALLOWED_HEADERS"; then
+  echo "FAIL: preflight from a disallowed origin returned access-control-allow-origin"
+  echo "$DISALLOWED_HEADERS"
+  exit 1
+fi
+echo "✓ Preflight from a disallowed origin returned no access-control-allow-origin header"
+{{< /doc-test >}}
