@@ -65,25 +65,25 @@ Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} by using Flux. The follow
    apiVersion: source.toolkit.fluxcd.io/v1
    kind: OCIRepository
    metadata:
-     name: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+     name: {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      interval: 5m
-     url: oci://cr.agentgateway.dev/charts/{{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+     url: oci://cr.agentgateway.dev/charts/{{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
      ref:
        tag: {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
    ---
    apiVersion: helm.toolkit.fluxcd.io/v2
    kind: HelmRelease
    metadata:
-     name: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+     name: {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      interval: 5m
-     releaseName: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+     releaseName: {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
      chartRef:
        kind: OCIRepository
-       name: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+       name: {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
      upgrade:
        strategy:
          name: RetryOnFailure
@@ -92,27 +92,27 @@ Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} by using Flux. The follow
    apiVersion: source.toolkit.fluxcd.io/v1
    kind: OCIRepository
    metadata:
-     name: {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+     name: {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      interval: 5m
-     url: oci://cr.agentgateway.dev/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+     url: oci://cr.agentgateway.dev/charts/{{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
      ref:
        tag: {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
    ---
    apiVersion: helm.toolkit.fluxcd.io/v2
    kind: HelmRelease
    metadata:
-     name: {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+     name: {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      dependsOn:
-       - name: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+       - name: {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
      interval: 5m
-     releaseName: {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+     releaseName: {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
      chartRef:
        kind: OCIRepository
-       name: {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+       name: {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
      upgrade:
        strategy:
          name: RetryOnFailure

@@ -123,7 +123,7 @@ Inference Extension CRDs, agentgateway, and the llm-d Router in Gateway mode.
    helm upgrade -i --create-namespace \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
      --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
-     {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}}
+     {{< reuse "agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}}
    ```
 
    ```bash
@@ -131,7 +131,7 @@ Inference Extension CRDs, agentgateway, and the llm-d Router in Gateway mode.
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
      --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
      --set inferenceExtension.enabled=true \
-     {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}}
+     {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}}
    ```
 
 4. Create an agentgateway `Gateway`.
