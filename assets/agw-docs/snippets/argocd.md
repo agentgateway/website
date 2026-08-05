@@ -37,7 +37,7 @@
    apiVersion: argoproj.io/v1alpha1
    kind: Application
    metadata:
-     name: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}-helm
+     name: {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}-helm
      namespace: argocd
    spec:
      destination:
@@ -45,7 +45,7 @@
        server: https://kubernetes.default.svc
      project: default
      source:
-       chart: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+       chart: {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
        helm:
          skipCrds: false
        repoURL: {{< reuse "agw-docs/snippets/helm-shortpath.md" >}}/charts
@@ -71,7 +71,7 @@
    apiVersion: argoproj.io/v1alpha1
    kind: Application
    metadata:
-     name: {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}-helm
+     name: {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}-helm
      namespace: argocd
    spec:
      destination:
@@ -79,7 +79,7 @@
        server: https://kubernetes.default.svc
      project: default
      source:
-       chart: {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+       chart: {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
        helm:
          skipCrds: false
          parameters:

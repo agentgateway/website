@@ -26,7 +26,7 @@ Revisit when the current main (1.4.x) ships as the next latest: the Standard pat
    {{< tabs >}}
    {{% tab name="Standard" %}}
    ```sh {paths="standard"}
-   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} \
+   helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} \
    --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
    --set controller.image.pullPolicy=Always
@@ -35,7 +35,7 @@ Revisit when the current main (1.4.x) ships as the next latest: the Standard pat
    {{% tab name="Experimental" %}}
    The experimental path uses the nightly development build of the {{< reuse "agw-docs/snippets/kgateway.md" >}} CRDs.
    ```sh {paths="experimental"}
-   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} \
+   helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} \
    --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
    --set controller.image.pullPolicy=Always
@@ -48,7 +48,7 @@ Revisit when the current main (1.4.x) ships as the next latest: the Standard pat
    {{< tabs >}}
    {{% tab name="Standard" %}}
    ```sh {paths="standard"}
-   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
+   helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
      --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
      --set controller.image.pullPolicy=Always \
@@ -58,7 +58,7 @@ Revisit when the current main (1.4.x) ships as the next latest: the Standard pat
    {{% tab name="Experimental" %}}
    The experimental path uses the nightly development build and enables the experimental Gateway API feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`.
    ```sh {paths="experimental"}
-   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
+   helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
    --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
    --set controller.image.pullPolicy=Always \

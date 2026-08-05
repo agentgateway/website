@@ -29,5 +29,5 @@ For other examples, see the [LLM consumption]({{< link-hextra path="/llm/" >}}),
 No longer need {{< reuse "/agw-docs/snippets/kgateway.md" >}}? Uninstall with the following command:
 
 ```sh
-helm uninstall {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+helm uninstall {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
