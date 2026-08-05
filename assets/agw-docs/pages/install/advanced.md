@@ -80,7 +80,7 @@ The following steps add a second control plane for a `tenant-b` team. The {{< re
    kubectl label namespace tenant-b gateway-controller=tenant-b
    ```
 
-2. Create a `secondary-values.yaml` file for the second control plane.
+2. Create a `secondary-values.yaml` file for the second control plane. Each entry in `discoveryNamespaceSelectors` is disjunctive (OR semantics), so the control plane watches a namespace if that namespace matches any entry. This example matches two sets of namespaces: the control plane's own namespace, `agentgateway-tenant-b-system`, and every namespace with the `gateway-controller: tenant-b` label. Include the control plane's own namespace, because the controller watches resources in that namespace, such as the certificate that secures its xDS connection.
 
    ```yaml
    gatewayClassName: agentgateway-tenant-b
@@ -95,8 +95,6 @@ The following steps add a second control plane for a `tenant-b` team. The {{< re
    - matchLabels:
        gateway-controller: tenant-b
    ```
-
-   Each entry in `discoveryNamespaceSelectors` is disjunctive, so this example selects the control plane's own namespace and every namespace with the `gateway-controller: tenant-b` label. Include the control plane's own namespace, because the controller watches resources in that namespace, including the certificate that secures its xDS connection.
 
 3. Install the second control plane in its own namespace.
 
