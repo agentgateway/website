@@ -162,7 +162,7 @@ Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} by using Flux. The follow
 Now that you have {{< reuse "/agw-docs/snippets/kgateway.md" >}} set up and running, check out the following guides to expand your gateway capabilities.
 
 - [Set up your agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-- Review the [LLM consumption]({{< link-hextra path="/llm/" >}}), [inference routing]({{< link-hextra path="/inference/" >}}), [MCP]({{< link-hextra path="/mcp/" >}}), or [agent connectivity]({{< link-hextra path="/agent/" >}}) guides to learn more about common agentgateway use cases.
+- Review the [LLM consumption]({{< link-hextra path="/llm/" >}}), [inference routing]({{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}{{< link-hextra path="/inference/" >}}{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}{{< link-hextra path="/llm/inference/" >}}{{< /version >}}), [MCP]({{< link-hextra path="/mcp/" >}}), or [agent connectivity]({{< link-hextra path="/agent/" >}}) guides to learn more about common agentgateway use cases.
 
 ## Cleanup
 
