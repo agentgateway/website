@@ -1,7 +1,7 @@
 ---
 name: doc-test-guides
 description: Add executable doc tests to agentgateway documentation guides using the doc test framework. Use when the user asks to "add doc tests", "add tests to a guide", "add tests to a topic", mentions "YAMLTest", or is working on quickstart guides, standalone binary guides, or Kubernetes doc pages that should generate runnable scripts from code blocks.
-version: 1.1.0
+version: 1.2.0
 ---
 
 # Doc test guides skill
@@ -114,6 +114,50 @@ The same trap applies to any repeated command, such as an identical `start_gatew
     AGW_PID=""
   }
   ```
+
+#### Never start a background process inside `$( )`
+
+A helper that both starts the gateway and returns a value looks convenient, but it breaks in two ways at once when it is called in a command substitution:
+
+```sh
+# BROKEN
+tool_names_for() {
+  agentgateway -f "$1" &
+  AGW_PID=$!                 # set in the SUBSHELL, invisible to the caller
+  curl ... | jq -r '...'
+}
+NAMES=$(tool_names_for config.yaml)
+```
+
+1. **The PID is lost.** `$( )` runs in a subshell, so `AGW_PID` never reaches the parent. A later `stop_gateway` sees it empty and returns without killing anything, so the gateway keeps holding its port. The next config then starts a gateway that cannot bind, and every assertion after that silently runs against the *previous* config.
+2. **The gateway's output is captured.** The background process inherits the substituted stdout, so its startup log ends up concatenated into the returned value.
+
+Symptom: the first assertion passes, later ones fail or hang for no obvious reason, and the test eventually times out. This is easy to misread as a product bug.
+
+Split the two jobs, so the process starts in the parent shell and only pure-curl code runs inside `$( )`:
+
+```sh
+start_gateway() {                       # call from the parent, never inside $( )
+  agentgateway -f "$1" > "agw-$1.log" 2>&1 &
+  AGW_PID=$!
+}
+
+wait_for_tools() {                      # pure curl, safe inside $( )
+  local out=""
+  for i in $(seq 1 15); do
+    out=$(query_something 2>/dev/null || true)
+    [ -n "$out" ] && break
+    sleep 2
+  done
+  echo "$out"
+}
+
+start_gateway config.yaml
+NAMES=$(wait_for_tools)
+stop_gateway
+```
+
+Redirect the process's output to a file as well, so nothing can leak into a captured value. When a page needs several configs in sequence, `stop_gateway` between them and confirm the port is actually released before the next start.
 
 ### 5. Env vars and placeholders
 
@@ -361,6 +405,7 @@ When in doubt, flag the failure to the user rather than silently adjusting the t
 - [ ] Multiple paths in `paths="..."` are **comma-separated**, not space-separated — `paths="a,b"` ✓, `paths="a b"` ✗ (spaces make the whole string a single path, silently excluding the block).
 - [ ] No two selected blocks are **byte-identical** — the extractor keeps only the first and silently drops the rest, so a repeated `--validate-only` (or `start_gateway`, or warmup loop) across sections leaves later sections untested. Add a comment naming the section, then verify with `grep -c` on the source vs. the generated script. See "Repeated commands across sections" under step 3.
 - [ ] A helper backend the test invents uses a port **no documented config uses** (avoid `8080`), its readiness check probes for a response only that backend produces, and cleanup is guarded with `|| true` so a failing `kill` in an `EXIT` trap does not fail the script under `set -e`.
+- [ ] No helper **starts a background process inside `$( )`** — the PID is set in the subshell and lost, so the process is never killed and later configs run against the stale one; and its output gets captured into the returned value. Start with `start_gateway` in the parent shell, keep only pure-curl code inside the substitution. See "Never start a background process inside `$( )`" under step 4.
 - [ ] If the guide has a long-running server, a **hidden** doc-test block starts it in the background (and optional trap/sleep); visible "start server" block has **no** path.
 - [ ] Placeholders in shell blocks are quoted or use `${VAR:-default}` so the script has no syntax errors.
 - [ ] `test:` front matter on the **content** page lists the right `file` and `path`; file path is the content path (extractor follows reuse). For pages with no testable content (index pages, no code blocks), use `test: skip` instead — counts toward coverage without generating test cases.
