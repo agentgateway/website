@@ -16,7 +16,7 @@ Each agentgateway pod runs an admin server on port `15000`. The admin server pro
 | `/debug/trace` | Streams a JSON-over-SSE trace of the next request that the proxy handles. The `agctl proxy trace` command consumes this endpoint. |
 | `/logging` | Get and set the logging level at runtime. |
 | `/memory` | Dump allocator and process memory statistics. |
-| `/debug/pprof/profile` | Build a CPU profile by using the [pprof](https://github.com/google/pprof) profiler. Use `?seconds=N` to set the duration (1–300s, default 10s). |
+| `/debug/pprof/profile` | Build a CPU profile by using the [pprof](https://github.com/google/pprof) profiler. Use `?seconds=N` to set the duration (1–300s, default 10s) and `?frequency=N` to set the sampling rate in Hz (1–1000, default 100). |
 | `/debug/pprof/heap` | Collect heap profiling data. |
 | `/debug/tasks` | Inspect the live tokio task tree. |
 | `/quitquitquit` | Trigger a graceful shutdown of the proxy. |
