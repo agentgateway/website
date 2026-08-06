@@ -19,6 +19,8 @@ The request follows these component boundaries:
 
 `PreRouting` is important when the vSR decision changes the model or adds a header that an HTTPRoute uses for matching. It makes the result available before agentgateway evaluates the route.
 
+When semantic caching is enabled, vSR can instead return a cached completion as an immediate ExtProc response. Agentgateway returns the response to the client without calling the configured backend.
+
 ## Choose an integration path
 
 The vSR and agentgateway projects provide complementary guides. Choose the one that matches the models and outcome that you want to evaluate.
@@ -27,7 +29,7 @@ The vSR and agentgateway projects provide complementary guides. Choose the one t
 {{< card link="https://vllm-sr.ai/docs/installation/k8s/agentgateway/" title="Deploy vSR with agentgateway" icon="external-link" description="Follow the vSR project guide to deploy the components on Kubernetes and route to vLLM-compatible inference workloads.">}}
 {{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/cost-based" title="Evaluate cost-based routing" icon="external-link" description="Select between hosted model tiers and measure the result with a model cost catalog and OpenTelemetry.">}}
 {{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/tier-aware" title="Configure tier-aware routing" icon="external-link" description="Select separate vSR configurations and model pools for authenticated Basic, Standard, and Pro callers.">}}
-{{< card link="https://github.com/agentgateway/agentgateway/pull/2883" title="Preview semantic caching" icon="external-link" description="Review the proposed Redis-backed example for reusing responses to semantically equivalent requests.">}}
+{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/semantic-cache" title="Configure semantic caching" icon="external-link" description="Reuse responses to semantically equivalent requests with the Redis-backed example.">}}
 {{< /cards >}}
 
 The vSR deployment guide owns the installation, Helm values, and semantic-router configuration. Each agentgateway example owns the policies and runnable gateway resources for its scenario. Keeping those details with their projects avoids version drift in this integration overview.
