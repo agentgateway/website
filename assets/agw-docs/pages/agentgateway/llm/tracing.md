@@ -82,6 +82,11 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
    EOF
    ```
 
+   {{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x,2.3.x,2.1.x,2026.7.1" >}}
+   > [!NOTE]
+   > `llm.inputTokens` includes the tokens that the provider read from or wrote to its prompt cache, so the span attribute means the same thing for every provider. To record what the provider reported instead, use `llm.providerInputTokens`. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).
+   {{< /version >}}
+
 2. Create your {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy. Make sure to reference the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that you created so that your proxy starts with the custom tracing configuration.
    ```yaml
    kubectl apply -f- <<EOF

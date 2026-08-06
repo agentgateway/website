@@ -14,11 +14,15 @@ Both local and global rate limiting support both request-based and token-based l
 
 ### How token counting works
 
-Agentgateway reads the `usage` field from every LLM response to accumulate token counts against the configured budget. Two behaviors are important to understand before applying limits:
+Agentgateway reads the `usage` field from every LLM response to accumulate token counts against the configured budget. Before applying limits, keep in mind the following:
 
 **Streaming responses:** Token counts are only known after the full stream completes. The gateway cannot interrupt a response mid-stream. Token-based limits apply to *future* requests — the request that pushes you over the budget completes successfully, and the *next* request gets a 429.
 
 **Counting happens after the fact:** This means token budgets are approximate. With a 1000-token-per-minute limit and a single request that returns 1200 tokens, that request succeeds, you're 200 tokens over budget, and subsequent requests are blocked until the window resets.
+
+{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x,2.3.x,2.1.x,2026.7.1" >}}
+**Cached tokens count against the budget:** A request debits the input count *including* the tokens that the provider read from or wrote to its prompt cache, plus the output count. Providers disagree about whether their own input count includes cached tokens, so agentgateway normalizes the number first. For providers that exclude cached tokens, such as Anthropic and Amazon Bedrock, a cache-heavy request therefore debits more than the provider's reported input count. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).
+{{< /version >}}
 
 Token budgets degrade gracefully: requests that exceed the budget fail fast with a 429 and are not forwarded to the backend. After the window resets, the token budget is restored and requests succeed again. No manual intervention is required.
 

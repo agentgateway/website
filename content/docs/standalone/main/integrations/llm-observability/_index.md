@@ -50,6 +50,6 @@ Agentgateway automatically includes these LLM-specific trace attributes:
 | `gen_ai.operation.name` | Operation type (chat, completion, embedding) |
 | `gen_ai.request.model` | Requested model name |
 | `gen_ai.response.model` | Actual model used |
-| `gen_ai.usage.input_tokens` | Input token count |
+| `gen_ai.usage.input_tokens` | Input token count, including the tokens read from or written to the prompt cache. See [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}) |
 | `gen_ai.usage.output_tokens` | Output token count |
 | `gen_ai.provider.name` | LLM provider (openai, anthropic, etc.) |

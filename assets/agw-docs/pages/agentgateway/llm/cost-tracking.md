@@ -172,7 +172,7 @@ OpenTelemetry traces include token usage as span attributes. You can view per-re
 1. Set up OpenTelemetry tracing. See the [tracing guide]({{< link-hextra path="/observability/tracing/" >}}) for setup instructions.
 
 2. Search for traces with LLM requests. Each trace includes these attributes:
-   - `gen_ai.usage.input_tokens`: Number of input tokens
+   - `gen_ai.usage.input_tokens`: Number of input tokens{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x,2.3.x,2.1.x,2026.7.1" >}}, including the tokens read from or written to the prompt cache. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).{{< /version >}}
    - `gen_ai.usage.output_tokens`: Number of output tokens
    - `gen_ai.request.model`: Model used
    - `gen_ai.response.model`: Model that responded
