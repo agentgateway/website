@@ -67,9 +67,40 @@ EOF
 
 Use the MCP endpoint URL from the previous step to configure your IDE. Replace `<MCP_URL>` with your endpoint, such as `http://localhost:8080/mcp/mcp` for port-forward setups.
 
-Review the following table of configuration details by IDE environment.
+### Claude Desktop
 
-{{< reuse "agw-docs/snippets/mcp-ide-comparison.md" >}}
+1. Add agentgateway to your Claude Desktop configuration file.
+
+   {{< tabs >}}
+   {{% tab name="macOS" %}}
+   Edit `~/Library/Application Support/Claude/claude_desktop_config.json`.
+
+   ```json
+   {
+     "mcpServers": {
+       "agentgateway": {
+         "url": "<MCP_URL>"
+       }
+     }
+   }
+   ```
+   {{% /tab %}}
+   {{% tab name="Windows" %}}
+   Edit `%APPDATA%\Claude\claude_desktop_config.json`.
+
+   ```json
+   {
+     "mcpServers": {
+       "agentgateway": {
+         "url": "<MCP_URL>"
+       }
+     }
+   }
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+2. Restart Claude Desktop and verify that the agentgateway tools appear in the MCP tools list.
 
 ### Claude Code
 
@@ -153,6 +184,8 @@ The `agentgateway` server shows up as **Connected**.
 
 2. Restart Devin Desktop and verify that agentgateway tools appear in the MCP tools list.
 
+> [!NOTE]
+> **Multiplexed tool names**: If your MCP endpoint routes to more than one target through [Virtual MCP]({{< link-hextra path="/mcp/virtual" >}}), agentgateway namespaces each tool and prompt name with its target name by default, for example `mcp-server-everything_search`. If a tool suddenly appears under a different name in your client's tool list after you add a second target, this prefixing is why. Control it with the `prefixMode` field on the MCP backend; see [Virtual MCP]({{< link-hextra path="/mcp/virtual" >}}) for the available modes.
 
 ## Authentication
 
@@ -167,7 +200,7 @@ claude mcp add agentgateway --transport http <MCP_URL> \
 ```
 {{% /tab %}}
 
-{{% tab name="JSON config (Cursor / VS Code / Devin Desktop)" %}}
+{{% tab name="JSON config (Claude Desktop / Cursor / VS Code / Devin Desktop)" %}}
 ```json
 {
   "mcpServers": {
