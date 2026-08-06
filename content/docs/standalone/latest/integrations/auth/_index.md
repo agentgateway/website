@@ -23,12 +23,3 @@ Agentgateway supports several authentication approaches.
 ## Identity providers
 
 Agentgateway includes native MCP authentication providers for the following identity providers. Each provider adapts agentgateway to the OAuth behaviors of that authorization server, such as where it publishes signing keys and whether it supports Dynamic Client Registration.
-
-| Identity provider | `provider` value | Guide |
-|-------------------|------------------|-------|
-| Auth0 | `auth0` | [Auth0]({{< link-hextra path="/integrations/auth/auth0" >}}) |
-| authentik | `authentik` | [authentik]({{< link-hextra path="/integrations/auth/authentik" >}}) |
-| Descope | `descope` | [Descope]({{< link-hextra path="/integrations/auth/descope" >}}) |
-| Keycloak | `keycloak` | [Keycloak]({{< link-hextra path="/integrations/auth/keycloak" >}}) |
-| Microsoft Entra ID | `entra` | [Microsoft Entra ID]({{< link-hextra path="/integrations/auth/entra" >}}) |
-| Okta | `okta` | [Okta]({{< link-hextra path="/integrations/auth/okta" >}}) |
