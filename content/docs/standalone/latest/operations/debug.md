@@ -16,8 +16,8 @@ Agentgateway exposes an admin server on `127.0.0.1:15000` by default. The admin 
 | `/debug/trace` | Streams a JSON-over-SSE trace of the next request that the proxy handles. The `agctl proxy trace` command consumes this endpoint. |
 | `/logging` | Get and set the logging level at runtime. |
 | `/memory` | Dump allocator and process memory statistics. |
-| `/debug/pprof/profile` | Build a CPU profile by using the [pprof](https://github.com/google/pprof) profiler. Use `?seconds=N` to set the duration (1–300s, default 10s). |
-| `/debug/pprof/heap` | Collect heap profiling data. |
+| `/debug/pprof/profile` | Build a CPU profile by using the [pprof](https://github.com/google/pprof) profiler. Available on Linux builds only. Use `?seconds=N` to set the duration (1–300s, default 10s) and `?frequency=N` to set the sampling rate in Hz (1–1000, default 100). |
+| `/debug/pprof/heap` | Collect heap profiling data. Contains allocation samples on Linux builds only. |
 | `/debug/tasks` | Inspect the live tokio task tree. |
 | `/quitquitquit` | Trigger a graceful shutdown of agentgateway. |
 
@@ -110,6 +110,9 @@ You can also set fine-grained levels per module by using the same `RUST_LOG` fil
 ## Capture profiles
 
 Agentgateway includes pprof endpoints to help you investigate CPU and memory issues.
+
+> [!IMPORTANT]
+> Profiling data is available only when agentgateway runs on Linux. On macOS and Windows builds, the CPU profile endpoint is not registered and returns a `404 Not Found` error, and the heap profile endpoint returns a profile that contains no allocation samples.
 
 1. Optional: If you have not already, download [Graphviz](https://graphviz.org/download/) to visualize the profiles.
 

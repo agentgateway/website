@@ -67,7 +67,7 @@ With respect to security, you can leverage agentgateway to implement MCP authent
 
 Another long awaited addition to the MCP specification is the [Enterprise Managed Authorization](https://modelcontextprotocol.io/extensions/auth/enterprise-managed-authorization) extension. This extension addresses real issues for enterprise users accessing systems that span identity domains. It incorporates the use of the ID-JAG OAuth specification also known as "Cross App Access" to deliver a "single sign-on" experience in that context.
 
-agentgateway provides three distinct [examples of Cross App Access](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-cross-app-access) that you can try out today.
+Agentgateway provides three distinct [examples of Cross App Access](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-cross-app-access) that you can try out today.
 
 Those are just some of the many examples that come out of the box with the agentgateway repository.
 

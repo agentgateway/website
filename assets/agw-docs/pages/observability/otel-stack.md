@@ -799,3 +799,11 @@ YAMLTest -f - <<'EOF'
         comparator: exists
 EOF
 {{< /doc-test >}}
+
+{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x,2.3.x" >}}
+### Scrape the control plane and proxy metrics {#scrape-control-plane}
+
+The previous steps configure Prometheus to scrape the metrics that the OTel Collector receives. The {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} Helm chart does not create ServiceMonitor or PodMonitor resources for the control plane and proxy metrics endpoints, so Prometheus does not scrape those endpoints yet.
+
+To add them, set `monitoring.enabled` to `true` in your Helm values file. For the resources that the chart creates and the fields that tune them, see [Enable monitoring with Helm]({{< link-hextra path="/observability/control-plane-metrics/#enable-monitoring" >}}).
+{{< /version >}}

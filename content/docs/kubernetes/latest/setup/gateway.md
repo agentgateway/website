@@ -58,7 +58,7 @@ EOF
 
 Explore how you can use {{< reuse "agw-docs/snippets/agentgateway.md" >}} by checking out guides for the most common use cases: 
 * [LLM consumption]({{< link-hextra path="/llm" >}}) 
-* [Inference routing]({{< link-hextra path="/inference" >}}) 
+* [Inference routing]({{< link-hextra path="/llm/inference/" >}}) 
 * [MCP connectivity]({{< link-hextra path="/mcp" >}}) 
 * [Agent connectivity]({{< link-hextra path="/agent" >}}) 
 

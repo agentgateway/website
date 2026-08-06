@@ -192,8 +192,8 @@ By default, weighted routes are disabled. Upgrade your {{< reuse "/agw-docs/snip
 
 1. Get the Helm values for your current Helm installation. 
    ```sh
-   helm get values {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.yaml
-   open {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.yaml
+   helm get values {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}.yaml
+   open {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}.yaml
    ```
    
 2. Add the following values to the Helm values file to enable the weighted routes feature in {{< reuse "/agw-docs/snippets/kgateway.md" >}}.
@@ -207,7 +207,7 @@ By default, weighted routes are disabled. Upgrade your {{< reuse "/agw-docs/snip
 3. Upgrade your Helm installation. Replace the `--version {{< reuse "/agw-docs/versions/helm-version-flag.md" >}}` option to match your current version.
    
    ```sh
-   helm upgrade -i --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} --version {{< reuse "/agw-docs/versions/helm-version-flag.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -f {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.yaml
+   helm upgrade -i --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} --version {{< reuse "/agw-docs/versions/helm-version-flag.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} -f {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}.yaml
    ```
 
 ## Step 3: Add weights to routes {#weight-routes}
