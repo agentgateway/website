@@ -23,8 +23,9 @@ MCP clients follow the [MCP authorization specification](https://modelcontextpro
 
 ## Before you begin {#before-you-begin}
 
+- [Install agentgateway]({{< link-hextra path="/deployment/binary" >}}).
 - An authentik instance that agentgateway can reach.
-- Permission to create an application and provider in authentik.
+- Permission to create an application and a provider in authentik.
 
 ## Create an OAuth provider and application in authentik {#register}
 
@@ -79,7 +80,7 @@ mcp:
 
 Review the following configuration details:
 
-- `issuer`: The authentik issuer URL, including the trailing slash. Agentgateway derives the JWKS URL by appending `jwks/` to this value, so you do not need to configure `jwks`. To fetch keys from somewhere else, such as a local file, set `jwks` explicitly to override the derived URL.
+- `issuer`: The authentik issuer URL, including the trailing slash. Keep the trailing slash, because this value must match the `iss` claim in the token, and authentik mints that claim with one. Agentgateway derives the JWKS URL as `{issuer}/jwks/` and normalizes any trailing slash first, so you do not need to configure `jwks`. To fetch keys from somewhere else, such as a local file, set `jwks` explicitly to override the derived URL.
 - `audiences`: The OAuth client ID. authentik sets the `aud` claim of its tokens to the client ID rather than to a separate API identifier, so this value must match `clientId`.
 - `clientId`: The client ID of the public client that you created in authentik. Agentgateway returns this client to MCP clients that attempt Dynamic Client Registration.
 

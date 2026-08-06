@@ -220,15 +220,29 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
 
 ## Verify MCP auth
 
-1. Port-forward the agentgateway proxy.
+1. Get the address of the agentgateway proxy.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
-   kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:80 &
-   sleep 5
+   export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy \
+     -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+
+   echo "Gateway address: $INGRESS_GW_ADDRESS"
    ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   After you port-forward, the gateway is available at `http://localhost:8080`. Use `localhost:8080` wherever the following steps reference `$INGRESS_GW_ADDRESS:80`.
+
+   ```sh
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 8080:80
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 2. Send an unauthenticated request to the MCP endpoint. Verify that the request is rejected with a 401 HTTP response code and a `WWW-Authenticate` header that points MCP clients to the protected resource metadata.
    ```sh
-   curl -i http://localhost:8080/mcp -X POST \
+   curl -i http://$INGRESS_GW_ADDRESS:80/mcp -X POST \
      -H "Content-Type: application/json" \
      -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{}},"id":1}'
    ```
@@ -241,12 +255,12 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
 
 3. Verify that the gateway serves the protected resource metadata.
    ```sh
-   curl -s http://localhost:8080/.well-known/oauth-protected-resource/mcp | jq
+   curl -s http://$INGRESS_GW_ADDRESS:80/.well-known/oauth-protected-resource/mcp | jq
    ```
 
 4. Verify that the gateway serves Okta's authorization server metadata, that the `audience` query parameter is appended to the authorization endpoint, and that the registration endpoint points back at the gateway.
    ```sh
-   curl -s http://localhost:8080/.well-known/oauth-authorization-server/mcp \
+   curl -s http://$INGRESS_GW_ADDRESS:80/.well-known/oauth-authorization-server/mcp \
      | jq '{issuer, jwks_uri, authorization_endpoint, registration_endpoint}'
    ```
 

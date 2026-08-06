@@ -317,9 +317,17 @@ python3 scripts/doc_test_run.py
 Each test scenario:
 1. Creates a `kind` cluster named `doc-test-<scenario>`.
 2. Starts `cloud-provider-kind` in the background (provides LoadBalancer IPs).
-3. Runs the generated bash script.
+3. Runs the generated bash script from a scratch working directory, `out/tests/work/<scenario>/`.
 4. Deletes the cluster.
 5. Writes results to `out/tests/generated/test-results.yaml`.
+
+### Where a test's files land
+
+Guides write their config with relative paths (`cat <<EOF > config.yaml`), so the runner executes each script from `out/tests/work/<scenario>/` rather than from the repo root. Without this, every run drops config files into the working tree — 58 scenarios write a bare `config.yaml`, which is why `.gitignore` still carries an entry for it.
+
+The directory is deleted and recreated per scenario, so a file left by an earlier run cannot mask a guide that forgets to write one. After a failure, the scratch files are still there to inspect, alongside the cluster diagnostics in `out/tests/generated/context/<scenario>/`.
+
+This is also why a doc-test block must not read anything from the repo by relative path. Write what the test needs inside the script, the way the guides already do.
 
 ### Run a single test scenario
 
@@ -343,7 +351,11 @@ python3 scripts/doc_test_run.py \
   --file content/docs/kubernetes/main/security/cors.md \
   --test cors-in-httproute \
   --generate-only
-bash out/tests/generated/<script-name>.sh
+
+# Run it from a scratch directory. Invoked by hand from the repo root, the script
+# writes its config files into the working tree.
+mkdir -p out/tests/work/manual && cd out/tests/work/manual
+bash ../../generated/<script-name>.sh
 ```
 
 ### Key CLI options

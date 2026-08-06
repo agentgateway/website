@@ -1,6 +1,6 @@
 ---
 title: Set up authentik
-weight: 60
+weight: 50
 description: Deploy and configure authentik as an OAuth identity provider for MCP authentication with agentgateway.
 test:
   setup-authentik:

@@ -27,7 +27,9 @@ For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link
 
 ## Before you begin {#before-you-begin}
 
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+- [Install agentgateway]({{< link-hextra path="/deployment/binary" >}}).
+- A [Microsoft Entra ID tenant](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-create-new-tenant). A free tenant is sufficient for development.
+- Permission to register an application in the Microsoft Entra admin center.
 
 ## Register an app in Entra ID {#register}
 

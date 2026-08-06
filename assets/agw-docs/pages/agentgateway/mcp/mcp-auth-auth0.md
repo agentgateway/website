@@ -164,7 +164,7 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
      - group: gateway.networking.k8s.io
        kind: Gateway
        name: agentgateway-proxy
-       namespace: agentgateway-system
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
      - filters:
        # Enable CORS for browser-based MCP clients
@@ -205,15 +205,29 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
 
 ## Verify MCP auth
 
-1. Port-forward the agentgateway proxy.
+1. Get the address of the agentgateway proxy.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh {paths="setup-auth0"}
-   kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:80 &
-   sleep 5
+   export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy \
+     -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+
+   echo "Gateway address: $INGRESS_GW_ADDRESS"
    ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   After you port-forward, the gateway is available at `http://localhost:8080`. Use `localhost:8080` wherever the following steps reference `$INGRESS_GW_ADDRESS:80`.
+
+   ```sh
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 8080:80
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 2. Send an unauthenticated request to the MCP endpoint. Verify that the request is rejected with a 401 HTTP response code and a `WWW-Authenticate` header that points MCP clients to the protected resource metadata.
-   ```sh {paths="setup-auth0"}
-   curl -i http://localhost:8080/mcp -X POST \
+   ```sh
+   curl -i http://$INGRESS_GW_ADDRESS:80/mcp -X POST \
      -H "Content-Type: application/json" \
      -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{}},"id":1}'
    ```
@@ -225,8 +239,8 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    ```
 
 3. Verify that the gateway serves the protected resource metadata.
-   ```sh {paths="setup-auth0"}
-   curl -s http://localhost:8080/.well-known/oauth-protected-resource/mcp | jq
+   ```sh
+   curl -s http://$INGRESS_GW_ADDRESS:80/.well-known/oauth-protected-resource/mcp | jq
    ```
 
    Example output:
@@ -242,8 +256,8 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    ```
 
 4. Verify that the gateway serves Auth0's authorization server metadata, and that the `audience` query parameter is appended to the authorization endpoint.
-   ```sh {paths="setup-auth0"}
-   curl -s http://localhost:8080/.well-known/oauth-authorization-server/mcp \
+   ```sh
+   curl -s http://$INGRESS_GW_ADDRESS:80/.well-known/oauth-authorization-server/mcp \
      | jq '{issuer, jwks_uri, authorization_endpoint, registration_endpoint}'
    ```
 
@@ -335,19 +349,53 @@ EOF
 # Assert the MCP auth behaviors that the Auth0 provider is responsible for: the
 # connect-time challenge, the protected-resource metadata, and the audience query
 # parameter appended to Auth0's authorization endpoint.
-code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/mcp -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{}},"id":1}')
-if [ "$code" != "401" ]; then echo "expected 401 from unauthenticated /mcp, got $code"; exit 1; fi
-
-curl -sf http://localhost:8080/.well-known/oauth-protected-resource/mcp >/dev/null
-
-meta=$(curl -sf http://localhost:8080/.well-known/oauth-authorization-server/mcp)
-auth_ep=$(echo "$meta" | jq -r '.authorization_endpoint')
-case "$auth_ep" in
-  *"audience=${AUTH0_AUDIENCE}"*) ;;
-  *) echo "expected the audience query parameter on the authorization endpoint, got '$auth_ep'"; exit 1 ;;
-esac
+#
+# This heredoc is deliberately unquoted, unlike the other YAMLTest blocks in this
+# repo. YAMLTest resolves environment variables in a test's url and request
+# headers only, not in expectation values, so asserting the configured audience
+# value needs the shell to expand ${AUTH0_AUDIENCE} first. The JSONPath dollar
+# signs are escaped for the same reason.
+YAMLTest -f - <<EOF
+- name: unauthenticated MCP request returns 401 (connect-time auth enforced)
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/mcp"
+    method: GET
+  source:
+    type: local
+  expect:
+    statusCode: 401
+    headers:
+      - name: www-authenticate
+        comparator: contains
+        value: resource_metadata
+  retries: 3
+- name: resource metadata discovery returns 200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/.well-known/oauth-protected-resource/mcp"
+    method: GET
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "\$.resource"
+        comparator: contains
+        value: "/mcp"
+  retries: 3
+- name: authorization server metadata carries the appended audience parameter
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/.well-known/oauth-authorization-server/mcp"
+    method: GET
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "\$.authorization_endpoint"
+        comparator: contains
+        value: "audience=${AUTH0_AUDIENCE}"
+  retries: 3
+EOF
 {{< /doc-test >}}
 
 ## Connect an MCP client

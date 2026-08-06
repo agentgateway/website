@@ -1,6 +1,6 @@
 ---
 title: Set up Auth0
-weight: 70
+weight: 50
 description: Configure Auth0 as an OAuth identity provider for MCP authentication with agentgateway.
 test:
   setup-auth0:

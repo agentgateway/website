@@ -77,15 +77,82 @@ Install authentik in your cluster to act as the authorization server.
 
 Create an OAuth2 provider and an application in authentik, and capture the client ID that agentgateway uses.
 
-1. Port-forward the authentik server so that you can reach its API.
+1. Expose the authentik API so that you can administer it from outside the cluster. The Helm chart gives the authentik server a ClusterIP Service, which agentgateway uses from inside the cluster. This extra Service is only for the administrative API calls in the following steps.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh {paths="setup-authentik"}
-   kubectl port-forward -n authentik svc/authentik-server 9000:80 &
-   sleep 5
+   kubectl apply -f - <<EOF
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: authentik-admin
+     namespace: authentik
+   spec:
+     type: LoadBalancer
+     selector:
+       app.kubernetes.io/name: authentik
+       app.kubernetes.io/instance: authentik
+       app.kubernetes.io/component: server
+     ports:
+     - name: http
+       port: 9000
+       targetPort: 9000
+   EOF
    ```
+
+   > [!NOTE]
+   > The Service listens on port 9000 rather than 80 on purpose. A local `kind` cluster publishes each LoadBalancer Service on the matching port of your workstation, so a second Service on port 80 collides with the gateway's own LoadBalancer and never receives an address.
+
+   ```sh {paths="setup-authentik"}
+   export AUTHENTIK_ADDRESS=$(kubectl get svc -n authentik authentik-admin \
+     -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}"):9000
+
+   echo "authentik address: $AUTHENTIK_ADDRESS"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   If your cluster does not assign LoadBalancer addresses, port-forward the authentik server instead.
+
+   ```sh
+   kubectl port-forward -n authentik svc/authentik-server 9000:80 &
+   export AUTHENTIK_ADDRESS=localhost:9000
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+{{< doc-test paths="setup-authentik" >}}
+# Wait for the LoadBalancer to assign an address to the authentik-admin Service,
+# then poll the API until it answers. A ready Deployment is not enough on its own:
+# authentik finishes migrating its database before it serves API requests, and the
+# LoadBalancer address is assigned independently of pod readiness.
+YAMLTest -f - <<'EOF'
+- name: wait for the authentik-admin LoadBalancer address
+  wait:
+    target:
+      kind: Service
+      metadata:
+        namespace: authentik
+        name: authentik-admin
+    jsonPath: "$.status.loadBalancer.ingress[0].ip"
+    jsonPathExpectation:
+      comparator: exists
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+
+export AUTHENTIK_ADDRESS=$(kubectl get svc -n authentik authentik-admin \
+  -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}"):9000
+for i in $(seq 1 90); do
+  curl -s --max-time 5 -o /dev/null "http://${AUTHENTIK_ADDRESS}/api/v3/root/config/" && break
+  sleep 2
+done
+{{< /doc-test >}}
 
 2. Look up the flow, signing key, and scope IDs that the provider requires.
    ```sh {paths="setup-authentik"}
-   export AUTHENTIK_API=http://localhost:9000/api/v3
+   export AUTHENTIK_API=http://${AUTHENTIK_ADDRESS}/api/v3
    export AK_AUTH_HEADER="Authorization: Bearer ${AUTHENTIK_BOOTSTRAP_TOKEN}"
 
    export AK_FLOW=$(curl -s -H "${AK_AUTH_HEADER}" \
@@ -117,10 +184,10 @@ Create an OAuth2 provider and an application in authentik, and capture the clien
    echo "Client ID: ${AUTHENTIK_CLIENT_ID}"
    ```
 
-   If the client ID is empty, the provider was not created. Check that the port-forward is still running and that `AUTHENTIK_BOOTSTRAP_TOKEN` matches the value you installed authentik with.
+   If the client ID is empty, the provider was not created. Check that `AUTHENTIK_ADDRESS` still resolves and that `AUTHENTIK_BOOTSTRAP_TOKEN` matches the value you installed authentik with.
 
-   > [!NOTE]
-   > This provider accepts any redirect URI so that you can connect different MCP clients while testing. In production, list only the callback URLs of the MCP clients that you allow.
+   > [!WARNING]
+   > The `.*` redirect URI matcher accepts **any** callback URL, so that you can connect different MCP clients while you test. Do not use it outside a test cluster. An authorization server that accepts any redirect URI lets an attacker intercept authorization codes by sending a victim through a crafted callback. In production, list only the callback URLs of the MCP clients that you allow.
 
 4. Create an application that uses the provider. The application slug appears in the issuer URL.
    ```sh {paths="setup-authentik"}
@@ -279,15 +346,29 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
 
 ## Verify MCP auth
 
-1. Port-forward the agentgateway proxy.
+1. Get the address of the agentgateway proxy.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh {paths="setup-authentik"}
-   kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:80 &
-   sleep 5
+   export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy \
+     -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+
+   echo "Gateway address: $INGRESS_GW_ADDRESS"
    ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   After you port-forward, the gateway is available at `http://localhost:8080`. Use `localhost:8080` wherever the following steps reference `$INGRESS_GW_ADDRESS:80`.
+
+   ```sh
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 8080:80
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 2. Send an unauthenticated request to the MCP endpoint. Verify that the request is rejected with a 401 HTTP response code and a `WWW-Authenticate` header that points MCP clients to the protected resource metadata.
-   ```sh {paths="setup-authentik"}
-   curl -i http://localhost:8080/mcp -X POST \
+   ```sh
+   curl -i http://$INGRESS_GW_ADDRESS:80/mcp -X POST \
      -H "Content-Type: application/json" \
      -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{}},"id":1}'
    ```
@@ -299,8 +380,8 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    ```
 
 3. Verify that the gateway serves the protected resource metadata.
-   ```sh {paths="setup-authentik"}
-   curl -s http://localhost:8080/.well-known/oauth-protected-resource/mcp | jq
+   ```sh
+   curl -s http://$INGRESS_GW_ADDRESS:80/.well-known/oauth-protected-resource/mcp | jq
    ```
 
    Example output:
@@ -316,8 +397,8 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    ```
 
 4. Verify that the gateway serves authorization server metadata from authentik's discovery document, and that it injected a `registration_endpoint` that points back at the gateway. authentik's own discovery document does not include this field.
-   ```sh {paths="setup-authentik"}
-   curl -s http://localhost:8080/.well-known/oauth-authorization-server/mcp \
+   ```sh
+   curl -s http://$INGRESS_GW_ADDRESS:80/.well-known/oauth-authorization-server/mcp \
      | jq '{issuer, jwks_uri, authorization_endpoint, registration_endpoint}'
    ```
 
@@ -332,8 +413,8 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    ```
 
 5. Verify that the gateway answers Dynamic Client Registration with your pre-registered client, instead of proxying the request to authentik.
-   ```sh {paths="setup-authentik"}
-   curl -s -X POST http://localhost:8080/.well-known/oauth-authorization-server/mcp/client-registration \
+   ```sh
+   curl -s -X POST http://$INGRESS_GW_ADDRESS:80/.well-known/oauth-authorization-server/mcp/client-registration \
      -H "Content-Type: application/json" \
      -d '{"client_name":"test-mcp-client","redirect_uris":["http://localhost:9999/callback"]}' \
      | jq -r '.client_id'
@@ -421,14 +502,14 @@ EOF
 # Assert the MCP auth behaviors that the Authentik provider is responsible for.
 # The gateway must challenge unauthenticated requests, and it must inject a
 # registration endpoint into authentik's metadata and answer DCR with clientId.
-code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/mcp -X POST \
+code=$(curl -s -o /dev/null -w '%{http_code}' "http://${INGRESS_GW_ADDRESS}:80/mcp" -X POST \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{}},"id":1}')
 if [ "$code" != "401" ]; then echo "expected 401 from unauthenticated /mcp, got $code"; exit 1; fi
 
-curl -sf http://localhost:8080/.well-known/oauth-protected-resource/mcp >/dev/null
+curl -sf "http://${INGRESS_GW_ADDRESS}:80/.well-known/oauth-protected-resource/mcp" >/dev/null
 
-reg=$(curl -sf http://localhost:8080/.well-known/oauth-authorization-server/mcp | jq -r '.registration_endpoint')
+reg=$(curl -sf "http://${INGRESS_GW_ADDRESS}:80/.well-known/oauth-authorization-server/mcp" | jq -r '.registration_endpoint')
 case "$reg" in
   */client-registration) ;;
   *) echo "expected an injected client-registration endpoint, got '$reg'"; exit 1 ;;

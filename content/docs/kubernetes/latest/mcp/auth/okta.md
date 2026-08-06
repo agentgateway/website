@@ -1,6 +1,6 @@
 ---
 title: Set up Okta
-weight: 80
+weight: 50
 description: Configure Okta as an OAuth identity provider for MCP authentication with agentgateway.
 test:
   setup-okta:
