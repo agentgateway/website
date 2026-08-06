@@ -71,7 +71,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./config.yaml:/etc/agentgateway/config.yaml
+      - ./config.yaml:/config.yaml:ro
+    command: ["-f", "/config.yaml"]
 
   phoenix:
     image: arizephoenix/phoenix:latest

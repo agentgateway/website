@@ -59,7 +59,7 @@ The `provider` field takes a map with a single provider key, such as `provider: 
 | `authentik` | `{issuer}/jwks/` | OIDC discovery | Injects a DCR endpoint, because authentik does not implement RFC 7591. Requires `clientId`. | [authentik]({{< link-hextra path="/integrations/auth/authentik" >}}) |
 | `descope` | `https://api.descope.com/{project-id}/.well-known/jwks.json` | OIDC discovery | Rewrites agentic issuers to the project-level JWKS URL. `clientId` recommended, because DCR requires a management key. | [Descope]({{< link-hextra path="/integrations/auth/descope" >}}) |
 | `entra` | Derived from the tenant's v2.0 discovery document | Entra v2.0 discovery | Strips the RFC 8707 `resource` parameter and proxies `authorize` and `token`. Requires `clientId`. | [Microsoft Entra ID]({{< link-hextra path="/integrations/auth/entra" >}}) |
-| `keycloak` | `{issuer}/protocol/openid-connect/certs` | OIDC discovery | Proxies DCR, because Keycloak does not send CORS headers on its registration endpoint. | [Keycloak]({{< link-hextra path="/integrations/auth/keycloak" >}}) |
+| `keycloak` | `{issuer}/protocol/openid-connect/certs` | OIDC discovery | Proxies DCR, because Keycloak sends CORS headers on its registration endpoint only for origins that you allow in a realm policy. | [Keycloak]({{< link-hextra path="/integrations/auth/keycloak" >}}) |
 | `okta` | `{issuer}/.well-known/jwks.json` | OIDC discovery | Appends the first audience to the authorization endpoint and proxies DCR to the org-level endpoint. Set `jwks` explicitly. | [Okta]({{< link-hextra path="/integrations/auth/okta" >}}) |
 | Not set | `{issuer}/.well-known/jwks.json` | RFC 8414 | Standards-compliant behavior with no provider-specific adaptations. | — |
 

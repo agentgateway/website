@@ -112,8 +112,8 @@ services:
       - "3000:3000"
       - "15000:15000"
     volumes:
-      - ./config.yaml:/etc/agentgateway/config.yaml:ro
-    command: ["-f", "/etc/agentgateway/config.yaml"]
+      - ./config.yaml:/config.yaml:ro
+    command: ["-f", "/config.yaml"]
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
 
