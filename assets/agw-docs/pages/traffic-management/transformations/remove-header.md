@@ -8,15 +8,15 @@ In this example, you remove the `x-debug-trace` request header before the reques
 
 1. Send a request to the httpbin app and include the `x-debug-trace` request header. Verify that httpbin echoes it back in the response body.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -s http://$INGRESS_GW_ADDRESS:80/get \
     -H "host: www.example.com:80" \
     -H "x-debug-trace: true"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -s localhost:8080/get \
    -H "host: www.example.com" \
@@ -90,15 +90,15 @@ In this example, you remove the `x-debug-trace` request header before the reques
 
 3. Send another request with the `x-debug-trace` request header. Verify that you get back a 200 HTTP response code and that the `x-debug-trace` header is no longer present in the headers echoed back by httpbin.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/get \
     -H "host: www.example.com:80" \
     -H "x-debug-trace: true"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/get \
    -H "host: www.example.com" \

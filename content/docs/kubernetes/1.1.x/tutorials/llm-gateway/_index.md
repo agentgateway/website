@@ -24,9 +24,9 @@ Make sure you have the following tools installed on your machine.
 
 kind runs Kubernetes inside Docker containers. Install Docker Desktop or Docker Engine for your operating system.
 
-{{< tabs items="macOS,Linux" >}}
+{{< tabs >}}
 
-{{< tab >}}
+{{< tab name="macOS" >}}
 ```bash
 # Install Docker Desktop for macOS
 # Download from https://www.docker.com/products/docker-desktop/
@@ -41,7 +41,7 @@ docker version
 ```
 {{< /tab >}}
 
-{{< tab >}}
+{{< tab name="Linux" >}}
 ```bash
 # Install Docker Engine
 curl -fsSL https://get.docker.com | sh
@@ -248,9 +248,9 @@ agentgateway-proxy   1/1     1            1           32s
 
 Set your API key, create a Kubernetes secret, and configure the LLM backend.
 
-{{< tabs items="OpenAI,Anthropic,Google Gemini" >}}
+{{< tabs >}}
 
-{{< tab >}}
+{{< tab name="OpenAI" >}}
 
 ### Set your API key
 
@@ -318,7 +318,7 @@ EOF
 
 {{< /tab >}}
 
-{{< tab >}}
+{{< tab name="Anthropic" >}}
 
 ### Set your API key
 
@@ -386,7 +386,7 @@ EOF
 
 {{< /tab >}}
 
-{{< tab >}}
+{{< tab name="Google Gemini" >}}
 
 ### Set your API key
 
@@ -468,9 +468,9 @@ kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippe
 
 Send a request to the LLM provider through agentgateway:
 
-{{< tabs items="OpenAI,Anthropic,Google Gemini" >}}
+{{< tabs >}}
 
-{{< tab >}}
+{{< tab name="OpenAI" >}}
 ```bash
 curl "localhost:8080/v1/chat/completions" \
   -H "Content-Type: application/json" \
@@ -481,7 +481,7 @@ curl "localhost:8080/v1/chat/completions" \
 ```
 {{< /tab >}}
 
-{{< tab >}}
+{{< tab name="Anthropic" >}}
 ```bash
 curl "localhost:8080/v1/messages" \
   -H "Content-Type: application/json" \
@@ -493,7 +493,7 @@ curl "localhost:8080/v1/messages" \
 ```
 {{< /tab >}}
 
-{{< tab >}}
+{{< tab name="Google Gemini" >}}
 ```bash
 curl "localhost:8080/v1/chat/completions" \
   -H "Content-Type: application/json" \

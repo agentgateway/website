@@ -82,8 +82,8 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
 
 4. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
    
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
       "model": "",
@@ -99,7 +99,7 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
       ]
     }' 
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json  -d '{
       "model": "",
@@ -238,8 +238,8 @@ Store the API key in a Kubernetes secret. Then, refer to the secret in the {{< r
 
 6. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
    
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
       "model": "",
@@ -255,7 +255,7 @@ Store the API key in a Kubernetes secret. Then, refer to the secret in the {{< r
       ]
     }' 
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json  -d '{
       "model": "",
@@ -374,8 +374,8 @@ Pass through an existing token directly from the client or a successful OpenID C
 
 4. Trigger your authenticated client to send a request to the {{< reuse "agw-docs/snippets/backend.md" >}}, and verify that you get back a successful response. For example, you might instruct your client to send a curl request through the AI Gateway. Note that the request includes the `Authorization` header, which is required for passthrough authentication.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H "Authorization: Bearer $TOKEN" -H content-type:application/json -d '{
       "model": "",
@@ -391,7 +391,7 @@ Pass through an existing token directly from the client or a successful OpenID C
       ]
     }'
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H "Authorization: Bearer $TOKEN" -H content-type:application/json -d '{
       "model": "",

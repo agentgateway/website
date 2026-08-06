@@ -66,15 +66,15 @@ Common pseudo headers include:
 
 2. Send a request to the `/get` endpoint and include the `foo: bar` header to trigger the transformation. Verify that you get back a 200 HTTP response code. The httpbin `/post` endpoint only accepts `POST` requests, so a 200 response confirms both the path rewrite and the method change succeeded.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/get \
     -H "foo: bar" \
     -H "host: www.example.com:80"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/get \
    -H "foo: bar" \
@@ -118,14 +118,14 @@ Common pseudo headers include:
 
 3. Send another request to the `/get` endpoint. This time, omit the `foo: bar` header. Verify that you get back a 200 HTTP response code and that the request path is not rewritten.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/get \
     -H "host: www.example.com:80"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/get \
    -H "host: www.example.com"

@@ -1,5 +1,5 @@
-{{< tabs tabTotal="4" items="Jaeger,Langfuse,Phoenix (Arize),OpenLLMetry" >}}
-{{% tab tabName="Jaeger" %}}
+{{< tabs >}}
+{{% tab name="Jaeger" %}}
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
@@ -25,7 +25,7 @@ spec:
 EOF
 ```
 {{% /tab %}}
-{{% tab tabName="Langfuse" %}}
+{{% tab name="Langfuse" %}}
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
@@ -54,7 +54,7 @@ spec:
 EOF
 ```
 {{% /tab %}}
-{{% tab tabName="Phoenix (Arize)" %}}
+{{% tab name="Phoenix (Arize)" %}}
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
@@ -81,7 +81,7 @@ spec:
 EOF
 ```
 {{% /tab %}}
-{{% tab tabName="OpenLLMetry" %}}
+{{% tab name="OpenLLMetry" %}}
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}

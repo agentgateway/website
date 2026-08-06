@@ -16,14 +16,14 @@ In this example, all three operations are applied together:
 
 1. Send a request to the httpbin app. The `access-control-allow-origin` header exists before setting the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers \
     -H "host: www.example.com:80"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/response-headers \
    -H "host: www.example.com" 
@@ -104,15 +104,15 @@ In this example, all three operations are applied together:
    * The response contains two `access-control-allow-origin` values.
    * The response omits `access-control-allow-credentials`.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers \
     -H "host: www.example.com:80" \
     -H "x-gateway-request: my-custom-value"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/response-headers \
    -H "host: www.example.com" \

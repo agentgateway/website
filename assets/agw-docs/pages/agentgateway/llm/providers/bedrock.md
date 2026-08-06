@@ -9,8 +9,8 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
 ## Set up access to Amazon Bedrock {#setup}
 
 1. Store your credentials to access the AWS Bedrock API. 
-   {{< tabs tabTotal="2" items="AWS credentials,AWS Bedrock API key" >}}
-   {{% tab tabName="AWS credentials" %}}
+   {{< tabs >}}
+   {{% tab name="AWS credentials" %}}
 
    1. Log in to the [AWS console](https://console.aws.amazon.com/console/home) and store your access credentials as environment variables.
       ```bash
@@ -30,7 +30,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
         --dry-run=client -o yaml | kubectl apply -f -
       ```
    {{% /tab %}}
-   {{% tab tabName="AWS Bedrock API key" %}}
+   {{% tab name="AWS Bedrock API key" %}}
    1. Save the API key in an environment variable.
       ```sh
       export BEDROCK_API_KEY=<insert your API key>
@@ -87,8 +87,8 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
 
 3. Create an HTTPRoute resource to route requests through your agentgateway proxy to the Bedrock {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource. The default Bedrock route is `/model/${MODEL}/converse`, such as `/model/amazon.nova-micro-v1:0/converse`.
 
-   {{< tabs tabTotal="3" items="Bedrock default, OpenAI-compatible v1/chat/completions, Custom route" >}}
-   {{% tab tabName="Bedrock default" %}}
+   {{< tabs >}}
+   {{% tab name="Bedrock default" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -109,7 +109,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   {{% tab name="OpenAI-compatible v1/chat/completions" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -134,7 +134,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="Custom route" %}}
+   {{% tab name="Custom route" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -164,8 +164,8 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
 
 4. Send a request to the LLM provider API along the route that you previously created, such as `/bedrock` or `/v1/chat/completions` depending on your route configuration. Verify that the request succeeds and that you get back a response from the chat completion API.
 
-   {{< tabs tabTotal="3" items="Bedrock default, OpenAI-compatible v1/chat/completions, Custom route" >}}
-   {{% tab tabName="Bedrock default" %}}
+   {{< tabs >}}
+   {{% tab name="Bedrock default" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/model/amazon.nova-micro-v1:0/converse" -H content-type:application/json -d '{
@@ -192,7 +192,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
      }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   {{% tab name="OpenAI-compatible v1/chat/completions" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json -d '{
@@ -219,7 +219,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
      }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="Custom route" %}}
+   {{% tab name="Custom route" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/bedrock" -H content-type:application/json -d '{
@@ -359,8 +359,8 @@ Extended thinking and reasoning lets models reason through complex problems befo
 
 **Note**: Extended thinking and reasoning requires a Claude model that supports it, such as `us.anthropic.claude-opus-4-20250514-v1:0`.
 
-{{< tabs tabTotal="2" items="Bedrock default, OpenAI-compatible v1/chat/completions" >}}
-{{% tab tabName="Bedrock default" %}}
+{{< tabs >}}
+{{% tab name="Bedrock default" %}}
 
 Use the `reasoning.effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
 
@@ -397,7 +397,7 @@ curl "localhost:8080/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
 ```
 
 {{% /tab %}}
-{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+{{% tab name="OpenAI-compatible v1/chat/completions" %}}
 
 Use the `reasoning_effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
 
@@ -445,8 +445,8 @@ curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
 
 Structured outputs constrain the model to respond with a specific JSON schema. You must provide the schema definition in your request. 
 
-{{< tabs tabTotal="2" items="Bedrock default, OpenAI-compatible v1/chat/completions" >}}
-{{% tab tabName="Bedrock default" %}}
+{{< tabs >}}
+{{% tab name="Bedrock default" %}}
 
 Provide the JSON schema definition in the `text.format` field.
 
@@ -505,7 +505,7 @@ curl "localhost:8080/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
 ```
 
 {{% /tab %}}
-{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+{{% tab name="OpenAI-compatible v1/chat/completions" %}}
 
 Provide the schema definition in the `response_format` field. Agentgateway translates this to Bedrock's native format automatically.
 

@@ -32,8 +32,8 @@ Configure global or provider-specific aliases for your models to refer to your m
 
 2. Send a request to the OpenAI provider with the `fast` model. Verify that the request succeeds and that you also see the `gpt-3.5-turbo` model in your response. 
 
-   {{< tabs tabTotal="2" items="OpenAI v1/chat/completions, Custom route" >}}
-   {{% tab tabName="OpenAI v1/chat/completions" %}}
+   {{< tabs >}}
+   {{% tab name="OpenAI v1/chat/completions" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
@@ -68,7 +68,7 @@ Configure global or provider-specific aliases for your models to refer to your m
    }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="Custom route" %}}
+   {{% tab name="Custom route" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
@@ -116,8 +116,8 @@ Configure global or provider-specific aliases for your models to refer to your m
 
 3. Repeat the request to the OpenAI provider with the `smart` model. Verify that the request succeeds and that you also see the `gpt-4-turbo` model in your response. 
 
-   {{< tabs tabTotal="2" items="OpenAI v1/chat/completions, Custom route" >}}
-   {{% tab tabName="OpenAI v1/chat/completions" %}}
+   {{< tabs >}}
+   {{% tab name="OpenAI v1/chat/completions" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
@@ -152,7 +152,7 @@ Configure global or provider-specific aliases for your models to refer to your m
    }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="Custom route" %}}
+   {{% tab name="Custom route" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{

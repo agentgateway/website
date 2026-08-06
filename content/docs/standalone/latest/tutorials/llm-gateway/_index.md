@@ -25,9 +25,9 @@ curl -sL https://agentgateway.dev/install | bash
 
 ### Step 2: Choose your LLM provider
 
-{{< tabs items="OpenAI,Anthropic,Google Gemini,xAI (Grok),Amazon Bedrock,Azure OpenAI,Ollama" >}}
+{{< tabs >}}
 
-{{< tab >}}
+{{< tab name="OpenAI" >}}
 #### Set your API key
 ```bash
 export OPENAI_API_KEY=your-api-key
@@ -64,7 +64,7 @@ curl http://localhost:4000/v1/chat/completions \
 ```
 {{< /tab >}}
 
-{{< tab >}}
+{{< tab name="Anthropic" >}}
 #### Set your API key
 ```bash
 export ANTHROPIC_API_KEY=your-api-key
@@ -101,7 +101,7 @@ curl http://localhost:4000/v1/chat/completions \
 ```
 {{< /tab >}}
 
-{{< tab >}}
+{{< tab name="Google Gemini" >}}
 #### Set your API key
 ```bash
 export GEMINI_API_KEY=your-api-key
@@ -138,7 +138,7 @@ curl http://localhost:4000/v1/chat/completions \
 ```
 {{< /tab >}}
 
-{{< tab >}}
+{{< tab name="xAI (Grok)" >}}
 #### Set your API key
 ```bash
 export XAI_API_KEY=your-api-key
@@ -176,7 +176,7 @@ curl http://localhost:4000/v1/chat/completions \
 ```
 {{< /tab >}}
 
-{{< tab >}}
+{{< tab name="Amazon Bedrock" >}}
 #### Configure AWS credentials
 ```bash
 aws configure
@@ -213,7 +213,7 @@ curl http://localhost:4000/v1/chat/completions \
 ```
 {{< /tab >}}
 
-{{< tab >}}
+{{< tab name="Azure OpenAI" >}}
 #### Set your API key (optional)
 ```bash
 export AZURE_API_KEY=your-api-key
@@ -252,7 +252,7 @@ curl http://localhost:4000/v1/chat/completions \
 ```
 {{< /tab >}}
 
-{{< tab >}}
+{{< tab name="Ollama" >}}
 #### Start Ollama first
 ```bash
 ollama serve

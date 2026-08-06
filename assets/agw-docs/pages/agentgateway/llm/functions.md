@@ -75,9 +75,9 @@ Keep in mind that for a real use case, you must develop your own app that is cap
 
 1. Send a request through the agentgateway proxy to the OpenAI LLM. In your request, include an example `get_weather` function call. Note that you can include other tools and functions that the app has access to. This way, your LLM can decide on the tool and the function that best answers the user's question. For more examples of creating a function, consult your [AI provider's documentation](#about-providers). The following example demonstrates a response that you might configure your app to send through the agentgateway proxy to the LLM.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{< tabs >}}
 
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
      "model": "gpt-3.5-turbo",
@@ -113,7 +113,7 @@ Keep in mind that for a real use case, you must develop your own app that is cap
    ```
    {{% /tab %}}
 
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json  -d '{
      "model": "gpt-3.5-turbo",
@@ -216,9 +216,9 @@ Keep in mind that for a real use case, you must develop your own app that is cap
    
    * The following example sends another curl through the agentgateway proxy to the LLM to simulate a response that your app might send. Unlike the first request, this request does not suggest a tool call. Instead, you provide the results from executing the suggested function as part of the message, along with the assistant role that called the tool. 
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{< tabs >}}
 
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H "Content-Type: application/json" -d '{
      "model": "gpt-3.5-turbo",
@@ -252,7 +252,7 @@ Keep in mind that for a real use case, you must develop your own app that is cap
    ```
    {{% /tab %}}
 
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H "Content-Type: application/json" -d '{
      "model": "gpt-3.5-turbo",

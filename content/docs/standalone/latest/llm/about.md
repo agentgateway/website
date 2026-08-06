@@ -58,8 +58,8 @@ These requests are translated to the upstream provider's API.
 Using the Chat Completions API works exactly the same as consuming OpenAI, with a change to the base URL.
 This allows you to continue using existing code and SDKs.
 
-{{< tabs items="Curl,Python,JavaScript" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Curl" %}}
 
 ```shell
 curl 'http://0.0.0.0:3000/' \
@@ -77,7 +77,7 @@ curl 'http://0.0.0.0:3000/' \
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Python" %}}
 
 {{< callout type="info" >}}
 The `api_key` parameter is required in the OpenAI library.
@@ -103,7 +103,7 @@ print(response)
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="JavaScript" %}}
 
 ```javascript
 import OpenAI from "openai";

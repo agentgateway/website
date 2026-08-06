@@ -19,9 +19,9 @@ Azure supports two endpoint types:
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
-{{< tabs items="Foundry (implicit auth),Foundry (API key),Azure OpenAI (implicit auth)" >}}
+{{< tabs >}}
 
-{{% tab %}}
+{{% tab name="Foundry (implicit auth)" %}}
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -36,7 +36,7 @@ llm:
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Foundry (API key)" %}}
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -52,7 +52,7 @@ llm:
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Azure OpenAI (implicit auth)" %}}
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -85,9 +85,9 @@ llm:
 
 For advanced Azure AI scenarios, use the traditional listener/route configuration format. The following tabs show examples for different authentication methods.
 
-{{< tabs items="Foundry (implicit auth),Foundry (client secret),Client secret,System-assigned managed identity,User-assigned managed identity,Workload identity" >}}
+{{< tabs >}}
 
-{{% tab %}}
+{{% tab name="Foundry (implicit auth)" %}}
 **Azure AI Foundry with implicit auth**: Use `DefaultAzureCredential` to automatically detect credentials from the environment (Azure CLI, managed identity, workload identity, or environment variables).
 
 ```yaml
@@ -123,7 +123,7 @@ binds:
 {{< /reuse-append >}}
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Foundry (client secret)" %}}
 **Azure AI Foundry with client secret**: Use Azure service principal credentials to authenticate agentgateway with an Azure AI Foundry endpoint.
 
 ```yaml
@@ -163,7 +163,7 @@ binds:
 {{< /reuse-append >}}
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Client secret" %}}
 **Client secret authentication**
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -196,7 +196,7 @@ binds:
 {{< /reuse-append >}}
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="System-assigned managed identity" %}}
 **System-assigned managed identity**: Let the Azure Instance Metadata Service automatically issue agentgateway an access token to use to call Azure AI services.
 
 To use system-assigned managed identity:
@@ -233,7 +233,7 @@ binds:
 {{< /reuse-append >}}
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="User-assigned managed identity" %}}
 **User-assigned managed identity**: Manually assign a managed identity for agentgateway to use to call Azure AI services. Unlike system-assigned managed identity, you manage the identity's lifecycle. This way, the identity is not tied to the underlying Azure resource and can be shared across other Azure resources.
 
 To use user-assigned managed identity:
@@ -276,7 +276,7 @@ binds:
 {{< /reuse-append >}}
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Workload identity" %}}
 **Workload identity**: Authenticate with Azure identity in Kubernetes clusters without the need to store credentials in the cluster.
 
 To use workload identity:

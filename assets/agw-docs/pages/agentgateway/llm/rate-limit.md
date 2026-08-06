@@ -119,8 +119,8 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
 
 3. Send repeated requests and watch the budget drain.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    for i in $(seq 1 10); do
      RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
@@ -136,7 +136,7 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
    done
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    for i in $(seq 1 10); do
      RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
@@ -168,8 +168,8 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
 
 4. Test with streaming to verify that token limits work the same way with streaming responses.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -N http://$INGRESS_GW_ADDRESS/openai \
      -H "Content-Type: application/json" \
@@ -180,7 +180,7 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
      }'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -N localhost:8080/openai \
      -H "Content-Type: application/json" \

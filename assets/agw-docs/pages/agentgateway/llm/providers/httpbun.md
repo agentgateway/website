@@ -244,8 +244,8 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-{{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider LoadBalancer" %}}
+{{< tabs >}}
+{{% tab name="Cloud Provider LoadBalancer" %}}
 Get the external address of the gateway and save it in an environment variable.
 
 ```bash
@@ -254,7 +254,7 @@ export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/name
 echo $INGRESS_GW_ADDRESS
 ```
 {{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
+{{% tab name="Port-forward for local testing" %}}
 Port-forward the gateway proxy `http` pod on port 8080.
 
 ```bash
@@ -267,8 +267,8 @@ kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippe
 
 Send a standard chat completion request.
 
-{{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider LoadBalancer" %}}
+{{< tabs >}}
+{{% tab name="Cloud Provider LoadBalancer" %}}
 ```bash
 curl -s http://$INGRESS_GW_ADDRESS/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -280,7 +280,7 @@ curl -s http://$INGRESS_GW_ADDRESS/v1/chat/completions \
   }' | jq
 ```
 {{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
+{{% tab name="Port-forward for local testing" %}}
 ```bash
 curl -s http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -322,8 +322,8 @@ Example output:
 
 ### Streaming request
 
-{{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider LoadBalancer" %}}
+{{< tabs >}}
+{{% tab name="Cloud Provider LoadBalancer" %}}
 ```bash
 curl -N http://$INGRESS_GW_ADDRESS/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -336,7 +336,7 @@ curl -N http://$INGRESS_GW_ADDRESS/v1/chat/completions \
   }'
 ```
 {{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
+{{% tab name="Port-forward for local testing" %}}
 ```bash
 curl -N http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -367,8 +367,8 @@ data: [DONE]
 
 Control exactly what the mock LLM returns by including the `httpbun` field in the request body. This is useful for writing deterministic integration tests against policies. You control the response, so you can verify that your gateway transforms, rate limits, or rejects it correctly.
 
-{{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider LoadBalancer" %}}
+{{< tabs >}}
+{{% tab name="Cloud Provider LoadBalancer" %}}
 ```bash
 curl -s http://$INGRESS_GW_ADDRESS/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -380,7 +380,7 @@ curl -s http://$INGRESS_GW_ADDRESS/v1/chat/completions \
 # "Gateway is working perfectly."
 ```
 {{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
+{{% tab name="Port-forward for local testing" %}}
 ```bash
 curl -s http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \

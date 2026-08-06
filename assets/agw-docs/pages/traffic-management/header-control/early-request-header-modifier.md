@@ -44,13 +44,13 @@ Remove a header that is reserved for use by another service, such as an external
    ```
 2. Send a test request to the sample httpbin app with a reserved header, such as `x-user-id`.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}  
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}  
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:80/headers -H "host: transformation.example" -H "x-user-id: reserved-user"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing"%}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/headers -H "host: transformation.example" -H "x-user-id: reserved-user"
    ```
@@ -104,13 +104,13 @@ Remove a header that is reserved for use by another service, such as an external
 
 4. Repeat the test request to the sample httpbin app. The `x-user-id` header is no longer present in the response.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}  
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}  
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: transformation.example" -H "x-user-id: reserved-user"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing"%}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/headers -H "host: transformation.example" -H "x-user-id: reserved-user"
    ```

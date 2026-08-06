@@ -25,9 +25,9 @@ In the following example, you explore how to refactor system and user prompts to
 
 1. Send a request to the AI API with the following prompt: `Parse the unstructured text into CSV format: Seattle, Los Angeles, and Chicago are cities in North America. London, Paris, and Berlin are cities in Europe.` Note that in this prompt, the system prompt is not separated from the user prompt.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{< tabs >}}
 
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
        "model": "gpt-3.5-turbo",
@@ -41,7 +41,7 @@ In the following example, you explore how to refactor system and user prompts to
    ```
    {{% /tab %}}
 
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
        "model": "gpt-3.5-turbo",
@@ -70,9 +70,9 @@ In the following example, you explore how to refactor system and user prompts to
 
 2. Refactor the request to improve readability and management of the prompt. In the following example, the instructions are separated from the unstructured text. The instructions are added as a system prompt and the unstructured text is added as a user prompt.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{< tabs >}}
 
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
       "model": "gpt-3.5-turbo",
@@ -90,7 +90,7 @@ In the following example, you explore how to refactor system and user prompts to
    ```
    {{< /tab >}}
 
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
       "model": "gpt-3.5-turbo",
@@ -154,9 +154,9 @@ Use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to enrich pro
 
 2. Send a request without a system prompt. Although the system prompt instructions are missing in the request, the unstructured text in the user prompt is still transformed into structured CSV format. This is because the system prompt is automatically prepended from the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource before it is sent to the LLM provider.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{< tabs >}}
 
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
       "model": "gpt-3.5-turbo",
@@ -170,7 +170,7 @@ Use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to enrich pro
    ```
    {{< /tab >}}
 
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
       "model": "gpt-3.5-turbo",
@@ -200,9 +200,9 @@ To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/traffic
 
 1. Send a request to the AI API and include a custom system prompt that instructs the API to transform unstructured text into JSON format.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{< tabs >}}
 
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
       "model": "gpt-3.5-turbo",
@@ -220,7 +220,7 @@ To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/traffic
    ```
    {{< /tab >}}
 
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
       "model": "gpt-3.5-turbo",
@@ -262,9 +262,9 @@ To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/traffic
 
 2. Send another request. This time, you do not include a system prompt. Because the default setting in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource is applied, the unstructured text is returned in CSV format.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{< tabs >}}
 
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
       "model": "gpt-3.5-turbo",
@@ -278,7 +278,7 @@ To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/traffic
    ```
    {{< /tab >}}
 
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
       "model": "gpt-3.5-turbo",

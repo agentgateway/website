@@ -92,8 +92,8 @@ curl "localhost:3000/v1/chat/completions" -H content-type:application/json -d '{
 
 Structured outputs constrain the model to respond with a specific JSON schema. You must provide the schema definition in your request.
 
-{{< tabs tabTotal="2" items="Bedrock default, OpenAI-compatible v1/chat/completions" >}}
-{{% tab tabName="Bedrock default" %}}
+{{< tabs >}}
+{{% tab name="Bedrock default" %}}
 
 Provide the JSON schema definition in the `text.format` field.
 
@@ -124,7 +124,7 @@ curl "localhost:3000/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
 ```
 
 {{% /tab %}}
-{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+{{% tab name="OpenAI-compatible v1/chat/completions" %}}
 
 Provide the schema definition in the `response_format` field. Agentgateway translates this to Bedrock's native format automatically.
 

@@ -33,8 +33,8 @@ To avoid this issue, explicitly set the URL value to `/` in the OpenAPI schema, 
 
 Run the sample [Swagger Petstore server](https://github.com/swagger-api/swagger-petstore) locally. The following steps show use Docker and Maven as an example to pull, build, and run the Petstore server. You can also use your own OpenAPI server and update the steps accordingly.
 
-{{< tabs items="AMD64 machines, ARM64 or other machines" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="AMD64 machines" %}}
 
 You can pull and run the sample Petstore server from Docker Hub.
 
@@ -51,7 +51,7 @@ You can pull and run the sample Petstore server from Docker Hub.
    ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="ARM64 or other machines" %}}
 
 Build the Docker image from the source code. The example builds the image for an ARM64 machine.
 

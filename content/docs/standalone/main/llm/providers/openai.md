@@ -55,8 +55,8 @@ Use agentgateway as a proxy to your OpenAI provider from the [Codex](https://cha
 
 2. Point Codex at agentgateway through one of the following methods.
 
-   {{< tabs items="Environment variable,CLI override,Config file" totalItems="3" >}}
-{{% tab tabName="Environment variable" %}}
+   {{< tabs totalItems="3" >}}
+{{% tab name="Environment variable" %}}
 
 Codex uses the [OPENAI_BASE_URL](https://developers.openai.com/codex/config-advanced) environment variable to override the default OpenAI endpoint. Use a base URL that includes `/v1` so requests go to `/v1/responses` and OpenAI does not return 404.
 
@@ -66,7 +66,7 @@ codex
 ```
 
 {{% /tab %}}
-{{% tab tabName="CLI override" %}}
+{{% tab name="CLI override" %}}
 
 To override the base URL for a single run, set `model_provider` and the provider's `name` and `base_url` (the `-c` values are TOML).
 
@@ -75,7 +75,7 @@ codex -c 'model_provider="proxy"' -c 'model_providers.proxy.name="OpenAI via age
 ```
 
 {{% /tab %}}
-{{% tab tabName="Config file" %}}
+{{% tab name="Config file" %}}
 
 To configure the base URL permanently, add the following to your `~/.codex/config.toml`. For more information, see [Advanced Configuration](https://developers.openai.com/codex/config-advanced). The `name` field is required for custom providers.
 

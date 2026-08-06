@@ -41,9 +41,9 @@ The OpenAI Moderation API detects potentially harmful content across categories 
    ```
 
 2. Test with content that triggers moderation. 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{< tabs >}}
 
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i "$INGRESS_GW_ADDRESS/openai" \
      -H "content-type: application/json" \
@@ -59,7 +59,7 @@ The OpenAI Moderation API detects potentially harmful content across categories 
    ```
    {{% /tab %}}
 
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i "localhost:8080/openai" \
      -H "content-type: application/json" \

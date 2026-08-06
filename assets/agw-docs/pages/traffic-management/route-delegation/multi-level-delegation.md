@@ -155,13 +155,13 @@ The following image illustrates the route delegation hierarchy:
    {{< /doc-test >}}
 
 5. Send a request to the `delegation.example` domain along the `/anything/team1/foo` path. Verify that you get a 200 HTTP response.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo -H "host: delegation.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/anything/team1/foo -H "host: delegation.example"
    ```
@@ -194,13 +194,13 @@ The following image illustrates the route delegation hierarchy:
    ```
 
 6. Send another request to the `delegation.example` domain along the `/anything/team1/bar` path. Verify that you get a 404 HTTP response, because this path is not specified in `child-team1`.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/bar -H "host: delegation.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/anything/team1/bar -H "host: delegation.example"
    ```
@@ -230,13 +230,13 @@ The following image illustrates the route delegation hierarchy:
    ```
 
 7. Send another request to the `delegation.example` domain. This time, use the `/anything/team2/grandchild/bar` path that is matched by the `grandchild` HTTPRoute. Verify that you get a 200 HTTP response.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team2/grandchild/bar -H "host: delegation.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/anything/team2/grandchild/bar -H "host: delegation.example"
    ```
@@ -268,13 +268,13 @@ The following image illustrates the route delegation hierarchy:
    ```
 
 8. Send another request along the `/anything/team2/grandchild/foo` path. Because the grandchild HTTPRoute uses a regular expression to match incoming traffic, any path that begins with `/anything/team2/grandchild/` is routed to the httpbin app in the `team2` namespace.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team2/grandchild/foo -H "host: delegation.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/anything/team2/grandchild/foo -H "host: delegation.example"
    ```

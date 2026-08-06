@@ -146,9 +146,9 @@ This is where the configuration differs from a standard LLM Gateway setup. Claud
 **Model selection matters.** If you specify a model in the backend (e.g., `claude-sonnet-4-5-20250929`) but Claude Code CLI uses a different model, you may get a `400` error with a misleading message like "thinking mode isn't enabled." To avoid this, either match the model exactly or omit the model field to allow any model.
 {{< /callout >}}
 
-{{< tabs items="Flexible model (recommended),Fixed model" >}}
+{{< tabs >}}
 
-{{% tab tabName="Flexible model (recommended)" %}}
+{{% tab name="Flexible model (recommended)" %}}
 
 This configuration allows Claude Code CLI to use any model. The `anthropic: {}` syntax means no model is pinned.
 
@@ -177,7 +177,7 @@ EOF
 ```
 {{% /tab %}}
 
-{{% tab tabName="Fixed model" %}}
+{{% tab name="Fixed model" %}}
 
 This configuration pins the backend to a specific model. Make sure the model matches what Claude Code CLI is configured to use.
 
@@ -286,9 +286,9 @@ This opens the full Claude Code CLI experience. Every request — prompts, tool 
 
 Now that connectivity is confirmed, add security by configuring prompt guards. This modifies the backend to reject requests containing specific patterns before they reach Anthropic.
 
-{{< tabs items="Flexible model,Fixed model" >}}
+{{< tabs >}}
 
-{{% tab tabName="Flexible model" %}}
+{{% tab name="Flexible model" %}}
 ```bash
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
@@ -322,7 +322,7 @@ EOF
 ```
 {{% /tab %}}
 
-{{% tab tabName="Fixed model" %}}
+{{% tab name="Fixed model" %}}
 ```bash
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1

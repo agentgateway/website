@@ -94,8 +94,8 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
 
 
 5. Test the guardrail. The following commands assume that you set up your guardrail to block requests that contain email information. 
-   {{< tabs tabTotal="2" items="OpenAI v1/chat/completions, Custom route" >}}
-   {{% tab tabName="OpenAI v1/chat/completions" %}}
+   {{< tabs >}}
+   {{% tab name="OpenAI v1/chat/completions" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
@@ -122,7 +122,7 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
    }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="Custom route" %}}
+   {{% tab name="Custom route" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{

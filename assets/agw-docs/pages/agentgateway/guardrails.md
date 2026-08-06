@@ -200,15 +200,15 @@ The webhook server is configured to take the following actions:
 
 3. Save the address of the webhook server in an environment variable. 
    
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal= "2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
 
    ```sh
    export WEBHOOK_SERVER_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} ai-guardrail-webhook -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
    echo $WEBHOOK_SERVER_ADDRESS  
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    If the webhook service is deployed in the same cluster as the gateway proxy, you can also use the Kubernetes DNS name of the service, such as `ai-guardrail-webhook.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local`.
    ```sh
    export WEBHOOK_SERVER_ADDRESS=ai-guardrail-webhook.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
@@ -268,8 +268,8 @@ EOF
 
 1. Send a request through {{< reuse "agw-docs/snippets/agentgateway.md" >}} to the OpenAI provider. In the body, include the word `block` to trigger the 403 Forbidden response.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal= "2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}   
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}   
    ```sh
    curl -vi "$INGRESS_GW_ADDRESS:80/openai" -H content-type:application/json  -d '{
       "model": "gpt-3.5-turbo",
@@ -286,7 +286,7 @@ EOF
     }'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi "localhost:8080/openai" -H content-type:application/json  -d '{
       "model": "gpt-3.5-turbo",
@@ -315,8 +315,8 @@ EOF
 
 2. Send another request. This time, include the word `mask` in the body to trigger the 200 response with the content masked.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal= "2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi "$INGRESS_GW_ADDRESS:80/openai" -H content-type:application/json  -d '{
       "model": "gpt-3.5-turbo",
@@ -333,7 +333,7 @@ EOF
     }'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi "localhost:8080/openai" -H content-type:application/json  -d '{
       "model": "gpt-3.5-turbo",

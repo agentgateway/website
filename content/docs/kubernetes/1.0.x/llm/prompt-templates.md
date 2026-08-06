@@ -59,8 +59,8 @@ Static templates use prompt enrichment to prepend or append fixed messages to ev
 
 2. Send a request without system prompts. The static template is automatically applied.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
      "model": "gpt-3.5-turbo",
@@ -73,7 +73,7 @@ Static templates use prompt enrichment to prepend or append fixed messages to ev
    }' | jq -r '.choices[].message.content'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
      "model": "gpt-3.5-turbo",
@@ -130,8 +130,8 @@ JWT claims in transformations require JWT authentication to be configured. See t
 
 2. Send a request with a user ID header.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -H "x-user-id: alice" -d '{
      "model": "gpt-3.5-turbo",
@@ -144,7 +144,7 @@ JWT claims in transformations require JWT authentication to be configured. See t
    }' | jq -r '.choices[].message.content'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -H "x-user-id: alice" -d '{
      "model": "gpt-3.5-turbo",

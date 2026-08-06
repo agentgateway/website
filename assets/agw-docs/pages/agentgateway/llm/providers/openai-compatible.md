@@ -116,8 +116,8 @@ Set up OpenAI-compatible provider access to [Mistral AI](https://mistral.ai/) mo
    ```
 6. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
    
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/mistral" -H content-type:application/json  -d '{
       "model": "",
@@ -133,7 +133,7 @@ Set up OpenAI-compatible provider access to [Mistral AI](https://mistral.ai/) mo
       ]
     }' | jq
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/mistral" -H content-type:application/json  -d '{
       "model": "",
@@ -258,8 +258,8 @@ Set up OpenAI-compatible provider access to [DeepSeek](https://www.deepseek.com/
 
 6. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
    
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/deepseek" -H content-type:application/json  -d '{
       "model": "",
@@ -275,7 +275,7 @@ Set up OpenAI-compatible provider access to [DeepSeek](https://www.deepseek.com/
       ]
     }' | jq
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/deepseek" -H content-type:application/json  -d '{
       "model": "",
@@ -399,8 +399,8 @@ Set up OpenAI-compatible provider access to [Groq](https://groq.com/) for fast i
 
 6. Send a request to verify the setup.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/groq" -H content-type:application/json  -d '{
       "model": "llama-3.3-70b-versatile",
@@ -412,7 +412,7 @@ Set up OpenAI-compatible provider access to [Groq](https://groq.com/) for fast i
       ]
     }' | jq
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/groq" -H content-type:application/json  -d '{
       "model": "llama-3.3-70b-versatile",
@@ -506,8 +506,8 @@ Set up OpenAI-compatible provider access to [Together AI](https://www.together.a
 
 6. Send a request to verify the setup.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/together" -H content-type:application/json  -d '{
       "model": "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
@@ -519,7 +519,7 @@ Set up OpenAI-compatible provider access to [Together AI](https://www.together.a
       ]
     }' | jq
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/together" -H content-type:application/json  -d '{
       "model": "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
@@ -613,8 +613,8 @@ Set up OpenAI-compatible provider access to [Perplexity](https://www.perplexity.
 
 6. Send a request to verify the setup.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/perplexity" -H content-type:application/json  -d '{
       "model": "llama-3.1-sonar-large-128k-online",
@@ -626,7 +626,7 @@ Set up OpenAI-compatible provider access to [Perplexity](https://www.perplexity.
       ]
     }' | jq
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/perplexity" -H content-type:application/json  -d '{
       "model": "llama-3.1-sonar-large-128k-online",
@@ -721,8 +721,8 @@ Set up OpenAI-compatible provider access to [Fireworks AI](https://fireworks.ai/
 
 6. Send a request to verify the setup.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/fireworks" -H content-type:application/json  -d '{
       "model": "accounts/fireworks/models/llama-v3p1-70b-instruct",
@@ -734,7 +734,7 @@ Set up OpenAI-compatible provider access to [Fireworks AI](https://fireworks.ai/
       ]
     }' | jq
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/fireworks" -H content-type:application/json  -d '{
       "model": "accounts/fireworks/models/llama-v3p1-70b-instruct",

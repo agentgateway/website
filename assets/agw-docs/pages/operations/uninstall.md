@@ -86,8 +86,8 @@ kubectl delete referencegrants --all -A --ignore-not-found
 
 For ArgoCD installations, use the following steps to clean up your environment.
 
-{{< tabs tabTotal="2" items="Argo CD UI,Argo CD CLI" >}}
-{{% tab tabName="Argo CD UI" %}}
+{{< tabs >}}
+{{% tab name="Argo CD UI" %}}
 1. Port-forward the Argo CD server on port 9999.
    ```sh
    kubectl port-forward svc/argocd-server -n argocd 9999:443
@@ -119,7 +119,7 @@ For ArgoCD installations, use the following steps to clean up your environment.
    ```
 
 {{% /tab %}}
-{{% tab tabName="Argo CD CLI" %}}
+{{% tab name="Argo CD CLI" %}}
 1. Port-forward the Argo CD server on port 9999.
    ```sh
    kubectl port-forward svc/argocd-server -n argocd 9999:443

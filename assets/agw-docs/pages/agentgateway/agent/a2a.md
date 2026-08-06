@@ -141,14 +141,14 @@ kubectl wait deployment/a2a-agent --for=condition=Available --timeout=120s
 
 1. Get the agentgateway address.
    
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh {paths="a2a"}
    export INGRESS_GW_ADDRESS=$(kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o=jsonpath="{.status.addresses[0].value}")
    echo $INGRESS_GW_ADDRESS
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing"%}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
    ```
@@ -167,8 +167,8 @@ done
 
 2. As a user, send a request to the A2A server. As an assistant, the agent echoes back the message that you sent.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh {paths="a2a"}
    curl -X POST http://$INGRESS_GW_ADDRESS/ \
      -H "Content-Type: application/json" \
@@ -192,7 +192,7 @@ done
      }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing"%}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -X POST http://localhost:8080/ \
      -H "Content-Type: application/json" \

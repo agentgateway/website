@@ -47,8 +47,8 @@ mkdir tailscale-auth-test && cd tailscale-auth-test
 
 Create a `config.yaml` file.
 
-{{< tabs items="Linux,macOS" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Linux" %}}
 **Linux configuration:**
 ```bash
 cat > config.yaml << 'EOF'
@@ -93,7 +93,7 @@ binds:
 EOF
 ```
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="macOS" %}}
 **macOS configuration:**
 ```bash
 cat > config.yaml << 'EOF'

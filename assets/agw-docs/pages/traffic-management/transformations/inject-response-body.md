@@ -54,15 +54,15 @@ In this example, you set the response body to a JSON string built from request c
 
 2. Send a request to the httpbin app and include an `x-request-id` request header. Verify that you get back a 200 HTTP response code and that the response body contains the transformed output with the request header value.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/get \
     -H "host: www.example.com:80" \
     -H "x-request-id: user123"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/get \
    -H "host: www.example.com" \
@@ -131,8 +131,8 @@ In this example, you parse a JSON request body by using the `json()` function to
 
 2. Send a POST request to the httpbin app with a JSON body. Verify that you get back a 200 HTTP response code and that the response body contains the `name` value from your request.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/post \
     -H "host: www.example.com:80" \
@@ -140,7 +140,7 @@ In this example, you parse a JSON request body by using the `json()` function to
     -d '{"name": "user123"}'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/post \
    -H "host: www.example.com" \

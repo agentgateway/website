@@ -270,14 +270,14 @@ Verify that the gRPC route to the echo service is working.
 
 1. Get the external address of the gateway and save it in an environment variable.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```bash
    export GATEWAY_IP=$(kubectl get gateway grpc-gateway -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.status.addresses[0].value}')
    echo $GATEWAY_IP
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```bash
    kubectl port-forward svc/grpc-gateway -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8443:443
    ```
@@ -286,14 +286,14 @@ Verify that the gRPC route to the echo service is working.
 
 2. Explore the API dynamically.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```bash
    grpcurl -insecure -authority grpc.example.com $GATEWAY_IP:443 list
    grpcurl -insecure -authority grpc.example.com $GATEWAY_IP:443 describe yages.Echo
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```bash
    grpcurl -insecure -authority grpc.example.com localhost:8443 list
    grpcurl -insecure -authority grpc.example.com localhost:8443 describe yages.Echo
@@ -315,8 +315,8 @@ Verify that the gRPC route to the echo service is working.
 
 3. Send a gRPC request to test the route.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```bash
    grpcurl -insecure \
      -authority grpc.example.com \
@@ -324,7 +324,7 @@ Verify that the gRPC route to the echo service is working.
      yages.Echo/Ping
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```bash
    grpcurl -insecure \
      -authority grpc.example.com \

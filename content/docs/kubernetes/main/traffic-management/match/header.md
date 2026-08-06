@@ -59,14 +59,14 @@ Match headers by an exact string, such as `version`.
    ```
 
 2. Send a request to the httpbin app on the `match.example` domain without any headers. Verify that you get back a 404 HTTP response code as no matching request could be found. 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 \
    -H "host: match.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/status/200 \
    -H "host: match.example"
@@ -85,15 +85,15 @@ Match headers by an exact string, such as `version`.
    ```
 
 3. Send another request to the httpbin app on the `match.example` domain. This time, add the `version: v2` header that you configured in the HTTPRoute. Verify that your request now succeeds and you get back a 200 HTTP response code. 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 \
    -H "host: match.example" \
    -H "version: v2"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/status/200 \
    -H "host: match.example" \
@@ -160,8 +160,8 @@ Match headers with regular expressions (regex).
    ```
 
 2. Send a request to the httpbin app on the `match.example` domain and add valid values for each of your headers. Verify that the request succeeds and you get back a 200 HTTP response code. 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: match.example" -H "host: match.example" \
    -H "Authorization: Bearer 123" \
@@ -169,7 +169,7 @@ Match headers with regular expressions (regex).
    -H "version: 3.0" 
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/status/200 -H "host: match.example" -H "host: match.example" \
    -H "Authorization: Bearer 123" \
@@ -193,8 +193,8 @@ Match headers with regular expressions (regex).
    ```
 
 3. Send another request to the httpbin app on the `match.example` domain. This time, you change the value of the `version` header to an invalid value that does not meet the regular expression that you defined. Verify that the request is denied with a 404 HTTP response code. 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: match.example" -H "host: match.example" \
    -H "Authorization: Bearer 123" \
@@ -202,7 +202,7 @@ Match headers with regular expressions (regex).
    -H "version: 30"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/status/200 -H "host: match.example" -H "host: match.example" \
    -H "Authorization: Bearer 123" \

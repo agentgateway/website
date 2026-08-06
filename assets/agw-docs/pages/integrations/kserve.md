@@ -147,8 +147,8 @@ headers — without touching the inference service itself.
    kubectl get httproute mock-llm -n kserve-test -o yaml
    ```
 
-{{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider LoadBalancer" %}}
+{{< tabs >}}
+{{% tab name="Cloud Provider LoadBalancer" %}}
 2. Get the external address of the gateway and save it in an environment variable.
    ```shell
    export INGRESS_GW_ADDRESS=$(kubectl get svc -n kserve agentgateway-proxy \
@@ -221,7 +221,7 @@ headers — without touching the inference service itself.
    < x-actual-model: mock-llm
    ```
 {{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
+{{% tab name="Port-forward for local testing" %}}
 2. Port-forward the gateway to your local machine.
 
    ```shell
@@ -350,8 +350,8 @@ KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backe
 
 ## Step 6: Test the endpoint
 
-{{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider LoadBalancer" %}}
+{{< tabs >}}
+{{% tab name="Cloud Provider LoadBalancer" %}}
 1. Get the external address of the gateway and save it in an environment variable.
    ```shell
    export INGRESS_GW_ADDRESS=$(kubectl get svc -n kserve agentgateway-proxy \
@@ -400,7 +400,7 @@ KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backe
    }
    ```
 {{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
+{{% tab name="Port-forward for local testing" %}}
 1. Port-forward the gateway to your local machine.
 
    ```shell
@@ -482,8 +482,8 @@ How token counting works: Agentgateway reads `usage.total_tokens` from the JSON 
      -o jsonpath='{.status.ancestors[0].conditions}'
    ```
 
-{{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider LoadBalancer" %}}
+{{< tabs >}}
+{{% tab name="Cloud Provider LoadBalancer" %}}
 3. Get the external address of the gateway and save it in an environment variable.
    ```shell
    export INGRESS_GW_ADDRESS=$(kubectl get svc -n kserve agentgateway-proxy \
@@ -520,7 +520,7 @@ How token counting works: Agentgateway reads `usage.total_tokens` from the JSON 
    ...
    ```
 {{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
+{{% tab name="Port-forward for local testing" %}}
 3. Port-forward the gateway to your local machine.
 
    ```shell
