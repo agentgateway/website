@@ -25,10 +25,12 @@ The vSR and agentgateway projects provide complementary guides. Choose the one t
 
 {{< cards >}}
 {{< card link="https://vllm-sr.ai/docs/installation/k8s/agentgateway/" title="Deploy vSR with agentgateway" icon="external-link" description="Follow the vSR project guide to deploy the components on Kubernetes and route to vLLM-compatible inference workloads.">}}
-{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing" title="Evaluate cost-based routing" icon="external-link" description="Use the agentgateway example to select between hosted model tiers and measure the result with a model cost catalog and OpenTelemetry.">}}
+{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/cost-based" title="Evaluate cost-based routing" icon="external-link" description="Select between hosted model tiers and measure the result with a model cost catalog and OpenTelemetry.">}}
+{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/tier-aware" title="Configure tier-aware routing" icon="external-link" description="Select separate vSR configurations and model pools for authenticated Basic, Standard, and Pro callers.">}}
+{{< card link="https://github.com/agentgateway/agentgateway/pull/2883" title="Preview semantic caching" icon="external-link" description="Review the proposed Redis-backed example for reusing responses to semantically equivalent requests.">}}
 {{< /cards >}}
 
-The vSR deployment guide owns the installation, Helm values, and semantic-router configuration. The agentgateway example owns the cost-routing policy and runnable gateway resources. Keeping those details with their projects avoids version drift in this integration overview.
+The vSR deployment guide owns the installation, Helm values, and semantic-router configuration. Each agentgateway example owns the policies and runnable gateway resources for its scenario. Keeping those details with their projects avoids version drift in this integration overview.
 
 > [!NOTE]
 > Current vSR examples require agentgateway 1.3.0 or later for the external-processing options that control request streaming and mode overrides.
