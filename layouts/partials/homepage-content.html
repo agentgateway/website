@@ -1461,7 +1461,7 @@
             <div class="com"># Run</div>
             <div><span class="prompt-char">$</span> agentgateway</div>
             <div>&nbsp;</div>
-            <div class="com"># info	app	serving UI at http://localhost:15000/ui</div>
+            <div class="com"># info	app	serving UI at http://localhost:4000/ui</div>
           </div>
           <div class="hp-code-panel" id="hp-code-helm">
             <div class="com"># Install Gateway API CRDs</div>
@@ -1482,10 +1482,12 @@
           </div>
           <div class="hp-code-panel" id="hp-code-docker">
             <div class="com"># Run agentgateway in a container</div>
-            <div><span class="prompt-char">$</span> docker run -p 3000:3000 -p 15000:15000 \</div>
-            <div>&nbsp;&nbsp;-v $(pwd)/config.yaml:/etc/agentgateway/config.yaml \</div>
-            <div>&nbsp;&nbsp;ghcr.io/agentgateway/agentgateway:latest \</div>
-            <div>&nbsp;&nbsp;-f /etc/agentgateway/config.yaml</div>
+            <div><span class="prompt-char">$</span> mkdir agentgateway-config</div>
+            <div><span class="prompt-char">$</span> docker run \</div>
+            <div>&nbsp;&nbsp;--user "$(id -u):$(id -g)" \</div>
+            <div>&nbsp;&nbsp;-v "$PWD/agentgateway-config:/config" \</div>
+            <div>&nbsp;&nbsp;-p 4000:4000 \</div>
+            <div>&nbsp;&nbsp;cr.agentgateway.dev/agentgateway:v1.4.1</div>
           </div>
         </div>
       </div>

@@ -6,8 +6,8 @@
  * This keeps screenshot capture in lockstep with the version the docs actually install:
  * when n-patch bumps 1.3.x from 1.3.1 to 1.3.2, captures follow automatically.
  *
- *   node resolve-image.mjs latest            -> ghcr.io/agentgateway/agentgateway:v1.3.1
- *   node resolve-image.mjs main              -> ghcr.io/agentgateway/agentgateway:latest-dev
+ *   node resolve-image.mjs latest            -> cr.agentgateway.dev/agentgateway:v1.3.1
+ *   node resolve-image.mjs main              -> cr.agentgateway.dev/agentgateway:latest-dev
  *   node resolve-image.mjs latest patch      -> 1.3.1
  *   node resolve-image.mjs main chart-version-> 0.0.0-latest-dev    (matches helm.md)
  *
@@ -20,7 +20,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const REGISTRY = process.env.AGW_REGISTRY || 'ghcr.io/agentgateway/agentgateway';
+const REGISTRY = process.env.AGW_REGISTRY || 'cr.agentgateway.dev/agentgateway';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..', '..');
 const nPatchPath = resolve(repoRoot, 'assets/agw-docs/versions/n-patch.md');
