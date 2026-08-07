@@ -33,128 +33,130 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
    tailscale ip -4
    ```
 
-## Step 2: Create the configuration
+## Step 2: Configure and start agentgateway
 
-Create a `config.yaml` file. The configuration uses an `extAuthz` policy to call the Tailscale daemon's local `whois` API with the source IP address of each request, then extracts the node name and user email from the response. The socket path for the Tailscale daemon differs by platform.
+1. Create a `config.yaml` file. The configuration uses an `extAuthz` policy to call the Tailscale daemon's local `whois` API with the source IP address of each request, then extracts the node name and user email from the response. The socket path for the Tailscale daemon differs by platform.
 
-{{< tabs >}}
-{{% tab name="Linux" %}}
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-frontendPolicies:
-  accessLog:
-    add:
-      tailscale.node: extauthz.tailscaleNode
-      tailscale.email: extauthz.tailscaleEmail
+   {{< tabs >}}
+   {{% tab name="Linux" %}}
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   frontendPolicies:
+     accessLog:
+       add:
+         tailscale.node: extauthz.tailscaleNode
+         tailscale.email: extauthz.tailscaleEmail
 
-gateways:
-  default:
-    port: 3000
-    protocol: HTTP
-routes:
-- name: application
-  backends:
-  - mcp:
-      targets:
-      - name: everything
-        stdio:
-          cmd: npx
-          args: ["@modelcontextprotocol/server-everything"]
-  policies:
-    cors:
-      allowOrigins: ["*"]
-      allowHeaders: ["*"]
-      exposeHeaders: ["Mcp-Session-Id"]
-    extAuthz:
-      host: unix:/run/tailscale/tailscaled.sock
-      protocol:
-        http:
-          path: |
-            "/localapi/v0/whois?addr=" + source.address
-          addRequestHeaders:
-            :authority: '"local-tailscaled.sock"'
-          metadata:
-            tailscaleNode: json(response.body).Node.Name
-            tailscaleEmail: json(response.body).UserProfile.LoginName
-```
-{{% /tab %}}
-{{% tab name="macOS" %}}
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-frontendPolicies:
-  accessLog:
-    add:
-      tailscale.node: extauthz.tailscaleNode
-      tailscale.email: extauthz.tailscaleEmail
+   gateways:
+     default:
+       port: 3000
+       protocol: HTTP
+   routes:
+   - name: application
+     backends:
+     - mcp:
+         targets:
+         - name: everything
+           stdio:
+             cmd: npx
+             args: ["@modelcontextprotocol/server-everything"]
+     policies:
+       cors:
+         allowOrigins: ["*"]
+         allowHeaders: ["*"]
+         exposeHeaders: ["Mcp-Session-Id"]
+       extAuthz:
+         host: unix:/run/tailscale/tailscaled.sock
+         protocol:
+           http:
+             path: |
+               "/localapi/v0/whois?addr=" + source.address
+             addRequestHeaders:
+               :authority: '"local-tailscaled.sock"'
+             metadata:
+               tailscaleNode: json(response.body).Node.Name
+               tailscaleEmail: json(response.body).UserProfile.LoginName
+   ```
+   {{% /tab %}}
+   {{% tab name="macOS" %}}
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   frontendPolicies:
+     accessLog:
+       add:
+         tailscale.node: extauthz.tailscaleNode
+         tailscale.email: extauthz.tailscaleEmail
 
-gateways:
-  default:
-    port: 3000
-    protocol: HTTP
-routes:
-- name: application
-  backends:
-  - mcp:
-      targets:
-      - name: everything
-        stdio:
-          cmd: npx
-          args: ["@modelcontextprotocol/server-everything"]
-  policies:
-    cors:
-      allowOrigins: ["*"]
-      allowHeaders: ["*"]
-      exposeHeaders: ["Mcp-Session-Id"]
-    extAuthz:
-      host: unix:/var/run/tailscale/tailscaled.sock
-      protocol:
-        http:
-          path: |
-            "/localapi/v0/whois?addr=" + source.address
-          addRequestHeaders:
-            :authority: '"local-tailscaled.sock"'
-          metadata:
-            tailscaleNode: json(response.body).Node.Name
-            tailscaleEmail: json(response.body).UserProfile.LoginName
-```
-{{% /tab %}}
-{{< /tabs >}}
+   gateways:
+     default:
+       port: 3000
+       protocol: HTTP
+   routes:
+   - name: application
+     backends:
+     - mcp:
+         targets:
+         - name: everything
+           stdio:
+             cmd: npx
+             args: ["@modelcontextprotocol/server-everything"]
+     policies:
+       cors:
+         allowOrigins: ["*"]
+         allowHeaders: ["*"]
+         exposeHeaders: ["Mcp-Session-Id"]
+       extAuthz:
+         host: unix:/var/run/tailscale/tailscaled.sock
+         protocol:
+           http:
+             path: |
+               "/localapi/v0/whois?addr=" + source.address
+             addRequestHeaders:
+               :authority: '"local-tailscaled.sock"'
+             metadata:
+               tailscaleNode: json(response.body).Node.Name
+               tailscaleEmail: json(response.body).UserProfile.LoginName
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
-The following table describes the key settings in the configuration.
+   {{< reuse "agw-docs/snippets/review-table.md" >}}
 
-| Setting | Description |
-|---------|-------------|
-| `frontendPolicies.accessLog.add` | Adds the Tailscale identity to the access logs. |
-| `extAuthz.host` | The Unix socket path to the Tailscale daemon. |
-| `extAuthz.protocol.http.path` | A CEL expression that calls the Tailscale `whois` API with the client's source IP address. |
-| `addRequestHeaders.:authority` | The hostname that the Tailscale local API requires. |
-| `metadata.tailscaleNode` | Extracts the machine name from the Tailscale response. |
-| `metadata.tailscaleEmail` | Extracts the user email from the Tailscale response. |
+   | Setting | Description |
+   |---------|-------------|
+   | `frontendPolicies.accessLog.add` | Adds the Tailscale identity to the access logs. |
+   | `extAuthz.host` | The Unix socket path to the Tailscale daemon. |
+   | `extAuthz.protocol.http.path` | A CEL expression that calls the Tailscale `whois` API with the client's source IP address. |
+   | `addRequestHeaders.:authority` | The hostname that the Tailscale local API requires. |
+   | `metadata.tailscaleNode` | Extracts the machine name from the Tailscale response. |
+   | `metadata.tailscaleEmail` | Extracts the user email from the Tailscale response. |
 
-The value for `extAuthz.host` is the path to the Tailscale daemon's local socket, which differs by platform. Use the path that matches the platform where agentgateway runs.
+   The value for `extAuthz.host` is the path to the Tailscale daemon's local socket, which differs by platform. Use the path that matches the platform where agentgateway runs.
 
-| Platform | Socket path |
-|----------|-------------|
-| Linux | `/run/tailscale/tailscaled.sock` |
-| macOS | `/var/run/tailscale/tailscaled.sock` |
-| Windows | Named pipe (not supported through a Unix socket) |
+   | Platform | Socket path |
+   |----------|-------------|
+   | Linux | `/run/tailscale/tailscaled.sock` |
+   | macOS | `/var/run/tailscale/tailscaled.sock` |
+   | Windows | Named pipe (not supported through a Unix socket) |
 
-> [!NOTE]
-> On most Linux systems, `/var/run` is a symlink to `/run`, so `/var/run/tailscale/tailscaled.sock` and `/run/tailscale/tailscaled.sock` point to the same socket.
+   > [!NOTE]
+   > On most Linux systems, `/var/run` is a symlink to `/run`, so `/var/run/tailscale/tailscaled.sock` and `/run/tailscale/tailscaled.sock` point to the same socket.
 
-## Step 3: Start agentgateway
+2. Start agentgateway.
 
-```bash
-agentgateway -f config.yaml
-```
+   ```bash
+   agentgateway -f config.yaml
+   ```
 
-Example output:
+   Example output:
 
-```
-info proxy::gateway started bind bind="bind/3000"
-```
+   ```
+   info  state_manager  loaded config from File("config.yaml")
+   info  app            serving UI at http://localhost:15000/ui
+   info  proxy::gateway started bind  bind="bind/3000"
+   ```
 
-## Step 4: Test the authentication
+## Step 3: Test the authentication
 
 1. Send a request from localhost. Because localhost does not have a Tailscale identity, the request is denied with a `403 Forbidden` response.
 
@@ -199,6 +201,7 @@ info proxy::gateway started bind bind="bind/3000"
    info request ... tailscale.node=your-machine-name tailscale.email=you@example.com
    ```
 
+<!--
 ## Troubleshooting
 
 **`external authorization failed` for Tailscale IPs**: Check that the Tailscale socket exists and is accessible at the path in your configuration.
@@ -212,6 +215,7 @@ ls -la /var/run/tailscale/tailscaled.sock
 ```
 
 **`no match for IP:port` in the Tailscale response**: The connecting IP address is not recognized by Tailscale. Make sure that you connect through a Tailscale IP address, not localhost or a LAN IP address.
+-->
 
 ## Learn more
 
