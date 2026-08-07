@@ -85,4 +85,4 @@ To avoid this configuration, set a given field or section in only one policy per
 | Value | Behavior |
 | -- | -- |
 | `Default` | The default value. Fields from more-specific attachment points, such as routes and route rules, can override fields from less-specific attachment points, such as gateways and listeners. Use this value to set a `traffic` default at the Gateway that specific routes can override. |
-| `Override` | Blocks `traffic` policies at more-specific attachment points from contributing to the effective policy. Use this when a less-specific policy, such as one at the Gateway level, must stay authoritative for everything below it. |
+| `Override` | Blocks `traffic` policies at more-specific attachment points from contributing to the effective policy. Use this value when a less-specific policy, such as one at the Gateway level, must stay authoritative for everything below it. |
