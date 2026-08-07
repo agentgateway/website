@@ -89,7 +89,7 @@ For **Langfuse Cloud**, agentgateway exports traces directly without needing an 
 version: '3'
 services:
   agentgateway:
-    image: ghcr.io/agentgateway/agentgateway:latest
+    image: cr.agentgateway.dev/agentgateway:latest
     ports:
       - "3000:3000"
     volumes:
@@ -105,7 +105,7 @@ For **self-hosted Langfuse**, you can point agentgateway directly to your instan
 version: '3'
 services:
   agentgateway:
-    image: ghcr.io/agentgateway/agentgateway:latest
+    image: cr.agentgateway.dev/agentgateway:latest
     ports:
       - "3000:3000"
     volumes:
