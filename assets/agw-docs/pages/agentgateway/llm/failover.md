@@ -41,7 +41,7 @@ flowchart LR
 
 **Rate-limit handling:** When a 429 response includes a `Retry-After` header, agentgateway uses that duration as the eviction time (overriding the configured `duration`). However, 429 responses only trigger eviction if your `unhealthyCondition` includes them (for example, `response.code >= 500 || response.code == 429`).
 
-**Current trigger behavior:** Both server errors (5xx) and connection-level failures, such as connection refused or DNS resolution failure, are classified as unhealthy and count toward eviction. This is true whether you use the built-in default classification or an explicit `unhealthyCondition`, as long as your CEL expression covers the response codes you care about.
+**Current trigger behavior:** Both server errors (5xx) and connection-level failures, such as connection refused or DNS resolution failure, are classified as unhealthy and count toward eviction. This classification is true whether you use the built-in default classification or an explicit `unhealthyCondition`, as long as your CEL expression covers the response codes you care about.
 
 ### Failover vs. traffic splitting {#traffic-splitting}
 
