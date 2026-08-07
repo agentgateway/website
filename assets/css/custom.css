@@ -327,3 +327,24 @@ h6 {
   /* Avoid breaking inside short blocks; don't force headings to next page */
   blockquote, figure, img { break-inside: avoid; }
 }
+
+/* Clearance for the custom fixed navbar above the docs content column.
+
+   Moved here from an inline `style="padding-top: 2.5rem"` that used to live on
+   the wrapper div inside forked copies of layouts/docs/single.html and
+   layouts/docs/list.html. Those forks were deleted once docs-theme-extras grew
+   the partials/docs/* extension slots (v0.2.0-beta.3), and an inline style on a
+   layout element had no way to survive that. This is also the correct home for
+   it: it is compensation for `partials/nav.html`, which is a styling concern.
+
+   The hook class is supplied by layouts/partials/docs/width-class.html, which
+   feeds the wrapper's class attribute, so the rule cannot leak into the blog,
+   models or tutorials layouts.
+
+   CAVEAT: if this site ever enables docTabs, the module emits an INLINE
+   `style="padding-top: 0.75rem"` on the same element, and an inline style beats
+   a class rule. Revisit this rule at that point rather than reaching for
+   !important. */
+.agw-docs-topgap {
+  padding-top: 2.5rem;
+}
