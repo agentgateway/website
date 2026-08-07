@@ -16,6 +16,10 @@ Key concepts:
 - **Refill interval**: How often the bucket refills (e.g., daily, hourly)
 - **Keying**: How to identify users (by header, JWT claim, or remote address)
 
+{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+The input count that a request debits includes the tokens that the provider read from or wrote to its prompt cache. Anthropic and Amazon Bedrock exclude cached tokens from the count that they report, so a cache-heavy request against those providers debits more than their reported input count. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).
+{{< /version >}}
+
 When a request arrives:
 
 ```mermaid
@@ -194,6 +198,11 @@ Track how much of each user's budget has been consumed using Prometheus metrics.
      increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])
    ) / 100000) * 100
    ```
+
+   {{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+   > [!WARNING]
+   > Do not add the `input_cache_read` or `input_cache_write` token types to these queries. The `input` series already includes the cached tokens, so adding them double counts.
+   {{< /version >}}
 
 3. Set up alerts when users approach their budget limits.
 
