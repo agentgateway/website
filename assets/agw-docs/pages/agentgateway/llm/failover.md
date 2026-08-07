@@ -364,7 +364,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    {{% /tab %}}
    {{% tab name="Self-hosted primary, cloud fallback" %}}
 
-   In this example, you configure failover from a self-hosted vLLM instance to a cloud provider. Requests route to your in-cluster vLLM deployment first. If vLLM becomes unavailable, requests fail over to OpenAI.
+   In this example, you configure failover from a self-hosted vLLM instance to a cloud provider. The self-hosted instance is a model that you run yourself, such as vLLM on your own GPU hardware. The cloud provider is a fully managed, externally hosted LLM API, such as OpenAI. Requests route to your in-cluster vLLM deployment first. If vLLM becomes unavailable, requests fail over to OpenAI.
 
    Before you begin, [set up vLLM]({{< link-hextra path="/llm/providers/vllm/" >}}) in your cluster.
 
