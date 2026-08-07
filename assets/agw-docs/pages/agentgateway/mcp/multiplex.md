@@ -40,6 +40,12 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
              args: ["-y", "@modelcontextprotocol/server-everything", "streamableHttp"]
              ports:
                - containerPort: 3001
+             readinessProbe:
+               tcpSocket:
+                 port: 3001
+               initialDelaySeconds: 2
+               periodSeconds: 2
+               failureThreshold: 30
    ---
    apiVersion: v1
    kind: Service
@@ -231,15 +237,18 @@ EOF
 
 {{< doc-test paths="virtual-mcp" >}}
 for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/mcp" && break
-  sleep 2
+  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://${INGRESS_GW_ADDRESS}:80/mcp" || true)
+  case "${code}" in
+    5*|"") sleep 2 ;;
+    *) break ;;
+  esac
 done
 {{< /doc-test >}}
 
 {{< doc-test paths="virtual-mcp" >}}
 YAMLTest -f - <<'EOF'
 - name: MCP endpoint accepts initialize request
-  retries: 5
+  retries: 30
   http:
     url: "http://${INGRESS_GW_ADDRESS}:80"
     path: /mcp
