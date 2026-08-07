@@ -18,7 +18,7 @@ The following table shows which resource types each policy section can target.
 
 | Policy section | Valid targets | sectionName | Notes |
 | -- | -- | -- | -- |
-| `frontend` | Gateway | Depends on the field; see [Frontend section restrictions](#frontend-restrictions). | Applies to all listeners on the targeted Gateway. A `targetRef` or `targetSelector` can also set `port` to scope the policy to a single listener port on the Gateway. |
+| `frontend` | Gateway | Depends on the field. See [Frontend section restrictions](#frontend-restrictions) for more information. | Applies to all listeners on the targeted Gateway. A `targetRef` or `targetSelector` can also set `port` to scope the policy to a single listener port on the Gateway. |
 | `traffic` | Gateway, HTTPRoute, GRPCRoute, ListenerSet | Optional | When targeting a Gateway, the `sectionName` selects a specific listener. When targeting an HTTPRoute or GRPCRoute, the `sectionName` selects a specific route rule. |
 | `backend` | Gateway, HTTPRoute, GRPCRoute, ListenerSet, Service, {{< reuse "agw-docs/snippets/backend.md" >}} | Optional | When targeting a Service, the `sectionName` selects a specific port. When targeting an {{< reuse "agw-docs/snippets/backend.md" >}}, the `sectionName` selects a specific sub-backend. |
 
