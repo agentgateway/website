@@ -74,7 +74,7 @@ For example, if a Gateway-level policy sets `backend.tcp` and `backend.tls`, and
 
 If multiple policies with the same specificity set the same field, agentgateway picks one policy's value for that field and silently drops the rest. The selection isn't based on creation time, name, or namespace, so which policy wins isn't predictable and can change between controller restarts. Every affected policy still reports `Accepted` and `Attached` status conditions as `True`, with no condition indicating that a field was dropped.
 
-This applies to every policy section, but it's easiest to hit with `frontend`. A `frontend` policy has at most three specificity levels: the Gateway, an optional `port`, and an optional listener `sectionName` for the fields where `sectionName` is allowed. Two policies that both target only the Gateway have no way to differentiate their specificity.
+This configuration applies to every policy section, but noticeable with `frontend`. A `frontend` policy has at most three specificity levels: the Gateway, an optional `port`, and an optional listener `sectionName` for the fields where `sectionName` is allowed. Two policies that both target only the Gateway have no way to differentiate their specificity.
 
 To avoid this, set a given field or section in only one policy per target.
 
