@@ -76,7 +76,7 @@ If multiple policies with the same specificity set the same field, agentgateway 
 
 This configuration applies to every policy section, but noticeable with `frontend`. A `frontend` policy has at most three specificity levels: the Gateway, an optional `port`, and an optional listener `sectionName` for the fields where `sectionName` is allowed. Two policies that both target only the Gateway have no way to differentiate their specificity.
 
-To avoid this, set a given field or section in only one policy per target.
+To avoid this configuration, set a given field or section in only one policy per target.
 
 ## Merge strategy overrides {#strategy}
 
