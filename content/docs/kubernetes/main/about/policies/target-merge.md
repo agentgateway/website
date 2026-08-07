@@ -18,9 +18,20 @@ The following table shows which resource types each policy section can target.
 
 | Policy section | Valid targets | sectionName | Notes |
 | -- | -- | -- | -- |
-| `frontend` | Gateway | Not allowed | Applies to all listeners on the targeted Gateway. |
+| `frontend` | Gateway | Depends on the field; see [Frontend section restrictions](#frontend-restrictions). | Applies to all listeners on the targeted Gateway. A `targetRef` or `targetSelector` can also set `port` to scope the policy to a single listener port on the Gateway. |
 | `traffic` | Gateway, HTTPRoute, GRPCRoute, ListenerSet | Optional | When targeting a Gateway, the `sectionName` selects a specific listener. When targeting an HTTPRoute or GRPCRoute, the `sectionName` selects a specific route rule. |
 | `backend` | Gateway, HTTPRoute, GRPCRoute, ListenerSet, Service, {{< reuse "agw-docs/snippets/backend.md" >}} | Optional | When targeting a Service, the `sectionName` selects a specific port. When targeting an {{< reuse "agw-docs/snippets/backend.md" >}}, the `sectionName` selects a specific sub-backend. |
+
+### Frontend section restrictions {#frontend-restrictions}
+
+`port` (to scope a `frontend` policy to a single listener port on the Gateway) is allowed for every `frontend` field. Whether a `frontend` policy can also set `sectionName` (to scope the policy to a single named listener) depends on which fields the policy sets.
+
+| Fields | `sectionName` |
+| -- | -- |
+| `accessLog`, `metrics`, `tracing` | Allowed. Selects a single listener. |
+| `connect`, `http`, `networkAuthorization`, `proxyProtocol`, `tcp`, `tls` | Not allowed. |
+
+If a policy sets any field from the second row, the Kubernetes API server rejects `sectionName` on that policy, even if the policy also sets a field from the first row.
 
 ### Backend section restrictions
 
@@ -51,8 +62,25 @@ Each policy section follows a different precedence order based on the specificit
 
 | Section | Precedence order (lowest to highest) |
 | -- | -- |
-| `frontend` | Field-level merge across policies that target the same Gateway. |
+| `frontend` | Gateway < Port < Listener (`sectionName`, only for the fields where it's allowed; see [Frontend section restrictions](#frontend-restrictions)) |
 | `traffic` | Gateway < Listener < Route < Route rule |
 | `backend` | Gateway < Listener < Route (targetRef) < Route rule (targetRef) < Backend (targetRef) < Backend (inline on the backend object) < Route backend ref (inline on the route) |
 
 For example, if a Gateway-level policy sets `backend.tcp` and `backend.tls`, and a Backend-level policy sets `backend.tls`, the effective policy uses `tcp` from the Gateway policy and `tls` from the Backend policy.
+
+### When two policies have equal specificity {#ties}
+
+If multiple policies with the same specificity set the same field, agentgateway picks one policy's value for that field and silently drops the rest. The selection isn't based on creation time, name, or namespace, so which policy wins isn't predictable and can change between controller restarts. Every affected policy still reports `Accepted` and `Attached` status conditions as `True`, with no condition indicating that a field was dropped.
+
+This applies to every policy section, but it's easiest to hit with `frontend`, because a `frontend` policy's only specificity levels are the Gateway, an optional `port`, and (for a few fields) an optional listener `sectionName`. Two policies that both target only the Gateway have no way to differentiate their specificity.
+
+To avoid this, set a given field or section in only one policy per target.
+
+## Merge strategy overrides {#strategy}
+
+`AgentgatewayPolicy.spec.strategy.inheritance` changes how `traffic` policies merge. It's valid only on policies that set `traffic`; the Kubernetes API server rejects a policy that sets `inheritance` alongside `frontend` or `backend`. Frontend and backend policy merging always follows the specificity order described above and doesn't use `inheritance`.
+
+| Value | Behavior |
+| -- | -- |
+| `Default` (the default) | Fields from more-specific attachment points, such as routes and route rules, can override fields from less-specific attachment points, such as gateways and listeners. Use this to set a `traffic` default at the Gateway that specific routes can override. |
+| `Override` | Blocks `traffic` policies at more-specific attachment points from contributing to the effective policy. Use this when a Gateway-level (or other less-specific) policy must stay authoritative for everything below it. |
