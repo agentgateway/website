@@ -581,7 +581,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    {{% /tab %}}
    {{% tab name="Self-hosted primary, cloud fallback" %}}
 
-   With the self-hosted vLLM configuration, the first request is served by your vLLM deployment. After vLLM is evicted, such as when the pod becomes unavailable or is scaled down, the next request fails over to the cloud fallback:
+   With the self-hosted vLLM configuration, the first request is served by your vLLM deployment. After the vLLM is evicted, such as when the pod becomes unavailable or is scaled down, the next request fails over to the cloud fallback:
 
    ```text
    === Request 1 ===
