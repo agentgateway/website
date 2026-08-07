@@ -1,4 +1,4 @@
-1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} version that this release was validated against. To use a different supported version, see the [Gateway API compatibility table]({{< link-hextra path="/reference/versions/" >}}) and set the variable accordingly.
+1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}. This example uses Gateway API {{< reuse "agw-docs/versions/k8s-gw-version.md" >}}, but you can use any version within the [supported range]({{< link-hextra path="/reference/versions/" >}}) by setting the variable accordingly.
    
    ```sh
    export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version.md" >}}

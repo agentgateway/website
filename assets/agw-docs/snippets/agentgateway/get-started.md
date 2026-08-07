@@ -3,7 +3,7 @@ Standard = released build (helm-version-flag) + standard Gateway API CRDs (k8s-g
 Experimental = nightly build (patch-dev) + experimental Gateway API CRDs at the newest version (k8s-gw-version-exp) + feature gate on.
 Why bundled: the nightly build watches TCPRoute at v1, which only Gateway API 1.6 serves; the released v1.3.x build watches v1alpha2, so the Standard path stays on Gateway API 1.5. That is why Experimental uses its own newer Gateway API version (k8s-gw-version-exp) instead of k8s-gw-version.
 Revisit when the current main (1.4.x) ships as the next latest: the Standard path will then also move to the v1 / Gateway API 1.6 era, and Standard vs Experimental Gateway API versions may converge. -->
-1. Deploy the Kubernetes Gateway API CRDs. The following commands use the version that this release was validated against. To use a different supported version, see the [Gateway API compatibility table]({{< link-hextra path="/reference/versions/" >}}) and set the variable accordingly.
+1. Deploy the Kubernetes Gateway API CRDs. These examples use Gateway API {{< reuse "agw-docs/versions/k8s-gw-version.md" >}} for the standard channel and {{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}} for the experimental channel, but you can use any version within the [supported range]({{< link-hextra path="/reference/versions/" >}}) by setting the variable accordingly.
 
    <!--The `--force-conflicts` flag is included to prevent field ownership conflicts if Gateway API CRDs were previously installed by another tool.-->
 
