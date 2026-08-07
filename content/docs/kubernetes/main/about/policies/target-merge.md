@@ -58,7 +58,7 @@ This field-level merge applies to all fields, including nested sub-fields. Each 
 
 Conditional policies are selected first based on their conditions. Only the selected policies participate in merge precedence evaluation.
 
-Each policy section follows a different precedence order based on the specificity of the target. The more specific the target, the higher the precedence. In the following table, `A < B` means a policy attached at `B` overrides a matching field set by a policy attached at `A`.
+Each policy section follows a different precedence order based on the specificity of the target. The more specific the target, the higher the precedence. In the following table, `<` shows which policies override others.For example, `A < B` means a policy attached at `B` overrides a matching field set by a policy attached at `A`.
 
 | Section | Precedence order (lowest to highest) |
 | -- | -- |
