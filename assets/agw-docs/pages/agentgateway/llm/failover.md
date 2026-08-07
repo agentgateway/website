@@ -490,7 +490,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    | Setting | Description |
    | --- | --- |
-   | `unhealthyCondition` | Optional CEL expression that classifies each response as healthy or unhealthy. When you set this field, `true` means the response counts as unhealthy toward eviction (together with `eviction`). When you omit this field, 5xx responses and connection failures (such as connection refused or DNS resolution failure) are still classified as unhealthy by a built-in default, and count toward eviction the same as an explicit `unhealthyCondition` would. |
+   | `unhealthyCondition` | Optional CEL expression that classifies each response as healthy or unhealthy. When you set this field, `true` means the response counts as unhealthy toward eviction (together with `eviction`). When you omit this field, 5xx responses and connection failures (such as connection refused or DNS resolution failure) are still classified as unhealthy by a built-in default, and count toward eviction in the same way as an explicit `unhealthyCondition` would. |
    | `eviction.duration` | Base time to remove an unhealthy backend from its priority group. Increases with multiplicative backoff on repeated evictions. When a 429 response includes `Retry-After`, that value is used instead. You might try `10s`–`60s` depending on how quickly you want failover versus avoiding flapping on brief errors. Shorter durations fail over faster. If you omit this field, the default is `3s`. |
    | `eviction.consecutiveFailures` | Number of consecutive unhealthy responses required before evicting. You might start with `3` so that a single transient error does not evict the backend. For tests, use `1` for immediate eviction. |
 
