@@ -24,7 +24,7 @@ The following table shows which resource types each policy section can target.
 
 ### Frontend section restrictions {#frontend-restrictions}
 
-Use `port` to scope a `frontend` policy to a single listener port on the Gateway, which is allowed for every `frontend` field. Whether a `frontend` policy can also set `sectionName` to scope the policy to a single named listener depends on which fields the policy sets.
+Use the `port` field to scope a `frontend` policy to a single listener port on the Gateway. Whether a `frontend` policy can also set a `sectionName` to scope the policy to a single named listener depends on which fields the policy sets.
 
 | Fields | `sectionName` |
 | -- | -- |
