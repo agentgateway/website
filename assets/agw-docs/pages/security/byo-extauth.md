@@ -34,17 +34,15 @@ sequenceDiagram
 
 {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
-{{< callout type="info" >}}
-Note that this guide assumes that you want to apply the policy to the OpenAI LLM provider. You can use other LLM providers or apply external auth to an MCP server, agents, and Kubernetes services. Make sure to adjust these steps to apply to your {{< reuse "agw-docs/snippets/backend.md" >}} type or Kubernetes service.
-{{< /callout >}}
+> [!NOTE]
+> Note that this guide assumes that you want to apply the policy to the OpenAI LLM provider. You can use other LLM providers or apply external auth to an MCP server, agents, and Kubernetes services. Make sure to adjust these steps to apply to your {{< reuse "agw-docs/snippets/backend.md" >}} type or Kubernetes service.
 
 ## Deploy your own external authorization service {#byo-ext-auth}
 
 Deploy your own external authorization service as a backend service that is accessible to your agentgateway proxy.
 
-{{< callout type="info" >}}
-Keep in mind that your external authorization service must conform to the [Envoy external auth proto](https://github.com/envoyproxy/envoy/blob/main/api/envoy/service/auth/v3/external_auth.proto). The external authorization service also configures the conditions for authorizing a request, such as the inclusion of a certain header or other credentials.
-{{< /callout >}}
+> [!NOTE]
+> Keep in mind that your external authorization service must conform to the [Envoy external auth proto](https://github.com/envoyproxy/envoy/blob/main/api/envoy/service/auth/v3/external_auth.proto). The external authorization service also configures the conditions for authorizing a request, such as the inclusion of a certain header or other credentials.
 
 1. Deploy your external authorization service. The following example uses the [Istio external authorization service](https://github.com/istio/istio/tree/master/samples/extauthz) for quick testing purposes. This service is configured to allow requests with the `x-ext-authz: allow` header.
 
@@ -100,7 +98,7 @@ Keep in mind that your external authorization service must conform to the [Envoy
 
 ## Create external auth policy {#create-policy}
 
-You can attach an external authorization policy to a Gateway, HTTPRoute, or backend (an {{< reuse "agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} or a Kubernetes Service). If you attach policies at multiple levels, the request must pass each one to be authorized.
+You can attach an external authorization policy to a Gateway, HTTPRoute, or backend (an {{< reuse "agw-docs/snippets/backend.md" >}} or a Kubernetes Service). If you attach policies at multiple levels, the request must pass each one to be authorized.
 
 Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authorization runs before the proxy selects a backend. Backend targets use the `backend.extAuth` section so that authorization runs after backend selection, which is useful when the authorization service shapes the outgoing request, for example by inserting a token, or when a route load-balances or fails over across multiple backends.
 
@@ -150,14 +148,14 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
    ...
    ```
 
-2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that references the external authorization service. Choose the tab for the target you want to attach the policy to. The Gateway and HTTPRoute tabs apply external authorization before backend selection. The {{< reuse "agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} tab applies it after backend selection.
+2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that references the external authorization service. Choose the tab for the target you want to attach the policy to. The Gateway and HTTPRoute tabs apply external authorization before backend selection. The {{< reuse "agw-docs/snippets/backend.md" >}} tab applies it after backend selection.
 
    {{< tabs >}}
    {{% tab name="Gateway" %}}
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      name: gateway-ext-auth-policy
@@ -174,6 +172,12 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
            name: ext-authz
            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
            port: 4444
+         cache:
+           key:
+             - request.path
+             - request.headers["authorization"]
+           ttl: 5m
+           maxEntries: 10000
          grpc: {}
    EOF
    ```
@@ -181,8 +185,8 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
    {{% tab name="HTTPRoute" %}}
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      name: route-ext-auth-policy
@@ -199,18 +203,24 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
            name: ext-authz
            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
            port: 4444
+         cache:
+           key:
+             - request.path
+             - request.headers["authorization"]
+           ttl: 5m
+           maxEntries: 10000
          grpc: {}
    EOF
    ```
    {{% /tab %}}
    {{% tab name="AgentgatewayBackend" %}}
    
-   Backend-level policies can also target a Kubernetes Service. To target a Service, set `kind: Service` and `group: ""` in `targetRefs`, and use the same `backend.extAuth` configuration shown in the {{< reuse "agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} tab.
+   Backend-level policies can also target a Kubernetes Service. To target a Service, set `kind: Service` and `group: ""` in `targetRefs`, and use the same `backend.extAuth` configuration shown in the {{< reuse "agw-docs/snippets/backend.md" >}} tab.
 
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      name: backend-ext-auth-policy
@@ -226,6 +236,12 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
          backendRef:
            name: ext-authz
            port: 4444
+         cache:
+           key:
+             - request.path
+             - request.headers["authorization"]
+           ttl: 5m
+           maxEntries: 10000
          grpc: {}
    EOF
    ```
@@ -333,7 +349,7 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete deployment ext-authz -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete service ext-authz -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

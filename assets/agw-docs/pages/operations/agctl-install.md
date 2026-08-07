@@ -2,27 +2,66 @@ Install `agctl`, the command-line tool that you use to inspect and debug agentga
 
 ## About
 
-`agctl` is the agentgateway command-line interface. Use `agctl` to inspect the configuration that an agentgateway proxy has loaded and to capture detailed traces of requests as the proxy handles them. The CLI works against agentgateway running in Kubernetes or as a standalone binary on your workstation.
+`agctl` is the agentgateway command-line interface. Use `agctl` to inspect the configuration that an agentgateway proxy has loaded, capture detailed traces of requests as the proxy handles them, {{< version exclude-if="1.4.x,1.3.x,1.2.x" >}}collect CPU and heap profiles, {{< /version >}}and manage proxy and controller log levels. The CLI works against agentgateway running in Kubernetes or as a standalone binary on your workstation.
 
 `agctl` includes the following subcommands.
 
 | Command | Description |
 | -- | -- |
-| `agctl trace` | Capture a tap-style trace to analyze a copy of the next request that an agentgateway proxy handles. Renders the trace in an interactive, text-based terminal user interface (TUI) by default. Alternatively, you can format the output as JSON for piping to other tools. |
-| `agctl config` | Retrieve the runtime configuration that an agentgateway proxy has loaded, including binds, listeners, routes, backends, workloads, and services. |
+| `agctl proxy trace` | Capture a tap-style trace to analyze a copy of the next request that an agentgateway proxy handles. Renders the trace in an interactive, text-based terminal user interface (TUI) by default. Alternatively, you can format the output as JSON for piping to other tools. |
+| `agctl proxy config` | Retrieve the runtime configuration that an agentgateway proxy has loaded, including binds, listeners, routes, backends, workloads, and services. |
+| `agctl proxy log` | Get or set log levels for the agentgateway proxy at runtime. |{{< version exclude-if="1.4.x,1.3.x,1.2.x" >}}
+| `agctl proxy profile` | Collect a CPU or heap [pprof](https://github.com/google/pprof) profile from an agentgateway proxy and write it to a file. |{{< /version >}}
+| `agctl controller log` | Get or set log levels for the agentgateway controller at runtime. |
+| `agctl version` | Print version information for the `agctl` CLI. |
 | `agctl completion` | Turn on autocompletion for your shell in `bash`, `zsh`, `fish`, or `powershell`. |
 
 For a complete list of subcommands and flags, see the [`agctl` CLI reference]({{< link-hextra path="/reference/agctl/" >}}).
 
 ## Before you begin
 
-Build `agctl` from source. Make sure that you have the following tools installed.
+Make sure that you have [Graphviz](https://graphviz.org/download/) installed if you plan to use `agctl` for profile investigation.
 
-* [Go](https://go.dev/doc/install) 1.22 or later
-* [Git](https://git-scm.com/downloads)
-* [Graphviz](https://graphviz.org/download/) for profile investigation
+If you choose to build `agctl` from source, you must also install [Go](https://go.dev/doc/install) 1.22 or later and [Git](https://git-scm.com/downloads).
 
 ## Install agctl
+
+Download the `agctl` binary for your platform from the [releases page](https://github.com/agentgateway/agentgateway/releases) or build it from source.
+
+{{< tabs >}}
+{{% tab name="Linux" %}}
+
+Download the pre-compiled binary:
+
+```sh
+curl -sL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-linux-amd64 -o agctl
+chmod +x agctl
+sudo mv agctl /usr/local/bin/agctl
+```
+
+{{% /tab %}}
+{{% tab name="macOS" %}}
+
+Download the pre-compiled binary:
+
+```sh
+# Intel
+curl -sL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-darwin-amd64 -o agctl
+
+# Apple Silicon
+curl -sL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-darwin-arm64 -o agctl
+
+chmod +x agctl
+sudo mv agctl /usr/local/bin/agctl
+```
+
+{{% /tab %}}
+{{% tab name="Windows" %}}
+
+Download `agctl-windows-amd64.exe` from the [releases page](https://github.com/agentgateway/agentgateway/releases) and add it to your `PATH`.
+
+{{% /tab %}}
+{{% tab name="Build from source" %}}
 
 1. Clone the agentgateway repository.
 
@@ -43,30 +82,36 @@ Build `agctl` from source. Make sure that you have the following tools installed
    export PATH="$(go env GOPATH)/bin:$PATH"
    ```
 
-3. Verify the install.
+{{% /tab %}}
+{{< /tabs >}}
 
-   ```sh
-   agctl --help
-   ```
+## Verify the installation
 
-   Example output:
+```sh
+agctl --help
+```
 
-   ```
-   agctl controls and inspects Agentgateway resources
+Example output:
 
-   Usage:
-     agctl [command]
+```
+agctl controls and inspects Agentgateway resources
 
-   Available Commands:
-     completion  Generate the autocompletion script for the specified shell
-     config      Retrieve Agentgateway configuration for a resource
-     help        Help about any command
-     trace       Trace the next request handled by an Agentgateway pod or local instance
+Usage:
+  agctl [command]
 
-   Flags:
-     -h, --help                help for agctl
-     -k, --kubeconfig string   kubeconfig
-   ```
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  controller  Inspect and manage the Agentgateway controller
+  help        Help about any command
+  proxy       Inspect and manage the Agentgateway proxy
+  version     Print agctl version information
+
+Flags:
+  -h, --help                help for agctl
+  -k, --kubeconfig string   kubeconfig
+
+Use "agctl [command] --help" for more information about a command.
+```
 
 ## Enable shell completion
 
@@ -109,7 +154,9 @@ agctl completion powershell | Out-String | Invoke-Expression
 
 ## Upgrade agctl
 
-To upgrade `agctl` to a newer version, pull the latest changes and rebuild.
+To upgrade `agctl`, replace the binary with the new version following the same steps as installation.
+
+If you built from source, pull the latest changes and rebuild.
 
 ```sh
 cd agentgateway
@@ -123,14 +170,17 @@ Verify the new version.
 agctl --help
 ```
 
-{{< callout type="info" >}}
-Use the same `agctl` version as the agentgateway version that you run in your cluster. Slight skews within minor versions typically work, but compatibility across major versions is not guaranteed.
-{{< /callout >}}
+> [!NOTE]
+> Use the same `agctl` version as the agentgateway version that you run in your cluster. Slight skews within minor versions typically work, but compatibility across major versions is not guaranteed.
 
 ## Uninstall agctl
 
-To uninstall `agctl`, remove the binary from your `GOBIN` directory.
+To uninstall `agctl`, remove the binary from your system. For example:
 
 ```sh
+# If installed to /usr/local/bin
+sudo rm /usr/local/bin/agctl
+
+# If installed via GOBIN
 rm "$(go env GOPATH)/bin/agctl"
 ```

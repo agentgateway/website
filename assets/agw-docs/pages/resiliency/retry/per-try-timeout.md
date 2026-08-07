@@ -1,8 +1,7 @@
 Set separate timeouts for retries. 
 
-{{< callout type="warning" >}} 
-{{< reuse "agw-docs/versions/warn-experimental.md" >}}
-{{< /callout >}}
+> [!WARNING]
+> {{< reuse "agw-docs/versions/warn-experimental.md" >}}
 
 ## About per-try timeouts
 
@@ -10,7 +9,7 @@ The per-try timeout allows you to set a timeout for retried requests. If the tim
 
 A request timeout represents the time the proxy waits for the entire request to complete, including retries. Without a per-try timeout, retries might take longer than the overall request timeout, and therefore might not be executed as the request times out before the retry attempts can be performed. You can configure a larger [request timeout]({{< link-hextra path="/resiliency/timeouts/request/" >}}) to account for this case. However, you can also define timeouts for each retry so that you can protect against slow retry attempts from consuming the entire request timeout.
 
-Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try timeouts on a Gateway listener level, use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} instead. 
+Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try timeouts on a Gateway listener level, use an {{< reuse "agw-docs/snippets/policy.md" >}} instead. 
 
 
 
@@ -22,10 +21,10 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
 1. Install the experimental Kubernetes Gateway API CRDs.
    
    ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
 
-2. Configure the per-try timeout. You can apply the timeout to an HTTPRoute by using a Kubernetes Gateway API-native approach. To apply it to an HTTPRoute rule or Gateway listener, use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. 
+2. Configure the per-try timeout. You can apply the timeout to an HTTPRoute by using a Kubernetes Gateway API-native approach. To apply it to an HTTPRoute rule or Gateway listener, use an {{< reuse "agw-docs/snippets/policy.md" >}} resource. 
    {{< tabs >}}
    {{% tab name="HTTPRoute (Kubernetes GW API)" %}}
    Use the `timeouts.backendRequest` field to configure the per-try timeout. Note that you must set a retry policy also to configure a per-try timeout. 
@@ -133,7 +132,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       ```
 
    {{% /tab %}}
-   {{% tab name="HTTPRoute (AgentGatewayPolicy)" %}}
+   {{% tab name="HTTPRoute (AgentgatewayPolicy)" %}}
    1. Create an HTTPRoute to route requests along the `retry.example` domain to the httpbin app. Note that you add a name `timeout` to your HTTPRoute rule so that you can configure the per-try timeout for that rule later. 
       ```yaml {paths="per-try-timeout-in-agentgateway"}
       kubectl apply -f- <<EOF
@@ -159,11 +158,11 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           name: timeout 
       EOF
       ```
-   2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to configure the per-try timeout. In this example, the per-try timeout is set to 5 seconds and assigned to the `timeout` HTTPRoute rule. Note that you must set a retry policy also to apply a per-try timeout. 
+   2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} to configure the per-try timeout. In this example, the per-try timeout is set to 5 seconds and assigned to the `timeout` HTTPRoute rule. Note that you must set a retry policy also to apply a per-try timeout. 
       ```yaml {paths="per-try-timeout-in-agentgateway"}
       kubectl apply -f- <<EOF
-      apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-      kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+      apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+      kind: {{< reuse "agw-docs/snippets/policy.md" >}}
       metadata:
         name: retry
         namespace: httpbin
@@ -280,11 +279,11 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
             port: 8000
       EOF
       ```
-   2. Create {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to configure the per-try timeout. In this example, the per-try timeout is set to 5 seconds and assigned to the `http` Gateway listener that you set up as part of the [before you begin](#before-you-begin) section. Note that you must set a retry policy also to apply a per-try timeout. 
+   2. Create {{< reuse "agw-docs/snippets/policy.md" >}} to configure the per-try timeout. In this example, the per-try timeout is set to 5 seconds and assigned to the `http` Gateway listener that you set up as part of the [before you begin](#before-you-begin) section. Note that you must set a retry policy also to apply a per-try timeout. 
       ```yaml {paths="per-try-timeout-in-gatewaylistener"}
       kubectl apply -f- <<EOF
-      apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-      kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+      apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+      kind: {{< reuse "agw-docs/snippets/policy.md" >}}
       metadata:
         name: retry
         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -506,8 +505,8 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
    
 ```sh
 kubectl delete httproute retry -n httpbin
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n httpbin
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} retry -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 

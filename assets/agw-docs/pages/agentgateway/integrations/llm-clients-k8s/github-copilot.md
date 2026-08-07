@@ -1,8 +1,7 @@
 Configure [GitHub Copilot](https://github.com/features/copilot) in VS Code to use agentgateway deployed in Kubernetes.
 
-{{< callout type="info" >}}
-Custom endpoint configuration for GitHub Copilot requires a GitHub Copilot Business or Enterprise plan. Individual Copilot plans do not support custom proxy endpoints.
-{{< /callout >}}
+> [!NOTE]
+> Custom endpoint configuration for GitHub Copilot requires a GitHub Copilot Business or Enterprise plan. Individual Copilot plans do not support custom proxy endpoints.
 
 ## Before you begin
 

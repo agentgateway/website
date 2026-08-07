@@ -1,8 +1,7 @@
 In this guide you explore how to expose the kgateway proxy with an AWS application load balancer (ALB). 
 
-{{< callout type="warning" >}}
-The AWS Load Balancer Controller only supports the creation of an ALB through an Ingress Controller and not through the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}. Because of this, you must create the ALB separately through an Ingress resource that connects it to the service that exposes your gateway proxy.
-{{< /callout >}}
+> [!WARNING]
+> The AWS Load Balancer Controller only supports the creation of an ALB through an Ingress Controller and not through the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}. Because of this, you must create the ALB separately through an Ingress resource that connects it to the service that exposes your gateway proxy.
 
 ## Before you begin
 
@@ -122,16 +121,15 @@ The AWS Load Balancer Controller only supports the creation of an ALB through an
    EOF
    ```
    
-   {{< callout type="info" >}}
-   If you later change your Ingress resource configuration, you might need to delete and re-create your Ingress resource for AWS to pick up the changes.
-   {{< /callout >}}
+   > [!NOTE]
+   > If you later change your Ingress resource configuration, you might need to delete and re-create your Ingress resource for AWS to pick up the changes.
 
 6. Review the load balancer in the AWS EC2 dashboard. 
    1. Go to the [AWS EC2 dashboard](https://console.aws.amazon.com/console/homeconsole/homeec2). 
    2. In the left navigation, go to **Load Balancing > Load Balancers**.
    3. Find and open the ALB that was created for you, with a name such as `k8s-gateway-alb-<hash>`. Note that it might take a few minutes for the ALB to provision.
    4. On the **Resource map** tab, verify that the load balancer points to healthy EC2 targets in your cluster. For example, you can click on the target EC2 name to verify that the instance summary lists your cluster name.
-      {{< reuse-image src="img/alb.png" >}}
+      {{< reuse-image-light src="img/alb.png" >}}
       {{< reuse-image-dark srcDark="img/alb.png" >}}
 
 ## Step 3: Test the ALB

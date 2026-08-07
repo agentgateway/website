@@ -1,5 +1,10 @@
 Distribute requests across multiple LLM providers automatically (also known as Power of Two Choices, or P2C).
 
+{{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
+> [!NOTE]
+> **Model-centric alternative**: To split traffic across models by weight, you can also use the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.weighted`. For more information, see [Virtual models]({{< link-hextra path="/llm/models/virtual/" >}}).
+{{< /version >}}
+
 ## About load balancing {#about}
 
 Load balancing distributes incoming requests across multiple backend LLM providers to optimize performance, cost, and availability. {{< reuse "agw-docs/snippets/agentgateway.md" >}} uses an intelligent **Power of Two Choices (P2C)** algorithm with health-aware scoring to automatically select the best available provider for each request.
@@ -39,6 +44,110 @@ When you configure multiple [priority groups]({{< link-hextra path="/llm/failove
 3. Falls back to the next priority group if all providers in the current group are unavailable
 
 This combines the benefits of automatic intelligent load balancing with explicit priority-based failover control.
+
+
+## Load balancing across Pod replicas
+
+When you register an LLM provider backend that points at an in-cluster Kubernetes Service with multiple Pod replicas behind it, the load balancing behavior depends on how the backend is configured.
+
+### Using `host`/`port` with a normal ClusterIP Service
+
+When you use the `host` and `port` fields (available on all provider types) to point at a normal Kubernetes Service with a `ClusterIP`, traffic goes through kube-proxy. Agentgateway sees only a single backend endpoint (the Service's ClusterIP), and kube-proxy handles the load balancing across individual Pods using iptables or IPVS rules. Agentgateway's P2C load balancing and health-aware scoring does **not** apply across individual Pod replicas in this case.
+
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+metadata:
+  name: my-backend
+  namespace: agentgateway-system
+spec:
+  ai:
+    provider:
+      openai:
+        model: my-model
+      host: my-llm-service.my-namespace.svc.cluster.local  # Normal ClusterIP Service
+      port: 80
+```
+
+### Using `host`/`port` with a headless Service
+
+When you point `host`/`port` at a **headless Service** (`clusterIP: None`) backed by multiple pods, agentgateway re-resolves DNS periodically and can distribute traffic across the resolved Pod IPs. However, this is **not health-aware** — agentgateway does not monitor the health of individual Pod endpoints or evict unhealthy ones in this scenario.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-llm-service
+  namespace: my-namespace
+spec:
+  clusterIP: None  # Headless Service
+  selector:
+    app: my-llm
+  ports:
+  - port: 8000
+    targetPort: 8000
+---
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+metadata:
+  name: my-backend
+  namespace: agentgateway-system
+spec:
+  ai:
+    provider:
+      openai:
+        model: my-model
+      host: my-llm-service.my-namespace.svc.cluster.local  # Headless Service
+      port: 8000
+```
+
+### Using `custom` provider with `backendRef` (Recommended)
+
+For **health-aware P2C load balancing** across individual Pod replicas, use the `custom` provider type with the `backendRef` field. Agentgateway resolves the Service's `EndpointSlices` directly and applies its P2C load balancing and health scoring across individual Pods, bypassing kube-proxy entirely.
+
+> [!NOTE]
+> The `backendRef` field is only available for the `custom` provider type. Use this approach when you want agentgateway's health-aware load balancing across replicas of a self-hosted LLM backend. Because `backendRef` is namespace-local, the Service must be in the same namespace as the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
+
+1. Create a Service for your LLM backend.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: my-llm-service
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     selector:
+       app: my-llm
+     ports:
+     - port: 8000
+       targetPort: 8000
+       protocol: TCP
+   EOF
+   ```
+
+2. Create an {{< reuse "agw-docs/snippets/backend.md" >}} using the `custom` provider type with `backendRef`.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: my-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         custom:
+           model: my-model
+           backendRef:
+             name: my-llm-service
+             port: 8000
+   EOF
+   ```
+
+Agentgateway will automatically discover all Pod endpoints behind the Service and apply its P2C load balancing algorithm with health-aware scoring across them.
 
 ## Before you begin
 
@@ -122,7 +231,7 @@ spec:
                   name: openai-secret
           - name: openai-gpt35
             openai:
-              model: gpt-3.5-turbo
+              model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
             policies:
               auth:
                 secretRef:
@@ -339,15 +448,14 @@ For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< 
 
 ## Known limitations
 
-{{< callout type="warning" >}}
-**Rate-limit-based eviction only**: Provider eviction and failover currently only trigger on 429 (Too Many Requests) responses with proper rate-limit headers (`Retry-After` or `x-ratelimit-reset`). Eviction does NOT trigger on:
-- 503 Service Unavailable responses
-- Connection refused or timeout errors
-- DNS resolution failures
-- Other error codes (404, 500, etc.)
-
-Providers that return non-429 errors receive degraded health scores (EWMA) and lower priority within their group, but are not evicted or failed over. This means traffic may still be routed to consistently failing providers, though at reduced rates.
-{{< /callout >}}
+> [!WARNING]
+> **Rate-limit-based eviction only**: Provider eviction and failover currently only trigger on 429 (Too Many Requests) responses with proper rate-limit headers (`Retry-After` or `x-ratelimit-reset`). Eviction does NOT trigger on:
+> - 503 Service Unavailable responses
+> - Connection refused or timeout errors
+> - DNS resolution failures
+> - Other error codes (404, 500, etc.)
+>
+> Providers that return non-429 errors receive degraded health scores (EWMA) and lower priority within their group, but are not evicted or failed over. This means traffic may still be routed to consistently failing providers, though at reduced rates.
 
 ## Monitoring load balancing
 
@@ -371,5 +479,5 @@ kubectl delete httproute loadbalanced-route -n {{< reuse "agw-docs/snippets/name
 ## Next steps
 
 - Configure [failover]({{< link-hextra path="/llm/failover/" >}}) with priority groups for high availability
-- Set up [cost tracking]({{< link-hextra path="/llm/cost-tracking/" >}}) to monitor spending across providers
-- Use [budget limits]({{< link-hextra path="/llm/budget-limits/" >}}) to control costs per provider or user
+- Set up [cost tracking]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}) to monitor spending across providers
+- Use [budget limits]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}) to control costs per provider or user

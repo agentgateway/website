@@ -1,4 +1,4 @@
-Add a [FrontendTLSConfig](https://gateway-api.sigs.k8s.io/reference/1.4/spec/#frontendtlsconfig) to a Gateway to create a mutual TLS (mTLS) listener. 
+Add a [FrontendTLSConfig](https://gateway-api.sigs.k8s.io/reference/api-spec/1.4/spec/#frontendtlsconfig) to a Gateway to create a mutual TLS (mTLS) listener. 
 
 ## About FrontendTLS
 
@@ -19,9 +19,8 @@ In this guide, you learn how to apply default certificate validation configurati
 
 Throughout this guide, you use self-signed TLS certificates for the Certificate Authority. These certificates are used to sign the TLS certificates for the gateway proxy (server) and httpbin client. 
 
-{{< callout type="warning" >}}
-Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trusted Certificate Authority. 
-{{< /callout >}}
+> [!WARNING]
+> Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trusted Certificate Authority. 
 
 ## Before you begin
 
@@ -43,7 +42,7 @@ Self-signed certificates are used for demonstration purposes. Do not use self-si
 
 3. Install the experimental channel of the Kubernetes Gateway API. This API is required to use the FrontendTLS configuration on a Gateway.   
    ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
 
 4. Ensure that you installed {{< reuse "agw-docs/snippets/kgateway.md" >}} with the `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true` Helm flag to use experimental Kubernetes Gateway API features. For an example, see the [Get started guide]({{< link-hextra path="/quickstart" >}}).
@@ -54,9 +53,8 @@ Self-signed certificates are used for demonstration purposes. Do not use self-si
 
 Create self-signed TLS certificates that you use for the mutual TLS connection between your client application (`curl`) and the gateway proxy. 
 
-{{< callout type="warning" >}}
-Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trusted Certificate Authority. 
-{{< /callout >}}
+> [!WARNING]
+> Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trusted Certificate Authority. 
 
 
 1. Create the `example_certs` directory and navigate to this directory. 

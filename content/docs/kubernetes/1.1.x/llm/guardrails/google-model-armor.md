@@ -163,8 +163,8 @@ In your GKE cluster, set up workload identity.
 1. Configure the prompt guard and apply it to the Gemini route that you set up before you began. Add the location, project ID and template ID of your guardrail. 
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: google-prompt-guard
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}

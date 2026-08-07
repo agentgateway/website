@@ -49,9 +49,8 @@
 .dark .hp-hero-cards { background: rgba(255,255,255,0.05); border-color: var(--hp-border); }
 .dark .hp-hero-card { border-color: var(--hp-border); }
 .dark .hp-hero-card:hover { background: rgba(160,110,255,0.08); }
-.dark .hp-hero-card-icon { background: rgba(160,110,255,0.15); }
+.dark .hp-hero-card-icon { background: var(--fi-soft, rgba(160,110,255,0.15)); }
 .dark .hp-code-block { background: linear-gradient(180deg, #0D1020, #080B14); }
-.dark .hp-lf { background: #060812; }
 .dark .hp-footer { background: #060812; }
 
 /* Reset some Hextra defaults for the landing page */
@@ -79,7 +78,7 @@
   -webkit-mask-image: radial-gradient(ellipse 100% 90% at 50% 30%, black 30%, transparent 75%);
 }
 .hp-hero-blob {
-  position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5; pointer-events: none;
+  position: absolute; border-radius: 50%; opacity: 0.5; pointer-events: none;
 }
 .hp-hero-blob-1 {
   width: 600px; height: 600px; top: -200px; right: -120px;
@@ -129,13 +128,22 @@
 .hp-eyebrow-dot { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; }
 .hp-eyebrow-dot img { width: 22px; height: 22px; }
 .hp-hero-title {
-  margin: 0 0 28px; line-height: 1;
+  margin: 0 0 8px; line-height: 1;
 }
 .hp-hero-logo { height: clamp(140px, 16vw, 220px); width: auto; }
 .hp-page .hp-hero-logo-light { display: block; }
 .hp-page .hp-hero-logo-dark { display: none; }
 .dark .hp-page .hp-hero-logo-light { display: none; }
 .dark .hp-page .hp-hero-logo-dark { display: block; }
+.hp-page .hp-aaif-badge {
+  display: inline-block; width: 124px; height: 30px;
+  background-color: var(--hp-text-2);
+  -webkit-mask: url(/aaif-light.svg) center / contain no-repeat;
+          mask: url(/aaif-light.svg) center / contain no-repeat;
+  transition: opacity .18s ease;
+}
+.hp-page .hp-aaif-link { display: inline-flex; align-items: center; line-height: 0; }
+.hp-page .hp-aaif-link:hover .hp-aaif-badge { opacity: 0.7; }
 .hp-hero-lede {
   font-family: var(--hp-font-h); font-weight: 600;
   font-size: clamp(26px, 2.6vw, 36px); line-height: 1.18; letter-spacing: -0.02em;
@@ -176,7 +184,7 @@
 .hp-hero-cards {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
   border: 1px solid var(--hp-border); border-radius: 18px;
-  background: rgba(255,255,255,0.6); backdrop-filter: blur(12px); overflow: hidden; max-width: 920px;
+  background: rgba(255,255,255,0.82); overflow: hidden; max-width: 920px;
   margin: 0 auto;
 }
 .hp-hero-card {
@@ -186,10 +194,12 @@
 .hp-hero-card:last-child { border-right: none; }
 .hp-hero-card:hover { background: rgba(138,63,252,0.04); }
 .hp-hero-card-icon {
-  width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
-  background: rgba(138,63,252,0.10); color: var(--hp-accent); border-radius: 10px; margin-bottom: 16px;
+  width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--fi-soft, rgba(138,63,252,0.10)); color: var(--fi, var(--hp-accent));
+  border-radius: 8px; margin-bottom: 14px;
 }
-.hp-hero-card-icon img { width: 20px; height: 20px; object-fit: contain; }
+.hp-hero-card-icon img { width: 16px; height: 16px; object-fit: contain; }
+.hp-hero-card-icon svg { width: 15px; height: 15px; }
 .dark .hp-hero-card-icon img { filter: brightness(0) invert(1); opacity: 0.9; }
 .hp-hero-card h3 {
   font-family: var(--hp-font-h); font-weight: 600; font-size: 22px;
@@ -269,7 +279,7 @@
   transform: translate(-50%, -50%);
   background: radial-gradient(closest-side, rgba(138,63,252,0.25) 0%, transparent 70%),
               radial-gradient(closest-side, rgba(32,183,243,0.08) 0%, transparent 80%);
-  filter: blur(40px); opacity: 0.85;
+  opacity: 0.65;
 }
 .dark .hp-diagram-bg-halo {
   background: radial-gradient(closest-side, rgba(138,63,252,0.55) 0%, transparent 70%),
@@ -282,13 +292,13 @@
 .dark .trace-base { stroke: rgba(255,255,255,0.12); }
 .hp-page .trace-pulse {
   fill: none; stroke: #8A3FFC; stroke-width: 1.5; stroke-linecap: round;
-  stroke-dasharray: 4 320; filter: drop-shadow(0 0 4px rgba(138,63,252,0.40));
+  stroke-dasharray: 4 320;
   animation: hp-pulse-flow var(--pulse-duration, 3.6s) linear infinite;
   animation-delay: var(--pulse-delay, 0s);
 }
 .hp-page .trace-pulse-rev {
   fill: none; stroke: #8A3FFC; stroke-width: 1.5; stroke-linecap: round;
-  stroke-dasharray: 4 320; filter: drop-shadow(0 0 4px rgba(138,63,252,0.40));
+  stroke-dasharray: 4 320;
   animation: hp-pulse-flow-rev var(--pulse-duration, 3.6s) linear infinite;
   animation-delay: var(--pulse-delay, 0s);
 }
@@ -367,7 +377,6 @@
 .hp-logo-scroll {
   display: flex; gap: 5rem; width: max-content;
   animation: hp-scroll-left 40s linear infinite;
-  will-change: transform; backface-visibility: hidden; transform: translateZ(0);
 }
 .hp-logo-scroll:hover { animation-play-state: paused; }
 .hp-logo-item {
@@ -375,7 +384,7 @@
   gap: 0.75rem; min-width: 140px; flex-shrink: 0;
 }
 .hp-logo-item span { color: var(--hp-text-5); font-size: 0.875rem; font-weight: 500; font-family: var(--hp-font-b); }
-.hp-logo-item img { height: 56px; width: auto; max-width: 160px; object-fit: contain; }
+.hp-logo-item img { height: 38px; width: auto; max-width: 120px; object-fit: contain; }
 .hp-logo-img { filter: brightness(0); }
 .dark .hp-logo-img { filter: brightness(0) invert(1); }
 @keyframes hp-scroll-left {
@@ -408,50 +417,190 @@
 }
 
 /* ===== FEATURES ===== */
-.hp-features { display: flex; flex-direction: column; gap: 8px; margin-top: 48px; }
+/* Capability groups presented as a tab strip with a panel of equal columns beneath.
+   Colour still comes from the --fi pair set per data-feat below. */
+.hp-caps-tabs {
+  display: flex; justify-content: space-between; gap: 24px;
+  margin-top: 44px; border-bottom: 1px solid var(--hp-border);
+  overflow-x: auto; scrollbar-width: none;
+}
+.hp-caps-tabs::-webkit-scrollbar { display: none; }
+.hp-caps-tab {
+  position: relative; appearance: none; background: none; border: none;
+  padding: 0 2px 12px; cursor: pointer; white-space: nowrap;
+  font-family: var(--hp-font-h); font-size: 13px; font-weight: 800;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--hp-text-4); transition: color 180ms;
+}
+.hp-caps-tab:hover { color: var(--hp-text-3); }
+.hp-caps-tab.active { color: var(--hp-accent); }
+.hp-caps-tab.active::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px;
+  background: var(--hp-accent);
+}
+.hp-caps-panel { display: none; }
+/* Two columns: the group's headline and lede on the left, its cards on the right.
+   Three grid children are placed explicitly, so no extra wrapper markup is needed. */
+.hp-caps-panel.active {
+  display: grid; grid-template-columns: minmax(190px, 250px) 1fr;
+  grid-template-rows: auto 1fr; column-gap: 40px; align-items: start;
+  padding-top: 32px;
+}
+.hp-caps-title {
+  grid-column: 1; grid-row: 1; margin: -6px 0 0;
+  font-family: var(--hp-font-h); font-weight: 800; font-size: 26px;
+  letter-spacing: 0.02em; text-transform: uppercase; color: var(--hp-text-1);
+}
+.hp-caps-lede {
+  grid-column: 1; grid-row: 2; margin: 10px 0 0;
+  font-family: var(--hp-font-b); font-size: 13.5px; line-height: 1.6;
+  color: var(--hp-text-4);
+}
+.hp-features {
+  grid-column: 2; grid-row: 1 / span 2;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px; align-items: start;
+}
 .hp-feat {
-  background: var(--hp-bg-0); border: 1px solid var(--hp-border); border-radius: 14px;
-  overflow: hidden; transition: border-color 200ms, box-shadow 200ms;
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
+  background: var(--hp-bg-0); border: 1px solid var(--hp-border);
+  border-radius: 10px; padding: 14px 15px 13px;
+  transition: border-color 220ms, box-shadow 220ms, transform 220ms;
 }
-.hp-feat:hover { border-color: var(--hp-border-2); box-shadow: 0 4px 16px rgba(15,19,35,0.06); }
-.hp-feat.open { border-color: var(--hp-accent); }
+/* A flat wash of the group's hue. This was a corner-anchored radial gradient, which
+   made every card fade from tinted to white and read as patchy in a row — a uniform
+   tint keeps the cards identical to each other. */
+.hp-feat::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: var(--fi-soft); opacity: 0.6; transition: opacity 220ms;
+}
+.hp-feat > * { position: relative; }
+.hp-feat:hover {
+  border-color: var(--fi, var(--hp-accent)); transform: translateY(-3px);
+  box-shadow: 0 16px 36px -16px rgba(15,19,35,0.24);
+}
+.dark .hp-feat:hover { box-shadow: 0 16px 36px -16px rgba(0,0,0,0.6); }
+.hp-feat:hover::before { opacity: 1; }
+/* Set briefly when a hero tile deep-links to a card. */
+.hp-feat.open { border-color: var(--fi, var(--hp-accent)); box-shadow: 0 0 0 3px var(--fi-soft); }
+/* Whole-card click target: a bare overlay anchor that is a *sibling* of the links
+   row, never an ancestor of it. Nesting the overlay inside the links row put it in
+   that row's stacking context, where it covered the Kubernetes link. At z-index 1 it
+   sits above the card text but below the links row (z-index 2), so the card surface
+   opens the standalone docs while both links keep working. */
+.hp-feat { cursor: pointer; }
+.hp-feat-cover {
+  position: absolute; inset: 0; z-index: 1; border-radius: 10px;
+}
+.hp-feat-links { position: relative; z-index: 2; }
+.hp-feat:hover .hp-feat-link-primary { text-decoration: underline; }
+.hp-feat:focus-within { border-color: var(--fi, var(--hp-accent)); }
+.hp-feat-cover:focus-visible { outline: 2px solid var(--fi, var(--hp-accent)); outline-offset: 2px; }
 .hp-feat-head {
-  display: flex; align-items: center; gap: 16px; padding: 20px 24px; cursor: pointer;
-  transition: background 200ms; width: 100%; border: none; background: transparent; text-align: left;
+  display: block; padding: 0; border: none; background: transparent;
+  text-align: left; cursor: default;
 }
-.hp-feat-head:hover { background: rgba(138,63,252,0.02); }
-.hp-feat-icon {
-  width: 36px; height: 36px; border-radius: 10px; background: var(--hp-accent-soft);
-  display: flex; align-items: center; justify-content: center; color: var(--hp-accent); flex-shrink: 0;
-}
-.hp-feat-icon img { width: 18px; height: 18px; object-fit: contain; }
-.dark .hp-feat-icon img { filter: brightness(0) invert(1); }
-.dark .hp-feat-icon img.color-icon { filter: none; }
-.hp-feat-title { font-family: var(--hp-font-h); font-weight: 600; font-size: 16px; color: var(--hp-text-2); }
-.hp-feat-sub { font-family: var(--hp-font-b); font-size: 14px; color: var(--hp-text-4); margin-top: 2px; }
-.hp-feat-toggle {
-  margin-left: auto; width: 28px; height: 28px; border-radius: 8px;
-  background: var(--hp-bg-1); display: flex; align-items: center; justify-content: center;
-  color: var(--hp-text-5); transition: transform 300ms; flex-shrink: 0;
-}
-.hp-feat.open .hp-feat-toggle { transform: rotate(45deg); color: var(--hp-accent); }
-.hp-feat-body {
-  display: none; padding: 0 24px 24px 76px;
-}
-.hp-feat.open .hp-feat-body { display: block; }
-.hp-feat-body p { font-size: 14px; line-height: 1.6; color: var(--hp-text-4); margin: 0 0 16px; }
-.hp-feat-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+/* One hue per capability group, taken from the admin UI palette, so colour signals
+   which tab you are in. --fi drives each card's hover border, --fi-soft its flat
+   wash. Light values are darkened from the UI's dark-theme originals for contrast. */
+/* route */
+.hp-page [data-feat="svc"],
+.hp-page [data-feat="llm"],
+.hp-page [data-feat="inf"],
+.hp-page [data-feat="mcp"],
+.hp-page [data-feat="a2a"],
+.hp-page [data-feat="playroute"] { --fi: #2F6BE0; --fi-soft: rgba(68,125,252,0.10); }
+/* secure */
+.hp-page [data-feat="sec"],
+.hp-page [data-feat="jwt"],
+.hp-page [data-feat="apikey"],
+.hp-page [data-feat="extauthz"],
+.hp-page [data-feat="rbac"],
+.hp-page [data-feat="mcpauth"],
+.hp-page [data-feat="tls"],
+.hp-page [data-feat="web"],
+.hp-page [data-feat="ratelimit"] { --fi: #D13A38; --fi-soft: rgba(230,67,65,0.10); }
+/* observe */
+.hp-page [data-feat="obs"],
+.hp-page [data-feat="agctl"],
+.hp-page [data-feat="playground"] { --fi: #2F9A44; --fi-soft: rgba(79,198,95,0.10); }
+/* govern */
+.hp-page [data-feat="toolaccess"],
+.hp-page [data-feat="guardrails"],
+.hp-page [data-feat="promptguards"],
+.hp-page [data-feat="polattach"] { --fi: #7734BE; --fi-soft: rgba(138,63,252,0.10); }
+/* cost */
+.hp-page [data-feat="cost"],
+.hp-page [data-feat="budget"],
+.hp-page [data-feat="vkeys"],
+.hp-page [data-feat="dash"],
+.hp-page [data-feat="catalog"],
+.hp-page [data-feat="tracking"] { --fi: #D9640A; --fi-soft: rgba(241,115,19,0.10); }
+.dark .hp-page [data-feat="svc"],
+.dark .hp-page [data-feat="llm"],
+.dark .hp-page [data-feat="inf"],
+.dark .hp-page [data-feat="mcp"],
+.dark .hp-page [data-feat="a2a"],
+.dark .hp-page [data-feat="playroute"] { --fi: #7BA4FF; --fi-soft: rgba(68,125,252,0.16); }
+.dark .hp-page [data-feat="sec"],
+.dark .hp-page [data-feat="jwt"],
+.dark .hp-page [data-feat="apikey"],
+.dark .hp-page [data-feat="extauthz"],
+.dark .hp-page [data-feat="rbac"],
+.dark .hp-page [data-feat="mcpauth"],
+.dark .hp-page [data-feat="tls"],
+.dark .hp-page [data-feat="web"],
+.dark .hp-page [data-feat="ratelimit"] { --fi: #FF7B79; --fi-soft: rgba(230,67,65,0.16); }
+.dark .hp-page [data-feat="obs"],
+.dark .hp-page [data-feat="agctl"],
+.dark .hp-page [data-feat="playground"] { --fi: #7ADB86; --fi-soft: rgba(79,198,95,0.16); }
+.dark .hp-page [data-feat="toolaccess"],
+.dark .hp-page [data-feat="guardrails"],
+.dark .hp-page [data-feat="promptguards"],
+.dark .hp-page [data-feat="polattach"] { --fi: #A06EFF; --fi-soft: rgba(138,63,252,0.16); }
+.dark .hp-page [data-feat="cost"],
+.dark .hp-page [data-feat="budget"],
+.dark .hp-page [data-feat="vkeys"],
+.dark .hp-page [data-feat="dash"],
+.dark .hp-page [data-feat="catalog"],
+.dark .hp-page [data-feat="tracking"] { --fi: #FF9E4D; --fi-soft: rgba(241,115,19,0.16); }
+
+.hp-feat-title { font-family: var(--hp-font-h); font-weight: 600; font-size: 15px; color: var(--hp-text-2); letter-spacing: -0.01em; }
+.hp-feat-body { display: block; padding: 0; margin-top: 6px; }
+.hp-feat-body p { font-size: 12.5px; line-height: 1.5; color: var(--hp-text-4); margin: 0; }
+.hp-feat-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 9px; }
 .hp-feat-tag {
-  padding: 4px 10px; border-radius: 6px; font-family: var(--hp-font-m);
-  font-size: 11px; background: rgba(15,19,35,0.04); color: var(--hp-text-4);
+  padding: 2px 7px; border-radius: 5px; font-family: var(--hp-font-m);
+  font-size: 10px; background: rgba(15,19,35,0.04); color: var(--hp-text-4);
 }
-.hp-feat-links { display: flex; gap: 20px; margin-top: 12px; }
-.hp-feat-link { color: var(--hp-accent); font-size: 14px; font-weight: 500; text-decoration: none; }
+.hp-feat-links { display: flex; gap: 14px; margin-top: 10px; }
+.hp-feat-link { color: var(--hp-accent); font-size: 12px; font-weight: 500; text-decoration: none; }
 .hp-feat-link:hover { text-decoration: underline; }
+
+/* Narrow viewports: tabs scroll horizontally, columns collapse. */
+@media (max-width: 1200px) {
+  .hp-features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .hp-caps-panel.active {
+    grid-template-columns: 1fr; grid-template-rows: auto auto auto; row-gap: 0;
+  }
+  .hp-caps-title, .hp-caps-lede { grid-column: 1; }
+  .hp-caps-title { grid-row: 1; margin-top: 0; }
+  .hp-caps-lede { grid-row: 2; }
+  .hp-features { grid-column: 1; grid-row: 3; margin-top: 26px; }
+}
+@media (max-width: 760px) {
+  .hp-caps-tabs { justify-content: flex-start; gap: 22px; }
+  .hp-caps-tab { font-size: 12px; letter-spacing: 0.10em; }
+  .hp-caps-title { font-size: 26px; }
+  .hp-features { grid-template-columns: 1fr; }
+}
 
 /* ===== GETTING STARTED ===== */
 .hp-gs-wrap {
-  display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; margin-top: 32px;
+  display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; margin-top: 32px; align-items: start;
 }
 @media (max-width: 860px) { .hp-gs-wrap { grid-template-columns: 1fr; } }
 .hp-code-block {
@@ -490,10 +639,11 @@
 }
 .hp-gs-item:hover { border-color: var(--hp-border-2); box-shadow: 0 4px 16px rgba(15,19,35,0.06); }
 .hp-gs-ico {
-  width: 32px; height: 32px; border-radius: 8px; background: var(--hp-accent-soft);
+  width: 26px; height: 26px; border-radius: 7px; background: var(--hp-accent-soft);
   display: flex; align-items: center; justify-content: center; color: var(--hp-accent); flex-shrink: 0;
 }
-.hp-gs-ico img { width: 16px; height: 16px; object-fit: contain; }
+.hp-gs-ico img { width: 14px; height: 14px; object-fit: contain; }
+.hp-gs-ico svg { width: 13px; height: 13px; }
 .dark .hp-gs-ico img { filter: brightness(0) invert(1); }
 .dark .hp-gs-ico img.color-icon { filter: none; }
 .hp-gs-item h4 { font-family: var(--hp-font-h); font-weight: 600; font-size: 15px; color: var(--hp-text-2); margin: 0 0 4px; }
@@ -523,7 +673,6 @@
 }
 .hp-integ-scroll {
   display: flex; gap: 14px; width: max-content;
-  will-change: transform; backface-visibility: hidden; transform: translateZ(0);
 }
 .hp-integ-slow { animation: hpMarqueeScroll 65s linear infinite; }
 .hp-integ-medium { animation: hpMarqueeScroll 55s linear infinite; }
@@ -534,6 +683,26 @@
   to { transform: translate3d(-50%, 0, 0); }
 }
 .hp-integ-scroll:hover { animation-play-state: paused; }
+.hp-anim-paused,
+.hp-anim-paused * {
+  animation-play-state: paused !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hp-page *,
+  .hp-page *::before,
+  .hp-page *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+  .hp-logo-scroll,
+  .hp-integ-scroll,
+  .trace-pulse,
+  .trace-pulse-rev {
+    animation: none !important;
+  }
+}
 @media (max-width: 980px) {
   .hp-integ-row { flex-direction: column; align-items: flex-start; gap: 8px; }
   .hp-integ-label { width: auto; text-align: left; }
@@ -545,11 +714,11 @@
   white-space: nowrap; flex-shrink: 0;
 }
 .hp-integ-pill-icon {
-  width: 28px; height: 28px; border-radius: 8px;
+  width: 22px; height: 22px; border-radius: 6px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; overflow: hidden;
 }
-.hp-integ-pill-icon img { width: 22px; height: 22px; object-fit: contain; }
+.hp-integ-pill-icon img { width: 17px; height: 17px; object-fit: contain; }
 .dark .hp-integ-pill-icon img { filter: brightness(0) invert(1); }
 .dark .hp-integ-pill-icon img.color-icon { filter: none; }
 .hp-integ-pill-icon svg { width: 18px; height: 18px; }
@@ -559,26 +728,6 @@
 .hp-integ-pill-meta {
   font-family: var(--hp-font-m); font-size: 11px; color: var(--hp-text-5); letter-spacing: 0.04em;
 }
-
-/* ===== LF QUOTE ===== */
-.hp-lf {
-  background: #0B0E18; padding: 80px 0; color: #C8CCDB;
-}
-.hp-lf-grid { display: grid; grid-template-columns: auto 1fr; gap: 48px; align-items: center; }
-@media (max-width: 720px) { .hp-lf-grid { grid-template-columns: 1fr; text-align: center; } }
-.hp-lf-mark {
-  font-family: var(--hp-font-h); font-weight: 700; font-size: 24px;
-  color: #fff; line-height: 1.15; letter-spacing: -0.01em;
-}
-.hp-lf-mark-small {
-  display: block; font-family: var(--hp-font-m); font-size: 11px; font-weight: 400;
-  color: #5A6078; margin-top: 8px; letter-spacing: 0.06em;
-}
-.hp-lf-quote {
-  font-family: var(--hp-font-b); font-size: 18px; line-height: 1.65;
-  color: #C8CCDB; font-style: italic; margin: 0 0 16px;
-}
-.hp-lf-byline { font-family: var(--hp-font-m); font-size: 13px; color: #5A6078; }
 
 /* ===== FOOTER ===== */
 .hp-footer {
@@ -606,12 +755,6 @@
   transition: color 200ms; text-decoration: none;
 }
 .hp-footer-col a:hover { color: #C8CCDB; }
-.hp-footer-bottom {
-  display: flex; justify-content: space-between; align-items: center;
-  border-top: 1px solid rgba(255,255,255,0.08); margin-top: 48px; padding-top: 24px;
-  font-family: var(--hp-font-m); font-size: 12px; color: #5A6078;
-}
-@media (max-width: 540px) { .hp-footer-bottom { flex-direction: column; gap: 8px; text-align: center; } }
 </style>
 
 <div class="hp-page">
@@ -639,14 +782,13 @@
       An open source HTTP and gRPC gateway that handles traditional application traffic and AI-native protocols in one data plane. Route, secure, observe, and govern services, LLM provider traffic, MCP tools, and agent-to-agent communication without stitching together separate gateways.
     </p>
 
-    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 32px;">
-      <span style="font-family: var(--hp-font-m); font-size: 12px; letter-spacing: 0.06em; color: var(--hp-text-5);">Part of</span>
-      <img src="/lf-logo.svg" alt="The Linux Foundation" style="height: 28px; width: auto; opacity: 0.55;">
-    </div>
-
-    <div class="hp-hero-ctas" style="justify-content: center;">
+    <div class="hp-hero-ctas" style="justify-content: center; margin-top: 8px;">
       <a href="#getting-started" class="hp-btn hp-btn-primary">
         Get Started <span style="display:inline-block;transition:transform .18s ease">→</span>
+      </a>
+      <a href="https://www.youtube.com/@soloio_inc/search?query=agentgateway" class="hp-btn hp-btn-ghost" target="_blank" rel="noopener">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="#FF0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"/><path fill="#fff" d="M9.546 15.568V8.432L15.818 12l-6.272 3.568z"/></svg>
+        See it in action
       </a>
       <a href="https://github.com/agentgateway/agentgateway" class="hp-btn hp-btn-ghost">
         <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
@@ -659,21 +801,21 @@
     </div>
 
     <div class="hp-hero-tiles" style="flex-direction: row; margin-top: 48px;">
-      <div class="hp-hero-tile" onclick="hpScrollToFeat('llm')">
+      <div class="hp-hero-tile" data-feat="llm" onclick="hpScrollToFeat('llm')">
         <div class="hp-hero-card-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/><path d="M5 3v4M3 5h4M19 17v4M17 19h4"/></svg>
         </div>
         <h3>LLM Gateway</h3>
         <p>Route to OpenAI, Claude, Gemini, or any self-hosted model with credentialing and failover.</p>
       </div>
-      <div class="hp-hero-tile" onclick="hpScrollToFeat('mcp')">
+      <div class="hp-hero-tile" data-feat="mcp" onclick="hpScrollToFeat('mcp')">
         <div class="hp-hero-card-icon">
           <img src="/integrations/mcp.svg" alt="MCP" class="color-icon">
         </div>
         <h3>MCP / A2A</h3>
         <p>Native protocol support for Model Context Protocol and agent-to-agent traffic.</p>
       </div>
-      <div class="hp-hero-tile" onclick="hpScrollToFeat('svc')">
+      <div class="hp-hero-tile" data-feat="svc" onclick="hpScrollToFeat('svc')">
         <div class="hp-hero-card-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/><path d="M2 12h20"/></svg>
         </div>
@@ -842,7 +984,7 @@
         <!-- Bottom labels -->
         <g>
           <text x="184" y="640" class="col-eyebrow" text-anchor="middle">REQUEST · INBOUND</text>
-          <text x="640" y="640" class="col-eyebrow col-eyebrow-strong" text-anchor="middle">ROUTE · SECURE · OBSERVE · GOVERN</text>
+          <text x="640" y="640" class="col-eyebrow col-eyebrow-strong" text-anchor="middle">ROUTE · SECURE · OBSERVE · GOVERN · COST</text>
           <text x="1096" y="640" class="col-eyebrow" text-anchor="middle">RESPONSE · OUTBOUND</text>
           <g class="trace-base" stroke-linecap="round">
             <line x1="64" y1="660" x2="304" y2="660"/>
@@ -864,29 +1006,15 @@
 <div class="hp-contributing">
   <div class="hp-contributing-label">Contributing Companies</div>
   <div class="hp-logo-track">
+    {{/* Contributing companies come from data/contributors.yaml. The list is
+         emitted twice: the second pass is an aria-hidden duplicate that lets
+         the marquee scroll seamlessly. Add companies to the data file, not here. */ -}}
     <div class="hp-logo-scroll">
-      <div class="hp-logo-item"><img src="/lf-logo.svg" alt="The Linux Foundation" class="hp-logo-img"><span>Linux Foundation</span></div>
-      <div class="hp-logo-item"><img src="/adopters/solo-io-light.png" alt="Solo.io" class="hp-logo-img"><span>Solo.io</span></div>
-      <div class="hp-logo-item"><img src="/quotes/microsoft.svg" alt="Microsoft" class="hp-logo-img"><span>Microsoft</span></div>
-      <div class="hp-logo-item"><img src="/logos/apple.svg" alt="Apple" class="hp-logo-img"><span>Apple</span></div>
-      <div class="hp-logo-item"><img src="/logos/alibaba.svg" alt="Alibaba" class="hp-logo-img"><span>Alibaba</span></div>
-      <div class="hp-logo-item"><img src="/logos/adobe.svg" alt="Adobe" class="hp-logo-img"><span>Adobe</span></div>
-      <div class="hp-logo-item"><img src="/logos/aws.svg" alt="AWS" class="hp-logo-img"><span>AWS</span></div>
-      <div class="hp-logo-item"><img src="/logos/cisco.svg" alt="Cisco" class="hp-logo-img"><span>Cisco</span></div>
-      <div class="hp-logo-item"><img src="/logos/salesforce.svg" alt="Salesforce" class="hp-logo-img"><span>Salesforce</span></div>
-      <div class="hp-logo-item"><img src="/logos/huawei.svg" alt="Huawei" class="hp-logo-img"><span>Huawei</span></div>
-      <div class="hp-logo-item"><img src="/logos/amdocs.svg" alt="Amdocs" class="hp-logo-img"><span>Amdocs</span></div>
-      <div class="hp-logo-item" aria-hidden="true"><img src="/lf-logo.svg" alt="The Linux Foundation" class="hp-logo-img"><span>Linux Foundation</span></div>
-      <div class="hp-logo-item" aria-hidden="true"><img src="/adopters/solo-io-light.png" alt="Solo.io" class="hp-logo-img"><span>Solo.io</span></div>
-      <div class="hp-logo-item" aria-hidden="true"><img src="/quotes/microsoft.svg" alt="Microsoft" class="hp-logo-img"><span>Microsoft</span></div>
-      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/apple.svg" alt="Apple" class="hp-logo-img"><span>Apple</span></div>
-      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/alibaba.svg" alt="Alibaba" class="hp-logo-img"><span>Alibaba</span></div>
-      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/adobe.svg" alt="Adobe" class="hp-logo-img"><span>Adobe</span></div>
-      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/aws.svg" alt="AWS" class="hp-logo-img"><span>AWS</span></div>
-      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/cisco.svg" alt="Cisco" class="hp-logo-img"><span>Cisco</span></div>
-      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/salesforce.svg" alt="Salesforce" class="hp-logo-img"><span>Salesforce</span></div>
-      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/huawei.svg" alt="Huawei" class="hp-logo-img"><span>Huawei</span></div>
-      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/amdocs.svg" alt="Amdocs" class="hp-logo-img"><span>Amdocs</span></div>
+{{- range $pass := seq 2 }}
+{{- range $c := site.Data.contributors }}
+      <div class="hp-logo-item"{{ if gt $pass 1 }} aria-hidden="true"{{ end }}><img src="{{ $c.logo }}" alt="{{ $c.name }}" class="hp-logo-img"><span>{{ $c.name }}</span></div>
+{{- end }}
+{{- end }}
     </div>
   </div>
 </div>
@@ -897,107 +1025,413 @@
     <div style="text-align: center;">
       <h2 class="hp-section-title" style="margin-left: auto; margin-right: auto; max-width: 760px;">Everything you need for agent traffic — in one binary.</h2>
       <p class="hp-section-sub" style="margin: 18px auto 0; max-width: 640px; text-align: center;">
-        One control plane for service traffic, LLM routing, MCP, A2A, and inference — with policy and observability that the platform team actually trusts.
+        One control plane for service traffic, LLM routing, MCP, A2A, and inference — with the policy, observability, and cost controls that a platform team actually trusts.
       </p>
     </div>
 
-    <div class="hp-features">
-      <div class="hp-feat" data-feat="svc">
-        <div class="hp-feat-head" onclick="hpToggleFeat(this)">
-          <div class="hp-feat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/><path d="M2 12h20"/></svg></div>
-          <div>
-            <div class="hp-feat-title">Service Gateway</div>
-            <div class="hp-feat-sub">HTTP, gRPC, TCP — observable by default.</div>
-          </div>
-          <div class="hp-feat-toggle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+      <div class="hp-caps">
+        <div class="hp-caps-tabs" role="tablist" aria-label="Capability groups">
+          <button type="button" class="hp-caps-tab active" role="tab" id="hp-tab-route" aria-controls="hp-panel-route" aria-selected="true" onclick="hpSelectGroup('route')">ROUTE</button>
+          <button type="button" class="hp-caps-tab" role="tab" id="hp-tab-secure" aria-controls="hp-panel-secure" aria-selected="false" onclick="hpSelectGroup('secure')">SECURE</button>
+          <button type="button" class="hp-caps-tab" role="tab" id="hp-tab-observe" aria-controls="hp-panel-observe" aria-selected="false" onclick="hpSelectGroup('observe')">OBSERVE</button>
+          <button type="button" class="hp-caps-tab" role="tab" id="hp-tab-govern" aria-controls="hp-panel-govern" aria-selected="false" onclick="hpSelectGroup('govern')">GOVERN</button>
+          <button type="button" class="hp-caps-tab" role="tab" id="hp-tab-cost" aria-controls="hp-panel-cost" aria-selected="false" onclick="hpSelectGroup('cost')">COST</button>
         </div>
-        <div class="hp-feat-body">
-          <p>Run any north–south or east–west traffic through a single binary. Zero-config TLS, OIDC, mTLS-rotation, native Envoy compatibility for those who want it.</p>
-          <div class="hp-feat-tags"><span class="hp-feat-tag">HTTP/2</span><span class="hp-feat-tag">gRPC</span><span class="hp-feat-tag">mTLS</span><span class="hp-feat-tag">TLS-1.3</span></div>
-          <div class="hp-feat-links"><a href="/docs/standalone/latest/" class="hp-feat-link">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+        <div class="hp-caps-panel active" id="hp-panel-route" data-group="route" role="tabpanel" aria-labelledby="hp-tab-route">
+          <h3 class="hp-caps-title">ROUTE</h3>
+          <p class="hp-caps-lede">One data plane for HTTP, gRPC, and TCP services, every major LLM provider, self-hosted inference, and the MCP and A2A protocols your agents speak.</p>
+          <div class="hp-features">
+          <div class="hp-feat" data-feat="svc">
+            <a class="hp-feat-cover" href="/docs/standalone/latest/" aria-hidden="true" tabindex="-1"></a>
+          <div class="hp-feat-head">
+            <div>
+              <div class="hp-feat-title">Service Gateway</div>
+            </div>
+          </div>
+          <div class="hp-feat-body">
+            <p>Run any north–south or east–west traffic through a single binary. Zero-config TLS, OIDC, mTLS-rotation, native Envoy compatibility for those who want it.</p>
+            <div class="hp-feat-tags"><span class="hp-feat-tag">HTTP/2</span><span class="hp-feat-tag">gRPC</span><span class="hp-feat-tag">mTLS</span><span class="hp-feat-tag">TLS-1.3</span></div>
+            <div class="hp-feat-links"><a href="/docs/standalone/latest/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+          </div>
+        </div>
+          <div class="hp-feat" data-feat="llm">
+            <a class="hp-feat-cover" href="/docs/standalone/latest/llm/" aria-label="LLM Gateway — standalone documentation"></a>
+          <div class="hp-feat-head">
+            <div>
+              <div class="hp-feat-title">LLM Gateway</div>
+            </div>
+          </div>
+          <div class="hp-feat-body">
+            <p>Drop-in OpenAI-compatible API in front of OpenAI, Anthropic, Bedrock, Gemini, Vertex, and OSS Llama runs — with token budgets, semantic caching, and prompt redaction.</p>
+            <div class="hp-feat-tags"><span class="hp-feat-tag">OpenAI</span><span class="hp-feat-tag">Anthropic</span><span class="hp-feat-tag">Bedrock</span><span class="hp-feat-tag">Gemini</span><span class="hp-feat-tag">Vertex</span></div>
+            <div class="hp-feat-links"><a href="/docs/standalone/latest/llm/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/llm/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+          </div>
+        </div>
+          <div class="hp-feat" data-feat="inf">
+            <a class="hp-feat-cover" href="/docs/standalone/latest/inference/" aria-label="Inference Routing — standalone documentation"></a>
+          <div class="hp-feat-head">
+            <div>
+              <div class="hp-feat-title">Inference Routing</div>
+            </div>
+          </div>
+          <div class="hp-feat-body">
+            <p>Latency-aware, cost-aware, model-aware routing for self-hosted inference. Plug-in vLLM, TGI, Triton; agentgateway picks the warmest replica.</p>
+            <div class="hp-feat-tags"><span class="hp-feat-tag">vLLM</span><span class="hp-feat-tag">TGI</span><span class="hp-feat-tag">Triton</span></div>
+            <div class="hp-feat-links"><a href="/docs/standalone/latest/inference/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/inference/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+          </div>
+        </div>
+            <div class="hp-feat" data-feat="mcp">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/mcp/" aria-label="MCP Gateway — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">MCP Gateway</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Treat MCP servers like microservices: discover them, sign and scope every tool call, and keep an audit trail of what agents invoked.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Discovery</span><span class="hp-feat-tag">Versioning</span><span class="hp-feat-tag">Audit</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/mcp/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/mcp/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="a2a">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/agent/a2a/" aria-label="A2A Gateway — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">A2A Gateway</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Route agent-to-agent invocations between LangChain, CrewAI, ADK, and your own runtime, with identity and tracing on every hop.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">LangChain</span><span class="hp-feat-tag">CrewAI</span><span class="hp-feat-tag">ADK</span><span class="hp-feat-tag">Identity</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/agent/a2a/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/agent/a2a/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="playroute">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/llm/playground/" aria-label="LLM Playground — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">LLM Playground</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Try a route before you ship it: pick a model, send a prompt from the admin UI, and see which backend actually served the request.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Admin UI</span><span class="hp-feat-tag">Pick a model</span><span class="hp-feat-tag">Compare</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/llm/playground/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hp-caps-panel" id="hp-panel-secure" data-group="secure" role="tabpanel" aria-labelledby="hp-tab-secure" hidden>
+          <h3 class="hp-caps-title">SECURE</h3>
+          <p class="hp-caps-lede">Authenticate, authorize, and redact on every hop — not just at the edge.</p>
+          <div class="hp-features">
+            <div class="hp-feat" data-feat="sec">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/configuration/security/" aria-label="Security &amp; Policy — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">Security &amp; Policy</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>The policy layer itself: what attaches where, how rules merge, and how a decision is reached on every hop — with tamper-evident audit logs.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Policies</span><span class="hp-feat-tag">Attachment</span><span class="hp-feat-tag">Audit</span><span class="hp-feat-tag">PII-shield</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/configuration/security/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/security/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="jwt">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/configuration/security/jwt-authn/" aria-label="JWT &amp; OIDC — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">JWT &amp; OIDC</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Validate JWTs at the edge and pull claims into routing and authorization decisions, or hand off a full OIDC login flow for browser traffic.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">JWT</span><span class="hp-feat-tag">OIDC</span><span class="hp-feat-tag">Claims</span><span class="hp-feat-tag">JWKS</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/configuration/security/jwt-authn/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/security/jwt/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="apikey">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/configuration/security/apikey-authn/" aria-label="API Keys &amp; Basic Auth — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">API Keys &amp; Basic Auth</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Issue and rotate API keys per consumer, or fall back to basic auth for internal tooling that cannot speak OIDC.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">API keys</span><span class="hp-feat-tag">Basic auth</span><span class="hp-feat-tag">Rotation</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/configuration/security/apikey-authn/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/security/apikey/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="extauthz">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/configuration/security/external-authz/" aria-label="External Authorization — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">External Authorization</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Delegate the allow/deny call to your own service over gRPC or HTTP, so existing entitlement logic stays where it already lives.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">ext_authz</span><span class="hp-feat-tag">gRPC</span><span class="hp-feat-tag">HTTP</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/configuration/security/external-authz/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/security/extauth/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="rbac">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/configuration/security/http-authz/" aria-label="Request Authorization — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">Request Authorization</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Express allow/deny rules over method, path, headers, and JWT claims — evaluated per hop, on both HTTP and network listeners.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">RBAC</span><span class="hp-feat-tag">CEL</span><span class="hp-feat-tag">Network authz</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/configuration/security/http-authz/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/security/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="mcpauth">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/configuration/security/mcp-authn/" aria-label="MCP Auth — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">MCP Auth</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Authenticate callers into MCP servers and scope which tools each identity may invoke, so an agent cannot reach past its mandate.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">MCP authn</span><span class="hp-feat-tag">MCP authz</span><span class="hp-feat-tag">Tool scoping</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/configuration/security/mcp-authn/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/mcp/auth/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="tls">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/configuration/security/backend-tls/" aria-label="TLS &amp; mTLS — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">TLS &amp; mTLS</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Terminate TLS at the listener and originate verified TLS or mTLS to every backend, with certificate rotation handled for you.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">TLS 1.3</span><span class="hp-feat-tag">mTLS</span><span class="hp-feat-tag">Backend TLS</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/configuration/security/backend-tls/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/security/backendtls/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="web">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/configuration/security/cors/" aria-label="CORS &amp; CSRF — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">CORS &amp; CSRF</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Browser-facing protections for gateways that serve web apps directly: origin allow-lists and CSRF token enforcement.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">CORS</span><span class="hp-feat-tag">CSRF</span><span class="hp-feat-tag">Origins</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/configuration/security/cors/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/security/cors/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="ratelimit">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/configuration/resiliency/rate-limits/" aria-label="Rate Limiting — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">Rate Limiting</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Local and global rate limits keyed on any request attribute, to blunt abuse and protect backends from a runaway agent loop.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Local</span><span class="hp-feat-tag">Global</span><span class="hp-feat-tag">Per-key</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/configuration/resiliency/rate-limits/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/security/rate-limit-http/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hp-caps-panel" id="hp-panel-observe" data-group="observe" role="tabpanel" aria-labelledby="hp-tab-observe" hidden>
+          <h3 class="hp-caps-title">OBSERVE</h3>
+          <p class="hp-caps-lede">Know exactly what happened on every request, and debug it without a restart.</p>
+          <div class="hp-features">
+          <div class="hp-feat" data-feat="obs">
+            <a class="hp-feat-cover" href="/docs/standalone/latest/llm/observability/" aria-label="Observability — standalone documentation"></a>
+          <div class="hp-feat-head">
+            <div>
+              <div class="hp-feat-title">Observability</div>
+            </div>
+          </div>
+          <div class="hp-feat-body">
+            <p>OpenTelemetry by default. Token-usage histograms on Prometheus, traces in Jaeger, and request logs with status, latency, and token counts — each carrying the realized USD cost.</p>
+            <div class="hp-feat-tags"><span class="hp-feat-tag">OTEL</span><span class="hp-feat-tag">Prometheus</span><span class="hp-feat-tag">Jaeger</span><span class="hp-feat-tag">Token metrics</span></div>
+            <div class="hp-feat-links"><a href="/docs/standalone/latest/llm/observability/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/llm/observability/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+          </div>
+        </div>
+          <div class="hp-feat" data-feat="agctl">
+            <a class="hp-feat-cover" href="/docs/standalone/latest/operations/agctl/" aria-label="agctl CLI — standalone documentation"></a>
+          <div class="hp-feat-head">
+            <div>
+              <div class="hp-feat-title">agctl CLI</div>
+            </div>
+          </div>
+          <div class="hp-feat-body">
+            <p>See what a proxy actually loaded, without a restart. <code>proxy trace</code> taps live requests into an interactive terminal view, <code>proxy config</code> dumps runtime state, and log levels change on the fly.</p>
+            <div class="hp-feat-tags"><span class="hp-feat-tag">proxy trace</span><span class="hp-feat-tag">proxy config</span><span class="hp-feat-tag">log levels</span><span class="hp-feat-tag">shell completion</span></div>
+            <div class="hp-feat-links"><a href="/docs/standalone/latest/operations/agctl/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/operations/agctl/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+          </div>
+        </div>
+            <div class="hp-feat" data-feat="playground">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/llm/playground/" aria-label="LLM Playground — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">LLM Playground</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Fire test prompts at a provider straight from the admin UI and watch routing, policy, and token accounting play out on a real request.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Admin UI</span><span class="hp-feat-tag">Test prompts</span><span class="hp-feat-tag">Live traffic</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/llm/playground/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hp-caps-panel" id="hp-panel-govern" data-group="govern" role="tabpanel" aria-labelledby="hp-tab-govern" hidden>
+          <h3 class="hp-caps-title">GOVERN</h3>
+          <p class="hp-caps-lede">Decide what each caller may invoke, inspect what flows through, and know how overlapping rules resolve.</p>
+          <div class="hp-features">
+            <div class="hp-feat" data-feat="toolaccess">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/mcp/mcp-target-policies/" aria-label="Tool Access Policies — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">Tool Access Policies</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Decide which tools on which MCP targets a caller may reach, and rewrite or restrict what the server exposes downstream.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Target policies</span><span class="hp-feat-tag">Tool scoping</span><span class="hp-feat-tag">Rewrites</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/mcp/mcp-target-policies/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/mcp/mcp-access/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="guardrails">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/mcp/guardrails/" aria-label="MCP Guardrails — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">MCP Guardrails</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Inspect tool calls and responses in flight, blocking prompt injection and unsafe payloads before they reach an agent or a server.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Injection</span><span class="hp-feat-tag">Content checks</span><span class="hp-feat-tag">Blocking</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/mcp/guardrails/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/mcp/guardrails/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="promptguards">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/llm/prompt-guards/" aria-label="Prompt Guards — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">Prompt Guards</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Pattern and model-based checks on LLM prompts and completions, with redaction for anything that should never leave your estate.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Redaction</span><span class="hp-feat-tag">PII</span><span class="hp-feat-tag">Regex</span><span class="hp-feat-tag">Moderation</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/llm/prompt-guards/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/llm/guardrails/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="polattach">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/configuration/policies/attachment/" aria-label="Policy Attachment — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">Policy Attachment</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Where a policy binds — gateway, listener, route, or backend — and how overlapping rules merge into one decision per request.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Attachment</span><span class="hp-feat-tag">Merging</span><span class="hp-feat-tag">Conditional</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/configuration/policies/attachment/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/about/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hp-caps-panel" id="hp-panel-cost" data-group="cost" role="tabpanel" aria-labelledby="hp-tab-cost" hidden>
+          <h3 class="hp-caps-title">COST</h3>
+          <p class="hp-caps-lede">Attribute, price, and cap what your agents spend.</p>
+          <div class="hp-features">
+            <div class="hp-feat" data-feat="cost">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/llm/cost-controls/" aria-label="Cost Controls — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">Cost Controls</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Spend control in three stages: attribute it, price it, then enforce it — before the invoice is the first place you find out.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Attribute</span><span class="hp-feat-tag">Price</span><span class="hp-feat-tag">Enforce</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/llm/cost-controls/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/llm/cost-controls/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="budget">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/llm/cost-controls/budget-limits/" aria-label="Budget &amp; Spend Limits — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">Budget &amp; Spend Limits</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Hard caps per key or team: cut off token consumption and dollar spend once a limit is hit, rather than alerting after the fact.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Token caps</span><span class="hp-feat-tag">Dollar limits</span><span class="hp-feat-tag">Per-team</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/llm/cost-controls/budget-limits/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/llm/cost-controls/budget-limits/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="vkeys">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/llm/cost-controls/virtual-keys/" aria-label="Virtual Keys — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">Virtual Keys</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Issue scoped keys per team, app, or user so every request carries an owner — the unit that budgets and reports attach to.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Scoped keys</span><span class="hp-feat-tag">Attribution</span><span class="hp-feat-tag">Rotation</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/llm/cost-controls/virtual-keys/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/llm/cost-controls/virtual-keys/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="dash">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/llm/cost-controls/dashboard/" aria-label="Cost Dashboard — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">Cost Dashboard</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Spend, token usage, and traffic in the admin UI, grouped by model, provider, and user, so you can see where the money went.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Admin UI</span><span class="hp-feat-tag">By model</span><span class="hp-feat-tag">By user</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/llm/cost-controls/dashboard/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/llm/cost-controls/dashboard/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="catalog">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/llm/cost-controls/costs/" aria-label="Model Cost Catalog — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">Model Cost Catalog</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Per-model input and output pricing, so each request carries a realized USD cost that logs, metrics, traces, and policies can all read.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Pricing</span><span class="hp-feat-tag">Realized USD</span><span class="hp-feat-tag">Per-model</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/llm/cost-controls/costs/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/llm/cost-controls/costs/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="tracking">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/llm/observability/" aria-label="Cost Tracking — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">Cost Tracking</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>The realized cost of every call, attached to logs, metrics, and traces — with catalog coverage reported so gaps do not hide.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Logs</span><span class="hp-feat-tag">Metrics</span><span class="hp-feat-tag">Traces</span><span class="hp-feat-tag">Coverage</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/llm/observability/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/llm/cost-controls/cost-tracking/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <div class="hp-feat" data-feat="llm">
-        <div class="hp-feat-head" onclick="hpToggleFeat(this)">
-          <div class="hp-feat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/><path d="M5 3v4M3 5h4M19 17v4M17 19h4"/></svg></div>
-          <div>
-            <div class="hp-feat-title">LLM Gateway</div>
-            <div class="hp-feat-sub">Route, fail over, and budget across 12+ model backends.</div>
-          </div>
-          <div class="hp-feat-toggle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        </div>
-        <div class="hp-feat-body">
-          <p>Drop-in OpenAI-compatible API in front of OpenAI, Anthropic, Bedrock, Gemini, Vertex, Cohere, OSS Llama runs — with per-team token budgets, semantic caching and prompt redaction.</p>
-          <div class="hp-feat-tags"><span class="hp-feat-tag">OpenAI</span><span class="hp-feat-tag">Anthropic</span><span class="hp-feat-tag">Bedrock</span><span class="hp-feat-tag">Gemini</span><span class="hp-feat-tag">Vertex</span></div>
-          <div class="hp-feat-links"><a href="/docs/standalone/latest/llm/" class="hp-feat-link">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/llm/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
-        </div>
-      </div>
-
-      <div class="hp-feat" data-feat="inf">
-        <div class="hp-feat-head" onclick="hpToggleFeat(this)">
-          <div class="hp-feat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/></svg></div>
-          <div>
-            <div class="hp-feat-title">Inference Routing</div>
-            <div class="hp-feat-sub">Smart routing across self-hosted GPU pools.</div>
-          </div>
-          <div class="hp-feat-toggle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        </div>
-        <div class="hp-feat-body">
-          <p>Latency-aware, cost-aware, model-aware routing for self-hosted inference. Plug-in vLLM, TGI, Triton; agentgateway picks the warmest replica.</p>
-          <div class="hp-feat-tags"><span class="hp-feat-tag">vLLM</span><span class="hp-feat-tag">TGI</span><span class="hp-feat-tag">Triton</span></div>
-          <div class="hp-feat-links"><a href="/docs/standalone/latest/inference/" class="hp-feat-link">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/inference/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
-        </div>
-      </div>
-
-      <div class="hp-feat" data-feat="mcp">
-        <div class="hp-feat-head" onclick="hpToggleFeat(this)">
-          <div class="hp-feat-icon"><img src="/integrations/mcp.svg" alt="MCP" class="color-icon"></div>
-          <div>
-            <div class="hp-feat-title">MCP Gateway</div>
-            <div class="hp-feat-sub">A control plane for the Model Context Protocol.</div>
-          </div>
-          <div class="hp-feat-toggle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        </div>
-        <div class="hp-feat-body">
-          <p>Discover, sign, scope and observe every tool call your agents make. Treat MCP servers like microservices — with versioning, RBAC, and audit trails out of the box.</p>
-          <div class="hp-feat-tags"><span class="hp-feat-tag">Discovery</span><span class="hp-feat-tag">RBAC</span><span class="hp-feat-tag">Audit</span></div>
-          <div class="hp-feat-links"><a href="/docs/standalone/latest/mcp/" class="hp-feat-link">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/mcp/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
-        </div>
-      </div>
-
-      <div class="hp-feat" data-feat="a2a">
-        <div class="hp-feat-head" onclick="hpToggleFeat(this)">
-          <div class="hp-feat-icon"><img src="/integrations/a2a.svg" alt="A2A"></div>
-          <div>
-            <div class="hp-feat-title">A2A Gateway</div>
-            <div class="hp-feat-sub">Bridge agents written in any framework.</div>
-          </div>
-          <div class="hp-feat-toggle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        </div>
-        <div class="hp-feat-body">
-          <p>agentgateway speaks the Agent-to-Agent protocol natively. Route invocations between LangChain, CrewAI, ADK and your own runtime — with identity, tracing, and replay.</p>
-          <div class="hp-feat-tags"><span class="hp-feat-tag">LangChain</span><span class="hp-feat-tag">CrewAI</span><span class="hp-feat-tag">ADK</span><span class="hp-feat-tag">Identity</span></div>
-          <div class="hp-feat-links"><a href="/docs/standalone/latest/agent/" class="hp-feat-link">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/agent/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
-        </div>
-      </div>
-
-      <div class="hp-feat" data-feat="sec">
-        <div class="hp-feat-head" onclick="hpToggleFeat(this)">
-          <div class="hp-feat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div>
-          <div>
-            <div class="hp-feat-title">Security &amp; Observability</div>
-            <div class="hp-feat-sub">Per-call traces, logs, and policy decisions.</div>
-          </div>
-          <div class="hp-feat-toggle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        </div>
-        <div class="hp-feat-body">
-          <p>OpenTelemetry by default. Per-tool, per-agent, per-tenant counters. OPA-evaluated allow/deny on every hop, with tamper-evident audit logs.</p>
-          <div class="hp-feat-tags"><span class="hp-feat-tag">OTEL</span><span class="hp-feat-tag">OPA</span><span class="hp-feat-tag">Audit</span><span class="hp-feat-tag">PII-shield</span></div>
-          <div class="hp-feat-links"><a href="/docs/standalone/latest/operations/" class="hp-feat-link">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/security/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
-        </div>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -1015,7 +1449,6 @@
       <div class="hp-code-block">
         <div class="hp-code-tabs">
           <button class="hp-code-tab active" data-code="install">Install script</button>
-          <button class="hp-code-tab" data-code="config">config.yaml</button>
           <button class="hp-code-tab" data-code="helm">Kubernetes</button>
           <button class="hp-code-tab" data-code="docker">Docker</button>
           <button class="hp-code-copy" id="hp-code-copy-btn">Copy</button>
@@ -1025,53 +1458,36 @@
             <div class="com"># Install the agentgateway binary</div>
             <div><span class="prompt-char">$</span> curl -sL https://agentgateway.dev/install | bash</div>
             <div>&nbsp;</div>
-            <div class="com"># Run with a config file</div>
-            <div><span class="prompt-char">$</span> agentgateway -f config.yaml</div>
+            <div class="com"># Run</div>
+            <div><span class="prompt-char">$</span> agentgateway</div>
             <div>&nbsp;</div>
-            <div class="com"># INFO agentgateway: Listening on 0.0.0.0:3000</div>
-            <div class="com"># INFO agentgateway: Admin UI at http://localhost:15000/ui/</div>
-          </div>
-          <div class="hp-code-panel" id="hp-code-config">
-            <div class="com"># yaml-language-server: $schema=https://agentgateway.dev/schema/config</div>
-            <div>binds:</div>
-            <div>- port: 3000</div>
-            <div>  listeners:</div>
-            <div>  - routes:</div>
-            <div>    - policies:</div>
-            <div>        cors:</div>
-            <div>          allowOrigins: ["*"]</div>
-            <div>          allowHeaders: [content-type, cache-control]</div>
-            <div>        a2a: {}</div>
-            <div>      backends:</div>
-            <div>      - host: localhost:9999</div>
+            <div class="com"># info	app	serving UI at http://localhost:4000/ui</div>
           </div>
           <div class="hp-code-panel" id="hp-code-helm">
             <div class="com"># Install Gateway API CRDs</div>
             <div><span class="prompt-char">$</span> kubectl apply --server-side --force-conflicts \</div>
-            <div>  -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml</div>
+            <div>&nbsp;&nbsp;-f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.0/standard-install.yaml</div>
             <div>&nbsp;</div>
             <div class="com"># Install agentgateway CRDs via Helm</div>
             <div><span class="prompt-char">$</span> helm upgrade -i agentgateway-crds \</div>
-            <div>  oci://cr.agentgateway.dev/charts/agentgateway-crds \</div>
-            <div>  --create-namespace --namespace agentgateway-system \</div>
-            <div>  --version v1.1.0 \</div>
-            <div>  --set controller.image.pullPolicy=Always</div>
+            <div>&nbsp;&nbsp;oci://cr.agentgateway.dev/charts/agentgateway-crds \</div>
+            <div>&nbsp;&nbsp;--create-namespace --namespace agentgateway-system \</div>
+            <div>&nbsp;&nbsp;--version v1.4.1</div>
             <div>&nbsp;</div>
             <div class="com"># Install agentgateway via Helm</div>
             <div><span class="prompt-char">$</span> helm upgrade -i agentgateway \</div>
-            <div>  oci://cr.agentgateway.dev/charts/agentgateway \</div>
-            <div>  --namespace agentgateway-system \</div>
-            <div>  --version v1.1.0 \</div>
-            <div>  --set controller.image.pullPolicy=Always \</div>
-            <div>  --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true \</div>
-            <div>  --wait</div>
+            <div>&nbsp;&nbsp;oci://cr.agentgateway.dev/charts/agentgateway \</div>
+            <div>&nbsp;&nbsp;--namespace agentgateway-system \</div>
+            <div>&nbsp;&nbsp;--version v1.4.1</div>
           </div>
           <div class="hp-code-panel" id="hp-code-docker">
             <div class="com"># Run agentgateway in a container</div>
-            <div><span class="prompt-char">$</span> docker run -p 3000:3000 -p 15000:15000 \</div>
-            <div>  -v $(pwd)/config.yaml:/etc/agentgateway/config.yaml \</div>
-            <div>  ghcr.io/agentgateway/agentgateway:latest \</div>
-            <div>  -f /etc/agentgateway/config.yaml</div>
+            <div><span class="prompt-char">$</span> mkdir agentgateway-config</div>
+            <div><span class="prompt-char">$</span> docker run \</div>
+            <div>&nbsp;&nbsp;--user "$(id -u):$(id -g)" \</div>
+            <div>&nbsp;&nbsp;-v "$PWD/agentgateway-config:/config" \</div>
+            <div>&nbsp;&nbsp;-p 4000:4000 \</div>
+            <div>&nbsp;&nbsp;cr.agentgateway.dev/agentgateway:v1.4.1</div>
           </div>
         </div>
       </div>
@@ -1283,23 +1699,6 @@
 
 {{ partial "quotes-carousel.html" . }}
 
-<!-- ============ LF QUOTE ============ -->
-<div class="hp-lf">
-  <div class="hp-wrap">
-    <div class="hp-lf-grid">
-      <div class="hp-lf-mark">
-        THE LINUX<br>FOUNDATION
-      </div>
-      <div>
-        <p class="hp-lf-quote">
-          "One of the biggest open security problems today is how to do MCP security effectively. While there are a lot of problems in this space that the community doesn't know how to address, the agentgateway project provides a first step toward addressing some of the important issues with basic role-based access control and visibility of actions to MCP servers. I look forward to seeing how this project adapts and evolves to handle the complex, evolving threats in this space under open source governance."
-        </p>
-        <div class="hp-lf-byline"><strong style="color:#fff;">Jamie Capper</strong> · published in The New York Times</div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ============ FOOTER ============ -->
 <footer class="hp-footer">
   <div class="hp-wrap">
@@ -1322,9 +1721,8 @@
       <div class="hp-footer-col">
         <h5>Resources</h5>
         <a href="/docs/">Docs</a>
-        <a href="/tutorials/">Tutorials</a>
         <a href="/blog/">Blog</a>
-        <a href="/docs/changelog/">Changelog</a>
+        <a href="/docs/standalone/latest/reference/release-notes/">Release notes</a>
       </div>
       <div class="hp-footer-col">
         <h5>Community</h5>
@@ -1333,10 +1731,6 @@
         <a href="#community">Meetings</a>
         <a href="https://github.com/agentgateway/agentgateway/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a>
       </div>
-    </div>
-    <div class="hp-footer-bottom">
-      <span>&copy; 2026 agentgateway authors · A Linux Foundation Project</span>
-      <span>Apache 2.0</span>
     </div>
   </div>
 </footer>
@@ -1377,27 +1771,43 @@
 })();
 
 // Feature accordion
-function hpToggleFeat(head) {
-  var feat = head.parentElement;
-  var isOpen = feat.classList.contains('open');
-  document.querySelectorAll('.hp-feat.open').forEach(function(f) { f.classList.remove('open'); });
-  if (!isOpen) feat.classList.add('open');
+// Capability tab strip.
+function hpSelectGroup(gid) {
+  document.querySelectorAll('.hp-caps-tab').forEach(function(t) {
+    var on = t.id === 'hp-tab-' + gid;
+    t.classList.toggle('active', on);
+    t.setAttribute('aria-selected', on ? 'true' : 'false');
+    t.setAttribute('tabindex', on ? '0' : '-1');
+  });
+  document.querySelectorAll('.hp-caps-panel').forEach(function(pl) {
+    var on = pl.dataset.group === gid;
+    pl.classList.toggle('active', on);
+    if (on) { pl.removeAttribute('hidden'); } else { pl.setAttribute('hidden', ''); }
+  });
 }
 
+// Initialize tabindex/hidden state.
+hpSelectGroup('route');
+
+// Hero tiles deep-link to a capability: open its group, then ring the card briefly.
 function hpScrollToFeat(key) {
   var feat = document.querySelector('.hp-feat[data-feat="' + key + '"]');
   if (!feat) return;
+  var panel = feat.closest('.hp-caps-panel');
+  if (panel) hpSelectGroup(panel.dataset.group);
   document.querySelectorAll('.hp-feat.open').forEach(function(f) { f.classList.remove('open'); });
   feat.classList.add('open');
-  feat.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  feat.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+  setTimeout(function() { feat.classList.remove('open'); }, 2400);
 }
 
 // Diagram pulse animation — respect reduced motion
 (function() {
   var diagram = document.getElementById('hp-diagram');
-  if (!diagram) return;
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    diagram.classList.add('pulse-off');
+    if (diagram) diagram.classList.add('pulse-off');
+    return;
   }
 })();
 </script>

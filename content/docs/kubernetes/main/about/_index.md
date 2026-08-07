@@ -2,6 +2,7 @@
 title: About
 weight: 10
 icon: info
+description: Learn about agentgateway components, architecture, and policies.
 test: skip
 ---
 

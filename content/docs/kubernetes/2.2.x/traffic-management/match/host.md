@@ -4,7 +4,7 @@ weight: 10
 ---
 Expose a route on multiple hosts. 
 
-For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/api-types/httproute/#matches).
+For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/api-types/httproute/#matches).
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 

@@ -59,7 +59,7 @@ Each AI provider has a different way of handling function calling. For example, 
 * [Gemini](https://ai.google.dev/gemini-api/docs/function-calling)
 * [Mistral AI](https://docs.mistral.ai/studio-api/agents/agent-tools/function-calling)
 * [OpenAI](https://developers.openai.com/api/docs/guides/function-calling)
-* [Vertex AI](https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1beta1/FunctionDeclaration?hl=en)
+* [Vertex AI](https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/rest?hl=en)
 
 ## Before you begin
 
@@ -69,9 +69,8 @@ Each AI provider has a different way of handling function calling. For example, 
 
 Send a function call to an LLM through agentgateway. In the following steps, you use an example `get_weather` function with an OpenAI LLM. 
 
-{{< callout type="info" >}}
-Keep in mind that for a real use case, you must develop your own app that is capable of sending requests to the LLM and executing a tool, such as to retrieve the latest weather information for a given location.
-{{< /callout >}}
+> [!NOTE]
+> Keep in mind that for a real use case, you must develop your own app that is capable of sending requests to the LLM and executing a tool, such as to retrieve the latest weather information for a given location.
 
 1. Send a request through the agentgateway proxy to the OpenAI LLM. In your request, include an example `get_weather` function call. Note that you can include other tools and functions that the app has access to. This way, your LLM can decide on the tool and the function that best answers the user's question. For more examples of creating a function, consult your [AI provider's documentation](#about-providers). The following example demonstrates a response that you might configure your app to send through the agentgateway proxy to the LLM.
 
@@ -80,7 +79,7 @@ Keep in mind that for a real use case, you must develop your own app that is cap
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
-     "model": "gpt-3.5-turbo",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
      "messages": [
        {
          "role": "user",
@@ -116,7 +115,7 @@ Keep in mind that for a real use case, you must develop your own app that is cap
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json  -d '{
-     "model": "gpt-3.5-turbo",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
      "messages": [
        {
          "role": "user",
@@ -154,7 +153,7 @@ Keep in mind that for a real use case, you must develop your own app that is cap
    | Field | Description |
    |-------|-------------|
    | `$INGRESS_GW_ADDRESS/openai` | The address of the agentgateway proxy that you set up before you began, along with the path to your AI provider, such as `openai`. |
-   | `model` | The model to use for the function call, such as `gpt-3.5-turbo`. |
+   | `model` | The model to use for the function call, such as `{{< reuse "agw-docs/snippets/openai-model.md" >}}`. |
    | `messages` | The messages to send to the model. The example shows a user message asking about the weather in Columbus. |
    | `parallel_tool_calls` | Whether to call multiple tools at the same time. |
    | `tools` | The tools to use for the function call. |
@@ -171,7 +170,7 @@ Keep in mind that for a real use case, you must develop your own app that is cap
      "id": "chatcmpl-B7nLgGVMnDpc13CZ8tCBNZ8SPmcV9",
      "object": "chat.completion",
      "created": 1741197692,
-     "model": "gpt-3.5-turbo-0125",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
      "choices": [
        {
          "index": 0,
@@ -221,7 +220,7 @@ Keep in mind that for a real use case, you must develop your own app that is cap
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H "Content-Type: application/json" -d '{
-     "model": "gpt-3.5-turbo",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
      "messages": [
        {
          "role": "user",
@@ -255,7 +254,7 @@ Keep in mind that for a real use case, you must develop your own app that is cap
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H "Content-Type: application/json" -d '{
-     "model": "gpt-3.5-turbo",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
      "messages": [
        {
          "role": "user",
@@ -295,7 +294,7 @@ Keep in mind that for a real use case, you must develop your own app that is cap
      "id": "chatcmpl-B7opYdxULQAF0xN6SK6jCIZft75xG",
      "object": "chat.completion",
      "created": 1741203388,
-     "model": "gpt-3.5-turbo-0125",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
      "choices": [
        {
          "index": 0,

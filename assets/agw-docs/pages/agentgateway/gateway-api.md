@@ -9,7 +9,7 @@ Unlike other implementations of Gateway API, agentgateway is the only data plane
 Kubernetes.
 As a result, agentgateway offers some of the most comprehensive support for the Gateway API.
 
-You can review the conformance test results by version in the [Gateway API docs](https://gateway-api.sigs.k8s.io/implementations/#conformance-levels). For example, as of the time of this writing, agentgateway is the only implementation of Gateway API that passes all conformance tests for Gateway API v1.3. 
+You can review the conformance test results by version in the [Gateway API docs](https://gateway-api.sigs.k8s.io/docs/implementations/list/#conformance-levels). For example, as of the time of this writing, agentgateway is the only implementation of Gateway API that passes all conformance tests for Gateway API v1.3. 
 
 In addition to supporting all Core and Extended Gateway API features, Gateway API has a number of "experimental"
 features that are in development.
@@ -44,19 +44,19 @@ When a feature is implemented in both the core Gateway API and an extension, you
 
 | Feature                     | Gateway API                                                                                          | Agentgateway extension                         | Differences                                                                                                                                              |
 |-----------------------------|------------------------------------------------------------------------------------------------------|------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Originating TLS to backends | [BackendTLSPolicy](https://gateway-api.sigs.k8s.io/api-types/backendtlspolicy/)                      | `AgentgatewayPolicy` `.backend.tls`            | Agentgateway supports mutual TLS (mTLS), automatic SNI and SAN validation, ALPN customization, and the ability to (optionally) disable TLS verification. |
-| Header manipulation         | [HTTPRoute header modifier](https://gateway-api.sigs.k8s.io/api-types/httproute/#filters-optional)   | `AgentgatewayPolicy` `.traffic.transformation` | Agentgateway supports setting headers based on CEL expressions, rather than just static values. |
+| Originating TLS to backends | [BackendTLSPolicy](https://gateway-api.sigs.k8s.io/reference/api-types/policy/backendtlspolicy/)                      | `AgentgatewayPolicy` `.backend.tls`            | Agentgateway supports mutual TLS (mTLS), automatic SNI and SAN validation, ALPN customization, and the ability to (optionally) disable TLS verification. |
+| Header manipulation         | [HTTPRoute header modifier](https://gateway-api.sigs.k8s.io/reference/api-types/httproute/#filters-optional)   | `AgentgatewayPolicy` `.traffic.transformation` | Agentgateway supports setting headers based on CEL expressions, rather than just static values. |
 | External Authorization      | [HTTPRoute ExternalAuth filter](https://gateway-api.sigs.k8s.io/geps/gep-1494/)                      | `AgentgatewayPolicy` `.traffic.extAuth`        | Agentgateway supports more advanced configuration, such as automatic redirects (to sign-in pages), and more control over request and response processing. |
-| HTTP Filters                | [Filters inline in HTTPRoute](https://gateway-api.sigs.k8s.io/api-types/httproute/#filters-optional) | `AgentgatewayPolicy` `.traffic`                | Agentgateway allows all policies to be either configured as inline HTTPRoute filters, or as standalone policies attached to objects like Gateway and HTTPRoute, allowing more flexibility and re-use. |
+| HTTP Filters                | [Filters inline in HTTPRoute](https://gateway-api.sigs.k8s.io/reference/api-types/httproute/#filters-optional) | `AgentgatewayPolicy` `.traffic`                | Agentgateway allows all policies to be either configured as inline HTTPRoute filters, or as standalone policies attached to objects like Gateway and HTTPRoute, allowing more flexibility and re-use. |
 
 ## Comparison with other implementations {#implementations}
 
-The Kubernetes Gateway API has more than 40 [implementations](https://gateway-api.sigs.k8s.io/implementations/) at the time of this writing.
+The Kubernetes Gateway API has more than 40 [implementations](https://gateway-api.sigs.k8s.io/docs/implementations/list/) at the time of this writing.
 If you are in the process of evaluating a Gateway API implementation, consider the following factors:
 
 
 
-**Conformance level**: Is the implementation up to date? The Gateway API docs [set three levels of conformance](https://gateway-api.sigs.k8s.io/implementations/#conformance-levels), depending on the level of commitment to the Gateway API by version.
+**Conformance level**: Is the implementation up to date? The Gateway API docs [set three levels of conformance](https://gateway-api.sigs.k8s.io/docs/implementations/list/#conformance-levels), depending on the level of commitment to the Gateway API by version.
 - Prefer conformant implementations that pass tests for the past two releases of the Gateway API, such as kgateway with agentgateway.
 - Review the release version-specific conformance reports. If an implementation is not listed, then it might be stale. Many implementations have not been updated for years, making them incompatible with the latest API.
 - Confirm that the implementation is generally available. Some implementations might be in beta or alpha, and not yet ready for production use.

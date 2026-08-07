@@ -1,19 +1,16 @@
 Review LLM-specific metrics and logs.
 
-{{< callout type="info" >}}
-To calculate costs from token usage metrics, see the [cost tracking guide]({{< link-hextra path="/llm/cost-tracking/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> To calculate costs from token usage metrics, see the [cost tracking guide]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}).
 
 {{< conditional-text include-if="kubernetes" >}}
-{{< callout type="info" >}}
-For external logging platforms (also known as prompt logging, request/response logging, or audit trail) like Langfuse and LangSmith, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For external logging platforms (also known as prompt logging, request/response logging, or audit trail) like Langfuse and LangSmith, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
 {{< /conditional-text >}}
 
 {{< conditional-text include-if="standalone" >}}
-{{< callout type="info" >}}
-For external logging platforms (also known as prompt logging, request/response logging, or audit trail) like Langfuse and LangSmith, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For external logging platforms (also known as prompt logging, request/response logging, or audit trail) like Langfuse and LangSmith, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
 {{< /conditional-text >}}
 
 ## Before you begin
@@ -45,11 +42,23 @@ PROXY_POD_IP=$(kubectl get ${PROXY_POD} -n agentgateway-system -o jsonpath='{.st
 kubectl run metrics-check -n agentgateway-system --rm -i --restart=Never --image=curlimages/curl -- -s "http://${PROXY_POD_IP}:15020/metrics" 2>/dev/null | grep "agentgateway_gen_ai_client_token_usage"
 {{< /doc-test >}}
 
+{{< version exclude-if="1.1.x" >}}
+## View realized costs
+
+When you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the realized USD cost of each LLM request and exposes it across the observability surface:
+
+* **Logs**: each LLM request log line includes `agw.ai.usage.cost.total`. Add the cost breakdown or applied rates with CEL `llm.cost` and `llm.costRates` fields.
+* **Metrics**: the `agentgateway_cost_catalog_lookups_total` counter tracks lookups by `status` (`Exact`, `Unpriced`, `Missing`, or `NoCatalog`) and by provider and model, so you can confirm that your catalog prices your traffic.
+* **Traces**: cost attributes are attached to the request span.
+
+For catalog configuration and the full list of cost fields, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
+{{< /version >}}
+
 ## Track per-user metrics
 
 When you set up API key authentication with per-user rate limiting, you can filter token usage metrics by user ID to track spending and usage patterns for each virtual key.
 
-For a complete virtual key setup guide, see [Virtual key management]({{< link-hextra path="/llm/virtual-keys/" >}}).
+For a complete virtual key setup guide, see [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
 
 Example PromQL query for per-user token usage:
 ```promql
@@ -74,8 +83,8 @@ Example for a successful request to the OpenAI LLM:
 2025-12-12T21:56:02.809082Z	info	request gateway=agentgateway-system/agentgateway-proxy listener=http
 route=agentgateway-system/openai endpoint=api.openai.com:443 src.addr=127.0.0.1:60862 http.method=POST
 http.host=localhost http.path=/openai http.version=HTTP/1.1 http.status=200 protocol=llm gen_ai.
-operation.name=chat gen_ai.provider.name=openai gen_ai.request.model=gpt-3.5-turbo gen_ai.response.
-model=gpt-3.5-turbo-0125 gen_ai.usage.input_tokens=68 gen_ai.usage.output_tokens=298 duration=2488ms 
+operation.name=chat gen_ai.provider.name=openai gen_ai.request.model={{< reuse "agw-docs/snippets/openai-model.md" >}} gen_ai.response.
+model={{< reuse "agw-docs/snippets/openai-model.md" >}}-0125 gen_ai.usage.input_tokens=68 gen_ai.usage.output_tokens=298 duration=2488ms 
 ```
 
 {{< doc-test paths="llm-observability" >}}

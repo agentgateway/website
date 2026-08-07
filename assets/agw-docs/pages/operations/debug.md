@@ -7,12 +7,12 @@ Use built-in tools to troubleshoot issues in your {{< reuse "/agw-docs/snippets/
 1. Enable port-forwarding on the control plane.
 
    ```sh
-   kubectl port-forward deploy/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} 9095
+   kubectl port-forward deploy/{{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} 9095
    ```
 
 2. In your browser, open the admin server debugging interface: [http://localhost:9095/](http://localhost:9095/).
 
-   {{< reuse-image src="img/admin-server-debug-ui.png" caption="Figure: Admin server debugging interface.">}}
+   {{< reuse-image-light src="img/admin-server-debug-ui.png" caption="Figure: Admin server debugging interface.">}}
    {{< reuse-image-dark srcDark="img/admin-server-debug-ui.png" caption="Figure: Admin server debugging interface.">}}
 
 3. Select one of the endpoints to continue debugging. {{< reuse "agw-docs/snippets/review-table.md" >}} 

@@ -1,5 +1,6 @@
 ---
 title: "Multi-Agent OpenClaw Architecture with a Kill Switch: Why Every AI Agent Needs a Gateway"
+category: "Deep Dive"
 publishDate: 2026-02-21
 author: "Sebastian Maniak"
 description: "A multi-agent system where a coordinator routes tasks to specialist sub-agents — and every LLM call and MCP tool invocation passes through agentgateway running in Kubernetes for cost control, rate limiting, governance, and a kill switch."
@@ -374,4 +375,4 @@ Build the agents. Put the gateway in front. Sleep at night.
 - [agentgateway](https://agentgateway.dev)
 - [agentgateway GitHub](https://github.com/agentgateway/agentgateway)
 - [agentgateway Docs — MCP](https://agentgateway.dev/docs/standalone/latest/about/introduction/)
-- [agentgateway Telemetry & Observability](https://agentgateway.dev/docs/standalone/latest/tutorials/telemetry/)
+- [agentgateway Telemetry & Observability](https://agentgateway.dev/docs/standalone/latest/integrations/observability/opentelemetry/)

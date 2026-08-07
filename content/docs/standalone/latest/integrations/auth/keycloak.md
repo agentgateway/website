@@ -19,25 +19,31 @@ Configure agentgateway to validate Keycloak JWTs:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: my-server
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-      policies:
-        mcpAuthentication:
-          mode: strict
-          issuer: https://keycloak.example.com/realms/myrealm
-          audiences:
-          - agentgateway
-          jwks:
-            url: https://keycloak.example.com/realms/myrealm/protocol/openid-connect/certs
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: my-server
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  policies:
+    mcpAuthentication:
+      mode: strict
+      issuer: https://keycloak.example.com/realms/myrealm
+      audiences:
+      - agentgateway
+      jwks:
+        url: https://keycloak.example.com/realms/myrealm/protocol/openid-connect/certs
+      resourceMetadata:
+        resource: agentgateway
+        scopesSupported:
+        - read:all
+        bearerMethodsSupported:
+        - header
 ```
 
 ## Docker Compose example
@@ -46,7 +52,7 @@ binds:
 version: '3'
 services:
   agentgateway:
-    image: ghcr.io/agentgateway/agentgateway:latest
+    image: cr.agentgateway.dev/agentgateway:latest
     ports:
       - "3000:3000"
     volumes:
@@ -92,6 +98,12 @@ policies:
     audiences: [agentgateway]
     jwks:
       url: https://keycloak.example.com/realms/myrealm/protocol/openid-connect/certs
+    resourceMetadata:
+      resource: agentgateway
+      scopesSupported:
+      - read:all
+      bearerMethodsSupported:
+      - header
   authorization:
     rules:
     # Check for admin role in token
@@ -101,4 +113,4 @@ policies:
 ## Learn more
 
 - [Keycloak Documentation](https://www.keycloak.org/documentation)
-- [MCP Authentication Tutorial]({{< link-hextra path="/tutorials/mcp-authentication" >}})
+- [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}})

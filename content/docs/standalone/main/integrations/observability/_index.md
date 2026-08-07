@@ -1,6 +1,6 @@
 ---
 title: Observability
-weight: 20
+weight: 10
 description: Monitor and trace agentgateway with observability tools
 test: skip
 ---

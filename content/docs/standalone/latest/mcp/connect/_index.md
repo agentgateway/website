@@ -1,7 +1,7 @@
 ---
 title: Connect to MCP servers
 weight: 20
-description:
+description: Connect agentgateway proxies to MCP tool servers via various transports
 test: skip
 ---
 

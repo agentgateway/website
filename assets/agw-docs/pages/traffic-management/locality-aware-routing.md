@@ -30,9 +30,8 @@ You configure both modes through standard Kubernetes Service fields, not through
 | Failover, prefer same zone | `spec.trafficDistribution` | `PreferSameZone` |
 | Strict, same node only | `spec.internalTrafficPolicy` | `Local` |
 
-{{< callout type="info" >}}
-`PreferSameZone` requires Kubernetes 1.34 or later. On earlier versions, use the `PreferClose` value, which has the same behavior but is deprecated in 1.34+.
-{{< /callout >}}
+> [!NOTE]
+> `PreferSameZone` requires Kubernetes 1.34 or later. On earlier versions, use the `PreferClose` value, which has the same behavior but is deprecated in 1.34+.
 
 ### How the gateway determines its own locality
 
@@ -82,9 +81,8 @@ kubectl rollout status deployment/agentgateway -n agentgateway-system --timeout=
 
 Deploy three backend instances that represent three localities, and then enable `PreferSameZone` on the Service so that the gateway prefers same-zone endpoints and falls back to other zones or regions only when needed.
 
-{{< callout type="info" >}}
-The example uses Istio `WorkloadEntry` resources to override locality on each backend. WorkloadEntries are required for single-node clusters such as kind, where every pod runs on the same node and shares one locality. In a real multi-zone cluster, you do not need WorkloadEntries, because each pod inherits locality from the node where it runs, and a Service selector that matches pod labels works as usual.
-{{< /callout >}}
+> [!NOTE]
+> The example uses Istio `WorkloadEntry` resources to override locality on each backend. WorkloadEntries are required for single-node clusters such as kind, where every pod runs on the same node and shares one locality. In a real multi-zone cluster, you do not need WorkloadEntries, because each pod inherits locality from the node where it runs, and a Service selector that matches pod labels works as usual.
 
 1. Create a namespace and a Gateway.
 

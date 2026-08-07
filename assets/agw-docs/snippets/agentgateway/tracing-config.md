@@ -2,7 +2,7 @@
 {{% tab name="Jaeger" %}}
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: jaeger-tracing-config
@@ -28,7 +28,7 @@ EOF
 {{% tab name="Langfuse" %}}
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: langfuse-tracing-config
@@ -57,7 +57,7 @@ EOF
 {{% tab name="Phoenix (Arize)" %}}
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: phoenix-tracing-config
@@ -84,7 +84,7 @@ EOF
 {{% tab name="OpenLLMetry" %}}
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: openllmetry-tracing-config

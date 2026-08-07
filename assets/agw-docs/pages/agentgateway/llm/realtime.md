@@ -2,13 +2,12 @@ Proxy OpenAI Realtime API traffic through {{< reuse "agw-docs/snippets/agentgate
 
 ## About
 
-The [OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime) uses WebSocket connections for low-latency, multimodal interactions. {{< reuse "agw-docs/snippets/agentgateway.md" >}} can proxy these WebSocket connections and parse the `response.done` events to extract token usage data, including input tokens, output tokens, and cached token counts.
+The [OpenAI Realtime API](https://developers.openai.com/api/docs/guides/realtime) uses WebSocket connections for low-latency, multimodal interactions. {{< reuse "agw-docs/snippets/agentgateway.md" >}} can proxy these WebSocket connections and parse the `response.done` events to extract token usage data, including input tokens, output tokens, and cached token counts.
 
 To enable token usage tracking, you must prevent the client and server from negotiating WebSocket frame compression. When the `sec-websocket-extensions: permessage-deflate` header is present, the WebSocket frames are compressed and {{< reuse "agw-docs/snippets/agentgateway.md" >}} cannot parse the token usage data. Remove this header from the request so that frames remain uncompressed and parseable.
 
-{{< callout type="info" >}}
-The `Realtime` route type supports token usage tracking and observability. Other LLM policies such as prompt guards, prompt enrichment, and request-body rate limiting are not supported for WebSocket traffic.
-{{< /callout >}}
+> [!NOTE]
+> The `Realtime` route type supports token usage tracking and observability. Other LLM policies such as prompt guards, prompt enrichment, and request-body rate limiting are not supported for WebSocket traffic.
 
 ## Before you begin
 
@@ -23,7 +22,7 @@ If you already set up [multiple endpoints]({{< link-hextra path="/llm/providers/
 
 ```yaml {paths="realtime"}
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: openai
@@ -66,14 +65,14 @@ EOF
 
 ## Step 2: Remove the WebSocket compression header
 
-Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that removes the `sec-websocket-extensions` header from requests to the OpenAI Realtime endpoint. This step prevents the client and server from negotiating `permessage-deflate` compression, which would make WebSocket frames unreadable for token tracking.
+Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that removes the `sec-websocket-extensions` header from requests to the OpenAI Realtime endpoint. This step prevents the client and server from negotiating `permessage-deflate` compression, which would make WebSocket frames unreadable for token tracking.
 
-1. Create the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to strip the header. Target the HTTPRoute section that handles the `/v1/realtime` path.
+1. Create the {{< reuse "agw-docs/snippets/policy.md" >}} to strip the header. Target the HTTPRoute section that handles the `/v1/realtime` path.
 
    ```yaml {paths="realtime"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: realtime-strip-websocket-extensions
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -110,7 +109,7 @@ Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that remov
    EOF
    {{< /doc-test >}}
 
-2. Verify that the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} is accepted.
+2. Verify that the {{< reuse "agw-docs/snippets/policy.md" >}} is accepted.
 
    ```sh
    kubectl get agentgatewaypolicy realtime-strip-websocket-extensions -n {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -147,12 +146,12 @@ After the Realtime request completes, verify that {{< reuse "agw-docs/snippets/a
 1. Open the {{< reuse "agw-docs/snippets/agentgateway.md" >}} [metrics endpoint](http://localhost:15020/metrics).
 2. Look for the `agentgateway_gen_ai_client_token_usage` metric. The metric includes labels for the token type (`input` or `output`) and the model used.
 
-For more information about LLM metrics and observability, see {{< conditional-text include-if="standalone" >}}[Observe traffic]({{< link-hextra path="/llm/observability/" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[LLM cost tracking]({{< link-hextra path="/llm/cost-tracking/" >}}){{< /conditional-text >}}.
+For more information about LLM metrics and observability, see {{< conditional-text include-if="standalone" >}}[Observe traffic]({{< link-hextra path="/llm/observability/" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[LLM cost tracking]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}){{< /conditional-text >}}.
 
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="realtime"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} realtime-strip-websocket-extensions -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} realtime-strip-websocket-extensions -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

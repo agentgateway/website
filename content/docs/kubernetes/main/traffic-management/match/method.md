@@ -1,21 +1,22 @@
 ---
 title: HTTP method
 weight: 10
+description: Match requests by HTTP method (GET, POST, PUT, PATCH, DELETE).
 test:
   method-match:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/traffic-management/match/method.md
+  - file: ${versionRoot}/traffic-management/match/method.md
     path: method-match
 ---
 
 Specify an HTTP method, such as POST, GET, PUT, PATCH, or DELETE, to match requests against.
 
-For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/api-types/httproute/#matches).
+For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/api-types/httproute/#matches).
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 

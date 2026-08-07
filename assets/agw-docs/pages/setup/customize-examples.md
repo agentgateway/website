@@ -12,7 +12,7 @@ Add custom environment variables to the agentgateway container. To set a default
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -35,7 +35,7 @@ Use the `image` config to specify a custom container image, such as in airgapped
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -64,7 +64,7 @@ spec:
 Change the logging format from `text` to `json`. 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -81,7 +81,7 @@ Configure CPU and memory requests and limits for the agentgateway container.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -97,6 +97,60 @@ spec:
 EOF
 ```
 
+### Run as a DaemonSet {#daemonset-workload}
+
+Run the managed gateway proxy as a DaemonSet instead of the default Deployment. DaemonSet mode creates one agentgateway pod on each schedulable matching node. Use the `daemonSet` overlay for DaemonSet-specific settings such as update strategy, node selectors, affinities, and tolerations.
+
+> [!WARNING]
+> The `deployment` and `horizontalPodAutoscaler` overlays are not valid for DaemonSet workloads. When changing workload kinds, move applicable pod template customizations to the matching overlay and remove fields that apply only to the previous kind, such as `spec.replicas` for Deployments.
+
+```yaml
+kubectl apply --server-side -f- <<'EOF'
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+metadata:
+  name: agentgateway-daemonset
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  workload:
+    kind: DaemonSet
+  daemonSet:
+    spec:
+      updateStrategy:
+        type: RollingUpdate
+      template:
+        spec:
+          tolerations:
+            - operator: Exists
+EOF
+```
+
+Attach the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to a Gateway to apply the DaemonSet workload mode to that Gateway.
+
+```yaml
+kubectl apply --server-side -f- <<'EOF'
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: agentgateway-daemonset
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
+  infrastructure:
+    parametersRef:
+      group: {{< reuse "agw-docs/snippets/group.md" >}}
+      kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+      name: agentgateway-daemonset
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
+EOF
+```
+
 ## Overlays
 
 To learn more about overlays, see [Overlays]({{< link-hextra path="/setup/customize/options/#overlays" >}}).
@@ -107,7 +161,7 @@ Set a specific number of replicas for the agentgateway deployment.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -125,7 +179,7 @@ Add image pull secrets to pull container images from private registries.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -146,7 +200,7 @@ OpenShift manages security contexts through Security Context Constraints (SCCs).
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -172,7 +226,7 @@ Configure custom security settings for the pod and containers.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -195,7 +249,7 @@ Configure node selectors, affinities, tolerations, and topology spread constrain
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -237,9 +291,12 @@ EOF
 
 Configure automatic scaling based on CPU utilization. The HPA resource is created only when you specify this overlay.
 
+> [!WARNING]
+> The `horizontalPodAutoscaler` overlay is valid only for Deployment workloads. Do not use this overlay with `workload.kind: DaemonSet`.
+
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -268,7 +325,7 @@ Configure a Pod Disruption Budget to ensure that at least one instance of your a
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -289,7 +346,7 @@ Mount a custom ConfigMap to the `agentgateway` container that runs inside your a
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -318,7 +375,7 @@ Use `$patch: replace` to completely replace a list of volumes instead of merging
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -336,9 +393,8 @@ spec:
 EOF
 ```
 
-{{< callout type="warning" >}}
-**Important:** Place `$patch: replace` as a separate list item before your actual items. If you include it in the same item as your config, you might end up with an empty list.
-{{< /callout >}}
+> [!WARNING]
+> **Important:** Place `$patch: replace` as a separate list item before your actual items. If you include it in the same item as your config, you might end up with an empty list.
 
 
 ### Custom labels and annotations {#labels-annotations}
@@ -347,7 +403,7 @@ Add custom labels and annotations to deployments, pods, and services.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -383,7 +439,7 @@ Remove a default label by setting it to `null`. Use `kubectl apply --server-side
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -404,7 +460,7 @@ Replace the default service ports with custom port configurations.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -431,7 +487,7 @@ Configure graceful shutdown timeouts using the `shutdown` config.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -449,7 +505,7 @@ Assign a static IP address to the LoadBalancer service.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -467,7 +523,7 @@ Configure GKE-specific features like Regional Backend Services (RBS) and static 
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -491,7 +547,7 @@ Configure AWS-specific load balancer features using service annotations.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -517,7 +573,7 @@ Configure Azure-specific load balancer features using service annotations.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -540,7 +596,7 @@ Add init containers that run before the main agentgateway container starts.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -566,7 +622,7 @@ Add sidecar containers alongside the main agentgateway container.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -593,7 +649,7 @@ Add annotations to the ServiceAccount for a cloud provider IAM integration, such
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config

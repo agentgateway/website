@@ -1,8 +1,7 @@
 Route to a Model Context Protocol (MCP) server dynamically by using a label selector. This way, unlike a static backend, you can update the backing MCP server without having to update the Backend resource. For more information, see the [About MCP]({{< link-hextra path="/mcp/about" >}}) topic.
 
-{{< callout type="warning" >}}
-Note that only streamable HTTP is currently supported for label selectors. If you need to use an SSE listener, use a [static MCP Backend]({{< link-hextra path="/mcp/static-mcp/">}}).
-{{< /callout >}}
+> [!WARNING]
+> Note that only streamable HTTP is currently supported for label selectors. If you need to use an SSE listener, use a [static MCP Backend]({{< link-hextra path="/mcp/static-mcp/">}}).
 
 ## Before you begin
 
@@ -198,7 +197,7 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 
 2. From the terminal, install the MCP Inspector tool. Then, the MCP Inspector opens in your browser. If the MCP inspector tool does not open automatically, run `mcp-inspector`.
    ```sh
-   npx modelcontextprotocol/inspector#{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
+   npx @modelcontextprotocol/inspector@{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
    ```
 
 3. From the MCP Inspector menu, connect to your agentgateway address as follows:
@@ -208,12 +207,12 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 
 4. From the menu bar, click the **Tools** tab, then click **List Tools**.
 
-   {{< reuse-image src="img/mcp-tools-everything.png" >}}
+   {{< reuse-image-light src="img/mcp-tools-everything.png" >}}
    {{< reuse-image-dark srcDark="img/mcp-tools-everything-dark.png" >}}
 
-5. Test the tools: Select a tool, such as `echo`. In the **message** field, enter a message, such as `Hello, world!`, and click **Run Tool**.
+5. Test the tools: Select a tool, such as `echo`. In the **Message** field, enter a message, such as `Hello, world!`, and click **Run Tool**.
 
-   {{< reuse-image src="img/mcp-tool-echo.png" >}}
+   {{< reuse-image-light src="img/mcp-tool-echo.png" >}}
    {{< reuse-image-dark srcDark="img/mcp-tool-echo-dark.png" >}}
 
 ## Cleanup

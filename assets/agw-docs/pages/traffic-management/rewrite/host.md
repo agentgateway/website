@@ -44,9 +44,8 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 
 2. Send a request to the httpbin app on the `rewrite.example` domain. Verify that you get back a 200 HTTP response code and that you see the `Host: www.example.com` header in your response. 
 
-   {{< callout type="info" >}}
-   The following request returns a 200 HTTP response code, because you set up an HTTPRoute for the httpbin app on the `www.example.com` domain as part of the getting started guide. If you chose a different domain for your example, make sure that you have an HTTPRoute that can be reached under the host you want to rewrite to. 
-   {{< /callout >}}
+   > [!NOTE]
+   > The following request returns a 200 HTTP response code, because you set up an HTTPRoute for the httpbin app on the `www.example.com` domain as part of the getting started guide. If you chose a different domain for your example, make sure that you have an HTTPRoute that can be reached under the host you want to rewrite to. 
    
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
@@ -128,11 +127,11 @@ EOF
 
 ## External service host rewrites
 
-1. Create an {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} that represents your external service. The following example creates an {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} for the `httpbin.org` domain. 
+1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} that represents your external service. The following example creates an {{< reuse "/agw-docs/snippets/backend.md" >}} for the `httpbin.org` domain. 
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
-   kind: {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}}
+   kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
    metadata:
      name: httpbin
      namespace: httpbin
@@ -143,7 +142,7 @@ EOF
    EOF
    ```
    
-2. Create an HTTPRoute resource that matches incoming traffic on the `external-rewrite.example` domain and forwards traffic to the {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} that you created. Because the {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} expects a different domain, you use the `URLRewrite` filter to rewrite the hostname from `external-rewrite.example` to `httpbin.org`. 
+2. Create an HTTPRoute resource that matches incoming traffic on the `external-rewrite.example` domain and forwards traffic to the {{< reuse "/agw-docs/snippets/backend.md" >}} that you created. Because the {{< reuse "/agw-docs/snippets/backend.md" >}} expects a different domain, you use the `URLRewrite` filter to rewrite the hostname from `external-rewrite.example` to `httpbin.org`. 
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -164,7 +163,7 @@ EOF
               hostname: "httpbin.org"
           backendRefs:
           - name: httpbin
-            kind: {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}}
+            kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
             group: agentgateway.dev
    EOF
    ```
@@ -219,7 +218,7 @@ EOF
 ```sh
 kubectl delete httproute httpbin-rewrite -n httpbin
 kubectl delete httproute backend-rewrite -n httpbin
-kubectl delete {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} httpbin -n httpbin
+kubectl delete {{< reuse "/agw-docs/snippets/backend.md" >}} httpbin -n httpbin
 ```
 
 

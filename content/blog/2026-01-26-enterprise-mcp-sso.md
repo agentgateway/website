@@ -1,5 +1,6 @@
 ---
 title: Enterprise MCP SSO With Microsoft Entra and Agentgateway
+category: "Tutorial"
 toc: false
 publishDate: 2026-01-26T00:00:00-00:00
 author: Christian Posta

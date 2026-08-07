@@ -1,0 +1,46 @@
+# Companies shown in the "Contributing Companies" marquee on the homepage.
+#
+# Rendered by layouts/partials/homepage-content.html, which loops over this file
+# twice — once visibly, once as an aria-hidden duplicate that makes the marquee
+# scroll seamlessly. Add each company here exactly once; the duplicate is
+# generated for you.
+#
+# Logo requirements (transparent background, one-color silhouette, sizing):
+# see CONTRIBUTING.md
+#
+#   - name:  Display name. Used for both the caption and the image alt text.
+#   - logo:  Absolute path to the file under static/. New logos belong in
+#            static/logos/; some older assets still live elsewhere.
+
+- name: AAIF
+  logo: /aaif-light.svg
+
+- name: Solo.io
+  logo: /logos/solo-io.png
+
+- name: Microsoft
+  logo: /quotes/microsoft.svg
+
+- name: Alibaba
+  logo: /logos/alibaba.svg
+
+- name: Adobe
+  logo: /logos/adobe.svg
+
+- name: AWS
+  logo: /logos/aws.svg
+
+- name: Cisco
+  logo: /logos/cisco.svg
+
+- name: Salesforce
+  logo: /logos/salesforce.svg
+
+- name: Huawei
+  logo: /logos/huawei.svg
+
+- name: Amdocs
+  logo: /logos/amdocs.svg
+
+- name: iFlytek
+  logo: /logos/iflytek.png

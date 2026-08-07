@@ -9,6 +9,7 @@ Reference for `agctl`, the command-line tool that you use to inspect and debug a
 
 To install `agctl`, see [Install agctl]({{< link-hextra path="/operations/agctl" >}}).
 
-{{< callout type="warning">}}
-{{< reuse "agw-docs/snippets/feature-experimental.md">}}
-{{< /callout >}}
+To generate a model cost catalog with `agctl costs import` and wire it into agentgateway, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
+
+> [!WARNING]
+> {{< reuse "agw-docs/snippets/feature-experimental.md">}}

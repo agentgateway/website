@@ -1,16 +1,16 @@
 ---
 title: External processing (ExtProc)
 weight: 10
-description:
+description: Modify requests and responses with an external gRPC processing server.
 test:
   extproc:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/latest/traffic-management/extproc.md
+  - file: ${versionRoot}/traffic-management/extproc.md
     path: extproc
 ---
 
@@ -18,7 +18,7 @@ Modify aspects of an HTTP request or response with an external processing server
 
 ## About external processing
 
-With the external processing, you can implement an external gRPC processing server that can read and modify all aspects of an HTTP request or response, and add that server to the agentgateway proxy processing chain. The external service can manipulate headers, body, and trailers of a request or response before it is forwarded to an upstream or downstream service. The request or response can also be terminated at any given time.
+With the external processing, you can implement an external gRPC processing server that can read and modify all aspects of an HTTP request or response, and add that server to the agentgateway proxy processing chain. The external service can manipulate headers of a request before it is forwarded to an upstream or downstream service. The request or response can also be terminated at any given time.
 
 With this approach, you have the flexibility to apply your requirements to all types of apps, without the need to run WebAssembly or other custom scripts.
 
@@ -148,11 +148,11 @@ EOF
 
 You can enable ExtProc for a particular route in an HTTPRoute resource. 
    
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that enables external processing for the agentgateway-proxy.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that enables external processing for the agentgateway-proxy.
    ```yaml {paths="extproc"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: extproc
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -238,6 +238,87 @@ EOF
    ...
    ```
 
+## Configure processing options
+
+By default, ExtProc sends request headers, response headers, request trailers, and response trailers to the external processor, and streams request and response bodies. To change which request or response phases are sent to the external processor, configure `traffic.extProc.processingOptions`.
+
+> [!NOTE]
+> The default body mode is `FullDuplexStreamed`. If the external processor must inspect a complete body before the gateway forwards it, use `Buffered` or `BufferedPartial` and account for the gateway's body buffer limit, which defaults to 2 MiB. To change the limit, set `frontend.http.maxBufferSize` in an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the Gateway. For more information, see [Buffer limits]({{< link-hextra path="/traffic-management/buffering/" >}}).
+
+| Field | Default | Values | Description |
+| --- | --- | --- | --- |
+| `traffic.extProc.processingOptions.requestHeaderMode` | `Send` | `Send`, `Skip` | Send or skip request headers. |
+| `traffic.extProc.processingOptions.responseHeaderMode` | `Send` | `Send`, `Skip` | Send or skip response headers. |
+| `traffic.extProc.processingOptions.requestBodyMode` | `FullDuplexStreamed` | `None`, `Buffered`, `BufferedPartial`, `FullDuplexStreamed` | Control how request bodies are sent. `None` skips the body. `Buffered` buffers the full body and returns an error if the body is larger than the gateway's body buffer limit, 2 MiB by default. `BufferedPartial` buffers up to that limit and sends the buffered prefix if the body is larger. `FullDuplexStreamed` streams the body to the external processor. |
+| `traffic.extProc.processingOptions.responseBodyMode` | `FullDuplexStreamed` | `None`, `Buffered`, `BufferedPartial`, `FullDuplexStreamed` | Control how response bodies are sent. The body modes behave the same as `requestBodyMode`, but apply to upstream responses. |
+| `traffic.extProc.processingOptions.requestTrailerMode` | `Send` | `Send`, `Skip` | Send or skip request trailers. |
+| `traffic.extProc.processingOptions.responseTrailerMode` | `Send` | `Send`, `Skip` | Send or skip response trailers. |
+| `traffic.extProc.processingOptions.allowModeOverride` | `false` | `true`, `false` | Allow `mode_override` values returned by the external processor in matching header responses to update later request and response processing phases for the same exchange. |
+
+The following example sends headers and trailers, buffers request bodies up to the body buffer limit, skips response bodies, and allows the external processor to override later processing phases after a matching header response.
+
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: extproc-processing-options
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway-proxy
+  traffic:
+    extProc:
+      backendRef:
+        name: ext-proc-grpc
+        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+        port: 4444
+      processingOptions:
+        requestHeaderMode: Send
+        responseHeaderMode: Send
+        requestBodyMode: BufferedPartial
+        responseBodyMode: None
+        requestTrailerMode: Send
+        responseTrailerMode: Send
+        allowModeOverride: true
+```
+
+You can also set `processingOptions` inside a conditional ExtProc policy. Each conditional policy can use different phase settings.
+
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: extproc-conditional-processing
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway-proxy
+  traffic:
+    extProc:
+      conditional:
+      - condition: 'request.path.startsWith("/upload")'
+        policy:
+          backendRef:
+            name: ext-proc-grpc
+            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+            port: 4444
+          processingOptions:
+            requestBodyMode: Buffered
+            responseBodyMode: None
+      - policy:
+          backendRef:
+            name: ext-proc-grpc
+            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+            port: 4444
+          processingOptions:
+            requestBodyMode: None
+            responseBodyMode: None
+```
+
 ## Conditional execution
 
 To send only certain requests through external processing, use the `conditional` field on your `extProc` policy. For example, you can route LLM chat traffic through a content filter and bypass the processor for every other request. For details, see [Conditional policies]({{< link-hextra path="/about/policies/conditional-policies" >}}).
@@ -247,7 +328,7 @@ To send only certain requests through external processing, use the `conditional`
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} extproc -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} extproc -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete deployment ext-proc-grpc -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete service ext-proc-grpc -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

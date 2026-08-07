@@ -32,9 +32,8 @@ llm:
    http://localhost:3000
    ```
 
-   {{< callout type="info" >}}
-   You do not need to provide LLM provider credentials (such as an API key) through Cursor. The credentials are configured in agentgateway. Toggle off any API key overrides in Cursor.
-   {{< /callout >}}
+   > [!NOTE]
+   > You do not need to provide LLM provider credentials (such as an API key) through Cursor. The credentials are configured in agentgateway. Toggle off any API key overrides in Cursor.
 
 ## Verify the connection
 

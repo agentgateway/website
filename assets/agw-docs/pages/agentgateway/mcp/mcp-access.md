@@ -1,8 +1,7 @@
 Control access or route traffic based on verified claims in a JSON web token (JWT).
 
-{{< callout type="info" >}}
-This guide shows how to enforce a standard JWT authentication policy on MCP servers. This policy is not specific to MCP, but can be used for basic service-to-service scenarios involving MCPs. However, for most MCP-specific authentication scenarios, see the MCP-native [MCP authentication guide]({{< link-hextra path="/mcp/auth/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> This guide shows how to enforce a standard JWT authentication policy on MCP servers. This policy is not specific to MCP, but can be used for basic service-to-service scenarios involving MCPs. However, for most MCP-specific authentication scenarios, see the MCP-native [MCP authentication guide]({{< link-hextra path="/mcp/auth/" >}}). For general authorization concepts, see the [Authorization guide]({{< link-hextra path="/security/authorization/" >}}).
 
 ## About JWT auth
 
@@ -20,8 +19,8 @@ sequenceDiagram
 ```
 
 1. The MCP client, such as the MCP inspector tool, sends a request to the agentgateway proxy with the JWT token in the `Authorization` header. 
-2. The agentgateway proxy validates the JWT with the JWKS server that you define in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. This policy is applied to the agentgateway proxy. 
-3. If the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} further defines RBAC rules, such as to only grant access for JWT tokens with certain claims, the agentgateway proxy validates these claims and either grants or denies access. 
+2. The agentgateway proxy validates the JWT with the JWKS server that you define in the {{< reuse "agw-docs/snippets/policy.md" >}} resource. This policy is applied to the agentgateway proxy. 
+3. If the {{< reuse "agw-docs/snippets/policy.md" >}} further defines RBAC rules, such as to only grant access for JWT tokens with certain claims, the agentgateway proxy validates these claims and either grants or denies access. 
 4. If successfully validated and authorized, the agentgateway proxy forwards the request to the MCP backend. 
 
 {{< reuse "agw-docs/pages/agentgateway/mcp/mcp-auth-vs-jwt.md" >}}
@@ -37,11 +36,11 @@ For more information, see the [MCP auth docs]({{< link-hextra path="/mcp/auth/">
 
 You can configure your agentgateway proxy to validate JWT tokens that are sent by an MCP client in an `Authorization` header. 
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your JWT validation rules and apply it to the agentgateway proxy that you created before you began. In this example, you use an inline, local JSON Web Key Set (JWKS) to verify the JWT. 
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with your JWT validation rules and apply it to the agentgateway proxy that you created before you began. In this example, you use an inline, local JSON Web Key Set (JWKS) to verify the JWT. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: jwt
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -85,7 +84,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    {{% tab name="CLI" %}}
    1. Send a request to the MCP server.   
       ```sh
-      npx @modelcontextprotocol/inspector@0.18.0 \
+      npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
       --cli http://localhost:8080/mcp-github \
       --transport http \
       --header "mcp-protocol-version: 2024-11-05" \
@@ -101,7 +100,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    {{% tab name="UI" %}}
    1. From the terminal, run the MCP Inspector command. Then, the MCP Inspector opens in your browser. If the MCP inspector tool does not open automatically, run `mcp-inspector`. 
       ```sh
-      npx modelcontextprotocol/inspector#{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
+      npx @modelcontextprotocol/inspector@{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
       ```
    
    2. From the MCP Inspector menu, try to connect to your agentgateway address as follows:
@@ -116,7 +115,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
       Connection Error - Check if your MCP server is running and proxy token is correct
       ```
    
-      {{< reuse-image src="img/mcp-github-error.png" >}}
+      {{< reuse-image-light src="img/mcp-github-error.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-error-dark.png" >}}
    {{% /tab %}}
    {{< /tabs >}}
@@ -125,7 +124,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    {{< tabs >}}
    {{% tab name="CLI" %}}
    ```sh
-   npx @modelcontextprotocol/inspector@0.18.0 \
+   npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
    --transport http \
    --header "mcp-protocol-version: 2024-11-05" \
@@ -156,7 +155,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
       * Click **Connect**.
 
    2. Verify that the connection now succeeds because a valid token was provided in an `Authorization` header to your agentgateway proxy: 
-      {{< reuse-image src="img/mcp-github-success.png" >}}
+      {{< reuse-image-light src="img/mcp-github-success.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-success-dark.png" >}}
 
    {{% /tab %}}
@@ -166,7 +165,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    {{< tabs >}}
    {{% tab name="CLI" %}}
    ```sh
-   npx @modelcontextprotocol/inspector@0.18.0 \
+   npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
    --transport http \
    --header "mcp-protocol-version: 2024-11-05" \
@@ -197,7 +196,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
       * Click **Connect**.
 
    2. Verify that you can also connect to your MCP server successfully.
-      {{< reuse-image src="img/mcp-github-success.png" >}}
+      {{< reuse-image-light src="img/mcp-github-success.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-success-dark.png" >}}
 
    {{% /tab %}}
@@ -207,7 +206,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    {{< tabs >}}
    {{% tab name="CLI" %}}
    ```sh
-   npx @modelcontextprotocol/inspector@0.18.0 \
+   npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
    --transport http \
    --header "mcp-protocol-version: 2024-11-05" \
@@ -232,7 +231,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
       * Click **Connect**.
 
    2. Verify that the connection fails, because no valid JWT token was provided. 
-      {{< reuse-image src="img/mcp-github-error.png" >}}
+      {{< reuse-image-light src="img/mcp-github-error.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-error-dark.png" >}}
 
    {{% /tab %}}
@@ -254,11 +253,11 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
 
 You can limit access to the MCP server based on specific JWT claims with CEL-based RBAC rules. 
 
-1. Update the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to add your RBAC rules. In the following example, you use a CEL expression to only allow access to the MCP server if the JWT has the `sub=alice` claim. 
+1. Update the {{< reuse "agw-docs/snippets/policy.md" >}} to add your RBAC rules. In the following example, you use a CEL expression to only allow access to the MCP server if the JWT has the `sub=alice` claim. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: jwt
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -287,7 +286,7 @@ You can limit access to the MCP server based on specific JWT claims with CEL-bas
    {{< tabs >}}
    {{% tab name="CLI" %}}
    ```sh
-   npx @modelcontextprotocol/inspector@0.18.0 \
+   npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
    --transport http \
    --header "mcp-protocol-version: 2024-11-05" \
@@ -318,7 +317,7 @@ You can limit access to the MCP server based on specific JWT claims with CEL-bas
       * Click **Connect**.
 
    2. Verify that the connection succeeds, because the JWT contains the `sub=alice` claim. 
-      {{< reuse-image src="img/mcp-github-success.png" >}}
+      {{< reuse-image-light src="img/mcp-github-success.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-success-dark.png" >}}
 
    {{% /tab %}}
@@ -328,7 +327,7 @@ You can limit access to the MCP server based on specific JWT claims with CEL-bas
    {{< tabs >}}
    {{% tab name="CLI" %}}
    ```sh
-   npx @modelcontextprotocol/inspector@0.18.0 \
+   npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
    --transport http \
    --header "mcp-protocol-version: 2024-11-05" \
@@ -353,7 +352,7 @@ You can limit access to the MCP server based on specific JWT claims with CEL-bas
       * Click **Connect**.
 
    2. Verify that the request fails, because the JWT does not have the `sub=alice` claim. 
-      {{< reuse-image src="img/mcp-github-error.png" >}}
+      {{< reuse-image-light src="img/mcp-github-error.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-error-dark.png" >}}
 
    {{% /tab %}}
@@ -371,7 +370,7 @@ Explore how to [control access to tools]({{< link-hextra path="/mcp/tool-access/
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} github-mcp-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete HTTPRoute mcp-github -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} jwt -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} jwt -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
    
 

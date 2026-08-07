@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Gateway config for the populated MCP playground capture. Mirrors the streamable-HTTP
+# MCP connect guide (content/docs/standalone/latest/mcp/connect/http.md) with two
+# adjustments for capturing inside the sl8 container:
+#
+#   - mcp.port is 3030 (not 3000): the playground connects browser-side to
+#     http://localhost:<mcp.port>/mcp, so this port must be free on the host AND mapped
+#     identically (docker -p 3030:3030). Host 3000 is commonly taken by another gateway.
+#   - target host is host.docker.internal:3005: the MCP test server (server-everything)
+#     runs on the host; the container reaches it via host.docker.internal.
+mcp:
+  port: 3030
+  policies:
+    cors:
+      allowOrigins:
+        - "*"
+      allowHeaders:
+        - "*"
+      exposeHeaders:
+        - "Mcp-Session-Id"
+  targets:
+    - name: everything
+      mcp:
+        host: http://host.docker.internal:3005/mcp/

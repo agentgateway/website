@@ -29,8 +29,9 @@
             be injected between the "Interactive reference" and "Field reference"
             headings without passing through Goldmark (which corrupts <script>).
           */}}
+          {{- $content := replace .Content "<div id=ks-widget-slot></div>" "<div id=\"ks-widget-slot\"></div>" }}
           {{- $sentinel := "<div id=\"ks-widget-slot\"></div>" }}
-          {{- $parts := split .Content $sentinel }}
+          {{- $parts := split $content $sentinel }}
           {{- index $parts 0 | safeHTML }}
           {{- with .Params.widgetHtml }}
             <div style="--ks-sticky-top: 7rem;">{{ . | safeHTML }}</div>

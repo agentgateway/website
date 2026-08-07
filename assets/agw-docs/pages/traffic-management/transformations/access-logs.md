@@ -1,4 +1,4 @@
-When building or debugging transformations, you can log CEL variables to inspect what values are available at runtime. Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with `spec.frontend.accessLog` to add custom attributes to the structured access log using CEL expressions.
+When building or debugging transformations, you can log CEL variables to inspect what values are available at runtime. Configure an {{< reuse "agw-docs/snippets/policy.md" >}} resource with `spec.frontend.accessLog` to add custom attributes to the structured access log using CEL expressions.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
@@ -6,12 +6,12 @@ When building or debugging transformations, you can log CEL variables to inspect
 
 Add access log attributes with CEL expressions.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that targets your Gateway and adds CEL variables as log attributes.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that targets your Gateway and adds CEL variables as log attributes.
 
    ```yaml {paths="access-logs"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: access-logs
      namespace: agentgateway-system
@@ -85,12 +85,12 @@ Add access log attributes with CEL expressions.
 
 Add a `filter` CEL expression to log only requests that match a condition. This configuration is useful for reducing log volume by capturing only error responses or specific traffic patterns.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with a `filter` field that logs requests only if the response status code that is equal to or higher than 400. 
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with a `filter` field that logs requests only if the response status code that is equal to or higher than 400. 
 
    ```yaml {paths="access-logs-filter"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: access-logs
      namespace: agentgateway-system
@@ -198,5 +198,5 @@ Add a `filter` CEL expression to log only requests that match a condition. This 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="access-logs,access-logs-filter"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} access-logs -n agentgateway-system
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n agentgateway-system
 ```

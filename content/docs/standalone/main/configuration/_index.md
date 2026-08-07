@@ -2,7 +2,7 @@
 title: Configuration
 weight: 22
 icon: tune
-description: 
+description: Entry point to configuring gateways, listeners, routes, backends, and policies in agentgateway.
 test: skip
 ---
 

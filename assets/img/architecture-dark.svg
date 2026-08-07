@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">agentgateway architecture</title>
+  <desc id="desc">Requests from command-line tools, AI agents, and applications flow through agentgateway to AI agents, model providers, MCP and A2A servers, and APIs.</desc>
+
+  <defs>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#8a3ffc" class="halo-core"/>
+      <stop offset=".62" stop-color="#8a3ffc" class="halo-edge"/>
+      <stop offset="1" stop-color="#8a3ffc" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" class="grid-line"/>
+    </pattern>
+
+    <symbol id="terminal" viewBox="0 0 24 24">
+      <path d="M2 4h20v16H2zM6 9l3 3-3 3m6 0h6"/>
+    </symbol>
+    <symbol id="agent" viewBox="0 0 24 24">
+      <path d="M3 10a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4zm9-8v4M3 14H2m20 0h-1"/>
+      <circle cx="9" cy="13" r="1.2" class="icon-fill"/>
+      <circle cx="15" cy="13" r="1.2" class="icon-fill"/>
+    </symbol>
+    <symbol id="person" viewBox="0 0 24 24">
+      <circle cx="12" cy="8" r="3.5"/>
+      <path d="M5 20a7 7 0 0 1 14 0"/>
+    </symbol>
+    <symbol id="api" viewBox="0 0 24 24">
+      <path d="M9 6 3 12l6 6m6-12 6 6-6 6m-1-14-4 16"/>
+    </symbol>
+    <symbol id="openai" viewBox="0 0 24 24">
+      <path d="M9.205 8.658v-2.26c0-.19.072-.333.238-.428l4.543-2.616c.619-.357 1.356-.523 2.117-.523 2.854 0 4.662 2.212 4.662 4.566 0 .167 0 .357-.024.547l-4.71-2.759a.797.797 0 0 0-.856 0l-5.97 3.473zm10.609 8.8V12.06c0-.333-.143-.57-.429-.737l-5.97-3.473 1.95-1.118a.433.433 0 0 1 .476 0l4.543 2.617c1.309.76 2.189 2.378 2.189 3.948 0 1.808-1.07 3.473-2.76 4.163zM7.802 12.703l-1.95-1.142c-.167-.095-.239-.238-.239-.428V5.899c0-2.545 1.95-4.472 4.591-4.472 1 0 1.927.333 2.712.928L8.23 5.067c-.285.166-.428.404-.428.737v6.898zM12 15.128l-2.795-1.57v-3.33L12 8.658l2.795 1.57v3.33L12 15.128zm1.796 7.23c-1 0-1.927-.332-2.712-.927l4.686-2.712c.285-.166.428-.404.428-.737v-6.898l1.974 1.142c.167.095.238.238.238.428v5.233c0 2.545-1.974 4.472-4.614 4.472zm-5.637-5.303-4.544-2.617c-1.308-.761-2.188-2.378-2.188-3.948A4.482 4.482 0 0 1 4.21 6.327v5.423c0 .333.143.571.428.738l5.947 3.449-1.95 1.118a.432.432 0 0 1-.476 0zm-.262 3.9c-2.688 0-4.662-2.021-4.662-4.519 0-.19.024-.38.047-.57l4.686 2.71c.286.167.571.167.856 0l5.97-3.448v2.26c0 .19-.07.333-.237.428l-4.543 2.616c-.619.357-1.356.523-2.117.523zm5.899 2.83a5.947 5.947 0 0 0 5.827-4.756C22.287 18.339 24 15.84 24 13.296c0-1.665-.713-3.282-1.998-4.448.119-.5.19-.999.19-1.498 0-3.401-2.759-5.947-5.946-5.947-.642 0-1.26.095-1.88.31A5.962 5.962 0 0 0 10.205 0a5.947 5.947 0 0 0-5.827 4.757C1.713 5.447 0 7.945 0 10.49c0 1.666.713 3.283 1.998 4.448-.119.5-.19 1-.19 1.499 0 3.401 2.759 5.946 5.946 5.946.642 0 1.26-.095 1.88-.309a5.96 5.96 0 0 0 4.162 1.713z"/>
+    </symbol>
+    <symbol id="anthropic" viewBox="0 0 24 24">
+      <path d="M13.827 3.52h3.603L24 20h-3.603l-6.57-16.48zm-7.258 0h3.767L16.906 20h-3.674l-1.343-3.461H5.017l-1.344 3.46H0L6.57 3.522zm4.132 9.959L8.453 7.687 6.205 13.48H10.7z"/>
+    </symbol>
+    <symbol id="mcp" viewBox="0 0 180 180">
+      <path d="M18 84.85 85.88 16.97c9.37-9.37 24.57-9.37 33.94 0s9.38 24.57 0 33.94l-51.26 51.27"/>
+      <path d="m69.27 101.47 50.55-50.56c9.38-9.37 24.57-9.37 33.95 0l.35.36c9.37 9.37 9.37 24.56 0 33.94l-61.4 61.39a8 8 0 0 0 0 11.31l12.61 12.61"/>
+      <path d="m102.85 33.94-50.2 50.21c-9.37 9.37-9.37 24.56 0 33.94s24.57 9.37 33.94 0l50.2-50.21"/>
+    </symbol>
+
+    <style>
+      :root{color-scheme:dark}
+      .canvas{fill:#0b0e18}
+      .grid-line{fill:none;stroke:#fff;stroke-opacity:.025}
+      .halo-core{stop-opacity:.34}
+      .halo-edge{stop-opacity:.08}
+      .eyebrow{fill:#8b90a3;font:600 11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em}
+      .eyebrow-strong{fill:#e6e8f2;font:700 13px Inter,ui-sans-serif,system-ui,sans-serif;letter-spacing:.16em}
+      .trace{fill:none;stroke:#fff;stroke-opacity:.16;stroke-width:1.25}
+      .trace-accent{fill:none;stroke:#8a3ffc;stroke-opacity:.72;stroke-width:1.5}
+      .node{fill:#161b2b;stroke:#fff;stroke-opacity:.13}
+      .icon-bg{fill:#fff;fill-opacity:.045;stroke:#fff;stroke-opacity:.11}
+      .icon{fill:none;stroke:#e8eaf2;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+      .icon-fill,.brand{fill:#e8eaf2;stroke:none}
+      .mcp{fill:none;stroke:#e8eaf2;stroke-width:14;stroke-linecap:round}
+      .label{fill:#f5f6fa;font:500 14px Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;dominant-baseline:middle}
+      .sub{fill:#9297aa;font:400 10px Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;dominant-baseline:middle}
+      .pill{fill:#161b2b;stroke:#fff;stroke-opacity:.16}
+      .pill-label{fill:#f5f6fa;font:500 13px Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-anchor:middle;dominant-baseline:middle}
+      .leader{fill:none;stroke:#fff;stroke-opacity:.22;stroke-dasharray:2 4}
+      .pin{fill:#fff;fill-opacity:.18}
+      .arrow{fill:#8b90a3}
+    </style>
+  </defs>
+
+  <rect width="1280" height="720" rx="24" class="canvas"/>
+  <rect width="1280" height="720" rx="24" fill="url(#grid)"/>
+  <circle cx="640" cy="360" r="300" fill="url(#halo)"/>
+
+  <!-- Headings -->
+  <path d="M610 100h60" class="trace"/>
+  <text x="640" y="120" class="eyebrow" text-anchor="middle">AGENTGATEWAY · CONTROL PLANE</text>
+
+  <!-- Request and response traces -->
+  <path d="M304 256h116q12 0 12 12v42q0 12 12 12h116M304 360h256M304 464h116q12 0 12-12v-42q0-12 12-12h116" class="trace"/>
+  <path d="M304 256h116q12 0 12 12v42q0 12 12 12h116M304 360h256M304 464h116q12 0 12-12v-42q0-12 12-12h116" class="trace-accent" stroke-dasharray="5 18"/>
+  <path d="M720 288h110q12 0 12-12v-88q0-12 12-12h122M720 324h140q12 0 12-12v-28q0-12 12-12h92M720 360h256M720 396h140q12 0 12 12v28q0 12 12 12h92M720 432h110q12 0 12 12v88q0 12 12 12h122" class="trace"/>
+  <path d="M720 288h110q12 0 12-12v-88q0-12 12-12h122M720 324h140q12 0 12-12v-28q0-12 12-12h92M720 360h256M720 396h140q12 0 12 12v28q0 12 12 12h92M720 432h110q12 0 12 12v88q0 12 12 12h122" class="trace-accent" stroke-dasharray="5 24"/>
+
+  <!-- Source nodes -->
+  <g transform="translate(64 224)">
+    <rect width="240" height="64" rx="14" class="node"/>
+    <rect x="14" y="14" width="36" height="36" rx="10" class="icon-bg"/>
+    <use href="#terminal" x="20" y="20" width="24" height="24" class="icon"/>
+    <text x="64" y="26" class="label">CLI / IDE</text>
+    <text x="64" y="44" class="sub">Claude, Codex, OpenCode</text>
+  </g>
+  <g transform="translate(64 328)">
+    <rect width="240" height="64" rx="14" class="node"/>
+    <rect x="14" y="14" width="36" height="36" rx="10" class="icon-bg"/>
+    <use href="#agent" x="20" y="20" width="24" height="24" class="icon"/>
+    <text x="64" y="26" class="label">AI agents</text>
+    <text x="64" y="44" class="sub">LangSmith, CrewAI, ADK</text>
+  </g>
+  <g transform="translate(64 432)">
+    <rect width="240" height="64" rx="14" class="node"/>
+    <rect x="14" y="14" width="36" height="36" rx="10" class="icon-bg"/>
+    <use href="#person" x="20" y="20" width="24" height="24" class="icon"/>
+    <text x="64" y="32" class="label">Apps &amp; clients</text>
+  </g>
+
+  <!-- Destination nodes -->
+  <g transform="translate(976 148)">
+    <rect width="240" height="56" rx="14" class="node"/>
+    <rect x="12" y="12" width="32" height="32" rx="9" class="icon-bg"/>
+    <use href="#agent" x="16" y="16" width="24" height="24" class="icon"/>
+    <text x="56" y="28" class="label">AI agents</text>
+  </g>
+  <g transform="translate(976 244)">
+    <rect width="240" height="56" rx="14" class="node"/>
+    <rect x="12" y="12" width="32" height="32" rx="9" class="icon-bg"/>
+    <use href="#openai" x="16" y="16" width="24" height="24" class="brand"/>
+    <text x="56" y="28" class="label">OpenAI</text>
+  </g>
+  <g transform="translate(976 332)">
+    <rect width="240" height="56" rx="14" class="node"/>
+    <rect x="12" y="12" width="32" height="32" rx="9" class="icon-bg"/>
+    <use href="#anthropic" x="16" y="16" width="24" height="24" class="brand"/>
+    <text x="56" y="28" class="label">Anthropic</text>
+  </g>
+  <g transform="translate(976 420)">
+    <rect width="240" height="56" rx="14" class="node"/>
+    <rect x="12" y="12" width="32" height="32" rx="9" class="icon-bg"/>
+    <use href="#mcp" x="16" y="16" width="24" height="24" class="mcp"/>
+    <text x="56" y="28" class="label">MCP / A2A</text>
+  </g>
+  <g transform="translate(976 516)">
+    <rect width="240" height="56" rx="14" class="node"/>
+    <rect x="12" y="12" width="32" height="32" rx="9" class="icon-bg"/>
+    <use href="#api" x="16" y="16" width="24" height="24" class="icon"/>
+    <text x="56" y="28" class="label">APIs / Services</text>
+  </g>
+
+  <!-- Gateway chip and pins -->
+  <g class="pin">
+    <rect x="554" y="319" width="8" height="6" rx="1"/><rect x="554" y="357" width="8" height="6" rx="1"/><rect x="554" y="395" width="8" height="6" rx="1"/>
+    <rect x="718" y="297" width="8" height="6" rx="1"/><rect x="718" y="327" width="8" height="6" rx="1"/><rect x="718" y="357" width="8" height="6" rx="1"/><rect x="718" y="387" width="8" height="6" rx="1"/><rect x="718" y="417" width="8" height="6" rx="1"/>
+  </g>
+  <rect x="560" y="280" width="160" height="160" rx="28" fill="#080a12" stroke="#8a3ffc" stroke-opacity=".75" stroke-width="1.25"/>
+  <rect x="572" y="292" width="136" height="136" rx="20" fill="none" stroke="#8a3ffc" stroke-opacity=".3" stroke-dasharray="2 4"/>
+  <path d="M582 296h-6v6m122-6h6v6M582 424h-6v-6m122 6h6v-6" fill="none" stroke="#8a3ffc" stroke-width="1.5" stroke-linecap="round"/>
+  <g transform="translate(592 316) scale(3)" fill="#8a3ffc">
+    <path d="M16.004 21.525c1.438 0 2.604 1.226 2.604 2.737 0 1.512-1.166 2.738-2.604 2.738S13.4 25.774 13.4 24.262c0-1.511 1.166-2.737 2.604-2.737Z"/>
+    <path d="M22.396 9.129c1.438 0 2.604 1.226 2.604 2.738 0 .527-.142 1.019-.387 1.436a5.35 5.35 0 0 0-.727 2.701c0 .96.251 1.848.681 2.617.274.433.433.953.433 1.512 0 1.512-1.166 2.738-2.604 2.738s-2.603-1.226-2.603-2.738c0-.547.153-1.057.416-1.485.439-.775.696-1.673.696-2.644 0-.994-.269-1.911-.727-2.698a2.85 2.85 0 0 1-.385-1.439c0-1.512 1.165-2.738 2.603-2.738ZM9.604 9.129c1.438 0 2.603 1.226 2.603 2.738 0 .527-.142 1.019-.387 1.436a5.35 5.35 0 0 0-.726 2.701c0 .96.25 1.848.68 2.616.273.434.433.954.433 1.513 0 1.512-1.165 2.738-2.603 2.738C8.166 22.871 7 21.645 7 20.133c0-.548.153-1.058.417-1.486.438-.775.695-1.673.695-2.643 0-.994-.269-1.911-.727-2.698A2.85 2.85 0 0 1 7 11.867c0-1.512 1.166-2.738 2.604-2.738Z"/>
+    <path d="M16.004 5c1.438 0 2.604 1.226 2.604 2.738 0 .558-.16 1.077-.433 1.51a5.31 5.31 0 0 0-.681 2.619c0 .994.269 1.911.727 2.699.245.417.387.91.387 1.438 0 1.512-1.166 2.738-2.604 2.738S13.4 17.516 13.4 16.004c0-.526.142-1.018.387-1.435.458-.788.726-1.705.726-2.702 0-.971-.257-1.87-.696-2.645a2.84 2.84 0 0 1-.416-1.484C13.4 6.226 14.566 5 16.004 5Z"/>
+  </g>
+
+  <!-- Capabilities -->
+  <g transform="translate(466 230)"><rect width="164" height="38" rx="19" class="pill"/><text x="82" y="19" class="pill-label">Traffic Management</text></g>
+  <path d="m548 268 42 12" class="leader"/>
+  <g transform="translate(650 230)"><rect width="164" height="38" rx="19" class="pill"/><text x="82" y="19" class="pill-label">LLM Gateway</text></g>
+  <path d="m732 268-42 12" class="leader"/>
+  <g transform="translate(466 492)"><rect width="164" height="38" rx="19" class="pill"/><text x="82" y="19" class="pill-label">Inference Routing</text></g>
+  <path d="m548 492 42-42" class="leader"/>
+  <g transform="translate(650 492)"><rect width="164" height="38" rx="19" class="pill"/><text x="82" y="19" class="pill-label">MCP / A2A gateway</text></g>
+  <path d="m732 492-42-42" class="leader"/>
+
+  <!-- Direction labels -->
+  <text x="640" y="640" class="eyebrow-strong" text-anchor="middle">ROUTE · SECURE · OBSERVE · GOVERN</text>
+  <path d="M500 660h280" class="trace"/>
+  <path d="m780 660-6-3v6z" class="arrow"/>
+</svg>

@@ -1,5 +1,10 @@
 Route requests to different LLM backends based on request body content, such as the requested model name.
 
+{{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
+> [!NOTE]
+> **Model-centric alternative**: To select a model from request context without writing route matches, you can also use the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.conditional`. For more information, see [Virtual models]({{< link-hextra path="/llm/models/virtual/" >}}).
+{{< /version >}}
+
 ## About content-based routing {#about}
 
 Content-based routing (also known as body-based routing or intelligent routing) allows you to route requests to different backends based on the content of the request body, not just headers or path. This is particularly useful for LLM applications where you want to route to different providers based on the `model` field in the request JSON.
@@ -133,12 +138,12 @@ This example shows how to route requests to different backends based on the `mod
    EOF
    ```
 
-3. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to extract the `model` field from the request body into the `x-model` header. The transformation uses a CEL expression to parse the JSON body and extract the model field. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
+3. Create a {{< reuse "agw-docs/snippets/policy.md" >}} resource to extract the `model` field from the request body into the `x-model` header. The transformation uses a CEL expression to parse the JSON body and extract the model field. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
 
    ```yaml,paths="content-routing"
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: extract-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -359,8 +364,8 @@ This example shows routing based on a custom `priority` field in the request bod
          filters:
            - type: ExtensionRef
              extensionRef:
-               group: {{< reuse "agw-docs/snippets/trafficpolicy-group.md" >}}
-               kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+               group: {{< reuse "agw-docs/snippets/group.md" >}}
+               kind: {{< reuse "agw-docs/snippets/policy.md" >}}
                name: extract-priority
          backendRefs:
            - name: high-priority-backend
@@ -374,8 +379,8 @@ This example shows routing based on a custom `priority` field in the request bod
          filters:
            - type: ExtensionRef
              extensionRef:
-               group: {{< reuse "agw-docs/snippets/trafficpolicy-group.md" >}}
-               kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+               group: {{< reuse "agw-docs/snippets/group.md" >}}
+               kind: {{< reuse "agw-docs/snippets/policy.md" >}}
                name: extract-priority
          backendRefs:
            - name: standard-priority-backend
@@ -385,12 +390,12 @@ This example shows routing based on a custom `priority` field in the request bod
    EOF
    ```
 
-3. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to extract the custom field. Use the `has()` macro to provide a default value if the field is not present. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
+3. Create a {{< reuse "agw-docs/snippets/policy.md" >}} to extract the custom field. Use the `coalesce()` function to provide a default value if the field is not present. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: extract-priority
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -405,7 +410,7 @@ This example shows routing based on a custom `priority` field in the request bod
          request:
            set:
            - name: "x-priority"
-             value: 'has(json(request.body).priority) ? json(request.body).priority : "standard"'
+             value: 'coalesce(json(request.body).priority, "standard")'
    EOF
    ```
 
@@ -439,9 +444,8 @@ This example shows routing based on a custom `priority` field in the request bod
 
 When implementing content-based routing, be aware of these limitations:
 
-{{< callout type="warning" >}}
-**PreRouting phase required**: Content-based routing requires `traffic.phase: PreRouting` and must target the Gateway (not HTTPRoute). This way, transformations run before route selection. Without PreRouting, the extracted header arrives too late for route matching.
-{{< /callout >}}
+> [!WARNING]
+> **PreRouting phase required**: Content-based routing requires `traffic.phase: PreRouting` and must target the Gateway (not HTTPRoute). This way, transformations run before route selection. Without PreRouting, the extracted header arrives too late for route matching.
 
 - **Performance impact**: Extracting fields from the request body adds processing overhead. For high-throughput scenarios, consider using header-based routing when possible.
 - **JSON parsing**: The `json()` CEL function requires valid JSON. Malformed JSON in the request body will cause routing failures.
@@ -452,13 +456,16 @@ When implementing content-based routing, be aware of these limitations:
 
 ```shell
 kubectl delete httproute content-routing priority-routing -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} extract-model extract-priority -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} extract-model extract-priority -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai-backend anthropic-backend high-priority-backend standard-priority-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 ## Next steps
 
 - Learn about [transformations]({{< link-hextra path="/traffic-management/transformations/" >}}) for more advanced request manipulation
+{{% version exclude-if="1.2.x,1.1.x,1.0.x,2.2.x" %}}
+- Route to [multiple inference pools]({{< link-hextra path="/llm/multiple-inference-pools/" >}}) with native body-based routing
+{{% /version %}}
 - Set up [load balancing]({{< link-hextra path="/llm/load-balancing/" >}}) across multiple providers
 - Configure [failover]({{< link-hextra path="/llm/failover/" >}}) for high availability
-- Use [cost tracking]({{< link-hextra path="/llm/cost-tracking/" >}}) to monitor spending per route
+- Use [cost tracking]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}) to monitor spending per route

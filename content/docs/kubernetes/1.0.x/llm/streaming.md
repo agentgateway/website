@@ -23,7 +23,7 @@ Click through the following tabs to see the request flows for each.
 {{< tabs >}}
 {{% tab name="Single response" %}}
 
-{{< reuse-image src="/img/aig-streaming-false-light.svg" width="600px" alt="Figure: Response without streaming in a single chunk" caption="Figure: Response without streaming in a single chunk">}}
+{{< reuse-image-light src="/img/aig-streaming-false-light.svg" width="600px" alt="Figure: Response without streaming in a single chunk" caption="Figure: Response without streaming in a single chunk">}}
 
 {{< reuse-image-dark srcDark="/img/aig-streaming-false-dark.svg" width="600px" alt="Figure: Response without streaming in a single chunk" caption="Figure: Response without streaming in a single chunk">}}
 
@@ -35,7 +35,7 @@ Click through the following tabs to see the request flows for each.
 {{% /tab %}}
 {{% tab name="Streaming" %}}
 
-{{< reuse-image src="/img/aig-streaming-true-light.svg" width="600px" alt="Figure: Response in a stream of chunks" caption="Figure: Response in a stream of chunks">}}
+{{< reuse-image-light src="/img/aig-streaming-true-light.svg" width="600px" alt="Figure: Response in a stream of chunks" caption="Figure: Response in a stream of chunks">}}
 {{< reuse-image-dark srcDark="/img/aig-streaming-true-dark.svg" width="600px" alt="Figure: Response in a stream of chunks" caption="Figure: Response in a stream of chunks">}}
 
 1. The client sends a request with streaming enabled.
@@ -94,13 +94,13 @@ For more information, see the LLM provider docs:
 
 ### TrafficPolicy for Gemini, Vertex {#policy}
 
-Google uses an HTTP stream protocol which requires special handling. {{< reuse "agw-docs/snippets/agentgateway.md" >}} automatically handles this for Gemini and Vertex when you configure the route type with a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+Google uses an HTTP stream protocol which requires special handling. {{< reuse "agw-docs/snippets/agentgateway.md" >}} automatically handles this for Gemini and Vertex when you configure the route type with a {{< reuse "agw-docs/snippets/policy.md" >}}.
 
-In the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} for the HTTPRoute to the LLM provider, set the `routeType` option to `CHAT_STREAMING`, such as the following example:
+In the {{< reuse "agw-docs/snippets/policy.md" >}} for the HTTPRoute to the LLM provider, set the `routeType` option to `CHAT_STREAMING`, such as the following example:
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: gemini-opt
   namespace: default
@@ -116,7 +116,7 @@ spec:
 For more information, see the LLM provider docs:
 
 - [Gemini](https://ai.google.dev/gemini-api/docs/text-generation#streaming-responses)
-- [Vertex](https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.endpoints/serverStreamingPredict)
+- [Vertex](https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/rest)
 
 ## Streaming example {#example}
 

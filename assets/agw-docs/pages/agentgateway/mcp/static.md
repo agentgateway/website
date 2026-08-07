@@ -106,10 +106,11 @@ spec:
   mcp:
     targets:
     - name: mcp-target
-      backendRef:
-        name: mcp-website-fetcher
-      port: 80
-      protocol: SSE
+      static:
+        backendRef:
+          name: mcp-website-fetcher
+        port: 80
+        protocol: SSE
 ```
 {{% /tab %}}
 {{< /tabs >}}
@@ -177,7 +178,7 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 
 2. From the terminal, run the MCP Inspector command. Then, the MCP Inspector opens in your browser. If the MCP inspector tool does not open automatically, run `mcp-inspector`. 
    ```sh
-   npx modelcontextprotocol/inspector#{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
+   npx @modelcontextprotocol/inspector@{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
    ```
    
 3. From the MCP Inspector menu, connect to your agentgateway address as follows:
@@ -185,17 +186,26 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
    * **URL**: Enter the agentgateway address, port, and the `/mcp` path. If your agentgateway proxy is exposed with a LoadBalancer server, use `http://<lb-address>/mcp`. In local test setups where you port-forwarded the agentgateway proxy on your local machine, use `http://localhost:8080/mcp`.
    * Click **Connect**.
 
-   {{< reuse-image src="img/mcp-inspector-connected.png" >}}
+   {{< reuse-image-light src="img/mcp-inspector-connected.png" >}}
    {{< reuse-image-dark srcDark="img/mcp-inspector-connected-dark.png" >}}
 
 4. From the menu bar, click the **Tools** tab. Then from the **Tools** pane, click **List Tools** and select the `fetch` tool. 
 5. From the **fetch** pane, in the **url** field, enter a website URL, such as `https://lipsum.com/`, and click **Run Tool**.
 6. Verify that you get back the fetched URL content.
 
-   {{< reuse-image src="img/mcp-inspector-fetch.png" >}}
+   {{< reuse-image-light src="img/mcp-inspector-fetch.png" >}}
    {{< reuse-image-dark srcDark="img/mcp-inspector-fetch-dark.png" >}}
 
 {{% /steps %}}
+
+{{% version exclude-if="1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{< reuse "agw-docs/snippets/verify-admin-ui.md" >}}
+
+{{% conditional-text include-if="kubernetes" %}}
+   {{< reuse-image-light src="img/agentgateway-ui-kube-route-mcp.png" width="600px">}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-route-mcp-dark.png" width="600px">}}
+{{% /conditional-text %}}
+{{% /version %}}
 
 ## Connect an IDE
 

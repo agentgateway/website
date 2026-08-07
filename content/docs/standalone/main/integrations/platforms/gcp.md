@@ -22,7 +22,7 @@ Run agentgateway as a serverless container on Cloud Run.
 
 ```bash
 gcloud run deploy agentgateway \
-  --image ghcr.io/agentgateway/agentgateway:latest \
+  --image cr.agentgateway.dev/agentgateway:latest \
   --port 3000 \
   --set-env-vars "GOOGLE_CLOUD_PROJECT=my-project" \
   --service-account agentgateway@my-project.iam.gserviceaccount.com \

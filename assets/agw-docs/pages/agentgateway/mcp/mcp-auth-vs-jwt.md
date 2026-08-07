@@ -1,6 +1,6 @@
 ### MCP auth vs JWT auth
 
-You can configure both MCP and JWT auth with an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. For most MCP cases, choose MCP auth.
+You can configure both MCP and JWT auth with an {{< reuse "agw-docs/snippets/policy.md" >}}. For most MCP cases, choose MCP auth.
 
 * **MCP auth**: Use MCP auth for MCP clients, such as MCP Inspector, VS Code, or Claude Code that need to dynamically discover the auth server and register with your IdP to get a client ID. The agentgateway proxy facilitates the discovery and client registration process between MCP clients and IdPs that do not implement the [MCP OAuth spec](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization). This way, your MCP clients successfully obtain a client ID to complete the OAuth flow. 
 

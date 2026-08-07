@@ -274,7 +274,7 @@ EOF
    - attachedRoutes: 1
    ```
    {{% /tab %}}
-   {{% tab name="ListenerSets" %}}
+   {{% tab name="ListenerSet" %}}
 
    ```sh
    kubectl get listenerset -n httpbin http-listenerset -o yaml

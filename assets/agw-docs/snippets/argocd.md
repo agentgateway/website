@@ -14,7 +14,8 @@
    customresourcedefinition.apiextensions.k8s.io/referencegrants.gateway.networking.k8s.io created
    ```
    
-   {{< callout type="info" >}}If you need to use an experimental feature such as TCPRoutes, install the experimental CRDs. For more information, see [Experimental features in Gateway API]({{< link-hextra path="/reference/versions/#experimental-features">}}).{{< /callout >}}
+   > [!NOTE]
+   > If you need to use an experimental feature such as TCPRoutes, install the experimental CRDs. For more information, see [Experimental features in Gateway API]({{< link-hextra path="/reference/versions/#experimental-features">}}).
    
 2. Port-forward the Argo CD server on port 9999.
    
@@ -26,7 +27,7 @@
 
 4. Log in with the `admin` username and `gateway` password.
    
-   {{< reuse-image src="img/argocd-welcome.png" >}}
+   {{< reuse-image-light src="img/argocd-welcome.png" >}}
    {{< reuse-image-dark srcDark="img/argocd-welcome.png" >}}
 
 5. Create an Argo CD application to deploy the {{< reuse "/agw-docs/snippets/kgateway.md" >}} CRD Helm chart. 
@@ -36,7 +37,7 @@
    apiVersion: argoproj.io/v1alpha1
    kind: Application
    metadata:
-     name: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}-helm
+     name: {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}-helm
      namespace: argocd
    spec:
      destination:
@@ -44,7 +45,7 @@
        server: https://kubernetes.default.svc
      project: default
      source:
-       chart: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+       chart: {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
        helm:
          skipCrds: false
        repoURL: {{< reuse "agw-docs/snippets/helm-shortpath.md" >}}/charts
@@ -70,7 +71,7 @@
    apiVersion: argoproj.io/v1alpha1
    kind: Application
    metadata:
-     name: {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}-helm
+     name: {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}-helm
      namespace: argocd
    spec:
      destination:
@@ -78,7 +79,7 @@
        server: https://kubernetes.default.svc
      project: default
      source:
-       chart: {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+       chart: {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
        helm:
          skipCrds: false
          parameters:
@@ -120,5 +121,5 @@
 
 9. Open the Argo CD UI and verify that you see the Argo CD application with a `Healthy` and `Synced` status.
 
-   {{< reuse-image src="img/argo-app-agw.png" >}}
+   {{< reuse-image-light src="img/argo-app-agw.png" >}}
    {{< reuse-image-dark srcDark="img/argo-app-agw.png" >}}

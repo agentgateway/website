@@ -211,7 +211,7 @@ Set up an HTTP listener on your Gateway.
    - attachedRoutes: 1
    ```
    {{% /tab %}}
-   {{% tab name="ListenerSets (experimental)" %}}
+   {{% tab name="ListenerSet (experimental)" %}}
 
    ```sh
    kubectl get xlistenerset -n httpbin http-listenerset -o yaml

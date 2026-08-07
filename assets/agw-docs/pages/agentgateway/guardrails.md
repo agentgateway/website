@@ -92,7 +92,7 @@ Example configuration file:
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agw-override
@@ -121,9 +121,8 @@ The webhook server is configured to take the following actions:
 * If the content has the word `block`, the request is rejected with a 403 Forbidden response.
 * If the response has the word `mask`, the gateway transforms the word `mask` to asterisks (`****`) in the body with a 200 response.
 
-{{< callout type="warning" >}}
-{{% reuse "agw-docs/snippets/demo-disclaimer.md" %}}
-{{< /callout >}}
+> [!WARNING]
+> {{% reuse "agw-docs/snippets/demo-disclaimer.md" %}}
 
 ### Before you begin
 
@@ -220,13 +219,13 @@ The webhook server is configured to take the following actions:
 
 ### Step 2: Configure the gateway proxy to use the webhook server {#ai-gateway}
 
-Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to use the webhook server for prompt guarding.
+Configure an {{< reuse "agw-docs/snippets/policy.md" >}} to use the webhook server for prompt guarding.
 
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: openai-prompt-guard
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -253,7 +252,7 @@ spec:
 EOF
 ```
 
-{{% reuse "agw-docs/snippets/review-table.md" %}} For more prompt guard options such as custom responses, see the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} API docs for AI.
+{{% reuse "agw-docs/snippets/review-table.md" %}} For more prompt guard options such as custom responses, see the {{< reuse "agw-docs/snippets/policy.md" >}} API docs for AI.
 
 | Setting | Description |
 |---------|-------------|
@@ -261,8 +260,7 @@ EOF
 | `backend.ai.promptGuard` | The AI prompt guarding configuration that you want to set up. In this example, you configure the webhook server for both request and response guardrails. |
 | `webhook.backendRef` | The reference to the webhook server service. The example webhook server is configured to use port 8000. |
 
-
-
+By default, agentgateway calls `POST /request` and `POST /response` on the webhook target.
 
 ### Step 3: Test the webhook server {#test-webhook-server}
 
@@ -272,7 +270,7 @@ EOF
    {{% tab name="Cloud Provider LoadBalancer" %}}   
    ```sh
    curl -vi "$INGRESS_GW_ADDRESS:80/openai" -H content-type:application/json  -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -289,7 +287,7 @@ EOF
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi "localhost:8080/openai" -H content-type:application/json  -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -319,7 +317,7 @@ EOF
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi "$INGRESS_GW_ADDRESS:80/openai" -H content-type:application/json  -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -336,7 +334,7 @@ EOF
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi "localhost:8080/openai" -H content-type:application/json  -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -363,7 +361,7 @@ EOF
      "id": "chatcmpl-BMFO97jLVP4YOjf6CZEOL5sHSqhbn",
      "object": "chat.completion",
      "created": 1744642069,
-     "model": "gpt-3.5-turbo-0125",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
      "choices": [
        {
          "index": 0,
@@ -398,6 +396,63 @@ EOF
    ```
 
 
+### Customize the request path and headers {#webhook-headers}
+
+Use the `webhook.headers` field to set headers on the outgoing webhook request from [CEL expressions]({{< link-hextra path="/reference/cel/" >}}). Set this field when your webhook service hosts other endpoints and cannot dedicate its root path to the guardrail API, or when you want to forward context such as JWT claims to the webhook.
+
+Keys are either regular header names or the `:path`, `:method`, and `:authority` pseudo-headers. Expressions are evaluated against the original client request, not against the webhook request, so `request.*`, `jwt.*`, and `llmRequest.*` all refer to the request that the client sent to the gateway.
+
+For example, the following {{< reuse "agw-docs/snippets/policy.md" >}} forwards the JWT subject and a tenant header to the webhook server that you deployed in this guide. The example webhook server serves the default `/request` and `/response` paths, so this example does not override `:path`.
+
+```yaml
+kubectl apply -f - <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: openai-prompt-guard
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: openai
+  backend:
+    ai:
+      promptGuard:
+        request:
+        - webhook:
+            backendRef:
+              kind: Service
+              name: ai-guardrail-webhook
+              port: 8000
+            headers:
+              x-user: jwt.sub
+              x-tenant: request.headers["x-tenant"]
+              x-model: llmRequest.model
+        response:
+        - webhook:
+            backendRef:
+              kind: Service
+              name: ai-guardrail-webhook
+              port: 8000
+EOF
+```
+
+| Setting | Description |
+|---------|-------------|
+| `webhook.headers` | A map of header names, or the `:path`, `:method`, and `:authority` pseudo-headers, to CEL expressions. Each expression is evaluated against the original client request. |
+| `:path` | Replaces the default `/request` or `/response` path that agentgateway sends to the webhook target. The value is a CEL expression, so a literal path is a quoted string within single quotes, such as `'"/api/guardrails/request"'`. |
+
+To send the guardrail calls to a different path, set the `:path` pseudo-header. Your webhook service must serve that path.
+
+```yaml
+            headers:
+              ":path": '"/api/guardrails/request"'
+```
+
+> [!NOTE]
+> An expression that cannot be evaluated, such as `jwt.sub` on a request with no JWT, omits that header instead of failing the request. A `:path` expression that cannot be evaluated leaves the default `/request` or `/response` path in place. The `llmRequest.*` variables are available on request-phase webhooks only.
+
 ### Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
@@ -408,8 +463,8 @@ EOF
    kubectl delete deploy,svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=ai-guardrail
    ```
 
-2. Delete the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+2. Delete the {{< reuse "agw-docs/snippets/policy.md" >}}.
 
    ```sh
-   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} openai-prompt-guard
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} openai-prompt-guard
    ```

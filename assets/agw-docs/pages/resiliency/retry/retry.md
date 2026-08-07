@@ -1,8 +1,7 @@
 Specify the number of times and duration for the gateway to try a connection to an unresponsive backend service. You might commonly use retries alongside [Timeouts]({{< link-hextra path="/resiliency/timeouts/">}}) to ensure that your apps are available even if they are temporarily unavailable.
 
-{{< callout type="warning" >}}
-{{< reuse "agw-docs/versions/warn-experimental.md" >}}
-{{< /callout >}}
+> [!WARNING]
+> {{< reuse "agw-docs/versions/warn-experimental.md" >}}
 
 ## About request retries
 
@@ -20,7 +19,7 @@ Set up retries to the sample app.
 1. Install the experimental Kubernetes Gateway API CRDs.
 
    ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
 
 2. Create your retry rules. You can choose to apply a retry on an HTTPRoute by using the Kubernetes Gateway API-native approach, or to add a retry to a specific HTTPRoute rule or Gateway listener by using an {{< reuse "agw-docs/snippets/backend.md" >}} resource.
@@ -130,7 +129,7 @@ Set up retries to the sample app.
          ```
 
    {{% /tab %}}
-   {{% tab name="HTTPRoute (EnterpriseAgentgatewayPolicy)" %}}
+   {{% tab name="HTTPRoute and rule (AgentgatewayPolicy)" %}}
    1. Create an HTTPRoute that routes requests along the `retry.example` domain to the sample app.
       ```yaml {paths="retry-in-agentgateway"}
       kubectl apply -f- <<EOF
@@ -158,11 +157,11 @@ Set up retries to the sample app.
       EOF
       ```
 
-   2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies a retry policy to the HTTPRoute rule.
+   2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies a retry policy to the HTTPRoute rule.
       ```yaml {paths="retry-in-agentgateway"}
       kubectl apply -f- <<EOF
-      apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-      kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+      apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+      kind: {{< reuse "agw-docs/snippets/policy.md" >}}
       metadata:
         name: retry
         namespace: httpbin
@@ -268,11 +267,11 @@ Set up retries to the sample app.
             port: 8000
       EOF
       ```
-   2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies a retry policy to the `agentgateway-proxy` Gateway listener. You set up this Gateway in the [before you begin](#before-you-begin) section.
+   2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies a retry policy to the `agentgateway-proxy` Gateway listener. You set up this Gateway in the [before you begin](#before-you-begin) section.
       ```yaml {paths="retry-in-gatewaylistener"}
       kubectl apply -f- <<EOF
-      apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-      kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+      apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+      kind: {{< reuse "agw-docs/snippets/policy.md" >}}
       metadata:
         name: retry
         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -498,8 +497,8 @@ Simulate a failure for the sample app so that you can verify that the request is
    ```sh
    kubectl delete httproute retry -n httpbin
    ```
-2. If you created an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, delete it from the namespace you created it in.
+2. If you created an {{< reuse "agw-docs/snippets/policy.md" >}}, delete it from the namespace you created it in.
    ```sh
-   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n httpbin
-   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} retry -n httpbin
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```

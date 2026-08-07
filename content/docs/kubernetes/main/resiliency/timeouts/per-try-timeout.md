@@ -1,7 +1,7 @@
 ---
 title: Per-try timeouts
 weight: 30
-description:
+description: Set shorter timeouts for individual retry attempts.
 test: skip
 ---
 

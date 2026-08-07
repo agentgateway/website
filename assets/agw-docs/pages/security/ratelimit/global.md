@@ -48,9 +48,9 @@ sequenceDiagram
 
 The global rate limiting feature consists of three components:
 
-1. **{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with rateLimit.global**: Configure your rate limit policy in an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. The rate limit policy includes the descriptors to extract from requests for the Gateway to send to the Rate Limit Service.
+1. **{{< reuse "agw-docs/snippets/policy.md" >}} with rateLimit.global**: Configure your rate limit policy in an {{< reuse "agw-docs/snippets/policy.md" >}}. The rate limit policy includes the descriptors to extract from requests for the Gateway to send to the Rate Limit Service.
 2. **GatewayExtension**: Connect {{< reuse "/agw-docs/snippets/kgateway.md" >}} with the Rate Limit Service by using a kgateway GatewayExtension.
-3. **Rate Limit Service** - An external service that you set up to implement the Envoy Rate Limit protocol. The Rate Limit Service has the actual rate limit values to enforce on requests, based on the descriptors that the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} includes.
+3. **Rate Limit Service** - An external service that you set up to implement the Envoy Rate Limit protocol. The Rate Limit Service has the actual rate limit values to enforce on requests, based on the descriptors that the {{< reuse "agw-docs/snippets/policy.md" >}} includes.
 
 ### Response headers
 
@@ -99,11 +99,11 @@ kubectl describe configmap ratelimit-config -n kgateway-test-extensions
 
 | Field | Description |
 |-------|-------------|
-| domain | Required. A globally unique identifier to group together a set of rate limit rules. This way, different teams can have their own set of rate limits that don't conflict with each other. Later, you set the domain to use in the kgateway GatewayExtension. If you have different domains for different teams, each team can create their own GatewayExtension that their {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} can reference. |
+| domain | Required. A globally unique identifier to group together a set of rate limit rules. This way, different teams can have their own set of rate limits that don't conflict with each other. Later, you set the domain to use in the kgateway GatewayExtension. If you have different domains for different teams, each team can create their own GatewayExtension that their {{< reuse "agw-docs/snippets/policy.md" >}} can reference. |
 | descriptors | A list of key-value pairs that the Rate Limit Service uses to select which rate limit to use on matching requests. Descriptors are case-sensitive. |
-| key | Required. The name for the descriptor to use when matching requests. Later, you use the descriptor key in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to decide which rate limits to apply to requests. The Rate Limit Service expects one of the following values for the descriptor key: `remote_address` for a client IP address (`RemoteAddress` in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}), `path` for path matching (`Path` in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}), a key name for header matching (`Header` in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}), or a custom key name for matching on a generic key-value pair (`Generic` in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}). |
+| key | Required. The name for the descriptor to use when matching requests. Later, you use the descriptor key in the {{< reuse "agw-docs/snippets/policy.md" >}} to decide which rate limits to apply to requests. The Rate Limit Service expects one of the following values for the descriptor key: `remote_address` for a client IP address (`RemoteAddress` in the {{< reuse "agw-docs/snippets/policy.md" >}}), `path` for path matching (`Path` in the {{< reuse "agw-docs/snippets/policy.md" >}}), a key name for header matching (`Header` in the {{< reuse "agw-docs/snippets/policy.md" >}}), or a custom key name for matching on a generic key-value pair (`Generic` in the {{< reuse "agw-docs/snippets/policy.md" >}}). |
 | value | Optional. Each descriptor can have a value for more specific matching. For example, you might have two descriptor keys that are both for an `X-User-ID` header, but one also has a value of `user1`. This way, you can apply different rate limits to the specific value, such as to further restrict or permit a particular user. Similarly, you can take this approach for remote addresses, paths, and generic key-value pairs such as for `service` plans. |
-| rate_limit | Optional. The actual rate limit rule to apply. The example sets different rate limits for each descriptor key. If a descriptor key does not have a rate limit, the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} cannot apply a rate limit to requests, and the requests that match the descriptor are allowed. |
+| rate_limit | Optional. The actual rate limit rule to apply. The example sets different rate limits for each descriptor key. If a descriptor key does not have a rate limit, the {{< reuse "agw-docs/snippets/policy.md" >}} cannot apply a rate limit to requests, and the requests that match the descriptor are allowed. |
 | unit | The unit of time for the rate limit, such as `second`, `minute`, `hour`, or `day`. |
 | requests_per_unit | The number of requests to allow per unit of time. |
 
@@ -182,11 +182,11 @@ Create a GatewayExtension resource that points to your Rate Limit Service.
    | Field | Description | Required |
    |-------|-------------|----------|
    | grpcService | Configuration for connecting to the gRPC rate limit service. | Yes |
-   | domain | Domain identity for the rate limit service. If you have different domains for different teams, each team can create their own GatewayExtension that their own {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} can reference. | Yes |
+   | domain | Domain identity for the rate limit service. If you have different domains for different teams, each team can create their own GatewayExtension that their own {{< reuse "agw-docs/snippets/policy.md" >}} can reference. | Yes |
    | timeout | Timeout for rate limit service calls, such as `100ms`. | No |
    | failOpen | When `true`, requests continue even if the rate limit service is unavailable. | No (defaults to `false`) |
 
-2. Create a Kubernetes ReferenceGrant to allow the GatewayExtension to access the Rate Limit Service. Otherwise, you can create the GatewayExtension and {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} in the same namespace as the Rate Limit Service.
+2. Create a Kubernetes ReferenceGrant to allow the GatewayExtension to access the Rate Limit Service. Otherwise, you can create the GatewayExtension and {{< reuse "agw-docs/snippets/policy.md" >}} in the same namespace as the Rate Limit Service.
 
    ```yaml
    kubectl apply -f - <<EOF
@@ -206,11 +206,11 @@ Create a GatewayExtension resource that points to your Rate Limit Service.
    EOF
    ```
 
-## Step 4: Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} {#traffic-policy}
+## Step 4: Create an {{< reuse "agw-docs/snippets/policy.md" >}} {#traffic-policy}
 
-Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that applies rate limits to your routes. Note that the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} must be in the same namespace as the GatewayExtension to select it.
+Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that applies rate limits to your routes. Note that the {{< reuse "agw-docs/snippets/policy.md" >}} must be in the same namespace as the GatewayExtension to select it.
 
-The {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} configures the descriptors that define the dimensions for rate limiting. Each descriptor consists of one or more entries that help categorize and count requests. The descriptor entries match on the descriptor keys that you defined previously in the Rate Limit Service.
+The {{< reuse "agw-docs/snippets/policy.md" >}} configures the descriptors that define the dimensions for rate limiting. Each descriptor consists of one or more entries that help categorize and count requests. The descriptor entries match on the descriptor keys that you defined previously in the Rate Limit Service.
 
 Entries can be of one of the following types: `RemoteAddress`, `Path`, `Header`, or `Generic`. You can combine different entry types so that they are applied together as a rate limit, such as `RemoteAddress` and `Generic` or `Header` and `Path`. The following table describes the different descriptor entry types. For more information, see the [API docs]({{< link-hextra path="/reference/api/#ratelimitpolicy">}}).
 
@@ -221,7 +221,7 @@ Entries can be of one of the following types: `RemoteAddress`, `Path`, `Header`,
 | Path | Use the request path as the descriptor value. The `Path` entry type is mapped to the `path` descriptor key in the Rate Limit Service. | None |
 | RemoteAddress | Use the client's IP address as the descriptor value. The `RemoteAddress` entry type is mapped to the `remote_address` descriptor key in the Rate Limit Service. | None |
 
-Flip through the tabs for different example rate limit policies. Note that the examples apply to the Gateway that you created before you began, but you can also apply an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to an HTTPRoute or specific route.
+Flip through the tabs for different example rate limit policies. Note that the examples apply to the Gateway that you created before you began, but you can also apply an {{< reuse "agw-docs/snippets/policy.md" >}} to an HTTPRoute or specific route.
 
 {{< tabs >}}
 
@@ -231,8 +231,8 @@ Limit requests based on the client's IP address.
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: ip-rate-limit
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -259,8 +259,8 @@ Limit requests based on the request path, such as a request with `/path1` or `/p
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: request-path
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -287,8 +287,8 @@ Limit requests based on a user ID from an `X-User-ID` header.
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: user-rate-limit
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -316,8 +316,8 @@ Apply different limits based on both path and user ID. The following example req
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: combined-rate-limit
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -358,15 +358,15 @@ descriptors:
 
 {{% tab name="Local and global rate limits" %}}
 
-Combine local and global rate limiting in the same {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} such as in the following example. For more information, see [Local rate limiting]({{< link-hextra path="/local">}}).
+Combine local and global rate limiting in the same {{< reuse "agw-docs/snippets/policy.md" >}} such as in the following example. For more information, see [Local rate limiting]({{< link-hextra path="/local">}}).
 
 * Local: A rate limit of 5 requests per second is applied to all requests.
 * Global: A rate limit of 2 requests per minute is applied to requests with a `service` descriptor key of `premium-api`.
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: local-global-rate-limit
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -398,7 +398,7 @@ spec:
 
 ## Step 5: Test the rate limits {#test-rate-limits}
 
-Test the rate limits by sending requests to the Gateway. The following steps assume that you created the **client IP address** example {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, which limits requests to 1 request per minute for a particular client IP address.
+Test the rate limits by sending requests to the Gateway. The following steps assume that you created the **client IP address** example {{< reuse "agw-docs/snippets/policy.md" >}}, which limits requests to 1 request per minute for a particular client IP address.
 
 1. Send a test request to the httpbin sample app. The request succeeds because you did not exceed the rate limit of 1 request per minute.
 
@@ -451,6 +451,6 @@ Test the rate limits by sending requests to the Gateway. The following steps ass
 ```sh
 kubectl delete -f https://raw.githubusercontent.com/kgateway-dev/kgateway/refs/heads/main/test/e2e/features/rate_limit/global/testdata/rate-limit-server.yaml
 kubectl delete gatewayextension global-ratelimit -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} ip-rate-limit user-rate-limit combined-rate-limit local-global-rate-limit -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} ip-rate-limit user-rate-limit combined-rate-limit local-global-rate-limit -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 

@@ -118,9 +118,8 @@ httpbun-7d9f6b8c4-v8w2p   1/1     Running   0          20s
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} to configure httpbun as an LLM provider. You set the `openai` provider type, because httpbun implements the OpenAI-compatible API. Then, override the host, port, and path to point at httpbun's `/llm/chat/completions` endpoint.
 
-{{< callout type="info" >}}
-**No API key needed**: httpbun accepts requests without authentication, so there is no `policies.auth` block in the following example. This also means that you don't need to manage a Kubernetes Secret: one less prerequisite to set up!
-{{< /callout >}}
+> [!NOTE]
+> **No API key needed**: httpbun accepts requests without authentication, so there is no `policies.auth` block in the following example. This also means that you don't need to manage a Kubernetes Secret: one less prerequisite to set up!
 
 ```bash {paths="setup-httpbun-llm"}
 kubectl apply -f- <<EOF
@@ -270,7 +269,7 @@ Send a standard chat completion request.
 {{< tabs >}}
 {{% tab name="Cloud Provider LoadBalancer" %}}
 ```bash
-curl -s http://$INGRESS_GW_ADDRESS/v1/chat/completions \
+curl -sS http://$INGRESS_GW_ADDRESS/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gpt-4",
@@ -282,7 +281,7 @@ curl -s http://$INGRESS_GW_ADDRESS/v1/chat/completions \
 {{% /tab %}}
 {{% tab name="Port-forward for local testing" %}}
 ```bash
-curl -s http://localhost:8080/v1/chat/completions \
+curl -sS http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gpt-4",
@@ -370,7 +369,7 @@ Control exactly what the mock LLM returns by including the `httpbun` field in th
 {{< tabs >}}
 {{% tab name="Cloud Provider LoadBalancer" %}}
 ```bash
-curl -s http://$INGRESS_GW_ADDRESS/v1/chat/completions \
+curl -sS http://$INGRESS_GW_ADDRESS/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gpt-4",
@@ -382,7 +381,7 @@ curl -s http://$INGRESS_GW_ADDRESS/v1/chat/completions \
 {{% /tab %}}
 {{% tab name="Port-forward for local testing" %}}
 ```bash
-curl -s http://localhost:8080/v1/chat/completions \
+curl -sS http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gpt-4",

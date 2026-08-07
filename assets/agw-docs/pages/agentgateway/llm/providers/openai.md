@@ -1,8 +1,7 @@
 Configure [OpenAI](https://openai.com/) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
 
-{{< callout type="info" >}}
-Don't have an API key to an LLM provider? You can still try out how LLM traffic works in agentgateway by following the [httpbun guide]({{< link-hextra path="/llm/providers/httpbun">}}). Httpbun provides a mock LLM API endpoint that is compatible with the OpenAI API for chat completions.
-{{< /callout >}}
+> [!NOTE]
+> Don't have an API key to an LLM provider? You can still try out how LLM traffic works in agentgateway by following the [httpbun guide]({{< link-hextra path="/llm/providers/httpbun">}}). Httpbun provides a mock LLM API endpoint that is compatible with the OpenAI API for chat completions.
 
 ## Before you begin
 
@@ -44,7 +43,7 @@ Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure an 
 
 ```yaml {paths="openai-setup"}
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: openai
@@ -52,9 +51,9 @@ metadata:
 spec:
   ai:
     provider:
-      openai:
+      openai: {}
         # Optional: specify a default  model
-        model: gpt-3.5-turbo
+        #model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
      # Optional: custom host and port, if needed
      # host: api.openai.com  
      # port: 443
@@ -62,6 +61,12 @@ spec:
     auth:
       secretRef:
         name: openai-secret
+    ai:
+      routes:
+        "/v1/responses": "Responses"
+        "/v1/chat/completions": "Completions"
+        "/v1/models": "Models"          # also silences Codex's model-metadata probe
+        "*": "Passthrough"
 EOF
 ```
 
@@ -70,7 +75,7 @@ EOF
 | Setting     | Description |
 |-------------|-------------|
 | `ai.provider.openai` | Define the OpenAI provider. |
-| `openai.model`     | The OpenAI model to use, such as `gpt-3.5-turbo`.  |
+| `openai.model`     | The OpenAI model to use, such as `{{< reuse "agw-docs/snippets/openai-model.md" >}}`.  |
 | `policies.auth` | Configure the authentication token for OpenAI API. The example refers to the secret that you previously created.|
 
 ### Step 3: Route to the backend
@@ -94,7 +99,7 @@ spec:
     - backendRefs:
       - name: openai
         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-        group: agentgateway.dev
+        group: {{< reuse "agw-docs/snippets/group.md" >}}
         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 EOF
 ```
@@ -116,10 +121,16 @@ spec:
     - path:
         type: PathPrefix
         value: /openai
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /v1/chat/completions
     backendRefs:
     - name: openai
       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-      group: agentgateway.dev
+      group: {{< reuse "agw-docs/snippets/group.md" >}}
       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 EOF
 ```
@@ -147,14 +158,14 @@ EOF
    
 ### Step 4: Send a request to the LLM
 
-Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the chat completion API.
+Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the chat completion API. If you did not pin a model in the {{< reuse "agw-docs/snippets/backend.md" >}}, include the model in the request.
    
 {{< tabs >}}
 {{% tab name="OpenAI v1/chat/completions" %}}
 **Cloud Provider LoadBalancer**:
 ```sh
 curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
-   "model": "",
+   "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
    "messages": [
      {
        "role": "system",
@@ -171,7 +182,7 @@ curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json 
 **Localhost**:
 ```sh
 curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
-   "model": "",
+   "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
    "messages": [
      {
        "role": "system",
@@ -189,7 +200,7 @@ curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '
 **Cloud Provider LoadBalancer**:
 ```sh
 curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
-   "model": "",
+   "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
    "messages": [
      {
        "role": "system",
@@ -206,7 +217,7 @@ curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
 **Localhost**:
 ```sh
 curl "localhost:8080/openai" -H content-type:application/json  -d '{
-   "model": "",
+   "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
    "messages": [
      {
        "role": "system",
@@ -232,7 +243,7 @@ YAMLTest -f - <<'EOF'
       content-type: application/json
     body: |
       {
-        "model": "gpt-3.5-turbo",
+        "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
         "messages": [
           {
             "role": "user",
@@ -263,7 +274,7 @@ Example output:
   "id": "chatcmpl-AEHYs2B0XUlEioCduH1meERmMwBGF",
   "object": "chat.completion",
   "created": 1727967462,
-  "model": "gpt-3.5-turbo-0125",
+  "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
   "choices": [
     {
       "index": 0,
@@ -292,6 +303,15 @@ Example output:
 ```
 
 {{% /steps %}}
+
+{{% version exclude-if="1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{< reuse "agw-docs/snippets/verify-admin-ui.md" >}}
+
+{{% conditional-text include-if="kubernetes" %}}
+   {{< reuse-image-light src="img/agentgateway-ui-kube-route-llm.png" width="600px">}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-route-llm-dark.png" width="600px">}}
+{{% /conditional-text %}}
+{{% /version %}}
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
 

@@ -20,25 +20,31 @@ Configure agentgateway to validate Okta JWTs:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: my-server
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-      policies:
-        mcpAuthentication:
-          mode: strict
-          issuer: https://your-org.okta.com/oauth2/default
-          audiences:
-          - api://agentgateway
-          jwks:
-            url: https://your-org.okta.com/oauth2/default/v1/keys
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: my-server
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  policies:
+    mcpAuthentication:
+      mode: strict
+      issuer: https://your-org.okta.com/oauth2/default
+      audiences:
+      - api://agentgateway
+      jwks:
+        url: https://your-org.okta.com/oauth2/default/v1/keys
+      resourceMetadata:
+        resource: api://agentgateway
+        scopesSupported:
+        - agentgateway
+        bearerMethodsSupported:
+        - header
 ```
 
 ## Okta setup
@@ -80,6 +86,12 @@ policies:
     audiences: [api://agentgateway]
     jwks:
       url: https://your-org.okta.com/oauth2/default/v1/keys
+    resourceMetadata:
+      resource: api://agentgateway
+      scopesSupported:
+      - agentgateway
+      bearerMethodsSupported:
+      - header
   authorization:
     rules:
     # Check for Okta group membership
@@ -89,4 +101,4 @@ policies:
 ## Learn more
 
 - [Okta Developer Documentation](https://developer.okta.com/)
-- [MCP Authentication Tutorial]({{< link-hextra path="/tutorials/mcp-authentication" >}})
+- [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}})

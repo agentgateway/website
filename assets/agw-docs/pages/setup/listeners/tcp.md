@@ -1,14 +1,13 @@
-The following guide deploys a sample TCP echo app, sets up a TCP listener on the gateway, and creates a [TCPRoute](https://gateway-api.sigs.k8s.io/guides/tcp) to the sample app.
+The following guide deploys a sample TCP echo app, sets up a TCP listener on the gateway, and creates a [TCPRoute](https://gateway-api.sigs.k8s.io/guides/user-guides/tcp/) to the sample app.
 
-{{< callout type="warning" >}}
-{{< reuse "agw-docs/versions/warn-experimental.md" >}}
-{{< /callout >}}
+> [!WARNING]
+> {{< reuse "agw-docs/versions/warn-experimental.md" >}}
 
 ## Before you begin
 
 1. Install the experimental channel of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} so that you can use TCPRoutes.
    ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
 
 2. Ensure that you installed {{< reuse "agw-docs/snippets/kgateway.md" >}} with the `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true` Helm flag to use experimental Kubernetes Gateway API features. For an example, see the [Get started guide]({{< link-hextra path="/quickstart" >}}).
@@ -211,7 +210,7 @@ Create a TCP listener so that the Gateway can serve TCP traffic. In the followin
    {{% tab name="Gateway listeners" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1alpha2
+   apiVersion: gateway.networking.k8s.io/{{< reuse "agw-docs/versions/tcproute-version.md" >}}
    kind: TCPRoute
    metadata:
      name: tcp-route-echo
@@ -234,7 +233,7 @@ Create a TCP listener so that the Gateway can serve TCP traffic. In the followin
    {{% tab name="ListenerSets" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1alpha2
+   apiVersion: gateway.networking.k8s.io/{{< reuse "agw-docs/versions/tcproute-version.md" >}}
    kind: TCPRoute
    metadata:
      name: tcp-route-echo

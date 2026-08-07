@@ -176,6 +176,19 @@ func toPropertyMapWithResolver(node *yaml.Node, parentRequired []string, resolve
 		}
 	}
 
+	// Externally-tagged enum variants serialize as a single-key object wrapper,
+	// e.g. {"full": "..."} for HostRedirect::Full. schemars attaches the variant's
+	// doc comment to the wrapper (this node's description) rather than to the inner
+	// property, so the field would otherwise render as "No description". Surface the
+	// wrapper description on the sole field when that field has none of its own.
+	if pm.description != "" && len(pm.keys) == 1 {
+		only := pm.keys[0]
+		if p := pm.props[only]; p.description == "" {
+			p.description = pm.description
+			pm.props[only] = p
+		}
+	}
+
 	return pm
 }
 
@@ -1913,6 +1926,9 @@ func renderJSONSchemaWidget(doc crdDocument, widgetID string, titleOverride stri
 		return "", false
 	}
 	pm := toPropertyMapWithResolver(root, required, &schemaResolver{root: root}, nil)
+	if title == "LocalConfig" || titleOverride == "Configuration schema" {
+		preferRootKeys(pm, []string{"config", "frontendPolicies", "binds", "llm", "mcp"})
+	}
 
 	// When a title override is provided, use it and suppress the root description
 	// and $schema URL (which are often internal implementation details, e.g. Rust doc comments).
@@ -1923,6 +1939,26 @@ func renderJSONSchemaWidget(doc crdDocument, widgetID string, titleOverride stri
 	}
 
 	return renderWidget(title, "", schemaVersion, "Schema", pm, widgetID, docsByPath), true
+}
+
+func preferRootKeys(pm *propertyMap, preferred []string) {
+	if pm == nil || len(pm.keys) == 0 {
+		return
+	}
+	seen := map[string]bool{}
+	next := make([]string, 0, len(pm.keys))
+	for _, key := range preferred {
+		if _, ok := pm.props[key]; ok {
+			next = append(next, key)
+			seen[key] = true
+		}
+	}
+	for _, key := range pm.keys {
+		if !seen[key] {
+			next = append(next, key)
+		}
+	}
+	pm.keys = next
 }
 
 func normalizePath(value string) string {

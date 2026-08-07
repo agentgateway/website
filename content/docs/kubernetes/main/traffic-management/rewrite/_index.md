@@ -1,6 +1,7 @@
 ---
 title: Rewrites
 weight: 10
+description: Rewrite host headers or path prefixes in requests.
 test: skip
 ---
 

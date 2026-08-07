@@ -1,10 +1,9 @@
 {{< reuse "agw-docs/snippets/about-agw.md" >}} Read on to learn how agentgateway addresses the unique demands of agent traffic.
 
-{{< callout type="info" >}}
-**New to agentgateway?** Get started in minutes with the [Quickstart guide]({{< link-hextra path="/quickstart/" >}})!
-{{< /callout >}}
+> [!NOTE]
+> **New to agentgateway?** Get started in minutes with the [Quickstart guide]({{< link-hextra path="/quickstart/" >}})!
 
-{{< reuse-image src="img/architecture.svg" caption="Figure: agentgateway works across compute environments to provide connectivity to various agentic tools, including MCP servers, agents, and OpenAPI endpoints." >}}
+{{< reuse-image src="img/architecture.svg" srcDark="img/architecture-dark.svg" caption="Figure: agentgateway works across compute environments to provide connectivity to various agentic tools, including MCP servers, agents, and OpenAPI endpoints." >}}
 
 ## Why agentgateway?
 
@@ -52,7 +51,7 @@ Don't see your provider? Many LLMs expose OpenAI-compatible APIs. Agentgateway c
 - **Ollama**, **LM Studio**, **vLLM**, **llama.cpp** (local models)
 - Any custom or self-hosted endpoint with OpenAI-compatible `/v1/chat/completions`
 
-For more information, see the [OpenAI compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) docs.
+For more information, see the {{< conditional-text include-if="kubernetes" >}}[OpenAI compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}){{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}[OpenAI compatible]({{< link-hextra path="/llm/providers/custom/" >}}){{< /conditional-text >}} docs.
 
 #### Self-hosted models & Inference routing
 

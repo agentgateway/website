@@ -2,10 +2,13 @@ Configure access to multiple OpenAI API endpoints such as for chat completions, 
 
 ## About
 
-To set up multiple LLM endpoints, use the `ai.llm.routes` field. This field maps the API paths to supported route types. The keys are URL suffix matches, like `/v1/models`. The values are the route types, like `Completions` or `Passthrough`.
+To set up multiple LLM endpoints, use the `ai.routes` field in the `policies` section of the {{< reuse "agw-docs/snippets/backend.md" >}} resource. This field maps the API paths to supported route types. The keys are URL suffix matches, like `/v1/models`. The values are the route types, like `Completions` or `Passthrough`.
 
-- `Completions`: Transforms to the LLM provider format and processes the request with the LLM provider. This route type supports full LLM features such as tokenization, rate limiting, transformations, and other policies like prompt guards.
-- `Passthrough`: Forwards the request to the LLM provider as-is. This route type does not support LLM features like route processing and policies. You might use this route type for non-chat endpoints such as health checks, `GET` requests like listing models, or custom endpoints that you want to pass traffic through to.
+Alternatively, you can define the routes in a separate {{< reuse "agw-docs/snippets/policy.md" >}} resource attached to a gateway. This approach decouples routing configuration from the backend definition, which can simplify management when you have multiple routes pointing to the same backend.
+
+- `Completions`: Parses the request, translates it to the LLM provider format, and fully processes it as an LLM request. This route type unlocks the full set of {{< reuse "agw-docs/snippets/agentgateway.md" >}} LLM features, such as tokenization and token-based rate limiting, prompt guards, prompt enrichment, model aliasing, transformations, cost tracking, and detailed observability.
+- `Detect`: Forwards the request as-is, but makes a best effort to extract the model and token counts so that a subset of policies still applies, specifically token-based rate limiting and telemetry. Guardrails and other request-shaping policies do not apply. Use this route type for endpoints with a format that cannot be automatically parsed by {{< reuse "agw-docs/snippets/agentgateway.md" >}}, but where you still want metrics and rate limiting.
+- `Passthrough`: Forwards the request to the LLM provider as-is, with no parsing, processing, or policies. Use passthrough for endpoints that do not need any traffic policy or manipulation, such as health checks or custom endpoints. Otherwise, use the other route types.
 
 Paths are matched in order, and the first match determines how the request is handled. The wildcard character `*` can be used to match anything. If no route is set, the route defaults to the Completions endpoint.
 
@@ -21,7 +24,7 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
 1. Update your {{< reuse "agw-docs/snippets/backend.md" >}} resource to include a `routes` field that maps API paths to route types.
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: openai
@@ -29,8 +32,9 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
    spec:
      ai:
        provider:
-         openai:
-           model: gpt-3.5-turbo  # Optional: specify default model
+         openai: {}
+           # Optional: specify default model
+           #model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
         # host: api.openai.com  # Optional: custom host if needed
         # port: 443  # Optional: custom port
      policies:
@@ -53,7 +57,7 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
    | `v1/models` | Routes to the models endpoint with `Passthrough` processing. This endpoint is used to get basic information about the models that are available. For more information, see the [OpenAI API docs for the endpoint](https://developers.openai.com/api/reference/resources/models/methods/list).|
    | `*` | Matches any path that doesn't match the specific endpoints otherwise set. Typically, you set this value to `Passthrough` to pass through to the provider API without LLM-specific processing.|
 
-2. Create an HTTPRoute resource that routes traffic to the OpenAI {{< reuse "agw-docs/snippets/backend.md" >}} along the `/openai` path matcher. Note that because you set up the `routes` map on the {{< reuse "agw-docs/snippets/backend.md" >}}, you do not need to create any URLRewrite filters to point your route matcher to the correct LLM provider endpoint.
+2. Create an HTTPRoute resource that routes traffic to the OpenAI {{< reuse "agw-docs/snippets/backend.md" >}} along the `/openai` path matcher.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -71,14 +75,72 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
        - path:
            type: PathPrefix
            value: /openai
+       filters:
+       - type: URLRewrite
+         urlRewrite:
+           path:
+             type: ReplacePrefixMatch
+             replacePrefixMatch: /v1/chat/completions
        backendRefs:
        - name: openai
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-3. Send requests to different OpenAI endpoints. With the routes configured, you can access different OpenAI endpoints by including the full path in your requests:
+
+3. **Alternative: define routes in an {{< reuse "agw-docs/snippets/policy.md" >}}**
+
+   Instead of setting up the `routes` map on the {{< reuse "agw-docs/snippets/backend.md" >}}, you can configure them in a separate {{< reuse "agw-docs/snippets/policy.md" >}} attached to the HTTPRoute. This decouples routing configuration from the backend definition.
+
+   1. Create the {{< reuse "agw-docs/snippets/backend.md" >}} resource without the `routes` field:
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: openai
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: {{< reuse "agw-docs/snippets/openai-model.md" >}}  # Optional: specify default model
+        # host: api.openai.com  # Optional: custom host if needed
+        # port: 443  # Optional: custom port
+     policies:
+       auth:
+         secretRef:
+           name: openai-secret
+   EOF
+   ```
+
+   2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that targets the HTTPRoute and defines the `routes`:
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: openai-routes
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: openai
+     backend:
+       ai:
+         routes:
+           "/v1/chat/completions": "Completions"
+           "/v1/embeddings": "Passthrough"
+           "/v1/models": "Passthrough"
+           "*": "Passthrough"
+   EOF
+   ```
+
+   3. Send requests to different OpenAI endpoints. With the routes configured, you can access different OpenAI endpoints by including the full path in your requests:
 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
@@ -87,7 +149,7 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
    curl "$INGRESS_GW_ADDRESS/openai/v1/chat/completions" \
      -H content-type:application/json \
      -d '{
-       "model": "gpt-3.5-turbo",
+       "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
        "messages": [{"role": "user", "content": "Hello!"}]
      }' | jq
    ```
@@ -113,7 +175,7 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
    curl "localhost:8080/openai/v1/chat/completions" \
      -H content-type:application/json \
      -d '{
-       "model": "gpt-3.5-turbo",
+       "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
        "messages": [{"role": "user", "content": "Hello!"}]
      }' | jq
    ```

@@ -14,12 +14,7 @@ flowchart LR
 
 {{< doc-test paths="httpbin" >}}
 # Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
@@ -71,47 +66,52 @@ Example output:
 }
 ```
 
-### Step 2: Create the agentgateway configuration
+### Step 2: Configure agentgateway to route to httpbin
 
-Create a `config.yaml` that listens on port 3000 and routes traffic to the httpbin host. Use a static `host` backend with the address and port where httpbin is reachable, such as `127.0.0.1:8000`.
+You add the gateway and route from the UI, so you can start agentgateway without a config file. When you run `agentgateway` without specifying a config, it bootstraps a basic config at `~/.config/agentgateway/config.yaml` and uses it automatically.
 
-```yaml {paths="httpbin"}
-cat > config.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - protocol: HTTP
-    routes:
-    - backends:
-      - host: 127.0.0.1:8000
-EOF
-```
+1. In a separate terminal, start agentgateway.
 
-### Step 3: Start agentgateway
+   ```sh
+   agentgateway
+   ```
 
-In a separate terminal, run agentgateway with the config file.
+2. Open the [agentgateway UI](http://localhost:15000/ui/). On the **Gateway Overview**, find the **Traffic** row and click **Enable Traffic**.
 
-```sh
-agentgateway -f config.yaml
-```
+3. Add a gateway.
+   1. In the **Traffic** section of the navigation menu, click **Gateways**.
+   2. Click **Add gateway**, enter `default` for the **Name** and `3000` for the **Port**, and click **Save gateway**.
+
+4. Add a route to httpbin.
+   1. Click **Routes**, and then click **Add route**.
+   2. For the **Gateway**, select the `default` gateway you created.
+   3. Under **Backends**, click **Add backend**, keep the **Host** target type, and enter `127.0.0.1:8000` for the host.
+   4. Click **Save route**.
+
+   {{< reuse-image-light src="img/ui-traffic-add-route.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-traffic-add-route-dark.png" >}}
 
 {{< doc-test paths="httpbin" >}}
+# Hidden test: the UI steps above (Enable Traffic -> Add gateway/route) are not
+# scriptable, so this block reproduces the equivalent config they produce, to keep the
+# resulting setup tested.
+cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 3000
+    protocol: HTTP
+routes:
+- backends:
+  - host: 127.0.0.1:8000
+EOF
 agentgateway -f config.yaml &
 AGW_PID=$!
 trap 'kill $AGW_PID 2>/dev/null' EXIT
 sleep 3
 {{< /doc-test >}}
 
-Example output:
-
-```
-info  state_manager  loaded config from File("config.yaml")
-info  app            serving UI at http://localhost:15000/ui
-info  proxy::gateway started bind  bind="bind/3000"
-```
-
-### Step 4: Send a request through agentgateway
+### Step 3: Send a request through agentgateway
 
 Send a request to agentgateway on port 3000. Agentgateway forwards it to httpbin; the response is returned to you.
 
@@ -160,7 +160,7 @@ curl -s http://localhost:3000/get
 curl -s http://localhost:3000/post -X POST -H "Content-Type: application/json" -d '{"key":"value"}'
 ```
 
-### Step 5 (Optional): Stop httpbin
+### Step 4 (Optional): Stop httpbin
 
 When you are done, stop and remove the httpbin container.
 
@@ -169,11 +169,3 @@ docker stop httpbin
 ```
 
 {{% /steps %}}
-
-## Next steps
-
-{{< cards >}}
-  {{< card path="/configuration/traffic-management" title="Traffic management" subtitle="Control and route traffic through agentgateway." >}}
-  {{< card path="/configuration/resiliency" title="Resiliency" subtitle="Simulate failures, disruptions, and adverse conditions to ensure gateway and app resilience." >}}
-  {{< card path="/configuration/security" title="Security" subtitle="Secure backends and routes with authentication, authorization, and rate limiting policies." >}}
-{{< /cards >}}

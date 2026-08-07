@@ -13,7 +13,7 @@ Global rate limiting is essential when running multiple proxy replicas and you n
 
 Global rate limiting requires two components:
 
-1. **{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with `rateLimit.global`**: Configure your rate limit policy with descriptors that extract request attributes using CEL expressions. The policy specifies the rate limit service reference (`backendRef`), a domain identifier, and CEL-based descriptor rules.
+1. **{{< reuse "agw-docs/snippets/policy.md" >}} with `rateLimit.global`**: Configure your rate limit policy with descriptors that extract request attributes using CEL expressions. The policy specifies the rate limit service reference (`backendRef`), a domain identifier, and CEL-based descriptor rules.
 
 2. **Rate Limit Service**: An external service implementing the [Envoy Rate Limit protocol](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/rate_limit_filter). The service stores the actual rate limit values, maintains counters in a backend store (typically Redis), and returns allow/deny decisions based on descriptor matching.
 
@@ -76,8 +76,8 @@ Review the following example policy, also used in the [Rate limit by client IP](
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: ip-rate-limit
   namespace: httpbin
@@ -127,13 +127,13 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 1. Create a namespace for the rate limit infrastructure.
 
-   ```sh {paths="global-rate-limit-by-ip"}
+   ```sh {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
    kubectl create namespace ratelimit
    ```
 
 2. Deploy Redis as the backing store.
 
-   ```yaml {paths="global-rate-limit-by-ip"}
+   ```yaml {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -169,9 +169,9 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
    EOF
    ```
 
-3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that are enforced by the rate limit service. The configuration includes rate limits by client IP (10 requests per minute), by path (100 requests per minute for `/api/v1`, 200 for `/api/v2`), by user ID (50 requests per minute for most users, 500 for VIP users), and by service tier (1000 requests per minute for premium, 100 for standard).
+3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that are enforced by the rate limit service. The configuration includes rate limits by client IP (10 requests per minute), a per-user LLM token budget (100 tokens per day, used by the [virtual keys guide]({{< link-hextra path="/llm/cost-controls/virtual-keys" >}})), by path (100 requests per minute for `/api/v1`, 200 for `/api/v2`), by user ID (50 requests per minute for most users, 500 for VIP users), and by service tier (1000 requests per minute for premium, 100 for standard).
 
-   ```yaml {paths="global-rate-limit-by-ip"}
+   ```yaml {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: ConfigMap
@@ -187,6 +187,13 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
            rate_limit:
              unit: minute
              requests_per_unit: 10
+
+         # Per-user LLM token budget (see the virtual keys guide).
+         # Deliberately small so you can exhaust it in a few requests; raise for production.
+         - key: user_id
+           rate_limit:
+             unit: day
+             requests_per_unit: 100
 
          # Rate limit by path
          - key: path
@@ -231,7 +238,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
    | Field | Description |
    |-------|-------------|
-   | `domain` | Arbitrary identifier grouping rate limit rules. Multiple teams can use different domains to maintain separate configurations. Must match the `domain` in your {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. |
+   | `domain` | Arbitrary identifier grouping rate limit rules. Multiple teams can use different domains to maintain separate configurations. Must match the `domain` in your {{< reuse "agw-docs/snippets/policy.md" >}}. |
    | `descriptors` | Array of rate limit rules. Each descriptor matches against request attributes. |
    | `key` | The descriptor name. Must match the `name` field in the policy's descriptor entries. Case-sensitive. |
    | `value` | Optional. Enables fine-grained matching. For example, different rate limits for different paths or user IDs. |
@@ -241,7 +248,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 4. Deploy the rate limit service.
 
-   ```yaml {paths="global-rate-limit-by-ip"}
+   ```yaml {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -302,7 +309,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
    EOF
    ```
 
-   {{< doc-test paths="global-rate-limit-by-ip" >}}
+   {{< doc-test paths="global-rate-limit-by-ip,deploy-rate-limit-server" >}}
    YAMLTest -f - <<'EOF'
    - name: wait for redis deployment to be ready
      wait:
@@ -351,7 +358,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 ## Create a global rate limit policy {#create-policy}
 
-Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with `rateLimit.global` configured. The policy defines **which** request attributes to extract (via CEL expressions) and send to the rate limit service. The rate limit service decides **how many** requests to allow based on its configuration.
+Create an {{< reuse "agw-docs/snippets/policy.md" >}} with `rateLimit.global` configured. The policy defines **which** request attributes to extract (via CEL expressions) and send to the rate limit service. The rate limit service decides **how many** requests to allow based on its configuration.
 
 The table summarizes the examples in the following sections.
 
@@ -375,16 +382,15 @@ For AI-specific use cases:
 
 Limit requests based on the client's source IP address (10 requests per minute per IP, as configured in the rate limit service).
 
-{{< callout type="info" >}}
-The descriptor entry `name` in the policy must match the `key` in the rate limit service ConfigMap. For example, `name: remote_address` in the policy matches `key: remote_address` in the ConfigMap.
-{{< /callout >}}
+> [!NOTE]
+> The descriptor entry `name` in the policy must match the `key` in the rate limit service ConfigMap. For example, `name: remote_address` in the policy matches `key: remote_address` in the ConfigMap.
 
 1. Apply the policy.
 
    ```yaml {paths="global-rate-limit-by-ip"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: ip-rate-limit
      namespace: httpbin
@@ -499,8 +505,8 @@ Extract the user ID from a header and rate limit per user (50 requests per minut
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: user-rate-limit
      namespace: httpbin
@@ -591,8 +597,8 @@ Apply different rate limits to different API paths (`/api/v1` at 100/min, `/api/
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: path-rate-limit
      namespace: httpbin
@@ -665,8 +671,8 @@ Use a static value to categorize traffic — for example, by service tier (1000 
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: tier-rate-limit
      namespace: httpbin
@@ -717,8 +723,8 @@ Combine multiple descriptor entries to create composite rate limits — for exam
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: nested-rate-limit
      namespace: httpbin
@@ -812,8 +818,8 @@ Apply both local and global rate limits to the same traffic.
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: combined-rate-limit
      namespace: httpbin
@@ -875,21 +881,25 @@ Apply both local and global rate limits to the same traffic.
 
    The first 50 requests succeed (global limit), then subsequent requests return 429.
 
+{{< version exclude-if="1.1.x" >}}
+
 ## Conditional execution
 
 To apply different rate limits based on the request, use the `conditional` field on your `rateLimit` policy. For example, you can apply a strict per-IP limit to anonymous traffic and a higher per-user limit to authenticated traffic. For details, see [Conditional policies]({{< link-hextra path="/about/policies/conditional-policies" >}}).
+
+{{< /version >}}
 
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="global-rate-limit-by-ip"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} ip-rate-limit -n httpbin --ignore-not-found
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} user-rate-limit -n httpbin --ignore-not-found
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} path-rate-limit -n httpbin --ignore-not-found
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} tier-rate-limit -n httpbin --ignore-not-found
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} nested-rate-limit -n httpbin --ignore-not-found
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} combined-rate-limit -n httpbin --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} ip-rate-limit -n httpbin --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} user-rate-limit -n httpbin --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} path-rate-limit -n httpbin --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} tier-rate-limit -n httpbin --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} nested-rate-limit -n httpbin --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} combined-rate-limit -n httpbin --ignore-not-found
 kubectl delete deployment ratelimit redis -n ratelimit --ignore-not-found
 kubectl delete service ratelimit redis -n ratelimit --ignore-not-found
 kubectl delete configmap ratelimit-config -n ratelimit --ignore-not-found

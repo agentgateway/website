@@ -2,7 +2,7 @@ Early request header modification allows you to add, set, or remove HTTP request
 
 This capability is especially useful for security and sanitization use cases, where you want to ensure that sensitive headers cannot be faked by downstream clients and are only set by trusted components such as external authentication services.
 
-Early request header modification is configured on an `{{< reuse "agw-docs/snippets/trafficpolicy.md" >}}` using the `transformation` field. This policy is attached directly to a proxy and applies header mutations before route selection. You can choose between the following header operations: 
+Early request header modification is configured on an `{{< reuse "agw-docs/snippets/policy.md" >}}` using the `transformation` field. This policy is attached directly to a proxy and applies header mutations before route selection. You can choose between the following header operations: 
 
 
 - `add`
@@ -78,12 +78,12 @@ Remove a header that is reserved for use by another service, such as an external
    }
    ```
 
-3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with a transformation to remove the `x-user-id` header. Apply the removal on the Gateway on the `PreRouting` phase.
+3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with a transformation to remove the `x-user-id` header. Apply the removal on the Gateway on the `PreRouting` phase.
 
    ```yaml {paths="remove-reserved-header"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: remove-reserved-header
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -159,5 +159,5 @@ EOF
 
 ```sh
 kubectl delete httproute httpbin-route -n httpbin
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} remove-reserved-header -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} remove-reserved-header -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

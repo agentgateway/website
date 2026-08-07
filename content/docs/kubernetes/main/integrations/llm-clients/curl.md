@@ -1,6 +1,6 @@
 ---
 title: curl
-weight: 40
+weight: 10
 description: Test agentgateway running in Kubernetes with curl
 ---
 

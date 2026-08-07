@@ -1,6 +1,6 @@
 ---
 title: MCP clients
-weight: 15
+weight: 10
 description: Connect AI coding assistants and tools to agentgateway
 test: skip
 ---
@@ -11,6 +11,7 @@ Configure popular AI coding assistants and tools to use agentgateway as their MC
 
 {{< reuse "agw-docs/standalone/prereq-mcp-clients.md" >}}
 
-## IDE Comparison
+> [!NOTE]
+> **Multiplexed tool names**: If your agentgateway backend routes to more than one [Virtual MCP]({{< link-hextra path="/mcp/connect/virtual" >}}) target, agentgateway namespaces each tool and prompt name with its target name by default, for example `time_get_current_time`. When you add a second target, tools in your client's tool list might get new names because of this prefixing. Control it with the `prefixMode` field; see [Tool name prefixing]({{< link-hextra path="/mcp/connect/virtual#tool-name-prefixing" >}}) for the available modes.
 
-{{< reuse "agw-docs/snippets/mcp-ide-comparison.md" >}}
+

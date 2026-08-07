@@ -13,56 +13,56 @@ Agentgateway provides seamless integration with various Large Language Model (LL
 
 ## Supported providers
 
-Agentgateway supports three categories of LLM providers:
+Agentgateway supports native, OpenAI-compatible, and self-hosted LLM providers.
 
 ### Native providers
 
-These providers have first-class support with dedicated configuration:
-- [OpenAI]({{< link-hextra path="/llm/providers/openai/" >}})
-- [Anthropic]({{< link-hextra path="/llm/providers/anthropic/" >}})
-- [Google Gemini]({{< link-hextra path="/llm/providers/gemini/" >}})
-- [Google Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}})
-- [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}})
-- [Azure]({{< link-hextra path="/llm/providers/azure/" >}})
+{{< reuse "agw-docs/snippets/llm-comparison.md" >}}
 
-### OpenAI-compatible providers
+### First-class providers
 
-Many providers offer OpenAI-compatible endpoints that work seamlessly with agentgateway:
-- [xAI (Grok)]({{< link-hextra path="/llm/providers/openai-compatible/#xai-grok" >}})
-- [Cohere]({{< link-hextra path="/llm/providers/openai-compatible/#cohere" >}})
-- [Together AI]({{< link-hextra path="/llm/providers/openai-compatible/#together-ai" >}})
-- [Groq]({{< link-hextra path="/llm/providers/openai-compatible/#groq" >}})
-- [DeepSeek]({{< link-hextra path="/llm/providers/openai-compatible/#deepseek" >}})
-- [Mistral]({{< link-hextra path="/llm/providers/openai-compatible/#mistral" >}})
-- [Perplexity]({{< link-hextra path="/llm/providers/openai-compatible/#perplexity" >}})
-- [Fireworks AI]({{< link-hextra path="/llm/providers/openai-compatible/#fireworks-ai" >}})
+Many providers now have dedicated integrations with preconfigured base URLs and request formats:
+- [Baseten]({{< link-hextra path="/llm/providers/baseten/" >}})
+- [Cerebras]({{< link-hextra path="/llm/providers/cerebras/" >}})
+- [DeepInfra]({{< link-hextra path="/llm/providers/deepinfra/" >}})
+- [xAI (Grok)]({{< link-hextra path="/llm/providers/xai/" >}})
+- [Cohere]({{< link-hextra path="/llm/providers/cohere/" >}})
+- [Together AI]({{< link-hextra path="/llm/providers/togetherai/" >}})
+- [Groq]({{< link-hextra path="/llm/providers/groq/" >}})
+- [DeepSeek]({{< link-hextra path="/llm/providers/deepseek/" >}})
+- [Mistral]({{< link-hextra path="/llm/providers/mistral/" >}})
+- [Hugging Face]({{< link-hextra path="/llm/providers/huggingface/" >}})
+- [OpenRouter]({{< link-hextra path="/llm/providers/openrouter/" >}})
+- [Fireworks AI]({{< link-hextra path="/llm/providers/fireworks/" >}})
 
 ### Self-hosted solutions
 
 Run models locally or in your own infrastructure:
 - [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}})
-- [vLLM]({{< link-hextra path="/llm/providers/openai-compatible/#vllm" >}})
-- [LM Studio]({{< link-hextra path="/llm/providers/openai-compatible/#lm-studio" >}})
+- [vLLM]({{< link-hextra path="/llm/providers/custom/" >}})
+- [LM Studio]({{< link-hextra path="/llm/providers/custom/" >}})
 
-{{< callout type="info" >}}
-Don't see your provider? You might still be able to use it with agentgateway! Many LLM providers offer OpenAI-compatible APIs. To get started, follow the [OpenAI compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) docs.
-{{< /callout >}}
+### Custom providers
 
-{{< reuse "agw-docs/snippets/llm-comparison.md" >}}
+Use [Custom provider]({{< link-hextra path="/llm/providers/custom/" >}}) for other providers without direct support such as Perplexity, vLLM, or LM Studio.
+Agentgateway supports all of the common LLM formats and can generally integrate with any provider ([file an issue](https://github.com/agentgateway/agentgateway/issues/new) if one is missing!).
 
 ## Using the API
 
-By default, requests to agentgateway use the [OpenAI Chat Completions](https://developers.openai.com/api/reference/chat-completions/overview) API.
-These requests are translated to the upstream provider's API.
+Agentgateway exposes multiple different API endpoints, including [OpenAI Chat Completions](https://developers.openai.com/api/reference/chat-completions/overview), [Anthropic Messages](https://platform.claude.com/docs/en/api/messages), and more.
+Depending on the API used in the request, and the provider selected, agentgateway can pass the request through or translate it as needed.
 
-Using the Chat Completions API works exactly the same as consuming OpenAI, with a change to the base URL.
-This allows you to continue using existing code and SDKs.
+This enables a unified API regardless of the provider used, allowing seamlessly connecting clients (regardless of which API they use) to any provider.
+
+Below shows some basic examples using the Chat Completions API
+> [!NOTE]
+> For detailed configuration of specific API endpoint types, including Chat Completions and the OpenAI Realtime API, see [API types]({{< link-hextra path="/llm/api-types/" >}}).
 
 {{< tabs >}}
 {{% tab name="Curl" %}}
 
 ```shell
-curl 'http://0.0.0.0:3000/' \
+curl 'http://localhost:4000/v1/chat/completions' \
 --header 'Content-Type: application/json' \
 --data ' {
   "model": "gpt-3.5-turbo",
@@ -79,17 +79,16 @@ curl 'http://0.0.0.0:3000/' \
 {{% /tab %}}
 {{% tab name="Python" %}}
 
-{{< callout type="info" >}}
-The `api_key` parameter is required in the OpenAI library.
-Depending on your agentgateway configuration, it may or may not be required, and can be set to a mock value.
-{{< /callout >}}
+> [!NOTE]
+> The `api_key` parameter is required in the OpenAI library.
+> Depending on your agentgateway configuration, it may or may not be required, and can be set to a mock value.
 
 ```python
 import openai
 
 client = openai.OpenAI(
     api_key="anything",
-    base_url="http://0.0.0.0:3000"
+    base_url="http://localhost:4000/v1"
 )
 
 response = client.chat.completions.create(model="gpt-4o-mini", messages = [
@@ -110,7 +109,7 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({
   apiKey: "anything",
-  baseURL: "http://0.0.0.0:3000",
+  baseURL: "http://localhost:4000/v1",
 });
 const response = await openai.chat.completions.create({
   model: "gpt-4o-mini",
@@ -125,14 +124,25 @@ console.log(response);
 
 ## Model routing and aliases
 
-When you configure a model in the `llm` section, two fields control how requests are routed, as shown in the following table.
+Model routing is configured within the `llm` section of your agentgateway configuration file. 
+The `llm` section offers a simplified, model-centric approach compared to the `gateways` and `routes` model; for more details on the two approaches, see [LLM configuration modes]({{< link-hextra path="/llm/configuration-modes/" >}}).
+The model configurations shown in this section live under the `llm.models` key.
+
+Agentgateway routes requests by matching an incoming model name, and then sending it to the configured model.
+The outgoing model can be passed through from the incoming model, be transformed, or be a static model.
+
+Some examples:
+
+* Match `fast` and send to `gpt-mini`.
+* Match `*` and forward the model as-is.
+* Match `openai/*` and strip the `openai/` prefix, forwarding the remaining model as-is.
 
 | Field | Purpose |
 |-------|---------|
 | `models.name` | The model name to match in incoming client requests. Agentgateway compares this value against the `model` field in the request body. Use a wildcard `*` to match any model name. |
 | `params.model` | The model name sent to the upstream provider. If set, this overrides the model from the request. If not set, the model from the request is passed through. |
 
-### Pass-through mode
+### Passthrough
 
 Use `name: "*"` without setting `params.model` to accept any model name and pass it directly to the provider. This is the simplest configuration for single-provider setups.
 
@@ -147,9 +157,28 @@ llm:
 
 Clients specify the actual model in their requests, such as `"model": "gpt-4o-mini"`, and agentgateway forwards it to the provider as-is.
 
+### Prefixed Passthrough
+
+Use `name: "openai/*"` without setting `params.model` to accept model requests like `openai/gpt-4o-mini` and forward to OpenAI as `gpt-4o-mini`.
+This is the recommended approach when you want to expose all models from multiple providers.
+
+```yaml
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    transformation:
+      model: llmRequest.model.stripPrefix("openai/")
+```
+
+Clients specify the provider and model in their requests, such as `"model": "openai/gpt-4o-mini"`, and agentgateway forwards to `gpt-4o-mini`
+
 ### Model aliases
 
-Set `name` to a user-friendly alias and `params.model` to the actual provider model. This lets you decouple client-facing model names from provider-specific identifiers, making it easier to swap models without updating client code.
+Set `name` to a user-friendly alias and `params.model` to the actual provider model.
+This lets you decouple client-facing model names from provider-specific identifiers, making it easier to swap models without updating client code.
 
 ```yaml
 llm:
@@ -170,19 +199,15 @@ Clients send `"model": "fast"` or `"model": "smart"`, and agentgateway translate
 
 ### Route priority
 
-When multiple models match a request, agentgateway selects the best match by using the following priority order:
-
-1. **Match specificity**: Routes with more match criteria take priority. For example, a route with two header matchers ranks higher than a route with one.
-2. **Config order**: When two routes have equal specificity, the route listed first in the configuration file takes priority.
-
-This means you can control tie-breaking behavior by ordering your models in the config. Place more specific routes before generic or wildcard routes to ensure they match first.
+When multiple models match a request, the more precise match takes precedence.
+For example, with the configuration below, requests with `accounts/fireworks/*` will match the `fireworks` provider first:
 
 ```yaml
 llm:
   models:
-  # Specific route — listed first, wins ties against the wildcard
+  # Specific route: wins ties against the wildcard
   - name: "accounts/fireworks/*"
-    provider: openAI
+    provider: fireworks
     matches:
     - headers:
       - name: "x-org"
@@ -190,9 +215,7 @@ llm:
           exact: "eng"
     params:
       apiKey: "$FIREWORKS_API_KEY"
-      hostOverride: api.fireworks.ai:443
-    backendTLS: {}
-  # Catch-all route — matches anything, but lower priority
+  # Catch-all route: matches anything, but lower priority
   - name: "*"
     provider: openAI
     matches:
@@ -206,7 +229,5 @@ llm:
 
 In this example, both routes have one header matcher, so they have equal specificity. Because the Fireworks route is listed first, it takes priority when both routes match.
 
-{{< callout type="info" >}}
-For advanced routing based on request body fields like the `model` name, see [Content-based routing]({{< link-hextra path="/llm/content-routing/" >}}).
-{{< /callout >}}
-
+> [!NOTE]
+> For advanced routing based on request body fields like the `model` name, see [Virtual models]({{< link-hextra path="/llm/virtual-models/" >}}).

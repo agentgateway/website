@@ -20,9 +20,8 @@ In this guide, you follow these steps:
 
 ## Before you begin
 
-{{< callout type="warning" >}}
-This guide requires you to enable IAM settings in your EKS cluster, such as the AWS Pod Identity Webhook, **before** you deploy {{< reuse "/agw-docs/snippets/kgateway.md" >}} components that are created during installation, such as the Gateway CRD and the gateway proxy service account. You might use this guide with a fresh EKS test cluster to try out Lambda function invocation with {{< reuse "/agw-docs/snippets/kgateway.md" >}} service accounts.
-{{< /callout >}}
+> [!WARNING]
+> This guide requires you to enable IAM settings in your EKS cluster, such as the AWS Pod Identity Webhook, **before** you deploy {{< reuse "/agw-docs/snippets/kgateway.md" >}} components that are created during installation, such as the Gateway CRD and the gateway proxy service account. You might use this guide with a fresh EKS test cluster to try out Lambda function invocation with {{< reuse "/agw-docs/snippets/kgateway.md" >}} service accounts.
 
 ## Configure AWS IAM resources {#iam}
 
@@ -164,14 +163,14 @@ Save your AWS details, and create an IRSA for the gateway proxy pod to use.
 
 Be sure that you [deployed the Amazon EKS Pod Identity Webhook](#webhook) to your cluster first before you continue to install {{< reuse "/agw-docs/snippets/kgateway.md" >}}.
 
-{{< reuse "agw-docs/snippets/envoy/get-started.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/get-started.md" >}}
 
 ## Annotate the gateway proxy service account {#annotate}
 
 1. Create a {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to specify the `eks.amazonaws.com/role-arn` IRSA annotation for the gateway proxy service account.
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
    metadata:
      name: http-lambda
@@ -198,7 +197,7 @@ Be sure that you [deployed the Amazon EKS Pod Identity Webhook](#webhook) to you
      infrastructure:
        parametersRef:
          name: http-lambda
-         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}        
      listeners:
      - protocol: HTTP
@@ -251,7 +250,7 @@ Create `Backend` and `HTTPRoute` resources to route requests to the Lambda funct
 1. Create a Backend resource that references the AWS region, ID of the account that contains the IAM role, and `echo` function that you created.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: Backend
    metadata:
      name: lambda
@@ -287,7 +286,7 @@ Create `Backend` and `HTTPRoute` resources to route requests to the Lambda funct
        backendRefs:
        - name: lambda
          namespace: {{< reuse "/agw-docs/snippets/namespace.md" >}}
-         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: Backend
    EOF
    ```

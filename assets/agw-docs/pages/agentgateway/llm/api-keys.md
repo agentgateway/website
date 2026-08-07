@@ -1,6 +1,6 @@
 Managing API keys is an important security mechanism to prevent unauthorized access to your LLM provider. If API keys are compromised, attackers can deliberately run expensive queries, such as large and recursive prompts, at your expense.
 
-When you issue API keys to users or teams and attach per-key token budgets (via [budget and spend limits]({{< link-hextra path="/llm/budget-limits/" >}})), you get a similar functionality that other AI gateways often call virtual keys or virtual key management. Agentgateway delivers this by composing API key authentication, token-based rate limits keyed by user or header, and optional observability. For a complete virtual key setup guide, see [Virtual key management]({{< link-hextra path="/llm/virtual-keys/" >}}).
+When you issue API keys to users or teams and attach per-key token budgets (via [budget and spend limits]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}})), you get a similar functionality that other AI gateways often call virtual keys or virtual key management. Agentgateway delivers this by composing API key authentication, token-based rate limits keyed by user or header, and optional observability. For a complete virtual key setup guide, see [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
 
 Follow the instructions in this guide to learn how to use these different methods. 
 
@@ -37,11 +37,18 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
    spec:
      ai:
        provider:
-         openai:
-           model: gpt-3.5-turbo 
+         openai: {}
+           #optionally pin the model or other OpenAI settings
+           #model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
      policies:
        auth:
          key: $TOKEN
+       ai:
+         routes:
+           "/v1/responses": "Responses"
+           "/v1/chat/completions": "Completions"
+           "/v1/models": "Models"
+           "*": "Passthrough"
    EOF
    ```
 
@@ -50,7 +57,7 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
    | Setting     | Description |
    |-------------|-------------|
    | `ai.provider.openai` | Define the OpenAI provider. |
-   | `openai.model`     | The OpenAI model to use, such as `gpt-3.5-turbo`.  |
+   | `openai.model`     | The OpenAI model to use, such as `{{< reuse "agw-docs/snippets/openai-model.md" >}}`.  |
    | `policies.auth` | Configure the authentication token for the OpenAI API. The example uses an inline token.|
 
 3. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/openai` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you previously created. The `URLRewrite` filter rewrites the path from `/openai` to the path of the API in the LLM provider that you want to use, `/v1/chat/completions`.
@@ -71,22 +78,28 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
        - path:
            type: PathPrefix
            value: /openai
+       filters:
+       - type: URLRewrite
+         urlRewrite:
+           path:
+             type: ReplacePrefixMatch
+             replacePrefixMatch: /v1/chat/completions
        backendRefs:
        - name: openai
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
 
 
-4. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
+4. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API. If you did not pin a model in the {{< reuse "agw-docs/snippets/backend.md" >}}, include the model in the request.
    
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
-      "model": "",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -102,7 +115,7 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json  -d '{
-      "model": "",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -124,7 +137,7 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
      "id": "chatcmpl-AEHYs2B0XUlEioCduH1meERmMwBGF",
      "object": "chat.completion",
      "created": 1727967462,
-     "model": "gpt-3.5-turbo-0125",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
      "choices": [
        {
          "index": 0,
@@ -191,7 +204,7 @@ Store the API key in a Kubernetes secret. Then, refer to the secret in the {{< r
      ai:
        provider:
          openai:
-           model: gpt-3.5-turbo  # Optional: specify default model
+           model: {{< reuse "agw-docs/snippets/openai-model.md" >}}  # Optional: specify default model
         # host: api.openai.com  # Optional: custom host if needed
         # port: 443  # Optional: custom port
      policies:
@@ -206,7 +219,7 @@ Store the API key in a Kubernetes secret. Then, refer to the secret in the {{< r
    | Setting     | Description |
    |-------------|-------------|
    | `ai.provider.openai` | Define the OpenAI provider. |
-   | `openai.model`     | The OpenAI model to use, such as `gpt-3.5-turbo`.  |
+   | `openai.model`     | The OpenAI model to use, such as `{{< reuse "agw-docs/snippets/openai-model.md" >}}`.  |
    | `policies.auth` | Configure the authentication token for OpenAI API. The example refers to the secret that you previously created.|
 
 5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/openai` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you previously created. 
@@ -230,19 +243,19 @@ Store the API key in a Kubernetes secret. Then, refer to the secret in the {{< r
        backendRefs:
        - name: openai
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
 
 
-6. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
+6. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API. If you did not pin a model in the {{< reuse "agw-docs/snippets/backend.md" >}}, include the model in the request.
    
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
-      "model": "",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -258,7 +271,7 @@ Store the API key in a Kubernetes secret. Then, refer to the secret in the {{< r
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json  -d '{
-      "model": "",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -280,7 +293,7 @@ Store the API key in a Kubernetes secret. Then, refer to the secret in the {{< r
      "id": "chatcmpl-AEHYs2B0XUlEioCduH1meERmMwBGF",
      "object": "chat.completion",
      "created": 1727967462,
-     "model": "gpt-3.5-turbo-0125",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
      "choices": [
        {
          "index": 0,
@@ -330,7 +343,7 @@ Pass through an existing token directly from the client or a successful OpenID C
      ai:
        provider:
          openai:
-           model: gpt-3.5-turbo  
+           model: {{< reuse "agw-docs/snippets/openai-model.md" >}} 
      policies:
        auth:
          passthrough: {}
@@ -342,7 +355,7 @@ Pass through an existing token directly from the client or a successful OpenID C
    | Setting     | Description |
    |-------------|-------------|
    | `ai.provider.openai` | Define the OpenAI provider. |
-   | `openai.model`     | The OpenAI model to use, such as `gpt-3.5-turbo`.  |
+   | `openai.model`     | The OpenAI model to use, such as `{{< reuse "agw-docs/snippets/openai-model.md" >}}`.  |
    | `policies.auth` | Configure the authentication token for OpenAI API. The example uses passthrough authentication.|
 
 3. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/openai` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you previously created.
@@ -366,19 +379,19 @@ Pass through an existing token directly from the client or a successful OpenID C
        backendRefs:
        - name: openai
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
 
 
-4. Trigger your authenticated client to send a request to the {{< reuse "agw-docs/snippets/backend.md" >}}, and verify that you get back a successful response. For example, you might instruct your client to send a curl request through the AI Gateway. Note that the request includes the `Authorization` header, which is required for passthrough authentication.
+4. Trigger your authenticated client to send a request to the {{< reuse "agw-docs/snippets/backend.md" >}}, and verify that you get back a successful response. For example, you might instruct your client to send a curl request through the AI Gateway. Note that the request includes the `Authorization` header, which is required for passthrough authentication. If you did not pin a model in the {{< reuse "agw-docs/snippets/backend.md" >}}, include the model in the request.
 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H "Authorization: Bearer $TOKEN" -H content-type:application/json -d '{
-      "model": "",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -394,7 +407,7 @@ Pass through an existing token directly from the client or a successful OpenID C
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H "Authorization: Bearer $TOKEN" -H content-type:application/json -d '{
-      "model": "",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -416,7 +429,7 @@ Pass through an existing token directly from the client or a successful OpenID C
      "id": "chatcmpl-AEHYs2B0XUlEioCduH1meERmMwBGF",
      "object": "chat.completion",
      "created": 1727967462,
-     "model": "gpt-3.5-turbo-0125",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
      "choices": [
        {
          "index": 0,

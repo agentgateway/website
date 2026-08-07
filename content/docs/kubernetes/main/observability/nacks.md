@@ -1,13 +1,14 @@
 ---
 title: Monitoring agentgateway proxies for NACKs
+description: Monitor and troubleshoot proxy configuration rejections with metrics and events.
 weight: 80
 test:
   nacks:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/observability/nacks.md
+  - file: ${versionRoot}/observability/nacks.md
     path: nacks
 ---
 

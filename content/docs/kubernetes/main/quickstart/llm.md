@@ -4,9 +4,9 @@ weight: 11
 description: Route requests to OpenAI's chat completions API with agentgateway on Kubernetes.
 test:
   openai:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/quickstart/llm.md
+  - file: ${versionRoot}/quickstart/llm.md
     path: openai-setup
 ---
 

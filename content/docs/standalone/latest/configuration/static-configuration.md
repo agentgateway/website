@@ -1,10 +1,10 @@
 ---
 title: Static configuration
 weight: 10
-description:
+description: Configure static settings that are applied at startup time.
 ---
 
-Most agentgateway configurations dynamically update as you make changes to the binds, policies, backends, and so on. 
+Most agentgateway configurations dynamically update as you make changes to the gateways, routes, policies, backends, and so on. 
 
 However, a few configurations are statically configured at startup. These static configurations are under the `config` section.
 
@@ -14,5 +14,5 @@ The following table shows the `config` file schema for static configurations at 
 
 {{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/config.md" 
    section="Configuration File Schema"
-   exclude="^\\|.(binds|frontendPolicies|policies|services|workloads|backends|llm|mcp|routeGroups)"
+   exclude="^\\|.(gateways|routes|tcpRoutes|ui|binds|frontendPolicies|policies|services|workloads|backends|llm|mcp|routeGroups)"
 %}}

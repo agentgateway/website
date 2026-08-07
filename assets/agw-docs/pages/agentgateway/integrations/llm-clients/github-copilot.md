@@ -1,8 +1,7 @@
 Configure [GitHub Copilot](https://github.com/features/copilot) in VS Code to route requests through agentgateway.
 
-{{< callout type="info" >}}
-Custom endpoint configuration for GitHub Copilot requires a GitHub Copilot Business or Enterprise plan. Individual Copilot plans do not support custom proxy endpoints. For more information, see the [GitHub Copilot documentation](https://docs.github.com/en/copilot/reference/copilot-allowlist-reference).
-{{< /callout >}}
+> [!NOTE]
+> Custom endpoint configuration for GitHub Copilot requires a GitHub Copilot Business or Enterprise plan. Individual Copilot plans do not support custom proxy endpoints. For more information, see the [GitHub Copilot documentation](https://docs.github.com/en/copilot/reference/copilot-allowlist-reference).
 
 ## Before you begin
 

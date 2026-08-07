@@ -4,7 +4,7 @@ weight: 30
 description: Integrate agentgateway with Arize Phoenix for LLM tracing and evaluation
 ---
 
-[Arize Phoenix](https://phoenix.arize.com/) is an open-source LLM observability platform for tracing, evaluation, and debugging.
+[Arize Phoenix](https://arize.com/phoenix/) is an open-source LLM observability platform for tracing, evaluation, and debugging.
 
 ## Features
 
@@ -33,30 +33,9 @@ Access Phoenix at [http://localhost:6006](http://localhost:6006).
 
 ## Configuration
 
-Phoenix accepts OpenTelemetry traces natively:
+Phoenix accepts OpenTelemetry traces natively on port 4317 (gRPC) and port 6006 (HTTP), so agentgateway can export traces directly to Phoenix without an intermediate OpenTelemetry Collector.
 
-```yaml
-# otel-collector-config.yaml
-receivers:
-  otlp:
-    protocols:
-      grpc:
-        endpoint: 0.0.0.0:4317
-
-exporters:
-  otlp:
-    endpoint: http://localhost:4317
-    tls:
-      insecure: true
-
-service:
-  pipelines:
-    traces:
-      receivers: [otlp]
-      exporters: [otlp]
-```
-
-Configure agentgateway:
+Configure agentgateway to send traces directly to Phoenix:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -65,40 +44,49 @@ config:
     otlpEndpoint: http://localhost:4317
     randomSampling: true
 
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-4o-mini
-      policies:
-        backendAuth:
-          key: "$OPENAI_API_KEY"
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - ai:
+      name: openai
+      provider:
+        openAI:
+          model: gpt-4o-mini
+  policies:
+    backendAuth:
+      key: "$OPENAI_API_KEY"
 ```
 
 ## Docker Compose example
+
+Agentgateway exports traces directly to Phoenix without needing an OTel Collector:
 
 ```yaml
 version: '3'
 services:
   agentgateway:
-    image: ghcr.io/agentgateway/agentgateway:latest
+    image: cr.agentgateway.dev/agentgateway:latest
     ports:
       - "3000:3000"
     volumes:
       - ./config.yaml:/etc/agentgateway/config.yaml
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://phoenix:4317
 
   phoenix:
     image: arizephoenix/phoenix:latest
     ports:
       - "6006:6006"
       - "4317:4317"
+```
+
+When using Docker Compose, update your config.yaml to use the Phoenix service name:
+
+```yaml
+config:
+  tracing:
+    otlpEndpoint: http://phoenix:4317
+    randomSampling: true
 ```
 
 ## Learn more

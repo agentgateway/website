@@ -6,7 +6,7 @@ In this guide, you set up a 3-level route delegation hierarchy. The parent HTTPR
 
 The following image illustrates the route delegation hierarchy:
 
-{{< reuse-image src="img/route-delegation-multi-level.svg" >}}
+{{< reuse-image-light src="img/route-delegation-multi-level.svg" >}}
 {{< reuse-image-dark srcDark="img/route-delegation-multi-level-dark.svg" >}}
 
 **`parent` HTTPRoute**:

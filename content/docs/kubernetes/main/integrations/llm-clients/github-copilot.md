@@ -1,6 +1,6 @@
 ---
 title: GitHub Copilot
-weight: 25
+weight: 10
 description: Configure GitHub Copilot to use agentgateway running in Kubernetes
 ---
 

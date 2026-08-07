@@ -4,12 +4,18 @@ weight: 30
 description: Configure agentgateway to route traffic to vLLM for self-hosted model inference
 test:
   vllm-provider-setup:
-  - file: content/docs/kubernetes/main/install/helm.md
+  - file: ${versionRoot}/install/helm.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/llm/providers/vllm.md
+  - file: ${versionRoot}/llm/providers/vllm.md
     path: vllm-provider-setup
 ---
+
+> [!NOTE]
+> This guide shows the simple OpenAI-compatible configuration for vLLM. If you
+> want to declare explicit format support, set per-format paths, or route to vLLM
+> through an InferencePool, use a
+> [custom provider]({{< link-hextra path="/llm/providers/custom/" >}}).
 
 {{< reuse "agw-docs/pages/agentgateway/llm/providers/vllm.md" >}}

@@ -137,6 +137,7 @@ framework-test-install:
 .PHONY: framework-test
 framework-test:
 	@$(MAKE) _framework_test_preflight
+	rm -rf public
 	hugo160 --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test; \
@@ -147,16 +148,33 @@ framework-test:
 .PHONY: framework-test-static
 framework-test-static:
 	@$(MAKE) _framework_test_preflight
+	rm -rf public
 	hugo160 --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=static; \
 		result=$$?; $(SHOW_REPORT); exit $$result)
 
-# Build the site and run chromium browser specs (tabs, mermaid, theme toggle,
-# copy-md, console errors, viewport, contrast).
+# Build the site and run only the content specs (markdown-leaks,
+# built-html-integrity, copy-md-fidelity, hugo-warnings, dev-build, plus the
+# source scanners curl-quotes/tab-syntax/shortcode-args/include-form/
+# cascade-type). This is the project a content-only PR needs; mirrors CI.
+.PHONY: framework-test-content
+framework-test-content:
+	@$(MAKE) _framework_test_preflight
+	rm -rf public
+	hugo160 --gc --minify > .build.log 2>&1
+	cd $(FRAMEWORK_EXTRAS_DIR) && \
+		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=content; \
+		result=$$?; npx playwright show-report; exit $$result)
+
+# Build the site and run chromium browser specs (theme toggle, mermaid,
+# contrast, viewport, sidebar rail, toc, alerts, back-to-top, brand). The
+# all-page console-error crawl is a separate "browser-crawl" project; the
+# full `framework-test` target runs it.
 .PHONY: framework-test-browser
 framework-test-browser:
 	@$(MAKE) _framework_test_preflight
+	rm -rf public
 	hugo160 --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=browser; \
@@ -167,6 +185,7 @@ framework-test-browser:
 .PHONY: framework-test-cross-browser
 framework-test-cross-browser:
 	@$(MAKE) _framework_test_preflight
+	rm -rf public
 	hugo160 --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test \
@@ -196,6 +215,43 @@ _framework_test_preflight:
 	@if [ ! -d "$(FRAMEWORK_EXTRAS_DIR)/node_modules" ]; then \
 		echo "Run 'make framework-test-install' first." >&2; exit 1; \
 	fi
+
+
+#----------------------------------------------------------------------------------
+# Playwright screenshots for docs images
+#----------------------------------------------------------------------------------
+# These targets live in the repo, not in docs-theme-extras. They generate the
+# committed UI screenshots under assets/img/ using the local Playwright setup in
+# ./playwright.
+#----------------------------------------------------------------------------------
+
+PLAYWRIGHT_DIR ?= playwright
+
+.PHONY: playwright-install
+playwright-install:
+	@if [ ! -d "$(PLAYWRIGHT_DIR)" ]; then \
+		echo "Playwright directory not found at $(PLAYWRIGHT_DIR)." >&2; \
+		exit 1; \
+	fi
+	cd $(PLAYWRIGHT_DIR) && npm ci
+	cd $(PLAYWRIGHT_DIR) && npx playwright install --with-deps chromium
+
+.PHONY: playwright-test
+playwright-test:
+	@if [ ! -d "$(PLAYWRIGHT_DIR)" ]; then \
+		echo "Playwright directory not found at $(PLAYWRIGHT_DIR)." >&2; \
+		exit 1; \
+	fi
+	cd $(PLAYWRIGHT_DIR) && npm run test:standalone
+
+.PHONY: playwright-update-images
+playwright-update-images: playwright-install
+	@if [ ! -d "$(PLAYWRIGHT_DIR)" ]; then \
+		echo "Playwright directory not found at $(PLAYWRIGHT_DIR)." >&2; \
+		exit 1; \
+	fi
+	cd $(PLAYWRIGHT_DIR) && npm run update
+	cd $(PLAYWRIGHT_DIR) && npm run sync-docs
 
 
 #----------------------------------------------------------------------------------

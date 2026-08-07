@@ -10,7 +10,7 @@ Serving multiple hosts on a single listener is also referred to as Server Name I
 
 In this guide, you learn how to set up an HTTPS Gateway that serves two different domains, `httpbin.example.com` and `petstore.example.com` on the same port 443. When sending a request to the Gateway, you indicate the hostname you want to connect to. Based on the selected hostname, the Gateway presents the hostname-specific certificate. 
 
-{{< reuse-image src="img/sni-listener.svg" width="700px">}}
+{{< reuse-image-light src="img/sni-listener.svg" width="700px">}}
 {{< reuse-image-dark srcDark="img/sni-listener-dark.svg" width="700px" >}}
 
 ## Before you begin
@@ -47,13 +47,11 @@ Deploy the Petstore sample app. This app is used alongside the httpbin app from 
 
 Create TLS certificates for the `httpbin.example.com` and `petstore.example.com` domains that are signed by a self-signed root CA.
 
-{{< callout type="warning" >}}
-Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trusted Certificate Authority.
-{{< /callout >}}
+> [!WARNING]
+> Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trusted Certificate Authority.
 
-{{< callout type="info" >}}
-When generating your Envoy certificates, make sure to use encryption algorithms that are supported in Envoy. To learn more about supported algorithms that you can use for your certificates and keys, see the <a href="https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/security/ssl#certificate-selection">Envoy documentation</a>. 
-{{< /callout >}}
+> [!NOTE]
+> When generating your Envoy certificates, make sure to use encryption algorithms that are supported in Envoy. To learn more about supported algorithms that you can use for your certificates and keys, see the <a href="https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/security/ssl#certificate-selection">Envoy documentation</a>. 
    
 1. Create a root certificate and private key to sign the certificates for your services. 
    ```shell

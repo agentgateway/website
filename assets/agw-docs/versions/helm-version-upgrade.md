@@ -1,1 +1,1 @@
-v$NEW_VERSION
+{{< version exclude-if="main" >}}v{{< /version >}}$NEW_VERSION

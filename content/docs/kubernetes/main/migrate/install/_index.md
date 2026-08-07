@@ -1,5 +1,6 @@
 ---
 title: "Install"
+description: Install the ingress2gateway tool on your operating system
 weight: 10
 test: skip
 ---

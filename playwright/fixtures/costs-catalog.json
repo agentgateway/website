@@ -1,0 +1,25 @@
+{
+  "providers": {
+    "openai": {
+      "models": {
+        "gpt-4o": { "rates": { "input": "2.5", "output": "10", "cacheRead": "1.25" } },
+        "gpt-4o-mini": { "rates": { "input": "0.15", "output": "0.6", "cacheRead": "0.075" } }
+      }
+    },
+    "anthropic": {
+      "models": {
+        "claude-3-5-sonnet": { "rates": { "input": "3", "output": "15", "cacheRead": "0.3" } }
+      }
+    },
+    "google": {
+      "models": {
+        "gemini-2.5-pro": { "rates": { "input": "1.25", "output": "10", "cacheRead": "0.125" } }
+      }
+    },
+    "bedrock": {
+      "models": {
+        "claude-3-haiku": { "rates": { "input": "0.25", "output": "1.25", "cacheRead": "0.03" } }
+      }
+    }
+  }
+}

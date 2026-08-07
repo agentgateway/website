@@ -51,12 +51,12 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to apply an LLM request transformation. The following example limits `max_completion_tokens` to no more than 10. If the client requests less than 10 tokens, this number is applied. If the client requests more than 10 tokens, the maximum number of 10 is applied.  
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource to apply an LLM request transformation. The following example limits `max_completion_tokens` to no more than 10. If the client requests less than 10 tokens, this number is applied. If the client requests more than 10 tokens, the maximum number of 10 is applied.  
 
    ```yaml {paths="llm-transformations"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: cap-max-tokens
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -100,23 +100,21 @@ EOF
    | `field` | The name of the LLM request field to set. Maximum 256 characters. |
    | `expression` | A CEL expression that computes the value for the field. Use the `llmRequest` variable to access the original LLM request body. Maximum 16,384 characters. |
 
-   {{< callout type="info" >}}
-   You can specify up to 64 transformations per policy. Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.
+   > [!NOTE]
+   > You can specify up to 64 transformations per policy. Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.
+   >
+   > Thinking budget fields, such as `reasoning_effort` and `thinking_budget_tokens` can also be set or capped by using transformations. This way, operators can enforce reasoning limits centrally without requiring client changes. For example, use `"field": "reasoning_effort"` with the expression `"medium"` to cap all requests to medium reasoning efforts regardless of what the client sends.
 
-   Thinking budget fields, such as `reasoning_effort` and `thinking_budget_tokens` can also be set or capped by using transformations. This way, operators can enforce reasoning limits centrally without requiring client changes. For example, use `"field": "reasoning_effort"` with the expression `"medium"` to cap all requests to medium reasoning efforts regardless of what the client sends.
-   {{< /callout >}}
-
-2. Verify that the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} is accepted.
+2. Verify that the {{< reuse "agw-docs/snippets/policy.md" >}} is accepted.
 
    ```sh
-   kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} cap-max-tokens -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.status.ancestors[0].conditions[?(@.type=="Accepted")].status}'
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} cap-max-tokens -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.status.ancestors[0].conditions[?(@.type=="Accepted")].status}'
    ```
 
 3. Send a request with `max_completion_tokens` set to a value greater than 10. The transformation limits it to 10 before the request reaches the LLM provider. Verify that the `completion_tokens` value in the response is 10 or fewer and the `finish_reason` is set to `length`.
 
-   {{< callout type="info" >}}
-   Some older OpenAI models use `max_tokens` instead of `max_completion_tokens`. If the transformation does not appear to take effect, check the model's API documentation for the correct field name and update the transformation's `field` value accordingly.
-   {{< /callout >}}
+   > [!NOTE]
+   > Some older OpenAI models use `max_tokens` instead of `max_completion_tokens`. If the transformation does not appear to take effect, check the model's API documentation for the correct field name and update the transformation's `field` value accordingly.
 
    {{< tabs >}}
 
@@ -125,7 +123,7 @@ EOF
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" \
    -H "content-type: application/json" \
    -d '{
-     "model": "gpt-3.5-turbo",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
      "max_completion_tokens": 5000,
      "messages": [
        {
@@ -142,7 +140,7 @@ EOF
    curl "localhost:8080/v1/chat/completions" \
    -H "content-type: application/json" \
    -d '{
-     "model": "gpt-3.5-turbo",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
      "max_completion_tokens": 5000,
      "messages": [
        {
@@ -176,7 +174,7 @@ EOF
    Example output: 
    ```console {hl_lines=[5,28]}
    {
-     "model": "gpt-3.5-turbo-0125",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
      "usage": {
        "prompt_tokens": 12,
        "completion_tokens": 10,
@@ -259,12 +257,12 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that targets the OpenAI provider's HTTPRoute and injects the model fields as response headers.
+1. Create a {{< reuse "agw-docs/snippets/policy.md" >}} resource that targets the OpenAI provider's HTTPRoute and injects the model fields as response headers.
 
    ```yaml {paths="llm-model-headers"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: llm-model-headers
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -361,8 +359,8 @@ EOF
    content-type: application/json
    < x-requested-model: gpt-4
    x-requested-model: gpt-4
-   < x-actual-model: gpt-3.5-turbo-0125
-   x-actual-model: gpt-3.5-turbo-0125
+   < x-actual-model: {{< reuse "agw-docs/snippets/openai-model.md" >}}-0125
+   x-actual-model: {{< reuse "agw-docs/snippets/openai-model.md" >}}-0125
    ...
    ```
 
@@ -377,9 +375,8 @@ EOF
    x-actual-model: gpt-4o-mini
    ```
 
-   {{< callout type="info" >}}
-   When sending traffic to the gateway with traffic compression enabled, such as `gzip` or `br`, the CEL expression could fail. If a header is missing from a response, try a different `accept-encoding` header in your request.
-   {{< /callout >}}
+   > [!NOTE]
+   > When sending traffic to the gateway with traffic compression enabled, such as `gzip` or `br`, the CEL expression could fail. If a header is missing from a response, try a different `accept-encoding` header in your request.
    
 <!-- metadata not working issue: https://github.com/agentgateway/agentgateway/issues/1554 -->
 <!--
@@ -395,8 +392,8 @@ Use the [`metadata`]({{< link-hextra path="/traffic-management/transformations/t
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: llm-context-vars
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -431,8 +428,8 @@ The `metadata` field pre-computes the `llm` context values once. The `default()`
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```shell {paths="llm-transformations,llm-model-headers"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} cap-max-tokens -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} cap-max-tokens -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 ```
 
 {{< doc-test paths="llm-transformations,llm-model-headers" >}}

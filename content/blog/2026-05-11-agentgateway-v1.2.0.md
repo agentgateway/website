@@ -1,5 +1,6 @@
 ---
 title: "Agentgateway v1.2.0: we're shipping like the agents are watching"
+category: "Announcement"
 publishDate: 2026-05-14
 author: "Sebastian Maniak"
 description: "Agentgateway v1.2.0 lands route delegation, backend external auth, conditional policies with CEL, the new agctl debugger, and a stack of LLM gateway upgrades."

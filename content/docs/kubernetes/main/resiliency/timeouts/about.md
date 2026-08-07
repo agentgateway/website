@@ -1,7 +1,7 @@
 ---
 title: About timeouts
 weight: 5
-description:
+description: Learn about timeout types and how to configure them for your services.
 test: skip
 ---
 

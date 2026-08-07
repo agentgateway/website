@@ -68,24 +68,19 @@ Use this skill when adding tests to documentation guides in the `website` repo s
 title: ...
 test:
   <scenario-name>:
-  - file: content/docs/standalone/main/quickstart/<page>.md
+  - file: ${versionRoot}/quickstart/<page>.md   # same-version prereq
     path: <path-name>
+  - path: <path-name>                           # file: omitted -> this page itself
 ---
 ```
 
-Or for the latest (stable) version:
+Write `file:` values **version-relative** so a page can be copied between `main` and `latest` with no front-matter edits:
 
-```yaml
----
-title: ...
-test:
-  <scenario-name>:
-  - file: content/docs/standalone/latest/quickstart/<page>.md
-    path: <path-name>
----
-```
+- **Omit `file:`** when the source is the page declaring the test (it defaults to that page).
+- **Use `${versionRoot}/...`** for same-version prerequisites. `${versionRoot}` expands to the version dir of the declaring page (`content/docs/kubernetes/main`, `.../latest`); `${version}` expands to just the segment. Covers the `kubernetes` and `standalone` sections.
+- Use a **literal path** only to point at a *different* version on purpose, e.g. `content/docs/standalone/latest/quickstart/<page>.md`.
 
-- Use the **content** path for `file`. List sources in dependency order if chaining (install → … → feature).
+- List sources in dependency order if chaining (install → … → feature).
 - One scenario can list only the current page with one path if the guide is self-contained.
 - For Kubernetes docs, prerequisite files often come from `latest` (e.g. `content/docs/kubernetes/latest/quickstart/install.md`) while the feature page may be in `main` or `latest`.
 

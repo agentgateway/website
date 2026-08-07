@@ -7,9 +7,8 @@ To contribute new documentation to kgateway, follow these steps:
 - Submit your contribution as a PR from your fork to the `kgateway-dev/kgateway.dev` GitHub repository.
 - Follow the review process until your contribution is merged.
 
-{{< callout type="info" >}}
-Looking to contribute code to kgateway? See the [contributing guide in the Community repo](https://github.com/kgateway-dev/community/blob/main/CONTRIBUTING.md).
-{{< /callout >}}
+> [!NOTE]
+> Looking to contribute code to kgateway? See the [contributing guide in the Community repo](https://github.com/kgateway-dev/community/blob/main/CONTRIBUTING.md).
 
 ## Audience and intended use {#audience}
 
@@ -127,9 +126,8 @@ The guide includes steps to install kgateway in three ways.
 
 Similar to the reuse shortcode, the reuse-image and reuse-image-dark shortcodes are used to display images in the documentation. Images are stored in the `assets/img` folder.
 
-{{< callout type="warning" >}}
-You must use both shortcodes together to display an image. This way, the image is displayed in both light and dark mode. If you do not have a different image file, still include both shortcodes with the same `src` image file.
-{{< /callout >}}
+> [!WARNING]
+> You must use both shortcodes together to display an image. This way, the image is displayed in both light and dark mode. If you do not have a different image file, still include both shortcodes with the same `src` image file.
 
 The following example shows the example syntax for using this shortcode:
 
@@ -161,19 +159,17 @@ Shortcode syntax
 
 ### callout
 
-A box that displays important information to the user. You can read more about this shortcode [here](https://imfing.github.io/hextra/docs/guide/shortcodes/callout/).
+A box that displays important information to the user. You can read more about callouts [here](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts).
 
 Example callout: 
 
-{{< callout type="info" >}}
-This is a sample callout of type info. 
-{{< /callout >}}
+> [!NOTE]
+> This is a sample callout of type info. 
 
-Shortcode syntax: 
+Syntax: 
 ```markdown
-{{</* callout type="info" */>}}
-This is a sample callout of type info. 
-{{</* /callout */>}}
+> [!NOTE]
+> This is a sample callout of type info. 
 ```
 
 ### version

@@ -6,7 +6,7 @@ In this guide, you set up route delegation from a parent HTTPRoute to two child 
 
 The following image illustrates the route delegation hierarchy:
 
-{{< reuse-image src="img/route-delegation-basic.svg" >}}
+{{< reuse-image-light src="img/route-delegation-basic.svg" >}}
 {{< reuse-image-dark srcDark="img/route-delegation-basic-dark.svg" >}}
 
 **`parent` HTTPRoute**:

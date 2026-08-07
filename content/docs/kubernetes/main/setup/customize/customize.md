@@ -1,7 +1,15 @@
 ---
 title: Customize the gateway
 weight: 20
-description:
+description: Customize the agentgateway proxy for different deployment scenarios and requirements.
+test:
+  customize:
+  - file: ${versionRoot}/quickstart/install.md
+    path: standard
+  - file: ${versionRoot}/setup/gateway.md
+    path: all
+  - file: ${versionRoot}/setup/customize/customize.md
+    path: customize
 ---
 
 {{< reuse "agw-docs/pages/setup/customize.md" >}}

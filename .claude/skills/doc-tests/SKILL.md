@@ -1,7 +1,7 @@
 ---
 name: doc-test-guides
 description: Add executable doc tests to agentgateway documentation guides using the doc test framework. Use when the user asks to "add doc tests", "add tests to a guide", "add tests to a topic", mentions "YAMLTest", or is working on quickstart guides, standalone binary guides, or Kubernetes doc pages that should generate runnable scripts from code blocks.
-version: 1.0.0
+version: 1.2.0
 ---
 
 # Doc test guides skill
@@ -25,6 +25,7 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
    > **Critical**: Most Kubernetes topic pages (e.g. `content/docs/kubernetes/latest/resiliency/timeouts/request.md`) are thin wrappers that only contain `{{< reuse "agw-docs/pages/..." >}}`. **Always place doc-test blocks in the reuse file** (`assets/agw-docs/pages/...`), never in the content wrapper. This way both `latest` and `main` versions automatically inherit the tests — you only need to add them once.
 3. **Extractor** resolves `{{< reuse "..." >}}` from `assets/`, so the script is built from the expanded content. Reference the **content file** in `test:` sources; the extractor will follow reuse.
 4. **Block order**: Selected blocks are emitted in document order (by file and `start_line`). Hidden blocks (e.g. "start server in background") must appear *before* any visible block that depends on them (e.g. curl). The extractor sorts selected blocks by `(file_path, start_line)` so hidden blocks are not deferred to the end.
+5. **Byte-identical blocks are silently dropped**: `build_script()` in `scripts/doc_test_extract.py` keeps a `seen` set of block contents and skips any block whose content (after stripping leading and trailing newlines) exactly matches an earlier selected block. Only the **first** copy reaches the generated script — there is no warning. See "Repeated commands across sections" under step 3 for what this breaks and how to avoid it.
 
 ---
 
@@ -51,6 +52,38 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
 - **Display-only YAML blocks**: Some pages show YAML configs as plain display blocks (no `cat <<'EOF'` shell wrapper), unlike LLM guides that wrap configs in shell commands. You can't tag a display-only YAML block with `paths=` because it isn't a runnable shell command. Instead, add a **hidden** `{{< doc-test >}}` block that writes the config with `cat <<'EOF' > config.yaml`. See `content/docs/standalone/main/mcp/mcp-authz.md` for an example.
 - **External service dependencies**: When a config example depends on an external service that can't be trivially stood up in the test (e.g. Keycloak on port 9000, a custom OIDC provider), skip that example and only test self-contained ones. It's better to test one example well than to skip the entire page.
 
+#### Repeated commands across sections
+
+The extractor drops any block whose content is byte-identical to a block it already selected, keeping only the first. Nothing is logged, so the remaining copies just quietly do not run.
+
+This bites on multi-section pages where each section repeats the same command. For example, a page with four sections that each write a config and then validate it:
+
+```
+{{< doc-test paths="my-test" >}}
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
+```
+
+Four blocks like that collapse to **one**, so three of the four configs are never validated even though the test passes. The visible config-writing blocks survive because each one contains a different config.
+
+Give each repeated block distinguishing content — a comment naming the section is enough, and it makes the generated script easier to read:
+
+```
+{{< doc-test paths="my-test" >}}
+# Multi-level delegation: validate the config written by step 1
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
+```
+
+To confirm nothing was dropped, count the commands in the generated script and compare against the source:
+
+```sh
+grep -c "validate-only" content/docs/standalone/main/<page>.md
+grep -c "validate-only" out/tests/generated/<script-name>.sh
+```
+
+The same trap applies to any repeated command, such as an identical `start_gateway`, `sleep 3`, or curl warmup loop used in more than one section.
+
 ### 4. Long-running processes (standalone binary)
 
 - The guide may show "run agentgateway" in the foreground. For the generated script, the process must run in the background so the script can continue (e.g. curl, YAMLTest).
@@ -60,6 +93,71 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
   - `trap 'kill $AGW_PID 2>/dev/null' EXIT`
   - `sleep 3`
 - Do **not** add a path to the visible "run agentgateway" block so it is not included in the script; only the hidden block is.
+- **Helper backends: pick a port no documented config uses.** When a test needs a local backend to forward to, remember that doc tests run sequentially within a CI shard, so a helper process that outlives its script can collide with the next test. Port `8080` is the one documented configs use most (for example, the body-buffering page's `host: localhost:8080`), so choose something else (`8081`, `8082`) for a backend you invented, and keep the documented port for the test whose page actually specifies it.
+- **Make readiness checks identity-aware.** A loop like `curl -sf http://127.0.0.1:8080/ && break` passes as soon as *anything* answers on that port, so a stale process from an earlier test satisfies it and the real assertion then fails for a misleading reason. Probe for a response only your backend produces, and fail with a clear message if it never appears:
+  ```sh
+  for i in $(seq 1 30); do
+    [ "$(curl -sf --max-time 5 -X POST -d probe http://127.0.0.1:8080/ 2>/dev/null)" = "probe" ] && break
+    sleep 1
+  done
+  if [ "$(curl -sf --max-time 5 -X POST -d probe http://127.0.0.1:8080/ 2>/dev/null)" != "probe" ]; then
+    echo "FAIL: the echo backend did not come up on 127.0.0.1:8080 (is the port already in use?)"
+    exit 1
+  fi
+  ```
+- **Cleanup runs under `set -e`.** Generated scripts start with `set -euo pipefail`, so a failing command inside an `EXIT` trap aborts the handler and the script exits non-zero even when every assertion passed. Guard cleanup with `|| true`, and guard unset variables for `set -u`:
+  ```sh
+  stop_gateway() {
+    [ -n "${AGW_PID:-}" ] || return 0
+    kill "$AGW_PID" 2>/dev/null || true
+    wait "$AGW_PID" 2>/dev/null || true
+    AGW_PID=""
+  }
+  ```
+
+#### Never start a background process inside `$( )`
+
+A helper that both starts the gateway and returns a value looks convenient, but it breaks in two ways at once when it is called in a command substitution:
+
+```sh
+# BROKEN
+tool_names_for() {
+  agentgateway -f "$1" &
+  AGW_PID=$!                 # set in the SUBSHELL, invisible to the caller
+  curl ... | jq -r '...'
+}
+NAMES=$(tool_names_for config.yaml)
+```
+
+1. **The PID is lost.** `$( )` runs in a subshell, so `AGW_PID` never reaches the parent. A later `stop_gateway` sees it empty and returns without killing anything, so the gateway keeps holding its port. The next config then starts a gateway that cannot bind, and every assertion after that silently runs against the *previous* config.
+2. **The gateway's output is captured.** The background process inherits the substituted stdout, so its startup log ends up concatenated into the returned value.
+
+Symptom: the first assertion passes, later ones fail or hang for no obvious reason, and the test eventually times out. This is easy to misread as a product bug.
+
+Split the two jobs, so the process starts in the parent shell and only pure-curl code runs inside `$( )`:
+
+```sh
+start_gateway() {                       # call from the parent, never inside $( )
+  agentgateway -f "$1" > "agw-$1.log" 2>&1 &
+  AGW_PID=$!
+}
+
+wait_for_tools() {                      # pure curl, safe inside $( )
+  local out=""
+  for i in $(seq 1 15); do
+    out=$(query_something 2>/dev/null || true)
+    [ -n "$out" ] && break
+    sleep 2
+  done
+  echo "$out"
+}
+
+start_gateway config.yaml
+NAMES=$(wait_for_tools)
+stop_gateway
+```
+
+Redirect the process's output to a file as well, so nothing can leak into a captured value. When a page needs several configs in sequence, `stop_gateway` between them and confirm the port is actually released before the next start.
 
 ### 5. Env vars and placeholders
 
@@ -73,10 +171,19 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
 title: ...
 test:
   <scenario-name>:
-  - file: content/docs/standalone/main/quickstart/<page>.md
+  - file: ${versionRoot}/quickstart/<page>.md   # same-version prereq
     path: <path-name>
+  - path: <path-name>                           # file: omitted -> this page itself
 ---
 ```
+
+**Write `file:` values version-relative so a page can be copied between `main` and `latest` with no front-matter edits:**
+
+- **Omit `file:`** when the source is the page that declares the test — it defaults to the declaring page.
+- **Use `${versionRoot}/...`** for prerequisites in the **same version** (e.g. `${versionRoot}/quickstart/install.md`). `${versionRoot}` expands to the version dir of the page declaring the test (`content/docs/kubernetes/main`, `.../latest`, etc.); `${version}` expands to just the segment (`main`/`latest`).
+- Use a **literal path** only when an entry must point at a *different* version on purpose.
+
+Token resolution covers the `kubernetes` and `standalone` sections; a `file:` that doesn't match the `content/docs/<section>/<version>/` layout is left as-is.
 
 **Pages with no testable content** (no code blocks, landing pages, concept pages, `_index.md` files without ordered steps, etc.) should be marked with `test: skip` instead of a scenario dict. This counts the page as covered in the test coverage report without generating any test cases:
 
@@ -98,19 +205,19 @@ test: skip
 
 **Key principle:** The existing framework already supports every content type except pure link validation. Most "non-runnable" pages can become testable through content changes alone — adding hidden `{{< doc-test >}}` blocks that write configs, start services in the background, and run lightweight assertions. 
 
-Or for the latest (stable) version:
+Because the example above uses `${versionRoot}` and omits `file:` for the declaring page, the **same** front matter works under `latest/` without changes. Only when you deliberately mix versions do you write a literal path:
 
 ```yaml
 ---
 title: ...
 test:
   <scenario-name>:
-  - file: content/docs/standalone/latest/quickstart/<page>.md
+  - file: content/docs/standalone/latest/quickstart/<page>.md   # literal: pin a specific version
     path: <path-name>
 ---
 ```
 
-- Use the **content** path for `file`. List sources in dependency order if chaining (install → … → feature).
+- Prefer version-relative `file:` values (see above). List sources in dependency order if chaining (install → … → feature).
 - One scenario can list only the current page with one path if the guide is self-contained.
 - For Kubernetes docs, prerequisite files often come from `latest` (e.g. `content/docs/kubernetes/latest/quickstart/install.md`) while the feature page may be in `main` or `latest`.
 
@@ -233,7 +340,34 @@ Before generating, review any `yaml`/`yml` fenced blocks tagged with `paths=` to
 - Inspect `out/tests/generated/*.sh`: order of steps, no unresolved shortcodes, env vars and backgrounding correct.
 - Run a script manually, e.g. `bash out/tests/generated/<script-name>.sh` (standalone tests do not use a kind cluster; use `--generate-only` and run the script in an env that has the binary/Docker/etc.).
 
-### 10. When a test fails: fix the test or fix the content?
+### 10. Report what is tested and what is not (required)
+
+Every time you add or update a doc test, produce a **coverage summary** for the page: a list of what the test validates from the visible content, and a list of what it does **not** validate, each with a one-line reason. This makes coverage gaps explicit instead of letting a passing test imply the whole page is covered.
+
+Do this in **two places**:
+
+1. **In the test**, as a `{{< doc-test >}}` comment block at the top of the test's hidden setup (the comment is not rendered on the page). Keep it current when you change assertions. Example shape:
+   ```
+   {{< doc-test paths="<scenario>" >}}
+   # WHAT THIS TEST VALIDATES:
+   #   * <thing> — <which content block / panel / endpoint it covers>
+   # WHAT THIS TEST DOES NOT VALIDATE (and why):
+   #   * <thing> — <reason: UI-only step / external dependency not stood up /
+   #     requires traffic or config this page does not include / display-only example / etc.>
+   {{< /doc-test >}}
+   ```
+2. **To the user**, as a short two-list summary in your reply.
+
+Write each "not tested" reason from a fixed set of causes so the gap is actionable:
+- **UI-only step** — the doc instructs clicking through a web UI (no scriptable equivalent), so the test uses an API call as a proxy or skips it.
+- **Display-only block** — the block is illustrative (PromQL query, a `version: '3'` compose file) and isn't a self-contained runnable command.
+- **External dependency** — needs a service the test can't stand up (real IdP, cloud API, LLM provider key).
+- **Requires config/traffic the page omits** — the metric/log/trace only appears with setup that lives on a different page (e.g. a tracing policy, an OTLP access-log policy, LLM/MCP traffic).
+- **Different layer** — e.g. backend pod readiness is checked but not that data is actually stored; the asserted metric exists but the dashboard panel's render isn't verified.
+
+Base both lists on what you actually confirmed on a run, not on what you intended to cover. If an assertion was dropped because it failed (and the failure is a content/product gap, not a test bug), it belongs in "not tested" with the reason — see step 11.
+
+### 11. When a test fails: fix the test or fix the content?
 
 When a test fails, determine **where the bug lives** before changing anything. There are two distinct cases:
 
@@ -269,10 +403,13 @@ When in doubt, flag the failure to the user rather than silently adjusting the t
 
 - [ ] Path tags and `{{< doc-test >}}` blocks added in the **asset** file(s) (`assets/agw-docs/...`), **not** in the content wrapper files — even if multiple content files (e.g. `latest/` and `main/`) reuse the same asset.
 - [ ] Multiple paths in `paths="..."` are **comma-separated**, not space-separated — `paths="a,b"` ✓, `paths="a b"` ✗ (spaces make the whole string a single path, silently excluding the block).
+- [ ] No two selected blocks are **byte-identical** — the extractor keeps only the first and silently drops the rest, so a repeated `--validate-only` (or `start_gateway`, or warmup loop) across sections leaves later sections untested. Add a comment naming the section, then verify with `grep -c` on the source vs. the generated script. See "Repeated commands across sections" under step 3.
+- [ ] A helper backend the test invents uses a port **no documented config uses** (avoid `8080`), its readiness check probes for a response only that backend produces, and cleanup is guarded with `|| true` so a failing `kill` in an `EXIT` trap does not fail the script under `set -e`.
+- [ ] No helper **starts a background process inside `$( )`** — the PID is set in the subshell and lost, so the process is never killed and later configs run against the stale one; and its output gets captured into the returned value. Start with `start_gateway` in the parent shell, keep only pure-curl code inside the substitution. See "Never start a background process inside `$( )`" under step 4.
 - [ ] If the guide has a long-running server, a **hidden** doc-test block starts it in the background (and optional trap/sleep); visible "start server" block has **no** path.
 - [ ] Placeholders in shell blocks are quoted or use `${VAR:-default}` so the script has no syntax errors.
 - [ ] `test:` front matter on the **content** page lists the right `file` and `path`; file path is the content path (extractor follows reuse). For pages with no testable content (index pages, no code blocks), use `test: skip` instead — counts toward coverage without generating test cases.
-- [ ] When copying a test chain between `main` and `latest`, **update every `file:` path** in front matter to match the target version directory.
+- [ ] `file:` values are **version-relative** (`${versionRoot}/...`, or omitted for the declaring page) so copying a page between `main` and `latest` needs **no** front-matter edits. Use a literal path only to point at a different version on purpose.
 - [ ] Prerequisite `file:` paths come from the guide's actual **Before you begin** links — don't guess; check the links to confirm exact paths.
 - [ ] No `kubectl port-forward` in any visible block — replace with YAMLTest HTTP assertions using `${INGRESS_GW_ADDRESS}`.
 - [ ] Host headers in YAMLTest `http.headers` use bare hostnames — no port suffix (e.g. `host: "example.com"`, not `host: "example.com:80"`). Including a port causes ECONNRESET, not an HTTP error.
@@ -286,6 +423,7 @@ When in doubt, flag the failure to the user rather than silently adjusting the t
 - [ ] Generated script order makes sense (server before curl/YAMLTest); regenerate after extractor changes if needed.
 - [ ] Optional YAMLTest in a hidden block for HTTP or other assertions.
 - [ ] When fixing a failing test, verified whether the bug is in the test or in the customer-facing content. If the content is wrong, fix the content first — don't silently weaken assertions.
+- [ ] Produced a coverage summary (what is tested / what is not, with a reason for each gap) — both as a `{{< doc-test >}}` comment block in the test and in the reply to the user. See step 10.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Platforms
-weight: 80
+weight: 10
 description: Deploy agentgateway on various platforms and cloud providers
 test: skip
 ---

@@ -31,12 +31,12 @@ You can use these approaches individually or combine them for maximum flexibilit
 
 Static templates use prompt enrichment to prepend or append fixed messages to every request. This is ideal for setting consistent behavior guidelines, adding organizational policies, or defining output formats.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with static prompt enrichment.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with static prompt enrichment.
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: static-prompt-template
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -94,18 +94,17 @@ Static templates use prompt enrichment to prepend or append fixed messages to ev
 
 Dynamic templates use CEL transformations to inject variables from the request context into prompts. This is ideal for personalizing prompts with user identity, adding request metadata, or applying conditional prompt modification based on headers or claims.
 
-{{< callout type="info" >}}
-JWT claims in transformations require JWT authentication to be configured. See the [JWT authentication guide]({{< link-hextra path="/security/jwt/">}}) for setup instructions.
-{{< /callout >}}
+> [!NOTE]
+> JWT claims in transformations require JWT authentication to be configured. See the [JWT authentication guide]({{< link-hextra path="/security/jwt/">}}) for setup instructions.
 
 ### Inject user identity from headers
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that injects user identity from request headers.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that injects user identity from request headers.
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: dynamic-prompt-template
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -181,9 +180,8 @@ For a complete list of available variables and functions, see the [CEL reference
 
 ### User context from JWT claims
 
-{{< callout type="warning" >}}
-JWT claims are not currently available in CEL transformations when using `mcpAuthentication`. This is tracked in [agentgateway issue #870](https://github.com/agentgateway/agentgateway/issues/870). Use `jwtAuthentication` in the traffic policy instead.
-{{< /callout >}}
+> [!WARNING]
+> JWT claims are not currently available in CEL transformations when using `mcpAuthentication`. This is tracked in [agentgateway issue #870](https://github.com/agentgateway/agentgateway/issues/870). Use `jwtAuthentication` in the traffic policy instead.
 
 Inject user identity and organization from JWT claims into the prompt.
 
@@ -290,7 +288,7 @@ This applies both static prompts (prepend/append) and dynamic user context (from
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} static-prompt-template dynamic-prompt-template -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} static-prompt-template dynamic-prompt-template -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 ## Next steps

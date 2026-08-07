@@ -1,4 +1,4 @@
-Use the `with()` and `regexReplace()` [CEL functions]({{< link-hextra path="/reference/cel/#functions-policy-all" >}}) together with `request.path` to rewrite dynamic path segments before forwarding the request to the upstream.
+Use the `with()` and `regexReplace()` [CEL functions]({{< link-hextra path="/reference/cel/variables/#functions-policy-all" >}}) together with `request.path` to rewrite dynamic path segments before forwarding the request to the upstream.
 
 `with()` binds a complex expression to a temporary variable to avoid evaluating it multiple times. `regexReplace()` replaces text matching a regular expression with a replacement string. Together, they are useful for sanitizing dynamic values such as replacing numeric IDs in a path with a placeholder before the request reaches the upstream service.
 
@@ -10,12 +10,12 @@ In this example, you bind `request.path` to a temporary variable using `with()`,
 
 For example, a request to `/users/12345` is forwarded upstream as `/users/id`.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
    ```yaml {paths="rewrite"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation
      namespace: httpbin
@@ -98,5 +98,5 @@ For example, a request to `/users/12345` is forwarded upstream as `/users/id`.
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="rewrite"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin
 ```

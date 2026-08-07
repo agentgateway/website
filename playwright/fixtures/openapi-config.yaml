@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Gateway config for the OPENAPI -> MCP playground capture. Mirrors
+# content/docs/standalone/main/mcp/connect/openapi.md, which exposes the Swagger Petstore
+# OpenAPI spec as MCP tools (getPetById, findPetsByStatus, addPet, ...).
+#
+# Adjustments for capturing inside the distroless sl8 container:
+#   - mcp.port is 3030 (not 3000): the playground connects browser-side to
+#     http://localhost:<mcp.port>/mcp, so this port must be free on the host AND mapped
+#     identically (docker -p 3030:3030).
+#   - the OpenAPI schema file is written to the mounted /config dir by serve-openapi-ui.sh
+#     (curled from the running Petstore server), and the upstream host is reached via
+#     host.docker.internal (the Petstore container publishes :8080 on the host).
+mcp:
+  port: 3030
+  policies:
+    cors:
+      allowOrigins:
+        - "*"
+      allowHeaders:
+        - "*"
+      exposeHeaders:
+        - "Mcp-Session-Id"
+  targets:
+    - name: openapi
+      openapi:
+        schema:
+          file: /config/openapi.json
+        host: http://host.docker.internal:8080

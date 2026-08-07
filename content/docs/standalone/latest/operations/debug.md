@@ -1,5 +1,6 @@
 ---
 title: Debug your setup
+description: Find and fix configuration and runtime problems in a standalone agentgateway using its admin endpoints and agctl.
 weight: 15
 ---
 
@@ -12,11 +13,11 @@ Agentgateway exposes an admin server on `127.0.0.1:15000` by default. The admin 
 | Endpoint | Description |
 | -- | -- |
 | `/config_dump` | Returns the runtime configuration that agentgateway has loaded, including binds, listeners, routes, backends, workloads, services, and policies. |
-| `/debug/trace` | Streams a JSON-over-SSE trace of the next request that the proxy handles. The `agctl trace` command consumes this endpoint. |
+| `/debug/trace` | Streams a JSON-over-SSE trace of the next request that the proxy handles. The `agctl proxy trace` command consumes this endpoint. |
 | `/logging` | Get and set the logging level at runtime. |
 | `/memory` | Dump allocator and process memory statistics. |
-| `/debug/pprof/profile` | Build a CPU profile by using the [pprof](https://github.com/google/pprof) profiler. Use `?seconds=N` to set the duration (1–300s, default 10s). |
-| `/debug/pprof/heap` | Collect heap profiling data. |
+| `/debug/pprof/profile` | Build a CPU profile by using the [pprof](https://github.com/google/pprof) profiler. Available on Linux builds only. Use `?seconds=N` to set the duration (1–300s, default 10s) and `?frequency=N` to set the sampling rate in Hz (1–1000, default 100). |
+| `/debug/pprof/heap` | Collect heap profiling data. Contains allocation samples on Linux builds only. |
 | `/debug/tasks` | Inspect the live tokio task tree. |
 | `/quitquitquit` | Trigger a graceful shutdown of agentgateway. |
 
@@ -31,7 +32,7 @@ To inspect the proxy's configuration and to capture per-request traces, use the 
 
 ## Inspect the loaded configuration
 
-To dump the configuration that the running proxy has loaded, capture the JSON from the `/config_dump` endpoint and pass it to `agctl config all`.
+To dump the configuration that the running proxy has loaded, capture the JSON from the `/config_dump` endpoint and pass it to `agctl proxy config all`.
 
 1. Save the proxy's config dump to a file.
 
@@ -42,19 +43,19 @@ To dump the configuration that the running proxy has loaded, capture the JSON fr
 2. Render it with `agctl`. Use `-o yaml` for a more readable view.
 
    ```sh
-   agctl config all --file /tmp/agw-dump.json -o yaml
+   agctl proxy config all --file /tmp/agw-dump.json -o yaml
    ```
 
 For complete steps, see [Inspect agentgateway configuration]({{< link-hextra path="/operations/inspect-config" >}}).
 
 ## Trace requests
 
-To capture a per-request trace as agentgateway processes it, use `agctl trace`. The trace shows you the route that was selected, the policies that were applied, the backend that was chosen, and the response status. Tracing is invaluable for understanding why a request matched (or did not match) a route, why a policy was or was not applied, or why a request returned an unexpected status.
+To capture a per-request trace as agentgateway processes it, use `agctl proxy trace`. The trace shows you the route that was selected, the policies that were applied, the backend that was chosen, and the response status. Tracing is invaluable for understanding why a request matched (or did not match) a route, why a policy was or was not applied, or why a request returned an unexpected status.
 
 1. In one terminal, start a watch.
 
    ```sh
-   agctl trace --local
+   agctl proxy trace --local
    ```
 
 2. In another terminal, send a request.
@@ -110,6 +111,9 @@ You can also set fine-grained levels per module by using the same `RUST_LOG` fil
 
 Agentgateway includes pprof endpoints to help you investigate CPU and memory issues.
 
+> [!IMPORTANT]
+> Profiling data is available only when agentgateway runs on Linux. On macOS and Windows builds, the CPU profile endpoint is not registered and returns a `404 Not Found` error, and the heap profile endpoint returns a profile that contains no allocation samples.
+
 1. Optional: If you have not already, download [Graphviz](https://graphviz.org/download/) to visualize the profiles.
 
 2. Capture a CPU profile. The default duration is 10 seconds; the example uses 30 seconds.
@@ -138,5 +142,5 @@ Agentgateway includes pprof endpoints to help you investigate CPU and memory iss
 
    Graphviz opens on your web browser to a UI on localhost. Example:
 
-   {{< reuse-image src="img/debug-heap-pprof.png" caption="Heap profile graph" >}}
+   {{< reuse-image-light src="img/debug-heap-pprof.png" caption="Heap profile graph" >}}
    {{< reuse-image-dark srcDark="img/debug-heap-pprof.png" caption="Heap profile graph" >}}

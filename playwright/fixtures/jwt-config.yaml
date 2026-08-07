@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Gateway config for the JWT / observability playground capture. Backs the playground
+# walkthrough in content/docs/standalone/main/reference/observability/metrics.md (and the
+# commented JWT block in observability/traces.md): a Bearer token carrying `sub: me` is
+# supplied in the playground, and the gateway maps the `sub` claim to a `user` metrics tag.
+#
+# The live metrics.md config leaves the route policy unset (the JWT is passed for tag
+# extraction, not enforced), so this fixture does NOT add a jwtAuth policy — the capture
+# only needs the playground to send the Authorization header and run a tool. That lets it
+# reuse the proven server-everything HTTP backend.
+#
+# NOTE: metrics tags (the `user: @sub` mapping in the guide) are configured via the full
+# bind/listener/route format, not this `mcp:` shorthand (the shorthand schema has no
+# top-level `metrics` field — it crashes the gateway). The tags only affect the /metrics
+# output (a curl step in the guide), not the playground screenshot, so they are omitted here.
+#
+# Adjustments for capturing inside the distroless sl8 container (same as the MCP fixture):
+#   - mcp.port is 3030; the everything target runs on the host (:3005) over HTTP.
+mcp:
+  port: 3030
+  policies:
+    cors:
+      allowOrigins:
+        - "*"
+      allowHeaders:
+        - "*"
+      exposeHeaders:
+        - "Mcp-Session-Id"
+  targets:
+    - name: everything
+      mcp:
+        host: http://host.docker.internal:3005/mcp/

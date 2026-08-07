@@ -1,1 +1,1 @@
-v{{< reuse "agw-docs/versions/n-patch.md" >}}
+{{< version exclude-if="main" >}}v{{< /version >}}{{< reuse "agw-docs/versions/n-patch.md" >}}

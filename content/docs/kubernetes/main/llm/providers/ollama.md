@@ -4,12 +4,17 @@ weight: 25
 description: Configure agentgateway to route LLM traffic to Ollama for local model inference
 test:
   ollama-provider-setup:
-  - file: content/docs/kubernetes/main/install/helm.md
+  - file: ${versionRoot}/install/helm.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/llm/providers/ollama.md
+  - file: ${versionRoot}/llm/providers/ollama.md
     path: ollama-provider-setup
 ---
+
+> [!NOTE]
+> This guide shows the simple OpenAI-compatible configuration for Ollama. To
+> declare multiple Ollama API formats, such as chat completions and messages, use
+> a [custom provider]({{< link-hextra path="/llm/providers/custom/" >}}).
 
 {{< reuse "agw-docs/pages/agentgateway/llm/providers/ollama.md" >}}

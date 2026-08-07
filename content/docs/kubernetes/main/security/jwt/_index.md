@@ -1,7 +1,7 @@
 ---
 title: JWT auth
 weight: 10
-description:
+description: Authenticate and authorize requests using JSON Web Tokens.
 test: skip
 ---
 

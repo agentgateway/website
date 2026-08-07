@@ -1,6 +1,6 @@
 ---
 title: LLM observability
-weight: 25
+weight: 10
 description: Send LLM telemetry for prompt logging, cost tracking, and audit trail.
 test: skip
 ---
@@ -28,19 +28,19 @@ config:
     otlpEndpoint: http://localhost:4317
     randomSampling: true
 
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-4o-mini
-      policies:
-        backendAuth:
-          key: "$OPENAI_API_KEY"
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - ai:
+      name: openai
+      provider:
+        openAI:
+          model: gpt-4o-mini
+  policies:
+    backendAuth:
+      key: "$OPENAI_API_KEY"
 ```
 
 Agentgateway automatically includes these LLM-specific trace attributes:

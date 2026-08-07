@@ -1,12 +1,12 @@
 ---
 title: Set up an agentgateway proxy
 weight: 10
-description:
+description: Set up an agentgateway proxy with Gateway API resources and custom configuration.
 test:
   setup-gateway:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
 ---
 
@@ -58,7 +58,7 @@ EOF
 
 Explore how you can use {{< reuse "agw-docs/snippets/agentgateway.md" >}} by checking out guides for the most common use cases: 
 * [LLM consumption]({{< link-hextra path="/llm" >}}) 
-* [Inference routing]({{< link-hextra path="/inference" >}}) 
+* [Inference routing]({{< link-hextra path="/llm/inference/" >}}) 
 * [MCP connectivity]({{< link-hextra path="/mcp" >}}) 
 * [Agent connectivity]({{< link-hextra path="/agent" >}}) 
 

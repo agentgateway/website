@@ -1,5 +1,12 @@
 baseURL: "/"
 enableRobotsTXT: true
+# Derive each page's .Lastmod from its last git commit — no manually maintained
+# front-matter dates. Feeds the sitemap <lastmod> for SEO. Listing "lastmod"
+# before ":git" keeps an explicit front-matter date ahead of the commit date
+# where a page sets one.
+enableGitInfo: true
+frontmatter:
+  lastmod: ["lastmod", ":git", "date", "publishDate"]
 canonifyURLs: true
 title: "agentgateway | Agent Connectivity Solved"
 
@@ -64,9 +71,6 @@ menu:
     - name: Docs
       url: /docs
       weight: 2
-    - name: Tutorials
-      url: /tutorials
-      weight: 3
     - name: Models
       weight: 5
       url: /models
@@ -128,7 +132,9 @@ params:
     displayPoweredBy: false
     width: wide
 
-  displayUpdatedDate: true
+  # Hide the visible "Last updated on <date>" footer; the git date still feeds
+  # the sitemap <lastmod> for SEO.
+  displayUpdatedDate: false
   dateFormat: "January 2, 2006"
 
   # Search
@@ -177,22 +183,22 @@ params:
   sections:
     standalone:
       versions:
-        - version: "1.3.x"
+        - version: "1.5.x"
           dropdown: "main"
           linkVersion: "main"
           url: "/main"
-        - version: "1.2.x"
-          dropdown: "1.2 (latest)"
+        - version: "1.4.x"
+          dropdown: "1.4 (latest)"
           linkVersion: "latest"
           url: "/latest"
     kubernetes:
       versions:
-        - version: "1.3.x"
+        - version: "1.5.x"
           dropdown: "main"
           linkVersion: "main"
           url: "/main"
-        - version: "1.2.x"
-          dropdown: "1.2 (latest)"
+        - version: "1.4.x"
+          dropdown: "1.4 (latest)"
           linkVersion: "latest"
           url: "/latest"
 

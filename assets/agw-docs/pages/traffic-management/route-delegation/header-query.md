@@ -6,7 +6,7 @@ In this guide, you add headers and query parameters as matchers on a parent HTTP
 
 The following image illustrates the route delegation hierarchy:
 
-{{< reuse-image src="img/route-delegation-header-query.svg" width="800" >}}
+{{< reuse-image-light src="img/route-delegation-header-query.svg" width="800" >}}
 {{< reuse-image-dark srcDark="img/route-delegation-header-query-dark.svg" width="800" >}}
 
 **`parent` HTTPRoute**:

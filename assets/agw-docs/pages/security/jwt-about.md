@@ -8,9 +8,8 @@ A JSON Web Token (JWT) is an open standard for securely sharing information betw
 * **Authorization**: JWTs can have custom claims that can define a user's scope, role, or other permissions. You can use these claims in combination with other policies to enforce fine-grained access control to your apps. By including the claim information within the JWT, the authorization process can happen faster and more scalably.
 * **Secure information exchange**: Because the token is in JSON format, many otherwise incompatible systems and services can use the token to exchange information. The authentication and authorization features built into the token help these systems validate and trust the information. 
 
-{{< callout type="warning" >}}
-Keep in mind that JWT data is encoded but not encrypted. As such, consider using JWT policies with no personally identifiable information (PII) or sensitive data, and only on HTTPS traffic.
-{{< /callout >}}
+> [!WARNING]
+> Keep in mind that JWT data is encoded but not encrypted. As such, consider using JWT policies with no personally identifiable information (PII) or sensitive data, and only on HTTPS traffic.
 
 ### JWT structure {#structure}
 
@@ -33,7 +32,7 @@ JWT authentication uses asymmetric cryptography with public and private key pair
 
 1. **Token issuance**: The identity provider, such as Keycloak signs JWTs with its private key.
 2. **Key distribution**: The identity provider publishes its public keys through a JWKS (JSON Web Key Set) endpoint. Each key has a unique key ID (`kid`).
-3. **Token validation**: Agentgateway reads the `kid` from the JWT header and fetches the matching public key from the configured JWKS endpoint. The JWKS endpoint can added as an inline JWKS or a remote JWKS address in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. After the agentgateway proxy fetched the public key, it uses the public key to verify the JWT signature. 
+3. **Token validation**: Agentgateway reads the `kid` from the JWT header and fetches the matching public key from the configured JWKS endpoint. The JWKS endpoint can added as an inline JWKS or a remote JWKS address in the {{< reuse "agw-docs/snippets/policy.md" >}}. After the agentgateway proxy fetched the public key, it uses the public key to verify the JWT signature. 
 
 Review the following diagram to understand the JWT request flow: 
 ```mermaid
@@ -89,4 +88,10 @@ Using a remote JWKS endpoint is the recommended approach when using JWT authenti
 - **Automatic key rotation**: When the identity provider rotates keys, the agentgateway proxy automatically fetches the new keys
 - **No manual key management**: You don't need to update policies when keys change
 - **Multiple keys**: The JWKS endpoint can return multiple keys, supporting gradual key rotation
+
+## What's next
+
+After setting up JWT authentication, you can use the verified JWT claims in authorization policies to control which requests are allowed to reach your backends.
+
+For more information, see [Authorization]({{< link-hextra path="/security/authorization/" >}}).
 

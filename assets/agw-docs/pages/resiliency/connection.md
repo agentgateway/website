@@ -1,4 +1,4 @@
-You can use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to apply HTTP connection settings to the agentgateway proxy. These settings include idle connection timeouts, the maximum number of connections that an upstream service can receive, and more. Note that these options are applied to HTTP/1 or HTTP/2 requests only when indicated.
+You can use an {{< reuse "agw-docs/snippets/policy.md" >}} to apply HTTP connection settings to the agentgateway proxy. These settings include idle connection timeouts, the maximum number of connections that an upstream service can receive, and more. Note that these options are applied to HTTP/1 or HTTP/2 requests only when indicated.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
@@ -27,12 +27,12 @@ Set an idle timeout for HTTP/1 traffic to terminate the connection to a downstre
 
 Set the maximum number of headers allowed in HTTP/1.1 requests.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies the HTTP/1.1 connection configuration to the proxy.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies the HTTP/1.1 connection configuration to the proxy.
 
    ```yaml {paths="connection-http1"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: http1
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -120,10 +120,10 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-4. Optional: Clean up and remove the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+4. Optional: Clean up and remove the {{< reuse "agw-docs/snippets/policy.md" >}}.
 
   ```sh
-  kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} http1 -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+  kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} http1 -n {{< reuse "agw-docs/snippets/namespace.md" >}}
   ```
 
 ## HTTP/2 settings {#http2}
@@ -132,12 +132,12 @@ Use these settings to tune HTTP/2 flow control, which governs how much data can 
 
 ### Flow control {#http2-flow}
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies HTTP/2 flow control configuration to the proxy.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies HTTP/2 flow control configuration to the proxy.
 
    ```yaml {paths="connection-http2-flow"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: http2-flow
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -232,10 +232,10 @@ Use these settings to tune HTTP/2 flow control, which governs how much data can 
    EOF
    {{< /doc-test >}}
 
-4. Optional: Clean up and remove the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+4. Optional: Clean up and remove the {{< reuse "agw-docs/snippets/policy.md" >}}.
 
   ```sh
-  kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} http2-flow -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+  kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} http2-flow -n {{< reuse "agw-docs/snippets/namespace.md" >}}
   ```
 
 ### Keepalive {#http2-keepalive}

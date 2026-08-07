@@ -20,25 +20,31 @@ Configure agentgateway to validate Auth0 JWTs:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: my-server
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-      policies:
-        mcpAuthentication:
-          mode: strict
-          issuer: https://your-tenant.auth0.com/
-          audiences:
-          - https://api.example.com
-          jwks:
-            url: https://your-tenant.auth0.com/.well-known/jwks.json
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: my-server
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  policies:
+    mcpAuthentication:
+      mode: strict
+      issuer: https://your-tenant.auth0.com/
+      audiences:
+      - https://api.example.com
+      jwks:
+        url: https://your-tenant.auth0.com/.well-known/jwks.json
+      resourceMetadata:
+        resource: https://api.example.com
+        scopesSupported:
+        - read:tools
+        bearerMethodsSupported:
+        - header
 ```
 
 ## Auth0 setup
@@ -89,6 +95,12 @@ policies:
     audiences: [https://api.example.com]
     jwks:
       url: https://your-tenant.auth0.com/.well-known/jwks.json
+    resourceMetadata:
+      resource: https://api.example.com
+      scopesSupported:
+      - read:tools
+      bearerMethodsSupported:
+      - header
   authorization:
     rules:
     # Check for specific permission
@@ -98,4 +110,4 @@ policies:
 ## Learn more
 
 - [Auth0 Documentation](https://auth0.com/docs)
-- [MCP Authentication Tutorial]({{< link-hextra path="/tutorials/mcp-authentication" >}})
+- [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}})

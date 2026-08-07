@@ -1,6 +1,7 @@
 ---
 title: AI (LLM) Policies
 weight: 19
+description: Configure policies to control AI model behavior and prompt handling.
 ---
 
 Attaches to: {{< badge content="Backend" path="/configuration/backends/">}} (AI Backends only)

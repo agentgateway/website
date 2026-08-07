@@ -1,5 +1,6 @@
 ---
 title: "Linux installation"
+description: Install ingress2gateway on Linux systems
 weight: 20
 ---
 

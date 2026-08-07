@@ -5,8 +5,7 @@ description: Inspect the runtime configuration that a standalone agentgateway in
 test: skip
 ---
 
-{{< callout type="warning">}}
-{{< reuse "agw-docs/snippets/feature-experimental.md">}}
-{{< /callout >}}
+> [!WARNING]
+> {{< reuse "agw-docs/snippets/feature-experimental.md">}}
 
 {{< reuse "agw-docs/pages/operations/inspect-config-standalone.md" >}}

@@ -1,7 +1,7 @@
 ---
 title: Custom webhooks
 weight: 45
-description:
+description: Build custom guardrail controls using the Guardrail Webhook API.
 test: skip
 ---
 

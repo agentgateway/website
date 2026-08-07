@@ -1,0 +1,55 @@
+---
+title: Inference routing
+weight: 50
+description: Configure Kubernetes Gateway API or standalone inference routing for AI workloads.
+url: /docs/standalone/latest/inference/
+test: skip
+---
+
+Agentgateway supports the Kubernetes Gateway API Inference Extension in two
+deployment modes.
+
+## Kubernetes Gateway API mode
+
+In Kubernetes Gateway API mode, agentgateway runs as the gateway data plane for
+Gateway API resources. You install the Inference Extension CRDs, create an
+`InferencePool`, and route to that pool from an `HTTPRoute`. The Endpoint Picker
+Extension (EPP) acts as an extension service that selects the best model server
+endpoint for each inference request.
+
+Use this mode when you want Gateway API integration, `InferencePool` resources,
+traffic splitting, route matching, and other Kubernetes networking features.
+
+{{< cards>}}
+  {{< card link="/docs/kubernetes/latest/inference/" title="Set up Kubernetes inference routing" >}}
+{{< /cards >}}
+
+## Standalone request scheduler mode
+
+In standalone request scheduler mode, agentgateway runs as a sidecar proxy with
+the EPP. The proxy and EPP communicate over localhost, and agentgateway uses its
+standalone `inferenceRouting` local configuration to route requests to a
+synthetic service before consulting the EPP for endpoint selection.
+
+Use this mode for single-tenant or job-scoped workloads where deploying a full
+Gateway API stack would add unnecessary operational overhead. In this mode, the
+[upstream standalone Helm chart](https://github.com/llm-d/llm-d-router/tree/main/config/charts)
+can deploy agentgateway as the sidecar proxy with `proxyType: agentgateway`.
+
+Standalone request scheduler mode does not support `InferencePool`. The
+standalone configuration must define a top-level synthetic service, such as a
+`services` entry, and the route backend must reference that service. When EPP
+owns endpoint discovery, set `destinationMode: passthrough` so EPP-selected
+destinations can be forwarded to directly without matching local workload
+endpoint data.
+
+For example, the standalone agentgateway configuration defines the synthetic
+service in `services`, and the route backend references it as
+`default/my-model`.
+
+
+{{% github-yaml url="https://agentgateway.dev/examples/llm-standalone-epp/config.yaml" %}}
+
+{{< cards>}}
+  {{< card link="https://github.com/agentgateway/agentgateway/blob/main/examples/llm-standalone-epp/README.md" title="Agentgateway llm-standalone-epp example" icon="external-link" >}}
+{{< /cards >}}

@@ -1,6 +1,7 @@
 ---
 title: Resiliency
-weight: 50
+weight: 60
+description: Configure retries, timeouts, rate limits, and mirroring for fault tolerance.
 prev: /configuration/traffic-management
 next: /configuration/security
 test: skip

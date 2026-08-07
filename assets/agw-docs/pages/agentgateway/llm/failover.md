@@ -1,5 +1,10 @@
 Prioritize the failover of requests across different models from an LLM provider. Include outlier detection of unhealthy LLM backends to automatically fail over when getting throttled by an unperformant model.
 
+{{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
+> [!NOTE]
+> **Model-centric alternative**: You can also configure failover with the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API, by using a virtual model with `virtualModel.failover` instead of an {{< reuse "agw-docs/snippets/backend.md" >}} with priority groups. For more information, see [Virtual models]({{< link-hextra path="/llm/models/virtual/" >}}).
+{{< /version >}}
+
 ## About failover {#about}
 
 Use failover (automatic fallback) to keep services running by switching to a backup when the main system fails or becomes unavailable.
@@ -9,7 +14,7 @@ For {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can set up failover a
 Failover in {{< reuse "agw-docs/snippets/agentgateway.md" >}} has two parts:
 
 - **Priority groups** in the {{< reuse "agw-docs/snippets/backend.md" >}} define the failover order. Each group is a tier. Models within the same group are load balanced equally. When all models in a group are evicted, requests fail over to the next group.
-- **A health policy** in an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} defines what counts as an unhealthy response (such as 5xx errors or 429 rate limits) and how to evict unhealthy backends. Without a health policy, backends are not evicted and failover does not occur.
+- **A health policy** in an {{< reuse "agw-docs/snippets/policy.md" >}} defines what counts as an unhealthy response (such as 5xx errors or 429 rate limits) and how to evict unhealthy backends. Without a health policy, backends are not evicted and failover does not occur.
 
 This approach increases the resiliency of your network environment by ensuring that apps that call LLMs can keep working without problems, even if one model has issues.
 
@@ -35,6 +40,8 @@ flowchart LR
 5. Evicted backends are restored after their eviction duration expires. The eviction duration uses multiplicative backoff on repeated evictions.
 
 **Rate-limit handling:** When a 429 response includes a `Retry-After` header, agentgateway uses that duration as the eviction time (overriding the configured `duration`). However, 429 responses only trigger eviction if your `unhealthyCondition` includes them (for example, `response.code >= 500 || response.code == 429`).
+
+**Trigger behavior:** Both server errors (5xx) and connection-level failures, such as connection refused or DNS resolution failure, are classified as unhealthy and count toward eviction. This classification is true whether you use the built-in default or an explicit `unhealthyCondition` classification, as long as your CEL expression covers the response codes you care about.
 
 ### Failover vs. traffic splitting {#traffic-splitting}
 
@@ -355,6 +362,40 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    
    {{% /tab %}}
+   {{% tab name="Self-hosted primary, cloud fallback" %}}
+
+   In this example, you configure failover from a self-hosted vLLM instance to a cloud provider. The self-hosted instance is a model that you run yourself, such as vLLM on your own GPU hardware. The cloud provider is a fully managed, externally hosted LLM API, such as OpenAI. Requests route to your in-cluster vLLM deployment first. If vLLM becomes unavailable, requests fail over to OpenAI.
+
+   Before you begin, [set up vLLM]({{< link-hextra path="/llm/providers/vllm/" >}}) in your cluster.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: model-failover
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       groups: 
+         - providers: 
+             - name: vllm-primary
+               openai: 
+                 model: meta-llama/Llama-3.1-8B-Instruct
+               host: vllm.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
+               port: 8000
+         - providers: 
+             - name: openai-fallback
+               openai: 
+                 model: gpt-4.1
+               policies:
+                 auth:
+                   secretRef:
+                     name: openai-secret
+   EOF
+   ```
+
+   {{% /tab %}}
    {{< /tabs >}}
 
 2. Create an HTTPRoute resource that routes incoming traffic on the `/model` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you created in the previous step. In this example, the URLRewrite filter rewrites the path from `/model` to the path of the API in the LLM provider that you want to use, such as `/v1/chat/completions` for OpenAI.
@@ -386,9 +427,9 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    ```
    
 
-3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with a health policy that targets the {{< reuse "agw-docs/snippets/backend.md" >}}. The health policy defines which responses are considered unhealthy and how to evict backends. Without this policy, backends are not evicted and failover does not occur.
+3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with a health policy that targets the {{< reuse "agw-docs/snippets/backend.md" >}}. The health policy defines which responses are considered unhealthy and how to evict backends. Without this policy, backends are not evicted and failover does not occur.
 
-   The `unhealthyCondition` field is an optional [CEL expression](https://github.com/google/cel-spec) that classifies each response. When you set it, `true` means the response counts as unhealthy toward eviction. The `eviction` settings control how many failures and how long an unhealthy backend stays out of its priority group.
+   The `unhealthyCondition` field is an optional [CEL expression](https://github.com/cel-expr/cel-spec) that classifies each response. When you set it, `true` means the response counts as unhealthy toward eviction. The `eviction` settings control how many failures and how long an unhealthy backend stays out of its priority group.
 
    {{< tabs >}}
    {{% tab name="5xx and rate-limit failover" %}}
@@ -397,8 +438,8 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: model-failover-health
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -423,8 +464,8 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: model-failover-health
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -449,18 +490,18 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    | Setting | Description |
    | --- | --- |
-   | `unhealthyCondition` | Optional CEL expression that classifies each response as healthy or unhealthy. When you set this field, `true` means the response counts as unhealthy toward eviction (together with `eviction`). When you omit this field, 5xx responses and connection failures still lower the backend health score for load balancing, but that built-in behavior does not trigger eviction by itself. |
+   | `unhealthyCondition` | Optional CEL expression that classifies each response as healthy or unhealthy. When you set this field, `true` means the response counts as unhealthy toward eviction (together with `eviction`). When you omit this field, 5xx responses and connection failures (such as connection refused or DNS resolution failure) are still classified as unhealthy by a built-in default, and count toward eviction in the same way as an explicit `unhealthyCondition` would. |
    | `eviction.duration` | Base time to remove an unhealthy backend from its priority group. Increases with multiplicative backoff on repeated evictions. When a 429 response includes `Retry-After`, that value is used instead. You might try `10s`–`60s` depending on how quickly you want failover versus avoiding flapping on brief errors. Shorter durations fail over faster. If you omit this field, the default is `3s`. |
    | `eviction.consecutiveFailures` | Number of consecutive unhealthy responses required before evicting. You might start with `3` so that a single transient error does not evict the backend. For tests, use `1` for immediate eviction. |
 
 4. Verify that failover works by temporarily configuring the health policy to treat all responses as unhealthy. This policy forces each backend to be evicted after its first response, so you can watch requests progress through the priority groups.
 
-   Update the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to set `unhealthyCondition` to `"true"`:
+   Update the {{< reuse "agw-docs/snippets/policy.md" >}} to set `unhealthyCondition` to `"true"`:
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: model-failover-health
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -538,6 +579,19 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    ```
    
    {{% /tab %}}
+   {{% tab name="Self-hosted primary, cloud fallback" %}}
+
+   With the self-hosted vLLM configuration, the first request is served by your vLLM deployment. After the vLLM is evicted, such as when the pod becomes unavailable or is scaled down, the next request fails over to the cloud fallback:
+
+   ```text
+   === Request 1 ===
+   { "model": "meta-llama/Llama-3.1-8B-Instruct", "status": "stop" }
+
+   === Request 2 ===
+   { "model": "gpt-4.1-2025-04-14", "status": "stop" }
+   ```
+   
+   {{% /tab %}}
    {{< /tabs >}}
 
 Now that you tested failover, restore the health policy to your production configuration. Reapply the policy from step 3 with your `unhealthyCondition` settings (such as `response.code >= 500 || response.code == 429`, where `>= 500` matches HTTP 5xx server errors).
@@ -548,7 +602,7 @@ Now that you tested failover, restore the health policy to your production confi
 
 ```shell
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} model-failover -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} model-failover-health -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} model-failover-health -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute model-failover -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 

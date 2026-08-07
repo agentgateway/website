@@ -30,9 +30,8 @@ The MCP endpoint is available at `http://localhost:8080/mcp/mcp`.
 
 {{< /tabs >}}
 
-{{< callout type="info" >}}
-The path `/mcp/mcp` assumes the default HTTPRoute path prefix of `/mcp` from the [Static MCP guide]({{< link-hextra path="/mcp/static-mcp" >}}). If you configured a different path in your HTTPRoute, adjust accordingly.
-{{< /callout >}}
+> [!NOTE]
+> The path `/mcp/mcp` assumes the default HTTPRoute path prefix of `/mcp` from the [Static MCP guide]({{< link-hextra path="/mcp/static-mcp" >}}). If you configured a different path in your HTTPRoute, adjust accordingly.
 
 {{< doc-test paths="mcp-clients-k8s" >}}
 for i in $(seq 1 60); do
@@ -68,9 +67,43 @@ EOF
 
 Use the MCP endpoint URL from the previous step to configure your IDE. Replace `<MCP_URL>` with your endpoint, such as `http://localhost:8080/mcp/mcp` for port-forward setups.
 
-Review the following table of configuration details by IDE environment.
+> [!NOTE]
+> **Multiplexed tool names**: If your agentgateway backend routes to more than one [Virtual MCP]({{< link-hextra path="/mcp/virtual" >}}) target, agentgateway namespaces each tool and prompt name with its target name by default, for example `mcp-server-everything_echo`. When you add a second target, tools in your client's tool list might get new names because of this prefixing. Control it with the `prefixMode` field on the MCP backend; see [Virtual MCP]({{< link-hextra path="/mcp/virtual" >}}) for the available modes.
 
-{{< reuse "agw-docs/snippets/mcp-ide-comparison.md" >}}
+### Claude Desktop
+
+1. Add agentgateway to your Claude Desktop configuration file.
+
+   {{< tabs >}}
+   {{% tab name="macOS" %}}
+   Edit `~/Library/Application Support/Claude/claude_desktop_config.json`.
+
+   ```json
+   {
+     "mcpServers": {
+       "agentgateway": {
+         "url": "<MCP_URL>"
+       }
+     }
+   }
+   ```
+   {{% /tab %}}
+   {{% tab name="Windows" %}}
+   Edit `%APPDATA%\Claude\claude_desktop_config.json`.
+
+   ```json
+   {
+     "mcpServers": {
+       "agentgateway": {
+         "url": "<MCP_URL>"
+       }
+     }
+   }
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+2. Restart Claude Desktop and verify that the agentgateway tools appear in the MCP tools list.
 
 ### Claude Code
 
@@ -138,22 +171,21 @@ The `agentgateway` server shows up as **Connected**.
 2. Restart VS Code and verify that agentgateway tools appear in the MCP tools list.
 
 
-### Windsurf
+### Devin Desktop (formerly Windsurf)
 
-1. Create or edit `~/.windsurf/mcp.json`.
+1. Create or edit `~/.codeium/windsurf/mcp_config.json`. For remote MCP servers, Devin Desktop uses the `serverUrl` field.
 
    ```json
    {
      "mcpServers": {
        "agentgateway": {
-         "url": "<MCP_URL>"
+         "serverUrl": "<MCP_URL>"
        }
      }
    }
    ```
 
-2. Restart Windsurf and verify that agentgateway tools appear in the MCP tools list.
-
+2. Restart Devin Desktop and verify that agentgateway tools appear in the MCP tools list.
 
 ## Authentication
 
@@ -168,7 +200,7 @@ claude mcp add agentgateway --transport http <MCP_URL> \
 ```
 {{% /tab %}}
 
-{{% tab name="JSON config (Cursor / VS Code / Windsurf)" %}}
+{{% tab name="JSON config (Claude Desktop / Cursor / VS Code / Devin Desktop)" %}}
 ```json
 {
   "mcpServers": {

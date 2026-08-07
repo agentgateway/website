@@ -1,14 +1,14 @@
 ---
 title: Observe traffic
 weight: 80
-description: Get prompt logging, cost tracking, and an audit trail for LLM traffic.
+description: Capture LLM metrics, logs, and traces, including request and response bodies and token usage, through OpenTelemetry.
 ---
 
 Get prompt logging, cost tracking, and a full audit trail: review LLM-specific metrics, logs, and traces (request/response capture and token usage) via OpenTelemetry. 
 
 ## Before you begin
 
-Complete an LLM guide, such as the [control spend]({{< link-hextra path="/llm/spending/" >}}) guide. This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics, logs, and traces.  
+Complete an LLM guide, such as the [virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide. This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics, logs, and traces.  
 
 ## View LLM metrics
 
@@ -24,6 +24,16 @@ You can access the agentgateway metrics endpoint to view LLM-specific metrics, s
    
 
 For more information, see the [Semantic conventions for generative AI metrics](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/) in the OpenTelemetry docs.
+
+## View realized costs
+
+When you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), agentgateway computes the realized USD cost of each LLM request and exposes it across the observability surface:
+
+* **Logs**: each LLM request log line includes `agw.ai.usage.cost.total`. Add the cost breakdown or applied rates with CEL `llm.cost` and `llm.costRates` fields.
+* **Metrics**: the `agentgateway_cost_catalog_lookups_total` counter tracks lookups by `status` (`Exact`, `Unpriced`, `Missing`, or `NoCatalog`) and by provider and model, so you can confirm that your catalog prices your traffic.
+* **Traces**: cost attributes are attached to the request span.
+
+For catalog configuration and the full list of cost fields, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
 
 ## View traces
 
@@ -51,12 +61,12 @@ For more information, see the [Semantic conventions for generative AI metrics](h
    agentgateway -f config.yaml
    ```
 
-4. Send a request to the OpenAI provider. 
+4. Send a request to the OpenAI provider. In simplified LLM configuration mode, the LLM listener uses port `4000` by default (port `3000` is reserved for MCP), and requests use the OpenAI-compatible `/v1/chat/completions` path. 
    ```sh
-   curl 'http://0.0.0.0:3000/' \
+   curl http://localhost:4000/v1/chat/completions \
    --header 'Content-Type: application/json' \
-   --data ' {
-     "model": "gpt-3.5-turbo",
+   --data '{
+     "model": "gpt-4o",
      "messages": [
        {
          "role": "user",
@@ -75,15 +85,17 @@ Agentgateway automatically logs information to stdout. When you run agentgateway
 
 Example for a successful request to the OpenAI LLM: 
 ```
-2025-09-03T20:30:08.686967Z	info	request gateway=bind/3000 listener=listener0 route_rule=route0/default
-route=route0 endpoint=api.openai.com:443 src.addr=127.0.0.1:54140 http.method=POST http.host=0.0.0.0 http.
-path=/ http.version=HTTP/1.1 http.status=200 llm.provider=openai llm.request.model=gpt-3.5-turbo llm.
-request.tokens=11 llm.response.model=gpt-3.5-turbo-0125 llm.response.tokens=331 duration=4305ms
+2025-12-12T21:56:02.809082Z	info	request gateway=agentgateway listener=http route=openai endpoint=api.openai.com:443
+src.addr=127.0.0.1:60862 http.method=POST http.host=localhost http.path=/openai http.version=HTTP/1.1
+http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai
+gen_ai.request.model=gpt-4o gen_ai.response.model=gpt-4o-2024-08-06
+gen_ai.usage.input_tokens=68 gen_ai.usage.output_tokens=298 duration=2488ms
 ```
 
 Example for a rate limited request: 
 ```
-2025-09-03T19:40:18.687849Z	info	request gateway=bind/3000 listener=listener0 route_rule=route0/default
-route=route0 endpoint=api.openai.com:443 src.addr=127.0.0.1:51794 http.method=POST http.host=0.0.0.0 http.
-path=/ http.version=HTTP/1.1 http.status=429 error=rate limit exceeded duration=206ms
+2025-12-12T21:40:18.687849Z	info	request gateway=agentgateway listener=http route=openai endpoint=api.openai.com:443
+src.addr=127.0.0.1:51794 http.method=POST http.host=localhost http.path=/openai http.version=HTTP/1.1
+http.status=429 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai
+gen_ai.request.model=gpt-4o error=rate limit exceeded duration=206ms
 ```

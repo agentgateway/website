@@ -41,17 +41,17 @@ Static tracing is configured globally and applies to all routes.
 3. Optional: To use the agentgateway UI playground later, add the following CORS policy to your `config.yaml` file. The config automatically reloads when you save the file.
       
       ```yaml
-      binds:
-      - port: 3000
-        listeners:
-        - routes:
-          - policies:
-              cors:
-                allowOrigins:
-                  - "*"
-                allowHeaders:
-                  - "*"
-            backends:
+      gateways:
+        default:
+          port: 3000
+      routes:
+      - policies:
+          cors:
+            allowOrigins:
+              - "*"
+            allowHeaders:
+              - "*"
+        backends:
       ...
       ```
 
@@ -96,47 +96,49 @@ frontendPolicies:
       route: request.path
     resources:
       service.name: '"agentgateway"'
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        cors:
-          allowOrigins:
-            - "*"
-          allowHeaders:
-            - "*"
-      backends:
-      - mcp:
-          targets:
-          - name: everything
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    cors:
+      allowOrigins:
+        - "*"
+      allowHeaders:
+        - "*"
+  backends:
+  - mcp:
+      targets:
+      - name: everything
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
 ```
 
 ## Verify traces
 
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
 
-2. Connect to the MCP server with the agentgateway UI playground. 
-   
-   1. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
-      
-      {{< reuse-image src="img/agentgateway-ui-playground.png" >}}
+2. Connect to the MCP server with the agentgateway UI playground.
 
-   2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   1. From the navigation menu under **MCP**, click **Tool Playground**.
 
-   3. Verify that you see a list of **Available Tools**. 
-   
-      {{< reuse-image src="img/ui-playground-tools.png" >}}
+   2. If you see a banner prompting you to allow browser access, click **Apply CORS**. This adds the UI's origin to the MCP CORS policy so the playground can open a session, and the configuration reloads automatically.
 
-3. Verify access to a tool. 
-   1. From the **Available Tools** list, select the `echo` tool. 
-   2. In the **message** field, enter any string, such as `hello world`, and click **Run Tool**. 
-   3. Verify that you see your message echoed in the **Response** card. 
-   
-      {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
+   3. Click **Initialize**. The agentgateway UI opens an MCP session and lists the tools that are exposed on the target.
+
+   4. Verify that the **Result** panel reports the discovered tools.
+
+      {{< reuse-image-light src="img/ui-playground-tools.png" >}}
+      {{< reuse-image-dark srcDark="img/ui-playground-tools-dark.png" >}}
+
+3. Verify access to a tool.
+   1. From the **Tool** dropdown, select the `echo` tool.
+   2. In the **Message** field, enter any string, such as `hello world`, and click **Call tool**.
+   3. Verify that the **Result** panel returns `HTTP 200` and that your message is echoed in the **Tool output**.
+
+      {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}
+      {{< reuse-image-dark srcDark="img/agentgateway-ui-tool-echo-hello-dark.png" >}}
 
 4. Open the [Jaeger UI](http://localhost:16686). 
 
@@ -179,68 +181,58 @@ You can optionally enrich the traces that are captured by the agentgateway with 
    ```json
    cat <<EOF > ./config.json
    {
-     "binds": [
-       {
+     "gateways": {
+       "default": {
          "port": 3000,
-         "listeners": [
+         "protocol": "HTTP"
+       }
+     },
+     "routes": [
+       {
+         "matches": [
            {
-             "name": "sse",
-             "protocol": "HTTP",
-             "hostname": null,
-             "routes": [
-               {
-                 "name": null,
-                 "ruleName": null,
-                 "hostnames": [],
-                 "matches": [
-                   {
-                     "path": {
-                       "pathPrefix": "/"
-                     }
+             "path": {
+               "pathPrefix": "/"
+             }
+           }
+         ],
+         "policies": {
+           "jwtAuth": {
+             "issuer": "me",
+             "audiences": ["me.com"],
+             "jwks": {
+               "file": "./pub-key"
+             }
+           }
+         },
+         "backends": [
+           {
+             "mcp": {
+               "targets": [
+                 {
+                   "name": "everything",
+                   "stdio": {
+                     "cmd": "npx",
+                     "args": [
+                       "@modelcontextprotocol/server-everything"
+                     ]
                    }
-                 ],
-                 "policies": {
-                   "jwtAuth": {
-                     "issuer": "me",
-                     "audiences": ["me.com"],
-                     "jwks": {
-                       "file": "./pub-key"
-                     }
-                   }
-                 },
-                 "backends": [
-                   {
-                     "mcp": {
-                       "targets": [
-                         {
-                           "name": "everything",
-                           "stdio": {
-                             "cmd": "npx",
-                             "args": [
-                               "@modelcontextprotocol/server-everything"
-                             ]
-                           }
-                         }
-                       ]
-                     }
-                   }
-                 ]
-               }
-             ],
-             "tls": null
+                 }
+               ]
+             }
            }
          ]
        }
      ],
-     "tracing": {
-       "tracer": {
-         "otlp": {
-           "endpoint": "http://localhost:4317"
+     "frontendPolicies": {
+       "tracing": {
+         "host": "localhost:4317",
+         "protocol": "grpc",
+         "randomSampling": "1.0",
+         "attributes": {
+           "user": "jwt.sub",
+           "custom-tag": "\"test\""
          }
-       },
-       "tags": {
-         "user": "@sub",
-         "custom-tag": "test"
        }
      }
    }
@@ -264,10 +256,12 @@ You can optionally enrich the traces that are captured by the agentgateway with 
    4. Click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
    5. Verify that you see a list of **Available Tools**.  
    
-      {{< reuse-image src="img/agentgateway-ui-tools-jwt.png" >}}
+      {{< reuse-image-light src="img/agentgateway-ui-tools-jwt.png" >}}
+      {{< reuse-image-dark srcDark="img/agentgateway-ui-tools-jwt-dark.png" >}}
 
-6. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
-   {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
+6. Select the `everything_echo` tool, enter any string in the **Message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
+   {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-tool-echo-hello-dark.png" >}}
 
 7. Open the [Jaeger UI](http://localhost:16686). 
 

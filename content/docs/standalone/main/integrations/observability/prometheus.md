@@ -66,7 +66,7 @@ scrape_configs:
 version: '3'
 services:
   agentgateway:
-    image: ghcr.io/agentgateway/agentgateway:latest
+    image: cr.agentgateway.dev/agentgateway:latest
     ports:
       - "3000:3000"
       - "15020:15020"
@@ -83,28 +83,9 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
 ```
 
-## Kubernetes ServiceMonitor
-
-For Kubernetes deployments with Prometheus Operator:
-
-```yaml
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: agentgateway
-spec:
-  selector:
-    matchLabels:
-      app: agentgateway
-  endpoints:
-  - port: metrics
-    interval: 15s
-    path: /metrics
-```
-
 ## Learn more
 
 {{< cards >}}
   {{< card path="/integrations/observability/grafana" title="Grafana" subtitle="Visualize metrics with Grafana" >}}
-  {{< card path="/tutorials/telemetry" title="Telemetry Tutorial" subtitle="Step-by-step observability setup" >}}
+  {{< card path="/integrations/observability/opentelemetry" title="OpenTelemetry" subtitle="Distributed tracing and metrics" >}}
 {{< /cards >}}

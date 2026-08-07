@@ -2,9 +2,8 @@ To federate multiple MCP servers on the same gateway, you can use a label select
 
 This approach, also referred to as multiplexing, makes it easier for you to add more MCP servers by adding labels. It also lets your clients access tools from multiple MCP servers through a single endpoint and MCP connection.
 
-{{< callout type="warning" >}}
-Note that only streamable HTTP is currently supported for label selectors. If you have SSE, use a [static MCP Backend]({{< link-hextra path="/mcp/static-mcp/">}}).
-{{< /callout >}}
+> [!WARNING]
+> Note that only streamable HTTP is currently supported for label selectors. If you have SSE, use a [static MCP Backend]({{< link-hextra path="/mcp/static-mcp/">}}).
 
 ## Before you begin
 
@@ -41,6 +40,12 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
              args: ["-y", "@modelcontextprotocol/server-everything", "streamableHttp"]
              ports:
                - containerPort: 3001
+             readinessProbe:
+               tcpSocket:
+                 port: 3001
+               initialDelaySeconds: 2
+               periodSeconds: 2
+               failureThreshold: 30
    ---
    apiVersion: v1
    kind: Service
@@ -155,20 +160,34 @@ EOF
    EOF
    ```
 
-   {{< callout type="info" >}}
-   **Failure mode**: By default, agentgateway uses `FailClosed` behavior, which means that if any MCP target fails to initialize or becomes unavailable during a fanout, the entire session fails. To allow the gateway to skip failed targets and continue serving from the healthy ones, set the `failureMode` field to `FailOpen` on the {{< reuse "agw-docs/snippets/backend.md" >}}:
+   > [!NOTE]
+   > **Failure mode**: By default, agentgateway uses `FailClosed` behavior, which means that if any MCP target fails to initialize or becomes unavailable during a fanout, the entire session fails. To allow the gateway to skip failed targets and continue serving from the healthy ones, set the `failureMode` field to `FailOpen` on the {{< reuse "agw-docs/snippets/backend.md" >}}:
+   > 
+   > ```yaml
+   > 
+   > spec:
+   >   mcp:
+   >     failureMode: FailOpen
+   >     targets:
+   >       ...
+   > ```
+   >
+   > With `FailOpen`, if one MCP server is down, the gateway still serves tools from the remaining healthy servers. If all targets fail, the gateway returns an error.
 
-   ```yaml
-   
-   spec:
-     mcp:
-       failureMode: FailOpen
-       targets:
-         ...
-   ```
-
-   With `FailOpen`, if one MCP server is down, the gateway still serves tools from the remaining healthy servers. If all targets fail, the gateway returns an error.
-   {{< /callout >}}
+   > [!NOTE]
+   > **Tool name prefixing**: When multiplexing, agentgateway namespaces tool and prompt names with the target name so that identical names from different servers do not collide. Resource URIs always retain target routing information and are unaffected. Control this behavior with the `prefixMode` field on the {{< reuse "agw-docs/snippets/backend.md" >}}:
+   > 
+   > * `Conditional` (default): Prefix names only when the backend has more than one target.
+   > * `Always`: Always prefix names, even with a single target.
+   > * `Never`: Never prefix names. Calls are routed by looking up which target serves the name, so names must be unique across all targets. Use this mode when clients need plain tool names{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}, such as for [MCP Apps]({{< link-hextra path="/mcp/apps" >}}){{< /version >}}.
+   >
+   > ```yaml
+   > spec:
+   >   mcp:
+   >     prefixMode: Never
+   >     targets:
+   >       ...
+   > ```
 
 ## Step 2: Route with agentgateway {#agentgateway}
 
@@ -218,15 +237,18 @@ EOF
 
 {{< doc-test paths="virtual-mcp" >}}
 for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/mcp" && break
-  sleep 2
+  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://${INGRESS_GW_ADDRESS}:80/mcp" || true)
+  case "${code}" in
+    5*|"") sleep 2 ;;
+    *) break ;;
+  esac
 done
 {{< /doc-test >}}
 
 {{< doc-test paths="virtual-mcp" >}}
 YAMLTest -f - <<'EOF'
 - name: MCP endpoint accepts initialize request
-  retries: 5
+  retries: 30
   http:
     url: "http://${INGRESS_GW_ADDRESS}:80"
     path: /mcp
@@ -326,7 +348,7 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 2. From the terminal, run the MCP Inspector command. Then, the MCP Inspector opens in your browser.
    
    ```sh
-   npx modelcontextprotocol/inspector#{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
+   npx @modelcontextprotocol/inspector@{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
    ```
    
 3. From the MCP Inspector menu, connect to your agentgateway address as follows:
@@ -338,11 +360,11 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
    * **`mcp-server-everything-3001_*`**: Tools from the `server-everything` MCP server, like `echo`, `add`, etc.
    * **`mcp-website-fetcher_fetch`**: The `fetch` tool from the website fetcher MCP server.
 
-   {{< reuse-image src="img/mcp-multiplex.png" >}}
+   {{< reuse-image-light src="img/mcp-multiplex.png" >}}
    {{< reuse-image-dark srcDark="img/mcp-multiplex-dark.png" >}}
 
 5. Test the federated tools:
-   * **Test the `mcp-server-everything-3001_echo` tool**: Click **List Tools** and select the `echo` tool. In the **message** field, enter any string, such as `Hello world`, and click **Run Tool**. Verify that your string is echoed back. 
+   * **Test the `mcp-server-everything-3001_echo` tool**: Click **List Tools** and select the `echo` tool. In the **Message** field, enter any string, such as `Hello world`, and click **Run Tool**. Verify that your string is echoed back. 
    * **Test the `mcp-website-fetcher_fetch` tool**: Click **List Tools** and select the `fetch` tool. In the **url** field, enter a website URL, such as `https://lipsum.com/`, and click **Run Tool**.
    
 

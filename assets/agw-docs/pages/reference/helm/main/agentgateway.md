@@ -4,8 +4,11 @@
 | Key | Type | Description | Default |
 |-----|------|-------------|---------|
 | affinity | object | Set affinity rules for pod scheduling, such as 'nodeAffinity:'. | `{}` |
+| agentgatewayModels | object | Configure the experimental AgentgatewayModel API. | `{"enabled":false}` |
+| agentgatewayModels.enabled | bool | Enable AgentgatewayModel support in the agentgateway controller. | `false` |
 | commonLabels | object | Additional labels to add to all resources created by the Helm chart. | `{}` |
-| controller | object | Configure the agentgateway control plane deployment. | `{"extraEnv":{},"extraVolumeMounts":[],"extraVolumes":[],"horizontalPodAutoscaler":{},"image":{"pullPolicy":"","registry":"","repository":"controller","tag":""},"logLevel":"info","podDisruptionBudget":{},"priorityClassName":"","replicaCount":1,"service":{"allocateLoadBalancerNodePorts":null,"annotations":{},"clusterIP":"","clusterIPs":[],"enabled":true,"externalIPs":[],"externalName":"","externalTrafficPolicy":"","extraLabels":{},"healthCheckNodePort":null,"internalTrafficPolicy":"","ipFamilies":[],"ipFamilyPolicy":"","loadBalancerClass":"","loadBalancerIP":"","loadBalancerSourceRanges":[],"ports":{"agwGrpc":9978,"health":9093,"metrics":9092},"publishNotReadyAddresses":false,"sessionAffinity":"","sessionAffinityConfig":{},"trafficDistribution":"","type":"ClusterIP"},"strategy":{},"verticalPodAutoscaler":{},"xds":{"mode":"tls"}}` |
+| controller | object | Configure the agentgateway control plane deployment. | `{"extraContainers":[],"extraEnv":{},"extraVolumeMounts":[],"extraVolumes":[],"horizontalPodAutoscaler":{},"image":{"pullPolicy":"","registry":"","repository":"controller","tag":""},"logLevel":"info","podDisruptionBudget":{},"priorityClassName":"","replicaCount":1,"service":{"allocateLoadBalancerNodePorts":null,"annotations":{},"clusterIP":"","clusterIPs":[],"enabled":true,"externalIPs":[],"externalName":"","externalTrafficPolicy":"","extraLabels":{},"healthCheckNodePort":null,"internalTrafficPolicy":"","ipFamilies":[],"ipFamilyPolicy":"","loadBalancerClass":"","loadBalancerIP":"","loadBalancerSourceRanges":[],"ports":{"agwGrpc":9978,"health":9093,"metrics":9092},"publishNotReadyAddresses":false,"sessionAffinity":"","sessionAffinityConfig":{},"trafficDistribution":"","type":"ClusterIP"},"strategy":{},"verticalPodAutoscaler":{},"xds":{"mode":"tls"}}` |
+| controller.extraContainers | list | Add extra sidecar containers to the controller pod. | `[]` |
 | controller.extraEnv | object | Add extra environment variables to the controller container. Supports either a direct scalar value: extraEnv:   LOG_FORMAT: json Or Kubernetes valueFrom sources: extraEnv:   API_TOKEN:     valueFrom:       secretKeyRef:         name: agentgateway-secrets         key: apiToken | `{}` |
 | controller.extraVolumeMounts | list | Add extra volume mounts to the controller container. | `[]` |
 | controller.extraVolumes | list | Add extra volumes to the controller pod. | `[]` |
@@ -46,9 +49,11 @@
 | controller.verticalPodAutoscaler | object | Set vertical pod autoscaler for the controller. Note that this does not    affect the data plane. The targetRef is automatically configured to    target the controller deployment. E.g.:  verticalPodAutoscaler:   updatePolicy:     updateMode: Auto   resourcePolicy:     containerPolicies:       - containerName: "*"         minAllowed:           cpu: 100m           memory: 128Mi | `{}` |
 | controller.xds | object | Configure xDS transport mode for the gRPC servers. | `{"mode":"tls"}` |
 | controller.xds.mode | string | One of: plaintext, tls, either. | `"tls"` |
+| controllerName | string | Value written to GatewayClass.spec.controllerName that this controller reconciles.    Leave empty to use the built-in default ("agentgateway.dev/agentgateway"). Sets AGW_CONTROLLER_NAME.    Change this together with gatewayClassName when running multiple agentgateway controllers. | `""` |
 | deploymentAnnotations | object | Add annotations to the agentgateway deployment. | `{}` |
 | discoveryNamespaceSelectors | list | List of namespace selectors (OR'ed): each entry can use 'matchLabels' or 'matchExpressions' (AND'ed within each entry if used together). Agentgateway includes the selected namespaces in config discovery. For more information, see the docs https://agentgateway.dev/docs/kubernetes/latest/install/advanced/#namespace-discovery. | `[]` |
 | fullnameOverride | string | Override the full name of resources created by the Helm chart, which is 'agentgateway'. If you set 'fullnameOverride: "foo", the full name of the resources that the Helm release creates become 'foo', such as the deployment, service, and service account for the agentgateway control plane in the agentgateway-system namespace. | `""` |
+| gatewayClassName | string | Name of the primary GatewayClass the controller creates and manages.    Leave empty to use the built-in default ("agentgateway"). Sets AGW_AGENTGATEWAY_CLASS_NAME. | `""` |
 | gatewayClassParametersRefs | object | Map of GatewayClass names to GatewayParameters references that will be set on    the default GatewayClasses managed by kgateway. Each entry must define both the    name and namespace of the GatewayParameters resource.    The default GatewayClasses managed by kgateway are:    - agentgateway    Example:    gatewayClassParametersRefs:      agentgateway:        name: shared-gwp        namespace: kgateway-system | `{}` |
 | image | object | Configure the default container image for the components that Helm deploys. You can override these settings for each particular component in that component's section, such as 'controller.image' for the agentgateway control plane. If you use your own private registry, make sure to include the imagePullSecrets. | `{"pullPolicy":"IfNotPresent","registry":"cr.agentgateway.dev","tag":""}` |
 | image.pullPolicy | string | Set the default image pull policy. | `"IfNotPresent"` |
@@ -57,23 +62,33 @@
 | imagePullSecrets | list | Set a list of image pull secrets for Kubernetes to use when pulling container images from your own private registry instead of the default agentgateway registry. | `[]` |
 | inferenceExtension | object | Configure the integration with the Gateway API Inference Extension project, which lets you use agentgateway to route to AI inference workloads like LLMs that run locally in your Kubernetes cluster. Documentation for Inference Extension can be found here: https://agentgateway.dev/docs/kubernetes/latest/inference/ | `{"enabled":false}` |
 | inferenceExtension.enabled | bool | Enable Inference Extension support in the agentgateway controller. | `false` |
-| monitoring | object | Configure Prometheus and Grafana monitoring resources. | `{"enabled":false,"grafanaDashboard":{"enabled":true,"labels":{"grafana_dashboard":"1"}},"proxy":{"namespaceSelector":{}},"serviceMonitor":{"enabled":true,"extraLabels":{},"interval":"15s"}}` |
+| istio | object | Control-plane-wide Istio mesh defaults. | `{"autoEnabled":false,"caAddress":"","clusterId":"","namespace":"","network":"","revision":""}` |
+| istio.autoEnabled | bool | Enable Istio integration by default on all built-in-class gateways.    When false (default), gateways opt in via AgentgatewayParameters spec.istio;    when true, individual gateways can opt out via spec.istio.enabled=false. | `false` |
+| istio.caAddress | string | Istio CA address override;    Defaults to "https://istiod.istio-system.svc:15012" | `""` |
+| istio.clusterId | string | Istio cluster ID (the istiod multiCluster clusterName) for mesh-integrated gateways. | `""` |
+| istio.namespace | string | Namespace where the Istio control plane the controller integrates with is installed.    Defaults to "istio-system". | `""` |
+| istio.network | string | Istio network for mesh-integrated gateways. | `""` |
+| istio.revision | string | Revision of the Istio control plane the controller integrates with.   If unset, the default revision is used. | `""` |
+| monitoring | object | Configure Prometheus and Grafana monitoring resources. | `{"enabled":false,"grafanaDashboard":{"enabled":true,"labels":{"grafana_dashboard":"1"}},"proxy":{"gatewayClassNames":["agentgateway"],"namespaceSelector":{},"podMonitor":{"enabled":true}},"serviceMonitor":{"enabled":true,"extraLabels":{},"interval":"15s"}}` |
 | monitoring.enabled | bool | Create monitoring resources (ServiceMonitors and Grafana dashboard ConfigMap). Requires the Prometheus Operator CRDs to be installed in the cluster. | `false` |
 | monitoring.grafanaDashboard.enabled | bool | Create the Grafana dashboard ConfigMap. | `true` |
 | monitoring.grafanaDashboard.labels | object | Labels that the Grafana sidecar uses to discover dashboards. | `{"grafana_dashboard":"1"}` |
-| monitoring.proxy.namespaceSelector | object | Namespace selector used by the proxy ServiceMonitor. The proxy ServiceMonitor always selects Services with gateway.networking.k8s.io/gateway-class-name=agentgateway. | `{}` |
-| monitoring.serviceMonitor.enabled | bool | Create ServiceMonitor resources. | `true` |
-| monitoring.serviceMonitor.extraLabels | object | Additional labels to add to both ServiceMonitor resources (e.g. release: prometheus). | `{}` |
-| monitoring.serviceMonitor.interval | string | Scrape interval for both ServiceMonitors. | `"15s"` |
+| monitoring.proxy.gatewayClassNames | list | GatewayClass names whose proxy pods are selected by the proxy PodMonitor. | `["agentgateway"]` |
+| monitoring.proxy.namespaceSelector | object | Namespace selector used by the proxy PodMonitor. Defaults to the release namespace only. | `{}` |
+| monitoring.proxy.podMonitor.enabled | bool | Create a PodMonitor that scrapes provisioned proxy pods on the pod's    metrics port (15020) directly, without requiring a metrics port on the    provisioned Service. | `true` |
+| monitoring.serviceMonitor.enabled | bool | Create the controller ServiceMonitor. | `true` |
+| monitoring.serviceMonitor.extraLabels | object | Additional labels to add to the controller ServiceMonitor and the proxy PodMonitor (e.g. release: prometheus). | `{}` |
+| monitoring.serviceMonitor.interval | string | Scrape interval for the controller ServiceMonitor and the proxy PodMonitor. | `"15s"` |
 | nameOverride | string | Add a name to the default Helm base release, which is 'agentgateway'. If you set 'nameOverride: "foo", the name of the resources that the Helm release creates become 'agentgateway-foo', such as the deployment, service, and service account for the agentgateway control plane in the agentgateway-system namespace. | `""` |
 | nodeSelector | object | Set node selector labels for pod scheduling, such as 'kubernetes.io/arch: amd64'. | `{}` |
 | podAnnotations | object | Add annotations to the agentgateway pods. | `{"prometheus.io/scrape":"true"}` |
+| podLabels | object | Add labels to the agentgateway pods. Useful for `NetworkPolicy` selectors (e.g. opt-in egress labels on Cilium-based clusters). | `{}` |
 | podSecurityContext | object | Set the pod-level security context. For example, 'fsGroup: 2000' sets the filesystem group to 2000. | `{}` |
 | proxy | object | Configure the agentgateway data plane deployment. | `{"image":{"registry":"","repository":"agentgateway","tag":""}}` |
 | proxy.image.registry | string | Set the default image registry. Set to override the global value. | `""` |
 | proxy.image.repository | string | Set the default image repository. | `"agentgateway"` |
 | proxy.image.tag | string | Set the default image tag. | `""` |
-| resources | object | Configure resource requests and limits for the container, such as 'limits.cpu: 100m' or 'requests.memory: 128Mi'. | `{}` |
+| resources | object | Configure resource requests and limits for the container, such as 'limits.cpu: 100m' or 'requests.memory: 128Mi'. | `{"requests":{"cpu":"100m","memory":"128Mi"}}` |
 | securityContext | object | Set the container-level security context, such as 'runAsNonRoot: true'. | `{}` |
 | serviceAccount | object | Configure the service account for the deployment. | `{"annotations":{},"create":true,"name":""}` |
 | serviceAccount.annotations | object | Add annotations to the service account. | `{}` |

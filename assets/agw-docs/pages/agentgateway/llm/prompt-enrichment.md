@@ -30,7 +30,7 @@ In the following example, you explore how to refactor system and user prompts to
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
-       "model": "gpt-3.5-turbo",
+       "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
        "messages": [
          {
            "role": "user",
@@ -44,7 +44,7 @@ In the following example, you explore how to refactor system and user prompts to
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
-       "model": "gpt-3.5-turbo",
+       "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
        "messages": [
          {
            "role": "user",
@@ -75,7 +75,7 @@ In the following example, you explore how to refactor system and user prompts to
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -93,7 +93,7 @@ In the following example, you explore how to refactor system and user prompts to
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -123,15 +123,15 @@ In the following example, you explore how to refactor system and user prompts to
 
 ## Append or prepend prompts
 
-Use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to enrich prompts by appending or prepending system and user prompts to each request. This way, you can centrally manage common prompts that you want to add to each request.
+Use an {{< reuse "agw-docs/snippets/policy.md" >}} resource to enrich prompts by appending or prepending system and user prompts to each request. This way, you can centrally manage common prompts that you want to add to each request.
 
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to enrich your prompts and configure additional settings. The following example prepends a system prompt of `Parse the unstructured text into CSV format.` to each request that is sent to the `openai` HTTPRoute.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource to enrich your prompts and configure additional settings. The following example prepends a system prompt of `Parse the unstructured text into CSV format.` to each request that is sent to the `openai` HTTPRoute.
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: openai-opt
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -152,14 +152,14 @@ Use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to enrich pro
    ```
    
 
-2. Send a request without a system prompt. Although the system prompt instructions are missing in the request, the unstructured text in the user prompt is still transformed into structured CSV format. This is because the system prompt is automatically prepended from the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource before it is sent to the LLM provider.
+2. Send a request without a system prompt. Although the system prompt instructions are missing in the request, the unstructured text in the user prompt is still transformed into structured CSV format. This is because the system prompt is automatically prepended from the {{< reuse "agw-docs/snippets/policy.md" >}} resource before it is sent to the LLM provider.
 
    {{< tabs >}}
 
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "user",
@@ -173,7 +173,7 @@ Use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to enrich pro
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "user",
@@ -196,7 +196,7 @@ Use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to enrich pro
 
 ## Overwrite settings on the route level
 
-To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource, you simply include that setting in your request.
+To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/policy.md" >}} resource, you simply include that setting in your request.
 
 1. Send a request to the AI API and include a custom system prompt that instructs the API to transform unstructured text into JSON format.
 
@@ -205,7 +205,7 @@ To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/traffic
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -223,7 +223,7 @@ To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/traffic
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -260,14 +260,14 @@ To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/traffic
    }
    ```
 
-2. Send another request. This time, you do not include a system prompt. Because the default setting in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource is applied, the unstructured text is returned in CSV format.
+2. Send another request. This time, you do not include a system prompt. Because the default setting in the {{< reuse "agw-docs/snippets/policy.md" >}} resource is applied, the unstructured text is returned in CSV format.
 
    {{< tabs >}}
 
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "user",
@@ -281,7 +281,7 @@ To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/traffic
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "user",
@@ -308,7 +308,7 @@ To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/traffic
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```shell
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=agentgateway
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=agentgateway
 ```
 
 

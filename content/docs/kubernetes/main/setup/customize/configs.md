@@ -1,7 +1,7 @@
 ---
 title: Example configs
 weight: 30
-description:
+description: Review example configurations for different agentgateway deployment scenarios.
 ---
 
 {{< reuse "agw-docs/pages/setup/customize-examples.md" >}}

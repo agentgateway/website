@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Gateway config for the MULTIPLEX (virtual MCP) playground capture. Mirrors
+# content/docs/standalone/main/mcp/connect/virtual.md, which federates two MCP targets
+# (`time` + `everything`) into one unified backend so their tools appear prefixed:
+# `time_get_current_time`, `everything_echo`, etc.
+#
+# Two adjustments for capturing inside the distroless sl8 container (same as the other
+# fixtures — the image cannot exec stdio `cmd`s, so targets run on the host over HTTP):
+#   - mcp.port is 3030 (not 3000): the playground connects browser-side to
+#     http://localhost:<mcp.port>/mcp, so this port must be free on the host AND mapped
+#     identically (docker -p 3030:3030).
+#   - each target is an HTTP `mcp.host` pointed at host.docker.internal:
+#       everything -> :3005  (npx @modelcontextprotocol/server-everything streamableHttp)
+#       time       -> :3006  (scripts/mock-mcp-time.mjs — deterministic get/convert time)
+#     Target names cannot contain underscores (the doc calls this out).
+mcp:
+  port: 3030
+  policies:
+    cors:
+      allowOrigins:
+        - "*"
+      allowHeaders:
+        - "*"
+      exposeHeaders:
+        - "Mcp-Session-Id"
+  targets:
+    - name: time
+      mcp:
+        host: http://host.docker.internal:3006/mcp/
+    - name: everything
+      mcp:
+        host: http://host.docker.internal:3005/mcp/

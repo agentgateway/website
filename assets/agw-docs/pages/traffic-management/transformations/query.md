@@ -8,12 +8,12 @@ This configuration is useful when a client passes information as a query paramet
 
 In this example, a client passes a feature flag as the `beta` query parameter. The backend service expects this as the `x-beta-features` request header. The transformation reads `request.uri` and sets the header to `enabled` when `beta=true` is present, and `disabled` when it is absent.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
    ```yaml {paths="query"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation
      namespace: httpbin
@@ -161,5 +161,5 @@ In this example, a client passes a feature flag as the `beta` query parameter. T
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="query"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin
 ```

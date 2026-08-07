@@ -19,7 +19,7 @@ You can add your custom configuration to the {{< reuse "agw-docs/snippets/gatewa
 1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example changes the logging format from `text` to `json`. For other examples, see [Built-in customization]({{< link-hextra path="/setup/customize/configs/#built-in-customization" >}}). 
    ```yaml
    kubectl apply --server-side -f- <<'EOF'
-   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
    metadata:
      name: agentgateway-config
@@ -44,7 +44,7 @@ You can add your custom configuration to the {{< reuse "agw-docs/snippets/gatewa
      infrastructure:
        parametersRef:
          name: agentgateway-config
-         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}       
      listeners:
        - name: http
@@ -70,14 +70,37 @@ You can add your custom configuration to the {{< reuse "agw-docs/snippets/gatewa
    {"level":"info","time":"2025-12-16T15:58:18.248081Z","scope":"agent_xds::client","message":"received response","type_url":"type.googleapis.com/agentgateway.dev.workload.Address","size":44,"removes":0,"xds":{"id":1}}
    ```
 
+#### Run as a DaemonSet {#daemonset-workload}
+
+To run the managed agentgateway proxy as a DaemonSet instead of the default Deployment, set `workload.kind: DaemonSet` in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that is attached to your Gateway or GatewayClass. Use the `daemonSet` [overlay](#overlays) for DaemonSet-specific settings. The `deployment` and `horizontalPodAutoscaler` overlays are valid only for Deployment workloads.
+
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+metadata:
+  name: agentgateway-daemonset
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  workload:
+    kind: DaemonSet
+  daemonSet:
+    spec:
+      updateStrategy:
+        type: RollingUpdate
+      template:
+        spec:
+          tolerations:
+            - operator: Exists
+```
+
 ### Overlays {#overlays}
 
-You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to override default settings for the deployment, service, and service account that are created for an agentgateway proxy. 
+You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to override default settings for the workload, service, and service account that are created for an agentgateway proxy. Use the `deployment` overlay for the default Deployment workload and the `daemonSet` overlay when `workload.kind` is set to `DaemonSet`.
 
 1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example changes the default replica count from 1 to 3. For other examples, see [Overlays]({{< link-hextra path="/setup/customize/configs/#overlays" >}}). 
-   ```yaml
+   ```yaml {paths="customize"}
    kubectl apply --server-side -f- <<'EOF'
-   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
    metadata:
      name: agentgateway-config
@@ -91,7 +114,7 @@ You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewaypa
 
 2. Create a Gateway resource that sets up an agentgateway proxy that uses your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}. 
 
-   ```yaml
+   ```yaml {paths="customize"}
    kubectl apply --server-side -f- <<'EOF'
    apiVersion: gateway.networking.k8s.io/v1
    kind: Gateway
@@ -103,7 +126,7 @@ You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewaypa
      infrastructure:
        parametersRef:
          name: agentgateway-config
-         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}       
      listeners:
        - name: http
@@ -114,6 +137,25 @@ You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewaypa
              from: All
    EOF
    ```
+
+{{< doc-test paths="customize" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for agentgateway-config deployment to scale to 3 replicas
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-config
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: equals
+      value: 3
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
 
 3. Check the number of agentgateway pods that are created. Verify that you see 3 replicas. 
    ```sh
@@ -133,32 +175,36 @@ You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewaypa
 Use the `rawConfig` option to pass in raw upstream configuration to your agentgateway proxy. Note that the configuration is not automatically validated. If configuration is malformatted or includes unsupported fields, the agentgateway proxy does not start. You can run `kubectl logs deploy/agentgateway-proxy -n agentgateway-system` to view the logs of the proxy and find more information about why the configuration could not be applied. 
 
 1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example sets up a simple direct response listener on port 3000 that returns a `200 OK` response with the body `"hello!"` for requests to the `/direct` path.
+
    ```yaml
    kubectl apply --server-side -f- <<'EOF'
-   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
    metadata:
      name: agentgateway-config
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      rawConfig:
-       binds: 
-       - port: 3000
-         listeners: 
-         - protocol: HTTP
-           routes: 
-           - name: direct-response
-             matches: 
-             - path: 
-                 pathPrefix: /direct
-             policies: 
-               directResponse:
-                 body: "hello!"
-                 status: 200
+       gateways:
+         default:
+           port: 3000
+           protocol: HTTP
+       routes:
+       - name: direct-response
+         matches:
+         - path:
+             pathPrefix: /direct
+         policies:
+           directResponse:
+             body: "hello!"
+             status: 200
    EOF
    ```
 
-2. Create a Gateway resource that sets up an agentgateway proxy that uses your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}. Set the port to a mock value like `3030` to avoid conflicts with the binds defined in your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
+   > [!NOTE]
+   > The `gateways` API requires agentgateway 1.4 or later. In earlier releases, use the equivalent `binds` configuration. Agentgateway 1.4 still accepts `binds`, but `gateways` is the recommended API.
+
+2. Create a Gateway resource that sets up an agentgateway proxy that uses your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}. Set the port to a mock value like `3030` to avoid conflicts with the ports defined in your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
 
    ```yaml
    kubectl apply --server-side -f- <<'EOF'
@@ -172,7 +218,7 @@ Use the `rawConfig` option to pass in raw upstream configuration to your agentga
      infrastructure:
        parametersRef:
          name: agentgateway-config
-         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}  
+         group: {{< reuse "agw-docs/snippets/group.md" >}}  
          kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}       
      listeners:
        - name: http
@@ -221,7 +267,7 @@ Use the `rawConfig` option to pass in raw upstream configuration to your agentga
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
-```sh
+```sh {paths="customize"}
 kubectl delete Gateway agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

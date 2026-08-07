@@ -1,31 +1,129 @@
-[KServe](https://kserve.github.io/website/) is a Kubernetes-native platform for serving machine learning models. With agentgateway in front of KServe, you can enforce traffic management policies, such as token-based rate limiting, for inference requests without modifying your inference services.
+[KServe](https://kserve.github.io/website/) is a Kubernetes-native platform
+for serving machine learning models. KServe can create an `InferencePool` and
+run the llm-d Router Endpoint Picker (EPP) for an `LLMInferenceService`.
+Agentgateway routes requests to that pool through the Gateway API Inference
+Extension.
+
+Use the standard `InferencePool` backend when you need inference-aware endpoint
+selection. Add an {{< reuse "agw-docs/snippets/backend.md" >}} only when you
+also need agentgateway LLM processing, such as token-based rate limiting,
+guardrails, or LLM observability.
+
+```mermaid
+graph LR
+    Client --> Gateway
+    Gateway --> HTTPRoute
+    HTTPRoute --> InferencePool
+    InferencePool --> EPP["KServe-managed llm-d Router EPP"]
+    EPP --> ModelServer["model server"]
+```
+
+KServe also maintains an
+[LLMInferenceService with agentgateway guide](https://kserve.github.io/website/docs/next/model-serving/generative-inference/llmisvc/llmisvc-agentgateway).
+For production llm-d deployment patterns, see the
+[llm-d gateway documentation](https://llm-d.ai/docs/infrastructure/gateway)
+and [agentgateway integration](https://llm-d.ai/docs/infrastructure/gateway/agentgateway).
 
 ## Before you begin
 
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+This guide is tested with the following versions.
 
-## Step 1: Install cert-manager
+| Component | Version |
+| --- | --- |
+| Kubernetes Gateway API | v1.6.0 |
+| Gateway API Inference Extension | v1.5.0 |
+| agentgateway | v1.4.1 |
+| KServe | v0.20.0-rc0 |
 
-1. Install cert-manager, which KServe requires for webhook certificates.
-   
+You need a Kubernetes cluster, Helm, and `kubectl`.
+
+## Install the APIs and controllers
+
+1. Install the Kubernetes Gateway API Custom Resource Definitions (CRDs).
+
    ```shell
-   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.20.2/cert-manager.yaml
+   kubectl apply --server-side -f \
+     https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.0/standard-install.yaml
    ```
 
-2. Wait for cert-manager to be ready before you continue.
-   
+2. Install cert-manager, which KServe uses for webhook certificates.
+
    ```shell
-   kubectl wait --for=condition=available deployment --all -n cert-manager --timeout=120s
+   kubectl apply -f \
+     https://github.com/cert-manager/cert-manager/releases/download/v1.20.2/cert-manager.yaml
+
+   kubectl wait --for=condition=available deployment --all \
+     --namespace cert-manager \
+     --timeout=180s
    ```
 
-## Step 2: Create the KServe namespace and gateway
+3. Install KServe and configure its `LLMInferenceService` controller to use a
+   shared agentgateway Gateway. The KServe chart also installs the transitional
+   Inference Extension CRDs that its migration controller requires.
 
-1. Create the `kserve` namespace. 
    ```shell
    kubectl create namespace kserve
+
+   helm upgrade -i kserve-llmisvc-crd \
+     oci://ghcr.io/kserve/charts/kserve-llmisvc-crd \
+     --version v0.20.0-rc0 \
+     --namespace kserve
+
+   helm upgrade -i kserve-llmisvc-resources \
+     oci://ghcr.io/kserve/charts/kserve-llmisvc-resources \
+     --version v0.20.0-rc0 \
+     --namespace kserve \
+     --set kserve.controller.deploymentMode=Standard \
+     --set kserve.controller.gateway.ingressGateway.enableGatewayApi=true \
+     --set kserve.controller.gateway.ingressGateway.createGateway=false \
+     --set kserve.controller.gateway.ingressGateway.kserveGateway=kserve/kserve-ingress-gateway \
+     --set kserve.controller.gateway.ingressGateway.className=agentgateway \
+     --set kserve.controller.gateway.disableIstioVirtualHost=true \
+     --set kserve.controller.gateway.disableIngressCreation=false \
+     --set kserve.controller.knativeAddressableResolver.enabled=false \
+     --set kserve.controller.gateway.localGateway.gateway="" \
+     --set kserve.controller.gateway.localGateway.gatewayService=""
+
+   kubectl rollout status deployment/llmisvc-controller-manager \
+     --namespace kserve \
+     --timeout=240s
+
+   helm upgrade -i kserve-runtime-configs \
+     oci://ghcr.io/kserve/charts/kserve-runtime-configs \
+     --version v0.20.0-rc0 \
+     --namespace kserve \
+     --set kserve.llmisvcConfigs.enabled=true
    ```
 
-2. Create a `Gateway` resource that agentgateway manages. KServe attaches `HTTPRoute` resources to this gateway automatically for each `InferenceService` you deploy.
+4. Apply the final GAIE v1.5.0 CRD bundle. Applying it after the KServe chart
+   updates the stable API definitions while retaining the transitional CRDs
+   that KServe needs during the migration.
+
+   ```shell
+   kubectl apply --server-side -f \
+     https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v1.5.0/manifests.yaml
+   ```
+
+5. Install agentgateway with Inference Extension support. Installing it after
+   the GAIE CRDs ensures that the controller discovers `InferencePool`.
+
+   ```shell
+   helm upgrade -i agentgateway-crds \
+     oci://cr.agentgateway.dev/charts/agentgateway-crds \
+     --create-namespace \
+     --namespace agentgateway-system \
+     --version v1.4.1
+
+   helm upgrade -i agentgateway \
+     oci://cr.agentgateway.dev/charts/agentgateway \
+     --namespace agentgateway-system \
+     --version v1.4.1 \
+     --set inferenceExtension.enabled=true
+   ```
+
+6. Create an agentgateway `Gateway`. KServe attaches generated `HTTPRoute`
+   resources from model namespaces to this shared Gateway.
+
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -46,532 +144,255 @@
        labels:
          serving.kserve.io/gateway: kserve-ingress-gateway
    EOF
-   ```
 
-3. Verify the gateway service is created.
-
-   ```shell
-   kubectl get svc -n kserve kserve-ingress-gateway
-   ```
-
-   Example output:
-
-   ```
-   NAME                     TYPE           CLUSTER-IP   EXTERNAL-IP   PORT(S)                      AGE
-   kserve-ingress-gateway   LoadBalancer   10.96.4.5    <pending>     80:32764/TCP,443:31766/TCP   11s
-   ```
-
-## Step 3: Install KServe
-
-1. Install the KServe CRDs.
-   ```shell
-   helm install kserve-crd oci://ghcr.io/kserve/charts/kserve-crd --version v0.17.0
-   ```
-
-2. Install KServe resources using Helm.
-   ```shell
-   helm install kserve oci://ghcr.io/kserve/charts/kserve-resources \
-     --version v0.17.0 \
+   kubectl wait --for=condition=Programmed \
+     gateway/kserve-ingress-gateway \
      --namespace kserve \
-     --create-namespace \
-     --set kserve.controller.deploymentMode=Standard \
-     --set kserve.controller.gateway.ingressGateway.enableGatewayApi=true \
-     --set kserve.controller.gateway.ingressGateway.createGateway=false \
-     --set kserve.controller.gateway.ingressGateway.kserveGateway=kserve/kserve-ingress-gateway \
-     --set kserve.controller.gateway.ingressGateway.className=agentgateway \
-     --set kserve.controller.gateway.disableIstioVirtualHost=true \
-     --set kserve.controller.gateway.disableIngressCreation=false \
-     --set kserve.controller.knativeAddressableResolver.enabled=false \
-     --set kserve.controller.gateway.localGateway.gateway="" \
-     --set kserve.controller.gateway.localGateway.gatewayService=""
+     --timeout=180s
    ```
 
-## Step 4: Deploy a mocked LLM with llm-d-inference-sim
+   Do not install the [llm-d Router Helm chart](https://github.com/llm-d/llm-d-router/tree/main/config/charts)
+   in this workflow. KServe owns the router deployment and uses the llm-d
+   endpoint-picker image from its runtime configuration.
 
-Instead of a real model, this guide uses [llm-d-inference-sim](https://github.com/llm-d/llm-d-inference-sim) to serve a mock OpenAI compatible endpoint. llm-d-inference-sim's `/v1/chat/completions` path returns a properly structured OpenAI chat completion response, including `usage.total_tokens` in the response body, which agentgateway reads to enforce token-based rate limits.
+## Deploy a simulated LLM
 
-1. Create the test namespace.
+1. Create a namespace for the model.
 
    ```shell
    kubectl create namespace kserve-test
    ```
 
-2. Deploy an `InferenceService` using llm-d-inference-sim directly via `spec.predictor.containers`. This approach bypasses KServe's model runtime machinery entirely, no `ClusterServingRuntime` or model storage is needed.
+2. Deploy an `LLMInferenceService` with its managed scheduler enabled. This
+   example uses
+   [llm-d-inference-sim](https://github.com/llm-d/llm-d-inference-sim)
+   instead of downloading model weights or requiring GPUs.
+
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: serving.kserve.io/v1beta1
-   kind: InferenceService
+   apiVersion: serving.kserve.io/v1alpha2
+   kind: LLMInferenceService
    metadata:
      name: mock-llm
      namespace: kserve-test
    spec:
-     predictor:
+     model:
+       name: mock-llm
+       uri: hf://mock/mock-llm
+     replicas: 1
+     storageInitializer:
+       enabled: false
+     router:
+       route: {}
+       scheduler: {}
+     template:
        containers:
-         - name: kserve-container
+         - name: main
            image: ghcr.io/llm-d/llm-d-inference-sim:v0.9.0-rc3
+           command:
+             - /app/llm-d-inference-sim
            args:
              - --model
              - mock-llm
              - --port
-             - "8080"
+             - "8000"
              - --mode
              - echo
            ports:
-             - containerPort: 8080
-               protocol: TCP
+             - name: http
+               containerPort: 8000
            resources:
              requests:
-               cpu: "100m"
-               memory: "128Mi"
+               cpu: 100m
+               memory: 128Mi
              limits:
-               cpu: "500m"
-               memory: "256Mi"
+               cpu: 500m
+               memory: 256Mi
    EOF
    ```
 
-3. Wait for the `InferenceService` to become ready.
-   
-   ```shell
-   kubectl get inferenceservices mock-llm -n kserve-test --watch
-   ```
-   
-## Optional Step 4b: Apply a transformation policy to the KServe-generated HTTPRoute
+3. Wait for the service and generated routing resources.
 
-Without a policy, agentgateway forwards requests and responses as-is. This
-step shows how a transformation policy can enrich responses with additional
-headers — without touching the inference service itself.
-
-1. Verify that KServe created an HTTPRoute after the Gateway becomes `READY`. The route attaches to `kserve/kserve-ingress-gateway` with hostname `mock-llm-kserve-test.example.com`.
-   
    ```shell
-   kubectl get httproute mock-llm -n kserve-test -o yaml
+   kubectl wait --for=condition=Ready \
+     llminferenceservice/mock-llm \
+     --namespace kserve-test \
+     --timeout=300s
+
+   kubectl get inferencepool mock-llm-inference-pool \
+     --namespace kserve-test
+   kubectl get httproute mock-llm-kserve-route \
+     --namespace kserve-test
    ```
 
-{{< tabs >}}
-{{% tab name="Cloud Provider LoadBalancer" %}}
-2. Get the external address of the gateway and save it in an environment variable.
+4. Confirm that the generated route uses the standard `InferencePool`
+   backend and that KServe runs the migrated llm-d Router image.
+
    ```shell
-   export INGRESS_GW_ADDRESS=$(kubectl get svc -n kserve agentgateway-proxy \
-     -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-   echo $INGRESS_GW_ADDRESS
+   kubectl get httproute mock-llm-kserve-route \
+     --namespace kserve-test \
+     -o jsonpath='{.spec.rules[?(@.name=="v1-chat-completions-path")].backendRefs[0]}{"\n"}'
+
+   kubectl get deployment mock-llm-kserve-router-scheduler \
+     --namespace kserve-test \
+     -o jsonpath='{.spec.template.spec.containers[?(@.name=="main")].image}{"\n"}'
    ```
 
-3. Confirm that the response contains no custom headers.
+   The backend is `mock-llm-inference-pool`. The EPP image repository is
+   `ghcr.io/llm-d/llm-d-router-endpoint-picker`.
+
+## Test the standard InferencePool backend
+
+1. Port-forward the Gateway service.
+
    ```shell
-   curl -s -X POST http://$INGRESS_GW_ADDRESS/v1/chat/completions \
-     -H "Host: mock-llm-kserve-test.example.com" \
+   kubectl port-forward \
+     --namespace kserve \
+     service/kserve-ingress-gateway \
+     8080:80
+   ```
+
+2. In another terminal, send a request through the path generated by KServe.
+
+   ```shell
+   curl -i http://localhost:8080/kserve-test/mock-llm/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d '{
        "model": "mock-llm",
        "messages": [{"role": "user", "content": "Hello"}]
-     }' -v 2>&1 | grep "^<"
+     }'
    ```
 
-   Example Output:
-   ```shell
-   < HTTP/1.1 200 OK
-   < server: fasthttp
-   < date: Mon, 18 May 2026 21:55:33 GMT
-   < content-type: application/json
-   < content-length: 353
-   ```
+   The response has an HTTP `200 OK` status. No
+   `AgentgatewayBackend` is required for this path.
 
-4. Apply a transformation policy that reads the model name from the request and response body and injects them as response headers.
+## Optional: Apply an AI policy
+
+Token-based rate limiting and other supported AI policies require agentgateway
+to parse the LLM request or response. To apply these policies, create an
+{{< reuse "agw-docs/snippets/backend.md" >}} that wraps the same `InferencePool`,
+then override the KServe route to use that backend.
+
+1. Create the backend.
+
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
-   kind: AgentgatewayPolicy
-   metadata:
-     name: model-echo-headers
-     namespace: kserve-test
-   spec:
-     targetRefs:
-       - group: gateway.networking.k8s.io
-         kind: HTTPRoute
-         name: mock-llm
-     traffic:
-       transformation:
-         response:
-           set:
-             - name: x-requested-model
-               value: 'string(json(request.body).model)'
-             - name: x-actual-model
-               value: 'string(json(response.body).model)'
-   EOF
-   ```
-
-5. Send the same request again and check the headers.
-   ```shell
-   curl -s -X POST http://$INGRESS_GW_ADDRESS/v1/chat/completions \
-     -H "Host: mock-llm-kserve-test.example.com" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "model": "mock-llm",
-       "messages": [{"role": "user", "content": "Hello"}]
-     }' -v 2>&1 | grep "^<"
-   ```
-   Example output:
-   ```shell
-   < HTTP/1.1 200 OK
-   < server: fasthttp
-   < date: Mon, 18 May 2026 21:56:12 GMT
-   < content-type: application/json
-   < content-length: 353
-   < x-requested-model: mock-llm
-   < x-actual-model: mock-llm
-   ```
-{{% /tab %}}
-{{% tab name="Port-forward for local testing" %}}
-2. Port-forward the gateway to your local machine.
-
-   ```shell
-   kubectl port-forward -n kserve svc/kserve-ingress-gateway 8080:80
-   ```
-
-3. Confirm that the response contains no custom headers.
-   ```shell
-   curl -s -X POST http://localhost:8080/v1/chat/completions \
-     -H "Host: mock-llm-kserve-test.example.com" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "model": "mock-llm",
-       "messages": [{"role": "user", "content": "Hello"}]
-     }' -v 2>&1 | grep "^<"
-   ```
-
-   Example Output:
-   ```shell
-   < HTTP/1.1 200 OK
-   < server: fasthttp
-   < date: Mon, 18 May 2026 21:55:33 GMT
-   < content-type: application/json
-   < content-length: 353
-   ```
-
-4. Apply a transformation policy that reads the model name from the request and response body and injects them as response headers.
-   ```yaml
-   kubectl apply -f - <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
-   kind: AgentgatewayPolicy
-   metadata:
-     name: model-echo-headers
-     namespace: kserve-test
-   spec:
-     targetRefs:
-       - group: gateway.networking.k8s.io
-         kind: HTTPRoute
-         name: mock-llm
-     traffic:
-       transformation:
-         response:
-           set:
-             - name: x-requested-model
-               value: 'string(json(request.body).model)'
-             - name: x-actual-model
-               value: 'string(json(response.body).model)'
-   EOF
-   ```
-
-5. Send the same request again and check the headers.
-   ```shell
-   curl -s -X POST http://localhost:8080/v1/chat/completions \
-     -H "Host: mock-llm-kserve-test.example.com" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "model": "mock-llm",
-       "messages": [{"role": "user", "content": "Hello"}]
-     }' -v 2>&1 | grep "^<"
-   ```
-   Example output:
-   ```shell
-   < HTTP/1.1 200 OK
-   < server: fasthttp
-   < date: Mon, 18 May 2026 21:56:12 GMT
-   < content-type: application/json
-   < content-length: 353
-   < x-requested-model: mock-llm
-   < x-actual-model: mock-llm
-   ```
-{{% /tab %}}
-{{< /tabs >}}
-
-
-## Step 5: Create an AgentgatewayBackend
-
-KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backendRef`. However, to apply a token-based rate limiting policy, agentgateway needs the backend to be an AgentgatewayBackend. This way, agentgateway knows that the backend is an LLM that has a response body with the `usage.total_tokens` field to count against the rate limit bucket. In the following steps, you create an AgentgatewayBackend and a second HTTPRoute to route to it as a workaround to the KServe-created, Service-based setup.
-
-1. Create an `AgentgatewayBackend` that points at the llm-d-inference-sim service.
-   ```yaml
-   kubectl apply -f - <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
-   kind: AgentgatewayBackend
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: mock-llm-backend
      namespace: kserve-test
    spec:
      ai:
        provider:
-         openai:
+         custom:
+           backendRef:
+             group: inference.networking.k8s.io
+             kind: InferencePool
+             name: mock-llm-inference-pool
            model: mock-llm
-         host: mock-llm-predictor.kserve-test.svc.cluster.local
-         port: 80
-         path: "/v1/chat/completions"
+           formats:
+             - type: Completions
+               path: /v1/chat/completions
    EOF
    ```
 
-2. Create a second `HTTPRoute` that routes to the `AgentgatewayBackend`. This route uses the same hostname as the KServe-generated route but matches only the `/v1/chat/completions` path, so the gateway prefers it for LLM traffic.
+2. Update the `LLMInferenceService` route. The managed scheduler remains
+   enabled, so KServe continues to own the `InferencePool` and llm-d Router
+   EPP.
+
+   ```shell
+   kubectl patch llminferenceservice mock-llm \
+     --namespace kserve-test \
+     --type merge \
+     --patch '{
+       "spec": {
+         "router": {
+           "route": {
+             "http": {
+               "spec": {
+                 "parentRefs": [{
+                   "group": "gateway.networking.k8s.io",
+                   "kind": "Gateway",
+                   "name": "kserve-ingress-gateway",
+                   "namespace": "kserve"
+                 }],
+                 "rules": [{
+                   "backendRefs": [{
+                     "group": "agentgateway.dev",
+                     "kind": "AgentgatewayBackend",
+                     "name": "mock-llm-backend"
+                   }],
+                   "matches": [{
+                     "path": {
+                       "type": "PathPrefix",
+                       "value": "/v1/chat/completions"
+                     }
+                   }],
+                   "timeouts": {
+                     "backendRequest": "0s",
+                     "request": "0s"
+                   }
+                 }]
+               }
+             }
+           },
+           "scheduler": {}
+         }
+       }
+     }'
+   ```
+
+3. Apply a token-based rate limit to the generated route.
+
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
-     name: mock-llm-ai
-     namespace: kserve-test
-   spec:
-     parentRefs:
-       - group: gateway.networking.k8s.io
-         kind: Gateway
-         name: kserve-ingress-gateway
-         namespace: kserve
-     hostnames:
-       - mock-llm-kserve-test.example.com
-     rules:
-       - matches:
-           - path:
-               type: PathPrefix
-               value: /v1/chat/completions
-         backendRefs:
-           - name: mock-llm-backend
-             namespace: kserve-test
-             group: agentgateway.dev
-             kind: AgentgatewayBackend
-   EOF
-   ```
-
-## Step 6: Test the endpoint
-
-{{< tabs >}}
-{{% tab name="Cloud Provider LoadBalancer" %}}
-1. Get the external address of the gateway and save it in an environment variable.
-   ```shell
-   export INGRESS_GW_ADDRESS=$(kubectl get svc -n kserve agentgateway-proxy \
-     -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-   echo $INGRESS_GW_ADDRESS
-   ```
-
-2. Send a request to verify the setup works end-to-end.
-   ```shell
-   curl -s http://$INGRESS_GW_ADDRESS/v1/chat/completions \
-     -H "Content-Type: application/json" \
-     -d '{
-       "model": "mock-llm",
-       "messages": [
-         {"role": "user", "content": "Hello"}
-       ]
-     }' | jq
-   ```
-
-   Example output:
-   ```shell
-   {
-     "model": "mock-llm",
-     "usage": {
-       "prompt_tokens": 6,
-       "completion_tokens": 1,
-       "total_tokens": 7,
-       "prompt_tokens_detail": {
-         "cached_tokens": 0
-       }
-     },
-     "choices": [
-       {
-         "message": {
-           "content": "Hello",
-           "role": "assistant"
-         },
-         "index": 0,
-         "finish_reason": "stop"
-       }
-     ],
-     "id": "chatcmpl-98473698-57bc-5d69-b91e-af0aace83ac9",
-     "object": "chat.completion",
-     "kv_transfer_params": null,
-     "created": 1779134384
-   }
-   ```
-{{% /tab %}}
-{{% tab name="Port-forward for local testing" %}}
-1. Port-forward the gateway to your local machine.
-
-   ```shell
-   kubectl port-forward -n kserve svc/kserve-ingress-gateway 8080:80
-   ```
-
-2. Send a single request to confirm the setup works end-to-end.
-
-   ```shell
-   curl -s -X POST http://localhost:8080/v1/chat/completions \
-     -H "Host: mock-llm-kserve-test.example.com" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "model": "mock-llm",
-       "messages": [{"role": "user", "content": "Hello"}]
-     }' | jq
-   ```
-
-   Example output:
-   
-   ```json
-   {
-     "model": "mock-llm",
-     "usage": {
-       "prompt_tokens": 6,
-       "completion_tokens": 1,
-       "total_tokens": 7,
-       "prompt_tokens_detail": {
-         "cached_tokens": 0
-       }
-     },
-     "choices": [
-       {
-         "message": {
-           "content": "Hello",
-           "role": "assistant"
-         },
-         "index": 0,
-         "finish_reason": "stop"
-       }
-     ],
-     "id": "chatcmpl-98473698-57bc-5d69-b91e-af0aace83ac9",
-     "object": "chat.completion",
-     "kv_transfer_params": null,
-     "created": 1779134384
-   }
-   ```
-{{% /tab %}}
-{{< /tabs >}}
-
-## Optional Step 7: Apply token-based rate limiting
-
-How token counting works: Agentgateway reads `usage.total_tokens` from the JSON response body returned by the inference service. Each request deducts that many tokens from the bucket. When the bucket empties, subsequent requests receive `429 Too Many Requests` until the next fill interval.
-
-1. Apply an `AgentgatewayPolicy` that caps requests at **70 tokens per minute**. The policy targets the `mock-llm-ai` route that selects the `AgentgatewayBackend`.
-   ```yaml
-   kubectl apply -f - <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
-   kind: AgentgatewayPolicy
-   metadata:
-     name: llm-token-budget
+     name: mock-llm-token-budget
      namespace: kserve-test
    spec:
      targetRefs:
        - group: gateway.networking.k8s.io
          kind: HTTPRoute
-         name: mock-llm-ai
+         name: mock-llm-kserve-route
      traffic:
        rateLimit:
          local:
-           - tokens: 70
+           - tokens: 10
              unit: Minutes
    EOF
    ```
 
-2. Verify the policy is accepted and attached. Both `Accepted` and `Attached` conditions must be `True`.
-   ```shell
-   kubectl get agentgatewaypolicy llm-token-budget -n kserve-test \
-     -o jsonpath='{.status.ancestors[0].conditions}'
-   ```
+4. Send requests to the policy-enabled route.
 
-{{< tabs >}}
-{{% tab name="Cloud Provider LoadBalancer" %}}
-3. Get the external address of the gateway and save it in an environment variable.
    ```shell
-   export INGRESS_GW_ADDRESS=$(kubectl get svc -n kserve agentgateway-proxy \
-     -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-   echo $INGRESS_GW_ADDRESS
-   ```
-
-3. Run a burst of requests to trigger the token rate limit. With `tokens: 70` and each response consuming 7 tokens, the budget exhausts after roughly 10 requests.
-   ```shell
-   for i in $(seq 1 30); do
+   for i in $(seq 1 5); do
      curl -s -o /dev/null -w "%{http_code}\n" \
-       -X POST http://$INGRESS_GW_ADDRESS/v1/chat/completions \
+       http://localhost:8080/v1/chat/completions \
        -H "Content-Type: application/json" \
-       -d '{"model": "mock-llm", "messages": [{"role": "user", "content": "Hello"}]}'
+       -d '{
+         "model": "mock-llm",
+         "messages": [{"role": "user", "content": "Hello"}]
+       }'
    done
    ```
 
-   Example output:
-   
-   ```
-   200
-   200
-   200
-   200
-   200
-   200
-   200
-   200
-   200
-   200
-   429
-   429
-   429
-   ...
-   ```
-{{% /tab %}}
-{{% tab name="Port-forward for local testing" %}}
-3. Port-forward the gateway to your local machine.
-
-   ```shell
-   kubectl port-forward -n kserve svc/kserve-ingress-gateway 8080:80
-   ```
-
-4. Run a burst of requests to trigger the token rate limit. With `tokens: 70` and each response consuming 7 tokens, the budget exhausts after roughly 10 requests.
-
-   ```shell
-   for i in $(seq 1 30); do
-     curl -s -o /dev/null -w "%{http_code}\n" \
-       -X POST http://localhost:8080/v1/chat/completions \
-       -H "Host: mock-llm-kserve-test.example.com" \
-       -H "Content-Type: application/json" \
-       -d '{"model": "mock-llm", "messages": [{"role": "user", "content": "Hello"}]}'
-   done
-   ```
-   
-   Example output:
-   
-   ```
-   200
-   200
-   200
-   200
-   200
-   200
-   200
-   200
-   200
-   200
-   429
-   429
-   429
-   ...
-   ```
-{{% /tab %}}
-{{< /tabs >}}
+   Successful requests return `200`. After the response token usage consumes
+   the budget, agentgateway returns `429 Too Many Requests`.
 
 ## Cleanup
 
 Remove the resources created in this guide.
-   ```shell
-   kubectl delete agentgatewaypolicy llm-token-budget -n kserve-test
-   kubectl delete AgentgatewayPolicy -n kserve-test model-echo-headers
-   kubectl delete httproute mock-llm-ai -n kserve-test
-   kubectl delete agentgatewaybackend mock-llm-backend -n kserve-test
-   kubectl delete inferenceservice mock-llm -n kserve-test
-   kubectl delete namespace kserve-test
-   helm uninstall kserve -n kserve
-   helm uninstall kserve-crd
-   kubectl delete gateway kserve-ingress-gateway -n kserve
-   kubectl delete namespace kserve
-   ```
+
+```shell
+kubectl delete namespace kserve-test
+helm uninstall kserve-runtime-configs --namespace kserve
+helm uninstall kserve-llmisvc-resources --namespace kserve
+helm uninstall kserve-llmisvc-crd --namespace kserve
+kubectl delete gateway kserve-ingress-gateway --namespace kserve
+kubectl delete namespace kserve
+helm uninstall agentgateway --namespace agentgateway-system
+helm uninstall agentgateway-crds --namespace agentgateway-system
+```

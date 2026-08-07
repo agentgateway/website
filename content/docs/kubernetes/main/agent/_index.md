@@ -2,7 +2,7 @@
 title: Agent connectivity
 weight: 60
 icon: smart_toy
-description:
+description: Connect agentgateway proxies to AI agents using A2A and MCP protocols.
 test: skip
 ---
 

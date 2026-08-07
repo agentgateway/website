@@ -13,19 +13,18 @@ The following features are experimental in the upstream Kubernetes Gateway API p
 
 `*` **Note**: ListenerSets, CORS in HTTPRoutes, and TLSRoutes moved from the experimental to the standard channel in [Gateway API version 1.5](https://github.com/kubernetes-sigs/gateway-api/releases/tag/v1.5.0).
 
-{{< callout type="warning" >}}
-**Experimental feature gate**: To use experimental Gateway API features in agentgateway, you must enable the `KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES` environment variable in your agentgateway controller deployment. This setting defaults to `false` and must be explicitly enabled. For example, you might upgrade your installation with the following Helm value:
+> [!WARNING]
+> **Experimental feature gate**: To use experimental Gateway API features in agentgateway, you must enable the `KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES` environment variable in your agentgateway controller deployment. This setting defaults to `false` and must be explicitly enabled. For example, you might upgrade your installation with the following Helm value:
+>
+> ```yaml
+> controller:
+>   extraEnv:
+>     KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES: "true"
+> ```
 
-```yaml
-controller:
-  extraEnv:
-    KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES: "true"
-```
-{{< /callout >}}
 
-
-**Sample command for version {{< reuse "agw-docs/versions/k8s-gw-version.md" >}}**: Note that some CRDs are prefixed with `X` to indicate that the entire CRD is experimental and subject to change.
+**Sample command for version {{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}**: Note that some CRDs are prefixed with `X` to indicate that the entire CRD is experimental and subject to change.
     
 ```sh
-kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
 ```

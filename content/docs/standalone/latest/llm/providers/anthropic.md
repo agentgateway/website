@@ -1,12 +1,48 @@
 ---
 title: Anthropic
-weight: 50
-description: Configuration and setup for Anthropic Claude provider
+weight: 15
+icon: /integrations/providers/bw/anthropic.svg
+description: Route agentgateway LLM traffic to Anthropic's Claude models.
+test:
+  anthropic:
+  - file: ${versionRoot}/llm/providers/anthropic.md
+    path: anthropic
 ---
 
 Configure Anthropic (Claude models) as an LLM provider in agentgateway.
 
+{{< doc-test paths="anthropic" >}}
+# ============================================================================
+# Doc test coverage for this guide (these comments are not rendered on the page)
+# ============================================================================
+# WHAT THIS TEST VALIDATES:
+#   * "Configuration": the API key example config is accepted by agentgateway
+#     (--validate-only), so `provider: anthropic` is recognized.
+#   * "Use Claude Platform on AWS", both tabs: the API-key config (with
+#     `requestHeaders.set` and a `params.baseUrl` override) and the AWS SigV4
+#     config (with `params.awsRegion` and `auth.aws.serviceName`) are both
+#     accepted.
+#   * With the base config loaded, agentgateway serves the wildcard model and
+#     resolves it to the `anthropic` provider.
+#
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * "Example request", "Token counting", "Extended thinking and reasoning", and
+#     "Structured outputs" - external dependency; each needs a real Anthropic API
+#     key and bills live completions. Their example responses are display-only.
+#   * Claude Platform on AWS at runtime - external dependency; reaching
+#     aws-external-anthropic needs real AWS credentials and an Anthropic
+#     workspace.
+#   * The `thinking` and `output_config` field tables - display-only table rows
+#     describing request bodies, with no runnable config on this page.
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+
+export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-test}"
+export ANTHROPIC_AWS_API_KEY="${ANTHROPIC_AWS_API_KEY:-test}"
+{{< /doc-test >}}
+
 ## Configuration
+
+For the common API key case, use the following config. Use the AWS SigV4 section later in the page only when you need Claude Platform on AWS or custom signing behavior.
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
@@ -21,6 +57,20 @@ llm:
       apiKey: "$ANTHROPIC_API_KEY"
 ```
 
+{{< doc-test paths="anthropic" >}}
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: anthropic
+    params:
+      apiKey: "$ANTHROPIC_API_KEY"
+EOF
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
+
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 | Setting | Description |
@@ -28,13 +78,13 @@ llm:
 | `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
 | `provider` | The LLM provider, set to `anthropic` for Claude models. |
 | `params.model` | The specific Claude model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
-| `params.apiKey` | The Anthropic API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
+| `params.apiKey` | The Anthropic API key for authentication. |
 
 ## Example request
 
 After running agentgateway with the configuration from the previous section, you can send a request to the `v1/messages` endpoint. Agentgateway automatically adds the `x-api-key` authorization and `anthropic-version` headers to the request. The request is forwarded to the Anthropic API and the response is returned to the client.
 
-```json
+```sh
 curl -X POST http://localhost:4000/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
@@ -96,13 +146,12 @@ Example response:
 }
 ```
 
-## Extended thinking and reasoing
+## Extended thinking and reasoning
 
 Extended thinking and reasoning lets Claude reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. 
 
-{{< callout type="info" >}}
-Extended thinking and reasoning requires a Claude model that supports these, such as `claude-opus-4-6`.
-{{< /callout >}}
+> [!NOTE]
+> Extended thinking and reasoning requires a Claude model that supports these, such as `claude-opus-4-6`.
 
 To opt in to extended thinking, include the `thinking.type` field in your request. You can also set the `output_config.effort` field to control how much reasoning the model applies.
 
@@ -128,7 +177,7 @@ The following values are supported:
 The following example request uses adaptive extended thinking. Note that this setting requires the `output_config.effort` field to be set too. 
 
 ```sh
-curl "localhost:3000/v1/messages" -H content-type:application/json -d '{
+curl "localhost:4000/v1/messages" -H content-type:application/json -d '{
   "model": "",
   "max_tokens": 1024,
   "thinking": {
@@ -179,7 +228,7 @@ Structured outputs constrain the model to respond with a specific JSON schema. Y
 Provide the JSON schema definition in the `output_config.format` field. 
 
 ```sh
-curl "localhost:3000/v1/messages" -H content-type:application/json -d '{
+curl "localhost:4000/v1/messages" -H content-type:application/json -d '{
   "model": "",
   "max_tokens": 256,
   "output_config": {
@@ -228,6 +277,146 @@ Example output:
 ```
 
 
+## Use Claude Platform on AWS
+
+[Claude Platform on AWS](https://docs.aws.amazon.com/claude-platform/latest/userguide/welcome.html) hosts Anthropic's native Messages API on AWS infrastructure at `aws-external-anthropic.{region}.api.aws`. Because the API is the same Anthropic Messages API, you point the `anthropic` provider at the AWS endpoint and choose either API-key or AWS SigV4 authentication.
+
+{{< tabs >}}
+{{% tab name="API key" %}}
+
+Store your Claude Platform on AWS API key in an environment variable or file and reference it from the provider configuration.
+Override the upstream host to point at the Claude Platform endpoint.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: anthropic
+    requestHeaders:
+      set:
+        # Replace with your workspace ID
+        anthropic-workspace-id: wrkspc_XXXXX
+    params:
+      apiKey: $ANTHROPIC_AWS_API_KEY
+      # Replace with your region
+      baseUrl: https://aws-external-anthropic.us-west-2.api.aws/v1
+```
+
+{{< doc-test paths="anthropic" >}}
+cat <<'EOF' > config-claude-platform-apikey.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: anthropic
+    requestHeaders:
+      set:
+        # Replace with your workspace ID
+        anthropic-workspace-id: wrkspc_XXXXX
+    params:
+      apiKey: $ANTHROPIC_AWS_API_KEY
+      # Replace with your region
+      baseUrl: https://aws-external-anthropic.us-west-2.api.aws/v1
+EOF
+agentgateway -f config-claude-platform-apikey.yaml --validate-only
+{{< /doc-test >}}
+
+| Setting                                     | Description |
+|---------------------------------------------|-------------|
+| `requestHeaders.set.anthropic-workspace-id` | The Anthropic workspace ID that scopes the request. Replace `wrkspc_XXXXX` with your workspace ID. |
+| `params.hostOverride`                       | The Claude Platform endpoint host and port. Use the form `aws-external-anthropic.{region}.api.aws:443`. |
+| `params.pathPrefix`                         | The Anthropic API path prefix on Claude Platform, set to `/v1`. |
+| `params.apiKey`                             | API key. |
+
+{{% /tab %}}
+{{% tab name="AWS SigV4" %}}
+
+Use IAM credentials from the environment (for example IRSA, an EC2 instance profile, or an AWS SSO profile) and let agentgateway sign requests with SigV4. Set `auth.aws.serviceName` to `aws-external-anthropic`, which is the SigV4 service name that Claude Platform expects.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "claude-platform/*"
+    provider: anthropic
+    requestHeaders:
+      set:
+        anthropic-workspace-id: wrkspc_XXXXX
+    params:
+      awsRegion: us-west-2
+      baseUrl: https://aws-external-anthropic.us-west-2.api.aws/v1
+    auth:
+      aws:
+        serviceName: aws-external-anthropic
+```
+
+{{< doc-test paths="anthropic" >}}
+cat <<'EOF' > config-claude-platform-sigv4.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "claude-platform/*"
+    provider: anthropic
+    requestHeaders:
+      set:
+        anthropic-workspace-id: wrkspc_XXXXX
+    params:
+      awsRegion: us-west-2
+      baseUrl: https://aws-external-anthropic.us-west-2.api.aws/v1
+    auth:
+      aws:
+        serviceName: aws-external-anthropic
+EOF
+agentgateway -f config-claude-platform-sigv4.yaml --validate-only
+{{< /doc-test >}}
+
+| Setting | Description |
+|---------|-------------|
+| `name` | Matches model names that start with `claude-platform/`, so you can route Claude Platform traffic alongside other Anthropic models. |
+| `requestHeaders.set.anthropic-workspace-id` | The Anthropic workspace ID that scopes the request. Replace `wrkspc_XXXXX` with your workspace ID. |
+| `params.baseUrl` | The full Claude Platform base URL, including scheme and `/v1` path prefix. |
+| `auth.aws.serviceName` | The SigV4 service name. Claude Platform requires `aws-external-anthropic`. Implicit AWS credentials from the workload environment are used to sign each request. |
+
+{{% /tab %}}
+{{< /tabs >}}
+
+## Use Claude on Azure AI Foundry
+
+To use Claude models through Azure AI Foundry, configure the `azure` provider with `azureResourceType: foundry` and a Claude model name. Agentgateway automatically routes requests to the Anthropic-native endpoint and injects the required headers — no additional configuration is needed.
+
+For setup instructions, see [Use Claude models on Azure AI Foundry]({{< link-hextra path="/llm/providers/azure/#use-claude-models-on-azure-ai-foundry" >}}).
+
 ## Connect to Claude Code
 
 To route Claude Code CLI traffic through agentgateway, see the [Claude Code integration guide]({{< link-hextra path="/integrations/llm-clients/claude-code" >}}).
+
+{{< doc-test paths="anthropic" >}}
+# Confirm the base API key config serves the wildcard model and resolves it to
+# the anthropic provider.
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null' EXIT
+sleep 3
+
+SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '[.data[].id] | index("*") // "missing"')
+if [ "$SERVED" = "missing" ]; then
+  echo "FAIL: the wildcard model from the example config is not served"
+  exit 1
+fi
+PROVIDER=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '
+  [ .backends[].backend.ai
+    | select(. != null)
+    | .target.providers[].active[].endpoint
+    | .provider | keys[0]
+  ] | first')
+if [ "$PROVIDER" != "anthropic" ]; then
+  echo "FAIL: expected provider anthropic but agentgateway resolved $PROVIDER"
+  exit 1
+fi
+echo "✓ The wildcard model is served and resolves to the anthropic provider"
+{{< /doc-test >}}

@@ -1,5 +1,6 @@
 ---
 title: "External Auth"
+description: Migrate NGINX external authentication annotations to agentgateway external auth policies.
 weight: 60
 ---
 

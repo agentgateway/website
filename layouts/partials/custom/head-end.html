@@ -45,6 +45,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
+{{/* Figtree powers the floating navbar/header on every page. The homepage
+     loads it via homepage-content.html, but other sections (blog, enterprise,
+     models) need it here too, otherwise the header falls back to system-ui. */}}
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 {{- /* Glossary tooltip + sidebar JS are now centralized in
        docs-theme-extras (loaded from themeExtras/head-end.html above). */ -}}
 

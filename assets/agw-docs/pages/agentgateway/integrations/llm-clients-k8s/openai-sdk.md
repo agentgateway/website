@@ -18,9 +18,8 @@ Use the OpenAI Python or Node.js SDK to send requests through agentgateway deplo
 
 2. Create and run the following script to send a request through agentgateway. Replace `<route-path>` with the path from your HTTPRoute configuration (for example, `/openai`).
 
-   {{< callout type="info" >}}
-   Do not include `/v1` in the `base_url` — the OpenAI SDK appends it automatically.
-   {{< /callout >}}
+   > [!NOTE]
+   > Do not include `/v1` in the `base_url` — the OpenAI SDK appends it automatically.
 
    ```python
    import os
@@ -50,9 +49,8 @@ Use the OpenAI Python or Node.js SDK to send requests through agentgateway deplo
 
 2. Create and run the following script to send a request through agentgateway. Replace `<route-path>` with the path from your HTTPRoute configuration (for example, `/openai`).
 
-   {{< callout type="info" >}}
-   Do not include `/v1` in the `baseURL` — the OpenAI SDK appends it automatically.
-   {{< /callout >}}
+   > [!NOTE]
+   > Do not include `/v1` in the `baseURL` — the OpenAI SDK appends it automatically.
 
    ```javascript
    import OpenAI from "openai";

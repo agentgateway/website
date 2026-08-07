@@ -2,10 +2,10 @@ Issue API keys to users or applications and control token usage (also known as v
 
 ## About
 
-Virtual key management allows you to issue API keys to users or applications, each with independent tracking and cost controls. Agentgateway achieves this by composing existing capabilities:
-- **API key authentication**: Identify incoming requests by API key
-- **Token-based rate limiting**: Enforce token budgets
-- **Observability metrics**: Track per-key spending and usage
+Virtual key management allows you to issue API keys to users or applications, each with independent tracking and cost controls. Agentgateway composes existing capabilities to do this:
+- API key authentication identifies incoming requests by API key.
+- Token-based rate limiting enforces token budgets.
+- Observability metrics track per-key spending and usage.
 
 ### How virtual keys work
 
@@ -31,15 +31,35 @@ flowchart TD
 
 {{< doc-test paths="virtual-keys" >}}
 # Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
-## Set up virtual keys
+{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
+
+> [!NOTE]
+> You can manage virtual keys two ways: interactively in the built-in [Admin UI]({{< link-hextra path="/operations/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes. The config file is the source of truth for GitOps workflows.
+
+## Set up virtual keys (Admin UI)
+
+Set up virtual keys interactively through the Admin UI.
+
+1. Open [http://localhost:15000/ui/llm/keys](http://localhost:15000/ui/llm/keys) (**LLM > Virtual API Keys**). Configured keys and their metadata are listed here, where you can show, copy, edit, or delete each one.
+
+   {{< reuse-image-light src="img/ui-virtual-keys-list.png" alt="Admin UI Virtual API Keys page listing configured keys and metadata" >}}
+   {{< reuse-image-dark srcDark="img/ui-virtual-keys-list-dark.png" alt="Admin UI Virtual API Keys page listing configured keys and metadata" >}}
+
+2. Click **New key**. Give the key a name, let {{< reuse "agw-docs/snippets/agentgateway.md" >}} auto-generate the key value (or paste your own), and add metadata such as a `user` entry to attribute usage. Click **Save key**.
+
+   {{< reuse-image-light src="img/ui-virtual-keys-new.png" alt="Create virtual key drawer with name, auto-generated key value, and metadata" >}}
+   {{< reuse-image-dark srcDark="img/ui-virtual-keys-new-dark.png" alt="Create virtual key drawer with name, auto-generated key value, and metadata" >}}
+3. **Copy** the virtual key value. Give this key to your users to use in an `Authorization: Bearer $VIRTUAL_KEY` header in subsequent requests through agentgateway.
+
+The rest of this guide uses the equivalent config-file settings, which apply the same `apiKey` policy shown in the UI.
+{{< /version >}}
+
+## Set up virtual keys (config file)
+
+Set up virtual keys in a declarative config file, particularly useful in GitOps settings.
 
 ### Step 1: Configure API key authentication
 
@@ -194,89 +214,410 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-## Add a global token budget
+## Configure token budgets
 
-To add a token budget that limits total token usage across all keys, use the routing-based configuration format with `localRateLimit`. Local rate limits apply to the gateway as a whole, not per key.
+LLMs typically charge per input and output token. Without spending control, users can quickly generate large bills by submitting long prompts, streaming or retrying requests, or running recursive agent loops. To protect against unexpected bills, scaling surprises, and abuse, use token-based rate limits to cap the number of tokens that can be used.
 
-{{< callout type="info" >}}
-Rate limiting requires the `binds/listeners/routes` configuration format because `localRateLimit` is an HTTP-level policy. For more information, see the [Routing-based configuration guide]({{< link-hextra path="/llm/configuration-modes/" >}}).
-{{< /callout >}}
+> [!WARNING]
+> `localRateLimit` is a **gateway-wide** limit, not a per-key limit. It enforces a single shared token budget across **all** requests and API keys.
+
+### How rate limiting works
+
+Agentgateway checks token-based rate limits in two phases:
+
+**At request time:**
+
+{{< reuse "agw-docs/snippets/ratelimit-requesttime.md" >}}
+
+**At response time:**
+
+{{< reuse "agw-docs/snippets/ratelimit-responsetime.md" >}}
+
+### Step 1: Add a token budget
+
+Update your configuration to include a `localRateLimit` policy. The following example builds on the virtual keys configuration from the previous section and adds a token budget.
 
 ```yaml
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 
-binds:
-- port: 4000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-3.5-turbo
-      policies:
-        apiKey:
-          mode: strict
-          keys:
-          - key: sk-alice-abc123def456
-            metadata:
-              user: alice
-          - key: sk-bob-xyz789uvw012
-            metadata:
-              user: bob
-        backendAuth:
-          key: "$OPENAI_API_KEY"
-        localRateLimit:
-        - maxTokens: 100000
-          tokensPerFill: 100000
-          fillInterval: 86400s
-          type: tokens
+llm:
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-alice-abc123def456
+        metadata:
+          user: alice
+      - key: sk-bob-xyz789uvw012
+        metadata:
+          user: bob
+    localRateLimit:
+    - maxTokens: 10
+      tokensPerFill: 1
+      fillInterval: 60s
+      type: tokens
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
 EOF
 ```
 
 | Setting | Description |
 | -- | -- |
-| `localRateLimit` | Token-based rate limiting applied to all requests through this route. |
-| `maxTokens` | The maximum number of tokens available in the budget. |
-| `tokensPerFill` | The number of tokens added during each refill. |
-| `fillInterval` | The interval between refills. Use `86400s` for a daily budget. |
-| `type` | Set to `tokens` for token-based limits. Use `requests` for request-based limits. |
+| `localRateLimit` | Applies a token-based rate limit to all incoming LLM requests. |
+| `maxTokens` | The maximum number of tokens that are available to use. |
+| `tokensPerFill` | The number of tokens that are added during a refill. |
+| `fillInterval` | The number of seconds after which the token bucket is refilled. |
+| `type` | The type of rate limiting to apply. Use `tokens` for token-based rate limiting, or `requests` for request-based rate limiting. |
 
-For more details on rate limiting, see [Control spend]({{< link-hextra path="/llm/spending/" >}}).
+### Step 2: Verify rate limits
+
+1. Start agentgateway with the updated configuration.
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+2. Send a prompt to the LLM. At the time the prompt is sent, the number of tokens required for the completion is unknown. Make sure to include a virtual key in the authorization header. Because `tokenize: true` is not set on the model, the prompt count is not estimated. As a result, the prompt is allowed.
+
+   > [!NOTE]
+   > The LLM typically returns the number of tokens required for completion in its response. Agentgateway uses this number and counts it against the rate limit.
+
+   ```sh
+   curl http://localhost:4000/v1/chat/completions \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer sk-alice-abc123def456' \
+     -d '{
+       "model": "gpt-3.5-turbo",
+       "messages": [
+         {
+           "role": "user",
+           "content": "Tell me a short story"
+         }
+       ]
+     }'
+   ```
+
+   Example output:
+   ```json
+   {
+     "choices": [
+       {
+         "message": {
+           "content": "Once upon a time, in a small village nestled between towering mountains...",
+           "role": "assistant"
+         },
+         "finish_reason": "stop"
+       }
+     ],
+     "usage": {
+       "prompt_tokens": 12,
+       "completion_tokens": 248,
+       "total_tokens": 260
+     }
+   }
+   ```
+
+3. Repeat the same request. This time, the request is rate limited because the tokens used in the first request exceeded the budget.
+   ```sh
+   curl http://localhost:4000/v1/chat/completions \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer sk-alice-abc123def456' \
+     -d '{
+       "model": "gpt-3.5-turbo",
+       "messages": [
+         {
+           "role": "user",
+           "content": "Tell me a short story"
+         }
+       ]
+     }'
+   ```
+
+   Example output:
+   ```
+   rate limit exceeded
+   ```
+
+### Step 3: Enable request-time token estimation
+
+By default, agentgateway does not estimate token counts at request time. To reject requests before they reach the LLM, set `tokenize: true` on your model.
+
+For more information about rate limiting configuration options, see [Rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}).
+
+1. Update your configuration with `tokenize: true` for your model. With this setting, requests are denied immediately if the estimated prompt token count exceeds the available budget.
+   
+   ```yaml
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+   llm:
+     policies:
+       apiKey:
+         mode: strict
+         keys:
+         - key: sk-alice-abc123def456
+           metadata:
+             user: alice
+         - key: sk-bob-xyz789uvw012
+           metadata:
+             user: bob
+       localRateLimit:
+       - maxTokens: 10
+         tokensPerFill: 1
+         fillInterval: 60s
+         type: tokens
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+         tokenize: true
+   EOF
+   ```
+
+2. Send a request. Use Bob's virtual key because Alice's virtual key already reached the rate limit in the previous step. This time, the request is rate limited because the estimated tokens exceed the budget.
+   
+   ```sh
+   curl http://localhost:4000/v1/chat/completions \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer sk-bob-xyz789uvw012' \
+     -d '{
+       "model": "gpt-3.5-turbo",
+       "messages": [
+         {
+           "role": "user",
+           "content": "Tell me a short story"
+         }
+       ]
+     }'
+   ```
+
+   Example output:
+   ```
+   rate limit exceeded
+   ```
 
 ## Monitor per-key spending
 
-Track token usage and spending for each virtual key using Prometheus metrics exposed by agentgateway.
+Agentgateway exposes token usage as Prometheus metrics on its stats endpoint, which listens on port `15020` by default (not the `15000` admin port). The `agentgateway_gen_ai_client_token_usage` metric is a histogram that records the tokens used per request.
 
-1. Access the agentgateway metrics endpoint.
+By default, this metric is broken down by dimensions such as the model (`gen_ai_request_model`) and token type (`gen_ai_token_type`), but *not* by key. To attribute usage to each virtual key, add a label such as `user_id` that reads the `user` metadata from the authenticated key, then query Prometheus.
+
+> [!NOTE]
+> The token usage metric only appears after a request *succeeds* and the LLM returns a usage count. Requests that are rejected (for example, a `401` from an invalid key or a `429` from the rate limit) never reach the LLM, so they do not produce token usage metrics.
+
+### Add a per-key metric label
+
+You can add a per-key metric label such as to track metrics by user ID. Note that the `user_id` label is high cardinality: every unique value creates a new metric series, which increases Prometheus memory and storage. This is acceptable for tens or hundreds of keys, but avoid attaching unbounded identifiers at large scale. Prefer lower-cardinality dimensions like tier or team when possible.
+
+1. Update your configuration to add a `user_id` metric label. The `add` field maps a label name to a CEL expression that is evaluated per request. Use `apiKey.user` to read the `user` metadata from the authenticated key. This example builds on the previous configuration.
+
+   ```yaml
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+   config:
+     metrics:
+       fields:
+         add:
+           user_id: apiKey.user
+
+   llm:
+     policies:
+       apiKey:
+         mode: strict
+         keys:
+         - key: sk-alice-abc123def456
+           metadata:
+             user: alice
+         - key: sk-bob-xyz789uvw012
+           metadata:
+             user: bob
+       localRateLimit:
+       - maxTokens: 10
+         tokensPerFill: 1
+         fillInterval: 60s
+         type: tokens
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   EOF
+   ```
+
+   | Setting | Description |
+   | -- | -- |
+   | `config.metrics.fields.add` | A map of metric label names to CEL expressions. Each expression is evaluated per request and its result is attached as a Prometheus label on the metrics. |
+   | `user_id: apiKey.user` | Adds a `user_id` label whose value is the `user` metadata from the authenticated API key. If the expression cannot be evaluated (for example, on an unauthenticated request), the label value is `unknown`. |
+
+2. Restart agentgateway with the updated configuration, then send successful requests with each key so the metrics have per-key data to report. Because the earlier rate-limit budget is small, raise `maxTokens` or wait for the bucket to refill so the requests are not rejected.
+
+3. Verify that the `user_id` label is attached to the token usage metric. Read the metrics endpoint and filter for the token usage sum.
+
    ```sh
-   curl http://localhost:15000/metrics
+   curl -s http://localhost:15020/metrics | grep gen_ai_client_token_usage_sum
    ```
 
-2. Query token usage metrics.
+   Each series now carries a `user_id` label that matches the `user` metadata of the key that made the request. For example, after sending requests with Alice's and Bob's keys:
+
+   ```
+   agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input",gen_ai_request_model="gpt-3.5-turbo",...,user_id="alice"} 21.0
+   agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output",gen_ai_request_model="gpt-3.5-turbo",...,user_id="alice"} 14.0
+   agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input",gen_ai_request_model="gpt-3.5-turbo",...,user_id="bob"} 9.0
+   agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output",gen_ai_request_model="gpt-3.5-turbo",...,user_id="bob"} 9.0
+   ```
+
+### Query with Prometheus
+
+The raw curl output in the previous step is a quick sanity check, but it returns only Prometheus exposition text. To run aggregations such as totals over time or estimated cost, use PromQL. PromQL runs inside a Prometheus server that scrapes the agentgateway metrics endpoint. You cannot send PromQL to the `/metrics` endpoint directly, so in standalone mode you run your own Prometheus.
+
+1. Create a Prometheus scrape configuration that targets the agentgateway stats endpoint.
+
+   ```yaml
+   cat <<'EOF' > prometheus.yml
+   global:
+     scrape_interval: 5s
+
+   scrape_configs:
+   - job_name: agentgateway
+     static_configs:
+     - targets: ["host.docker.internal:15020"]
+   EOF
+   ```
+
+   > [!NOTE]
+   > Use `host.docker.internal:15020` when you run Prometheus in Docker, as in the next step. If you run the Prometheus binary directly on your machine, use `localhost:15020` instead.
+
+2. Start Prometheus with this configuration.
+
+   ```sh
+   docker run --rm -p 9090:9090 \
+     -v "$(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml" \
+     prom/prometheus
+   ```
+
+3. Verify that Prometheus is scraping agentgateway. Open [http://localhost:9090/targets](http://localhost:9090/targets) and confirm that the `agentgateway` target is **UP**. You might need to restart the container or refresh the page.
+
+   {{< reuse-image-light src="img/prom-agw.png">}}
+   {{< reuse-image-dark srcDark="img/prom-agw-dark.png">}}
+
+4. Query token usage per key. The following query returns the total tokens consumed by each virtual key. The token usage metric carries a separate series per token type, so match both `input` and `output` in a *single* selector with `=~` and sum them. 
+   
+   {{< tabs >}}
+   {{% tab name="Query"%}}
    ```promql
-   # Total tokens consumed over the last 24 hours
-   sum(
-     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h]) +
-     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])
-   )
+   sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type=~"input|output"})
    ```
+   {{% /tab %}}
+   {{% tab name="Prometheus UI"%}}
+   Open the [Prometheus expression browser](http://localhost:9090/query?) and run a PromQL query
 
-3. Calculate costs by multiplying token counts by your provider's pricing. For example, with OpenAI GPT-3.5:
+   {{< reuse-image-light src="img/prom-agw-query.png">}}
+   {{< reuse-image-dark srcDark="img/prom-agw-query-dark.png">}}
+
+   {{% /tab %}}
+   {{% tab name="curl"%}}
+   ```sh
+   curl -s http://localhost:9090/api/v1/query \
+     --data-urlencode 'query=sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type=~"input|output"})' \
+     | jq .
+   ```
+   
+   Example output:
+   ```json
+   {
+     "status": "success",
+     "data": {
+       "resultType": "vector",
+       "result": [
+         {
+           "metric": {
+             "user_id": "bob"
+           },
+           "value": [
+             1783540709.896,
+             "253"
+           ]
+         },
+         {
+           "metric": {
+             "user_id": "alice"
+           },
+           "value": [
+             1783540709.896,
+             "262"
+           ]
+         }
+       ]
+     }
+   }
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+5. Estimate costs by multiplying token counts by your provider's pricing. Input and output tokens are usually priced differently, so aggregate each type separately, then add the two results. Each `sum by (user_id)` collapses the `gen_ai_token_type` label, so the `+` matches on `user_id`.
+
+   > [!NOTE]
+   > Queries that use `rate()` or `increase()` over a range such as `[24h]` need that much scrape history to return meaningful values. While testing locally, query the raw `_sum` counters or use a shorter range such as `[5m]`.
+   > 
+   > This query *estimates* cost for OpenAI GPT-3.5 by applying your own pricing to token counts. To have agentgateway compute the *realized* USD cost per request from a model cost catalog, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
+
+   {{< tabs >}}
+   {{% tab name="Query"%}}
+
    ```promql
-   # Estimated cost (assuming $0.50 per 1M input tokens, $1.50 per 1M output tokens)
-   sum(
-     ((rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h]) / 1000000) * 0.50) +
-     ((rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h]) / 1000000) * 1.50)
-   )
+   # Estimated cost per key (assuming $0.50 per 1M input tokens, $1.50 per 1M output tokens)
+   sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"} / 1000000 * 0.50)
+   +
+   sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"} / 1000000 * 1.50)
    ```
+   {{% /tab %}}
+   {{% tab name="Prometheus UI"%}}
+   Open the [Prometheus expression browser](http://localhost:9090/query?) and run a PromQL query
 
-For more information on cost tracking, see the [Control spend guide]({{< link-hextra path="/llm/spending/" >}}).
+   {{< reuse-image-light src="img/prom-agw-query-add.png">}}
+   {{< reuse-image-dark srcDark="img/prom-agw-query-add-dark.png">}}
 
-## What's next
-
-- [Manage API keys]({{< link-hextra path="/llm/api-keys/" >}}) for detailed authentication configuration
-- [Control spend]({{< link-hextra path="/llm/spending/" >}}) for token-based rate limiting
-- [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to view token usage metrics and logs
+   {{% /tab %}}
+   {{% tab name="curl"%}}
+   ```sh
+   curl -s http://localhost:9090/api/v1/query \
+     --data-urlencode 'query=(sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"} / 1000000 * 0.50))+(sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"} / 1000000 * 1.50))' \
+     | jq .
+   ```
+   
+   Example output:
+   ```json
+   {
+     "status": "success",
+     "data": {
+       "resultType": "vector",
+       "result": [
+         {
+           "metric": {
+             "user_id": "bob"
+           },
+           "value": [
+             1783541276.199,
+             "0.0003675"
+           ]
+         },
+         {
+           "metric": {
+             "user_id": "alice"
+           },
+           "value": [
+             1783541276.199,
+             "0.000381"
+           ]
+         }
+       ]
+     }
+   }
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}

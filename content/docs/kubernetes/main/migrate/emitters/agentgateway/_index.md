@@ -1,6 +1,6 @@
 ---
 title: "Agentgateway"
-description: "How ingress-nginx annotations map to Gateway API + AgentgatewayPolicy resources"
+description: "How ingress-nginx annotations map to Gateway API + AgentgatewayPolicy resources."
 weight: 30
 test: skip
 ---

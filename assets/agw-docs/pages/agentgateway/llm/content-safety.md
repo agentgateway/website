@@ -85,9 +85,8 @@ To optimize performance:
 
 For webhook-specific performance tuning, see the [Guardrail Webhook optimization guide]({{< link-hextra path="/llm/guardrail-api/guardrail-guide/" >}}#optimize-performance).
 
-{{< callout type="info" >}}
-**Evaluation order**: Prompt guards are evaluated *after* rate limiting. This means that requests rejected by content safety checks (403 Forbidden) still consume rate limit quota. If you want to avoid consuming quota on blocked requests, authentication policies (JWT/OPA) are evaluated before rate limiting and can prevent quota consumption.
-{{< /callout >}}
+> [!NOTE]
+> **Evaluation order**: Prompt guards are evaluated *after* rate limiting. This means that requests rejected by content safety checks (403 Forbidden) still consume rate limit quota. If you want to avoid consuming quota on blocked requests, authentication policies (JWT/OPA) are evaluated before rate limiting and can prevent quota consumption.
 
 ## Before you begin
 
@@ -110,8 +109,8 @@ Example configuration that masks credit cards in responses:
 
 ```yaml,paths="content-safety-regex"
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: content-safety-regex
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -141,8 +140,8 @@ Example that rejects requests containing specific restricted terms:
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: content-safety-custom
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -175,7 +174,7 @@ Send a request with a fake credit card number and verify it gets masked in the r
 {{% tab name="Cloud Provider LoadBalancer" %}}
 ```sh
 curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
-  "model": "gpt-3.5-turbo",
+  "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
   "messages": [
     {
       "role": "user",
@@ -189,7 +188,7 @@ curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
 {{% tab name="Port-forward for local testing" %}}
 ```sh
 curl "localhost:8080/openai" -H content-type:application/json -d '{
-  "model": "gpt-3.5-turbo",
+  "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
   "messages": [
     {
       "role": "user",
@@ -287,8 +286,8 @@ The OpenAI Moderation API detects potentially harmful content across categories 
 2. Configure the prompt guard to use OpenAI Moderation:
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: content-safety-openai
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -359,9 +358,8 @@ The OpenAI Moderation API detects potentially harmful content across categories 
 
 AWS Bedrock Guardrails provide content filtering, PII detection, topic restrictions, and word filters. You must first create a guardrail in the AWS Bedrock console.
 
-{{< callout type="info" >}}
-For instructions on creating Bedrock Guardrails, see the [AWS Bedrock Guardrails documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-permissions.html).
-{{< /callout >}}
+> [!NOTE]
+> For instructions on creating Bedrock Guardrails, see the [AWS Bedrock Guardrails documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-permissions.html).
 
 1. Get your guardrail identifier and version:
    ```sh
@@ -371,8 +369,8 @@ For instructions on creating Bedrock Guardrails, see the [AWS Bedrock Guardrails
 2. Configure the prompt guard:
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: content-safety-bedrock
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -386,34 +384,32 @@ For instructions on creating Bedrock Guardrails, see the [AWS Bedrock Guardrails
          promptGuard:
            request:
            - bedrockGuardrails:
-               guardrailIdentifier: your-guardrail-id
-               guardrailVersion: "1"  # or "DRAFT"
+               identifier: your-guardrail-id
+               version: "1"  # or "DRAFT"
                region: us-west-2
                policies:
-                 backendAuth:
+                 auth:
                    aws: {}
            response:
            - bedrockGuardrails:
-               guardrailIdentifier: your-guardrail-id
-               guardrailVersion: "1"
+               identifier: your-guardrail-id
+               version: "1"
                region: us-west-2
                policies:
-                 backendAuth:
+                 auth:
                    aws: {}
    EOF
    ```
 
-{{< callout type="info" >}}
-The `aws: {}` configuration uses the default AWS credential chain (IAM role, environment variables, or instance profile). For authentication details, see the [AWS authentication documentation](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/).
-{{< /callout >}}
+> [!NOTE]
+> The `aws: {}` configuration uses the default AWS credential chain (IAM role, environment variables, or instance profile). For authentication details, see the [AWS authentication documentation](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/).
 
 ### Google Model Armor
 
 Google Model Armor (formerly Vertex AI Safety) provides content safety filtering for Google Cloud customers. Configuration follows a similar pattern to other external moderation endpoints.
 
-{{< callout type="info" >}}
-For Google Model Armor configuration details, contact Solo.io support or consult the Google Cloud documentation for Vertex AI content safety features.
-{{< /callout >}}
+> [!NOTE]
+> For Google Model Armor configuration details, consult the Google Cloud documentation for Vertex AI content safety features.
 
 ## Layer 3: Custom webhook integration
 
@@ -434,8 +430,8 @@ Configure a prompt guard to call your webhook service:
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: content-safety-webhook
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -472,8 +468,8 @@ Example configuration that uses all three layers:
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: content-safety-layered
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -529,5 +525,5 @@ EOF
 
 - [Configure prompt guards]({{< link-hextra path="/llm/prompt-guards/" >}}) for step-by-step examples of regex-based guards
 - [Guardrail Webhook API]({{< link-hextra path="/llm/guardrail-api/guardrail-guide/" >}}) for implementing custom content safety logic
-- [Track costs]({{< link-hextra path="/llm/cost-tracking/" >}}) to monitor the impact of blocked requests on your budget
+- [Track costs]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}) to monitor the impact of blocked requests on your budget
 - [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to track content safety metrics

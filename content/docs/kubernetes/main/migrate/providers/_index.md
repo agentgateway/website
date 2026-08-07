@@ -1,5 +1,6 @@
 ---
 title: "Providers"
+description: Configure providers for migrating Ingress resources to Gateway API
 weight: 20
 test: skip
 ---

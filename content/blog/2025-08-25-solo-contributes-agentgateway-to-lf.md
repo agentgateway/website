@@ -1,5 +1,6 @@
 ---
 title: Solo.io Contributes agentgateway to Linux Foundation to Make AI Agents More Accessible, Capable, and Secure
+category: "Community"
 toc: false
 publishDate: 2025-08-25T00:00:00-00:00
 author: Lin Sun

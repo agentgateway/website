@@ -1,5 +1,6 @@
 ---
 title: "Explore Gateway API and Agentgateway with ExtAuth Match 💕 Game"
+category: "Community"
 publishDate: 2026-02-13
 author: "Lin Sun & Yuval Kohavi"
 description: "Let’s have some fun and share love while learning Kubernetes Gateway API and agentgateway with the ExtAuth Match game."

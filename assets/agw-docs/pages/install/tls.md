@@ -1,11 +1,23 @@
 Enable server-side TLS encryption for the xDS gRPC server in the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane. For more information about the server, see the [Architecture]({{< link-hextra path="/about/architecture" >}}) docs.
 
+{{< version exclude-if="1.0.x,1.1.x,2.2.x" >}}
+The control plane serves xDS over TLS by default (`controller.xds.mode: tls`) and self-manages the certificate: it generates and rotates an internal CA and serving certificate, and propagates the CA bundle to the {{< reuse "agw-docs/snippets/pod-name.md" >}} data plane proxies. No cert-manager setup or pre-created secret is required. Optionally, you can bring your own certificate authority.
+{{< /version >}}
+{{< version include-if="1.0.x,1.1.x,2.2.x" >}}
 TLS encryption is disabled by default. When enabled, the control plane mounts a `{{< reuse "agw-docs/snippets/pod-name.md" >}}-xds-cert` TLS secret that you create and propagates the CA bundle to any {{< reuse "agw-docs/snippets/pod-name.md" >}} data plane proxies to establish a secure connection. You might integrate your secret with a provider such as [cert-manager](https://cert-manager.io/docs) to automate certificate management and rotation.
+{{< /version >}}
 
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/agentgateway-prereq.md" >}}
 
+{{< version exclude-if="1.0.x,1.1.x,2.2.x" >}}
+## Step 1: (Optional) Bring your own certificate authority {#cert-manager}
+
+The control plane self-manages the xDS certificate, so cert-manager is not required and you can skip to [Step 2](#control-plane). To use your own certificate authority instead of the self-signed one that the control plane generates, provide a CA key pair (certificate and key) in the `{{< reuse "agw-docs/snippets/pod-name.md" >}}-xds-cert` secret in the control plane namespace. You might use a provider such as [cert-manager](https://cert-manager.io/docs) to automate issuance and rotation.
+{{< /version >}}
+
+{{< version include-if="1.0.x,1.1.x,2.2.x" >}}
 ## Step 1: Set up cert-manager {#cert-manager}
 
 cert-manager is a Kubernetes controller that helps you automate the process of obtaining and renewing certificates from various PKI providers, such as AWS Private CA, Google Cloud CA, or Vault. In this example, you set up cert-manager to provide self-signed certificates for the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane.
@@ -20,7 +32,8 @@ cert-manager is a Kubernetes controller that helps you automate the process of o
    helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace \
    --set "extraArgs={--feature-gates=ExperimentalGatewayAPISupport=true}" --set installCRDs=true
    ```
-   {{< callout type="info" >}}To allow cert-manager to use the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}, you must set `--feature-gates=ExperimentalGatewayAPISupport=true` in the cert-manager Helm installation.{{< /callout >}}
+   > [!NOTE]
+   > To allow cert-manager to use the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}, you must set `--feature-gates=ExperimentalGatewayAPISupport=true` in the cert-manager Helm installation.
 
 3. Create a self-signed Certificate Authority (CA) that acts as the root of trust for the xDS gRPC server certificates. For production environments, replace the self-signed root issuer with your organization's CA issuer, such as Vault or a cloud CA service. For more information, see the [cert-manager CA issuer docs](https://cert-manager.io/docs/configuration/issuers/).
 
@@ -56,7 +69,8 @@ cert-manager is a Kubernetes controller that helps you automate the process of o
 
 4. Use the CA to sign a TLS certificate for the xDS gRPC server. This two-tiered approach keeps the root CA separate from the server certificate, and lets the server certificate be rotated independently of the CA. cert-manager automatically creates a Kubernetes secret with the required name `{{< reuse "agw-docs/snippets/pod-name.md" >}}-xds-cert`, type `kubernetes.io/tls`, and the server certificate and private key in the `tls.crt` and `tls.key` keys.
 
-   {{< callout type="info" >}}The DNS names in the server certificate must match the service endpoints of the control plane. If you install the control plane in a different namespace, you must update the DNS names to match the actual service endpoints.{{< /callout >}}
+   > [!NOTE]
+   > The DNS names in the server certificate must match the service endpoints of the control plane. If you install the control plane in a different namespace, you must update the DNS names to match the actual service endpoints.
    
    ```yaml
    kubectl apply -f - <<EOF
@@ -81,10 +95,10 @@ cert-manager is a Kubernetes controller that helps you automate the process of o
        kind: Issuer
      isCA: false
      dnsNames:
-     - {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
-     - {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.{{< reuse "agw-docs/snippets/namespace.md" >}}
-     - {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc
-     - {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
+     - {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
+     - {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}.{{< reuse "agw-docs/snippets/namespace.md" >}}
+     - {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc
+     - {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
      duration: 1h
      renewBefore: 5m
      privateKey:
@@ -92,6 +106,8 @@ cert-manager is a Kubernetes controller that helps you automate the process of o
        size: 2048
    EOF
    ```
+
+{{< /version >}}
 
 ## Step 2: Update the control plane to use TLS {#control-plane}
 
@@ -106,22 +122,33 @@ Upgrade {{< reuse "agw-docs/snippets/kgateway.md" >}} with TLS enabled for the c
 2. Get the Helm values file for your current version.
       
    ```sh
-   helm get values {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > values.yaml
+   helm get values {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > values.yaml
    open values.yaml
    ```
 
 3. Add the following values to the Helm values file to enable TLS for the xDS gRPC server.
+
+   {{% version exclude-if="1.0.x,1.1.x,2.2.x" %}}
+   ```yaml
+   controller:
+     xds:
+       mode: tls
+   ```
+   {{% /version %}}
+
+   {{% version include-if="1.0.x,1.1.x,2.2.x" %}}
    ```yaml
    controller:
      xds:
        tls:
          enabled: true
    ```
+   {{% /version %}}
 
 4. Upgrade your Helm installation.
 
    ```sh
-   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
      -f values.yaml \
      --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} 
    ```
@@ -139,7 +166,7 @@ Now that the control plane is up and running, verify the TLS connection.
 1. Port-forward the control plane service on port 9977.
 
    ```sh
-   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/{{< reuse "agw-docs/snippets/helm-kgateway.md" >}} 9978
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/{{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} 9978
    ```
 
 2. Send a request to the control plane in plaintext without TLS authentication. You get back an `authentication failed` error.
@@ -157,7 +184,7 @@ Now that the control plane is up and running, verify the TLS connection.
 3. Port-forward the control plane deployment on port 9092.
 
    ```sh
-   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} deploy/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} 9092
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} deploy/{{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} 9092
    ```
 
 4. Send a request to the metrics endpoint to check for `xds_auth` metrics.

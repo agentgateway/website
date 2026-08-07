@@ -1,7 +1,7 @@
 ---
 title: About 
 weight: 5
-description:
+description: Learn about Model Context Protocol (MCP) and how agentgateway enables secure, enterprise-grade connectivity to MCP servers.
 test: skip
 ---
 

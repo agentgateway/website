@@ -1,19 +1,20 @@
 ---
 title: Tracing
+description: Integrate with OpenTelemetry to collect and analyze request traces.
 weight: 90
 test:
   tracing:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/observability/tracing.md
+  - file: ${versionRoot}/observability/tracing.md
     path: tracing
 ---
 
-Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and configure custom metadata for your traces with an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and configure custom metadata for your traces with an {{< reuse "agw-docs/snippets/policy.md" >}}.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
@@ -88,11 +89,11 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
 
 ## Set up tracing
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your tracing configuration. 
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your tracing configuration. 
    ```yaml {paths="tracing"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: tracing
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -206,13 +207,28 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
 
    ```
 
+## Production sampling
+
+The example sets `randomSampling: "true"` to capture every trace, which is useful in development. In production, sampling every request adds overhead, so sample a percentage of requests instead by setting `randomSampling` to a ratio between `0` and `1`. For example, the following snippet samples 10% of requests.
+
+```yaml
+frontend:
+  tracing:
+    backendRef:
+      name: opentelemetry-collector-traces
+      namespace: telemetry
+      port: 4317
+    protocol: GRPC
+    randomSampling: "0.1"
+```
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-1. Delete the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource.
+1. Delete the {{< reuse "agw-docs/snippets/policy.md" >}} resource.
    ```sh
-   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} tracing -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} tracing -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
 2. Uninstall the OpenTelemetry collector.

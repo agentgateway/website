@@ -59,7 +59,7 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
 1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your tracing configuration. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
    metadata:
      name: tracing
@@ -95,7 +95,7 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
      infrastructure:
        parametersRef:
          name: tracing
-         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}  
+         group: {{< reuse "agw-docs/snippets/group.md" >}}  
          kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}  
      listeners:
      - protocol: HTTP

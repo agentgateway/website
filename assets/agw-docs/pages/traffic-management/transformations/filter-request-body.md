@@ -1,4 +1,4 @@
-Use the `filterKeys()` and `merge()` [CEL functions]({{< link-hextra path="/reference/cel/#functions-policy-all" >}}) together with `json()` and `toJson()` to sanitize a JSON request body before it reaches the upstream. `filterKeys()` removes unwanted fields by testing each key against a predicate. `merge()` combines two maps, with the second map's value overwriting any matching keys in the first. `toJson()` serializes the resulting map back to a JSON string.
+Use the `filterKeys()` and `merge()` [CEL functions]({{< link-hextra path="/reference/cel/variables/#functions-policy-all" >}}) together with `json()` and `toJson()` to sanitize a JSON request body before it reaches the upstream. `filterKeys()` removes unwanted fields by testing each key against a predicate. `merge()` combines two maps, with the second map's value overwriting any matching keys in the first. `toJson()` serializes the resulting map back to a JSON string.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
@@ -8,12 +8,12 @@ In this example, an incoming request body contains internal metadata fields pref
 
 For example, a request body of `{"messages": [...], "model": "gpt-3.5-turbo", "x_trace_id": "abc", "x_user_session": "xyz"}` is forwarded upstream as `{"messages": [...], "model": "gpt-4o", "max_tokens": 2048}`.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
    ```yaml {paths="filter-request-body"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation
      namespace: httpbin
@@ -101,5 +101,5 @@ For example, a request body of `{"messages": [...], "model": "gpt-3.5-turbo", "x
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="filter-request-body"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin
 ```

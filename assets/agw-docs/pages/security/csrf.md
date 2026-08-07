@@ -38,21 +38,20 @@ sequenceDiagram
     AGW-->>User: 200 OK
 ```
 
-{{< callout type="info" >}}
-Note that because CSRF attacks specifically target state-changing requests, the filter only acts on HTTP requests that have a state-changing method such as `POST` or `PUT`.
-{{< /callout >}}
+> [!NOTE]
+> Note that because CSRF attacks specifically target state-changing requests, the filter only acts on HTTP requests that have a state-changing method such as `POST` or `PUT`.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up CSRF protection
 
-Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to enable CSRF protection for your Gateway. This policy validates the `Origin` header of incoming requests and blocks requests from untrusted origins.
+Configure an {{< reuse "agw-docs/snippets/policy.md" >}} to enable CSRF protection for your Gateway. This policy validates the `Origin` header of incoming requests and blocks requests from untrusted origins.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your CSRF configuration.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with your CSRF configuration.
    ```yaml {paths="csrf"}
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: csrf
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -148,7 +147,7 @@ EOF
    CSRF validation failed%
    ```
 
-3. Send another request to the httpbin app. This time, you include the `allowThisOne.example.com` origin header that is allowed in your policy. Verify that you get back a 200 HTTP response code, because the origin matches the origin that you specified in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource.
+3. Send another request to the httpbin app. This time, you include the `allowThisOne.example.com` origin header that is allowed in your policy. Verify that you get back a 200 HTTP response code, because the origin matches the origin that you specified in the {{< reuse "agw-docs/snippets/policy.md" >}} resource.
    
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
@@ -195,5 +194,5 @@ EOF
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} csrf -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} csrf -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

@@ -22,12 +22,12 @@ Good job! You now have the {{< reuse "/agw-docs/snippets/kgateway.md" >}} contro
 
 {{< icon "agentgateway" >}} [Create an agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}) that you can use for Model Context Protocol (MCP), agent-to-agent (A2A), large language model (LLM), and more AI-related use cases. For example, you can follow the [guide]({{< link-hextra path="/mcp/static-mcp/" >}}) to use agentgateway to proxy traffic to a sample MCP tool server. The example deploys a sample MCP server with a `fetch` tool, exposes the tool with agentgateway, and tests the tool with the MCP Inspector UI.
 
-For other examples, see the [LLM consumption]({{< link-hextra path="/llm/" >}}), [inference routing]({{< link-hextra path="/inference/" >}}), [MCP]({{< link-hextra path="/mcp/" >}}), or [agent connectivity]({{< link-hextra path="/agent/" >}}) guides. 
+For other examples, see the [LLM consumption]({{< link-hextra path="/llm/" >}}), [inference routing]({{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}{{< link-hextra path="/inference/" >}}{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}{{< link-hextra path="/llm/inference/" >}}{{< /version >}}), [MCP]({{< link-hextra path="/mcp/" >}}), or [agent connectivity]({{< link-hextra path="/agent/" >}}) guides. 
 
 ## Cleanup
 
 No longer need {{< reuse "/agw-docs/snippets/kgateway.md" >}}? Uninstall with the following command:
 
 ```sh
-helm uninstall {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+helm uninstall {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
