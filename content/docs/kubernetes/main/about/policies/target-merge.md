@@ -80,7 +80,7 @@ To avoid this configuration, set a given field or section in only one policy per
 
 ## Merge strategy overrides {#strategy}
 
-`AgentgatewayPolicy.spec.strategy.inheritance` changes how `traffic` policies merge. It's valid only on policies that set `traffic`. The Kubernetes API server rejects a policy that sets `inheritance` alongside `frontend` or `backend`. Frontend and backend policy merging always follows the specificity order described above and doesn't use `inheritance`.
+`AgentgatewayPolicy.spec.strategy.inheritance` changes how `traffic` policies merge. It's valid only on policies that set `traffic`. The Kubernetes API server rejects a policy that sets the `inheritance` block alongside the `frontend` or `backend` block. Frontend and backend policy merging always follows the specificity order described above and doesn't use `inheritance`.
 
 | Value | Behavior |
 | -- | -- |
