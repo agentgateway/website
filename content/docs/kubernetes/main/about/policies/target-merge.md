@@ -31,7 +31,7 @@ Use the `port` field to scope a `frontend` policy to a single listener port on t
 | `accessLog`, `metrics`, `tracing` | Allowed. Selects a single listener. |
 | `connect`, `http`, `networkAuthorization`, `proxyProtocol`, `tcp`, `tls` | Not allowed. |
 
-If a policy sets any not allowed field, the Kubernetes API server rejects `sectionName` on that policy, even if the policy also sets an allowed field.
+If a policy sets any not allowed field, the Kubernetes API server rejects the `sectionName` on that policy.
 
 ### Backend section restrictions
 
