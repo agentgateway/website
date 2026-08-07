@@ -1,15 +1,17 @@
 <!-- Install-path design (decided 2026-07, PR #702): channel-keyed bundles. Standard = released build (helm-version-flag) + standard Gateway API CRDs (k8s-gw-version). Experimental = nightly build (patch-dev) + experimental Gateway API CRDs at the newest version (k8s-gw-version-exp) + feature gate. The nightly watches TCPRoute at v1 (needs Gateway API 1.6); released v1.3.x watches v1alpha2 (Gateway API 1.5). Revisit when main (1.4.x) ships as the next latest. See get-started.md for the full rationale. -->
-1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} version {{< reuse "agw-docs/versions/k8s-gw-version.md" >}}.
+1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} version that this release was validated against. To use a different supported version, see the [Gateway API compatibility table]({{< link-hextra path="/reference/versions/" >}}) and set the variable accordingly.
    {{< tabs >}}
    {{% tab name="Standard" %}}
    ```sh {paths="standard"}
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
+   export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version.md" >}}
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v${GWAPI_VERSION}/standard-install.yaml
    ```
    {{% /tab %}}
    {{% tab name="Experimental" %}}
    CRDs in the experimental channel are required to use some experimental features in the Gateway API. Guides that require experimental CRDs note this requirement in their prerequisites.
    ```sh {paths="experimental"}
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
+   export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v${GWAPI_VERSION}/experimental-install.yaml
    ```
    {{% /tab %}}
    {{< /tabs >}}
