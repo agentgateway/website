@@ -66,7 +66,7 @@ Each policy section follows a different precedence order based on the specificit
 | `traffic` | Gateway < Listener < Route < Route rule |
 | `backend` | Gateway < Listener < Route (targetRef) < Route rule (targetRef) < Backend (targetRef) < Backend (inline on the backend object) < Route backend ref (inline on the route) |
 
-For `frontend`, the Listener level applies only to `sectionName`. Only some `frontend` fields allow `sectionName` at all. See [Frontend section restrictions](#frontend-restrictions) for which ones.
+For a `frontend` policy, you can only apply the policy at the Listener level when the `frontend` policy field supports setting a `sectionName`. For more information about the fields that support the `sectionName` setting, see [Frontend section restrictions](#frontend-restrictions).
 
 For example, if a Gateway-level policy sets `backend.tcp` and `backend.tls`, and a Backend-level policy sets `backend.tls`, the effective policy uses `tcp` from the Gateway policy and `tls` from the Backend policy.
 
