@@ -76,9 +76,9 @@ If multiple policies with the same specificity set the same field, agentgateway 
 
 A tie only happens when two policies share both the same specificity and the same field. You can attach multiple policies to the same target as long as each one sets a different field, or attaches at a different specificity level. For example, a `frontend` policy that sets `tls` at the Gateway level and another that sets `accessLog` using a listener `sectionName` don't tie, because they set different fields. A `frontend` policy that sets `tls` at the Gateway level and another that sets `tls` using `port` also don't tie, because `port` is more specific and wins for that field.
 
-This is easiest to hit with `frontend`, because a `frontend` policy has at most three specificity levels: the Gateway, an optional `port`, and an optional listener `sectionName` for the fields where `sectionName` is allowed. Two policies that both target only the Gateway have no way to differentiate their specificity.
+A tie is easiest to hit with `frontend`, because a `frontend` policy has at most three specificity levels: the Gateway, an optional `port`, and an optional listener `sectionName` for the fields where `sectionName` is allowed. Two policies that both target only the Gateway have no way to differentiate their specificity.
 
-To avoid this configuration, set a given field or section in only one policy per target.
+To avoid a tie, set a given field or section in only one policy per target.
 
 ## Merge strategy overrides {#strategy}
 
