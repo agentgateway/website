@@ -25,9 +25,6 @@ h6 {
     font-family: 'Open Sans', 'ui-sans-serif', 'system-ui', 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
-.nav-container {
-    font-family: 'Open Sans', 'ui-sans-serif', 'system-ui', 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-}
 
 /* Test Status Badge - Modern gradient style */
 .test-status-badge {
@@ -197,10 +194,6 @@ h6 {
     color: #111827;
     background: #f3f4f6;
 }
-.sidebar-link.sidebar-active-item {
-    color: #1e40af;
-    background: #dbeafe;
-}
 .dark .sidebar-link:not(.sidebar-active-item) {
     color: #9ca3af !important;
 }
@@ -208,11 +201,6 @@ h6 {
     color: #e5e7eb !important;
     background: rgba(255,255,255,0.05) !important;
 }
-.dark .sidebar-link.sidebar-active-item {
-    color: #c7d2fe !important;
-    background: rgba(99,102,241,0.1) !important;
-}
-
 .dark .sidebar-container {
     background-color: #111 !important;
 }
@@ -231,44 +219,7 @@ h6 {
     display: block;
     padding-top: 1.5rem;
 }
-.hextra-tabs-toggle {
-    cursor: pointer;
-    padding: 0.5rem;
-    margin-right: 0.5rem;
-    font-weight: 500;
-    border-bottom: 2px solid transparent;
-    color: #4b5563;
-    background: none;
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    transition: color 0.15s, border-color 0.15s;
-}
-.hextra-tabs-toggle:hover {
-    color: #000;
-    border-bottom-color: #d1d5db;
-}
-.hextra-tabs-toggle[data-state="selected"] {
-    color: hsl(212, 100%, 45%);
-    border-bottom-color: hsl(212, 100%, 50%);
-}
-.dark .hextra-tabs-toggle {
-    color: #d1d5db;
-}
-.dark .hextra-tabs-toggle:hover {
-    color: #fff;
-    border-bottom-color: #4b5563;
-}
-.dark .hextra-tabs-toggle[data-state="selected"] {
-    color: hsl(212, 100%, 60%);
-    border-bottom-color: hsl(212, 100%, 50%);
-}
 
-/* Light/dark image toggling */
-.light-only { display: block; }
-.dark-only { display: none; }
-.dark .light-only { display: none; }
-.dark .dark-only { display: block; }
 
 /* Dark mode: everything matches nav background (#030712) */
 .dark body,
@@ -299,26 +250,6 @@ h6 {
 }
 
 /* {{< cards >}} shortcode — responsive grid */
-.section-cards {
-  display: grid;
-  gap: 1rem;
-  margin-top: 1rem;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 640px) {
-  .section-cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .section-cards {
-    grid-template-columns: repeat(var(--section-cards-cols, 3), minmax(0, 1fr));
-  }
-}
-
-
 
 /* Spacing between headings and following content. Needed because reuse
    shortcode output has no <p> wrapper, so there's no margin-top from
@@ -401,4 +332,25 @@ h6 {
 
   /* Avoid breaking inside short blocks; don't force headings to next page */
   blockquote, figure, img { break-inside: avoid; }
+}
+
+/* Clearance for the custom fixed navbar above the docs content column.
+
+   Moved here from an inline `style="padding-top: 2.5rem"` that used to live on
+   the wrapper div inside forked copies of layouts/docs/single.html and
+   layouts/docs/list.html. Those forks were deleted once docs-theme-extras grew
+   the partials/docs/* extension slots (v0.2.0-beta.3), and an inline style on a
+   layout element had no way to survive that. This is also the correct home for
+   it: it is compensation for `partials/nav.html`, which is a styling concern.
+
+   The hook class is supplied by layouts/partials/docs/width-class.html, which
+   feeds the wrapper's class attribute, so the rule cannot leak into the blog,
+   models or tutorials layouts.
+
+   CAVEAT: if this site ever enables docTabs, the module emits an INLINE
+   `style="padding-top: 0.75rem"` on the same element, and an inline style beats
+   a class rule. Revisit this rule at that point rather than reaching for
+   !important. */
+.agw-docs-topgap {
+  padding-top: 2.5rem;
 }
