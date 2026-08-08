@@ -68,13 +68,15 @@ Each policy section follows a different precedence order based on the specificit
 
 For a `frontend` policy, you can only apply the policy at the Listener level when the `frontend` policy field supports setting a `sectionName`. For more information about the fields that support the `sectionName` setting, see [Frontend section restrictions](#frontend-restrictions).
 
-For example, if a Gateway-level policy sets `backend.tcp` and `backend.tls`, and a Backend-level policy sets `backend.tls`, the effective policy uses `tcp` from the Gateway policy and `tls` from the Backend policy.
+For `backend`, precedence works the same way but with more levels. For example, if a Gateway-level policy sets `backend.tcp` and `backend.tls`, and a Backend-level policy sets `backend.tls`, the effective policy uses `tcp` from the Gateway policy and `tls` from the Backend policy.
 
 ### Equal specificity {#ties}
 
 If multiple policies with the same specificity set the same field, agentgateway picks one policy's value for that field and silently drops the rest. The selection isn't based on creation time, name, or namespace, so which policy wins isn't predictable and can change between controller restarts. Every affected policy still reports `Accepted` and `Attached` status conditions as `True`, with no condition indicating that a field was dropped.
 
-This configuration applies to every policy section, but noticeable with `frontend`. A `frontend` policy has at most three specificity levels: the Gateway, an optional `port`, and an optional listener `sectionName` for the fields where `sectionName` is allowed. Two policies that both target only the Gateway have no way to differentiate their specificity.
+A tie only happens when two policies share both the same specificity and the same field. You can attach multiple policies to the same target as long as each one sets a different field, or attaches at a different specificity level. For example, a `frontend` policy that sets `tls` at the Gateway level and another that sets `accessLog` using a listener `sectionName` don't tie, because they set different fields. A `frontend` policy that sets `tls` at the Gateway level and another that sets `tls` using `port` also don't tie, because `port` is more specific and wins for that field.
+
+This is easiest to hit with `frontend`, because a `frontend` policy has at most three specificity levels: the Gateway, an optional `port`, and an optional listener `sectionName` for the fields where `sectionName` is allowed. Two policies that both target only the Gateway have no way to differentiate their specificity.
 
 To avoid this configuration, set a given field or section in only one policy per target.
 
@@ -86,3 +88,6 @@ To avoid this configuration, set a given field or section in only one policy per
 | -- | -- |
 | `Default` | The default value. Fields from more-specific attachment points, such as routes and route rules, can override fields from less-specific attachment points, such as gateways and listeners. Use this value to set a `traffic` default at the Gateway that specific routes can override. |
 | `Override` | Blocks `traffic` policies at more-specific attachment points from contributing to the effective policy. Use this value when a less-specific policy, such as one at the Gateway level, must stay authoritative for everything below it. |
+
+> [!NOTE]
+> The less-specific policy is the one that overrides, not the one being overridden. A Gateway-level `traffic` policy with `inheritance: Override` locks its fields so that policies attached at more-specific points, such as routes or route rules, can't replace them.
