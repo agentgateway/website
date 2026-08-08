@@ -1,7 +1,8 @@
-1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} version {{< reuse "agw-docs/versions/k8s-gw-version.md" >}}. 
+1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}. This example uses Gateway API {{< reuse "agw-docs/versions/k8s-gw-version.md" >}}, but you can use any version within the [supported range]({{< link-hextra path="/reference/versions/" >}}) by setting the variable accordingly.
    
    ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
+   export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version.md" >}}
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v${GWAPI_VERSION}/standard-install.yaml
    ```
    
    Example output: 

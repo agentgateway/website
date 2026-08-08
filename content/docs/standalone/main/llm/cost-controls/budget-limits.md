@@ -20,6 +20,8 @@ To give each user their own budget, use `remoteRateLimit` with a descriptor keye
 
 > [!NOTE]
 > Token-based rate limits are checked in two phases, at request time and at response time, because the completion token count is not known until the response returns. For details, see [Token-based rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/#token-based-rate-limits" >}}).
+>
+> The input count that a request debits includes the tokens that the provider read from or wrote to its prompt cache. Anthropic and Amazon Bedrock exclude cached tokens from the count that they report, so a cache-heavy request against those providers debits more than their reported input count. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).
 
 1. Configure agentgateway to send a per-user descriptor to the rate limit server. The `apiKey.user` value comes from the API key `metadata` you set in the virtual keys guide, so each user is counted independently. Setting `type: tokens` counts LLM tokens (not requests) against the budget.
 
@@ -180,3 +182,6 @@ curl http://localhost:15020/metrics
 ```
 
 Query token usage by user with the `agentgateway_gen_ai_client_token_usage_sum` metric, or realized cost with `agw.ai.usage.cost.total`. For per-key spending queries and cost tracking, see [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/#monitor-per-key-spending" >}}) and [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
+
+> [!WARNING]
+> When you sum token usage, do not add the `input_cache_read` or `input_cache_write` token types to the `input` type. The `input` series already includes the cached tokens, so adding them double counts.
