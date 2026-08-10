@@ -1,7 +1,8 @@
-1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} version {{< reuse "agw-docs/versions/k8s-gw-version.md" >}}. 
+1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}. This example uses Gateway API {{< reuse "agw-docs/versions/k8s-gw-version.md" >}}, but you can use any version within the [supported range]({{< link-hextra path="/reference/versions/" >}}) by setting the variable accordingly.
    
    ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
+   export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version.md" >}}
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v$GWAPI_VERSION/standard-install.yaml
    ```
    
    Example output: 
@@ -64,7 +65,7 @@
 
 6. Create an Argo CD application to install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} Helm chart. You might also need the following parameters:
    * **Development builds**: `controller.image.pullPolicy=Always` to ensure you get the latest image.
-   * **Experimental Gateway API features**: `controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true` to enable experimental features such as TCPRoutes.
+   * **Experimental Gateway API features**: `controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true` to set the feature gate for experimental features such as TCPRoutes explicitly. This setting is enabled by default.
    
    ```yaml
    kubectl apply -f- <<EOF
@@ -85,7 +86,7 @@
          parameters:
          - name: controller.image.pullPolicy
            value: "Always"
-         - name: controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES
+         - name: controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES
            value: "true"
        repoURL: {{< reuse "/agw-docs/snippets/helm-shortpath.md" >}}/charts
        targetRevision: {{< reuse "agw-docs/versions/helm-version-flag.md" >}}

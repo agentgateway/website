@@ -11,6 +11,9 @@ test:
 
 Configure Amazon Bedrock as an LLM provider in agentgateway.
 
+> [!NOTE]
+> Bedrock excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Bedrock reports. To read the Bedrock number itself, use `llm.providerInputTokens`. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).
+
 {{< doc-test paths="bedrock" >}}
 # ============================================================================
 # Doc test coverage for this guide (these comments are not rendered on the page)

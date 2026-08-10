@@ -207,7 +207,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `filter` _[CELExpression](#celexpression)_ | CEL expression used to filter logs. A log<br />will only be emitted if the expression evaluates to `true`. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `attributes` _[LogTracingAttributes](#logtracingattributes)_ | Customizations to the key-value pairs that are<br />logged. |  | Optional: \{\} <br /> |
-| `otlp` _[OtlpAccessLog](#otlpaccesslog)_ | OTLP access log export to an<br />OpenTelemetry-compatible backend. |  | Optional: \{\} <br /> |
+| `otlp` _[OtlpAccessLog](#otlpaccesslog)_ | OTLP access log export to an<br />OpenTelemetry-compatible backend. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 
 
 #### Action
@@ -638,7 +638,7 @@ _Appears in:_
 | `strategy` _[PolicyStrategy](#policystrategy)_ | Policy merge and conflict resolution strategy.<br />Strategy settings apply to the policy object as a whole. Individual strategy fields may<br />only be valid for specific policy kinds; for example, inheritance is only valid when this<br />policy contains traffic settings. |  | Optional: \{\} <br /> |
 | `frontend` _[Frontend](#frontend)_ | Settings for how to handle incoming traffic.<br />A frontend policy can only target a `Gateway`. `Listener` and<br />`ListenerSet` are not valid targets.<br />When multiple policies are selected for a given request, they are merged on a field-level basis, but not a deep<br />merge. For example, policy A sets `tcp` and `tls`, and policy B sets<br />`tls`; the effective policy would be `tcp` from policy A, and `tls` from<br />policy B. |  | Optional: \{\} <br /> |
 | `traffic` _[Traffic](#traffic)_ | Settings for how to process traffic.<br />A traffic policy can target a `Gateway` (optionally, with a<br />`sectionName` indicating the listener), `ListenerSet`, or `Route`<br />(optionally, with a `sectionName` indicating the route rule).<br />When multiple policies are selected for a given request, they are merged on a field-level basis, but not a deep<br />merge. Precedence is given to more precise policies: `Gateway` <<br />`Listener` < `Route` < `Route Rule`. For example, policy A sets<br />`timeouts` and `retries`, and policy B sets `retries`; the effective<br />policy would be `timeouts` from policy A, and `retries` from policy B. |  | Optional: \{\} <br /> |
-| `backend` _[BackendFull](#backendfull)_ | Settings for how to connect to destination backends.<br />A backend policy can target a `Gateway` (optionally, with a<br />`sectionName` indicating the listener), `ListenerSet`, `Route`<br />(optionally, with a `sectionName` indicating the route rule), or a<br />`Service` or `Backend` (optionally, with a `sectionName` indicating the<br />port for `Service`, or sub-backend for `Backend`).<br />Note that a backend policy applies when connecting to a specific destination backend. Targeting a higher level<br />resource, like `Gateway`, is just a way to easily apply a policy to a<br />group of backends.<br />When multiple policies are selected for a given request, they are merged on a field-level basis, but not a deep<br />merge. Precedence is given to more precise policies: `Gateway` <<br />`Listener` < `Route` < `Route Rule` < `Backend` or `Service`. For<br />example, if a `Gateway` policy sets `tcp` and `tls`, and a `Backend`<br />policy sets `tls`, the effective policy would be `tcp` from the<br />`Gateway`, and `tls` from the `Backend`. |  | Optional: \{\} <br /> |
+| `backend` _[BackendFull](#backendfull)_ | Settings for how to connect to destination backends.<br />A backend policy can target a `Gateway` (optionally, with a<br />`sectionName` indicating the listener), `ListenerSet`, `Route`<br />(optionally, with a `sectionName` indicating the route rule), or a<br />`Service` or `Backend` (optionally, with a `sectionName` indicating the<br />numeric port for `Service`, or sub-backend for `Backend`).<br />Note that a backend policy applies when connecting to a specific destination backend. Targeting a higher level<br />resource, like `Gateway`, is just a way to easily apply a policy to a<br />group of backends.<br />When multiple policies are selected for a given request, they are merged on a field-level basis, but not a deep<br />merge. Precedence is given to more precise policies: `Gateway` <<br />`Listener` < `Route` < `Route Rule` < `Backend` or `Service`. For<br />example, if a `Gateway` policy sets `tcp` and `tls`, and a `Backend`<br />policy sets `tls`, the effective policy would be `tcp` from the<br />`Gateway`, and `tls` from the `Backend`. |  | Optional: \{\} <br /> |
 
 
 #### AnthropicConfig
@@ -1127,7 +1127,7 @@ _Appears in:_
 | `aws` _[AwsAuth](#awsauth)_ | Explicit AWS authentication method for the backend.<br />When omitted, default AWS SDK credential discovery is used. |  | Optional: \{\} <br /> |
 | `azure` _[AzureAuth](#azureauth)_ | Azure authentication method for the backend. |  | AtMostOneOf: [secretRef managedIdentity workloadIdentity] <br />Optional: \{\} <br /> |
 | `gcp` _[GcpAuth](#gcpauth)_ | Google authentication method for the backend.<br />When omitted, default Google credential discovery is used. |  | Optional: \{\} <br /> |
-| `oauthTokenExchange` _[OAuthTokenExchange](#oauthtokenexchange)_ | OAuth 2.0 token exchange (RFC 8693) / jwt-bearer (RFC 7523) authentication. |  | Optional: \{\} <br /> |
+| `oauthTokenExchange` _[OAuthTokenExchange](#oauthtokenexchange)_ | OAuth 2.0 token exchange (RFC 8693) / jwt-bearer (RFC 7523) authentication. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `crossAppAccess` _[CrossAppAccessAuth](#crossappaccessauth)_ | Cross App Access (Identity Assertion / ID-JAG) authentication. |  | Optional: \{\} <br /> |
 | `jwtSign` _[JwtSignAuth](#jwtsignauth)_ | Signs a short-lived JWT with a private key on each request and sends it<br />to the backend, for upstreams that require per-request keypair JWTs<br />(e.g. the Snowflake SQL API) rather than a static credential. |  | Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where backend credentials are inserted.<br />If omitted, credentials are written to the `Authorization` header with the `Bearer ` prefix.<br />This applies to `key`, `secretRef`, and `passthrough`. Entries in `credentials` carry their own location. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
@@ -1185,7 +1185,7 @@ _Appears in:_
 | `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
 | `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
-| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 
 
 #### BackendEviction
@@ -1224,7 +1224,7 @@ _Appears in:_
 | `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
 | `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
-| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | AtMostOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange crossAppAccess jwtSign] <br />Optional: \{\} <br /> |
 | `ai` _[BackendAI](#backendai)_ | Settings for AI workloads. This is only applicable when<br />connecting to a `Backend` of type `ai`. |  | Optional: \{\} <br /> |
 | `mcp` _[BackendMCP](#backendmcp)_ | Settings for MCP workloads. This is only applicable when<br />connecting to a `Backend` of type `mcp`. |  | Optional: \{\} <br /> |
@@ -1292,7 +1292,7 @@ _Appears in:_
 | `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
 | `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
-| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | AtMostOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange crossAppAccess jwtSign] <br />Optional: \{\} <br /> |
 
 
@@ -1341,7 +1341,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `mtlsCertificateRef` _[LocalSecretObjectRef](#localsecretobjectref) array_ | Enables mutual TLS to the backend using `tls.key` and `tls.crt` from the<br />referenced credential source (defaulting to a Kubernetes `Secret`). An<br />optional `ca.cert`, if present, verifies the server certificate, but<br />`caCertificateRefs` takes priority. If unspecified, no client certificate<br />is used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
-| `caCertificateRefs` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core) array_ | CA certificate `ConfigMap` to use to<br />verify the server certificate.<br />If unset, the system's trusted certificates are used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
+| `caCertificateRefs` _[LocalCACertificateRef](#localcacertificateref) array_ | CA certificate source to use to verify the server certificate. Omitted kind<br />and `ConfigMap` select a ConfigMap; `Secret` selects a Secret. The `ca.crt`<br />key is required. If unset, the system's trusted certificates are used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `insecureSkipVerify` _[InsecureTLSMode](#insecuretlsmode)_ | Originates TLS but skips verification of the backend's certificate<br />WARNING: insecure; only use if the risks are understood<br />Modes:<br />* `All` disables all TLS verification<br />* `Hostname` trusts the CA certificate but ignores hostname/SAN mismatches.<br />  Still insecure; prefer `verifySubjectAltNames` where possible. |  | Optional: \{\} <br /> |
 | `sni` _[SNI](#sni)_ | Server Name Indicator (`SNI`) to use in the TLS<br />handshake. If unset, the `SNI` is automatically set based on the<br />destination hostname. |  | MaxLength: 253 <br />MinLength: 1 <br />Pattern: `^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Optional: \{\} <br /> |
 | `verifySubjectAltNames` _[ShortString](#shortstring) array_ | Subject Alternative Names (`SAN`)<br />to verify in the server certificate.<br />If not present, the destination hostname is automatically used. |  | MaxItems: 16 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
@@ -1355,7 +1355,8 @@ _Appears in:_
 
 
 
-
+_Validation:_
+- ExactlyOneOf: [backendRef url]
 
 _Appears in:_
 - [BackendConnectionPolicy](#backendconnectionpolicy)
@@ -1369,7 +1370,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | Proxy server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 
 
 #### BackendWithAI
@@ -1388,7 +1390,7 @@ _Appears in:_
 | `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
 | `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
-| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | AtMostOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange crossAppAccess jwtSign] <br />Optional: \{\} <br /> |
 | `ai` _[BackendAI](#backendai)_ | Settings for AI workloads. This is only applicable when<br />connecting to a `Backend` of type `ai`. |  | Optional: \{\} <br /> |
 | `transformation` _[Transformation](#transformation)_ | Mutates and transforms requests and responses sent to and from the backend. |  | Optional: \{\} <br /> |
@@ -1508,7 +1510,7 @@ _Appears in:_
 | `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
 | `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
-| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `auth` _[BedrockGuardrailsAuth](#bedrockguardrailsauth)_ | Settings for authenticating to AWS Bedrock Guardrails. |  | ExactlyOneOf: [key secretRef aws] <br />Optional: \{\} <br /> |
 
 
@@ -1793,8 +1795,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `identityProvider` _[CrossAppAccessEndpoint](#crossappaccessendpoint)_ | User identity provider authorization server, used for the RFC 8693 ID-JAG exchange. |  | Required: \{\} <br /> |
-| `resourceAuthorizationServer` _[CrossAppAccessEndpoint](#crossappaccessendpoint)_ | Resource authorization server, used for the RFC 7523 jwt-bearer exchange. |  | Required: \{\} <br /> |
+| `identityProvider` _[CrossAppAccessEndpoint](#crossappaccessendpoint)_ | User identity provider authorization server, used for the RFC 8693 ID-JAG exchange. |  | ExactlyOneOf: [backendRef url] <br />Required: \{\} <br /> |
+| `resourceAuthorizationServer` _[CrossAppAccessEndpoint](#crossappaccessendpoint)_ | Resource authorization server, used for the RFC 7523 jwt-bearer exchange. |  | ExactlyOneOf: [backendRef url] <br />Required: \{\} <br /> |
 | `audience` _[ShortString](#shortstring)_ | Identifier of the resource authorization server. The issued ID-JAG is bound to this audience. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `resources` _string array_ | Resources sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `scopes` _string array_ | Scopes sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
@@ -1808,14 +1810,16 @@ _Appears in:_
 
 
 
-
+_Validation:_
+- ExactlyOneOf: [backendRef url]
 
 _Appears in:_
 - [CrossAppAccessAuth](#crossappaccessauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | Token endpoint backend. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 | `path` _string_ | Token endpoint path; defaults to "/". Must start with "/". |  | Pattern: `^/` <br />Optional: \{\} <br /> |
 | `clientAuth` _[OAuthClientAuth](#oauthclientauth)_ | Client authentication for the token endpoint. |  | Required: \{\} <br /> |
 
@@ -2014,7 +2018,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | External Authorization server to reach.<br />Supported types: `Service` and `Backend`. |  | Optional: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when the external authorization service is<br />unavailable or returns an error. "FailOpen" allows the request to continue.<br />"FailClosed" (default) denies the request. |  | Optional: \{\} <br /> |
 | `grpc` _[AgentExtAuthGRPC](#agentextauthgrpc)_ | Uses the gRPC External Authorization<br />[protocol](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto) should be used. |  | Optional: \{\} <br /> |
 | `http` _[AgentExtAuthHTTP](#agentextauthhttp)_ | Uses HTTP to connect to<br />the authorization server. The authorization server must return a `200`<br />status code, otherwise the request is considered an authorization<br />failure. |  | Optional: \{\} <br /> |
@@ -2088,7 +2093,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | External Authorization server to reach.<br />Supported types: `Service` and `Backend`. |  | Optional: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when the external authorization service is<br />unavailable or returns an error. "FailOpen" allows the request to continue.<br />"FailClosed" (default) denies the request. |  | Optional: \{\} <br /> |
 | `grpc` _[AgentExtAuthGRPC](#agentextauthgrpc)_ | Uses the gRPC External Authorization<br />[protocol](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto) should be used. |  | Optional: \{\} <br /> |
 | `http` _[AgentExtAuthHTTP](#agentextauthhttp)_ | Uses HTTP to connect to<br />the authorization server. The authorization server must return a `200`<br />status code, otherwise the request is considered an authorization<br />failure. |  | Optional: \{\} <br /> |
@@ -2111,7 +2117,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | External Processor server to reach.<br />Supported types: `Service` and `Backend`. |  | Optional: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when the external processor is unavailable or returns an error.<br />"FailOpen" allows the request to continue, as long as the request body has not<br />been sent (or started streaming) to the ext_proc. Once the request body has<br />started streaming to the ext_proc, the request will fail closed on error.<br />"FailClosed" (default) rejects the request on any failure. |  | Optional: \{\} <br /> |
 | `processingOptions` _[ProcessingOptions](#processingoptions)_ | How request and response phases are sent to ext_proc. |  | Optional: \{\} <br /> |
 | `metadataContext` _object (keys:string, values:[NamespacedMetadataContext](#namespacedmetadatacontext))_ | Metadata to send to the external processor in the<br />`metadata_context.filter_metadata` field of the ProcessingRequest.<br />Keyed by metadata namespace, then by key within that namespace; values are<br />CEL expressions evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
@@ -2149,7 +2156,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | External Processor server to reach.<br />Supported types: `Service` and `Backend`. |  | Optional: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when the external processor is unavailable or returns an error.<br />"FailOpen" allows the request to continue, as long as the request body has not<br />been sent (or started streaming) to the ext_proc. Once the request body has<br />started streaming to the ext_proc, the request will fail closed on error.<br />"FailClosed" (default) rejects the request on any failure. |  | Optional: \{\} <br /> |
 | `processingOptions` _[ProcessingOptions](#processingoptions)_ | How request and response phases are sent to ext_proc. |  | Optional: \{\} <br /> |
 | `metadataContext` _object (keys:string, values:[NamespacedMetadataContext](#namespacedmetadatacontext))_ | Metadata to send to the external processor in the<br />`metadata_context.filter_metadata` field of the ProcessingRequest.<br />Keyed by metadata namespace, then by key within that namespace; values are<br />CEL expressions evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
@@ -2305,7 +2313,7 @@ _Appears in:_
 | `proxyProtocol` _[FrontendProxyProtocol](#frontendproxyprotocol)_ | Settings for downstream PROXY protocol handling.<br />If configured, incoming connections may require a PROXY header before<br />normal protocol handling. This can also be configured to allow both<br />PROXY and non-PROXY traffic on the same listener. |  | Optional: \{\} <br /> |
 | `connect` _[FrontendConnect](#frontendconnect)_ | Settings for downstream HTTP CONNECT handling.<br />If unset, CONNECT requests are rejected with Method Not Allowed. |  | Optional: \{\} <br /> |
 | `accessLog` _[AccessLog](#accesslog)_ | Access logging configuration. |  | Optional: \{\} <br /> |
-| `tracing` _[Tracing](#tracing)_ | OpenTelemetry tracing settings. |  | Optional: \{\} <br /> |
+| `tracing` _[Tracing](#tracing)_ | OpenTelemetry tracing settings. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `metrics` _[MetricLabels](#metriclabels)_ | Custom Prometheus metric label configuration.<br />CEL expressions are evaluated per-request and added as labels to all<br />Prometheus metrics exposed by agentgateway. |  | Optional: \{\} <br /> |
 
 
@@ -2483,7 +2491,8 @@ _Appears in:_
 
 
 
-
+_Validation:_
+- ExactlyOneOf: [backendRef url]
 
 _Appears in:_
 - [RateLimits](#ratelimits)
@@ -2491,7 +2500,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | Rate limit server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when the remote rate limit service is<br />unavailable or returns an error. `FailOpen` allows the request to continue.<br />`FailClosed` (default) denies the request. |  | Optional: \{\} <br /> |
 | `domain` _[ShortString](#shortstring)_ | Domain under which this limit should apply.<br />This is an arbitrary string that enables a rate limit server to distinguish between different applications. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `descriptors` _[RateLimitDescriptor](#ratelimitdescriptor) array_ | Dimensions for rate limiting. These values are<br />passed to the rate limit service which applies configured limits based<br />on them. Each descriptor represents a single rate limit rule with one or<br />more entries. |  | MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
@@ -2550,7 +2560,7 @@ _Appears in:_
 | `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
 | `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
-| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `auth` _[GoogleModelArmorAuth](#googlemodelarmorauth)_ | Settings for authenticating to Google Model Armor. |  | ExactlyOneOf: [gcp] <br />Optional: \{\} <br /> |
 
 
@@ -2801,7 +2811,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `remote` _[RemoteJWKS](#remotejwks)_ | How to reach the JSON Web Key Set from a remote<br />address. |  | Optional: \{\} <br /> |
+| `remote` _[RemoteJWKS](#remotejwks)_ | How to reach the JSON Web Key Set from a remote<br />address. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `inline` _string_ | Inline JSON Web Key Set used to validate the<br />signature of the JWT. |  | MaxLength: 65536 <br />MinLength: 2 <br />Optional: \{\} <br /> |
 
 
@@ -3047,6 +3057,24 @@ _Appears in:_
 | `port` _integer_ | Destination port number to use for this resource.<br />Required when the referenced resource is a Kubernetes Service. |  | Maximum: 65535 <br />Minimum: 1 <br />Optional: \{\} <br /> |
 
 
+#### LocalCACertificateRef
+
+
+
+LocalCACertificateRef references a same-namespace CA certificate source.
+An omitted kind defaults to ConfigMap.
+
+
+
+_Appears in:_
+- [BackendTLS](#backendtls)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | Name of the referenced CA certificate source. |  | Required: \{\} <br /> |
+| `kind` _string_ | Kind of the referenced CA certificate source. Omitted defaults to ConfigMap. | ConfigMap | Enum: [ConfigMap Secret] <br />Optional: \{\} <br /> |
+
+
 #### LocalPolicyTargetReference
 
 
@@ -3266,7 +3294,7 @@ _Appears in:_
 | `provider` _[McpIDP](#mcpidp)_ | Identity provider to use for authentication. |  | Optional: \{\} <br /> |
 | `issuer` _[ShortString](#shortstring)_ | IdP that issued the JWT. This corresponds to the<br />`iss` claim ([RFC 7519 §4.1.1](https://tools.ietf.org/html/rfc7519#section-4.1.1)). |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `audiences` _string array_ | Allowed audiences that are allowed<br />access. This corresponds to the `aud` claim<br />([RFC 7519 §4.1.3](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3)).<br />If unset, any audience is allowed. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
-| `jwks` _[RemoteJWKS](#remotejwks)_ | Remote JSON Web Key used to validate the signature of<br />the JWT. |  | Required: \{\} <br /> |
+| `jwks` _[RemoteJWKS](#remotejwks)_ | Remote JSON Web Key used to validate the signature of<br />the JWT. |  | ExactlyOneOf: [backendRef url] <br />Required: \{\} <br /> |
 | `mode` _[JWTAuthenticationMode](#jwtauthenticationmode)_ | Validation mode for JWT authentication. | Strict | Optional: \{\} <br /> |
 | `clientId` _string_ | Client ID to use for short-circuiting Dynamic Client Registration.<br />If set, the gateway will not proxy registration requests to the IDP and instead return this client ID. |  | Optional: \{\} <br /> |
 | `clientSecretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Reference to a Kubernetes Secret holding the OAuth client secret of the app<br />registration identified by `clientId` (for example Entra ID confidential clients,<br />which require the secret at the token endpoint). The gateway injects it into the<br />token requests it proxies to the provider. Defaults to the `clientSecret` key;<br />override via `clientSecretRef.key`. |  | Optional: \{\} <br /> |
@@ -3285,7 +3313,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `targets` _[McpTargetSelector](#mcptargetselector) array_ | MCP targets to use for this backend. Policies<br />targeting MCP targets must use `targetRefs[].sectionName` to select<br />the target by name. |  | ExactlyOneOf: [selector static] <br />MaxItems: 32 <br />MinItems: 1 <br />Required: \{\} <br /> |
+| `targets` _[McpTargetSelector](#mcptargetselector) array_ | MCP targets to use for this backend. Policies<br />targeting MCP targets must use `targetRefs[].sectionName` to select<br />the target by name. |  | ExactlyOneOf: [selector static] <br />MaxItems: 128 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `sessionRouting` _[SessionRouting](#sessionrouting)_ | MCP session routing behavior.<br />Defaults to `Stateful` if not set. |  | Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when MCP targets fail to initialize or<br />become unavailable at runtime. `FailOpen` skips failed targets and<br />continues serving from healthy ones. `FailClosed` (default) fails the<br />entire session if any target fails. |  | Optional: \{\} <br /> |
 | `prefixMode` _[PrefixMode](#prefixmode)_ | How tool and prompt names are prefixed with the target name. Resource URIs<br />always retain target routing information when multiplexing and are unaffected.<br />`Conditional` (default) prefixes only when there are multiple targets.<br />`Always` prefixes even with a single target. `Never` exposes unprefixed<br />names and routes calls by looking up which target serves the name;<br />names must be unique across targets. |  | Optional: \{\} <br /> |
@@ -3322,7 +3350,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `remote` _[MCPGuardrailsRemote](#mcpguardrailsremote)_ | `remote` configures a gRPC policy server. |  | Optional: \{\} <br /> |
+| `remote` _[MCPGuardrailsRemote](#mcpguardrailsremote)_ | `remote` configures a gRPC policy server. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `methods` _object (keys:string, values:[MCPMethodPhase](#mcpmethodphase))_ | `methods` is the allowlist of JSON-RPC methods (e.g. `tools/call`,<br />`tools/list`) routed through this processor, keyed by method name with the<br />phase it runs in. Keys may be exact, a prefix wildcard (`tools/*`), a suffix<br />wildcard (`*/list`), or `*` for all methods; the most specific match wins.<br />Methods matching no key, including unknown ones, bypass this processor. |  | MaxProperties: 64 <br />MinProperties: 1 <br />Required: \{\} <br /> |
 
 
@@ -3332,14 +3360,16 @@ _Appears in:_
 
 
 
-
+_Validation:_
+- ExactlyOneOf: [backendRef url]
 
 _Appears in:_
 - [MCPGuardrailsProcessor](#mcpguardrailsprocessor)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` references the remote guardrails policy server.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | `failureMode` controls behavior when the policy server is unreachable<br />or returns an error. `FailOpen` allows the request; `FailClosed`<br />(default) denies it. |  | Optional: \{\} <br /> |
 | `metadata` _object (keys:string, values:[CELExpression](#celexpression))_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `allowedRequestHeaders` _[HeaderName](#headername) array_ | `allowedRequestHeaders` lists the incoming request headers forwarded to<br />the policy server in `McpRequest.headers`. If empty, all headers and<br />pseudo-headers (`:authority`, `:method`, ...) are forwarded. Matching is<br />case-insensitive. |  | MaxItems: 64 <br />MaxLength: 256 <br />MinLength: 1 <br />Pattern: `^:?[A-Za-z0-9!#$%&'*+\-.^_\x60\|~]+$` <br />Optional: \{\} <br /> |
@@ -3531,7 +3561,7 @@ _Appears in:_
 | `aws` _[AwsAuth](#awsauth)_ | Explicit AWS authentication method for the model provider. When omitted,<br />default AWS SDK credential discovery is used. |  | Optional: \{\} <br /> |
 | `azure` _[AzureAuth](#azureauth)_ | Azure authentication method for the model provider. |  | AtMostOneOf: [secretRef managedIdentity workloadIdentity] <br />Optional: \{\} <br /> |
 | `gcp` _[GcpAuth](#gcpauth)_ | Google authentication method for the model provider. When omitted,<br />default Google credential discovery is used. |  | Optional: \{\} <br /> |
-| `oauthTokenExchange` _[OAuthTokenExchange](#oauthtokenexchange)_ | OAuth 2.0 token exchange (RFC 8693) / jwt-bearer (RFC 7523)<br />authentication. |  | Optional: \{\} <br /> |
+| `oauthTokenExchange` _[OAuthTokenExchange](#oauthtokenexchange)_ | OAuth 2.0 token exchange (RFC 8693) / jwt-bearer (RFC 7523)<br />authentication. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where backend credentials are inserted. If omitted, credentials are<br />written to the `Authorization` header with the `Bearer ` prefix. This<br />applies to `key`, `secretRef`, and `passthrough`. Entries in<br />`credentials` carry their own location. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
 | `credentials` _[BackendAuthCredential](#backendauthcredential) array_ | Credentials is a list of additional credentials to inject on the backend<br />request. Each entry resolves a Secret key and writes its value to the<br />entry's location. `credentials` is independent of the primary<br />`key`/`secretRef`/`passthrough` mechanism and may be set on its own or<br />alongside it. |  | MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
@@ -3621,7 +3651,7 @@ _Appears in:_
 | `auth` _[ModelBackendAuth](#modelbackendauth)_ | Credentials used to authenticate requests to this model provider. |  | AtMostOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
 | `health` _[Health](#health)_ | Health checking and eviction behavior for this model provider. |  | Optional: \{\} <br /> |
 | `tls` _[BackendTLS](#backendtls)_ | TLS settings for connections to this model provider. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
-| `tunnel` _[BackendTunnel](#backendtunnel)_ | Proxy tunnel used to reach this model provider. |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Proxy tunnel used to reach this model provider. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `headers` _[HeaderModifiers](#headermodifiers)_ | Request and response header changes applied to provider traffic. |  | Optional: \{\} <br /> |
 | `promptGuard` _[AIPromptGuard](#aipromptguard)_ | Guardrails for requests and responses sent to this model provider. |  | Optional: \{\} <br /> |
 
@@ -3910,7 +3940,8 @@ _Appears in:_
 
 OAuth token exchange settings for backend authentication.
 
-
+_Validation:_
+- ExactlyOneOf: [backendRef url]
 
 _Appears in:_
 - [BackendAuth](#backendauth)
@@ -3918,7 +3949,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | RFC 8693 token endpoint backend. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 | `path` _string_ | Token endpoint path; defaults to "/". Must start with "/". |  | Pattern: `^/` <br />Optional: \{\} <br /> |
 | `grantType` _[OAuthGrantType](#oauthgranttype)_ | RFC followed by the request. Defaults to TokenExchange (RFC 8693). |  | Optional: \{\} <br /> |
 | `subjectToken` _[OAuthTokenSpec](#oauthtokenspec)_ | Subject token / assertion source and type. Defaults to Authorization Bearer, AccessToken.<br />The token type may be a built-in value or a custom absolute URI for providers<br />that support custom token exchange profiles. |  | Optional: \{\} <br /> |
@@ -4146,7 +4178,7 @@ _Appears in:_
 | `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
 | `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
-| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `auth` _[OpenAIModerationAuth](#openaimoderationauth)_ | Settings for authenticating to OpenAI. |  | ExactlyOneOf: [key secretRef] <br />Optional: \{\} <br /> |
 
 
@@ -4157,14 +4189,16 @@ _Appears in:_
 Ships access logs to an
 OpenTelemetry-compatible backend via OTLP.
 
-
+_Validation:_
+- ExactlyOneOf: [backendRef url]
 
 _Appears in:_
 - [AccessLog](#accesslog)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | OTLP server to send access logs to.<br />Supported types: `Service` and `AgentgatewayBackend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 | `filter` _[CELExpression](#celexpression)_ | CEL expression used to filter OTLP logs. A log<br />will only be exported if the expression evaluates to `true`.<br />If unset, the parent access log filter is used. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `attributes` _[LogTracingAttributes](#logtracingattributes)_ | Customizations to the key-value pairs exported over OTLP.<br />If unset, the parent access log attributes are used. |  | Optional: \{\} <br /> |
 | `protocol` _[OTLPProtocol](#otlpprotocol)_ | OTLP protocol variant to use. | GRPC | Optional: \{\} <br /> |
@@ -4187,6 +4221,34 @@ _Appears in:_
 | `ancestorRef` _[ParentReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#parentreference)_ | The ancestor resource that this status entry describes. |  | Required: \{\} <br /> |
 | `controllerName` _string_ | The controller that wrote this status entry.<br />Example: `example.net/gateway-controller`. |  | Required: \{\} <br /> |
 | `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#condition-v1-meta) array_ | Conditions for this policy's effect on the specified ancestor. |  | MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+
+
+#### PolicyBackendEndpoint
+
+
+
+PolicyBackendEndpoint identifies a backend used by policy features.
+
+
+
+_Appears in:_
+- [BackendTunnel](#backendtunnel)
+- [CrossAppAccessEndpoint](#crossappaccessendpoint)
+- [ExtAuth](#extauth)
+- [ExtAuthOrConditional](#extauthorconditional)
+- [ExtProc](#extproc)
+- [ExtProcOrConditional](#extprocorconditional)
+- [GlobalRateLimit](#globalratelimit)
+- [MCPGuardrailsRemote](#mcpguardrailsremote)
+- [OAuthTokenExchange](#oauthtokenexchange)
+- [OtlpAccessLog](#otlpaccesslog)
+- [RemoteJWKS](#remotejwks)
+- [Tracing](#tracing)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 
 
 
@@ -4488,6 +4550,7 @@ _Appears in:_
 | `entries` _[RateLimitDescriptorEntry](#ratelimitdescriptorentry) array_ | Individual components that make up this descriptor. |  | MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `unit` _[RateLimitUnit](#ratelimitunit)_ | Cost unit. If unspecified,<br />`Requests` is used. |  | Optional: \{\} <br /> |
 | `cost` _[CELExpression](#celexpression)_ | Common Expression Language (`CEL`) expression that determines<br />the cost of the request for this descriptor. If unset, `Requests` costs<br />default to 1, and `Tokens` costs default to the total token count.<br />`Tokens` cost are evaluated after the request has completed. For non-streaming requests, `request`, `llm`, and<br />`response` fields are all available; for streaming requests, `response` is not available (however, all LLM<br />attributes are in `llm`). For `Requests`, cost is computed during the request phase.<br />See https://agentgateway.dev/docs/standalone/latest/reference/cel/ for more info. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `limitOverride` _[CELExpression](#celexpression)_ | Common Expression Language (`CEL`) expression that returns a dynamic<br />limit override for this descriptor. The expression must evaluate to an<br />object containing `unit` and `requestsPerUnit`, for example<br />`\{"unit":"minute","requestsPerUnit":5\}`.<br />See https://agentgateway.dev/docs/standalone/latest/reference/cel/ for more info. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### RateLimitDescriptorEntry
@@ -4538,7 +4601,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `local` _[LocalRateLimit](#localratelimit) array_ | Local rate limiting policy. |  | ExactlyOneOf: [requests tokens] <br />MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
-| `global` _[GlobalRateLimit](#globalratelimit)_ | Global rate limiting policy using an external service. |  | Optional: \{\} <br /> |
+| `global` _[GlobalRateLimit](#globalratelimit)_ | Global rate limiting policy using an external service. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 
 
 #### RateLimitsConditional
@@ -4572,7 +4635,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `local` _[LocalRateLimit](#localratelimit) array_ | Local rate limiting policy. |  | ExactlyOneOf: [requests tokens] <br />MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
-| `global` _[GlobalRateLimit](#globalratelimit)_ | Global rate limiting policy using an external service. |  | Optional: \{\} <br /> |
+| `global` _[GlobalRateLimit](#globalratelimit)_ | Global rate limiting policy using an external service. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `conditional` _[RateLimitsConditional](#ratelimitsconditional) array_ | Conditional policy execution. Set this or the top-level rateLimit fields.<br />The first matching policy will be executed.<br />A single policy may be provided without a condition set; if so, it must be the last policy and will be the fallback<br />in case no conditions are met. |  | MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
@@ -4601,7 +4664,8 @@ _Appears in:_
 
 
 
-
+_Validation:_
+- ExactlyOneOf: [backendRef url]
 
 _Appears in:_
 - [JWKS](#jwks)
@@ -4609,9 +4673,10 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `jwksPath` _string_ | Path to the IdP `jwks` endpoint, relative to the root, commonly<br />`".well-known/jwks.json"`. |  | MaxLength: 2000 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `jwksPath` _[LongString](#longstring)_ | Path to the IdP `jwks` endpoint, relative to the root, commonly<br />`".well-known/jwks.json"`. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `cacheDuration` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ |  | 5m | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
-| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | Remote JWKS server to reach.<br />Supported types are `Service` and static `Backend`. An<br />`AgentgatewayPolicy` containing backend TLS config can then be attached<br />to the `Service` or `Backend` in order to set TLS options for a<br />connection to the remote `jwks` source. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 
 
 #### ResourceAdd
@@ -4788,14 +4853,16 @@ _Appears in:_
 
 
 
-
+_Validation:_
+- ExactlyOneOf: [backendRef url]
 
 _Appears in:_
 - [Frontend](#frontend)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | OTLP server to reach.<br />Supported types: `Service` and `AgentgatewayBackend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 | `protocol` _[OTLPProtocol](#otlpprotocol)_ | OTLP protocol variant to use. | GRPC | Optional: \{\} <br /> |
 | `path` _[LongString](#longstring)_ | OTLP path to use. This is only applicable when<br />`protocol` is `HTTP`. If unset, this defaults to `/v1/traces`. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `attributes` _[LogTracingAttributes](#logtracingattributes)_ | Customizations to the key-value pairs that are<br />included in the trace. |  | Optional: \{\} <br /> |

@@ -83,7 +83,7 @@ routes:
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That unauthorized tools are actually filtered — would require an
 #     authenticated tools/list call with a JWT carrying the right claims.
-#   * The tool-arguments fragment later on the page is not a standalone config.
+#   * The access-log fragment later on the page is not a standalone config.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -167,7 +167,7 @@ The following MCP-specific CEL variables are available in authorization rules:
 |----------|------|-------------|-------------|
 | `mcp.tool.name` | `string` | Request-time | The name of the tool being called. |
 | `mcp.tool.target` | `string` | Request-time | The target backend handling the tool call. |
-| `mcp.tool.arguments` | `map` | Request-time | The JSON arguments passed to the tool call. |
+| `mcp.tool.arguments` | `map` | Post-request | The JSON arguments passed to the tool call (access logs only). |
 | `mcp.tool.result` | `any` | Post-request | The tool call result payload (access logs only). |
 | `mcp.tool.error` | `any` | Post-request | The tool call error payload (access logs only). |
 | `mcp.prompt.name` | `string` | Request-time | The name of the prompt being accessed. |
@@ -177,14 +177,17 @@ The following MCP-specific CEL variables are available in authorization rules:
 
 Request-time variables are available during authorization and can be used in `mcpAuthorization` rules. Post-request variables are available in access log CEL expressions.
 
-### Authorize based on tool arguments
+### Tool arguments are not available during authorization
 
-You can use tool arguments in authorization rules to enforce fine-grained access control. For example, restrict which URLs a fetch tool can access:
+`mcp.tool.arguments` is populated only after a tool call completes, so it cannot be referenced in `mcpAuthorization` rules. Base authorization decisions on `mcp.tool.name` and `mcp.tool.target` instead.
+
+To inspect tool arguments, use an access log policy, which evaluates post-request:
 
 ```yaml
-mcpAuthorization:
-  rules:
-  - 'mcp.tool.name == "fetch" && mcp.tool.arguments.url.startsWith("https://internal.")'
+frontendPolicies:
+  accessLog:
+    add:
+      tool_args: 'mcp.tool.arguments'
 ```
 
-Refer to the [CEL reference]({{< link-hextra path="/reference/cel/" >}}) for additional variables.
+See [MCP observability]({{< link-hextra path="/mcp/mcp-observability" >}}) for the full example, and the [CEL reference]({{< link-hextra path="/reference/cel/" >}}) for additional variables.

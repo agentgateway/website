@@ -181,7 +181,7 @@ traffic:
 
 When your identity provider runs outside the cluster (for example, Okta, Auth0, or Microsoft Entra ID) and is served over HTTPS, reference an {{< reuse "/agw-docs/snippets/backend.md" >}} in the `jwks.remote.backendRef` instead of a Kubernetes Service. The {{< reuse "/agw-docs/snippets/backend.md" >}} sets the upstream host and TLS SNI together, so the JWKS fetch connects to the provider with the correct hostname and certificate.
 
-1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} for the identity provider. Set `static.host` to the provider's public hostname and `policies.tls.sni` to the same hostname. Because no `caCertificateRefs` are set, the gateway proxy validates the provider's certificate against the system trust store.
+1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} for the identity provider. Set `static.host` to the provider's public hostname and `policies.tls.sni` to the same hostname. Because no `caCertificateRefs` are set, the provider's certificate is verified against the system trust store.
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "/agw-docs/snippets/api-version.md" >}}
@@ -198,6 +198,18 @@ When your identity provider runs outside the cluster (for example, Okta, Auth0, 
          sni: myorg.okta.com
    EOF
    ```
+   {{< version include-if="main" >}}
+   If your identity provider presents a certificate that is signed by a private CA, add `policies.tls.caCertificateRefs` to the {{< reuse "/agw-docs/snippets/backend.md" >}}. The certificate must be in a `ca.crt` key of a ConfigMap or a Secret in the same namespace as the {{< reuse "/agw-docs/snippets/backend.md" >}}. Omit `kind` to read the certificate from a ConfigMap, or set `kind: Secret` to read it from a Secret, such as a Secret that cert-manager issues.
+
+   ```yaml
+       policies:
+         tls:
+           sni: myorg.okta.com
+           caCertificateRefs:
+           - name: idp-ca
+             kind: Secret
+   ```
+   {{< /version >}}
 
 2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that points `jwks.remote.backendRef` at the {{< reuse "/agw-docs/snippets/backend.md" >}} that you created.
    ```yaml

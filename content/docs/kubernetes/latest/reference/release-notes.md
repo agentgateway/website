@@ -25,6 +25,46 @@ Agentgateway now builds against Gateway API v1.6, and the controller uses the `v
 
 When an MCP guardrail rejects a request during the request phase, agentgateway now returns the rejection as an HTTP 200 with a JSON-RPC error body, matching the existing response-phase behavior. Update any clients or tests that expected a non-200 status for request-phase rejections.
 
+### musl container images removed
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2574 -->
+
+The `musl`-based container image variants are no longer published. If you pin a `musl` image in your Helm values or in an AgentgatewayParameters resource, switch to the standard (glibc) image before you upgrade.
+
+## 🔒 Security {#v14-security}
+
+### Stateful MCP sessions can cross routes and overwrite the authorization policy
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2691 -->
+
+This release fixes the security advisory [GHSA-mvgg-jvj2-4frq](https://github.com/agentgateway/agentgateway/security/advisories/GHSA-mvgg-jvj2-4frq), a High severity (CVSS 8.1) issue in MCP authorization. In earlier versions, a client could present an MCP session ID on a different route than the route that created the session. Agentgateway then applied the second route's MCP authorization policy, but stayed connected to the first route's backend. That mismatch bypassed the authorization controls that you configured. Only stateful MCP setups with more than one MCP backend on separate routes are affected. HTTP authorization policies are not affected. Now, a stateful MCP session is pinned to the backend endpoint that created it.
+
+Upgrade to version 1.4.0 or later. No workaround exists for earlier versions. For details, review the [advisory](https://github.com/agentgateway/agentgateway/security/advisories/GHSA-mvgg-jvj2-4frq).
+
+### Request and response body CEL attributes in authorization policies
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2615 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2678 -->
+
+The `request.body` and `response.body` CEL attributes behave differently in this release, and the change affects any authorization policy that reads a body. The gateway buffers a body only up to the `frontend.http.maxBufferSize` limit, which defaults to 2 MB.
+
+| Attribute | 1.3.x and earlier | 1.4.x |
+| --- | --- | --- |
+| `request.body`, `response.body` | The buffered prefix of the body, truncated to the buffer limit | Not available if the body exceeds the buffer limit. The expression fails to evaluate. |
+| `request.bodyPrefix`, `response.bodyPrefix` | Not available | The first `maxBufferSize` bytes of the body |
+
+The split between `body` and `bodyPrefix` gives you more control over a body that exceeds the buffer limit. Use `body` when the policy must see the complete body, and `bodyPrefix` when a prefix is enough.
+
+In either version, an authorization policy that matches on a body is prone to bypass. Consider the following expression:
+
+```
+string(request.bodyPrefix).contains("attacker-payload")
+```
+
+If the request is larger than the buffer limit, the payload can be in the part of the body that agentgateway did not buffer, and the expression does not match. Request encoding schemes, such as compression, can also hide a payload from the expression.
+
+Review each [authorization]({{< link-hextra path="/security/authorization/" >}}) policy that reads `request.body` or `response.body`, and make sure that the policy degrades safely when the body exceeds the buffer limit or arrives encoded. This guidance is a security recommendation for how you use these attributes, not a defect in agentgateway. For the attribute descriptions, see the [CEL reference]({{< link-hextra path="/reference/cel/variables/" >}}).
+
 ## 🌟 New features {#v14-new-features}
 
 ### MCP protocol 2026-07-28 support
