@@ -2,6 +2,11 @@
 title: Blog
 toc: false
 description: ""
+# Keep the blog listing page out of FlexSearch. The list body is a dump of
+# every post card (via lp-list), so queries like "cost" ranked this page as
+# title "Blog" ahead of real posts — and selecting it navigated nowhere useful
+# when already on /blog/. Hextra's search-data.json skips excludeSearch: true.
+excludeSearch: true
 ---
 
 <section class="relative overflow-hidden bg-gray-50 dark:bg-gray-950 pt-[9.875rem] lg:pt-44 pb-14 lg:pb-20 px-6 lg:px-12 xl:px-25 bg-[linear-gradient(rgba(15,19,35,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(15,19,35,0.04)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[length:56px_56px]">

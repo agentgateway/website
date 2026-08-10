@@ -450,6 +450,40 @@
       background-color: rgba(255,255,255,0.1);
       color: #e5e7eb; /* gray-200 — visible on the near-black nav in dark mode */
     }
+
+    /* Blog-only search in the landing pill nav. Docs search is unchanged
+       (docs branch of this partial). Scope: /blog/* via $isBlog only. */
+    .landing-navbar .landing-blog-search {
+      position: relative;
+      flex: 0 0 auto;
+    }
+    .landing-navbar .landing-blog-search .hextra-search-wrapper {
+      width: 11.5rem;
+    }
+    .landing-navbar .landing-blog-search .hextra-search-input {
+      font-size: 0.8125rem;
+      padding-top: 0.375rem;
+      padding-bottom: 0.375rem;
+      border-radius: 999px;
+    }
+    .landing-navbar .landing-blog-search .hextra-search-results {
+      /* Pill nav is centered; keep the panel readable and above page content. */
+      min-width: 18rem;
+      max-width: min(28rem, calc(100vw - 2rem));
+      z-index: 60;
+    }
+    .landing-mobile-nav-search {
+      width: 100%;
+      padding-bottom: 1rem;
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(15, 19, 35, 0.08);
+    }
+    .dark .landing-mobile-nav-search {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+    .landing-mobile-nav-search .hextra-search-wrapper {
+      width: 100%;
+    }
   </style>
   <div class="agw-landing-nav-wrap fixed top-5 left-0 right-0 flex justify-center z-50 pointer-events-none hidden lg:flex">
     <nav class="navbar landing-navbar pointer-events-auto flex items-center gap-7">
@@ -473,6 +507,14 @@
         <a class="link whitespace-nowrap" href="https://discord.gg/y9efgEmppm">Community</a>
       </div>
       <div class="flex items-center gap-2 ml-1">
+        {{- /* Blog-only: mount Hextra FlexSearch so ⌘/Ctrl-K and the field work
+               under /blog/*. search-section-priority.js filters results to blog
+               by default. Home/enterprise/models stay without search. */ -}}
+        {{- if $isBlog -}}
+          <div class="landing-blog-search">
+            {{- partial "search.html" (dict "params" (dict) "location" "navbar") -}}
+          </div>
+        {{- end -}}
         {{- /* Hextra dropdown (light/dark/system) — replaces the older
                simple sun/moon button so the landing nav matches the
                docs nav. */ -}}
@@ -512,6 +554,11 @@
   <div class="mobile-nav-overflow-wrapper block lg:hidden">
   <div class="mobile-nav bg-white dark:bg-[#111422] w-screen z-40">
     <div class="h-full flex flex-col px-6 items-stretch pt-24 pb-8 overflow-y-auto w-screen">
+      {{- if $isBlog -}}
+      <div class="landing-mobile-nav-search">
+        {{- partial "search.html" (dict "params" (dict) "location" "navbar") -}}
+      </div>
+      {{- end -}}
       <a class="whitespace-nowrap text-xl font-medium text-gray-900 dark:text-gray-100 py-4" href="/docs/">Docs</a>
       <a class="whitespace-nowrap text-lg text-gray-500 dark:text-gray-400 py-2 pl-6" href="/docs/standalone/latest/">Standalone</a>
       <a class="whitespace-nowrap text-lg text-gray-500 dark:text-gray-400 py-2 pl-6" href="/docs/kubernetes/latest/">Kubernetes</a>
