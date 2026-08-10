@@ -2,7 +2,7 @@
    
    ```sh
    export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version.md" >}}
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v${GWAPI_VERSION}/standard-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v$GWAPI_VERSION/standard-install.yaml
    ```
    
    Example output: 
