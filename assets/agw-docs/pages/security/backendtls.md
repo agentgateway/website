@@ -157,8 +157,9 @@ Deploy an NGINX server that serves HTTPS traffic. The NGINX server presents the 
 #   * The "External service" section - external dependency (httpbin.org egress).
 #   * The `kind: ConfigMap` / omitted-kind variants of caCertificateRefs -
 #     requires config the page omits; the page documents only the Secret variant.
-#   * The port-forward tab of the verification step - the framework forbids
-#     `kubectl port-forward`, so the assertion uses ${INGRESS_GW_ADDRESS}.
+#   * The port-forward tab of the verification step - the framework rejects any
+#     script that runs `kubectl port-forward`, so the assertion goes through
+#     ${INGRESS_GW_ADDRESS} instead.
 YAMLTest -f - <<'EOF'
 - name: wait for the NGINX TLS sample app to be ready
   wait:
