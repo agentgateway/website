@@ -459,7 +459,7 @@ This section reuses the NGINX server and the `nginx-route` HTTPRoute that you cr
    | Setting | Description |
    |---------|-------------|
    | `targetRefs` | The Service that you want the Gateway to originate a TLS connection to. Use `sectionName` to select the port that the policy applies to. For a Service, `sectionName` must be the numeric port, such as `"8443"`, and not the name of the port. |
-   | `backend.tls.caCertificateRefs` | The CA certificate source that has the certificate used to verify the backend, in a `ca.crt` key. Set `kind` to `Secret` to read the certificate from a Kubernetes Secret, or omit `kind` to read it from a ConfigMap. The gateway does not fall back between sources, so if a Secret and a ConfigMap have the same name, only the source that `kind` selects is used. |
+   | `backend.tls.caCertificateRefs` | The CA certificate source that has the certificate used to verify the backend, in a `ca.crt` key. Set `kind` to `Secret` to read the certificate from a Kubernetes Secret, or omit `kind` to read it from a ConfigMap. The gateway does not fall back between sources, so if a Secret and a ConfigMap have the same name, only the source that the `kind` field selects is used. |
    | `backend.tls.sni` | The Server Name Indication (SNI) value to send in the TLS handshake. If unset, the SNI is derived from the destination hostname, which does not match the NGINX server certificate in this example. |
    | `backend.tls.verifySubjectAltNames` | The Subject Alternative Names (SANs) to verify in the server certificate. If unset, the destination hostname is used, which does not match the NGINX server certificate in this example. |
 
