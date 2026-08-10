@@ -16,7 +16,7 @@ Create an HTTP listener on your gateway proxy. Your proxy listens for HTTP traff
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
    ```
 
-   You must also ensure that you installed {{< reuse "agw-docs/snippets/kgateway.md" >}} with the `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true` Helm flag to use experimental Kubernetes Gateway API features. For an example, see the [Get started guide]({{< link-hextra path="/quickstart" >}}).
+   Experimental Kubernetes Gateway API features are enabled by default. To set the feature gate explicitly, install or upgrade {{< reuse "agw-docs/snippets/kgateway.md" >}} with the `--set controller.extraEnv.KGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true` Helm flag. For an example, see the [Get started guide]({{< link-hextra path="/quickstart" >}}).
    
 ## Set up an HTTP listener {#setup-http}
 

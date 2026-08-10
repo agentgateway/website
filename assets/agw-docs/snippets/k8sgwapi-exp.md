@@ -13,13 +13,13 @@ The following features are experimental in the upstream Kubernetes Gateway API p
 
 `*` **Note**: ListenerSets, CORS in HTTPRoutes, and TLSRoutes moved from the experimental to the standard channel in [Gateway API version 1.5](https://github.com/kubernetes-sigs/gateway-api/releases/tag/v1.5.0).
 
-> [!WARNING]
-> **Experimental feature gate**: To use experimental Gateway API features in agentgateway, you must enable the `KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES` environment variable in your agentgateway controller deployment. This setting defaults to `false` and must be explicitly enabled. For example, you might upgrade your installation with the following Helm value:
+> [!NOTE]
+> **Experimental feature gate**: Experimental Gateway API features in agentgateway are controlled by the `AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES` environment variable in your agentgateway controller deployment. This setting is enabled by default. To set it explicitly, or to turn experimental features off, include the following Helm value:
 >
 > ```yaml
 > controller:
 >   extraEnv:
->     KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES: "true"
+>     AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES: "true"
 > ```
 
 
