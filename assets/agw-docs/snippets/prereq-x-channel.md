@@ -3,7 +3,7 @@
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
 
-2. [Upgrade]({{< link-hextra path="/operations/upgrade/" >}}) or [install]({{< link-hextra path="/install/" >}}) {{< reuse "agw-docs/snippets/kgateway.md" >}} with the `KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES` environment variable. This setting defaults to `false` and must be explicitly enabled to use Gateway API experimental features.
+2. Optional: Gateway API experimental features are controlled by the `AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES` environment variable in the {{< reuse "agw-docs/snippets/kgateway.md" >}} controller. This setting is enabled by default, so you do not have to change anything. To set it explicitly, such as to make the setting visible in your Helm values, [upgrade]({{< link-hextra path="/operations/upgrade/" >}}) or [install]({{< link-hextra path="/install/" >}}) {{< reuse "agw-docs/snippets/kgateway.md" >}} with the following flag.
    
    Example command:
    ```sh
@@ -11,7 +11,7 @@
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
      --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
      --set controller.image.pullPolicy=Always \
-     --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true
+     --set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true
    ```
 
 3. [Set up an agentgateway proxy]({{< link-hextra path="/setup/gateway/">}}).

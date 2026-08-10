@@ -58,13 +58,13 @@ Revisit when the current main (1.4.x) ships as the next latest: the Standard pat
    ```
    {{% /tab %}}
    {{% tab name="Experimental" %}}
-   The experimental path uses the nightly development build and enables the experimental Gateway API feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`.
+   The experimental path uses the nightly development build. Experimental Gateway API features are enabled by default, and the following command sets the feature gate explicitly with `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true`.
    ```sh {paths="experimental"}
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
    --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
    --set controller.image.pullPolicy=Always \
-   --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true \
+   --set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true \
    --wait
    ```
    {{% /tab %}}
