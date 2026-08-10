@@ -59,6 +59,9 @@ Streaming is useful for:
 
 With {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can still apply policies to your streaming responses, such as prompt guards, JWT auth, and rate limiting.
 
+> [!IMPORTANT]
+> Guardrails do not run on streamed responses until you set `promptGuard.streaming` to `Enabled`, and the `Mask` action never applies to a streamed response. Review [Streaming guardrails]({{< link-hextra path="/llm/guardrails/overview/#streaming" >}}) before you rely on a response guard to protect streamed traffic.
+
 ## Provider differences {#provider-differences}
 
 The streaming process differs for each LLM provider.

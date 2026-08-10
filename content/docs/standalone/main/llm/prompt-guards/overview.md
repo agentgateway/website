@@ -56,6 +56,8 @@ The diagram shows content flowing through multiple guard layers. Each layer can:
 - **Reject**: Block the request and return an error message
 - **Mask**: Replace sensitive patterns with placeholders and continue
 
+Both actions are available on the request path and the response path. A response guard can reject a response as well as mask it.
+
 ## Shared and model-specific guardrails
 
 Use `llm.policies.guardrails` to define a shared baseline for every LLM model. You can then add extra guardrails on an individual model with `llm.models[].guardrails`.
@@ -64,10 +66,38 @@ When both are configured, agentgateway merges the shared and model-specific guar
 
 ## Streaming guardrails
 
-Set `llm.policies.streaming` to one of the following values:
+By default, guardrails run only on buffered LLM traffic. When a client sets `"stream": true`, the LLM response is streamed to the client, and response guards do not run at all.
 
-- `Disabled` - the default. Guardrails run for non-streaming LLM traffic.
-- `Enabled` - guardrails also run on streamed content, including SSE responses and OpenAI Realtime WebSocket traffic.
+To run guardrails on streamed content, set the `streaming` field on the guardrails that you want to apply. Set `llm.policies.guardrails.streaming` for the shared baseline, or `llm.models[].guardrails.streaming` for a single model.
+
+```yaml
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      model: gpt-4o-mini
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
+      streaming: Enabled
+      response:
+      - regex:
+          action: reject
+          rules:
+          - builtin: email
+```
+
+| Value | Description |
+| -- | -- |
+| `Disabled` | The default. Guardrails run only on buffered LLM traffic. |
+| `Enabled` | Guardrails also run on streamed content, including server-sent events (SSE) responses and OpenAI Realtime WebSocket traffic. |
+
+> [!WARNING]
+> **The `mask` action does not apply to a streamed response.** Agentgateway can block a streamed response, but it cannot rewrite content that is already on its way to the client. A response guard that matches content and uses `action: mask` passes that content through unmodified. The client receives no error, and the proxy records no guardrail event. The same limit applies to every response guard that modifies content, such as a webhook guard that returns a mask action, or AWS Bedrock Guardrails anonymization.
+>
+> To protect a streamed response, use `action: reject`. When the guard matches, agentgateway ends the stream and sends a `guardrail_blocked` error event to the client.
+
+Request guards do not have this limit. A request is buffered before it reaches the LLM provider, so both `mask` and `reject` apply to requests whether or not the client asks for a streamed response.
 
 ## Choosing the right approach
 
