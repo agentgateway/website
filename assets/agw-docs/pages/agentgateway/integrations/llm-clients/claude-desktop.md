@@ -86,7 +86,7 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
    http://127.0.0.1:4001/claude
    ```
 
-5. For the **Credential kind** dropdown, select `Static API key` and then in the **Gateway API key** field, enter the bearer token you copied in step 1. To authenticate each user with your identity provider instead of a shared token, see [Authenticate users with your identity provider](#sso).
+5. For the **Credential kind** dropdown, select `Static API key` and then in the **Gateway API key** field, enter the bearer token you copied in step 1. To authenticate each user with your identity provider instead of requiring users to pass the same shared token, see [Authenticate users with your identity provider](#sso).
 
 6. Click **Apply Changes**, then fully quit Claude Desktop and reopen it. Claude Desktop reads its configuration only at launch.
 

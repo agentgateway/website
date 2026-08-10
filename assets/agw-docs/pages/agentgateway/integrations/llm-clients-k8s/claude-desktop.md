@@ -22,8 +22,8 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 >
 > You therefore have two options:
 >
-> * **Port-forward the proxy** and use `http://127.0.0.1:<port>`. Use the literal address `127.0.0.1`, because `localhost` does not always resolve as a loopback address for this check. This option suits a single machine that you use to evaluate the setup.
-> * **Terminate HTTPS on the proxy** and use `https://<hostname>`. This option is the one to use for a rollout. To set up a certificate, see [HTTPS listeners]({{< link-hextra path="/setup/listeners/https/" >}}).
+> * **Port-forward the proxy** and use `http://127.0.0.1:<port>`. Use the literal address `127.0.0.1`, because `localhost` does not always resolve as a loopback address for this check. Choose this option to try out the setup on a single machine.
+> * **Terminate HTTPS on the proxy** and use `https://<hostname>`. Choose this option when you [roll out the configuration to your organization](#mdm), because each user's machine must reach the proxy over the network. To set up a certificate, see [HTTPS listeners]({{< link-hextra path="/setup/listeners/https/" >}}).
 
 ## Set up the Anthropic backend
 
@@ -153,7 +153,7 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 
    {{< /tabs >}}
 
-5. For the **Credential kind** dropdown, select `Static API key` and then in the **Gateway API key** field, enter the bearer token you copied in step 1. To authenticate each user with your identity provider instead of a shared token, see [Authenticate users with your identity provider](#sso).
+5. For the **Credential kind** dropdown, select `Static API key` and then in the **Gateway API key** field, enter the bearer token you copied in step 1. To authenticate each user with your identity provider instead of requiring users to pass the same shared token, see [Authenticate users with your identity provider](#sso).
 
 6. Click **Apply Changes**, then fully quit Claude Desktop and reopen it. Claude Desktop reads its configuration only at launch.
 

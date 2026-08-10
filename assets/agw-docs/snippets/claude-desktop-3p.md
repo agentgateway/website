@@ -1,6 +1,6 @@
 Claude Desktop sends model traffic to Anthropic by default. Third-party inference mode changes that destination to an endpoint that you operate, such as an agentgateway proxy. Anthropic made this mode generally available on July 9, 2026.
 
-Anthropic designed the mode for organizations whose security, regulatory, or contractual requirements prevent them from sending data to Anthropic's first-party infrastructure. Prompts, responses, files, and tool outputs go only to the endpoint that you configure, and conversation history stays on the user's device. Put an agentgateway proxy at that endpoint, and every Claude Desktop request passes through your policies for authentication, guardrails, rate limits, and observability before it reaches a model.
+Anthropic designed the mode for organizations whose security, regulatory, or contractual requirements prevent them from sending data to Anthropic's first-party infrastructure. Prompts, responses, files, and tool outputs go only to the endpoint that you configure, and conversation history stays on the user's device. You can create an agentgateway proxy at that endpoint, so that every Claude Desktop request passes through your policies for authentication, guardrails, rate limits, and observability before it reaches a model.
 
 Keep the following behavior in mind:
 
