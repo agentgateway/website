@@ -265,7 +265,7 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
    | `identityProvider` | The user's IdP authorization server token endpoint, referenced as an {{< reuse "agw-docs/snippets/backend.md" >}} through `backendRef`, with the token endpoint `path`. Agentgateway sends the validated ID token as the RFC 8693 `subject_token` on this leg. |
    | `resourceAuthorizationServer` | The resource authorization server token endpoint, in the same shape as `identityProvider`. This leg uses the RFC 7523 JWT-bearer grant, with the ID-JAG from the IdP leg sent as the assertion. This is a separate client registration from the IdP one. |
    | `clientAuth` | Client authentication for each token endpoint. `method` is `ClientSecretBasic` (default), `ClientSecretPost`, or `PrivateKeyJwt`. Use `secretRef` to read the client secret from a Kubernetes Secret. |
-   | `subjectToken` | Optional source of the subject token for the exchange. `source` defaults to the `Authorization` Bearer header. When a route-level JWT policy validates the inbound token, it strips the `Authorization` header, so set `source.expression` to the `jwt.rawToken.unredacted()` CEL expression to read the validated token instead. |
+   | `subjectToken` | Optional source of the subject token for the exchange. `source` defaults to the `Authorization` Bearer header. When a route-level JWT policy validates the inbound token, it strips the `Authorization` header, so set `source.expression` to the `jwt.rawToken.unredacted()` CEL expression to read the validated token instead. For the header, query parameter, and cookie forms that `source` also takes, see [Choose where the subject token is read from](#subject-token-source). |
    | `audience` | Required identifier of the resource authorization server. The issued ID-JAG is bound to this value. |
    | `resources` | Optional protected resource or API identifiers ([RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707)), sent on the token exchange leg. Configure these explicitly when the authorization server expects them. |
    | `scopes` | Optional scopes to request. The authorization server might grant a subset. |
@@ -411,6 +411,55 @@ BAD_TOKEN=$(curl -s -o /dev/null -w '%{http_code}' "http://${INGRESS_GW_ADDRESS}
 [ "$BAD_TOKEN" = "401" ] || { echo "FAILED: expected 401 with bad token, got $BAD_TOKEN"; exit 1; }
 echo "cross-app-access exchange verified"
 {{< /doc-test >}}
+
+## Choose where the subject token is read from {#subject-token-source}
+
+The `subjectToken.source` field selects where the gateway reads the subject credential from. It takes one of the following four forms. A policy that sets none of them, or more than one, is rejected when you apply it, with the message `exactly one of the fields in [header queryParameter cookie expression] must be set`.
+
+| Form | Reads the credential from |
+| -- | -- |
+| `header` | The named request header, verbatim. |
+| `queryParameter` | The named query parameter of the request URL. |
+| `cookie` | The named cookie. |
+| `expression` | A CEL expression that the gateway evaluates against the validated request, such as a claim of a JWT that a [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) policy validated. |
+
+When you omit `subjectToken`, the gateway reads the credential from the `Authorization` header with the `Bearer` prefix.
+
+Only the location is configurable. Whichever form you choose, the gateway sends the credential to the identity provider as an ID token, with `subject_token_type` set to `urn:ietf:params:oauth:token-type:id_token`.
+
+After the exchange, the gateway removes the credential from the location that you configured. The gateway removes a named cookie or query parameter on its own, and forwards the remaining cookies and parameters unchanged. The gateway then writes the exchanged access token to the `Authorization` header, which replaces any credential that the client sent in that header. The backend therefore receives the exchanged token only, never the subject credential.
+
+> [!NOTE]
+> On MCP routes, the `queryParameter` form never matches, because the request that the policy inspects carries no query string. The exchange fails even when the parameter is present on the incoming request. Use a header, a cookie, or a CEL expression instead. Plain HTTP routes are not affected.
+
+<!--TODO 
+For more information, see [agentgateway#2799](https://github.com/agentgateway/agentgateway/issues/2799).
+-->
+
+### Read the subject token from a claim {#subject-token-claim}
+
+A client does not always present an ID token directly. In an MCP OAuth setup, for example, the client authenticates with an OAuth access token, and the ID token travels inside that token as a claim. Validate the incoming token at the edge with a route-level JWT authentication policy, then point the subject source at the claim that carries the ID token. Use the claim name that your authorization server issues.
+
+```yaml
+backend:
+  auth:
+    crossAppAccess:
+      subjectToken:
+        source:
+          expression: jwt.id_token
+```
+
+The `jwt` variable holds the claims of the token that the JWT authentication policy validated, so an expression can read only a claim that arrived signed. The exchange runs on the extracted ID token, and the outer access token is never sent to either token endpoint.
+
+### When the source yields no credential {#subject-token-empty}
+
+The gateway does not fall back to another location. If the configured source yields nothing, the request fails with a `400` and the message `invalid request`, and the gateway does not call the identity provider. The following cases all fail this way:
+
+- The configured header, cookie, or query parameter is absent from the request.
+- A CEL expression evaluates to nothing, such as an expression that names a claim that the validated token does not carry. The policy still reports `Accepted: True` with the reason `Valid`, because the expression itself is well formed.
+- A CEL expression does not compile. The policy reports the reason `PartiallyValid` and names the expression, as in `crossAppAccess subjectToken source expression is not a valid CEL expression: ((`.
+
+Because a policy can report itself healthy while every request on the route fails, check the response code as well as the policy status after you change the subject source.
 
 ## Private key JWT client authentication
 
