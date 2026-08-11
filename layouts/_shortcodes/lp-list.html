@@ -1,23 +1,66 @@
 {{- /*
   Shortcode: lp-list
   Renders a list of child pages as styled article cards showing the date, author, title, summary, and a "Read full article" link.
+  Includes click-to-filter category pills above the grid.
 
   Parameters:
     (none -- iterates over child pages of the current page)
 
   Example: {{< lp-list >}}
 */ -}}
-<section class="px-6 md:px-10 py-16 md:py-24 max-w-7xl mx-auto bg-gray-50 dark:bg-gray-950">
+{{- /* Collect unique categories present on child pages (sorted A–Z). */ -}}
+{{- $categories := slice -}}
+{{- range $.Page.Pages -}}
+  {{- with .Params.category -}}
+    {{- if not (in $categories .) -}}
+      {{- $categories = $categories | append . -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $categories = sort $categories -}}
+
+<section class="px-6 md:px-10 pt-4 md:pt-6 pb-16 md:pb-24 max-w-7xl mx-auto bg-gray-50 dark:bg-gray-950">
   {{- /* Category badge color map. Class strings are literal so Tailwind compiles them. */ -}}
   {{- $catColors := dict
       "Announcement" "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300"
       "Feature"      "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
       "Tutorial"     "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300"
       "Community"    "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
-      "Deep Dive"    "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300" -}}
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+      "Deep Dive"    "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300"
+      "Release"      "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-300"
+      "Integration"  "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300" -}}
+
+  {{- /* Filter pills — click to show/hide cards by category. */ -}}
+  {{- if $categories -}}
+  <div class="flex flex-wrap gap-2 md:gap-3 mb-8 md:mb-10" id="blog-filters" role="group" aria-label="Filter posts by category">
+    <button
+      type="button"
+      class="blog-filter active px-4 py-2 rounded-full text-sm font-medium transition-all border border-transparent bg-purple-600 text-white"
+      data-category="all"
+      aria-pressed="true"
+    >
+      All
+    </button>
+    {{- range $categories -}}
+    <button
+      type="button"
+      class="blog-filter px-4 py-2 rounded-full text-sm font-medium transition-all border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:border-purple-400 dark:hover:border-purple-500"
+      data-category="{{ . }}"
+      aria-pressed="false"
+    >
+      {{ . }}
+    </button>
+    {{- end -}}
+  </div>
+  {{- end -}}
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8" id="blog-cards">
     {{ range $.Page.Pages }}
-      <article class="group flex flex-col h-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-2xl p-6 md:p-7 hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-[0_20px_60px_-15px_rgba(139,92,246,0.4)] transition-all duration-300 hover:scale-[1.01] text-left">
+      {{- $cat := .Params.category | default "" -}}
+      <article
+        class="blog-card group flex flex-col h-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-2xl p-6 md:p-7 hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-[0_20px_60px_-15px_rgba(139,92,246,0.4)] transition-all duration-300 hover:scale-[1.01] text-left"
+        data-category="{{ $cat }}"
+      >
 
         <!-- Category badge -->
         {{ with .Params.category }}
@@ -61,4 +104,50 @@
       </article>
     {{ end }}
   </div>
+
+  <p id="blog-filter-empty" class="hidden text-center text-gray-500 dark:text-gray-400 mt-12 text-base" role="status">
+    No posts in this category.
+  </p>
 </section>
+
+<script>
+(function () {
+  var filters = document.querySelectorAll('.blog-filter');
+  var cards = document.querySelectorAll('.blog-card');
+  var empty = document.getElementById('blog-filter-empty');
+  if (!filters.length || !cards.length) return;
+
+  var activeOn = ['active', 'bg-purple-600', 'text-white', 'border-transparent'];
+  var activeOff = ['border-gray-200', 'dark:border-gray-700', 'bg-white', 'dark:bg-gray-900', 'text-gray-700', 'dark:text-gray-300'];
+
+  function setActive(btn) {
+    filters.forEach(function (b) {
+      activeOn.forEach(function (c) { b.classList.remove(c); });
+      activeOff.forEach(function (c) { b.classList.add(c); });
+      b.setAttribute('aria-pressed', 'false');
+    });
+    activeOff.forEach(function (c) { btn.classList.remove(c); });
+    activeOn.forEach(function (c) { btn.classList.add(c); });
+    btn.setAttribute('aria-pressed', 'true');
+  }
+
+  function filterBy(category) {
+    var visible = 0;
+    cards.forEach(function (card) {
+      var match = category === 'all' || card.getAttribute('data-category') === category;
+      card.hidden = !match;
+      if (match) visible++;
+    });
+    if (empty) {
+      empty.classList.toggle('hidden', visible > 0);
+    }
+  }
+
+  filters.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      setActive(btn);
+      filterBy(btn.getAttribute('data-category'));
+    });
+  });
+})();
+</script>
