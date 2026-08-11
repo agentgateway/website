@@ -224,6 +224,10 @@ To supply a header value that changes over time, set a credential helper instead
 
 Configure and test one machine in developer mode first. When the connection works, click **Export** in the **Configure Third Party Inference** panel to produce a profile for your device management system, and distribute it with the tool that you already use, such as Jamf, Intune, Workspace ONE, or Group Policy. Users then receive the configuration on first launch and do not configure anything by hand.
 
+For an end-to-end Microsoft Intune rollout with Entra ID and managed-device
+enforcement, see [Manage Claude Desktop with Microsoft Intune]({{< link-hextra
+path="/integrations/llm-clients/microsoft-intune/#manage-claude-desktop" >}}).
+
 Managed configuration takes precedence over local settings, so a user cannot point the app at a different endpoint. The delivery mechanism differs per operating system.
 
 | Operating system | Managed configuration |
