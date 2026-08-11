@@ -433,8 +433,8 @@ clientAuth:
 The following parts of the Identity Assertion Authorization Grant draft are not yet supported:
 
 - DPoP sender-constrained tokens (RFC 9449).
-- `.well-known` endpoint discovery (RFC 8414, endpoints must be configured explicitly).
-- SAML or refresh-token subject types in the open source build (only OIDC ID tokens are used as the subject).
+- `.well-known` endpoint discovery (RFC 8414, endpoints must be configured explicitly).{{< conditional-text include-if="kubernetes" >}}
+- SAML and refresh-token subject types. Only an OIDC ID token can be the subject of the exchange.{{< /conditional-text >}}
 
 ## Cleanup
 
