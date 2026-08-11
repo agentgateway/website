@@ -1101,6 +1101,7 @@ _Appears in:_
 | `defaults` _[FieldDefault](#fielddefault) array_ | Defaults to merge with user input fields. If the field is already set, the field in the request is used. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `overrides` _[FieldDefault](#fielddefault) array_ | Overrides to merge with user input fields. If the field is already set, the field is overwritten. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `transformations` _[FieldTransformation](#fieldtransformation) array_ | CEL transformations to compute and set fields in the request body.<br />The expression result overwrites any existing value for that field.<br />This has a higher priority than `overrides` if both are set for the same<br />key. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `finalTransformations` _[FieldTransformation](#fieldtransformation) array_ | CEL transformations to compute and set fields in the request body.<br />The expression result overwrites any existing value for that field.<br />This has a higher priority than `overrides` if both are set for the same<br />key.<br />Those transformations are applied after the request is converted to the provider's format, so they can be used to set provider-specific fields. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `modelAliases` _object (keys:string, values:string)_ | Maps friendly model names to actual provider model names.<br />Example: `\{"fast": "gpt-3.5-turbo", "smart": "gpt-4-turbo"\}`.<br />Note: This field is only applicable when using the agentgateway data plane. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `promptCaching` _[PromptCachingConfig](#promptcachingconfig)_ | Automatic prompt caching for supported<br />providers, currently AWS Bedrock.<br />Reduces API costs by caching static content like system prompts and tool definitions.<br />Only applicable for Bedrock Claude 3+ and Nova models. |  | Optional: \{\} <br /> |
 | `routes` _object (keys:string, values:[RouteType](#routetype))_ | Rules for identifying the type of traffic to handle.<br />The keys are URL path suffixes matched using ends-with comparison, for<br />example `"/v1/chat/completions"`.<br />The special `*` wildcard matches any path.<br />If not specified, all traffic defaults to `completions` type. |  | Optional: \{\} <br /> |
@@ -3183,7 +3184,7 @@ _Appears in:_
 | `requests` _integer_ | Number of HTTP requests per unit of time that<br />are allowed. Requests exceeding this limit will fail with a `429`<br />error. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `tokens` _integer_ | Number of LLM tokens per unit of time that are<br />allowed. Requests exceeding this limit will fail with a `429` error.<br />Both input and output tokens are counted. However, token counts are not known until the request completes. As a<br />result, token-based rate limits will apply to future requests only. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `unit` _[LocalRateLimitUnit](#localratelimitunit)_ | Unit of time for the limit. |  | Required: \{\} <br /> |
-| `burst` _integer_ | Allowance of requests above the request-per-unit<br />that should be allowed within a short period of time. |  | Optional: \{\} <br /> |
+| `burst` _integer_ | Allowance of requests above the request-per-unit<br />that should be allowed within a short period of time. |  | Minimum: 0 <br />Optional: \{\} <br /> |
 
 
 #### LocalRateLimitUnit
@@ -3648,6 +3649,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `transformations` _[FieldTransformation](#fieldtransformation) array_ | CEL transformations applied to fields in the provider request body. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `finalTransformations` _[FieldTransformation](#fieldtransformation) array_ | CEL transformations applied to fields in the provider request body.<br />After conversion from one provider format to another, these transformations are applied to the converted request body. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `authorization` _[Authorization](#authorization)_ | Authorization rules that clients must satisfy to use this model. |  | Optional: \{\} <br /> |
 | `auth` _[ModelBackendAuth](#modelbackendauth)_ | Credentials used to authenticate requests to this model provider. |  | AtMostOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
 | `health` _[Health](#health)_ | Health checking and eviction behavior for this model provider. |  | Optional: \{\} <br /> |
