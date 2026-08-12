@@ -5,6 +5,8 @@ Test and interact with agentgateway using curl.
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. Install curl (pre-installed on macOS and Linux).
 
+{{< reuse "agw-docs/snippets/llm-client-setup-callout.md" >}}
+
 ## Example agentgateway configuration
 
 ```yaml

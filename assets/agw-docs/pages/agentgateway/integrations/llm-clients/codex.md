@@ -6,6 +6,8 @@ Configure [Codex](https://chatgpt.com/codex), the AI coding tool by OpenAI, to r
 2. Install either the [Codex CLI](https://learn.chatgpt.com/docs/codex/cli) or
    the [ChatGPT desktop app](https://chatgpt.com/download/).
 
+{{< reuse "agw-docs/snippets/llm-client-setup-callout.md" >}}
+
 ## Configure agentgateway
 
 Start agentgateway with an OpenAI backend configuration. The wildcard `*` model name accepts any model. Codex sends the model in each request, so you do not need to pin a specific model.

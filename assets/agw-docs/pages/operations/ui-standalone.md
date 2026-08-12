@@ -70,7 +70,7 @@ kill $AGW_DEFAULT_PID 2>/dev/null || true
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x" >}}
 ## Generate LLM client settings {#client-setup}
 
-The **LLM > Client Setup** page generates connection settings and snippets for supported LLM clients, including Claude Desktop, Claude Code, curl, Cursor, and OpenAI SDKs.
+The **LLM > Client Setup** page generates connection settings and snippets for curl, Claude Code, Claude Desktop, Codex CLI, OpenCode, Cursor, GitHub Copilot, Windsurf, and the OpenAI JavaScript and Python SDKs.
 
 1. Configure at least one LLM model and, if the gateway requires client authentication, a [virtual API key]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
 2. Open [http://localhost:15000/ui/llm/client-setup](http://localhost:15000/ui/llm/client-setup).
