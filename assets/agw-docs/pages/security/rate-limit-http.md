@@ -90,7 +90,7 @@ With both policies in place, traffic to `www.example.com` is subject to the rout
 
 ## Before you begin
 
-{{< reuse "agw-docs/snippets/prereq-x-channel.md" >}}
+{{< reuse "agw-docs/snippets/prereq.md" >}}
 
 ## Local rate limiting {#local}
 

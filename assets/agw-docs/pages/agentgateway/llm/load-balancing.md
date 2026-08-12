@@ -46,13 +46,18 @@ When you configure multiple [priority groups]({{< link-hextra path="/llm/failove
 This combines the benefits of automatic intelligent load balancing with explicit priority-based failover control.
 
 
-## Load balancing across Pod replicas
+## Load balancing across Pod replicas {#pod-replicas}
 
 When you register an LLM provider backend that points at an in-cluster Kubernetes Service with multiple Pod replicas behind it, the load balancing behavior depends on how the backend is configured.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}
+> [!NOTE]
+> This section is about the `host` and `port` fields of an **LLM provider**. It does not describe how {{< reuse "agw-docs/snippets/agentgateway.md" >}} treats Kubernetes Services in general. When an HTTPRoute routes to a Service directly, the proxy resolves the endpoints of that Service and load balances across the individual pods with P2C, for LLM and non-LLM traffic alike. For more information, see [Load balancing]({{< link-hextra path="/traffic-management/load-balancing/" >}}).
+{{< /version >}}
+
 ### Using `host`/`port` with a normal ClusterIP Service
 
-When you use the `host` and `port` fields (available on all provider types) to point at a normal Kubernetes Service with a `ClusterIP`, traffic goes through kube-proxy. Agentgateway sees only a single backend endpoint (the Service's ClusterIP), and kube-proxy handles the load balancing across individual Pods using iptables or IPVS rules. Agentgateway's P2C load balancing and health-aware scoring does **not** apply across individual Pod replicas in this case.
+When you use the `host` and `port` fields (available on all provider types) to point at a normal Kubernetes Service with a `ClusterIP`, traffic goes through kube-proxy. Because the provider is configured as a hostname rather than as a Service reference, agentgateway resolves it to a single dial target (the Service's ClusterIP), and kube-proxy handles the load balancing across individual Pods using iptables or IPVS rules. Agentgateway's P2C load balancing and health-aware scoring does **not** apply across individual Pod replicas in this case.
 
 ```yaml
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
