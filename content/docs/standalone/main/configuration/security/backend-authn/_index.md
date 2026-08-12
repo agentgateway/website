@@ -249,7 +249,7 @@ backendAuth:
 
 Only `signingKey` is required. A policy that sets nothing else signs with `RS256` and a 300-second lifetime, and writes the token to the `Authorization` header.
 
-The signer owns the time claims. agentgateway always sets `iat` and `exp`, and backdates `iat` by 10 seconds so that a validator whose clock trails the proxy still accepts a freshly minted token. A decoded token therefore spans the `ttl` plus 10 seconds, and never carries an `nbf` claim. Setting `iat`, `exp`, or `nbf` under `claims` is rejected when the configuration loads.
+The signer owns the time claims. Agentgateway always sets `iat` and `exp`, and backdates `iat` by 10 seconds so that a validator whose clock trails the proxy still accepts a freshly minted token. A decoded token therefore spans the `ttl` plus 10 seconds, and never carries an `nbf` claim. Setting `iat`, `exp`, or `nbf` under `claims` is rejected when the configuration loads.
 
 ```
 Error: jwtSign claim "iat" is reserved for the signer and cannot be configured

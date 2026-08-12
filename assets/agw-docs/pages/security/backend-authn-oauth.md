@@ -279,7 +279,7 @@ EOF
    | `grantType` | `TokenExchange` (default, RFC 8693) or `JwtBearer` (RFC 7523). |
    | `clientAuth` | Client authentication for the token endpoint. `method` is `ClientSecretBasic` (default), `ClientSecretPost`, or `PrivateKeyJwt`. Use `secretRef` to read the client secret from a Kubernetes Secret. |
    | `audiences`, `scopes`, `resources` | The `audience`, `scope`, and `resource` parameters sent to the token endpoint. `resources` are [RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707) resource indicators. |
-   | `subjectToken` | Where to read the incoming credential and its `tokenType`, which is either a built-in name such as `AccessToken`, `Jwt`, or `IdToken`, or a custom absolute URI, as described in [Token types](#token-types). Defaults to the `Authorization: Bearer` header, with the type `AccessToken`. |
+   | `subjectToken` | The type of token to extract the subject information from and how it is provided. For the token type, you can choose a built-in type, such as `AccessToken`, `Jwt`, or `IdToken`, or provide a custom URI as described in [Token types](#token-types). Defaults to the `Authorization: Bearer` header, with the type `AccessToken`. |
    | `actorToken` | Optional RFC 8693 delegation actor token (`TokenExchange` grant only). Takes the same `tokenType` values as `subjectToken`. |
    | `requestedTokenType` | Optional token type to request, limited to `AccessToken`, `Jwt`, or `IdToken`, and valid only with the `TokenExchange` grant type. The response must return the type that you request. See [Request a token type](#requested-token-type). |
    | `location` | Where to place the exchanged token in the backend request. Defaults to the `Authorization` header. |
@@ -403,7 +403,7 @@ backend authentication failed: token exchange returned issued_token_type urn:iet
 > [!NOTE]
 > When you omit `requestedTokenType`, the gateway sends no `requested_token_type` parameter, and it does not check `issued_token_type` at all. The authorization server chooses the type, and the gateway accepts whatever the response returns. Set the field when the type of the issued token matters to the backend.
 
-### Checks that only log a warning {#oauth-warnings}
+### Support for non-compliant providers {#oauth-warnings}
 
 The gateway accepts the following three settings for compatibility with providers that do not yet support the stricter shape. Each one logs a warning in the proxy and still forwards traffic. A future release might reject them, so prefer [RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707) resource URIs, valid scope tokens, and header or cookie placement where your provider allows it.
 

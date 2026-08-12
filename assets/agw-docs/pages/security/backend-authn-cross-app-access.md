@@ -265,7 +265,7 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
    | `identityProvider` | The user's IdP authorization server token endpoint, referenced as an {{< reuse "agw-docs/snippets/backend.md" >}} through `backendRef`, with the token endpoint `path`. Agentgateway sends the validated ID token as the RFC 8693 `subject_token` on this leg. |
    | `resourceAuthorizationServer` | The resource authorization server token endpoint, in the same shape as `identityProvider`. This leg uses the RFC 7523 JWT-bearer grant, with the ID-JAG from the IdP leg sent as the assertion. This is a separate client registration from the IdP one. |
    | `clientAuth` | Client authentication for each token endpoint. `method` is `ClientSecretBasic` (default), `ClientSecretPost`, or `PrivateKeyJwt`. Use `secretRef` to read the client secret from a Kubernetes Secret. |
-   | `subjectToken` | Optional source of the subject token for the exchange. `source` defaults to the `Authorization` Bearer header. When a route-level JWT policy validates the inbound token, it strips the `Authorization` header, so set `source.expression` to the `jwt.rawToken.unredacted()` CEL expression to read the validated token instead. For the header, query parameter, and cookie forms that `source` also takes, see [Choose where the subject token is read from](#subject-token-source). |
+   | `subjectToken` | Optional source of the subject token for the exchange. `source` defaults to the `Authorization` Bearer header. When a route-level JWT policy validates the inbound token, it strips the `Authorization` header, so set `source.expression` to the `jwt.rawToken.unredacted()` CEL expression to read the validated token instead. For more information about other forms of sources, such as headers, query parameters, or cookies,  see [Choose where the subject token is read from](#subject-token-source). |
    | `audience` | Required identifier of the resource authorization server. The issued ID-JAG is bound to this value. |
    | `resources` | Optional protected resource or API identifiers ([RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707)), sent on the token exchange leg. Configure these explicitly when the authorization server expects them. |
    | `scopes` | Optional scopes to request. The authorization server might grant a subset. |
@@ -418,9 +418,9 @@ The `subjectToken.source` field selects where the gateway reads the subject cred
 
 | Form | Reads the credential from |
 | -- | -- |
-| `header` | The named request header, verbatim. |
-| `queryParameter` | The named query parameter of the request URL. |
-| `cookie` | The named cookie. |
+| `header` | The name of the request header. |
+| `queryParameter` | The name of the query parameter in the request URL. |
+| `cookie` | The name of the cookie. |
 | `expression` | A CEL expression that the gateway evaluates against the validated request, such as a claim of a JWT that a [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) policy validated. |
 
 When you omit `subjectToken`, the gateway reads the credential from the `Authorization` header with the `Bearer` prefix.

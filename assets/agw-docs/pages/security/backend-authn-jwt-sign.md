@@ -8,7 +8,7 @@ With the `jwtSign` backend authentication method, the gateway mints the token it
 
 Two behaviors are worth knowing before you configure the method:
 
-* **The signer owns the time claims.** The gateway always sets `iat` and `exp`, and rejects a policy that tries to configure `iat`, `exp`, or `nbf`. The gateway backdates `iat` by 10 seconds, so that a validator whose clock trails the gateway still accepts a freshly minted token. A decoded token therefore spans the `ttl` plus 10 seconds, and never carries an `nbf` claim.
+* **The signer (gateway) owns the time claims.** The gateway always sets `iat` and `exp`, and rejects a policy that tries to configure `iat`, `exp`, or `nbf`. The gateway backdates `iat` by 10 seconds, so that a validator whose clock trails the gateway still accepts a freshly minted token. A decoded token therefore spans the `ttl` plus 10 seconds, and never carries an `nbf` claim.
 * **The token overwrites only what sits at its location.** With the default location, the gateway writes the `Authorization` header, which replaces a credential that the client sent in that header. If you point `location` at a different header, query parameter, or cookie, the client's `Authorization` header is no longer the one that the gateway overwrites, and the gateway forwards that header to the backend like any other. Remove it with a request filter if the upstream must not see it.
 
 > [!NOTE]
@@ -22,7 +22,7 @@ Two behaviors are worth knowing before you configure the method:
 
 The gateway reads the private key from the `signingKey` entry of a Secret in the policy's namespace. The key must be a PEM-encoded RSA or EC private key that matches the algorithm that you configure.
 
-1. Generate a key. An EC P-256 key is the smallest option, and pairs with the `ES256` algorithm.
+1. Generate a private key that you use for the signing process. An EC P-256 key is the smallest option, and pairs with the `ES256` algorithm.
 
    ```sh {paths="jwt-sign"}
    openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out signing-key.pem

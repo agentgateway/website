@@ -116,9 +116,9 @@ kubectl logs deployment/agentgateway-proxy -n agentgateway-system | grep "gen_ai
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x" >}}
 ## Tool calls {#tool-calls}
 
-When a model responds with tool or function calls, the gateway can carry those calls into your telemetry. Unlike the `gen_ai` fields in the preceding log line, tool calls are not collected automatically. Referencing the `llm.toolCalls` CEL field in an access log or tracing attribute is what turns extraction on, and no separate setting exists.
+When a model responds with tool or function calls, the gateway can carry those calls into your telemetry. Unlike the `gen_ai` fields in the preceding log line, tool calls are not collected automatically. You must reference the `llm.toolCalls` CEL field in an access log or tracing attribute to turn on extraction.
 
-Add an attribute whose expression reads `llm.toolCalls`. The following {{< reuse "agw-docs/snippets/policy.md" >}} records the calls in the access log as a `toolCalls` field, and on spans as a `gen_ai.tool_calls` attribute.
+Add an access log attribute and a trace span field to capture the tools that were accessed. To extract the tool and its metadata from the request, you use the `llm.toolCalls` CEL expression. In the following example, the extracted tool information is added as a `toolCalls` log attribute to your access logs and  `gen_ai.tool_calls` field to your trace spans. 
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -151,7 +151,7 @@ spec:
 EOF
 ```
 
-The value is an array of the calls that the model made. Each entry carries the call `id`, the tool `name`, and the `arguments`, which are parsed JSON rather than a string.
+Example value for the `toolCalls` access log attribute: 
 
 ```
 toolCalls=[{"id": "call_abc123", "name": "get_weather", "arguments": {"location": "Paris"}}]
