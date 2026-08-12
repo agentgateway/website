@@ -135,7 +135,11 @@
     var visible = 0;
     cards.forEach(function (card) {
       var match = category === 'all' || card.getAttribute('data-category') === category;
-      card.hidden = !match;
+      /* Use the `hidden` utility class, not the `hidden` property. Tailwind v3's
+         preflight emits [hidden]{display:none} before .flex{display:flex} at equal
+         specificity, so .flex wins and the card stays visible. The class is emitted
+         after .flex, so it wins. */
+      card.classList.toggle('hidden', !match);
       if (match) visible++;
     });
     if (empty) {
