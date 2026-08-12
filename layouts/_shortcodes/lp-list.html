@@ -37,6 +37,7 @@
       type="button"
       class="blog-filter active px-4 py-2 rounded-full text-sm font-medium transition-all border border-transparent bg-purple-600 text-white hover:border-purple-400 dark:hover:border-purple-500"
       data-category="all"
+      data-slug="all"
       aria-pressed="true"
     >
       All
@@ -46,6 +47,7 @@
       type="button"
       class="blog-filter px-4 py-2 rounded-full text-sm font-medium transition-all border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:border-purple-400 dark:hover:border-purple-500"
       data-category="{{ . }}"
+      data-slug="{{ . | urlize }}"
       aria-pressed="false"
     >
       {{ . }}
@@ -147,11 +149,52 @@
     }
   }
 
+  /* Deep linking: /blog/?category=deep-dive selects a filter on load, each click
+     pushes a history entry, and back/forward restore the matching filter. */
+  var PARAM = 'category';
+
+  function buttonForSlug(slug) {
+    var match = null;
+    filters.forEach(function (b) {
+      if (b.getAttribute('data-slug') === slug) match = b;
+    });
+    return match;
+  }
+
+  function slugFromUrl() {
+    var slug = new URLSearchParams(window.location.search).get(PARAM);
+    /* Fall back to All when the URL names a category that no longer exists, rather
+       than stranding the reader on an empty page with a stale link. */
+    return slug && buttonForSlug(slug) ? slug : 'all';
+  }
+
+  function syncUrl(slug, replace) {
+    var url = new URL(window.location.href);
+    if (slug === 'all') url.searchParams.delete(PARAM);
+    else url.searchParams.set(PARAM, slug);
+    var next = url.pathname + url.search + url.hash;
+    window.history[replace ? 'replaceState' : 'pushState']({ blogCategory: slug }, '', next);
+  }
+
+  function select(btn) {
+    setActive(btn);
+    filterBy(btn.getAttribute('data-category'));
+  }
+
   filters.forEach(function (btn) {
     btn.addEventListener('click', function () {
-      setActive(btn);
-      filterBy(btn.getAttribute('data-category'));
+      select(btn);
+      syncUrl(btn.getAttribute('data-slug'), false);
     });
   });
+
+  window.addEventListener('popstate', function () {
+    select(buttonForSlug(slugFromUrl()));
+  });
+
+  /* Apply on load, and normalize the URL if it carried a stale or redundant value. */
+  var initial = slugFromUrl();
+  select(buttonForSlug(initial));
+  syncUrl(initial, true);
 })();
 </script>
