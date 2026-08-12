@@ -27,7 +27,7 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 > * **Terminate HTTPS on the proxy** and use `https://<hostname>`. Choose this option when you [roll out the configuration to your organization](#mdm), because each user's machine must reach the proxy over the network. To set up a certificate, see [HTTPS listeners]({{< link-hextra path="/setup/listeners/https/" >}}).
 
 > [!NOTE]
-> The Kubernetes Admin UI is read-only and does not currently show the standalone **LLM > Client Setup** generator. Configure the client with the same gateway URL and credential values manually. The client settings are not specific to a deployment mode; only the resources that configure agentgateway differ. For more information, see [Admin UI]({{< link-hextra path="/observability/ui/" >}}).
+> The Kubernetes Admin UI is read-only and does not currently show the standalone **LLM > Client Setup** generator. Configure the client with the same gateway URL and credential values manually. The client settings are not specific to a deployment mode; only the resources that configure agentgateway differ. Follow [agentgateway/agentgateway#2989](https://github.com/agentgateway/agentgateway/issues/2989) for the enhancement, and see [Admin UI]({{< link-hextra path="/observability/ui/" >}}) for more information about the current UI.
 
 ## Set up the Anthropic backend
 

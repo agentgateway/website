@@ -5,7 +5,7 @@ Use the agentgateway Admin UI to inspect your Kubernetes proxy configuration.
 The agentgateway Admin UI is a built-in web interface that runs on port 15000 of the `agentgateway-proxy` pod. In Kubernetes mode, the UI is **read-only**. It reflects the configuration that the agentgateway controller pushes to the proxy over xDS, the protocol that the control plane uses to deliver configuration to the proxy.
 
 > [!NOTE]
-> The Admin UI is read-only in Kubernetes mode. Unlike standalone mode, you cannot use the UI to add features such as models, LLM providers, or MCP servers. The Kubernetes UI also does not currently show the standalone **LLM > Client Setup** generator. Instead, make configuration changes by updating your Kubernetes resources, such as through GitOps, and configure LLM clients with the values from their integration guides.
+> The Admin UI is read-only in Kubernetes mode. Unlike standalone mode, you cannot use the UI to add features such as models, LLM providers, or MCP servers. The Kubernetes UI also does not currently show the standalone **LLM > Client Setup** generator. Instead, make configuration changes by updating your Kubernetes resources, such as through GitOps, and configure LLM clients with the values from their integration guides. Follow [agentgateway/agentgateway#2989](https://github.com/agentgateway/agentgateway/issues/2989) for the Client Setup enhancement.
 
 
 The Admin UI is useful for debugging and verifying the configuration that the proxy received from the controller, such as confirming that a Gateway, HTTPRoute, AgentgatewayBackend, or AgentgatewayPolicy resource took effect.
