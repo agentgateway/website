@@ -5,7 +5,7 @@ The following guide deploys a sample TCP echo app, sets up a TCP listener on the
 
 ## Before you begin
 
-1. Install the experimental channel of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} so that you can use TCPRoutes.
+1. To use TCPRoutes in {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} 1.3 - 1.5, install the experimental channel.
    ```sh
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
