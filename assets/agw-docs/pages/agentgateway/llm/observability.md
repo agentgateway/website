@@ -112,3 +112,55 @@ model={{< reuse "agw-docs/snippets/openai-model.md" >}}-0125 gen_ai.usage.input_
 {{< doc-test paths="llm-observability" >}}
 kubectl logs deployment/agentgateway-proxy -n agentgateway-system | grep "gen_ai.usage.input_tokens"
 {{< /doc-test >}}
+
+{{< version exclude-if="2.1.x,2.2.x,2.3.x" >}}
+## Tool calls {#tool-calls}
+
+When a model responds with tool or function calls, the gateway can carry those calls into your telemetry. Unlike the `gen_ai` fields in the preceding log line, tool calls are not collected automatically. Referencing the `llm.toolCalls` CEL field in an access log or tracing attribute is what turns extraction on, and no separate setting exists.
+
+Add an attribute whose expression reads `llm.toolCalls`. The following {{< reuse "agw-docs/snippets/policy.md" >}} records the calls in the access log as a `toolCalls` field, and on spans as a `gen_ai.tool_calls` attribute.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: llm-telemetry
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway-proxy
+  frontend:
+    accessLog:
+      attributes:
+        add:
+        - name: toolCalls
+          expression: llm.toolCalls
+    tracing:
+      backendRef:
+        name: opentelemetry-collector
+        namespace: telemetry
+        port: 4317
+      protocol: GRPC
+      attributes:
+        add:
+        - name: gen_ai.tool_calls
+          expression: llm.toolCalls
+EOF
+```
+
+The value is an array of the calls that the model made. Each entry carries the call `id`, the tool `name`, and the `arguments`, which are parsed JSON rather than a string.
+
+```
+toolCalls=[{"id": "call_abc123", "name": "get_weather", "arguments": {"location": "Paris"}}]
+```
+
+The gateway extracts tool calls from every response format that it supports, including streaming responses. For a streaming response, the gateway assembles the argument fragments from the individual chunks into one value when the stream ends, so a set of arguments that the provider splits across several chunks still arrives as one object.
+
+When a response carries no tool calls, the gateway omits the attribute from the log line completely, rather than recording an empty array. Filter for the attribute name to find the requests that used tools.
+
+> [!NOTE]
+> Reading `llm.toolCalls` has a performance cost for large responses, because the gateway inspects the response body. Add the attribute where the tool calls matter, rather than to every route.
+{{< /version >}}
