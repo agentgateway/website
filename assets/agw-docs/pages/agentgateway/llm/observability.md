@@ -113,7 +113,7 @@ model={{< reuse "agw-docs/snippets/openai-model.md" >}}-0125 gen_ai.usage.input_
 kubectl logs deployment/agentgateway-proxy -n agentgateway-system | grep "gen_ai.usage.input_tokens"
 {{< /doc-test >}}
 
-{{< version exclude-if="2.1.x,2.2.x,2.3.x" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x" >}}
 ## Tool calls {#tool-calls}
 
 When a model responds with tool or function calls, the gateway can carry those calls into your telemetry. Unlike the `gen_ai` fields in the preceding log line, tool calls are not collected automatically. Referencing the `llm.toolCalls` CEL field in an access log or tracing attribute is what turns extraction on, and no separate setting exists.
