@@ -12,10 +12,25 @@ The steps in this guide run agentgateway on the same machine as Claude Desktop a
 2. Install [Claude Desktop](https://claude.com/download).
 3. Decide how the proxy authenticates callers, and meet the requirements for that path.
 
-   * **A shared token from a Claude subscription**, which [Configure Claude Desktop](#configure-claude-desktop) covers. You need a Claude Teams or Pro subscription, and the [Claude Code CLI](https://code.claude.com/docs) (`npm install -g @anthropic-ai/claude-code`), which provides the `claude setup-token` command.
+   * **A gateway API key**, which [Use Client Setup with a gateway API key](#client-setup) covers. Configure an LLM model and a [virtual API key]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) in agentgateway.
+   * **A shared token from a Claude subscription**, which [Configure agentgateway with a Claude subscription](#configure-agentgateway) covers. You need a Claude Teams or Pro subscription, and the [Claude Code CLI](https://code.claude.com/docs) (`npm install -g @anthropic-ai/claude-code`), which provides the `claude setup-token` command.
    * **A per-user token from your identity provider**, which [Authenticate users with your identity provider](#sso) covers. You need an OIDC provider and an Anthropic API key for the proxy to send upstream.
 
-## Configure agentgateway
+## Use Client Setup with a gateway API key {#client-setup}
+
+If you manage LLM models and virtual API keys in the standalone Admin UI, use **Client Setup** to generate the client-side values for Claude Desktop.
+
+1. Open [http://localhost:15000/ui/llm/client-setup](http://localhost:15000/ui/llm/client-setup).
+2. Review the **Gateway base URL**, and select a configured model to load the available client recipes.
+3. Select a configured virtual API key, or enter a raw key that the gateway accepts.
+4. Select **Claude Desktop** from the **Integration** dropdown.
+5. Follow the displayed steps and copy the gateway URL and API key into Claude Desktop.
+
+For Claude Desktop, Client Setup outputs the gateway URL and API key; it does not configure a model name in Claude Desktop. The gateway route must already accept the key and support the Anthropic Messages API at `/v1/messages`, and agentgateway must hold the upstream provider credential. An endpoint that exposes only the OpenAI-compatible `/v1/chat/completions` API is not sufficient. For more information about the UI, see [Admin UI]({{< link-hextra path="/operations/ui/" >}}).
+
+To use a Claude subscription token instead of a gateway API key, continue with the following sections.
+
+## Configure agentgateway with a Claude subscription {#configure-agentgateway}
 
 Start agentgateway with the Teams configuration. Agentgateway listens on port `4001` and exposes Claude at the `/claude` path.
 
@@ -66,7 +81,7 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
 >       anthropic-beta: oauth-2025-04-20
 > ```
 
-## Configure Claude Desktop
+## Configure Claude Desktop with a Claude subscription
 
 1. Get a bearer token for your Claude account.
 
@@ -105,7 +120,7 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
 
 ## Authenticate users with your identity provider {#sso}
 
-A static API key gives every user the same credential, which you cannot attribute to a person and cannot revoke for one user alone. Instead, select the **Interactive sign-in** credential kind. Claude Desktop then runs an OAuth 2.0 authorization code flow with Proof Key for Code Exchange (PKCE) against your identity provider, and sends the resulting token on every inference request. Agentgateway validates the token and adds the LLM provider credential itself, so the user's device never holds a provider API key. When you offboard a user in your identity provider, that user loses access to the proxy.
+{{< reuse "agw-docs/snippets/claude-desktop-sso-overview.md" >}}
 
 The following steps use Microsoft Entra ID as the example identity provider. Any OpenID Connect (OIDC) provider works the same way. Substitute your own issuer URL, client ID, and JWKS URL.
 
@@ -201,6 +216,8 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    | Bearer token | **ID token** |
    | Scopes | `openid profile email offline_access` |
 
+   {{< reuse "agw-docs/snippets/claude-desktop-id-token-warning.md" >}}
+
 6. Click **Apply Changes**, then fully quit Claude Desktop and reopen it. A browser window opens to your identity provider. After you sign in, Claude Desktop stores the token and refreshes it in the background through the `offline_access` scope.
 
 ## Send custom headers {#headers}
@@ -251,6 +268,8 @@ Look for log entries like the following in your running agentgateway output:
 ```
 info  request gateway=default/default listener=http route=claude-agent endpoint=api.anthropic.com:443 http.method=POST http.path=/v1/messages http.status=200 protocol=llm
 ```
+
+If you configured gateway API key or OIDC authentication in strict mode, send a request without the `Authorization` header and confirm that agentgateway rejects it. This negative check verifies that the route does not admit unauthenticated requests.
 
 ## Next steps
 
