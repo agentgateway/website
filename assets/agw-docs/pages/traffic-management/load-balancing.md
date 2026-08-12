@@ -4,7 +4,7 @@ Distribute requests across the endpoints of a backend, for every kind of traffic
 
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} load balances requests across the endpoints of a backend by using the **Power of Two Choices (P2C)** algorithm with health-aware scoring.
 
-P2C applies to all traffic that the gateway proxies, not only to Large Language Model (LLM) traffic. Plain HTTP, gRPC, Model Context Protocol (MCP), and LLM backends share the same load balancer. The [LLM load balancing]({{< link-hextra path="/llm/load-balancing/" >}}) guide describes how the same algorithm distributes requests across LLM *providers*, but the underlying endpoint selection is identical.
+P2C applies to all traffic that the gateway proxies, not only to Large Language Model (LLM) traffic. Plain HTTP, gRPC, Model Context Protocol (MCP), and LLM backends share the same load balancer. The [LLM load balancing]({{< link-hextra path="/llm/load-balancing/" >}}) guide applies the same algorithm across LLM providers.
 
 For each request, {{< reuse "agw-docs/snippets/agentgateway.md" >}} does the following:
 
@@ -21,7 +21,7 @@ Whether {{< reuse "agw-docs/snippets/agentgateway.md" >}} load balances across i
 | A Kubernetes Service, such as an HTTPRoute `backendRefs` entry that points to a Service | The individual endpoints of the Service, from its EndpointSlices | {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}}, with P2C and health-aware scoring |
 | A hostname or IP address, such as an {{< reuse "agw-docs/snippets/backend.md" >}} that sets a `host` field | One opaque dial target | The DNS resolver, or kube-proxy when the hostname resolves to a `ClusterIP` |
 
-When you route to a Kubernetes Service, {{< reuse "agw-docs/snippets/agentgateway.md" >}} resolves the Service to its endpoints and connects to a pod IP address directly. Traffic does not go to the `ClusterIP` of the Service, so kube-proxy does not make the load balancing decision. This behavior is the default, and you do not configure anything to enable it.
+By default when you route to a Kubernetes Service, {{< reuse "agw-docs/snippets/agentgateway.md" >}} connects to a pod IP address directly, not to the `ClusterIP`, so kube-proxy does not make the load balancing decision.
 
 > [!NOTE]
 > To load balance across the pod replicas of a self-hosted LLM backend, reference the Service instead of setting the `host` and `port` fields. For more information, see [Load balancing across pod replicas]({{< link-hextra path="/llm/load-balancing/#pod-replicas" >}}).
@@ -63,7 +63,7 @@ To confirm that the proxy resolved a Service to its endpoints, list the backends
 agctl proxy config backends gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
-In the output, the `TYPE` column tells you which case you are in. A `Service` row means that {{< reuse "agw-docs/snippets/agentgateway.md" >}} resolved the Kubernetes Service and load balances across the endpoints that the `ENDPOINT` column names, with one row per endpoint. A `Backend` row means that the target is an {{< reuse "agw-docs/snippets/backend.md" >}} resource, which might be an opaque hostname.
+The `TYPE` column tells you which case you are in. A `Service` row means that the proxy resolved the Kubernetes Service and load balances across its endpoints, one row per endpoint, named in the `ENDPOINT` column. A `Backend` row means an {{< reuse "agw-docs/snippets/backend.md" >}} resource, which might be an opaque hostname.
 
 ```console
 TYPE     NAME       NAMESPACE            ENDPOINT                    HEALTH  REQUESTS  LATENCY

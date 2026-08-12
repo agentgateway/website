@@ -4,12 +4,12 @@ Sign a short-lived JWT with your own private key on every request to a backend.
 
 Some upstreams do not accept a durable credential at all. The Snowflake SQL API, for example, requires a JWT that is signed with the caller's private key on each call. The `key` and `secretRef` backend authentication methods cannot serve those upstreams, because they forward a static credential.
 
-With the `jwtSign` backend authentication method, the gateway mints the token itself. The gateway reads a PEM-encoded private key from a Kubernetes Secret, signs a JWT that carries the claims that you configure, and writes that token to each request that it forwards to the backend. Nothing is cached, so the gateway signs every request afresh.
+With the `jwtSign` backend authentication method, the gateway mints the token itself. It reads a PEM-encoded private key from a Kubernetes Secret, signs a JWT that carries the claims that you configure, and writes that token to each request that it forwards to the backend. Nothing is cached, so every request is signed afresh.
 
 Two behaviors are worth knowing before you configure the method:
 
-* **The signer (gateway) owns the time claims.** The gateway always sets `iat` and `exp`, and rejects a policy that tries to configure `iat`, `exp`, or `nbf`. The gateway backdates `iat` by 10 seconds, so that a validator whose clock trails the gateway still accepts a freshly minted token. A decoded token therefore spans the `ttl` plus 10 seconds, and never carries an `nbf` claim.
-* **The token overwrites only what sits at its location.** With the default location, the gateway writes the `Authorization` header, which replaces a credential that the client sent in that header. If you point `location` at a different header, query parameter, or cookie, the client's `Authorization` header is no longer the one that the gateway overwrites, and the gateway forwards that header to the backend like any other. Remove it with a request filter if the upstream must not see it.
+* **The signer (gateway) owns the time claims.** The gateway always sets `iat` and `exp`, and rejects a policy that tries to configure `iat`, `exp`, or `nbf`. It backdates `iat` by 10 seconds, so that a validator whose clock trails the gateway still accepts a freshly minted token. A decoded token therefore spans the `ttl` plus 10 seconds, and never carries an `nbf` claim.
+* **The token overwrites only what sits at its location.** By default, the gateway writes the `Authorization` header, replacing any credential that the client sent there. If you point `location` at a different header, query parameter, or cookie, the client's `Authorization` header is forwarded to the backend untouched. Remove it with a request filter if the upstream must not see it.
 
 > [!NOTE]
 > The `jwtSign` method is not the same as the `clientAuth.privateKeyJwt` setting on [Cross App Access]({{< link-hextra path="/security/backend-authn-cross-app-access/" >}}). The two share the signing implementation, but `privateKeyJwt` authenticates the gateway to an OAuth token endpoint, and `jwtSign` sends a signed JWT to the backend itself.
@@ -83,8 +83,6 @@ The gateway reads the private key from the `signingKey` entry of a Secret in the
    | `claims` | Optional static claims that the gateway copies into every token, such as `iss`, `sub`, and `aud`. A value can be any JSON value, including a number or an array. The `iat`, `exp`, and `nbf` claims are reserved for the signer, and the controller rejects them. |
    | `ttl` | Optional token lifetime that the gateway uses for `exp`. Defaults to `300s`. |
    | `location` | Optional location that the gateway writes the signed token to. Defaults to the `Authorization` header with a `Bearer` prefix. Set exactly one of `header`, `queryParameter`, or `cookie` to change it. At a custom location, the gateway writes the bare token with no `Bearer` prefix. |
-
-2. Only `signingKeyRef` is required. A policy that sets nothing else signs with `RS256` and a 300-second lifetime, and writes the token to the `Authorization` header.
 
 {{< doc-test paths="jwt-sign" >}}
 YAMLTest -f - <<'EOF'

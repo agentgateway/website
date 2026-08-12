@@ -414,7 +414,7 @@ echo "cross-app-access exchange verified"
 
 ## Choose where the subject token is read from {#subject-token-source}
 
-The `subjectToken.source` field selects where the gateway reads the subject credential from. It takes one of the following four forms. A policy that sets none of them, or more than one, is rejected when you apply it, with the message `exactly one of the fields in [header queryParameter cookie expression] must be set`.
+The `subjectToken.source` field selects where the gateway reads the subject credential from. Set one of the following four forms. A policy that sets none of them, or several of them, is rejected when you apply it, with the message `exactly one of the fields in [header queryParameter cookie expression] must be set`.
 
 | Form | Reads the credential from |
 | -- | -- |
@@ -423,11 +423,13 @@ The `subjectToken.source` field selects where the gateway reads the subject cred
 | `cookie` | The name of the cookie. |
 | `expression` | A CEL expression that the gateway evaluates against the validated request, such as a claim of a JWT that a [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) policy validated. |
 
-When you omit `subjectToken`, the gateway reads the credential from the `Authorization` header with the `Bearer` prefix.
+When you omit `subjectToken`, the gateway reads the credential from the `Authorization` header with the `Bearer` prefix. The gateway does not fall back to another location.
 
-Only the location is configurable. Whichever form you choose, the gateway sends the credential to the identity provider as an ID token, with `subject_token_type` set to `urn:ietf:params:oauth:token-type:id_token`.
+If the configured source yields no credential, the request fails with a `400` and the message `invalid request`, and the gateway does not call the identity provider. However, the policy can still report `Accepted: True` in that case, because an expression that names a missing claim is still well formed. Check the response code as well as the policy status after you change the source.
 
-After the exchange, the gateway removes the credential from the location that you configured. The gateway removes a named cookie or query parameter on its own, and forwards the remaining cookies and parameters unchanged. The gateway then writes the exchanged access token to the `Authorization` header, which replaces any credential that the client sent in that header. The backend therefore receives the exchanged token only, never the subject credential.
+You can also configure the location where the gateway checks for the subject token. Whichever form you choose, the gateway sends the credential to the identity provider as an ID token, with `subject_token_type` set to `urn:ietf:params:oauth:token-type:id_token`.
+
+After the exchange, the gateway removes the credential from the location that you configured, and forwards the remaining cookies and parameters unchanged. It then writes the exchanged access token to the `Authorization` header, replacing any credential that the client sent there. The backend therefore receives only the exchanged token, never the subject credential.
 
 > [!NOTE]
 > On MCP routes, the `queryParameter` form never matches, because the request that the policy inspects carries no query string. The exchange fails even when the parameter is present on the incoming request. Use a header, a cookie, or a CEL expression instead. Plain HTTP routes are not affected.
@@ -438,7 +440,7 @@ For more information, see [agentgateway#2799](https://github.com/agentgateway/ag
 
 ### Read the subject token from a claim {#subject-token-claim}
 
-A client does not always present an ID token directly. In an MCP OAuth setup, for example, the client authenticates with an OAuth access token, and the ID token travels inside that token as a claim. Validate the incoming token at the edge with a route-level JWT authentication policy, then point the subject source at the claim that carries the ID token. Use the claim name that your authorization server issues.
+A client does not always present an ID token directly. In an MCP OAuth setup, for example, the client authenticates with an OAuth access token that carries the ID token as a claim. Validate the incoming token with a route-level JWT authentication policy, then point the subject source at the claim that carries the ID token, using the claim name that your authorization server issues.
 
 ```yaml
 backend:
@@ -449,17 +451,7 @@ backend:
           expression: jwt.id_token
 ```
 
-The `jwt` variable holds the claims of the token that the JWT authentication policy validated, so an expression can read only a claim that arrived signed. The exchange runs on the extracted ID token, and the outer access token is never sent to either token endpoint.
-
-### When the source yields no credential {#subject-token-empty}
-
-The gateway does not fall back to another location. If the configured source yields nothing, the request fails with a `400` and the message `invalid request`, and the gateway does not call the identity provider. The following cases all fail this way:
-
-- The configured header, cookie, or query parameter is absent from the request.
-- A CEL expression evaluates to nothing, such as an expression that names a claim that the validated token does not carry. The policy still reports `Accepted: True` with the reason `Valid`, because the expression itself is well formed.
-- A CEL expression does not compile. The policy reports the reason `PartiallyValid` and names the expression, as in `crossAppAccess subjectToken source expression is not a valid CEL expression: ((`.
-
-Because a policy can report itself healthy while every request on the route fails, check the response code as well as the policy status after you change the subject source.
+The `jwt` variable holds the claims of the token that the JWT authentication policy validated, so an expression can read only a claim that arrived signed. The gateway exchanges the ID token that it extracts from the claim. The access token that the client presented is not sent to either token endpoint.
 
 ## Private key JWT client authentication
 
