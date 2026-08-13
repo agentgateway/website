@@ -215,9 +215,8 @@ _Appears in:_
 _Underlying type:_ _string_
 
 Action to take if a regex pattern is matched in a request or response.
-The action applies to request and response matches alike. Note that
-`Mask` is not applied to streamed responses: matched content in a
-streamed response is passed through unmodified.
+This setting applies only to request matches. `PromptguardResponse`
+matches are always masked by default.
 
 
 
@@ -226,8 +225,8 @@ _Appears in:_
 
 | Field | Description |
 | --- | --- |
-| `Mask` | Mask the matched data in the request or response.<br /> |
-| `Reject` | Reject the request or response that contains the matched content.<br /> |
+| `Mask` | Mask the matched data in the request.<br /> |
+| `Reject` | Reject the request if the regex matches content in the request.<br /> |
 
 
 #### AgentExtAuthGRPC
@@ -4259,7 +4258,7 @@ _Appears in:_
 
 | Field | Description |
 | --- | --- |
-| `Enabled` | Enable prompt guards for streaming responses and realtime websocket messages.<br />A guard can reject a streamed response, but `Mask` actions are not applied to<br />streamed content.<br /> |
+| `Enabled` | Enable prompt guards for streaming responses and realtime websocket messages.<br /> |
 
 
 #### PromptguardRequest
@@ -4500,7 +4499,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `matches` _[LongString](#longstring) array_ | Regex patterns to match against the request or response.<br />Matches and built-ins are additive. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `builtins` _[BuiltIn](#builtin) array_ | Built-in regex patterns to match against the request or response.<br />Matches and built-ins are additive. |  | Optional: \{\} <br /> |
-| `action` _[Action](#action)_ | The action to take if a regex pattern is matched in a request or response.<br />The action applies to request and response matches alike. Note that<br />`Mask` is not applied to streamed responses: matched content in a<br />streamed response is passed through unmodified.<br />Defaults to `Mask`. | Mask | Optional: \{\} <br /> |
+| `action` _[Action](#action)_ | The action to take if a regex pattern is matched in a request or response.<br />This setting applies only to request matches. `PromptguardResponse`<br />matches are always masked by default.<br />Defaults to `Mask`. | Mask | Optional: \{\} <br /> |
 
 
 #### RemoteJWKS
