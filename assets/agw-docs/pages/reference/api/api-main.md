@@ -387,7 +387,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `parentRefs` _[ParentReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#parentreference) array_ | Gateways and listeners to which this model attaches. |  | MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
+| `parentRefs` _[ParentReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#parentreference) array_ | Parent resources to which this model attaches. Supported parent kinds are<br />Gateway, ListenerSet, and HTTPRoute.<br />A Gateway or ListenerSet parent attaches the model directly to its<br />listeners. An HTTPRoute parent attaches the model to the referenced rule;<br />sectionName selects a named rule, or the HTTPRoute must contain exactly<br />one rule when sectionName is omitted. The selected rule must use exactly<br />one AgentgatewayModel backend with name "*". If the rule has path matches,<br />they must use PathPrefix matching. |  | MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `match` _[ModelMatch](#modelmatch)_ | Conditions for selecting this model from client requests. |  | Optional: \{\} <br /> |
 | `visibility` _[ModelVisibility](#modelvisibility)_ | Controls whether clients can request this model directly. Internal models<br />can only be selected by virtual models. Defaults to Public. | Public | Optional: \{\} <br /> |
 | `provider` _[ModelProvider](#modelprovider)_ | Provider serving this concrete model. Provider-specific configuration is<br />set by the corresponding field below when needed. |  | Optional: \{\} <br /> |
@@ -1101,6 +1101,7 @@ _Appears in:_
 | `defaults` _[FieldDefault](#fielddefault) array_ | Defaults to merge with user input fields. If the field is already set, the field in the request is used. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `overrides` _[FieldDefault](#fielddefault) array_ | Overrides to merge with user input fields. If the field is already set, the field is overwritten. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `transformations` _[FieldTransformation](#fieldtransformation) array_ | CEL transformations to compute and set fields in the request body.<br />The expression result overwrites any existing value for that field.<br />This has a higher priority than `overrides` if both are set for the same<br />key. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `finalTransformations` _[FieldTransformation](#fieldtransformation) array_ | CEL transformations to compute and set fields in the request body.<br />The expression result overwrites any existing value for that field.<br />This has a higher priority than `overrides` if both are set for the same<br />key.<br />Those transformations are applied after the request is converted to the provider's format, so they can be used to set provider-specific fields. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `modelAliases` _object (keys:string, values:string)_ | Maps friendly model names to actual provider model names.<br />Example: `\{"fast": "gpt-3.5-turbo", "smart": "gpt-4-turbo"\}`.<br />Note: This field is only applicable when using the agentgateway data plane. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `promptCaching` _[PromptCachingConfig](#promptcachingconfig)_ | Automatic prompt caching for supported<br />providers, currently AWS Bedrock.<br />Reduces API costs by caching static content like system prompts and tool definitions.<br />Only applicable for Bedrock Claude 3+ and Nova models. |  | Optional: \{\} <br /> |
 | `routes` _object (keys:string, values:[RouteType](#routetype))_ | Rules for identifying the type of traffic to handle.<br />The keys are URL path suffixes matched using ends-with comparison, for<br />example `"/v1/chat/completions"`.<br />The special `*` wildcard matches any path.<br />If not specified, all traffic defaults to `completions` type. |  | Optional: \{\} <br /> |
@@ -1202,7 +1203,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `duration` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Base time a backend should be evicted after being marked unhealthy.<br />Subsequent evictions use multiplicative backoff (duration * times_evicted).<br />If all endpoints are evicted, the load balancer falls back to returning evicted endpoints<br />rather than failing entirely.<br />If unset, defaults to `3s`. | 3s | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
+| `duration` _[Duration](#duration)_ | Base time a backend should be evicted after being marked unhealthy.<br />Subsequent evictions use multiplicative backoff (duration * times_evicted).<br />If all endpoints are evicted, the load balancer falls back to returning evicted endpoints<br />rather than failing entirely.<br />If unset, defaults to `3s`. | 3s | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `restoreHealth` _integer_ | Health score from 0 to 100 assigned to a backend when it returns from eviction.<br />For gradual recovery, set below 100; for full recovery immediately, set 100.<br />If unset, the backend resumes with the health it had when evicted. |  | Maximum: 100 <br />Minimum: 0 <br />Optional: \{\} <br /> |
 | `consecutiveFailures` _integer_ | Number of consecutive unhealthy responses required before the backend is evicted.<br />For example, a value of 5 means the backend must receive 5 unhealthy responses in a row before being evicted.<br />When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.<br />When neither is set, a single unhealthy response can trigger eviction. |  | Minimum: 0 <br />Optional: \{\} <br /> |
 | `healthThreshold` _integer_ | EWMA health score threshold, from 0 to 100. When set, a backend is evicted<br />only if its computed health drops below this value after an unhealthy<br />response (e.g. 50 evicts when EWMA health falls below 50%). Unlike<br />consecutiveFailures, this sliding-window average lets a single success delay<br />eviction. If both are set, either condition evicts; if neither, a single<br />unhealthy response evicts. |  | Maximum: 100 <br />Minimum: 0 <br />Optional: \{\} <br /> |
@@ -1254,7 +1255,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `version` _[HTTPVersion](#httpversion)_ | HTTP protocol version for backend connections. If unset, it is inferred:<br />`Service` appProtocol, `HTTP2` for gRPC, the original protocol for<br />plaintext HTTP, or `HTTP1` for HTTPS because clients often upgrade HTTPS<br />to HTTP/2 even when the backend does not support it. |  | Optional: \{\} <br /> |
-| `requestTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Deadline for receiving a response from the backend. |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
+| `requestTimeout` _[Duration](#duration)_ | Deadline for receiving a response from the backend. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 
 
 #### BackendMCP
@@ -1317,7 +1318,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `keepalive` _[Keepalive](#keepalive)_ | Settings for enabling TCP keepalives on the<br />connection. |  | Optional: \{\} <br /> |
-| `connectTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Deadline for establishing a connection to<br />the destination. |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
+| `connectTimeout` _[Duration](#duration)_ | Deadline for establishing a connection to<br />the destination. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 
 
 #### BackendTLS
@@ -1839,6 +1840,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `source` _[AuthorizationExtractionLocation](#authorizationextractionlocation)_ | Where to read the subject token. Defaults to the Authorization Bearer header. |  | ExactlyOneOf: [header queryParameter cookie expression] <br />Optional: \{\} <br /> |
+| `tokenType` _[OAuthTokenType](#oauthtokentype)_ | OAuth RFC 8693 subject token type. Defaults to IdToken |  | Optional: \{\} <br /> |
 
 
 #### CustomProvider
@@ -1989,6 +1991,32 @@ _Appears in:_
 | `bodyExpression` _[CELExpression](#celexpression)_ | CEL expression that produces the HTTP response body.<br />Strings and bytes are written directly; other values are serialized as JSON.<br />If this field is omitted, no expression body is included in the response. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `headers` _[DirectResponseHeader](#directresponseheader) array_ | Response headers to set on the direct response. |  | MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `conditional` _[DirectResponseConditional](#directresponseconditional) array_ | Conditional policy execution. Set this or the top-level directResponse fields.<br />The first matching policy will be executed.<br />A single policy may be provided without a condition set; if so, it must be the last policy and will be the fallback<br />in case no conditions are met. |  | MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+
+
+#### Duration
+
+
+
+Duration is a string value representing a duration in time. The format is a
+strict subset of the syntax parsed by time.ParseDuration, as specified by GEP-2257.
+
+_Validation:_
+- MaxLength: 32
+- Pattern: `^([0-9]{1,5}(h|m|s|ms)){1,4}$`
+- Type: string
+
+_Appears in:_
+- [BackendEviction](#backendeviction)
+- [BackendHTTP](#backendhttp)
+- [BackendTCP](#backendtcp)
+- [FrontendHTTP](#frontendhttp)
+- [FrontendTLS](#frontendtls)
+- [JwtSignAuth](#jwtsignauth)
+- [Keepalive](#keepalive)
+- [OAuthInMemoryTokenCache](#oauthinmemorytokencache)
+- [RemoteJWKS](#remotejwks)
+- [Timeouts](#timeouts)
+
 
 
 #### DynamicForwardProxyBackend
@@ -2367,15 +2395,15 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `maxBufferSize` _[ByteSize](#bytesize)_ | Maximum HTTP body size that will be buffered<br />into memory.<br />Bodies will only be buffered for policies which require buffering.<br />If unset, this defaults to `2mb`. |  | MaxLength: 32 <br />MinLength: 1 <br />Pattern: `^[+-]?([0-9]+(\.[0-9]*)?\|\.[0-9]+)(([KMGTPE]i)\|[numkMGTPE]\|[eE](\+?0*([0-9]\|1[0-8])\|-0*[0-9]))?$` <br />XIntOrString: \{\} <br />Optional: \{\} <br /> |
 | `http1MaxHeaders` _integer_ | Maximum number of headers allowed<br />in `HTTP/1.1` requests.<br />If unset, this defaults to 100. |  | Maximum: 4096 <br />Minimum: 1 <br />Optional: \{\} <br /> |
-| `http1IdleTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Timeout before an unused connection is<br />closed.<br />If unset, this defaults to 10 minutes. |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
+| `http1IdleTimeout` _[Duration](#duration)_ | Timeout before an unused connection is<br />closed.<br />If unset, this defaults to 10 minutes. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `http1HeaderCase` _[HTTPHeaderCase](#httpheadercase)_ | Controls HTTP/1 request header name casing when encoding responses on the same connection.<br />This only applies to `HTTP/1`. If a request is HTTP/2 in either the incoming or outgoing request, this will be ignored.<br />HTTP/2 requests are always lower case.<br />Modifying the headers from other policies may result in the original case being lost. |  | Optional: \{\} <br /> |
 | `http2WindowSize` _[ByteSize](#bytesize)_ | Initial window size for stream-level flow<br />control for received data. |  | MaxLength: 32 <br />MinLength: 1 <br />Pattern: `^[+-]?([0-9]+(\.[0-9]*)?\|\.[0-9]+)(([KMGTPE]i)\|[numkMGTPE]\|[eE](\+?0*([0-9]\|1[0-8])\|-0*[0-9]))?$` <br />XIntOrString: \{\} <br />Optional: \{\} <br /> |
 | `http2ConnectionWindowSize` _[ByteSize](#bytesize)_ | Initial window size for<br />connection-level flow control for received data. |  | MaxLength: 32 <br />MinLength: 1 <br />Pattern: `^[+-]?([0-9]+(\.[0-9]*)?\|\.[0-9]+)(([KMGTPE]i)\|[numkMGTPE]\|[eE](\+?0*([0-9]\|1[0-8])\|-0*[0-9]))?$` <br />XIntOrString: \{\} <br />Optional: \{\} <br /> |
 | `http2FrameSize` _[ByteSize](#bytesize)_ | Maximum frame size to use.<br />If unset, this defaults to `16kb`. |  | MaxLength: 32 <br />MinLength: 1 <br />Pattern: `^[+-]?([0-9]+(\.[0-9]*)?\|\.[0-9]+)(([KMGTPE]i)\|[numkMGTPE]\|[eE](\+?0*([0-9]\|1[0-8])\|-0*[0-9]))?$` <br />XIntOrString: \{\} <br />Optional: \{\} <br /> |
 | `http2MaxHeaderSize` _[ByteSize](#bytesize)_ | Maximum aggregate size of decoded HTTP/2<br />request headers.<br />If unset, this defaults to `16Ki`. |  | MaxLength: 32 <br />MinLength: 1 <br />Pattern: `^[+-]?([0-9]+(\.[0-9]*)?\|\.[0-9]+)(([KMGTPE]i)\|[numkMGTPE]\|[eE](\+?0*([0-9]\|1[0-8])\|-0*[0-9]))?$` <br />XIntOrString: \{\} <br />Optional: \{\} <br /> |
-| `http2KeepaliveInterval` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ |  |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
-| `http2KeepaliveTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ |  |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
-| `maxConnectionDuration` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Maximum time a connection is allowed to remain open.<br />After this duration, the connection is gracefully closed after the current in-flight request completes.<br />Useful for ensuring even traffic distribution behind load balancers during scaling events. |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
+| `http2KeepaliveInterval` _[Duration](#duration)_ | Interval between `HTTP/2` keepalive pings.<br />If unset, keepalive pings are not sent. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
+| `http2KeepaliveTimeout` _[Duration](#duration)_ | Time to wait for a response to an `HTTP/2` keepalive ping before the connection is closed.<br />Only applies when `http2KeepaliveInterval` is set. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
+| `maxConnectionDuration` _[Duration](#duration)_ | Maximum time a connection is allowed to remain open.<br />After this duration, the connection is gracefully closed after the current in-flight request completes.<br />Useful for ensuring even traffic distribution behind load balancers during scaling events. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 
 
 #### FrontendProxyProtocol
@@ -2424,7 +2452,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `handshakeTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Deadline for a TLS handshake to<br />complete. If unset, this defaults to `15s`. |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
+| `handshakeTimeout` _[Duration](#duration)_ | Deadline for a TLS handshake to<br />complete. If unset, this defaults to `15s`. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `alpnProtocols` _[TinyString](#tinystring)_ | Application-Layer Protocol Negotiation (`ALPN`)<br />value to use in the TLS handshake.<br />If not present, defaults to `["h2", "http/1.1"]`. |  | MaxItems: 16 <br />MaxLength: 64 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `minProtocolVersion` _[TLSVersion](#tlsversion)_ | Minimum TLS version to support. |  | Optional: \{\} <br /> |
 | `maxProtocolVersion` _[TLSVersion](#tlsversion)_ | Maximum TLS version to support. |  | Optional: \{\} <br /> |
@@ -2909,7 +2937,7 @@ _Appears in:_
 | `alg` _[JwtSigningAlg](#jwtsigningalg)_ | JWS signing algorithm. Defaults to RS256. |  | Optional: \{\} <br /> |
 | `kid` _string_ | Optional JWS key ID header. |  | Optional: \{\} <br /> |
 | `claims` _object (keys:string, values:[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#json-v1-apiextensions-k8s-io))_ | Static claims added to every token (e.g. iss, sub, aud). Values may be<br />any JSON value (e.g. a string, number, bool, or array). iat, exp, and<br />nbf are reserved for the signer and cannot be configured here; the<br />controller rejects them at translation time. |  | Optional: \{\} <br /> |
-| `ttl` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Token lifetime used for exp. Defaults to 300s. |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
+| `ttl` _[Duration](#duration)_ | Token lifetime used for exp. Defaults to 300s. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where the signed token is written on the backend request.<br />Defaults to the Authorization header with a "Bearer " prefix. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
 
 
@@ -2950,8 +2978,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `retries` _integer_ | Maximum number of keepalive probes to send before dropping the connection.<br />If unset, this defaults to 9. |  | Maximum: 64 <br />Minimum: 1 <br />Optional: \{\} <br /> |
-| `time` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Time a connection needs to be idle before keepalive probes start being sent.<br />If unset, this defaults to 180s. |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
-| `interval` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Time between keepalive probes.<br />If unset, this defaults to 180s. |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
+| `time` _[Duration](#duration)_ | Time a connection needs to be idle before keepalive probes start being sent.<br />If unset, this defaults to 180s. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
+| `interval` _[Duration](#duration)_ | Time between keepalive probes.<br />If unset, this defaults to 180s. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 
 
 #### KeyExchangeGroup
@@ -3183,7 +3211,7 @@ _Appears in:_
 | `requests` _integer_ | Number of HTTP requests per unit of time that<br />are allowed. Requests exceeding this limit will fail with a `429`<br />error. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `tokens` _integer_ | Number of LLM tokens per unit of time that are<br />allowed. Requests exceeding this limit will fail with a `429` error.<br />Both input and output tokens are counted. However, token counts are not known until the request completes. As a<br />result, token-based rate limits will apply to future requests only. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `unit` _[LocalRateLimitUnit](#localratelimitunit)_ | Unit of time for the limit. |  | Required: \{\} <br /> |
-| `burst` _integer_ | Allowance of requests above the request-per-unit<br />that should be allowed within a short period of time. |  | Optional: \{\} <br /> |
+| `burst` _integer_ | Allowance of requests above the request-per-unit<br />that should be allowed within a short period of time. |  | Minimum: 0 <br />Optional: \{\} <br /> |
 
 
 #### LocalRateLimitUnit
@@ -3648,6 +3676,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `transformations` _[FieldTransformation](#fieldtransformation) array_ | CEL transformations applied to fields in the provider request body. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `finalTransformations` _[FieldTransformation](#fieldtransformation) array_ | CEL transformations applied to fields in the provider request body.<br />After conversion from one provider format to another, these transformations are applied to the converted request body. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `authorization` _[Authorization](#authorization)_ | Authorization rules that clients must satisfy to use this model. |  | Optional: \{\} <br /> |
 | `auth` _[ModelBackendAuth](#modelbackendauth)_ | Credentials used to authenticate requests to this model provider. |  | AtMostOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
 | `health` _[Health](#health)_ | Health checking and eviction behavior for this model provider. |  | Optional: \{\} <br /> |
@@ -3861,7 +3890,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `maxEntries` _integer_ | Default 8192; 0 disables the cache. |  | Optional: \{\} <br /> |
-| `defaultTtl` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | TTL used when the token endpoint omits expires_in. Default 300s. |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
+| `defaultTtl` _[Duration](#duration)_ | TTL used when the token endpoint omits expires_in. Default 300s. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 
 
 #### OAuthMayActValidationMode
@@ -3995,6 +4024,7 @@ subject/actor tokens can use provider-specific token type URIs.
 
 
 _Appears in:_
+- [CrossAppAccessSubjectToken](#crossappaccesssubjecttoken)
 - [OAuthActorToken](#oauthactortoken)
 - [OAuthTokenExchange](#oauthtokenexchange)
 - [OAuthTokenSpec](#oauthtokenspec)
@@ -4675,7 +4705,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `jwksPath` _[LongString](#longstring)_ | Path to the IdP `jwks` endpoint, relative to the root, commonly<br />`".well-known/jwks.json"`. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
-| `cacheDuration` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ |  | 5m | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
+| `cacheDuration` _[Duration](#duration)_ | How long a fetched `jwks` document is used before it is re-fetched from the IdP. | 5m | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
 | `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 
@@ -4843,7 +4873,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `request` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Timeout for an individual request from the gateway to a backend. This covers the time from when<br />the request first starts being sent from the gateway to when the full response has been received from the backend. |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
+| `request` _[Duration](#duration)_ | Timeout for an individual request from the gateway to a backend. This covers the time from when<br />the request first starts being sent from the gateway to when the full response has been received from the backend. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 
 
 

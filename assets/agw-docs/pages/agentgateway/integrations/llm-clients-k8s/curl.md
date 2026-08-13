@@ -62,3 +62,18 @@ curl "http://$INGRESS_GW_ADDRESS/<route-path>" \
     "messages": [{"role": "user", "content": "Hello"}]
   }' | jq
 ```
+
+## Streaming responses
+
+Use the `-N` flag to disable output buffering for streaming.
+
+```sh
+curl "http://$INGRESS_GW_ADDRESS/<route-path>" \
+  -N \
+  -H "content-type: application/json" \
+  -d '{
+    "model": "gpt-4o-mini",
+    "messages": [{"role": "user", "content": "Write a haiku about the cloud"}],
+    "stream": true
+  }'
+```

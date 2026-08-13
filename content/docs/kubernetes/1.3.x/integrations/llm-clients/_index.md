@@ -1,15 +1,8 @@
 ---
-title: LLM client configuration
+title: LLM clients
 weight: 10
-description: Configure AI coding tools and applications to use agentgateway running in Kubernetes
-test:
-  llm-clients-k8s-gateway-url:
-  - file: ${versionRoot}/install/helm.md
-    path: standard
-  - file: ${versionRoot}/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/integrations/llm-clients/_index.md
-    path: llm-clients-k8s-gateway-url
+description: Configure AI coding tools and applications to use agentgateway
+test: skip
 ---
 
-{{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients-k8s.md" >}}
+{{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/llm-clients-index.md" >}}
