@@ -5,6 +5,8 @@ Configure [Cursor](https://cursor.com/), the AI code editor, to route requests t
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. [Install Cursor](https://cursor.com/).
 
+{{< reuse "agw-docs/snippets/llm-client-setup-callout.md" >}}
+
 ## Example agentgateway configuration
 
 ```yaml
