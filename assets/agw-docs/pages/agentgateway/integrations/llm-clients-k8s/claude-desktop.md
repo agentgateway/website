@@ -10,6 +10,7 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 2. Install [Claude Desktop](https://claude.com/download).
 3. Decide how the proxy authenticates callers, and meet the requirements for that path.
 
+   * **A gateway API key**, which [Use a gateway API key](#gateway-api-key) covers. You need an Anthropic API key for the proxy to send upstream and a [virtual API key]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) for Claude Desktop.
    * **A shared token from a Claude subscription**, which [Configure Claude Desktop](#configure-claude-desktop) covers. You need a Claude Teams or Pro subscription, and the [Claude Code CLI](https://code.claude.com/docs) (`npm install -g @anthropic-ai/claude-code`), which provides the `claude setup-token` command.
    * **A per-user token from your identity provider**, which [Authenticate users with your identity provider](#sso) covers. You need an OIDC provider and an Anthropic API key for the proxy to send upstream.
 
@@ -25,9 +26,12 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 > * **Port-forward the proxy** and use `http://127.0.0.1:<port>`. Use the literal address `127.0.0.1`, because `localhost` does not always resolve as a loopback address for this check. Choose this option to try out the setup on a single machine.
 > * **Terminate HTTPS on the proxy** and use `https://<hostname>`. Choose this option when you [roll out the configuration to your organization](#mdm), because each user's machine must reach the proxy over the network. To set up a certificate, see [HTTPS listeners]({{< link-hextra path="/setup/listeners/https/" >}}).
 
+> [!NOTE]
+> The Kubernetes Admin UI is read-only and does not currently show the standalone **LLM > Client Setup** generator. Configure the client with the same gateway URL and credential values manually. The client settings are not specific to a deployment mode; only the resources that configure agentgateway differ. Follow [agentgateway/agentgateway#2989](https://github.com/agentgateway/agentgateway/issues/2989) for the enhancement, and see [Admin UI]({{< link-hextra path="/observability/ui/" >}}) for more information about the current UI.
+
 ## Set up the Anthropic backend
 
-1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for the Anthropic provider. No API key is needed because authentication uses your Claude subscription via OAuth.
+1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for the Anthropic provider. This initial configuration omits a provider API key for the Claude subscription path. The gateway API key and interactive sign-in sections configure a separate upstream credential.
 
    ```bash
    kubectl apply -f- <<EOF
@@ -113,7 +117,7 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
    EOF
    ```
 
-## Configure Claude Desktop
+## Configure Claude Desktop with a Claude subscription {#configure-claude-desktop}
 
 1. Get a bearer token for your Claude account. Store the value in a safe place.
 
@@ -170,9 +174,22 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
    > EOF
    > ```
 
+## Use a gateway API key {#gateway-api-key}
+
+You can use the same client-side values that the standalone **Client Setup** page produces. The Kubernetes Admin UI does not generate these values, so configure the gateway and Claude Desktop manually.
+
+1. Give the `anthropic-desktop` backend an Anthropic API key. Follow [Anthropic provider]({{< link-hextra path="/llm/providers/anthropic/" >}}) to create a provider credential Secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}}. This credential is sent upstream and is separate from the key that Claude Desktop sends to agentgateway.
+2. Follow [Virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) to create a client API key and a strict API key authentication policy. Target the `claude-desktop` `HTTPRoute` if the key must protect only this integration, or target the `agentgateway-proxy` `Gateway` to protect all of its routes.
+3. In Claude Desktop, go to **Developer → Configure Third Party Inference → Gateway**.
+4. For **Gateway base URL**, enter the URL from [Get the gateway URL](#gateway-url), including the `/claude` path.
+5. For **Credential kind**, select **Static API key**. Enter the client API key from step 2 in **Gateway API key**.
+6. Click **Apply Changes**, then fully quit Claude Desktop and reopen it.
+
+Claude Desktop sends Anthropic Messages API requests to `/v1/messages`. Agentgateway can translate those requests for another provider, but a route that exposes only the OpenAI-compatible `/v1/chat/completions` API is not sufficient.
+
 ## Authenticate users with your identity provider {#sso}
 
-A static API key gives every user the same credential, which you cannot attribute to a person and cannot revoke for one user alone. Instead, select the **Interactive sign-in** credential kind. Claude Desktop then runs an OAuth 2.0 authorization code flow with Proof Key for Code Exchange (PKCE) against your identity provider, and sends the resulting token on every inference request. The proxy validates the token and adds the LLM provider credential itself, so the user's device never holds a provider API key. When you offboard a user in your identity provider, that user loses access to the proxy.
+{{< reuse "agw-docs/snippets/claude-desktop-sso-overview.md" >}}
 
 The following steps use Microsoft Entra ID as the example identity provider. Any OpenID Connect (OIDC) provider works the same way. Substitute your own issuer URL, client ID, and JWKS path.
 
@@ -274,8 +291,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    | Bearer token | **ID token** |
    | Scopes | `openid profile email offline_access` |
 
-   > [!WARNING]
-   > **Set the bearer token type to ID token.** With the access token setting, Entra ID returns a Microsoft Graph token that its own service signs, and validation against your tenant JWKS always fails with `InvalidSignature`. The ID token carries the client ID as its audience, which matches the `audiences` value in the policy.
+   {{< reuse "agw-docs/snippets/claude-desktop-id-token-warning.md" >}}
 
 7. Click **Apply Changes**, then fully quit Claude Desktop and reopen it. A browser window opens to your identity provider. After you sign in, Claude Desktop stores the token and refreshes it in the background through the `offline_access` scope.
 
@@ -335,6 +351,8 @@ For every available key and for the per-region profiles that a multi-region depl
    ```bash
    kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --tail=5
    ```
+
+3. If you configured gateway API key or OIDC authentication in strict mode, send a request without the `Authorization` header and confirm that agentgateway rejects it. This negative check verifies that the route does not admit unauthenticated requests.
 
 ## Cleanup
 
