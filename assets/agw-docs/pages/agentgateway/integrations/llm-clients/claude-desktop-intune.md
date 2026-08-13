@@ -152,7 +152,7 @@ configuration](https://claude.com/docs/third-party/claude-desktop/configuration)
 and [Deploy with
 MDM](https://claude.com/docs/third-party/claude-desktop/mdm).
 
-### Deploy the macOS profile
+### Deploy the configuration on macOS
 
 1. In the Intune admin center, go to **Devices > Manage devices >
    Configuration > Create > New policy**.
@@ -165,7 +165,7 @@ MDM](https://claude.com/docs/third-party/claude-desktop/mdm).
 For more information, see [Add custom settings to Apple devices in Microsoft
 Intune](https://learn.microsoft.com/en-us/intune/device-configuration/templates/configure-custom-settings-apple).
 
-### Deploy the Windows policy
+### Deploy the configuration on Windows
 
 1. Extract the exported ADMX package.
 2. In the Intune admin center, go to **Devices > Manage devices >
