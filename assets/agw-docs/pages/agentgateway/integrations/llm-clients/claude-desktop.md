@@ -25,6 +25,145 @@ For Claude Desktop, Client Setup outputs the gateway URL and API key; it does no
 {{< reuse-image-light src="img/ui-client-setup-claude-desktop.png" alt="Admin UI Client Setup page with the Claude Desktop recipe selected, showing the gateway URL and API key to enter in Claude Desktop" >}}
 {{< reuse-image-dark srcDark="img/ui-client-setup-claude-desktop-dark.png" alt="Admin UI Client Setup page with the Claude Desktop recipe selected, showing the gateway URL and API key to enter in Claude Desktop" >}}
 
+> [!NOTE]
+> Client Setup fills its **Model** and **Virtual API key** dropdowns from the `llm` section of your configuration. The configuration in this guide scopes the key to a route instead, so that it applies only to the `/claude` path, and those dropdowns therefore do not list it. Client Setup reports `No models configured` against this configuration. Select **Raw value** in the **Virtual API key** dropdown and paste the key to generate the recipe, or read the gateway URL and key from the steps that follow. To manage models and keys in the `llm` section so that Client Setup lists them, see [Virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
+
+The following steps configure agentgateway to validate a client API key on the route and to send your own Anthropic credential upstream, then point Claude Desktop at that route. Client Setup generates the client-side values only; it does not create any of this configuration.
+
+1. Save your Anthropic API key and the client API key that Claude Desktop sends to agentgateway. These are two different credentials: the first is what agentgateway sends to Anthropic, and the second is what Claude Desktop sends to agentgateway. Agentgateway reads variable references in the configuration file from the environment at startup.
+
+   The client API key is a value that you choose, not one that a provider issues to you. Agentgateway accepts whatever string the policy in the next step lists, so generate an unguessable one.
+
+   ```bash
+   export ANTHROPIC_API_KEY=<your-anthropic-api-key>
+   export GATEWAY_API_KEY="agw_sk_$(openssl rand -hex 32)"
+   ```
+
+   The `agw_sk_` prefix is the convention that the Admin UI follows when it generates a key, and it makes the value easy to recognize in a client's settings. To create and store keys interactively instead, use **LLM > Virtual API Keys > New key**, which offers an auto-generate option (`agw_sk_*****`) and a **Copy** action. For that workflow, see [Virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
+
+   {{< doc-test paths="claude-desktop-gateway-key" >}}
+   # WHAT THIS TEST VALIDATES:
+   #   * the gateway-API-key config block parses and passes --validate-only
+   #   * agentgateway starts with it and serves the /claude route on 4001
+   #   * apiKey mode: strict rejects a request with no Authorization header, with
+   #     agentgateway's own 401 body (the negative check in "Verify the connection")
+   #   * a request carrying the client key gets PAST the gateway's own auth, which is
+   #     what distinguishes a gateway rejection from an upstream one
+   # WHAT THIS TEST DOES NOT VALIDATE (and why):
+   #   * every Claude Desktop panel step (developer mode, Configure Third-Party
+   #     Inference, Credential kind, Apply Changes) — UI-only step, no scriptable
+   #     equivalent for a desktop app
+   #   * a successful completion through to Anthropic — external dependency, needs a
+   #     real ANTHROPIC_API_KEY, so the test asserts only that gateway auth passed
+   #   * the Claude subscription and interactive sign-in paths — the former needs a
+   #     Claude subscription token from `claude setup-token`, the latter an OIDC provider
+   #   * the macOS deploymentMode workaround — modifies a desktop app's config file
+   # The placeholders in the visible export block are deliberately not shell-safe
+   # (unquoted <...> would redirect), so the test supplies its own defaults here and
+   # takes real values from the environment when they are set.
+   export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-sk-ant-not-a-real-key}"
+   export GATEWAY_API_KEY="${GATEWAY_API_KEY:-agw_sk_docs_example_key}"
+   {{< /doc-test >}}
+
+2. Create a configuration file that requires the client API key on the route and attaches the Anthropic credential to the backend.
+
+   ```yaml {paths="claude-desktop-gateway-key"}
+   cat > config.yaml << 'EOF'
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   gateways:
+     default:
+       port: 4001
+       protocol: HTTP
+   routes:
+   - name: claude-agent
+     matches:
+     - path:
+         pathPrefix: /claude
+     policies:
+       urlRewrite:
+         path:
+           prefix: /
+       apiKey:
+         mode: strict
+         keys:
+         - key: "$GATEWAY_API_KEY"
+           metadata:
+             user: claude-desktop
+     backends:
+     - ai:
+         name: claude-agent
+         provider:
+           anthropic: {}
+         policies:
+           backendAuth:
+             key: "$ANTHROPIC_API_KEY"
+           ai:
+             routes:
+               /v1/messages: messages
+               /v1/messages/count_tokens: anthropicTokenCount
+               '*': passthrough
+   EOF
+   ```
+
+   {{% reuse "agw-docs/snippets/review-table.md" %}}
+
+   | Setting | Description |
+   | -- | -- |
+   | `apiKey.mode` | Set to `strict` so that agentgateway rejects any request that does not carry a valid key. The default value, `optional`, admits unauthenticated requests. |
+   | `apiKey.keys` | The client keys that this route accepts. Claude Desktop sends the key in the `Authorization: Bearer <key>` header. |
+   | `metadata` | Optional labels attached to requests authenticated with this key, which you can use in metrics and logs to attribute traffic. |
+   | `backendAuth.key` | The Anthropic API key that agentgateway sends upstream. The client never holds this credential. |
+
+   For more information about client keys, see [Virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
+
+3. Start agentgateway.
+
+   ```bash
+   agentgateway -f config.yaml
+   ```
+
+   {{< doc-test paths="claude-desktop-gateway-key" >}}
+   # Claude Desktop gateway API key: schema-gate the config before running it, so a field
+   # error is reported as such rather than as a confusing startup failure.
+   agentgateway --validate-only -f config.yaml
+   # The visible block runs in the foreground, so the test starts its own background copy.
+   # Output goes to a file so nothing can leak into a captured value.
+   agentgateway -f config.yaml > agw-claude-desktop.log 2>&1 &
+   AGW_PID=$!
+   stop_gateway() {
+     [ -n "${AGW_PID:-}" ] || return 0
+     kill "$AGW_PID" 2>/dev/null || true
+     wait "$AGW_PID" 2>/dev/null || true
+     AGW_PID=""
+   }
+   trap stop_gateway EXIT
+   for i in $(seq 1 30); do
+     curl -s -o /dev/null --max-time 2 http://127.0.0.1:4001/claude/v1/messages && break
+     sleep 1
+   done
+   if ! curl -s -o /dev/null --max-time 5 http://127.0.0.1:4001/claude/v1/messages; then
+     echo "FAIL: agentgateway did not start serving /claude on 127.0.0.1:4001"
+     cat agw-claude-desktop.log
+     exit 1
+   fi
+   {{< /doc-test >}}
+
+4. {{< reuse "agw-docs/snippets/claude-desktop-developer-mode.md" >}}
+
+5. In the menu bar, go to **Developer → Configure Third Party Inference → Gateway**.
+
+6. Enter the gateway URL. Use `127.0.0.1` rather than `localhost`.
+
+   ```
+   http://127.0.0.1:4001/claude
+   ```
+
+7. For the **Credential kind** dropdown, select `Static API key`. In the **Gateway API key** field, enter the `GATEWAY_API_KEY` value from step 1.
+
+8. Click **Apply Changes**, then fully quit Claude Desktop and reopen it. Claude Desktop reads its configuration only at launch.
+
+   {{< reuse "agw-docs/snippets/claude-desktop-3p-macos.md" >}}
+
 To use a Claude subscription token instead of a gateway API key, continue with the following sections.
 
 ## Configure agentgateway with a Claude subscription {#configure-agentgateway}
@@ -88,7 +227,7 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
 
    Copy the token printed to the terminal.
 
-2. Open Claude Desktop and enable developer mode: **Help → Troubleshooting → Enable Developer Mode**. Then fully quit and relaunch Claude Desktop. A new **Developer** menu appears in the menu bar.
+2. {{< reuse "agw-docs/snippets/claude-desktop-developer-mode.md" >}}
 
 3. In the menu bar, go to **Developer → Configure Third Party Inference → Gateway**.
 
@@ -102,18 +241,7 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
 
 6. Click **Apply Changes**, then fully quit Claude Desktop and reopen it. Claude Desktop reads its configuration only at launch.
 
-   > [!NOTE]
-   > On macOS, Claude Desktop might not enter third-party inference mode from the settings panel alone. If the app still signs in to Anthropic after you reopen it, set `deploymentMode` to `3p` in the third-party configuration file, then quit and reopen the app again.
-   >
-   > ```bash
-   > python3 - <<'EOF'
-   > import json, os
-   > p = os.path.expanduser('~/Library/Application Support/Claude-3p/claude_desktop_config.json')
-   > d = json.load(open(p))
-   > d['deploymentMode'] = '3p'
-   > open(p, 'w').write(json.dumps(d, indent=2))
-   > EOF
-   > ```
+   {{< reuse "agw-docs/snippets/claude-desktop-3p-macos.md" >}}
 
 ## Authenticate users with your identity provider {#sso}
 
@@ -267,6 +395,51 @@ info  request gateway=default/default listener=http route=claude-agent endpoint=
 ```
 
 If you configured gateway API key or OIDC authentication in strict mode, send a request without the `Authorization` header and confirm that agentgateway rejects it. This negative check verifies that the route does not admit unauthenticated requests.
+
+```bash {paths="claude-desktop-gateway-key"}
+curl -i http://127.0.0.1:4001/claude/v1/messages -H content-type:application/json -d '{
+  "model": "claude-sonnet-4-5",
+  "max_tokens": 16,
+  "messages": [{"role": "user", "content": "hi"}]
+}'
+```
+
+{{< doc-test paths="claude-desktop-gateway-key" >}}
+BODY_FILE=$(mktemp)
+# Negative: no Authorization header must be refused BY AGENTGATEWAY, not upstream.
+CODE=$(curl -s -o "$BODY_FILE" -w '%{http_code}' --max-time 20 \
+  http://127.0.0.1:4001/claude/v1/messages -H content-type:application/json \
+  -d '{"model":"claude-sonnet-4-5","max_tokens":16,"messages":[{"role":"user","content":"hi"}]}')
+if [ "$CODE" != "401" ]; then
+  echo "FAIL: expected 401 without an Authorization header, got $CODE"; cat "$BODY_FILE"; exit 1
+fi
+if ! grep -q "no API Key found" "$BODY_FILE"; then
+  echo "FAIL: 401 did not come from agentgateway's API key policy. Body was:"; cat "$BODY_FILE"; exit 1
+fi
+echo "OK: agentgateway refused the unauthenticated request"
+
+# Positive: the client key must get PAST agentgateway's own auth. The upstream call is
+# expected to fail without a real ANTHROPIC_API_KEY, so assert only that the rejection is
+# no longer agentgateway's — that is exactly the distinction the guide describes.
+CODE=$(curl -s -o "$BODY_FILE" -w '%{http_code}' --max-time 30 \
+  http://127.0.0.1:4001/claude/v1/messages -H content-type:application/json \
+  -H "Authorization: Bearer $GATEWAY_API_KEY" \
+  -d '{"model":"claude-sonnet-4-5","max_tokens":16,"messages":[{"role":"user","content":"hi"}]}')
+if grep -q "no API Key found" "$BODY_FILE"; then
+  echo "FAIL: the client key was refused by agentgateway (status $CODE). Body was:"; cat "$BODY_FILE"; exit 1
+fi
+echo "OK: the client key passed agentgateway's API key policy (upstream status $CODE)"
+rm -f "$BODY_FILE"
+{{< /doc-test >}}
+
+Check the response body, not only the status code. Agentgateway rejects the request itself, and the body names the reason.
+
+```
+HTTP/1.1 401 Unauthorized
+api key authentication failure: no API Key found
+```
+
+Anthropic also returns `401` when it rejects a credential, so the status code alone does not tell you which hop refused the request. An upstream rejection returns a JSON body with a `request_id` instead.
 
 ## Next steps
 

@@ -1,0 +1,1 @@
+Open Claude Desktop and enable developer mode from the menu bar: **Help → Troubleshooting → Enable Developer Mode**. Then fully quit and relaunch Claude Desktop. A new **Developer** menu appears in the menu bar.

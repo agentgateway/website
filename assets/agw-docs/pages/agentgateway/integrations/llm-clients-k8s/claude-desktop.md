@@ -125,7 +125,7 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
    claude setup-token
    ```
 
-2. Open Claude Desktop and enable developer mode from the menu bar: **Help → Troubleshooting → Enable Developer Mode**. Then fully quit and relaunch Claude Desktop. A new **Developer** menu appears in the menu bar.
+2. {{< reuse "agw-docs/snippets/claude-desktop-developer-mode.md" >}}
 
 3. In the menu bar, go to **Developer → Configure Third Party Inference → Gateway**.
 
@@ -161,29 +161,120 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 
 6. Click **Apply Changes**, then fully quit Claude Desktop and reopen it. Claude Desktop reads its configuration only at launch.
 
-   > [!NOTE]
-   > On macOS, Claude Desktop might not enter third-party inference mode from the settings panel alone. If the app still signs in to Anthropic after you reopen it, set `deploymentMode` to `3p` in the third-party configuration file, then quit and reopen the app again.
-   >
-   > ```bash
-   > python3 - <<'EOF'
-   > import json, os
-   > p = os.path.expanduser('~/Library/Application Support/Claude-3p/claude_desktop_config.json')
-   > d = json.load(open(p))
-   > d['deploymentMode'] = '3p'
-   > open(p, 'w').write(json.dumps(d, indent=2))
-   > EOF
-   > ```
+   {{< reuse "agw-docs/snippets/claude-desktop-3p-macos.md" >}}
 
 ## Use a gateway API key {#gateway-api-key}
 
 You can use the same client-side values that the standalone **Client Setup** page produces. The Kubernetes Admin UI does not generate these values, so configure the gateway and Claude Desktop manually.
 
-1. Give the `anthropic-desktop` backend an Anthropic API key. Follow [Anthropic provider]({{< link-hextra path="/llm/providers/anthropic/" >}}) to create a provider credential Secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}}. This credential is sent upstream and is separate from the key that Claude Desktop sends to agentgateway.
-2. Follow [Virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) to create a client API key and a strict API key authentication policy. Target the `claude-desktop` `HTTPRoute` if the key must protect only this integration, or target the `agentgateway-proxy` `Gateway` to protect all of its routes.
-3. In Claude Desktop, go to **Developer → Configure Third Party Inference → Gateway**.
-4. For **Gateway base URL**, enter the URL from [Get the gateway URL](#gateway-url), including the `/claude` path.
-5. For **Credential kind**, select **Static API key**. Enter the client API key from step 2 in **Gateway API key**.
-6. Click **Apply Changes**, then fully quit Claude Desktop and reopen it.
+These are two different credentials: the Anthropic key is what agentgateway sends upstream, and the client API key is what Claude Desktop sends to agentgateway.
+
+1. Save both credentials in your shell so that the following commands can resolve them. The client API key is a value that you choose, not one that a provider issues to you: agentgateway accepts any key whose hash appears in the ConfigMap that you create later in this section. Generate an unguessable one, or take it from your API management tool if you issue keys centrally.
+
+   ```bash
+   export ANTHROPIC_API_KEY=<your-anthropic-api-key>
+   export GATEWAY_API_KEY="agw_sk_$(openssl rand -hex 32)"
+   ```
+
+   The `agw_sk_` prefix is the convention that the standalone Admin UI uses when it generates a key, and it makes the value easy to recognize in a client's settings. The Kubernetes Admin UI is read-only and cannot generate keys, so create them outside the cluster as shown here. Store the raw value somewhere safe: only its hash goes into the cluster, so you cannot recover it afterward.
+
+2. Create a Secret that holds your Anthropic API key, and give the `anthropic-desktop` backend a reference to it. The `policies.ai.routes` settings are unchanged from [Set up the Anthropic backend](#set-up-the-anthropic-backend); reapplying the {{< reuse "agw-docs/snippets/backend.md" >}} adds the credential to it.
+
+   ```bash
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: anthropic-desktop-secret
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   type: Opaque
+   stringData:
+     Authorization: $ANTHROPIC_API_KEY
+   ---
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: anthropic-desktop
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         anthropic: {}
+     policies:
+       auth:
+         secretRef:
+           name: anthropic-desktop-secret
+       ai:
+         routes:
+           '/v1/messages': Messages
+           '/v1/messages/count_tokens': AnthropicTokenCount
+           '*': Passthrough
+   EOF
+   ```
+
+3. Compute a SHA-256 hash of the client API key. A ConfigMap is not confidential, so each entry stores the hash rather than the raw key. Clients still send the raw key, and the proxy compares hashes, so the plaintext key never exists in the cluster. The hash is computed over the exact key bytes, so do not include a trailing newline.
+
+   ```bash
+   printf '%s' "$GATEWAY_API_KEY" | sha256sum | awk '{print "sha256:"$1}'
+   ```
+
+4. Create the ConfigMap with the hash from the previous step, and an {{< reuse "agw-docs/snippets/policy.md" >}} that requires a valid key. This example targets the `claude-desktop` `HTTPRoute`, so the key protects only this integration. To protect every route the proxy serves, target the `agentgateway-proxy` `Gateway` instead.
+
+   ```bash
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: claude-desktop-apikey
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app: claude-desktop
+   data:
+     claude-desktop: |
+       {
+         "keyHash": "sha256:<hash-from-the-previous-step>",
+         "metadata": {
+           "user": "claude-desktop"
+         }
+       }
+   ---
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: claude-desktop-apikey
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: claude-desktop
+     traffic:
+       apiKeyAuthentication:
+         mode: Strict
+         configMapSelector:
+           matchLabels:
+             app: claude-desktop
+   EOF
+   ```
+
+   {{% reuse "agw-docs/snippets/review-table.md" %}}
+
+   | Setting | Description |
+   | -- | -- |
+   | `keyHash` | The SHA-256 hash of the client API key, in `sha256:<hex>` form. Every entry in a selected ConfigMap must use `keyHash`; an entry that uses a raw `key` is rejected and the policy reports a `PartiallyValid` status. |
+   | `apiKeyAuthentication.mode` | Set to `Strict` so that agentgateway rejects any request that does not carry a valid key. |
+   | `configMapSelector` | Selects the ConfigMaps that hold the accepted key hashes. |
+
+   For more information, see [API key authentication]({{< link-hextra path="/security/apikey/" >}}) and [Virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
+
+5. {{< reuse "agw-docs/snippets/claude-desktop-developer-mode.md" >}}
+
+6. In Claude Desktop, go to **Developer → Configure Third Party Inference → Gateway**.
+7. For **Gateway base URL**, enter the URL from [Get the gateway URL](#gateway-url), including the `/claude` path.
+8. For **Credential kind**, select **Static API key**. In the **Gateway API key** field, enter the raw `GATEWAY_API_KEY` value from step 1, not its hash.
+9. Click **Apply Changes**, then fully quit Claude Desktop and reopen it.
+
+   {{< reuse "agw-docs/snippets/claude-desktop-3p-macos.md" >}}
 
 Claude Desktop sends Anthropic Messages API requests to `/v1/messages`. Agentgateway can translate those requests for another provider, but a route that exposes only the OpenAI-compatible `/v1/chat/completions` API is not sufficient.
 
@@ -353,6 +444,23 @@ For every available key and for the per-region profiles that a multi-region depl
    ```
 
 3. If you configured gateway API key or OIDC authentication in strict mode, send a request without the `Authorization` header and confirm that agentgateway rejects it. This negative check verifies that the route does not admit unauthenticated requests.
+
+   ```bash
+   curl -i $INGRESS_GW_ADDRESS/claude/v1/messages -H content-type:application/json -d '{
+     "model": "claude-sonnet-4-5",
+     "max_tokens": 16,
+     "messages": [{"role": "user", "content": "hi"}]
+   }'
+   ```
+
+   Check the response body, not only the status code. Agentgateway rejects the request itself, and the body names the reason.
+
+   ```
+   HTTP/1.1 401 Unauthorized
+   api key authentication failure: no API Key found
+   ```
+
+   Anthropic also returns `401` when it rejects a credential, so the status code alone does not tell you which hop refused the request. An upstream rejection returns a JSON body with a `request_id` instead.
 
 ## Cleanup
 
