@@ -178,28 +178,14 @@ are managed defaults, not supported `requirements.toml` constraints.
    reports **Succeeded**.
 2. On the Mac, open Company Portal, select the device, and select **Check
    status** to request the latest assigned configuration.
-3. Confirm that macOS received a profile for the `com.openai.codex` preference
-   domain.
-
-   ```sh
-   sudo profiles show -type configuration | \
-     grep -A 8 -B 8 com.openai.codex
-   ```
-
-4. Read and decode the effective managed default.
-
-   ```sh
-   defaults read com.openai.codex config_toml_base64 | base64 -D
-   ```
-
-   Confirm that the decoded TOML contains the approved `model_provider`,
-   `base_url`, and `wire_api` values. Do not include the decoded content in
-   device inventory or compliance output if you later add sensitive managed
-   settings.
-5. Fully quit Codex. On macOS, use **Command-Q** instead of only closing the
+3. Deploy the [macOS verification script](#automate-verification-with-intune)
+   with Codex enabled. Confirm that Intune reports success for the
+   installation, effective managed configuration, and network checks. The
+   script reports only check results and does not return the decoded TOML.
+4. Fully quit Codex. On macOS, use **Command-Q** instead of only closing the
    window. Reopen Codex so that it loads the managed defaults, and start a new
    local task. A cloud task does not run through the local managed provider.
-6. Start the agentgateway log stream as described in [Verify the
+5. Start the agentgateway log stream as described in [Verify the
    deployment](#verify-the-deployment), and then send a harmless prompt from
    the new task.
 
@@ -214,16 +200,16 @@ are managed defaults, not supported `requirements.toml` constraints.
    codex exec 'Reply exactly: AGW-CODEX-VERIFY. Do not use tools.'
    ```
 
-7. Correlate the request by its time. Codex might first send `GET /v1/models`.
+6. Correlate the request by its time. Codex might first send `GET /v1/models`.
    The decisive entry is a successful `POST /v1/responses` with the configured
    gateway hostname, the expected route, and `http.status=200`. The access log
    does not need to contain the prompt text.
-8. If no entry appears, check that the task is local, Codex was fully
+7. If no entry appears, check that the task is local, Codex was fully
    restarted, DNS resolves the managed hostname, and the configured `http` or
    `https` scheme matches the Gateway listener. An unauthorized response
    indicates a client or backend authentication problem rather than an Intune
    delivery problem.
-9. Add a conflicting provider or base URL to the user's `config.toml`, or start
+8. Add a conflicting provider or base URL to the user's `config.toml`, or start
    Codex with a conflicting `--config` value. Restart Codex and confirm that it
    starts with the managed agentgateway values.
 
@@ -411,6 +397,77 @@ Protocol (MCP) servers in supported clients.
 MCP policy controls which tool servers the client can load. It is separate from
 the model-provider configuration that routes LLM requests through agentgateway.
 
+## Automate verification with Intune
+
+Use the example verification scripts in the agentgateway repository to check
+Codex and Claude Desktop without asking users to run local commands.
+
+- [macOS shell
+  script](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/verify-agentgateway-clients-macos.sh)
+- [Windows PowerShell
+  script](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/Verify-AgentgatewayClientsWindows.ps1)
+- [Script configuration and deployment
+  instructions](https://github.com/agentgateway/agentgateway/tree/main/examples/microsoft-intune)
+
+Before you upload a script, edit its configuration block. Set the approved
+Codex URL including `/v1`, set the approved Claude Desktop URL including its
+route prefix, and enable only the clients required for the target group. The
+optional installation check recognizes the common paths listed in the script.
+Add your organization's package path or disable that check and use the Intune
+managed-app report when the approved package uses a different path. Never add
+a provider key, bearer token, or another secret.
+
+The scripts perform these checks for every enabled client.
+
+1. Confirm that the application is installed in a recognized location when
+   the installation check is enabled.
+2. Read the effective managed preference, file, or registry policy and confirm
+   the approved agentgateway URL. The scripts do not print the configuration.
+3. Connect to the approved URL and confirm that it returns an HTTP response. A
+   `401` or `403` response passes this connectivity check because it proves
+   that DNS, transport, and the protected Gateway listener are reachable.
+
+### Deploy the verification script on macOS
+
+1. In the Intune admin center, go to **Devices > By platform > macOS > Manage
+   devices > Scripts > Add** and upload the shell script.
+2. Set **Run script as signed-in user** to **Yes**. The effective Codex and
+   Claude Desktop settings are user-scoped.
+3. Select a frequency, assign the pilot group, and monitor **Device status** or
+   **User status**. Exit code `0` reports success; a nonzero exit code reports
+   one or more failed checks.
+
+The Mac must have the Microsoft Intune management agent. For prerequisites,
+scheduling, and reporting behavior, see [Use shell scripts on macOS devices in
+Intune](https://learn.microsoft.com/en-us/intune/device-management/tools/run-shell-scripts-macos).
+
+### Deploy the verification script on Windows
+
+1. In the Intune admin center, go to **Devices > Manage devices > Scripts and
+   remediations** and create a script package.
+2. Upload the PowerShell script as the detection script. A remediation script
+   is optional when the managed client policy already restores configuration.
+3. Set **Run this script using the logged-on credentials** and **Run script in
+   64-bit PowerShell** to **Yes**.
+4. Assign a schedule and the pilot group, and then monitor **Device status**.
+
+You can instead upload the PowerShell file as a [Windows platform
+script](https://learn.microsoft.com/en-us/intune/device-management/tools/run-powershell-scripts-windows)
+for a one-time check. For recurring checks, review the enrollment, Windows
+edition, and licensing requirements for [Intune
+Remediations](https://learn.microsoft.com/en-us/intune/device-management/tools/deploy-remediations).
+
+{{< callout type="info" >}}
+These operational scripts are not custom compliance discovery scripts. Custom
+compliance requires platform-specific structured output and the matching JSON
+definition described in [Add compliance reporting](#add-compliance-reporting).
+{{< /callout >}}
+
+The network check does not send an LLM prompt and cannot prove that an
+interactive client request used agentgateway. After the script passes, complete
+the interactive test in [Verify the deployment](#verify-the-deployment) and
+correlate the request with the agentgateway access log.
+
 ## Add compliance reporting
 
 Use [custom
@@ -442,7 +499,10 @@ device, and select **Check Status** to request an evaluation.
 
 ## Verify the deployment
 
-Test each policy on a pilot device before broad assignment.
+Test each policy on a pilot device before broad assignment. The automated
+script verifies the local prerequisites and network path; retain this final
+interactive test to prove that the client actually sends inference traffic
+through agentgateway.
 
 1. If Intune deploys the client, confirm its installation under **Managed
    apps** or the app installation report. On a personally owned device, do not
