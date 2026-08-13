@@ -6,3 +6,5 @@ test: skip
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/llm-clients-index.md" >}}
+
+## Supported clients
