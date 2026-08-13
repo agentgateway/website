@@ -28,7 +28,7 @@ In this guide, you learn how to originate one-way TLS connections for the follow
 
 ## Before you begin
 
-{{< reuse "agw-docs/snippets/prereq-x-channel.md" >}}
+{{< reuse "agw-docs/snippets/prereq.md" >}}
 
 ## In-cluster service
 

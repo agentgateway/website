@@ -118,6 +118,8 @@ trap 'stop_gateway' EXIT
 
 Multiplexing combines multiple MCP servers (targets) within a single backend into one unified MCP server. All targets are exposed together so that clients can access tools from all targets simultaneously. By default, when a backend has more than one target, tool names are prefixed with the target name (e.g., `time_get_current_time`, `everything_echo`) to avoid collisions. You can change this behavior with the `prefixMode` field, described in [Tool name prefixing](#tool-name-prefixing).
 
+Multiplexing is a property of putting several targets in one backend, not of the top-level `mcp` section. You get the same result from `routes[].backends[].mcp`. To expose each MCP server on its own path instead, give each one its own backend. For help choosing, and for how the choice affects authentication, see [MCP configuration modes]({{< link-hextra path="/mcp/configuration-modes" >}}).
+
 {{% details title="Example multiplexing configuration" closed="false" %}}
 
 ```yaml
