@@ -221,28 +221,16 @@ Test the following cases on Windows and macOS before expanding the rollout.
 2. In the Intune admin center, open the device's **Device configuration** page
    and confirm that the Claude Desktop profile reports **Succeeded**. On macOS,
    use Company Portal **Check status** to request the latest configuration.
-3. On macOS, confirm that the managed profile contains the
-   `com.anthropic.claudefordesktop` preference domain.
-
-   ```sh
-   sudo profiles show -type configuration | \
-     grep -A 12 -B 8 com.anthropic.claudefordesktop
-   ```
-
-4. On macOS, inspect the effective managed values.
-
-   ```sh
-   defaults read com.anthropic.claudefordesktop
-   ```
-
-   Confirm the gateway URL, interactive credential kind, Entra issuer and
-   client ID, managed MCP servers, and workspace restrictions. Do not copy
-   tokens or sensitive header values into Intune inventory or support logs.
-5. Fully quit and reopen Claude Desktop instead of only closing its window. On
+3. Deploy the platform-appropriate script from [Automate verification with
+   Intune](#automate-verification-with-intune) with Claude Desktop enabled.
+   Confirm that Intune reports success for the installation, effective managed
+   gateway URL, and network checks. The script does not return managed
+   preference or registry contents.
+4. Fully quit and reopen Claude Desktop instead of only closing its window. On
    macOS, use **Command-Q**. Open the third-party inference configuration and
    confirm that it is marked as organization-managed, read-only, and points to
    agentgateway.
-6. Start the agentgateway log stream as described in [Verify the
+5. Start the agentgateway log stream as described in [Verify the
    deployment](#verify-the-deployment). Sign in with a pilot Entra account,
    start a new third-party inference conversation, and send a harmless prompt.
 
@@ -251,28 +239,28 @@ Test the following cases on Windows and macOS before expanding the rollout.
    ```
 
    Then test model discovery and each managed MCP server.
-7. Correlate the inference request by its time. Confirm a successful
+6. Correlate the inference request by its time. Confirm a successful
    `POST /v1/messages` entry with the expected managed hostname, identity,
    route, upstream provider, and `http.status=200`. The access log does not
    need to contain the prompt text and must not contain the bearer token or
    upstream provider credential. If no entry appears, check the full restart,
    managed HTTPS URL, DNS, and network path. An unauthorized response indicates
    an Entra token or agentgateway authentication-policy problem.
-8. Confirm that an invalid issuer, audience, expired token, and missing token
+7. Confirm that an invalid issuer, audience, expired token, and missing token
    each receive an unauthorized response.
-9. Try to save a local gateway URL or local third-party configuration. Fully
+8. Try to save a local gateway URL or local third-party configuration. Fully
    restart Claude Desktop and confirm that the managed configuration remains
    effective.
-10. Confirm that only approved MCP servers are available and that each tool
+9. Confirm that only approved MCP servers are available and that each tool
     uses the configured approval policy.
-11. For broker mode, mark a pilot device noncompliant and confirm that
+10. For broker mode, mark a pilot device noncompliant and confirm that
     Conditional Access blocks a new sign-in.
-12. Remove a pilot user from the assigned Entra group and revoke the user's
-   sessions. Confirm that a new sign-in is blocked. A JWT that agentgateway
+11. Remove a pilot user from the assigned Entra group and revoke the user's
+    sessions. Confirm that a new sign-in is blocked. A JWT that agentgateway
    already accepted remains valid until its expiration unless you add a
    separate token-revocation mechanism, so choose an appropriate token and
    session lifetime.
-13. Confirm that endpoint network controls block direct inference traffic to
+12. Confirm that endpoint network controls block direct inference traffic to
     unapproved providers.
 
 ### Update or remove the Claude Desktop policy
