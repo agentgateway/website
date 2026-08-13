@@ -79,7 +79,7 @@ Open your browser to the following endpoints.
    
    ```bash
    # {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane
-   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} deployment/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} deployment/{{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
    
    # Replace $GATEWAY_NAME with the name of your gateway.
    export GATEWAY_NAME=http

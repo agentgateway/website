@@ -25,7 +25,7 @@ az containerapp create \
   --name agentgateway \
   --resource-group my-rg \
   --environment my-env \
-  --image ghcr.io/agentgateway/agentgateway:latest \
+  --image cr.agentgateway.dev/agentgateway:latest \
   --target-port 3000 \
   --ingress external \
   --secrets openai-key=secretref:openai-api-key \

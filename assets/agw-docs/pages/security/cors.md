@@ -51,7 +51,7 @@ You can configure the CORS policy at two levels:
 
 ## Before you begin
 
-{{< reuse "agw-docs/snippets/prereq-x-channel.md" >}}
+{{< reuse "agw-docs/snippets/prereq.md" >}}
 
 ## Set up CORS policies
 

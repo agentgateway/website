@@ -12,7 +12,7 @@
 # Ctrl-C (or Playwright's webServer teardown) tears it down. Requires Docker + Node 18+ + sqlite3.
 set -euo pipefail
 
-IMAGE="${AGW_IMAGE:-ghcr.io/agentgateway/agentgateway:v1.3.1}"
+IMAGE="${AGW_IMAGE:-cr.agentgateway.dev/agentgateway:v1.3.1}"
 UI_PORT="${UI_HOST_PORT:-15100}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CFG_DIR="$ROOT/.agw-runtime"

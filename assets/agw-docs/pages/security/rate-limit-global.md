@@ -119,7 +119,7 @@ EOF
 
 ## Before you begin
 
-{{< reuse "agw-docs/snippets/prereq-x-channel.md" >}}
+{{< reuse "agw-docs/snippets/prereq.md" >}}
 
 ## Deploy the rate limit service {#deploy-service}
 

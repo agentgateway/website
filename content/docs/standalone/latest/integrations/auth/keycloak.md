@@ -635,7 +635,7 @@ To run both as containers instead of running the agentgateway binary on your hos
 ```yaml
 services:
   agentgateway:
-    image: ghcr.io/agentgateway/agentgateway:latest
+    image: cr.agentgateway.dev/agentgateway:latest
     ports:
       - "3000:3000"
     volumes:

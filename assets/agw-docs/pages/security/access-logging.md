@@ -15,7 +15,7 @@ For logging, CEL exposes these variable groups when enabled or applicable:
 * **source**: client address, port, and TLS identity
 * **backend**: backend name, type, and protocol
 * **Auth and metadata**: `jwt`, `apiKey`, or `basicAuth`, plus `extauthz` and `extproc` metadata
-* **LLM**: model, provider, token counts, and optional prompt/completion
+* **LLM**: model, provider, token counts, and optional prompt/completion{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x" >}}/tool calls{{< /version >}}
 * **MCP**: tool, prompt, and resource name and target
 
 Use the `filter` field in the {{< reuse "agw-docs/snippets/policy.md" >}} to define the requests that you want to apply your access log policy to. For example, you might want to apply the policy only to specific paths or response codes. Then, use the `attributes` list to add or remove fields from the access logs by using CEL expressions. For the full variable table, available functions, and examples, see the [CEL expressions reference]({{< link-hextra path="/reference/cel/" >}}).

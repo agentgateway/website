@@ -98,6 +98,11 @@ llm:
 
 To set the port and TLS settings for LLM traffic, define a gateway and attach the `llm` section to it. When you omit the `gateways` field, the `llm` section attaches to the gateway named `default`. The `mcp` and `ui` sections attach the same way, so all three can share one port.
 
+When your configuration file defines no gateway at all, such as the earlier basic example, the implied `default` gateway serves LLM traffic on port `4000` and MCP traffic on port `3000`. Requests use the OpenAI-compatible paths, such as `http://localhost:4000/v1/chat/completions`.
+
+> [!NOTE]
+> The `llm.port`, `llm.tls`, and `mcp.port` fields are deprecated in favor of gateways. They still work, and setting them overrides these defaults.
+
 Use the gateway's `tls` field to serve LLM traffic over TLS.
 - Most deployments only need `cert` and `key`.
 - Use `root` for a custom trust bundle or mTLS.
@@ -124,9 +129,6 @@ mcp:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
 ```
-
-> [!NOTE]
-> The `llm.port`, `llm.tls`, and `mcp.port` fields are deprecated in favor of gateways. They still work, and when you set them without a gateway, LLM traffic defaults to port `4000` and MCP traffic to port `3000`.
 
 For more MCP listener context, see [MCP overview]({{< link-hextra path="/mcp/" >}}).
 

@@ -41,6 +41,8 @@ flowchart LR
 
 **Rate-limit handling:** When a 429 response includes a `Retry-After` header, agentgateway uses that duration as the eviction time (overriding the configured `duration`). However, 429 responses only trigger eviction if your `unhealthyCondition` includes them (for example, `response.code >= 500 || response.code == 429`).
 
+**Trigger behavior:** Both server errors (5xx) and connection-level failures, such as connection refused or DNS resolution failure, are classified as unhealthy and count toward eviction. This classification is true whether you use the built-in default or an explicit `unhealthyCondition` classification, as long as your CEL expression covers the response codes you care about.
+
 ### Failover vs. traffic splitting {#traffic-splitting}
 
 Failover uses priority groups to automatically switch between backends when failures occur. 
@@ -360,6 +362,40 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    
    {{% /tab %}}
+   {{% tab name="Self-hosted primary, cloud fallback" %}}
+
+   In this example, you configure failover from a self-hosted vLLM instance to a cloud provider. The self-hosted instance is a model that you run yourself, such as vLLM on your own GPU hardware. The cloud provider is a fully managed, externally hosted LLM API, such as OpenAI. Requests route to your in-cluster vLLM deployment first. If vLLM becomes unavailable, requests fail over to OpenAI.
+
+   Before you begin, [set up vLLM]({{< link-hextra path="/llm/providers/vllm/" >}}) in your cluster.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: model-failover
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       groups: 
+         - providers: 
+             - name: vllm-primary
+               openai: 
+                 model: meta-llama/Llama-3.1-8B-Instruct
+               host: vllm.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
+               port: 8000
+         - providers: 
+             - name: openai-fallback
+               openai: 
+                 model: gpt-4.1
+               policies:
+                 auth:
+                   secretRef:
+                     name: openai-secret
+   EOF
+   ```
+
+   {{% /tab %}}
    {{< /tabs >}}
 
 2. Create an HTTPRoute resource that routes incoming traffic on the `/model` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you created in the previous step. In this example, the URLRewrite filter rewrites the path from `/model` to the path of the API in the LLM provider that you want to use, such as `/v1/chat/completions` for OpenAI.
@@ -454,7 +490,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    | Setting | Description |
    | --- | --- |
-   | `unhealthyCondition` | Optional CEL expression that classifies each response as healthy or unhealthy. When you set this field, `true` means the response counts as unhealthy toward eviction (together with `eviction`). When you omit this field, 5xx responses and connection failures still lower the backend health score for load balancing, but that built-in behavior does not trigger eviction by itself. |
+   | `unhealthyCondition` | Optional CEL expression that classifies each response as healthy or unhealthy. When you set this field, `true` means the response counts as unhealthy toward eviction (together with `eviction`). When you omit this field, 5xx responses and connection failures (such as connection refused or DNS resolution failure) are still classified as unhealthy by a built-in default, and count toward eviction in the same way as an explicit `unhealthyCondition` would. |
    | `eviction.duration` | Base time to remove an unhealthy backend from its priority group. Increases with multiplicative backoff on repeated evictions. When a 429 response includes `Retry-After`, that value is used instead. You might try `10s`–`60s` depending on how quickly you want failover versus avoiding flapping on brief errors. Shorter durations fail over faster. If you omit this field, the default is `3s`. |
    | `eviction.consecutiveFailures` | Number of consecutive unhealthy responses required before evicting. You might start with `3` so that a single transient error does not evict the backend. For tests, use `1` for immediate eviction. |
 
@@ -539,6 +575,19 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    { "model": "claude-haiku-4-5-20251001", "status": "stop" }
 
    === Request 3 ===
+   { "model": "gpt-4.1-2025-04-14", "status": "stop" }
+   ```
+   
+   {{% /tab %}}
+   {{% tab name="Self-hosted primary, cloud fallback" %}}
+
+   With the self-hosted vLLM configuration, the first request is served by your vLLM deployment. After the vLLM is evicted, such as when the pod becomes unavailable or is scaled down, the next request fails over to the cloud fallback:
+
+   ```text
+   === Request 1 ===
+   { "model": "meta-llama/Llama-3.1-8B-Instruct", "status": "stop" }
+
+   === Request 2 ===
    { "model": "gpt-4.1-2025-04-14", "status": "stop" }
    ```
    

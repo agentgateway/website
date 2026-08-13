@@ -95,10 +95,10 @@ cert-manager is a Kubernetes controller that helps you automate the process of o
        kind: Issuer
      isCA: false
      dnsNames:
-     - {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
-     - {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.{{< reuse "agw-docs/snippets/namespace.md" >}}
-     - {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc
-     - {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
+     - {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
+     - {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}.{{< reuse "agw-docs/snippets/namespace.md" >}}
+     - {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc
+     - {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
      duration: 1h
      renewBefore: 5m
      privateKey:
@@ -122,7 +122,7 @@ Upgrade {{< reuse "agw-docs/snippets/kgateway.md" >}} with TLS enabled for the c
 2. Get the Helm values file for your current version.
       
    ```sh
-   helm get values {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > values.yaml
+   helm get values {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > values.yaml
    open values.yaml
    ```
 
@@ -148,7 +148,7 @@ Upgrade {{< reuse "agw-docs/snippets/kgateway.md" >}} with TLS enabled for the c
 4. Upgrade your Helm installation.
 
    ```sh
-   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
      -f values.yaml \
      --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} 
    ```
@@ -166,7 +166,7 @@ Now that the control plane is up and running, verify the TLS connection.
 1. Port-forward the control plane service on port 9977.
 
    ```sh
-   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/{{< reuse "agw-docs/snippets/helm-kgateway.md" >}} 9978
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/{{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} 9978
    ```
 
 2. Send a request to the control plane in plaintext without TLS authentication. You get back an `authentication failed` error.
@@ -184,7 +184,7 @@ Now that the control plane is up and running, verify the TLS connection.
 3. Port-forward the control plane deployment on port 9092.
 
    ```sh
-   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} deploy/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} 9092
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} deploy/{{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} 9092
    ```
 
 4. Send a request to the metrics endpoint to check for `xds_auth` metrics.

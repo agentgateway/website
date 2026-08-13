@@ -105,7 +105,7 @@ Azure supports two endpoint types:
    {{% /tab %}}
    {{< /tabs >}}
 
-   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#azureconfig" >}}).
+   {{% reuse "agw-docs/snippets/review-table.md" %}}{{< version exclude-if="1.1.x" >}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#azureconfig" >}}).{{< /version >}}
 
    | Setting     | Description |
    |-------------|-------------|
@@ -267,6 +267,120 @@ Azure supports two endpoint types:
        "total_tokens": 47
      }
    }
+   ```
+
+## Use Claude models on Azure AI Foundry
+
+[Azure AI Foundry](https://ai.azure.com/) hosts Anthropic Claude models at native Anthropic endpoints. When you set `resourceType: Foundry` and a model name that starts with `claude-`, agentgateway automatically routes requests to the Anthropic-native path (`/anthropic/v1/messages`) instead of the OpenAI-compatible path, and injects the required `anthropic-version` header. No extra configuration is needed beyond specifying a Claude model name.
+
+> [!NOTE]
+> For more information about Claude models on Azure AI Foundry, see the [Microsoft documentation](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/how-to/use-foundry-models-claude).
+
+1. Create a Kubernetes secret to store your Azure AI Foundry API key.
+
+   ```sh
+   export AZURE_API_KEY=<insert your Azure AI Foundry API key>
+   ```
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: azure-claude-secret
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   type: Opaque
+   stringData:
+     Authorization: $AZURE_API_KEY
+   EOF
+   ```
+
+2. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource that uses the `azure` provider with `resourceType: Foundry` and a Claude model name.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: azure-claude
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         azure:
+           resourceName: my-foundry-resource
+           resourceType: Foundry
+           projectName: my-project
+           model: claude-3-5-haiku-20241022
+     policies:
+       auth:
+         secretRef:
+           name: azure-claude-secret
+   EOF
+   ```
+
+   {{% reuse "agw-docs/snippets/review-table.md" %}}
+
+   | Setting | Description |
+   |---------|-------------|
+   | `azure.resourceName` | The Azure AI Foundry resource name used to construct the endpoint hostname. |
+   | `azure.resourceType` | Set to `Foundry` to use Azure AI Foundry endpoints. |
+   | `azure.projectName` | The Foundry project name. |
+   | `azure.model` | The Claude model to use, for example `claude-3-5-haiku-20241022`. The model name must start with `claude-` to trigger routing to the Anthropic-native endpoint. |
+   | `policies.auth.secretRef` | References the secret that holds the Azure AI Foundry API key. The key is automatically sent in the `Authorization` header. |
+
+3. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: azure-claude
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - backendRefs:
+       - name: azure-claude
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+       matches:
+          - path:
+              type: PathPrefix
+              value: /azure-claude #Path  example
+   EOF
+   ```
+
+4. Send a request to verify the setup.
+
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/azure-claude" -H content-type:application/json -d '{
+     "max_tokens": 256,
+     "messages": [
+       {
+         "role": "user",
+         "content": "Hello!"
+       }
+     ]
+   }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/azure-claude" -H content-type:application/json -d '{
+     "max_tokens": 256,
+     "messages": [
+       {
+         "role": "user",
+         "content": "Hello!"
+       }
+     ]
+   }' | jq
    ```
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

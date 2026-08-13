@@ -42,6 +42,29 @@ PROXY_POD_IP=$(kubectl get ${PROXY_POD} -n agentgateway-system -o jsonpath='{.st
 kubectl run metrics-check -n agentgateway-system --rm -i --restart=Never --image=curlimages/curl -- -s "http://${PROXY_POD_IP}:15020/metrics" 2>/dev/null | grep "agentgateway_gen_ai_client_token_usage"
 {{< /doc-test >}}
 
+{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+## Token usage fields {#token-usage-fields}
+
+LLM providers disagree about whether the input token count in a response includes the tokens that the provider read from or wrote to its prompt cache. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} normalizes the counts, so that a field means the same thing no matter which provider served the request.
+
+| Field | What it reports |
+|-------|-----------------|
+| `llm.inputTokens` | The total input count, including cache-read and cache-creation tokens. |
+| `llm.totalTokens` | The normalized input count plus the output count. |
+| `llm.providerInputTokens` | The input count exactly as the provider sent it. |
+| `llm.providerTotalTokens` | The total count exactly as the provider sent it. |
+| `llm.cachedInputTokens` | The input tokens that the provider read from cache. |
+| `llm.cacheCreationInputTokens` | The input tokens that the provider wrote to cache. |
+
+The `gen_ai.usage.input_tokens` log and span field and the `input` series of the `agentgateway_gen_ai_client_token_usage` metric both report the normalized count.
+
+Anthropic and Amazon Bedrock exclude cached tokens from the input count that they report. OpenAI, Azure OpenAI, and Google Gemini include them. For the providers that exclude them, `llm.inputTokens` is therefore larger than `llm.providerInputTokens` whenever prompt caching is active. To report exactly what the provider billed, read `llm.providerInputTokens` or `llm.providerTotalTokens` instead.
+
+> [!WARNING]
+> Do not add `llm.cachedInputTokens` or `llm.cacheCreationInputTokens` to `llm.inputTokens`. The cache counts are a subset of the normalized input count, so adding them double counts the cached tokens.
+{{< /version >}}
+
+{{< version exclude-if="1.1.x" >}}
 ## View realized costs
 
 When you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the realized USD cost of each LLM request and exposes it across the observability surface:
@@ -51,6 +74,7 @@ When you configure a [model cost catalog]({{< link-hextra path="/llm/cost-contro
 * **Traces**: cost attributes are attached to the request span.
 
 For catalog configuration and the full list of cost fields, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
+{{< /version >}}
 
 ## Track per-user metrics
 
@@ -88,3 +112,55 @@ model={{< reuse "agw-docs/snippets/openai-model.md" >}}-0125 gen_ai.usage.input_
 {{< doc-test paths="llm-observability" >}}
 kubectl logs deployment/agentgateway-proxy -n agentgateway-system | grep "gen_ai.usage.input_tokens"
 {{< /doc-test >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x" >}}
+## Tool calls {#tool-calls}
+
+When a model responds with tool or function calls, the gateway can carry those calls into your telemetry. Unlike the `gen_ai` fields in the preceding log line, tool calls are not collected automatically. You must reference the `llm.toolCalls` CEL field in an access log or tracing attribute to turn on extraction.
+
+Add an access log attribute and a trace span field to capture the tools that were accessed. In the following example, the extracted tool information is added as a `toolCalls` attribute to your access logs, and as a `gen_ai.tool_calls` field to your trace spans.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: llm-telemetry
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway-proxy
+  frontend:
+    accessLog:
+      attributes:
+        add:
+        - name: toolCalls
+          expression: llm.toolCalls
+    tracing:
+      backendRef:
+        name: opentelemetry-collector
+        namespace: telemetry
+        port: 4317
+      protocol: GRPC
+      attributes:
+        add:
+        - name: gen_ai.tool_calls
+          expression: llm.toolCalls
+EOF
+```
+
+Example value for the `toolCalls` access log attribute: 
+
+```
+toolCalls=[{"id": "call_abc123", "name": "get_weather", "arguments": {"location": "Paris"}}]
+```
+
+The gateway extracts tool calls from every response format that it supports. For streaming responses, the gateway reassembles arguments that the provider splits across chunks into a single object when the stream ends.
+
+When a response carries no tool calls, the gateway omits the attribute from both the log line and the span, rather than recording an empty array. To find the requests that used tools, filter for the attribute name.
+
+> [!NOTE]
+> Reading `llm.toolCalls` has a performance cost for large responses, because the gateway must inspect the response body. Attach the policy only to the routes where you need tool call data, instead of to the gateway.
+{{< /version >}}

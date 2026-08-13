@@ -490,6 +490,8 @@ The install prerequisite should point to `content/docs/kubernetes/<version>/quic
 
 Tests that contain `kubectl port-forward` in the generated script are automatically failed without running. Port-forwarding requires a persistent background process that doesn't work in the automated test environment. Replace any port-forward-based verification with a `YAMLTest` HTTP assertion using `${INGRESS_GW_ADDRESS}` instead.
 
+The check skips comment-only lines, so a hidden `{{< doc-test >}}` block may name the command when explaining why a test avoids it. Trailing comments are still in scope — distinguishing a real `#` from one inside a quoted string or heredoc would need a shell parser, so the check over-reports rather than risk missing a real invocation. If a test is rejected and you cannot find the command, check for the phrase after a `#` on a line that also contains code.
+
 **Wait assertions pass but HTTP test hangs then fails with `read ECONNRESET`**
 
 When a test creates a new HTTPRoute with a hostname that was not previously registered, agentgateway-proxy (Rust/hyper) goes through two phases before it can serve the new route. `Accepted=True` and `ResolvedRefs=True` on the HTTPRoute only reflect control plane state (~50ms) — they do not guarantee the data plane is ready.

@@ -3,9 +3,42 @@ title: Amazon Bedrock
 weight: 15
 icon: /integrations/providers/bw/bedrock.svg
 description: Route agentgateway LLM traffic to foundation models on Amazon Bedrock.
+test:
+  bedrock:
+  - file: ${versionRoot}/llm/providers/bedrock.md
+    path: bedrock
 ---
 
 Configure Amazon Bedrock as an LLM provider in agentgateway.
+
+> [!NOTE]
+> Bedrock excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Bedrock reports. To read the Bedrock number itself, use `llm.providerInputTokens`. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).
+
+{{< doc-test paths="bedrock" >}}
+# ============================================================================
+# Doc test coverage for this guide (these comments are not rendered on the page)
+# ============================================================================
+# WHAT THIS TEST VALIDATES:
+#   * "Configuration": the example config is accepted by agentgateway
+#     (--validate-only), so `provider: bedrock` is recognized and
+#     `params.awsRegion` is correct.
+#   * "Passthrough": the `passthrough: detect` config is accepted, including the
+#     `name: us.anthropic*` prefix match.
+#   * With the base config loaded, agentgateway serves the wildcard model and
+#     resolves it to the `bedrock` provider in the configured AWS region.
+#
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * "Authentication" - external dependency; AWS credentials are resolved per
+#     request from the ambient environment, which the test cannot provide.
+#   * The Converse and Invoke boto3 examples - display-only Python snippets that
+#     need real AWS credentials and a Bedrock model grant.
+#   * "Token counting", "Extended thinking and reasoning", and "Structured
+#     outputs" - external dependency; each bills a live Bedrock completion. Their
+#     example responses and the `reasoning_effort` budget table are display-only.
+#   * That format translation to Bedrock's Converse API is correct - a different
+#     layer; verifying the translation needs a live Bedrock upstream.
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+{{< /doc-test >}}
 
 > [!NOTE]
 > Agentgateway accepts requests in one of the supported [API formats](../../api-types) (such as the `/v1/chat/completions` request body shape) and returns responses in that format.
@@ -31,6 +64,20 @@ llm:
     params:
       awsRegion: us-west-2
 ```
+
+{{< doc-test paths="bedrock" >}}
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: bedrock
+    params:
+      awsRegion: us-west-2
+EOF
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
@@ -60,6 +107,20 @@ llm:
       awsRegion: us-west-2
     passthrough: detect
 ```
+
+{{< doc-test paths="bedrock" >}}
+cat <<'EOF' > config-passthrough.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  models:
+  - name: us.anthropic*
+    provider: bedrock
+    params:
+      awsRegion: us-west-2
+    passthrough: detect
+EOF
+agentgateway -f config-passthrough.yaml --validate-only
+{{< /doc-test >}}
 
 Then, you can send native Converse and Invoke requests:
 
@@ -222,3 +283,29 @@ curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
   ]
 }' | jq
 ```
+
+{{< doc-test paths="bedrock" >}}
+# Confirm the base config serves the wildcard model and that `params.awsRegion`
+# reaches the resolved provider config.
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null' EXIT
+sleep 3
+
+SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '[.data[].id] | index("*") // "missing"')
+if [ "$SERVED" = "missing" ]; then
+  echo "FAIL: the wildcard model from the example config is not served"
+  exit 1
+fi
+RESOLVED=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '
+  [ .backends[].backend.ai
+    | select(. != null)
+    | .target.providers[].active[].endpoint
+    | "\(.provider | keys[0])|\(.provider.bedrock.region)"
+  ] | first')
+if [ "$RESOLVED" != "bedrock|us-west-2" ]; then
+  echo "FAIL: expected bedrock|us-west-2 but agentgateway resolved $RESOLVED"
+  exit 1
+fi
+echo "✓ Wildcard model is served and resolves to bedrock in us-west-2"
+{{< /doc-test >}}

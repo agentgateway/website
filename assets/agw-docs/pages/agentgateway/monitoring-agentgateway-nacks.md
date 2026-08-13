@@ -31,7 +31,7 @@ You can access the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane 
 
 1. Port-forward the control plane deployment on port 9092.
    ```sh
-   kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} port-forward deployment/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} 9092
+   kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} port-forward deployment/{{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} 9092
    ```
 
 2. Open the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane [metrics endpoint](http://localhost:9092/metrics).

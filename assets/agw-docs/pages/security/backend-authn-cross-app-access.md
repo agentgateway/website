@@ -210,7 +210,7 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
    EOF
    ```
 
-4. Create a backend-level {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `crossAppAccess` method to the `httpbin` Service. The `identityProvider` leg authenticates as `agent-client` to mint the ID-JAG, and the `resourceAuthorizationServer` leg authenticates as `resource-client` to exchange the ID-JAG for a backend access token. The `audience` must equal the resource identifier that `resource-client` is registered with.
+4. Create a backend-level {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `crossAppAccess` method to the `httpbin` Service. The `identityProvider` leg authenticates as `agent-client` to mint the ID-JAG, and the `resourceAuthorizationServer` leg authenticates as `resource-client` to exchange the ID-JAG for a backend access token. The `audience` must equal the resource identifier that `resource-client` is registered with. The `subjectToken.source` reads the inbound ID token as the subject of the exchange. Because the route-level JWT policy validates and strips the `Authorization` header, this example reads the validated token from the `jwt.rawToken` CEL variable instead of the header.
 
    ```yaml {paths="cross-app-access"}
    kubectl apply -f- <<EOF
@@ -249,19 +249,23 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
                method: ClientSecretBasic
                secretRef:
                  name: resource-oauth-client
+           subjectToken:
+             source:
+               expression: jwt.rawToken.unredacted()
            audience: https://resource.idjag.demo
            scopes:
            - todos.read
    EOF
    ```
 
-   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [API docs]({{< link-hextra path="/reference/api-kubespec/policies/#spec.backend.auth.crossAppAccess" >}}).
+   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the {{< conditional-text include-if="kubernetes" >}}[API docs]({{< link-hextra path="/reference/api-kubespec/policies/#spec.backend.auth.crossAppAccess" >}}){{< /conditional-text >}}{{< conditional-text include-if="agentgateway" >}}[API docs](https://agentgateway.dev/docs/kubernetes/latest/reference/api-kubespec/policies/#spec.backend.auth.crossAppAccess){{< /conditional-text >}}.
 
    | Field | Description |
    | -- | -- |
    | `identityProvider` | The user's IdP authorization server token endpoint, referenced as an {{< reuse "agw-docs/snippets/backend.md" >}} through `backendRef`, with the token endpoint `path`. Agentgateway sends the validated ID token as the RFC 8693 `subject_token` on this leg. |
    | `resourceAuthorizationServer` | The resource authorization server token endpoint, in the same shape as `identityProvider`. This leg uses the RFC 7523 JWT-bearer grant, with the ID-JAG from the IdP leg sent as the assertion. This is a separate client registration from the IdP one. |
    | `clientAuth` | Client authentication for each token endpoint. `method` is `ClientSecretBasic` (default), `ClientSecretPost`, or `PrivateKeyJwt`. Use `secretRef` to read the client secret from a Kubernetes Secret. |
+   | `subjectToken` | Optional source of the subject token for the exchange. `source` defaults to the `Authorization` Bearer header. When a route-level JWT policy validates the inbound token, it strips the `Authorization` header, so set `source.expression` to the `jwt.rawToken.unredacted()` CEL expression to read the validated token instead. For more information about other forms of sources, such as headers, query parameters, or cookies,  see [Choose where the subject token is read from](#subject-token-source). |
    | `audience` | Required identifier of the resource authorization server. The issued ID-JAG is bound to this value. |
    | `resources` | Optional protected resource or API identifiers ([RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707)), sent on the token exchange leg. Configure these explicitly when the authorization server expects them. |
    | `scopes` | Optional scopes to request. The authorization server might grant a subset. |
@@ -372,15 +376,34 @@ ID_TOKEN=$(curl -s --max-time 15 -X POST "http://${INGRESS_GW_ADDRESS}:80/realms
   -d username=alice -d password=alice -d scope=openid | jq -r .id_token)
 test -n "$ID_TOKEN" -a "$ID_TOKEN" != "null" || { echo "FAILED: could not mint alice's ID token"; exit 1; }
 
-AZP=$(curl -s --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" \
-  -H "Authorization: Bearer $ID_TOKEN" | python3 -c '
+# The crossAppAccess exchange (remote JWKS fetch + backend policy programming) can lag route
+# readiness, so poll until the backend reports azp=resource-client. A single-shot request can catch
+# the data plane mid-programming and get an empty or non-JSON response, so this tolerates both.
+AZP=""
+RESP=""
+for i in $(seq 1 30); do
+  RESP=$(curl -s --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" \
+    -H "Authorization: Bearer $ID_TOKEN")
+  AZP=$(printf '%s' "$RESP" | python3 -c '
 import sys,json,base64
-h=json.load(sys.stdin)["headers"]
-tok=(h.get("Authorization") or h.get("authorization"))
-tok=(tok[0] if isinstance(tok,list) else tok).split()[1]
-print(json.loads(base64.urlsafe_b64decode(tok.split(".")[1]+"=="))["azp"])')
+try:
+    h=json.load(sys.stdin)["headers"]
+    tok=h.get("Authorization") or h.get("authorization")
+    tok=(tok[0] if isinstance(tok,list) else tok).split()[1]
+    print(json.loads(base64.urlsafe_b64decode(tok.split(".")[1]+"=="))["azp"])
+except Exception:
+    pass')
+  [ "$AZP" = "resource-client" ] && break
+  sleep 2
+done
 echo "backend token azp: $AZP"
-[ "$AZP" = "resource-client" ] || { echo "FAILED: expected azp=resource-client, got '$AZP'"; exit 1; }
+if [ "$AZP" != "resource-client" ]; then
+  CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers" \
+    -H "host: www.example.com" -H "Authorization: Bearer $ID_TOKEN")
+  echo "FAILED: expected azp=resource-client, got '$AZP' (last HTTP status: $CODE)"
+  echo "last response body (first 500 chars): $(printf '%s' "$RESP" | head -c 500)"
+  exit 1
+fi
 
 NO_TOKEN=$(curl -s -o /dev/null -w '%{http_code}' "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com")
 [ "$NO_TOKEN" = "401" ] || { echo "FAILED: expected 401 with no token, got $NO_TOKEN"; exit 1; }
@@ -388,6 +411,47 @@ BAD_TOKEN=$(curl -s -o /dev/null -w '%{http_code}' "http://${INGRESS_GW_ADDRESS}
 [ "$BAD_TOKEN" = "401" ] || { echo "FAILED: expected 401 with bad token, got $BAD_TOKEN"; exit 1; }
 echo "cross-app-access exchange verified"
 {{< /doc-test >}}
+
+## Choose where the subject token is read from {#subject-token-source}
+
+The `subjectToken.source` field selects where the gateway reads the subject credential from. Set one of the following four forms. A policy that sets none of them, or several of them, is rejected when you apply it, with the message `exactly one of the fields in [header queryParameter cookie expression] must be set`.
+
+| Form | Reads the credential from |
+| -- | -- |
+| `header` | The name of the request header. |
+| `queryParameter` | The name of the query parameter in the request URL. |
+| `cookie` | The name of the cookie. |
+| `expression` | A CEL expression that the gateway evaluates against the validated request, such as a claim of a JWT that a [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) policy validated. |
+
+When you omit `subjectToken`, the gateway reads the credential from the `Authorization` header with the `Bearer` prefix. The gateway does not fall back to another location.
+
+If the configured source yields no credential, the request fails with a `400` and the message `invalid request`, and the gateway does not call the identity provider. However, the policy can still report `Accepted: True` in that case, because an expression that names a missing claim is still well formed. Check the response code as well as the policy status after you change the source.
+
+You can also configure the location where the gateway checks for the subject token. Whichever form you choose, the gateway sends the credential to the identity provider as an ID token, with `subject_token_type` set to `urn:ietf:params:oauth:token-type:id_token`.
+
+After the exchange, the gateway removes the credential from the location that you configured, and forwards the remaining cookies and parameters unchanged. It then writes the exchanged access token to the `Authorization` header, replacing any credential that the client sent there. The backend therefore receives only the exchanged token, never the subject credential.
+
+> [!NOTE]
+> On MCP routes, the `queryParameter` form never matches, because the request that the policy inspects carries no query string. The exchange fails even when the parameter is present on the incoming request. Use a header, a cookie, or a CEL expression instead. Plain HTTP routes are not affected.
+
+<!--TODO 
+For more information, see [agentgateway#2799](https://github.com/agentgateway/agentgateway/issues/2799).
+-->
+
+### Read the subject token from a claim {#subject-token-claim}
+
+A client does not always present an ID token directly. In an MCP OAuth setup, for example, the client authenticates with an OAuth access token that carries the ID token as a claim. Validate the incoming token with a route-level JWT authentication policy, then point the subject source at the claim that carries the ID token, using the claim name that your authorization server issues.
+
+```yaml
+backend:
+  auth:
+    crossAppAccess:
+      subjectToken:
+        source:
+          expression: jwt.id_token
+```
+
+The `jwt` variable holds the claims of the token that the JWT authentication policy validated, so an expression can read only a claim that arrived signed. The gateway exchanges the ID token that it extracts from the claim. The access token that the client presented is not sent to either token endpoint.
 
 ## Private key JWT client authentication
 
@@ -410,8 +474,8 @@ clientAuth:
 The following parts of the Identity Assertion Authorization Grant draft are not yet supported:
 
 - DPoP sender-constrained tokens (RFC 9449).
-- `.well-known` endpoint discovery (RFC 8414, endpoints must be configured explicitly).
-- SAML or refresh-token subject types in the open source build (only OIDC ID tokens are used as the subject).
+- `.well-known` endpoint discovery (RFC 8414, endpoints must be configured explicitly).{{< conditional-text include-if="kubernetes" >}}
+- SAML and refresh-token subject types. Only an OIDC ID token can be the subject of the exchange.{{< /conditional-text >}}
 
 ## Cleanup
 

@@ -184,7 +184,7 @@ Weighted routing splits traffic probabilistically, so you verify it over volume 
 
 ### Keep serving during outages with failover routing
 
-Use `routing.failover` with `priority` to define ordered backups. Beyond resilience, failover lets you keep serving, often from a cheaper alternate, when your primary provider is rate limited or down, instead of failing the request. For the full failover example and how to verify it, see [Failover routing]({{< link-hextra path="/llm/virtual-models/#failover-routing" >}}).
+Use `routing.failover` with `priority` to define ordered backups, and set `health.eviction` on the concrete target models so unhealthy primaries can leave the active set. Beyond resilience, failover lets you keep serving, often from a cheaper alternate, when your primary provider is rate limited or down. For the full failover example, including why eviction is required, see [Failover routing]({{< link-hextra path="/llm/virtual-models/#failover-routing" >}}).
 
 ## Cache repeated prompt content
 
@@ -228,7 +228,7 @@ With a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}
 - `llm.cacheCreationInputTokens`: tokens written to cache (a one-time cost).
 - `llm.cost.cacheRead` and `llm.cost.cacheWrite`: the USD cost of each, separate from `llm.cost.input`.
 
-A high `cachedInputTokens`-to-`inputTokens` ratio means caching is working. For the catalog rate fields, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
+A high `cachedInputTokens`-to-`inputTokens` ratio means caching is working. Because `inputTokens` includes the cached tokens for every provider, the ratio is a true fraction and is comparable across providers. For the catalog rate fields, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
 
 ## Measure the savings in dollars
 

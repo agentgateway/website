@@ -30,7 +30,7 @@ For more information, see [About models]({{< link-hextra path="/llm/models/about
 3. Enable the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API on the control plane. The API is experimental and disabled by default, so it is not available in a standard installation.
 
    ```sh {paths="serve-model"}
-   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
    --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
    --reuse-values \
    --set controller.image.pullPolicy=Always \
@@ -47,7 +47,7 @@ For more information, see [About models]({{< link-hextra path="/llm/models/about
 4. Verify that the API is enabled. The command returns `true` when the feature gate is set.
 
    ```sh
-   kubectl get deploy {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+   kubectl get deploy {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
      -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="AGW_ENABLE_AGENTGATEWAY_MODELS")].value}'
    ```
 
@@ -76,7 +76,7 @@ A listener serves LLM traffic only when it allows the `{{< reuse "agw-docs/snipp
          kinds:
          - group: gateway.networking.k8s.io
            kind: HTTPRoute
-         - group: {{< reuse "agw-docs/snippets/group.md" >}}
+         - group: agentgateway.dev
            kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    EOF
    ```
@@ -142,7 +142,7 @@ When you omit `spec.match`, the model matches `metadata.name` exactly. Clients r
 
    ```yaml {paths="serve-model"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: gpt-4
@@ -265,7 +265,7 @@ Use `spec.match.model` to match more than one model name. The provider does not 
 
    ```yaml {paths="serve-model"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: openai-models
@@ -374,7 +374,7 @@ Real providers require credentials. Use `spec.policies.auth` to read them from a
 
    ```yaml {paths="serve-model"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: gpt-5-mini
