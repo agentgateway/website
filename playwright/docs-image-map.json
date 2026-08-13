@@ -130,6 +130,21 @@
       "$note": "llm/cost-controls/costs \u2014 LLM Costs catalog management page (sources + custom overrides).",
       "light": "assets/img/ui-cost-catalog.png",
       "dark": "assets/img/ui-cost-catalog-dark.png"
+    },
+    "ui-client-setup.png": {
+      "$note": "operations/ui #client-setup \u2014 LLM > Client Setup with the default curl recipe.",
+      "light": "assets/img/ui-client-setup.png",
+      "dark": "assets/img/ui-client-setup-dark.png"
+    },
+    "ui-client-setup-claude-desktop.png": {
+      "$note": "integrations/llm-clients/claude-desktop #client-setup \u2014 Client Setup with the Claude Desktop recipe selected (gateway URL + API key, no model).",
+      "light": "assets/img/ui-client-setup-claude-desktop.png",
+      "dark": "assets/img/ui-client-setup-claude-desktop-dark.png"
+    },
+    "ui-client-setup-integrations.png": {
+      "$note": "operations/ui #client-setup \u2014 open Integration dropdown listing every shipped recipe; the evidence behind the client list in the prose.",
+      "light": "assets/img/ui-client-setup-integrations.png",
+      "dark": "assets/img/ui-client-setup-integrations-dark.png"
     }
   }
 }

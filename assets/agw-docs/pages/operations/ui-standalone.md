@@ -70,12 +70,19 @@ kill $AGW_DEFAULT_PID 2>/dev/null || true
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x" >}}
 ## Generate LLM client settings {#client-setup}
 
-The **LLM > Client Setup** page generates connection settings and snippets for curl, Claude Code, Claude Desktop, Codex CLI, OpenCode, Cursor, GitHub Copilot, Windsurf, and the OpenAI JavaScript and Python SDKs.
+The **LLM > Client Setup** page generates connection settings and snippets for curl, Claude Code, Claude Desktop, Codex CLI, OpenCode, Goose, Cursor, GitHub Copilot, Windsurf, and the OpenAI JavaScript and Python SDKs.
 
 1. Configure at least one LLM model and, if the gateway requires client authentication, a [virtual API key]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
 2. Open [http://localhost:15000/ui/llm/client-setup](http://localhost:15000/ui/llm/client-setup).
-3. Review the **Gateway base URL**, and select a model and virtual API key.
+3. Review the **Gateway base URL**, and select a model and virtual API key. The **Base URL**, **Model**, and **Auth** summary shows the values that the generated snippet uses.
+
+   {{< reuse-image-light src="img/ui-client-setup.png" alt="Admin UI Client Setup page showing the gateway base URL, model, and virtual API key alongside the generated curl snippet" >}}
+   {{< reuse-image-dark srcDark="img/ui-client-setup-dark.png" alt="Admin UI Client Setup page showing the gateway base URL, model, and virtual API key alongside the generated curl snippet" >}}
+
 4. Select the client from the **Integration** dropdown, and copy the generated settings or snippet.
+
+   {{< reuse-image-light src="img/ui-client-setup-integrations.png" alt="Admin UI Client Setup Integration dropdown listing every supported client recipe" >}}
+   {{< reuse-image-dark srcDark="img/ui-client-setup-integrations-dark.png" alt="Admin UI Client Setup Integration dropdown listing every supported client recipe" >}}
 
 Client Setup does not create a route, model, authentication policy, or provider credential. It generates client-side values from the configuration that already exists. For client-specific prerequisites, see [LLM clients]({{< link-hextra path="/integrations/llm-clients/" >}}).
 

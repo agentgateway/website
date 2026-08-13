@@ -29,6 +29,7 @@ import { resolveImage } from './scripts/resolve-image.mjs';
  *                      virtual — server-everything + mock-mcp-time, multiplexed (virtual.spec.ts)
  *                      openapi — Swagger Petstore + openapi target (openapi.spec.ts)
  *                      jwt     — server-everything + metrics tags (jwt.spec.ts)
+ *                      client-setup — models + virtual keys, no backend (client-setup.spec.ts)
  *                    The scripts under scripts/ are self-contained: they start any backing
  *                    servers, run the container, and clean up on exit.
  *   REUSE: webServer.reuseExistingServer attaches to anything already serving the URL,
@@ -65,6 +66,7 @@ const SCRIPT_FOR = {
   openapi: 'serve-openapi-ui.sh',
   jwt: 'serve-jwt-ui.sh',
   costs: 'serve-costs-ui.sh',
+  'client-setup': 'serve-client-setup-ui.sh',
 };
 const command = BIN
   ? `"${BIN}" -f fixtures/standalone-config.yaml`

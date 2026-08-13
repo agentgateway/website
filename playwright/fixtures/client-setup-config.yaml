@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Config for the LLM > Client Setup captures (operations/ui.md #client-setup, plus the
+# per-client guides under integrations/llm-clients/). Client Setup only READS configuration —
+# it generates client-side connection settings from the gateway's models and virtual keys, and
+# never sends a request — so unlike every other capture mode this one needs NO backend and no
+# mock provider.
+#
+#   - Models are NAMED rather than the `*` wildcard the other fixtures use. A wildcard model
+#     makes the page render an extra "Specific model" resolver field, which is not the flow the
+#     guides describe; named models keep the capture on the documented "select a model and
+#     virtual API key" path.
+#   - An anthropic model is included so the Claude Desktop recipe, which emits Anthropic
+#     Messages API values, has a matching model to select.
+#   - The provider apiKeys are throwaway literals; nothing is ever sent upstream. They are
+#     deliberately NOT `sk-ant-oat...` subscription tokens, which would trip the page's
+#     "Claude subscription key detected" warning banner and change the capture.
+#   - llm.policies.apiKey seeds the virtual keys the page offers in its "Virtual API key"
+#     dropdown. The page auto-selects the first key, and the generated snippet embeds it
+#     verbatim, so these must be fixed literals to keep the capture byte-stable.
+llm:
+  port: 4000
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+        - key: agw_sk_docs_example_key
+          metadata:
+            user: docs-example
+        - key: agw_sk_ci_example_key
+          metadata:
+            user: ci-example
+  models:
+    - name: gpt-4o-mini
+      provider: openAI
+      params:
+        model: gpt-4o-mini
+        apiKey: "sk-mock-not-a-real-key"
+    - name: claude-sonnet-4-5
+      provider: anthropic
+      params:
+        model: claude-sonnet-4-5
+        apiKey: "sk-mock-not-a-real-key"

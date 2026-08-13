@@ -282,7 +282,7 @@ setup the `reference-docs` workflow uses.
 | `playwright.config.ts` | `webServer` launcher selection (`CAPTURE_MODE` → `SCRIPT_FOR`), light/dark projects, viewport, diff tolerance |
 | `docs-image-map.json` | Screenshot name → `{ light, dark? }` `assets/img/` destinations |
 | `fixtures/test.ts` | Per-project theme seeding; `dismissWelcome` / `maskSession` / `selectTool` helpers |
-| `fixtures/*-config.yaml` | Per-mode gateway configs (mcp, a2a, llm, virtual, openapi, jwt) + `standalone-config.yaml` (for `AGENTGATEWAY_BIN`) |
+| `fixtures/*-config.yaml` | Per-mode gateway configs (mcp, a2a, llm, virtual, openapi, jwt, costs, client-setup) + `standalone-config.yaml` (for `AGENTGATEWAY_BIN`) |
 | `fixtures/petstore-openapi.json` | Bundled Swagger Petstore spec served by the openapi mock |
 | `tests/smoke.spec.ts` `tests/landing.spec.ts` `tests/cel.spec.ts` | No-backend captures (run under `test:standalone`) |
 | `tests/playground.spec.ts` | MCP playground (tools discovered + echo) |
@@ -291,6 +291,7 @@ setup the `reference-docs` workflow uses.
 | `tests/jwt.spec.ts` | Playground with a JWT in the Authorization header |
 | `tests/a2a-traffic.spec.ts` | A2A config shown as a Traffic route/listener (no A2A playground in the new UI) |
 | `tests/llm-playground.spec.ts` | LLM playground against the mock provider |
+| `tests/client-setup.spec.ts` | LLM > Client Setup: default curl recipe, Claude Desktop recipe, and the open Integration list (no backend — the page only reads config) |
 | `scripts/serve-*.sh` | Per-mode launchers: start backend(s) + UI container, clean up on exit |
 | `scripts/mock-*.mjs` | Deterministic mock backends (openai, mcp-time, petstore) |
 | `scripts/sync-docs-images.mjs` | Copies baselines → `assets/img/` via `docs-image-map.json` |
@@ -302,7 +303,8 @@ setup the `reference-docs` workflow uses.
 | Script | Does |
 |---|---|
 | `test:standalone` | Capture/verify the no-backend specs (landing, cel, smoke) |
-| `test:mcp` / `:a2a` / `:llm` / `:virtual` / `:openapi` / `:jwt` | Capture/verify one backend mode (brings up its backend + UI) |
+| `test:mcp` / `:a2a` / `:llm` / `:virtual` / `:openapi` / `:jwt` / `:costs` | Capture/verify one backend mode (brings up its backend + UI) |
+| `test:client-setup` | Capture/verify the Client Setup page (config-only mode: models + virtual keys, no backend) |
 | `capture:all` | Run every mode in sequence (what CI runs); `clean:ui` between modes |
 | `update:all` | Same as `capture:all` but **regenerates** baselines (`--update-snapshots`) |
 | `update` | Regenerate only the no-backend baselines (quick) |

@@ -36,6 +36,23 @@ const snapDir = join(pwRoot, '__screenshots__');
 function findBaseline(name, projectSuffix) {
   if (!existsSync(snapDir)) return null;
   const stem = name.replace(/\.png$/, '');
+  // Baselines are `<stem>-<target>-<version>-<theme>.png`, where <target> is a single segment
+  // (`standalone`, `kube`) and projectSuffix is the `<version>-<theme>` tail. Anchor BOTH ends
+  // and allow only a hyphen-free target in between, because the loose prefix scan below matches
+  // any baseline whose stem merely STARTS WITH this one: `ui-client-setup` would otherwise claim
+  // `ui-client-setup-claude-desktop-standalone-latest-light.png` (readdir order decides, so the
+  // wrong image is published silently). The loose scan stays as a fallback for any baseline whose
+  // middle segment does not fit that shape.
+  const anchored = new RegExp(
+    `^${stem.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-[a-z0-9]+-${projectSuffix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\.png$`
+  );
+  for (const entry of readdirSync(snapDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const specDir = join(snapDir, entry.name);
+    for (const file of readdirSync(specDir)) {
+      if (anchored.test(file)) return join(specDir, file);
+    }
+  }
   for (const entry of readdirSync(snapDir, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
     const specDir = join(snapDir, entry.name);
