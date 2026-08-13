@@ -272,15 +272,17 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    EOF
    ```
 
+   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [JwtAuthentication API docs]({{< link-hextra path="/reference/api/#jwtauthentication" >}}).
+
    | Setting | Description |
    | -- | -- |
-   | `traffic.jwtAuthentication.providers[].issuer` | The authentik issuer URL, including the trailing slash. This must exactly match the `iss` claim in tokens that authentik issues. |
-   | `traffic.jwtAuthentication.providers[].audiences` | The OAuth client ID. authentik sets the `aud` claim of its tokens to the client ID rather than to a separate API identifier, so this value must match `clientId`. |
-   | `traffic.jwtAuthentication.providers[].jwks.remote.backendRef` | The in-cluster authentik Service that the control plane fetches public keys from. |
-   | `traffic.jwtAuthentication.providers[].jwks.remote.jwksPath` | The path to authentik's JWKS endpoint. authentik serves keys at `{issuer}/jwks/`. |
-   | `traffic.jwtAuthentication.mcp.provider` | The identity provider to adapt agentgateway's OAuth behavior to. In this example, `Authentik` is used. |
-   | `traffic.jwtAuthentication.mcp.clientId` | The pre-registered public client that agentgateway returns to MCP clients that attempt Dynamic Client Registration. Required for authentik. |
-   | `traffic.jwtAuthentication.mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. Includes the resource identifier, supported scopes, and bearer token methods. |
+   | `providers[].issuer` | The authentik issuer URL, including the trailing slash. This must exactly match the `iss` claim in tokens that authentik issues. |
+   | `providers[].audiences` | The OAuth client ID. authentik sets the `aud` claim of its tokens to the client ID rather than to a separate API identifier, so this value must match `clientId`. |
+   | `providers[].jwks.remote.backendRef` | The in-cluster authentik Service that the control plane fetches public keys from. |
+   | `providers[].jwks.remote.jwksPath` | The path to authentik's JWKS endpoint. authentik serves keys at `{issuer}/jwks/`. |
+   | `mcp.provider` | The identity provider to adapt agentgateway's OAuth behavior to. In this example, `Authentik` is used. |
+   | `mcp.clientId` | The pre-registered public client that agentgateway returns to MCP clients that attempt Dynamic Client Registration. Required for authentik. |
+   | `mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. Includes the resource identifier, supported scopes, and bearer token methods. |
 
    > [!NOTE]
    > When the policy is first applied, the control plane might briefly log `jwks keyset ... isn't available` until it completes the first JWKS fetch. This condition resolves on its own.

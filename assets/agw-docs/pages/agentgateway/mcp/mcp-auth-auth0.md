@@ -16,23 +16,32 @@ For more information about MCP auth, see the [About MCP auth]({{< link-hextra pa
    ```sh {paths="setup-auth0"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
-4. Create an API and an application in Auth0, and collect the values that agentgateway needs.
-   1. Make sure that you have access to an [Auth0 tenant](https://auth0.com/docs/get-started/auth0-overview/create-tenants). If you do not have one, you can create a free tenant.
-   2. In the Auth0 Dashboard, go to **Applications > APIs** and click **Create API**. Enter a name such as `agentgateway MCP`, and set the **Identifier** to the resource URL that your MCP clients request, such as `https://mcp.example.com/mcp`. The identifier becomes the `aud` claim of the tokens that Auth0 issues.
-   3. Go to **Applications > Applications** and click **Create Application**. Choose **Native** for local MCP clients, or **Single Page Application** for browser-based clients. Both are public clients that use PKCE, which is what MCP clients require.
-   4. On the application's **Settings** tab, note the **Domain** and the **Client ID**. Under **Application URIs**, add the callback URLs of the MCP clients that you plan to connect.
-   5. Save the values as environment variables.
-      ```bash
-      export AUTH0_DOMAIN=<your-tenant>.us.auth0.com
-      export AUTH0_CLIENT_ID=<your-application-client-id>
-      export AUTH0_AUDIENCE=https://mcp.example.com/mcp
-      ```
 
-      | Variable | Description |
-      | -- | -- |
-      | `AUTH0_DOMAIN` | Your Auth0 tenant domain, without a scheme or trailing slash, such as `dev-abc123.us.auth0.com`. Copy it from the application's **Settings** tab. |
-      | `AUTH0_CLIENT_ID` | The **Client ID** of the application that you created. |
-      | `AUTH0_AUDIENCE` | The **Identifier** of the API that you created. Auth0 sets the `aud` claim of its access tokens to this value. |
+## Set up Auth0
+
+Create an API and an application in Auth0, and collect the values that agentgateway needs.
+
+1. Make sure that you have access to an [Auth0 tenant](https://auth0.com/docs/get-started/auth0-overview/create-tenants). If you do not have one, you can create a free tenant.
+
+2. In the Auth0 Dashboard, go to **Applications > APIs** and click **Create API**. Enter a name such as `agentgateway MCP`, and set the **Identifier** to the resource URL that your MCP clients request, such as `https://mcp.example.com/mcp`. The identifier becomes the `aud` claim of the tokens that Auth0 issues.
+
+3. Go to **Applications > Applications** and click **Create Application**. Choose **Native** for local MCP clients, or **Single Page Application** for browser-based clients. Both are public clients that use PKCE, which is what MCP clients require.
+
+4. On the application's **Settings** tab, note the **Domain** and the **Client ID**. Under **Application URIs**, add the callback URLs of the MCP clients that you plan to connect.
+
+5. Save the values as environment variables.
+   
+   ```bash
+   export AUTH0_DOMAIN=<your-tenant>.us.auth0.com
+   export AUTH0_CLIENT_ID=<your-application-client-id>
+   export AUTH0_AUDIENCE=https://mcp.example.com/mcp
+   ```
+
+   | Variable | Description |
+   | -- | -- |
+   | `AUTH0_DOMAIN` | Your Auth0 tenant domain, without a scheme or trailing slash, such as `dev-abc123.us.auth0.com`. Copy it from the application's **Settings** tab. |
+   | `AUTH0_CLIENT_ID` | The **Client ID** of the application that you created. |
+   | `AUTH0_AUDIENCE` | The **Identifier** of the API that you created. Auth0 sets the `aud` claim of its access tokens to this value. |
 
 {{< doc-test paths="setup-auth0" >}}
 # The controller fetches the provider's remote JWKS when it translates the policy,

@@ -21,26 +21,36 @@ For more information about MCP auth, see the [About MCP auth]({{< link-hextra pa
    ```sh {paths="setup-okta"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
-4. Create an app integration in Okta, and collect the values that agentgateway needs.
-   1. Make sure that you have access to an [Okta org](https://developer.okta.com/signup/). If you do not have one, you can create a free developer org.
-   2. In the Okta Admin Console, go to **Applications > Applications** and click **Create App Integration**. Select **OIDC - OpenID Connect** as the sign-in method, and select **Native Application** for local MCP clients or **Single-Page Application** for browser-based clients. Both are public clients that use PKCE, which is what MCP clients require.
-   3. Under **Grant type**, select **Authorization Code** and **Refresh Token**. Under **Sign-in redirect URIs**, add the callback URLs of the MCP clients that you plan to connect. Assign the app to the users or groups that need access, then click **Save**.
-   4. On the app's **General** tab, note the **Client ID**.
-   5. Go to **Security > API > Authorization Servers**. Use the `default` authorization server, or add one for your MCP server. Note the **Audience** value on the server's **Settings** tab, and add a scope on the **Scopes** tab if your MCP server enforces scopes.
-   6. Save the values as environment variables.
-      ```bash
-      export OKTA_DOMAIN=<your-org>.okta.com
-      export OKTA_AUTH_SERVER=default
-      export OKTA_CLIENT_ID=<your-app-client-id>
-      export OKTA_AUDIENCE=api://default
-      ```
 
-      | Variable | Description |
-      | -- | -- |
-      | `OKTA_DOMAIN` | Your Okta org domain, without a scheme or trailing slash, such as `dev-1234567.okta.com`. |
-      | `OKTA_AUTH_SERVER` | The ID of the authorization server to use. The built-in server is `default`. |
-      | `OKTA_CLIENT_ID` | The **Client ID** of the app integration that you created. |
-      | `OKTA_AUDIENCE` | The **Audience** of the authorization server. For the `default` server, this value is `api://default`. Okta sets the `aud` claim of its access tokens to this value. |
+## Set up Okta
+
+Create an app integration in Okta, and collect the values that agentgateway needs.
+
+1. Make sure that you have access to an [Okta org](https://developer.okta.com/signup/). If you do not have one, you can create a free developer org.
+
+2. In the Okta Admin Console, go to **Applications > Applications** and click **Create App Integration**. Select **OIDC - OpenID Connect** as the sign-in method, and select **Native Application** for local MCP clients or **Single-Page Application** for browser-based clients. Both are public clients that use PKCE, which is what MCP clients require.
+
+3. Under **Grant type**, select **Authorization Code** and **Refresh Token**. Under **Sign-in redirect URIs**, add the callback URLs of the MCP clients that you plan to connect. Assign the app to the users or groups that need access, then click **Save**.
+
+4. On the app's **General** tab, note the **Client ID**.
+
+5. Go to **Security > API > Authorization Servers**. Use the `default` authorization server, or add one for your MCP server. Note the **Audience** value on the server's **Settings** tab, and add a scope on the **Scopes** tab if your MCP server enforces scopes.
+
+6. Save the values as environment variables.
+   
+   ```bash
+   export OKTA_DOMAIN=<your-org>.okta.com
+   export OKTA_AUTH_SERVER=default
+   export OKTA_CLIENT_ID=<your-app-client-id>
+   export OKTA_AUDIENCE=api://default
+   ```
+
+   | Variable | Description |
+   | -- | -- |
+   | `OKTA_DOMAIN` | Your Okta org domain, without a scheme or trailing slash, such as `dev-1234567.okta.com`. |
+   | `OKTA_AUTH_SERVER` | The ID of the authorization server to use. The built-in server is `default`. |
+   | `OKTA_CLIENT_ID` | The **Client ID** of the app integration that you created. |
+   | `OKTA_AUDIENCE` | The **Audience** of the authorization server. For the `default` server, this value is `api://default`. Okta sets the `aud` claim of its access tokens to this value. |
 
    > [!TIP]
    > To confirm the issuer and JWKS path for your authorization server, open its metadata document at `https://<your-org>.okta.com/oauth2/<auth-server-id>/.well-known/openid-configuration` and check the `issuer` and `jwks_uri` fields.

@@ -17,15 +17,29 @@ For more information about MCP auth, see the [About MCP auth]({{< link-hextra pa
    ```sh {paths="setup-entra"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
-4. Register an application in Microsoft Entra ID and collect the values that agentgateway needs.
-   1. Make sure that you have access to a [Microsoft Entra ID tenant](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-create-new-tenant). If you do not have one, you can create a free tenant for development purposes.
-   2. [Register an application](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app) in the Microsoft Entra admin center. For **Supported account types**, choose the option that fits your organization. Under **Redirect URI**, select the **Mobile and desktop applications** platform and add the callback URLs of the MCP clients that you plan to connect.
-   3. From the app's **Overview** page, note the **Directory (tenant) ID** and the **Application (client) ID**, and save them as environment variables.
-      ```bash
-      export ENTRA_TENANT_ID=<your-tenant-id>
-      export ENTRA_CLIENT_ID=<your-application-client-id>
-      ```
-   4. Select **Expose an API**. Next to **Application ID URI**, click **Set** and accept the default value of `api://${ENTRA_CLIENT_ID}`. Then click **Add a scope**, enter a scope name such as `mcp_access`, set **Who can consent** to **Admins and users**, and click **Add scope**.
+
+## Set up Entra ID
+
+Register an application in Microsoft Entra ID, and collect the values that agentgateway needs.
+
+1. Make sure that you have access to a [Microsoft Entra ID tenant](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-create-new-tenant). If you do not have one, you can create a free tenant for development purposes.
+
+2. [Register an application](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app) in the Microsoft Entra admin center. 
+   
+   1. For **Supported account types**, choose the option that fits your organization. 
+   2. Under **Redirect URI**, select the **Mobile and desktop applications** platform and add the callback URLs of the MCP clients that you plan to connect.
+
+3. From the app's **Overview** page, note the **Directory (tenant) ID** and the **Application (client) ID**, and save them as environment variables.
+      
+   ```bash
+   export ENTRA_TENANT_ID=<your-tenant-id>
+   export ENTRA_CLIENT_ID=<your-application-client-id>
+   ```
+
+4. Select **Expose an API**. 
+   
+   1. Next to **Application ID URI**, click **Set** and accept the default value of `api://${ENTRA_CLIENT_ID}`. 
+   2. Click **Add a scope**, enter a scope name such as `mcp_access`, set **Who can consent** to **Admins and users**, and click **Add scope**.
 
 {{< doc-test paths="setup-entra" >}}
 # The controller fetches the provider's remote JWKS when it translates the policy,

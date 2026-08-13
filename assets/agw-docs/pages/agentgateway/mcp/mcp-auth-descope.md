@@ -20,25 +20,34 @@ For more information about MCP auth, see the [About MCP auth]({{< link-hextra pa
    ```sh {paths="setup-descope"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
-4. Create an MCP Server and a client in Descope, and collect the values that agentgateway needs.
-   1. Create a project in the [Descope Console](https://app.descope.com/). Note your **Project ID** from **Project Settings**.
-   2. Create an [MCP Server](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers) to represent your MCP gateway. Set the **MCP Server URL** to the public URL that agentgateway exposes, typically ending with `/mcp`, and define the scopes that your server enforces.
-   3. From the MCP Server's **Connection Information** section, copy the **Issuer URL**. Descope agentic issuers take the form `https://api.descope.com/v1/apps/agentic/<project-id>/<server-id>`. Note the server ID from the end of that URL.
-   4. Create a [Client](https://docs.descope.com/agentic-identity-hub/core-components/clients#creating-a-client) for the MCP clients that connect through the gateway, and note its **Client ID**.
-   5. Save the values as environment variables.
-      ```bash
-      export DESCOPE_PROJECT_ID=<your-project-id>
-      export DESCOPE_SERVER_ID=<your-mcp-server-id>
-      export DESCOPE_CLIENT_ID=<your-client-id>
-      export DESCOPE_MCP_SERVER_URL=https://mcp.example.com/mcp
-      ```
 
-      | Variable | Description |
-      | -- | -- |
-      | `DESCOPE_PROJECT_ID` | Your Descope **Project ID**, found under **Project Settings**. Descope publishes signing keys at the project level, so this value determines the JWKS path. |
-      | `DESCOPE_SERVER_ID` | The MCP server ID from the end of your issuer URL. |
-      | `DESCOPE_CLIENT_ID` | The **Client ID** of the Descope Client that you created. |
-      | `DESCOPE_MCP_SERVER_URL` | Your MCP server's public URL, which must match the **MCP Server URL** in Descope. Descope sets the `aud` claim of its tokens to this value. |
+## Set up Descope
+
+Create an MCP Server and a client in Descope, and collect the values that agentgateway needs.
+
+1. Create a project in the [Descope Console](https://app.descope.com/). Note your **Project ID** from **Project Settings**.
+
+2. Create an [MCP Server](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers) to represent your MCP gateway. Set the **MCP Server URL** to the public URL that agentgateway exposes, typically ending with `/mcp`, and define the scopes that your server enforces.
+
+3. From the MCP Server's **Connection Information** section, copy the **Issuer URL**. Descope agentic issuers take the form `https://api.descope.com/v1/apps/agentic/<project-id>/<server-id>`. Note the server ID from the end of that URL.
+
+4. Create a [Client](https://docs.descope.com/agentic-identity-hub/core-components/clients#creating-a-client) for the MCP clients that connect through the gateway, and note its **Client ID**.
+
+5. Save the values as environment variables.
+   
+   ```bash
+   export DESCOPE_PROJECT_ID=<your-project-id>
+   export DESCOPE_SERVER_ID=<your-mcp-server-id>
+   export DESCOPE_CLIENT_ID=<your-client-id>
+   export DESCOPE_MCP_SERVER_URL=https://mcp.example.com/mcp
+   ```
+
+   | Variable | Description |
+   | -- | -- |
+   | `DESCOPE_PROJECT_ID` | Your Descope **Project ID**, found under **Project Settings**. Descope publishes signing keys at the project level, so this value determines the JWKS path. |
+   | `DESCOPE_SERVER_ID` | The MCP server ID from the end of your issuer URL. |
+   | `DESCOPE_CLIENT_ID` | The **Client ID** of the Descope Client that you created. |
+   | `DESCOPE_MCP_SERVER_URL` | Your MCP server's public URL, which must match the **MCP Server URL** in Descope. Descope sets the `aud` claim of its tokens to this value. |
 
 {{< doc-test paths="setup-descope" >}}
 # Descope has no public sample project that serves a JWKS, so this test cannot
