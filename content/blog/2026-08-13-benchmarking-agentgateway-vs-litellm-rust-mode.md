@@ -118,6 +118,8 @@ agentgateway handled **over 36× more requests per second** while maintaining su
 ==> Run ID: 20260812-215223
 ==> LiteLLM workers: 2
 ==> API format: anthropic
+==> Checking LiteLLM Rust header
+    x-litellm-rust: true
 ...
 Running fortio to litellm at 0 QPS for 3s and 32 connections...
 qps: 983.56qps     p50: 32.139ms    p90: 48.528ms    p99: 71.451ms
@@ -195,6 +197,8 @@ Both gateways sustained the target rate. Latency remained dramatically different
 ==> Run ID: 20260813-115938
 ==> LiteLLM workers: 2
 ==> API format: anthropic
+==> Checking LiteLLM Rust header
+    x-litellm-rust: true
 ...
 Running fortio to litellm at 900 QPS for 30s and 32 connections...
 qps: 898.42qps     p50: 17.200ms    p90: 31.040ms    p99: 46.598ms
