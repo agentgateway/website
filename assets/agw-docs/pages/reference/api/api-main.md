@@ -387,7 +387,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `parentRefs` _[ParentReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#parentreference) array_ | Gateways and listeners to which this model attaches. |  | MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
+| `parentRefs` _[ParentReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#parentreference) array_ | Parent resources to which this model attaches. Supported parent kinds are<br />Gateway, ListenerSet, and HTTPRoute.<br />A Gateway or ListenerSet parent attaches the model directly to its<br />listeners. An HTTPRoute parent attaches the model to the referenced rule;<br />sectionName selects a named rule, or the HTTPRoute must contain exactly<br />one rule when sectionName is omitted. The selected rule must use exactly<br />one AgentgatewayModel backend with name "*". If the rule has path matches,<br />they must use PathPrefix matching. |  | MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `match` _[ModelMatch](#modelmatch)_ | Conditions for selecting this model from client requests. |  | Optional: \{\} <br /> |
 | `visibility` _[ModelVisibility](#modelvisibility)_ | Controls whether clients can request this model directly. Internal models<br />can only be selected by virtual models. Defaults to Public. | Public | Optional: \{\} <br /> |
 | `provider` _[ModelProvider](#modelprovider)_ | Provider serving this concrete model. Provider-specific configuration is<br />set by the corresponding field below when needed. |  | Optional: \{\} <br /> |
@@ -1840,6 +1840,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `source` _[AuthorizationExtractionLocation](#authorizationextractionlocation)_ | Where to read the subject token. Defaults to the Authorization Bearer header. |  | ExactlyOneOf: [header queryParameter cookie expression] <br />Optional: \{\} <br /> |
+| `tokenType` _[OAuthTokenType](#oauthtokentype)_ | OAuth RFC 8693 subject token type. Defaults to IdToken |  | Optional: \{\} <br /> |
 
 
 #### CustomProvider
@@ -4023,6 +4024,7 @@ subject/actor tokens can use provider-specific token type URIs.
 
 
 _Appears in:_
+- [CrossAppAccessSubjectToken](#crossappaccesssubjecttoken)
 - [OAuthActorToken](#oauthactortoken)
 - [OAuthTokenExchange](#oauthtokenexchange)
 - [OAuthTokenSpec](#oauthtokenspec)

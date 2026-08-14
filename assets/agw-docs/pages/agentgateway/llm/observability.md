@@ -112,3 +112,55 @@ model={{< reuse "agw-docs/snippets/openai-model.md" >}}-0125 gen_ai.usage.input_
 {{< doc-test paths="llm-observability" >}}
 kubectl logs deployment/agentgateway-proxy -n agentgateway-system | grep "gen_ai.usage.input_tokens"
 {{< /doc-test >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x" >}}
+## Tool calls {#tool-calls}
+
+When a model responds with tool or function calls, the gateway can carry those calls into your telemetry. Unlike the `gen_ai` fields in the preceding log line, tool calls are not collected automatically. You must reference the `llm.toolCalls` CEL field in an access log or tracing attribute to turn on extraction.
+
+Add an access log attribute and a trace span field to capture the tools that were accessed. In the following example, the extracted tool information is added as a `toolCalls` attribute to your access logs, and as a `gen_ai.tool_calls` field to your trace spans.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: llm-telemetry
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway-proxy
+  frontend:
+    accessLog:
+      attributes:
+        add:
+        - name: toolCalls
+          expression: llm.toolCalls
+    tracing:
+      backendRef:
+        name: opentelemetry-collector
+        namespace: telemetry
+        port: 4317
+      protocol: GRPC
+      attributes:
+        add:
+        - name: gen_ai.tool_calls
+          expression: llm.toolCalls
+EOF
+```
+
+Example value for the `toolCalls` access log attribute: 
+
+```
+toolCalls=[{"id": "call_abc123", "name": "get_weather", "arguments": {"location": "Paris"}}]
+```
+
+The gateway extracts tool calls from every response format that it supports. For streaming responses, the gateway reassembles arguments that the provider splits across chunks into a single object when the stream ends.
+
+When a response carries no tool calls, the gateway omits the attribute from both the log line and the span, rather than recording an empty array. To find the requests that used tools, filter for the attribute name.
+
+> [!NOTE]
+> Reading `llm.toolCalls` has a performance cost for large responses, because the gateway must inspect the response body. Attach the policy only to the routes where you need tool call data, instead of to the gateway.
+{{< /version >}}
