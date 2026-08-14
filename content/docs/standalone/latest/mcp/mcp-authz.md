@@ -23,4 +23,5 @@ For the full reference and examples, see [MCP authorization]({{< link-hextra pat
   {{< card path="/mcp/mcp-target-policies" title="MCP target policies" subtitle="Review the other policies that you can scope to an individual target." >}}
   {{< card path="/mcp/mcp-observability" title="MCP observability" subtitle="Log tool calls and their arguments after a request completes." >}}
   {{< card path="/reference/cel" title="CEL reference" subtitle="Look up the full list of supported variables and functions." >}}
+  {{< card link="https://learncloudnative.com/blog/2026-08-14-7-practical-mcp-policies-agentgateway" title="7 practical MCP policies" subtitle="Community blog post with worked authorization, authentication, and guardrail recipes." icon="external-link" >}}
 {{< /cards >}}

@@ -30,3 +30,10 @@ For end-to-end setup with a specific identity provider, including registering th
   {{< card path="/integrations/auth/keycloak" title="Keycloak" subtitle="Use a Keycloak realm, with proxied client registration." >}}
   {{< card path="/integrations/auth/okta" title="Okta" subtitle="Use an Okta org authorization server with an explicit JWKS URL." >}}
 {{< /cards >}}
+
+## Related
+
+{{< cards >}}
+  {{< card path="/mcp/mcp-authz" title="MCP authorization" subtitle="Control which tools and resources authenticated clients can reach." >}}
+  {{< card link="https://learncloudnative.com/blog/2026-08-14-7-practical-mcp-policies-agentgateway" title="7 practical MCP policies" subtitle="Community blog post with worked authentication, authorization, and guardrail recipes." icon="external-link" >}}
+{{< /cards >}}
