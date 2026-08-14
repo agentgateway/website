@@ -183,7 +183,7 @@ curl --request POST \
   --url "http://${INGRESS_GW_ADDRESS}:80/audio/v1/audio/transcriptions" \
   --header 'Content-Type: multipart/form-data' \
   --form model=voxtral-small-24b-2507 \
-  --form 'file=@./testdata/sample-audio.webm' | jq
+  --form 'file=@./testdata/sample-audio.wav' | jq
 {{% /tab %}}
 {{% tab name="Port-forward for local testing" %}}
 In one terminal, start a port-forward to the gateway.
@@ -199,12 +199,12 @@ curl --request POST \
   --url "http://localhost:8080/audio/v1/audio/transcriptions" \
   --header 'Content-Type: multipart/form-data' \
   --form model=voxtral-small-24b-2507 \
-  --form 'file=@./testdata/sample-audio.webm' | jq
+  --form 'file=@./testdata/sample-audio.wav' | jq
 {{% /tab %}}
 {{< /tabs >}}
 
 {{< callout type="info" >}}
-**Supported audio formats:** WAV, MP3, MKV, WEBM and other formats supported by the underlying model. For Voxtral, recommended formats include WebM and WAV.
+**Supported audio formats:** WAV, FLAC, OGG and AU (via [libsndfile](https://github.com/libsndfile/libsndfile)). These formats are natively supported by vLLM's audio processing pipeline.
 {{< /callout >}}
 
 {{< /steps %}}
