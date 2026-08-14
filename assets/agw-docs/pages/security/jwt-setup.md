@@ -92,48 +92,27 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
    authentication failure: no bearer token found%  
    ```      
    
-2. Create a Keycloak client for the two test users. The client permits only the password grant, which the next step uses to get a token without a browser.
-
-   > [!WARNING]
-   > This client exists so that the guide can get a token from the command line for testing purposes only. Real applications do not use the password grant, and they do not need an administrator to create a client for them. To see a client register itself with Keycloak and send the user through a browser login, see the [MCP auth guide]({{< link-hextra path="/mcp/auth/setup/" >}}).
-
+2. Register a client with Keycloak. The client uses dynamic client registration (DCR), so no administrator creates it, and Keycloak returns the client ID and secret that the next step uses.
    ```sh {paths="jwt-claims"}
-   # Refresh the administrator token, which is short-lived
-   KEYCLOAK_TOKEN=$(curl --fail --silent --show-error \
-     -d client_id=admin-cli \
-     -d username=admin \
-     -d password=admin \
-     -d grant_type=password \
-     "$KEYCLOAK_URL/realms/master/protocol/openid-connect/token" \
-     | jq -r .access_token)
-
-   KEYCLOAK_CLIENT=jwt-auth-guide
-   KEYCLOAK_SECRET=jwt-auth-guide-secret
-
-   # Create the client, and enable only the password grant
-   curl --fail --silent --show-error \
-     -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+   REGISTRATION=$(curl --fail --silent --show-error \
      -H "Content-Type: application/json" \
-     -d "{
-       \"clientId\": \"${KEYCLOAK_CLIENT}\",
-       \"secret\": \"${KEYCLOAK_SECRET}\",
-       \"directAccessGrantsEnabled\": true,
-       \"standardFlowEnabled\": false,
-       \"serviceAccountsEnabled\": false,
-       \"publicClient\": false
-     }" \
-     "$KEYCLOAK_URL/admin/realms/master/clients"
+     -d '{
+       "client_name": "jwt-auth-guide",
+       "grant_types": ["client_credentials"],
+       "token_endpoint_auth_method": "client_secret_basic"
+     }' \
+     "$KEYCLOAK_URL/realms/master/clients-registrations/openid-connect")
+
+   KEYCLOAK_CLIENT=$(jq -r .client_id <<<"$REGISTRATION")
+   KEYCLOAK_SECRET=$(jq -r .client_secret <<<"$REGISTRATION")
+   echo $KEYCLOAK_CLIENT
    ```
 
-3. Get an access token for `user1` from Keycloak by using the password grant type.
+3. Get an access token for the client by using the client credentials grant. A service that calls your API uses this grant to authenticate as itself, with no user involved. This token identifies the client, not a person, so it carries no username. To see a client authenticate on behalf of a signed-in user instead, see the [MCP auth guide]({{< link-hextra path="/mcp/auth/setup/" >}}).
    ```sh {paths="jwt-claims"}
-   ACCESS_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
-     -H "Content-Type: application/x-www-form-urlencoded" \
-     -d "grant_type=password" \
-     -d "client_id=${KEYCLOAK_CLIENT}" \
-     -d "client_secret=${KEYCLOAK_SECRET}" \
-     -d "username=user1" \
-     -d "password=password" \
+   ACCESS_TOKEN=$(curl -s -u "${KEYCLOAK_CLIENT}:${KEYCLOAK_SECRET}" \
+     -d grant_type=client_credentials \
+     "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
      | jq -r '.access_token')
    
    echo $ACCESS_TOKEN
@@ -141,7 +120,7 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
 
    {{< doc-test paths="jwt-claims" >}}
    if [ -z "${ACCESS_TOKEN:-}" ] || [ "${ACCESS_TOKEN}" = "null" ]; then
-     echo "no access token issued for user1; check the client registration in the previous step"
+     echo "no access token issued for the client; check the client registration in the previous step"
      exit 1
    fi
    {{< /doc-test >}}
@@ -185,7 +164,7 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
 
 Authentication proves who sent the request. Authorization decides what that identity is allowed to do. After agentgateway validates the JWT, the claims are available to Common Expression Language (CEL) expressions through the `jwt` variable, so you can write access rules against them in the same {{< reuse "agw-docs/snippets/policy.md" >}}.
 
-The following example allows `user1` and denies every other identity, including `user2`.
+The following example allows the client that you registered, and denies every other identity.
 
 1. Update the `jwt-auth-policy` to add an authorization rule.
    ```yaml {paths="jwt-claims"}
@@ -220,14 +199,14 @@ The following example allows `user1` and denies every other identity, including 
          action: Allow
          policy:
            matchExpressions:
-           - "jwt.preferred_username == 'user1'"
+           - "jwt.azp == '${KEYCLOAK_CLIENT}'"
    EOF
    ```
 
    | Field | Description |
    |-------|-------------|
    | `traffic.authorization.action` | The effect of the rule when it matches. When at least one `Allow` rule is configured, agentgateway denies every request that no allow rule matches. |
-   | `traffic.authorization.policy.matchExpressions` | The CEL expressions that must all evaluate to true for the rule to match. This example compares the `preferred_username` claim from the validated token. |
+   | `traffic.authorization.policy.matchExpressions` | The CEL expressions that must all evaluate to true for the rule to match. This example compares the `azp` claim, which Keycloak sets to the client ID that the token was issued to. |
 
    > [!NOTE]
    > Authorization runs only after authentication succeeds. A request with a missing or invalid token fails JWT authentication and returns a `401` before any expression is evaluated. Authorization denials return a `403`.
@@ -251,23 +230,29 @@ The following example allows `user1` and denies every other identity, including 
    EOF
    {{< /doc-test >}}
 
-2. Repeat the request with `user1`'s token. Verify that the request still succeeds, because the `preferred_username` claim matches the allow rule.
+2. Repeat the request with the client's token. Verify that the request still succeeds, because the `azp` claim matches the allow rule.
    ```sh
    curl -v "${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" -H "Authorization: Bearer ${ACCESS_TOKEN}"
    ```
 
-3. Get a token for `user2`, and send the same request. Verify that the request fails with a `403 Forbidden` response code. The token is valid, so authentication succeeds, but no allow rule matches the `user2` identity.
+3. Register a second client, get a token for it, and send the same request. Verify that the request fails with a `403 Forbidden` response code. The token is valid, so authentication succeeds, but no allow rule matches the second client.
    ```sh {paths="jwt-claims"}
-   USER2_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
-     -H "Content-Type: application/x-www-form-urlencoded" \
-     -d "grant_type=password" \
-     -d "client_id=${KEYCLOAK_CLIENT}" \
-     -d "client_secret=${KEYCLOAK_SECRET}" \
-     -d "username=user2" \
-     -d "password=password" \
+   OTHER_REGISTRATION=$(curl --fail --silent --show-error \
+     -H "Content-Type: application/json" \
+     -d '{
+       "client_name": "jwt-auth-guide-other",
+       "grant_types": ["client_credentials"],
+       "token_endpoint_auth_method": "client_secret_basic"
+     }' \
+     "$KEYCLOAK_URL/realms/master/clients-registrations/openid-connect")
+
+   OTHER_TOKEN=$(curl -s \
+     -u "$(jq -r .client_id <<<"$OTHER_REGISTRATION"):$(jq -r .client_secret <<<"$OTHER_REGISTRATION")" \
+     -d grant_type=client_credentials \
+     "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
      | jq -r '.access_token')
 
-   curl -v "${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" -H "Authorization: Bearer ${USER2_TOKEN}"
+   curl -v "${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" -H "Authorization: Bearer ${OTHER_TOKEN}"
    ```
 
    Example output:
@@ -281,9 +266,9 @@ The following example allows `user1` and denies every other identity, including 
 # The visible blocks set both tokens as shell variables; export them so that
 # YAMLTest (a child process that interpolates them from its environment) can read them.
 export ACCESS_TOKEN
-export USER2_TOKEN
+export OTHER_TOKEN
 YAMLTest -f - <<'EOF'
-- name: user1 matches the allow rule
+- name: the registered client matches the allow rule
   retries: 3
   http:
     url: "http://${INGRESS_GW_ADDRESS}:80/headers"
@@ -295,14 +280,14 @@ YAMLTest -f - <<'EOF'
     type: local
   expect:
     statusCode: 200
-- name: user2 is authenticated but not authorized
+- name: a second client is authenticated but not authorized
   retries: 3
   http:
     url: "http://${INGRESS_GW_ADDRESS}:80/headers"
     method: GET
     headers:
       host: "www.example.com"
-      authorization: "Bearer ${USER2_TOKEN}"
+      authorization: "Bearer ${OTHER_TOKEN}"
   source:
     type: local
   expect:
