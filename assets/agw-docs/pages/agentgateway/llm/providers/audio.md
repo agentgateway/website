@@ -38,7 +38,7 @@ Configure audio models like [Voxtral Small](https://huggingface.co/mistralai/Vox
 If you are running the audio model inside your cluster (e.g., Voxtral Small via vLLM), deploy the model and expose it via a Service.
 
 {{< callout type="warning" >}}
-**Voxtral Small requires significant GPU resources.** You need Docker with NVIDIA GPU support (`nvidia-container-toolkit`) and at least **24 GB of GPU RAM** for a single-GPU deployment (use `--load_format bitsandbytes` or `--quantization fp8` for quantized inference). For full precision bf16, approximately **55 GB of GPU RAM** is needed.
+**Voxtral Small requires a Docker environment with NVIDIA GPU support (`nvidia-container-toolkit`).**
 {{< /callout >}}
 
 1. Deploy Voxtral Small using the official vLLM OpenAI-compatible image.
@@ -105,7 +105,6 @@ If you are running the audio model inside your cluster (e.g., Voxtral Small via 
    - `vllm serve mistralai/Voxtral-Small-24B-2507` with Mistral-specific configuration
    - Port `8000` internally (vLLM default) exposed as port `80` on the Service
    - NVIDIA GPU reservation (1 GPU)
-   - For full precision bf16 (~55 GB VRAM), increase GPU count or use quantization
 
 2. Wait for the pod to be ready.
 
