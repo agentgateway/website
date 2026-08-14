@@ -403,9 +403,9 @@ Use the example verification scripts in the agentgateway repository to check
 Codex and Claude Desktop without asking users to run local commands.
 
 - [macOS shell
-  script](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/verify-agentgateway-clients-macos.sh)
+  script](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/verification/verify-agentgateway-clients-macos.sh)
 - [Windows PowerShell
-  script](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/Verify-AgentgatewayClientsWindows.ps1)
+  script](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/verification/Verify-AgentgatewayClientsWindows.ps1)
 - [Script configuration and deployment
   instructions](https://github.com/agentgateway/agentgateway/tree/main/examples/microsoft-intune)
 
@@ -476,20 +476,18 @@ compliance](https://learn.microsoft.com/en-us/intune/device-security/compliance/
 when access decisions must include the state of a client configuration. Custom
 compliance supports enrolled and managed macOS devices, including a BYOD Mac
 enrolled through Company Portal. It does not cover an unenrolled or MAM-only
-device. On macOS, a Bash discovery script can report a boolean such as
-`CodexGatewayConfigured` after checking the effective file or managed
-preference.
+device. On macOS, a Bash discovery script can report a client-specific Boolean
+after checking the effective file or managed preference.
 
-The agentgateway examples include compliance artifacts for Codex.
+The agentgateway examples include independently assignable compliance
+artifacts for Codex and Claude Desktop.
 
-- [macOS Bash discovery
-  script](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/compliance/discover-codex-gateway-macos.sh)
-- [Windows PowerShell discovery
-  script](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/compliance/Discover-CodexGatewayWindows.ps1)
-- [Codex custom-compliance rule
-  JSON](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/compliance/codex-gateway-compliance.json)
+| Client | macOS discovery | Windows discovery | Rule JSON | Reported setting |
+| --- | --- | --- | --- | --- |
+| Codex | [Bash script](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/compliance/codex/discover-gateway-macos.sh) | [PowerShell script](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/compliance/codex/Discover-GatewayWindows.ps1) | [Rules](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/compliance/codex/compliance.json) | `CodexGatewayConfigured` |
+| Claude Desktop | [Bash script](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/compliance/claude-desktop/discover-gateway-macos.sh) | [PowerShell script](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/compliance/claude-desktop/Discover-GatewayWindows.ps1) | [Rules](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/compliance/claude-desktop/compliance.json) | `ClaudeDesktopGatewayConfigured` |
 
-These scripts reuse the managed-configuration checks from the operational
+These scripts apply the same managed-configuration intent as the operational
 verifiers but implement the custom-compliance contract. They return only the
 discovered state and never return configuration contents, tokens, prompts, or
 credentials. A missing or mismatched configuration is a valid discovered
@@ -500,26 +498,33 @@ The discovery scripts do not test Gateway reachability. A temporary Gateway or
 network outage must not make every managed device noncompliant or unexpectedly
 affect Conditional Access.
 
-### Add Codex compliance on macOS
+Before uploading a script, replace its example URL with the approved address.
+Include `/v1` for Codex and the configured route prefix, such as `/claude`, for
+Claude Desktop. Keep the expected URL aligned with the corresponding managed
+configuration policy.
 
-1. Download the macOS discovery script and replace its example Codex URL with
-   the approved agentgateway address, including `/v1`.
+Use separate compliance policies and assignments for the two clients. This
+prevents a device that requires only one client from being marked noncompliant
+because the other client is not configured.
+
+### Add client compliance on macOS
+
+1. Download the macOS discovery script and rule JSON for the required client.
 2. In the Intune admin center, go to **Endpoint security > Device compliance >
    Scripts > Add > macOS** and upload the script.
 3. Set **Run this script using the logged on credentials** to **Yes**. Enable
    signature enforcement when your organization signs scripts.
 4. Create a macOS compliance policy, add **Custom Compliance**, select the
    discovery script, and upload the custom-compliance rule JSON.
-5. Assign the policy to the same pilot group as the Codex application and
+5. Assign the policy to the same pilot group as the client application and
    managed preference policies.
 
-The macOS discovery script prints only `true` or `false` for the single
-`CodexGatewayConfigured` Boolean rule.
+Each macOS discovery script prints only `true` or `false` for its single
+Boolean rule.
 
-### Add Codex compliance on Windows
+### Add client compliance on Windows
 
-1. Download the Windows discovery script and replace its example Codex URL
-   with the approved agentgateway address, including `/v1`.
+1. Download the Windows discovery script and rule JSON for the required client.
 2. In the Intune admin center, go to **Endpoint security > Device compliance >
    Scripts > Add > Windows** and upload the script.
 3. Set **Run this script using the logged on credentials** and **Run script in
@@ -527,13 +532,17 @@ The macOS discovery script prints only `true` or `false` for the single
    organization signs scripts.
 4. Create a Windows compliance policy, add **Custom Compliance**, select the
    discovery script, and upload the custom-compliance rule JSON.
-5. Assign the policy to the same pilot group as the Codex application and
+5. Assign the policy to the same pilot group as the client application and
    managed configuration policies.
 
-The Windows discovery script returns one compressed JSON object.
+Each Windows discovery script returns one compressed JSON object. For example:
 
 ```json
 {"CodexGatewayConfigured":true}
+```
+
+```json
+{"ClaudeDesktopGatewayConfigured":true}
 ```
 
 Use a grace period during the pilot so that application installation and first
