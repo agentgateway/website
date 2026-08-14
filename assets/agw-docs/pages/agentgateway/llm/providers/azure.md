@@ -13,6 +13,13 @@ Azure supports two endpoint types:
 
 You can authenticate to Azure with an API key or with implicit Entra ID authentication through `DefaultAzureCredential`. On Kubernetes, implicit authentication can obtain a token from managed identity or workload identity. It does not require a Kubernetes secret or `policies.auth`.
 
+{{< version include-if="main" >}}
+The Agentgateway proxy can use explicit managed identity authentication only when it can reach an Azure managed identity endpoint. Choose `systemAssigned` for the host identity. Choose `userAssigned` and provide one identifier: client ID, object ID, or resource ID. Do not configure both identity types. Managed identity and workload identity use different credential sources.
+
+> [!IMPORTANT]
+> Existing Kubernetes configurations that put `clientId`, `objectId`, or `resourceId` directly under `managedIdentity` must move the identifier under `userAssigned`. Reapply the resource after updating the Agentgateway CRDs because stored objects are not converted to the new shape automatically.
+{{< /version >}}
+
 ## Set up access to Azure
 
 1. Retrieve the resource name and, if applicable, the project name from the [Azure AI Foundry portal](https://ai.azure.com/) or the [Azure portal](https://portal.azure.com/). For example:
@@ -106,6 +113,59 @@ You can authenticate to Azure with an API key or with implicit Entra ID authenti
    ```
    {{% /tab %}}
    {{< /tabs >}}
+
+   {{< version include-if="main" >}}
+   To use explicit managed identity authentication instead, apply one of the following {{< reuse "agw-docs/snippets/backend.md" >}} configurations.
+
+   **System-assigned managed identity**
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: azure
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         azure:
+           resourceName: my-resource
+           resourceType: OpenAI
+           model: gpt-4.1-mini
+     policies:
+       auth:
+         azure:
+           managedIdentity:
+             systemAssigned: {}
+   EOF
+   ```
+
+   **User-assigned managed identity**
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: azure
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         azure:
+           resourceName: my-resource
+           resourceType: OpenAI
+           model: gpt-4.1-mini
+     policies:
+       auth:
+         azure:
+           managedIdentity:
+             userAssigned:
+               clientId: <managed-identity-client-id>
+   EOF
+   ```
+   {{< /version >}}
 
    {{% reuse "agw-docs/snippets/review-table.md" %}}{{< version exclude-if="1.1.x" >}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#azureconfig" >}}).{{< /version >}}
 

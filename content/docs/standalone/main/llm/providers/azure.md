@@ -182,6 +182,9 @@ agentgateway -f config-azure-openai.yaml --validate-only
 
 For advanced Azure AI scenarios, use the traditional listener/route configuration format. The following tabs show examples for different authentication methods.
 
+> [!IMPORTANT]
+> Managed identity configuration now names the identity type with `systemAssigned` or `userAssigned`. Rename the standalone `userAssignedIdentity` field to `userAssigned`. The legacy `managedIdentity: {}` form still selects a system-assigned identity in standalone mode, but new configurations should spell it as `systemAssigned: {}`.
+
 {{< tabs >}}
 
 {{% tab name="Foundry (implicit auth)" %}}
@@ -371,7 +374,7 @@ To use system-assigned managed identity:
 * The Azure resource must have managed identity enabled.
 * The Azure resource identity must have permissions to and the network ability to access the Azure AI services.
 
-Leave the `managedIdentity` field empty so that the system assigns a managed identity to use.
+Select `systemAssigned` to use the identity of the Azure resource that runs Agentgateway.
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -390,7 +393,8 @@ routes:
     backendAuth:
       azure:
         explicitConfig:
-          managedIdentity: {}
+          managedIdentity:
+            systemAssigned: {}
 ```
 
 {{< doc-test paths="azure" >}}
@@ -412,14 +416,15 @@ routes:
     backendAuth:
       azure:
         explicitConfig:
-          managedIdentity: {}
+          managedIdentity:
+            systemAssigned: {}
 EOF
 agentgateway -f config-adv-system-managed-identity.yaml --validate-only
 {{< /doc-test >}}
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
-| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
+| `backendAuth.azure.explicitConfig.managedIdentity.systemAssigned` | Use the system-assigned identity of the Azure resource that runs Agentgateway. |
 {{< /reuse-append >}}
 
 {{% /tab %}}
@@ -428,9 +433,8 @@ agentgateway -f config-adv-system-managed-identity.yaml --validate-only
 
 To use user-assigned managed identity:
 * Agentgateway must run in an Azure resource, such as a VM or container instance.
-* The Azure resource must have managed identity enabled.
-* The Azure resource identity must have permissions to and the network ability to access the Azure AI services.
-* Create and assign a managed identity for the Azure resource to use.
+* Create a user-assigned identity and attach it to the Azure resource.
+* The selected identity must have permissions to and the network ability to access the Azure AI services.
 
 Specify the client ID of the user-assigned managed identity to use. You can also specify the object ID or resource ID instead.
 ```yaml
@@ -452,7 +456,7 @@ routes:
       azure:
         explicitConfig:
           managedIdentity:
-            userAssignedIdentity:
+            userAssigned:
               clientId: "<your-managed-identity-client-id>"
               # OR use objectId or resourceId instead
               # objectId: "your-managed-identity-object-id"
@@ -479,7 +483,7 @@ routes:
       azure:
         explicitConfig:
           managedIdentity:
-            userAssignedIdentity:
+            userAssigned:
               clientId: "<your-managed-identity-client-id>"
               # OR use objectId or resourceId instead
               # objectId: "your-managed-identity-object-id"
@@ -490,7 +494,7 @@ agentgateway -f config-adv-user-managed-identity.yaml --validate-only
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
-| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
+| `backendAuth.azure.explicitConfig.managedIdentity.userAssigned` | Use a user-assigned managed identity. Specify exactly one of `clientId`, `objectId`, or `resourceId`. |
 {{< /reuse-append >}}
 
 {{% /tab %}}
