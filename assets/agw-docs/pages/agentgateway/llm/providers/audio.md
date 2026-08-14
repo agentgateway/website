@@ -1,4 +1,4 @@
-Configure audio models like [Voxtral Small](https://huggingface.co/mistralai/Voxtral-Small-24B-2507) or [OpenAI Whisper](https://platform.openai.com/docs/guides/speech-to-text) through {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Audio models expose endpoints like `/v1/audio/transcriptions` and `/v1/audio/translations` that are handled via `Passthrough` routing — agentgateway forwards the request and response without parsing or modifying the payload.
+Configure audio models like [Voxtral Small](https://huggingface.co/mistralai/Voxtral-Small-24B-2507) or [OpenAI Whisper](https://platform.openai.com/docs/guides/speech-to-text) through {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Audio models expose endpoints like `/v1/audio/transcriptions` and `/v1/models` that are handled via `Passthrough` routing — agentgateway forwards the request and response without parsing or modifying the payload.
 
 ## Before you begin
 
@@ -137,7 +137,6 @@ spec:
     ai:
       routes:
         "/v1/audio/transcriptions": "Passthrough"
-        "/v1/audio/translations": "Passthrough"
         "/v1/models": "Passthrough"
         "*": "Passthrough"
 EOF
@@ -152,7 +151,6 @@ EOF
 | `host` | The in-cluster DNS name of the Service pointing to the audio model. |
 | `port` | The port the audio model listens on. |
 | `policies.ai.routes["/v1/audio/transcriptions"]` | Routes audio transcription requests with `Passthrough` processing. Agentgateway forwards the multipart form data and response without modification. |
-| `policies.ai.routes["/v1/audio/translations"]` | Routes audio translation requests (to English) with `Passthrough` processing. |
 | `policies.ai.routes["*"]` | Catches any unmatched paths and forwards them as `Passthrough`. |
 
 ### Step 4: Create an HTTPRoute
@@ -231,7 +229,6 @@ The table below lists the audio-specific endpoints that can be configured via `P
 | API path | Route type | Description |
 |----------|------------|-------------|
 | `/v1/audio/transcriptions` | `Passthrough` | Transcribes audio files to text. Agentgateway forwards the `multipart/form-data` payload and the JSON response without modification. |
-| `/v1/audio/translations` | `Passthrough` | Translates audio files to English. Similar to transcriptions but outputs English text. |
 | `/v1/models` | `Passthrough` | Lists available models. |
 
 {{< callout type="info" >}}
