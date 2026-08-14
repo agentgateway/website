@@ -208,16 +208,16 @@ mcp:
 
 ### Stateless sessions
 
-OpenAPI backends are inherently stateless because they translate standard REST endpoints into MCP tools. You can set `statefulMode: Stateless` on the MCP backend to skip session tracking. In stateless mode, the gateway automatically wraps each request with an initialization sequence so the upstream processes every request independently.
+OpenAPI backends are inherently stateless because they translate standard REST endpoints into MCP tools. You can set `statefulMode: stateless` on the MCP backend to skip session tracking. In stateless mode, the gateway automatically wraps each request with an initialization sequence so the upstream processes every request independently.
 
 ```yaml
-backends:
-- mcp:
-    statefulMode: Stateless
-    targets:
-    - name: openapi
-      openapi:
-        schema:
-          url: http://localhost:8080/api/v3/openapi.json
-        host: localhost:8080
+mcp:
+  port: 3000
+  statefulMode: stateless
+  targets:
+  - name: openapi
+    openapi:
+      schema:
+        url: http://localhost:8080/api/v3/openapi.json
+      host: localhost:8080
 ```
