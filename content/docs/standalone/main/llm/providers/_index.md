@@ -38,7 +38,10 @@ Use `auth.key.location` only when a provider needs the credential somewhere othe
 llm:
   models:
   - name: "*"
-    provider: custom
+    provider:
+      custom:
+        formats:
+        - type: completions
     auth:
       key:
         value: "$API_KEY"

@@ -216,6 +216,5 @@ routes:
   - path:
       pathPrefix: /api
   backends:
-  - http:
-      host: api.example.com:443
+  - host: api.example.com:443
 ```
