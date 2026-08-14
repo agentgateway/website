@@ -1,4 +1,4 @@
-Configure audio transcription models like [Voxtral](https://huggingface.co/mistralai/Voxtral-Mini-4B-Realtime-2602) or [OpenAI Whisper](https://platform.openai.com/docs/guides/speech-to-text) through {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Audio models expose endpoints like `/v1/audio/transcriptions` and `/v1/audio/translations` that are handled via `Passthrough` routing — agentgateway forwards the request and response without parsing or modifying the payload.
+Configure audio models like [Voxtral Small](https://huggingface.co/mistralai/Voxtral-Small-24B-2507) or [OpenAI Whisper](https://platform.openai.com/docs/guides/speech-to-text) through {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Audio models expose endpoints like `/v1/audio/transcriptions` and `/v1/audio/translations` that are handled via `Passthrough` routing — agentgateway forwards the request and response without parsing or modifying the payload.
 
 ## Before you begin
 
@@ -10,7 +10,7 @@ Configure audio transcription models like [Voxtral](https://huggingface.co/mistr
 
 ### Step 1: Get an API key
 
-1. Obtain an API key for your audio model provider (e.g., OpenAI, or your own host for self-hosted models like Voxtral).
+1. Obtain an API key for your audio model provider (e.g., OpenAI, or self-hosted models like Voxtral Small).
 
 2. If your provider requires authentication, save the API key in an environment variable.
 
@@ -35,13 +35,13 @@ Configure audio transcription models like [Voxtral](https://huggingface.co/mistr
 
 ### Step 2: Deploy the audio model (self-hosted)
 
-If you are running the audio model inside your cluster (e.g., Voxtral via vLLM), deploy the model and expose it via a Service.
+If you are running the audio model inside your cluster (e.g., Voxtral Small via vLLM), deploy the model and expose it via a Service.
 
 {{< callout type="warning" >}}
-**Voxtral requires a GPU.** You need Docker with NVIDIA GPU support (`nvidia-container-toolkit`) and at least 16GB of GPU memory. For CPU-only deployments, consider using Whisper via [Speaches](https://github.com/MLT-OSS/speaches) instead.
+**Voxtral Small requires significant GPU resources.** You need Docker with NVIDIA GPU support (`nvidia-container-toolkit`) and approximately **55 GB of GPU RAM** for the full 24B model (requires 2 GPUs). For smaller deployments, consider using [Voxtral Mini](https://huggingface.co/mistralai/Voxtral-Mini-3B-2507) which requires much less GPU memory.
 {{< /callout >}}
 
-1. Deploy Voxtral using the vLLM container image with GPU support.
+1. Deploy Voxtral Small using the official vLLM OpenAI-compatible image.
 
    ```yaml {paths="audio-deploy"}
    kubectl apply -f- <<EOF
@@ -62,18 +62,30 @@ If you are running the audio model inside your cluster (e.g., Voxtral via vLLM),
        spec:
          containers:
          - name: voxtral-vllm
-           image: ghcr.io/virtuos/vllm-voxtral:latest
+           image: vllm/vllm-openai:latest
+           args:
+           - "vllm"
+           - "serve"
+           - "mistralai/Voxtral-Small-24B-2507"
+           - "--tokenizer_mode"
+           - "mistral"
+           - "--config_format"
+           - "mistral"
+           - "--load_format"
+           - "mistral"
+           - "--tensor-parallel-size"
+           - "2"
+           - "--tool-call-parser"
+           - "mistral"
+           - "--enable-auto-tool-choice"
            ports:
            - containerPort: 8000
              name: http
-           env:
-           - name: VLLM_DISABLE_COMPILE_CACHE
-             value: "1"
            resources:
              limits:
-               nvidia.com/gpu: "1"
+               nvidia.com/gpu: "2"
              requests:
-               nvidia.com/gpu: "1"
+               nvidia.com/gpu: "2"
    ---
    apiVersion: v1
    kind: Service
@@ -91,10 +103,11 @@ If you are running the audio model inside your cluster (e.g., Voxtral via vLLM),
    ```
 
    The deployment uses:
-   - `ghcr.io/virtuos/vllm-voxtral:latest` — a community Docker image that runs `vllm serve mistralai/Voxtral-Mini-4B-Realtime-2602` with optimal settings
+   - `vllm/vllm-openai:latest` — the official vLLM OpenAI-compatible server image
+   - `vllm serve mistralai/Voxtral-Small-24B-2507` with Mistral-specific configuration
    - Port `8000` internally (vLLM default) exposed as port `80` on the Service
-   - NVIDIA GPU reservation (1 GPU)
-   - `VLLM_DISABLE_COMPILE_CACHE=1` environment variable for reliable inference
+   - NVIDIA GPU reservation (2 GPUs for 55 GB VRAM)
+   - `--tensor-parallel-size 2` to split the model across 2 GPUs
 
 2. Wait for the pod to be ready.
 
@@ -120,7 +133,7 @@ spec:
   ai:
     provider:
       openai:
-        model: voxtral-small-2507
+        model: voxtral-small-24b-2507
       host: voxtral-service.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
       port: 80
   policies:
@@ -186,7 +199,7 @@ curl --request POST \
   --url "http://${INGRESS_GW_ADDRESS}:80/audio/v1/audio/transcriptions" \
   --header 'Authorization: Bearer $AUDIO_API_KEY' \
   --header 'Content-Type: multipart/form-data' \
-  --form model=voxtral-small-2507 \
+  --form model=voxtral-small-24b-2507 \
   --form 'file=@./testdata/sample-audio.webm' | jq
 {{% /tab %}}
 {{% tab name="Port-forward for local testing" %}}
@@ -203,7 +216,7 @@ curl --request POST \
   --url "http://localhost:8080/audio/v1/audio/transcriptions" \
   --header 'Authorization: Bearer $AUDIO_API_KEY' \
   --header 'Content-Type: multipart/form-data' \
-  --form model=voxtral-small-2507 \
+  --form model=voxtral-small-24b-2507 \
   --form 'file=@./testdata/sample-audio.webm' | jq
 {{% /tab %}}
 {{< /tabs >}}
