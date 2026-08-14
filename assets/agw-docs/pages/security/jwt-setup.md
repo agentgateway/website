@@ -92,7 +92,45 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
    authentication failure: no bearer token found%  
    ```      
    
-2. Get an access token from Keycloak by using the password grant type.
+2. Register a client with Keycloak by using dynamic client registration (DCR). The client permits the password grant, which the next step uses to get a token for `user1`. Keycloak requires an initial access token to register the client.
+   ```sh {paths="jwt-claims"}
+   # Refresh the administrator token, which is short-lived
+   KEYCLOAK_TOKEN=$(curl --fail --silent --show-error \
+     -d client_id=admin-cli \
+     -d username=admin \
+     -d password=admin \
+     -d grant_type=password \
+     "$KEYCLOAK_URL/realms/master/protocol/openid-connect/token" \
+     | jq -r .access_token)
+
+   # Create an initial access token that authorizes one registration, and expires in 10 minutes
+   KEYCLOAK_INITIAL_TOKEN=$(curl --fail --silent --show-error \
+     -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+     -H "Content-Type: application/json" \
+     -d '{"expiration": 600, "count": 1}' \
+     "$KEYCLOAK_URL/admin/realms/master/clients-initial-access" \
+     | jq -r .token)
+
+   # Register the client, and grant it only the password grant
+   KEYCLOAK_REGISTRATION=$(curl --fail --silent --show-error \
+     -H "Authorization: Bearer ${KEYCLOAK_INITIAL_TOKEN}" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "client_name": "jwt-auth-guide",
+       "grant_types": ["password"],
+       "token_endpoint_auth_method": "client_secret_basic"
+     }' \
+     "$KEYCLOAK_URL/realms/master/clients-registrations/openid-connect")
+
+   KEYCLOAK_CLIENT=$(jq -r .client_id <<<"$KEYCLOAK_REGISTRATION")
+   KEYCLOAK_SECRET=$(jq -r .client_secret <<<"$KEYCLOAK_REGISTRATION")
+   echo $KEYCLOAK_CLIENT
+   ```
+
+   > [!NOTE]
+   > Keycloak also permits anonymous client registration, which MCP clients use in the [MCP auth guide]({{< link-hextra path="/mcp/auth/setup/" >}}). However, Keycloak marks an anonymously registered client as requiring user consent, and the password grant cannot answer a consent prompt. The initial access token registers the client without that requirement.
+
+3. Get an access token for `user1` from Keycloak by using the password grant type.
    ```sh {paths="jwt-claims"}
    ACCESS_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
      -H "Content-Type: application/x-www-form-urlencoded" \
@@ -106,7 +144,14 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
    echo $ACCESS_TOKEN
    ```
 
-3. Repeat the request to the httpbin app. This time, include the JWT token that you received in the previous step. Verify that the request succeeds and you get back a 200 HTTP response code. 
+   {{< doc-test paths="jwt-claims" >}}
+   if [ -z "${ACCESS_TOKEN:-}" ] || [ "${ACCESS_TOKEN}" = "null" ]; then
+     echo "no access token issued for user1; check the client registration in the previous step"
+     exit 1
+   fi
+   {{< /doc-test >}}
+
+4. Repeat the request to the httpbin app. This time, include the JWT token that you received in the previous step. Verify that the request succeeds and you get back a 200 HTTP response code. 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
