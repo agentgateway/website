@@ -33,7 +33,9 @@ Create an MCP Server and a client in Descope, and collect the values that agentg
 
 4. Create a [Client](https://docs.descope.com/agentic-identity-hub/core-components/clients#creating-a-client) for the MCP clients that connect through the gateway, and note its **Client ID**.
 
-5. Save the values as environment variables.
+5. Assign a role such as `Tenant Admin` to the users or clients that need access to your MCP server. You use this role in the authorization rule that you configure later.
+
+6. Save the values as environment variables.
    
    ```bash
    export DESCOPE_PROJECT_ID=<your-project-id>
@@ -98,9 +100,9 @@ Create an {{< reuse "agw-docs/snippets/backend.md" >}} that points to the Descop
 
 ## Configure MCP auth
 
-With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces Descope authentication for the MCP backend.
+With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces Descope authentication and authorization for the MCP backend.
 
-1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with the `Descope` provider.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with the `Descope` provider. The policy validates tokens that Descope issues and uses a Common Expression Language (CEL) rule to require the `Tenant Admin` role.
    ```yaml {paths="setup-descope"}
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -143,6 +145,12 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
              - profile
              bearerMethodsSupported:
              - header
+       # Allow only tokens that carry the Tenant Admin role
+       authorization:
+         action: Allow
+         policy:
+           matchExpressions:
+           - '"Tenant Admin" in jwt.roles'
    EOF
    ```
 
@@ -157,6 +165,10 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    | `mcp.provider` | The identity provider. Set to `Descope` to enable the native Descope behavior. |
    | `mcp.clientId` | The Client ID of your Descope Client. Agentgateway answers Dynamic Client Registration requests with this value instead of proxying them to Descope. |
    | `mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. Includes the resource identifier, supported scopes, and bearer token methods. |
+   | `authorization.policy.matchExpressions` | CEL rules that authorize the claims in the verified JWT. This example requires the `Tenant Admin` role. Requests that present a valid token without that role are denied with a 403 HTTP response code. |
+
+   > [!NOTE]
+   > Where the roles claim appears depends on your [Authorization Claims Configuration](https://docs.descope.com/management/token/jwt-templates#authorization-claims-configuration). With the default Descope JWT, roles are in `jwt.tenants["<your-tenant-id>"].roles`. With the No Tenant Reference claim format, roles are in `jwt.roles`, which is what this rule uses.
 
    > [!NOTE]
    > Setting `clientId` is recommended for Descope. Descope's Dynamic Client Registration endpoint requires a management key that MCP clients do not have, so registration requests that the gateway proxies to Descope fail. If you prefer to let clients register dynamically, use [CIMD](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers/registration-methods#client-id-metadata-documents-cimd) instead.
@@ -275,7 +287,11 @@ Point your MCP client at the gateway's MCP endpoint, such as `http://localhost:8
 
 ## Role-based authorization
 
-Descope includes role information in its tokens according to your [Authorization Claims Configuration](https://docs.descope.com/management/token/jwt-templates#authorization-claims-configuration). With the default Descope JWT, roles appear in `tenants["<tenant-id>"].roles`. With the No Tenant Reference format, they appear in `roles`. You can use those claims to restrict which MCP tools a caller can invoke. For more information, see [Tool access]({{< link-hextra path="/mcp/tool-access/" >}}).
+The policy that you created gates the MCP endpoint on the `Tenant Admin` role, which Descope includes in its tokens according to your [Authorization Claims Configuration](https://docs.descope.com/management/token/jwt-templates#authorization-claims-configuration). Authentication alone is not enough: any caller that Descope issues a token to for your MCP server passes JWT validation, including clients that authorize themselves rather than a user. The authorization rule denies those tokens with a 403 HTTP response code.
+
+Because MCP authentication runs at the route level, every claim in the verified token is also available to other route-level policies, such as rate limiting and transformations. For more information about the rules that you can write, see [Authorization]({{< link-hextra path="/security/authorization/" >}}).
+
+To authorize individual tools instead of the whole MCP endpoint, use an MCP authorization policy. For more information, see [Tool access]({{< link-hextra path="/mcp/tool-access/" >}}).
 
 ## Clean up
 
@@ -290,15 +306,17 @@ kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} descope-jwks
 {{< doc-test paths="setup-descope" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The descope-jwks backend and BackendTLSPolicy, the mcp-descope-authn
-#     AgentgatewayPolicy with provider: Descope, the project-level JWKS path, and
-#     clientId, and the updated HTTPRoute are all accepted by the Kubernetes API
-#     server and by the agentgateway control plane.
+#     AgentgatewayPolicy with provider: Descope, the project-level JWKS path,
+#     clientId, and the roles authorization rule, and the updated HTTPRoute are
+#     all accepted by the Kubernetes API server and by the agentgateway control
+#     plane.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That the policy programs on the data plane, the 401 challenge, the proxied
-#     authorization-server metadata, the proxied client registration endpoint, and
-#     runtime token verification. Descope has no public sample project that serves
-#     a JWKS, so the control plane cannot resolve keys for the placeholder project
-#     and the policy never reaches the proxy. Set DESCOPE_PROJECT_ID,
+#     authorization-server metadata, the proxied client registration endpoint,
+#     runtime token verification, and the 403 that the authorization rule returns
+#     for a token without the Tenant Admin role. Descope has no public sample
+#     project that serves a JWKS, so the control plane cannot resolve keys for the
+#     placeholder project and the policy never reaches the proxy. Set DESCOPE_PROJECT_ID,
 #     DESCOPE_SERVER_ID, DESCOPE_CLIENT_ID, and DESCOPE_MCP_SERVER_URL to a real
 #     Descope project to exercise the full flow.
 YAMLTest -f - <<'EOF'

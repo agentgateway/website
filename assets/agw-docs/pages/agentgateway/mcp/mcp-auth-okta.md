@@ -36,7 +36,9 @@ Create an app integration in Okta, and collect the values that agentgateway need
 
 5. Go to **Security > API > Authorization Servers**. Use the `default` authorization server, or add one for your MCP server. Note the **Audience** value on the server's **Settings** tab, and add a scope on the **Scopes** tab if your MCP server enforces scopes.
 
-6. Save the values as environment variables.
+6. On the authorization server's **Claims** tab, add a `groups` claim so that a user's group memberships appear in the access token. Then, go to **Directory > Groups**, create a group such as `AI-Users`, and add the users that you want to access the MCP server. You use this group in the authorization rule that you configure later.
+
+7. Save the values as environment variables.
    
    ```bash
    export OKTA_DOMAIN=<your-org>.okta.com
@@ -104,9 +106,9 @@ Create an {{< reuse "agw-docs/snippets/backend.md" >}} that points to your Okta 
 
 ## Configure MCP auth
 
-With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces Okta authentication for the MCP backend.
+With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces Okta authentication and authorization for the MCP backend.
 
-1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with the `Okta` provider.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with the `Okta` provider. The policy validates tokens that Okta issues and uses a Common Expression Language (CEL) rule to require the `AI-Users` group.
    ```yaml {paths="setup-okta"}
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -148,6 +150,12 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
              - profile
              bearerMethodsSupported:
              - header
+       # Allow only tokens from members of the AI-Users group
+       authorization:
+         action: Allow
+         policy:
+           matchExpressions:
+           - '"AI-Users" in jwt.groups'
    EOF
    ```
 
@@ -162,6 +170,7 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    | `mcp.provider` | The identity provider. Set to `Okta` to enable the native Okta bridging behavior. |
    | `mcp.clientId` | The Client ID of your Okta app integration. Agentgateway answers Dynamic Client Registration requests with this value instead of proxying them to Okta. |
    | `mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. Includes the resource identifier, supported scopes, and bearer token methods. |
+   | `authorization.policy.matchExpressions` | CEL rules that authorize the claims in the verified JWT. This example requires membership in the `AI-Users` Okta group. Requests that present a valid token without that group are denied with a 403 HTTP response code. |
 
    > [!NOTE]
    > Setting `clientId` is recommended for Okta. Okta's Dynamic Client Registration endpoint usually requires an API token that MCP clients do not have, so registration requests that the gateway proxies to Okta fail. A pre-registered client avoids that dependency.
@@ -290,7 +299,11 @@ Point your MCP client at the gateway's MCP endpoint, such as `http://localhost:8
 
 ## Group-based authorization
 
-Okta can include a user's group memberships in the `groups` claim when you add a groups claim to your authorization server. You can use those claims to restrict which MCP tools a caller can invoke. For more information, see [Tool access]({{< link-hextra path="/mcp/tool-access/" >}}).
+The policy that you created gates the MCP endpoint on the `AI-Users` group, which Okta puts in the `groups` claim of the access token when you add the groups claim to your authorization server. Authentication alone is not enough: any caller that Okta issues a token to for your audience passes JWT validation, including tokens that a client obtains for itself rather than for a user. The authorization rule denies those tokens with a 403 HTTP response code.
+
+Because MCP authentication runs at the route level, every claim in the verified token is also available to other route-level policies, such as rate limiting and transformations. For more information about the rules that you can write, see [Authorization]({{< link-hextra path="/security/authorization/" >}}).
+
+To authorize individual tools instead of the whole MCP endpoint, use an MCP authorization policy. For more information, see [Tool access]({{< link-hextra path="/mcp/tool-access/" >}}).
 
 ## Clean up
 
@@ -305,17 +318,19 @@ kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} okta-jwks
 {{< doc-test paths="setup-okta" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The okta-jwks backend and BackendTLSPolicy, the mcp-okta-authn
-#     AgentgatewayPolicy with provider: Okta, an explicit Okta JWKS path, and
-#     clientId, and the updated HTTPRoute are all accepted by the Kubernetes API
-#     server and by the agentgateway control plane.
+#     AgentgatewayPolicy with provider: Okta, an explicit Okta JWKS path,
+#     clientId, and the groups authorization rule, and the updated HTTPRoute are
+#     all accepted by the Kubernetes API server and by the agentgateway control
+#     plane.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That the policy programs on the data plane, the 401 challenge, the proxied
 #     authorization-server metadata, the audience query parameter, the proxied
-#     client registration endpoint, and runtime token verification. Okta has no
-#     public sample org that serves a JWKS, so the control plane cannot resolve
-#     keys for the placeholder domain and the policy never reaches the proxy.
-#     Set OKTA_DOMAIN, OKTA_AUTH_SERVER, OKTA_CLIENT_ID, and OKTA_AUDIENCE to a
-#     real Okta org to exercise the full flow.
+#     client registration endpoint, runtime token verification, and the 403 that
+#     the authorization rule returns for a token without the AI-Users group.
+#     Okta has no public sample org that serves a JWKS, so the control plane
+#     cannot resolve keys for the placeholder domain and the policy never reaches
+#     the proxy. Set OKTA_DOMAIN, OKTA_AUTH_SERVER, OKTA_CLIENT_ID, and
+#     OKTA_AUDIENCE to a real Okta org to exercise the full flow.
 YAMLTest -f - <<'EOF'
 - name: wait for okta-jwks BackendTLSPolicy to be accepted
   wait:

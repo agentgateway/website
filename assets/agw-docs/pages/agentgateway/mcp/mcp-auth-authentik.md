@@ -176,6 +176,7 @@ done
        \"client_type\": \"public\",
        \"signing_key\": \"${AK_SIGNING_KEY}\",
        \"property_mappings\": ${AK_SCOPES},
+       \"grant_types\": [\"authorization_code\", \"refresh_token\", \"client_credentials\"],
        \"redirect_uris\": [{\"matching_mode\": \"regex\", \"url\": \".*\"}],
        \"sub_mode\": \"user_username\",
        \"include_claims_in_id_token\": true
@@ -185,6 +186,15 @@ done
    ```
 
    If the client ID is empty, the provider was not created. Check that `AUTHENTIK_ADDRESS` still resolves and that `AUTHENTIK_BOOTSTRAP_TOKEN` matches the value you installed authentik with.
+
+   The following table describes the settings that matter for MCP.
+
+   | Setting | Description |
+   | -- | -- |
+   | `client_type` | Must be `public`. MCP clients cannot keep a client secret, so they authenticate with PKCE instead. |
+   | `property_mappings` | The scopes that the provider can issue. The `profile` scope is what puts the `groups` claim in the token, which the authorization rule reads. |
+   | `grant_types` | authentik rejects any grant that is not listed here with `invalid_grant`. MCP clients use `authorization_code`. |
+   | `sub_mode` | Sets the `sub` claim to the username, which makes tokens easier to read while you test. |
 
    > [!WARNING]
    > The `.*` redirect URI matcher accepts **any** callback URL, so that you can connect different MCP clients while you test. Do not use it outside a test cluster. An authorization server that accepts any redirect URI lets an attacker intercept authorization codes by sending a victim through a crafted callback. In production, list only the callback URLs of the MCP clients that you allow.
@@ -215,7 +225,34 @@ if [ -z "${AK_PROVIDER_PK:-}" ] || [ "${AK_PROVIDER_PK}" = "null" ]; then
 fi
 {{< /doc-test >}}
 
-5. Save the issuer URL. authentik issuers take the form `https://<authentik-host>/application/o/<app-slug>/`, including the trailing slash. Because the agentgateway control plane fetches the JWKS from inside the cluster, use the in-cluster address of the authentik Service.
+5. Create a group for the users that can access the MCP server, and add your user to it. When a client requests the `profile` scope, authentik puts the names of the groups that the user belongs to in the `groups` claim of the token. The authorization rule that you configure later reads that claim.
+   ```sh {paths="setup-authentik"}
+   export AK_GROUP_PK=$(curl -s -X POST -H "${AK_AUTH_HEADER}" -H "Content-Type: application/json" \
+     "${AUTHENTIK_API}/core/groups/" -d '{"name": "mcp-agent"}' | jq -r '.pk')
+
+   export AK_USER_PK=$(curl -s -H "${AK_AUTH_HEADER}" \
+     "${AUTHENTIK_API}/core/users/?username=akadmin" | jq -r '.results[0].pk')
+
+   curl -s -X POST -H "${AK_AUTH_HEADER}" -H "Content-Type: application/json" \
+     "${AUTHENTIK_API}/core/groups/${AK_GROUP_PK}/add_user/" -d "{\"pk\": ${AK_USER_PK}}"
+
+   echo "Group: ${AK_GROUP_PK}"
+   ```
+
+   Repeat the `add_user` request for each user that you want to give access to the MCP server.
+
+{{< doc-test paths="setup-authentik" >}}
+# Confirm the group exists and that akadmin is a member, because the authorization
+# rule in the policy below denies every token that does not carry this group.
+if [ -z "${AK_GROUP_PK:-}" ] || [ "${AK_GROUP_PK}" = "null" ]; then
+  echo "AK_GROUP_PK is empty: the mcp-agent group was not created"
+  exit 1
+fi
+curl -s -H "${AK_AUTH_HEADER}" "${AUTHENTIK_API}/core/groups/?search=mcp-agent" \
+  | jq -e '[.results[] | select(.name == "mcp-agent") | .users_obj[].username] | index("akadmin")' >/dev/null
+{{< /doc-test >}}
+
+6. Save the issuer URL. authentik issuers take the form `https://<authentik-host>/application/o/<app-slug>/`, including the trailing slash. Because the agentgateway control plane fetches the JWKS from inside the cluster, use the in-cluster address of the authentik Service.
    ```sh {paths="setup-authentik"}
    export AUTHENTIK_ISSUER="http://authentik-server.authentik.svc.cluster.local/application/o/agentgateway-mcp/"
    export AUTHENTIK_JWKS_PATH="/application/o/agentgateway-mcp/jwks/"
@@ -223,9 +260,9 @@ fi
 
 ## Configure MCP auth
 
-With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces authentik authentication for the MCP backend.
+With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces authentik authentication and authorization for the MCP backend.
 
-1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with the `Authentik` provider.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with the `Authentik` provider. The policy validates tokens that authentik issues and uses a Common Expression Language (CEL) rule to require the `mcp-agent` group.
    ```yaml {paths="setup-authentik"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -269,6 +306,12 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
              - profile
              bearerMethodsSupported:
              - header
+       # Allow only tokens from members of the mcp-agent group
+       authorization:
+         action: Allow
+         policy:
+           matchExpressions:
+           - '"mcp-agent" in jwt.groups'
    EOF
    ```
 
@@ -283,6 +326,7 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    | `mcp.provider` | The identity provider to adapt agentgateway's OAuth behavior to. In this example, `Authentik` is used. |
    | `mcp.clientId` | The pre-registered public client that agentgateway returns to MCP clients that attempt Dynamic Client Registration. Required for authentik. |
    | `mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. Includes the resource identifier, supported scopes, and bearer token methods. |
+   | `authorization.policy.matchExpressions` | CEL rules that authorize the claims in the verified JWT. This example requires membership in the `mcp-agent` group that you created. Requests that present a valid token without that group are denied with a 403 HTTP response code. |
 
    > [!NOTE]
    > When the policy is first applied, the control plane might briefly log `jwks keyset ... isn't available` until it completes the first JWKS fetch. This condition resolves on its own.
@@ -429,9 +473,10 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
 #   * authentik installs in the cluster and its server becomes ready.
 #   * The OAuth2 provider and application are created, and authentik serves JWKS
 #     at the derived {issuer}/jwks/ path that the Authentik provider expects.
+#   * The mcp-agent group is created and the akadmin user is a member of it.
 #   * The mcp-authentik-authn AgentgatewayPolicy (provider: Authentik, clientId,
-#     and a cross-namespace remote JWKS backendRef) is accepted and attached, and
-#     the updated HTTPRoute is accepted.
+#     a cross-namespace remote JWKS backendRef, and the group authorization rule)
+#     is accepted and attached, and the updated HTTPRoute is accepted.
 #   * The gateway enforces the connect-time 401 challenge, serves the protected
 #     resource metadata, serves authorization server metadata proxied from
 #     authentik, injects a registration_endpoint that authentik does not publish,
@@ -440,6 +485,10 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
 #   * The full interactive OAuth sign-in flow, which requires a real user signing
 #     in through a browser that can reach authentik. In this test authentik is
 #     only reachable inside the cluster.
+#   * That a token from a user in the mcp-agent group is admitted and one from a
+#     user outside it is denied with a 403. Minting a token from the command line
+#     needs a service account and the client_credentials grant, which is a
+#     different flow from the authorization code flow that this guide documents.
 YAMLTest -f - <<'EOF'
 - name: wait for authentik server to be ready
   wait:
@@ -530,6 +579,14 @@ Point your MCP client at the gateway's MCP endpoint, such as `http://localhost:8
 
 > [!IMPORTANT]
 > The authorization and token endpoints that the gateway advertises come from authentik. In this guide, those endpoints use the in-cluster Service address, which a browser outside the cluster cannot reach. To complete an interactive sign-in, expose authentik at an address that both your MCP client and the gateway can resolve, and set `AUTHENTIK_ISSUER` to that address.
+
+## Group-based authorization
+
+The policy that you created gates the MCP endpoint on the `mcp-agent` group, which authentik puts in the `groups` claim of the token when the client requests the `profile` scope. Authentication alone is not enough: any caller that authentik issues a token to for this client passes JWT validation, including service accounts that authorize themselves rather than a user. The authorization rule denies those tokens with a 403 HTTP response code.
+
+Because MCP authentication runs at the route level, every claim in the verified token is also available to other route-level policies, such as rate limiting and transformations. For more information about the rules that you can write, see [Authorization]({{< link-hextra path="/security/authorization/" >}}).
+
+To authorize individual tools instead of the whole MCP endpoint, use an MCP authorization policy. For more information, see [Tool access]({{< link-hextra path="/mcp/tool-access/" >}}).
 
 ## Clean up
 

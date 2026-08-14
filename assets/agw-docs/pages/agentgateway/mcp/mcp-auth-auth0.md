@@ -25,11 +25,13 @@ Create an API and an application in Auth0, and collect the values that agentgate
 
 2. In the Auth0 Dashboard, go to **Applications > APIs** and click **Create API**. Enter a name such as `agentgateway MCP`, and set the **Identifier** to the resource URL that your MCP clients request, such as `https://mcp.example.com/mcp`. The identifier becomes the `aud` claim of the tokens that Auth0 issues.
 
-3. Go to **Applications > Applications** and click **Create Application**. Choose **Native** for local MCP clients, or **Single Page Application** for browser-based clients. Both are public clients that use PKCE, which is what MCP clients require.
+3. On the API's **Settings** tab, enable **Add Permissions in the Access Token**. Then, on the API's **Permissions** tab, define the permissions that your MCP server enforces, such as `read:tools`, and grant them to the users or applications that need access. You use this permission in the authorization rule that you configure later.
 
-4. On the application's **Settings** tab, note the **Domain** and the **Client ID**. Under **Application URIs**, add the callback URLs of the MCP clients that you plan to connect.
+4. Go to **Applications > Applications** and click **Create Application**. Choose **Native** for local MCP clients, or **Single Page Application** for browser-based clients. Both are public clients that use PKCE, which is what MCP clients require.
 
-5. Save the values as environment variables.
+5. On the application's **Settings** tab, note the **Domain** and the **Client ID**. Under **Application URIs**, add the callback URLs of the MCP clients that you plan to connect.
+
+6. Save the values as environment variables.
    
    ```bash
    export AUTH0_DOMAIN=<your-tenant>.us.auth0.com
@@ -93,9 +95,9 @@ Create an {{< reuse "agw-docs/snippets/backend.md" >}} that points to your Auth0
 
 ## Configure MCP auth
 
-With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces Auth0 authentication for the MCP backend.
+With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces Auth0 authentication and authorization for the MCP backend.
 
-1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with the `Auth0` provider.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with the `Auth0` provider. The policy validates tokens that Auth0 issues and uses a Common Expression Language (CEL) rule to require the `read:tools` permission.
    ```yaml {paths="setup-auth0"}
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -136,6 +138,12 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
              - profile
              bearerMethodsSupported:
              - header
+       # Allow only tokens that carry the read:tools permission
+       authorization:
+         action: Allow
+         policy:
+           matchExpressions:
+           - '"read:tools" in jwt.permissions'
    EOF
    ```
 
@@ -150,6 +158,7 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    | `mcp.provider` | The identity provider. Set to `Auth0` to append the `audience` query parameter to Auth0's authorization endpoint. |
    | `mcp.clientId` | The Client ID of your Auth0 application. Agentgateway answers Dynamic Client Registration requests with this value instead of proxying them to Auth0. |
    | `mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. Includes the resource identifier, supported scopes, and bearer token methods. |
+   | `authorization.policy.matchExpressions` | CEL rules that authorize the claims in the verified JWT. This example requires the `read:tools` permission that you defined on your Auth0 API. Requests that present a valid token without that permission are denied with a 403 HTTP response code. |
 
    > [!NOTE]
    > Setting `clientId` is recommended for Auth0. Auth0 supports Dynamic Client Registration, but only when you enable **Dynamic Application Registration** in your tenant settings. Because agentgateway passes through Auth0's own registration endpoint rather than proxying it, MCP clients register directly with Auth0. Pre-registering a client with `clientId` avoids that dependency.
@@ -283,17 +292,21 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
 {{< doc-test paths="setup-auth0" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The auth0-jwks backend and BackendTLSPolicy, the mcp-auth0-authn
-#     AgentgatewayPolicy with provider: Auth0 and clientId, and the updated
-#     HTTPRoute are all accepted, and the provider's JWKS resolves so the policy
-#     programs on the data plane.
+#     AgentgatewayPolicy with provider: Auth0, clientId, and the permissions
+#     authorization rule, and the updated HTTPRoute are all accepted, and the
+#     provider's JWKS resolves so the policy programs on the data plane.
 #   * The gateway enforces the connect-time 401 challenge and serves the
 #     protected-resource metadata.
 #   * The gateway serves Auth0's authorization server metadata and appends the
-#     audience query parameter to the authorization endpoint.
+#     audience query parameter to the authorization endpoint. The discovery
+#     endpoints stay reachable with the authorization rule in place, because the
+#     rule applies only after a token is verified.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The full interactive OAuth sign-in flow and runtime token verification.
-#     Both require a real user signing in to a configured Auth0 tenant and a
-#     signed JWT, which an automated test cannot perform.
+#   * The full interactive OAuth sign-in flow and runtime token verification,
+#     including the 403 that the authorization rule returns for a token without
+#     the read:tools permission. All of them require a real user signing in to a
+#     configured Auth0 tenant and a signed JWT, which an automated test cannot
+#     perform.
 YAMLTest -f - <<'EOF'
 - name: wait for auth0-jwks BackendTLSPolicy to be accepted
   wait:
@@ -413,7 +426,11 @@ Point your MCP client at the gateway's MCP endpoint, such as `http://localhost:8
 
 ## Permission-based authorization
 
-Auth0 includes the permissions that you grant to your API in the `permissions` claim when you enable **Add Permissions in the Access Token** on the API's **Settings** tab. You can use those claims to restrict which MCP tools a caller can invoke. For more information, see [Tool access]({{< link-hextra path="/mcp/tool-access/" >}}).
+The policy that you created gates the MCP endpoint on the `read:tools` permission, which Auth0 puts in the `permissions` claim of the access token when you enable **Add Permissions in the Access Token** on the API's **Settings** tab. Authentication alone is not enough: any caller that Auth0 issues a token to for your API passes JWT validation, including machine-to-machine clients that authorize themselves rather than a user. The authorization rule denies those tokens with a 403 HTTP response code.
+
+Because MCP authentication runs at the route level, every claim in the verified token is also available to other route-level policies, such as rate limiting and transformations. For more information about the rules that you can write, see [Authorization]({{< link-hextra path="/security/authorization/" >}}).
+
+To authorize individual tools instead of the whole MCP endpoint, use an MCP authorization policy. For more information, see [Tool access]({{< link-hextra path="/mcp/tool-access/" >}}).
 
 ## Clean up
 
