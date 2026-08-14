@@ -51,8 +51,8 @@ Configure an {{< reuse "agw-docs/snippets/policy.md" >}} to validate JWTs using 
    | Field | Description | Example |
    |-------|-------------|---------|
    | `mode` | Validation mode for JWT authentication. `Strict` requires a valid JWT for all requests. `Optional` validates JWTs if present but allows requests without tokens. `Permissive` is the least strict mode. | `Strict` |
-   | `issuer` | The issuer URL that must match the `iss` claim in JWT tokens exactly. Agentgateway rejects tokens from other issuers. | `http://keycloak:8080/realms/master` |
-   | `audiences` | List of allowed audience values. The JWT's `aud` claim must contain at least one of these values. If not specified, any audience is accepted. | `["my-application"]` |
+   | `issuer` | The issuer URL that must match the `iss` claim in JWT tokens exactly. Agentgateway rejects tokens from other issuers.{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}} Agentgateway also rejects a token that has no `iss` claim.{{< /version >}} | `http://keycloak:8080/realms/master` |
+   | `audiences` | List of allowed audience values. The JWT's `aud` claim must contain at least one of these values. Omit the field to accept any audience.{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}} An empty list also accepts any audience, and a non-empty list rejects a token that has no `aud` claim.{{< /version >}} | `["my-application"]` |
    | `jwks.remote.jwksPath` | The path to the JWKS endpoint on the identity provider, relative to the backend root. This endpoint returns the public keys used to verify JWT signatures. | `/realms/master/protocol/openid-connect/certs` |
    | `jwks.remote.cacheDuration` | How long to cache the JWKS keys locally. This reduces load on the identity provider and improves performance. Keys are automatically refreshed when the cache expires. | `5m` (5 minutes) |
    | `jwks.remote.backendRef` | Reference to the backend that hosts the identity provider. Agentgateway uses this to fetch the JWKS from the identity provider. For an in-cluster provider, reference a Kubernetes Service. For an external provider reached over TLS, reference an {{< reuse "/agw-docs/snippets/backend.md" >}} instead. See [External identity provider over TLS](#external-identity-provider-over-tls). | Keycloak service |
@@ -92,7 +92,11 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
    authentication failure: no bearer token found%  
    ```      
    
-2. Register a client with Keycloak by using dynamic client registration (DCR). The client permits the password grant, which the next step uses to get a token for `user1`. Keycloak requires an initial access token to register the client.
+2. Create a Keycloak client for the two test users. The client permits only the password grant, which the next step uses to get a token without a browser.
+
+   > [!WARNING]
+   > This client exists so that the guide can get a token from the command line for testing purposes only. Real applications do not use the password grant, and they do not need an administrator to create a client for them. To see a client register itself with Keycloak and send the user through a browser login, see the [MCP auth guide]({{< link-hextra path="/mcp/auth/setup/" >}}).
+
    ```sh {paths="jwt-claims"}
    # Refresh the administrator token, which is short-lived
    KEYCLOAK_TOKEN=$(curl --fail --silent --show-error \
@@ -103,28 +107,22 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
      "$KEYCLOAK_URL/realms/master/protocol/openid-connect/token" \
      | jq -r .access_token)
 
-   # Create an initial access token that authorizes one registration, and expires in 10 minutes
-   KEYCLOAK_INITIAL_TOKEN=$(curl --fail --silent --show-error \
+   KEYCLOAK_CLIENT=jwt-auth-guide
+   KEYCLOAK_SECRET=jwt-auth-guide-secret
+
+   # Create the client, and enable only the password grant
+   curl --fail --silent --show-error \
      -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
      -H "Content-Type: application/json" \
-     -d '{"expiration": 600, "count": 1}' \
-     "$KEYCLOAK_URL/admin/realms/master/clients-initial-access" \
-     | jq -r .token)
-
-   # Register the client, and grant it only the password grant
-   KEYCLOAK_REGISTRATION=$(curl --fail --silent --show-error \
-     -H "Authorization: Bearer ${KEYCLOAK_INITIAL_TOKEN}" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "client_name": "jwt-auth-guide",
-       "grant_types": ["password"],
-       "token_endpoint_auth_method": "client_secret_basic"
-     }' \
-     "$KEYCLOAK_URL/realms/master/clients-registrations/openid-connect")
-
-   KEYCLOAK_CLIENT=$(jq -r .client_id <<<"$KEYCLOAK_REGISTRATION")
-   KEYCLOAK_SECRET=$(jq -r .client_secret <<<"$KEYCLOAK_REGISTRATION")
-   echo $KEYCLOAK_CLIENT
+     -d "{
+       \"clientId\": \"${KEYCLOAK_CLIENT}\",
+       \"secret\": \"${KEYCLOAK_SECRET}\",
+       \"directAccessGrantsEnabled\": true,
+       \"standardFlowEnabled\": false,
+       \"serviceAccountsEnabled\": false,
+       \"publicClient\": false
+     }" \
+     "$KEYCLOAK_URL/admin/realms/master/clients"
    ```
 
 3. Get an access token for `user1` from Keycloak by using the password grant type.
@@ -182,6 +180,137 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
    }
    ```
   
+
+## Authorize requests by a JWT claim
+
+Authentication proves who sent the request. Authorization decides what that identity is allowed to do. After agentgateway validates the JWT, the claims are available to Common Expression Language (CEL) expressions through the `jwt` variable, so you can write access rules against them in the same {{< reuse "agw-docs/snippets/policy.md" >}}.
+
+The following example allows `user1` and denies every other identity, including `user2`.
+
+1. Update the `jwt-auth-policy` to add an authorization rule.
+   ```yaml {paths="jwt-claims"}
+   kubectl apply -f - <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: jwt-auth-policy
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     traffic:
+       jwtAuthentication:
+         mode: Strict
+         providers:
+         - issuer: "${KEYCLOAK_ISSUER}"
+           jwks:
+             remote:
+               jwksPath: "${KEYCLOAK_JWKS_PATH}"
+               cacheDuration: "5m"
+               backendRef:
+                 group: ""
+                 kind: Service
+                 name: keycloak
+                 namespace: keycloak
+                 port: 8080
+       # Allow only the identity that the JWT belongs to
+       authorization:
+         action: Allow
+         policy:
+           matchExpressions:
+           - "jwt.preferred_username == 'user1'"
+   EOF
+   ```
+
+   | Field | Description |
+   |-------|-------------|
+   | `traffic.authorization.action` | The effect of the rule when it matches. When at least one `Allow` rule is configured, agentgateway denies every request that no allow rule matches. |
+   | `traffic.authorization.policy.matchExpressions` | The CEL expressions that must all evaluate to true for the rule to match. This example compares the `preferred_username` claim from the validated token. |
+
+   > [!NOTE]
+   > Authorization runs only after authentication succeeds. A request with a missing or invalid token fails JWT authentication and returns a `401` before any expression is evaluated. Authorization denials return a `403`.
+
+   {{< doc-test paths="jwt-claims" >}}
+   YAMLTest -f - <<'EOF'
+   - name: wait for jwt-auth-policy with authorization to be accepted
+     wait:
+       target:
+         kind: AgentgatewayPolicy
+         metadata:
+           namespace: agentgateway-system
+           name: jwt-auth-policy
+       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+       jsonPathExpectation:
+         comparator: equals
+         value: "True"
+       polling:
+         timeoutSeconds: 60
+         intervalSeconds: 2
+   EOF
+   {{< /doc-test >}}
+
+2. Repeat the request with `user1`'s token. Verify that the request still succeeds, because the `preferred_username` claim matches the allow rule.
+   ```sh
+   curl -v "${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" -H "Authorization: Bearer ${ACCESS_TOKEN}"
+   ```
+
+3. Get a token for `user2`, and send the same request. Verify that the request fails with a `403 Forbidden` response code. The token is valid, so authentication succeeds, but no allow rule matches the `user2` identity.
+   ```sh {paths="jwt-claims"}
+   USER2_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
+     -H "Content-Type: application/x-www-form-urlencoded" \
+     -d "grant_type=password" \
+     -d "client_id=${KEYCLOAK_CLIENT}" \
+     -d "client_secret=${KEYCLOAK_SECRET}" \
+     -d "username=user2" \
+     -d "password=password" \
+     | jq -r '.access_token')
+
+   curl -v "${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" -H "Authorization: Bearer ${USER2_TOKEN}"
+   ```
+
+   Example output:
+   ```
+   ...
+   < HTTP/1.1 403 Forbidden
+   ...
+   ```
+
+{{< doc-test paths="jwt-claims" >}}
+# The visible blocks set both tokens as shell variables; export them so that
+# YAMLTest (a child process that interpolates them from its environment) can read them.
+export ACCESS_TOKEN
+export USER2_TOKEN
+YAMLTest -f - <<'EOF'
+- name: user1 matches the allow rule
+  retries: 3
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/headers"
+    method: GET
+    headers:
+      host: "www.example.com"
+      authorization: "Bearer ${ACCESS_TOKEN}"
+  source:
+    type: local
+  expect:
+    statusCode: 200
+- name: user2 is authenticated but not authorized
+  retries: 3
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/headers"
+    method: GET
+    headers:
+      host: "www.example.com"
+      authorization: "Bearer ${USER2_TOKEN}"
+  source:
+    type: local
+  expect:
+    statusCode: 403
+EOF
+{{< /doc-test >}}
+
+For more authorization rules, such as combining `Allow` with `Require` or restricting access by source address, see [Authorization]({{< link-hextra path="/security/authorization/" >}}). For the claims and functions that you can use in an expression, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
 
 ## Other JWT auth examples
 
