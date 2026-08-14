@@ -9,6 +9,10 @@ Azure supports two endpoint types:
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
+## Authentication
+
+You can authenticate to Azure with an API key or with implicit Entra ID authentication through `DefaultAzureCredential`. On Kubernetes, implicit authentication can obtain a token from managed identity or workload identity. It does not require a Kubernetes secret or `policies.auth`.
+
 ## Set up access to Azure
 
 1. Retrieve the resource name and, if applicable, the project name from the [Azure AI Foundry portal](https://ai.azure.com/) or the [Azure portal](https://portal.azure.com/). For example:
@@ -84,8 +88,6 @@ Azure supports two endpoint types:
    ```
    {{% /tab %}}
    {{% tab name="Azure OpenAI (implicit auth)" %}}
-   When you use implicit Entra ID authentication, the gateway automatically obtains a token using `DefaultAzureCredential`. No secret or `policies.auth` is required. This works with managed identity, workload identity, or Azure CLI credentials.
-
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
