@@ -77,15 +77,15 @@ mcp:
 Aggregate multiple remote MCP servers:
 
 ```yaml
-backends:
-- mcp:
-    targets:
-    - name: server-a
-      mcp:
-        host: http://mcp-server-a:8080/mcp/
-    - name: server-b
-      mcp:
-        host: http://mcp-server-b:8080/mcp/
+mcp:
+  port: 3000
+  targets:
+  - name: server-a
+    mcp:
+      host: http://mcp-server-a:8080/mcp/
+  - name: server-b
+    mcp:
+      host: http://mcp-server-b:8080/mcp/
 ```
 
 ## Why use agentgateway?
