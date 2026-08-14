@@ -1,4 +1,4 @@
-Configure audio models such as [OpenAI Whisper](https://platform.openai.com/docs/guides/speech-to-text) or [Voxtral](https://docs.voxtral.ai/) through {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Audio models expose endpoints like `/v1/audio/transcriptions` and `/v1/audio/speech` that are handled via `Passthrough` routing — agentgateway forwards the request and response without parsing or modifying the payload.
+Configure audio transcription models like [Voxtral](https://huggingface.co/mistralai/Voxtral-Mini-4B-Realtime-2602) or [OpenAI Whisper](https://platform.openai.com/docs/guides/speech-to-text) through {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Audio models expose endpoints like `/v1/audio/transcriptions` and `/v1/audio/translations` that are handled via `Passthrough` routing — agentgateway forwards the request and response without parsing or modifying the payload.
 
 ## Before you begin
 
@@ -25,7 +25,7 @@ Configure audio models such as [OpenAI Whisper](https://platform.openai.com/docs
    apiVersion: v1
    kind: Secret
    metadata:
-     name: audio-model-secret
+     name: voxtral-audio-secret
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    type: Opaque
    stringData:
@@ -37,40 +37,52 @@ Configure audio models such as [OpenAI Whisper](https://platform.openai.com/docs
 
 If you are running the audio model inside your cluster (e.g., Voxtral via vLLM), deploy the model and expose it via a Service.
 
-1. Create a deployment and Service for your audio model.
+{{< callout type="warning" >}}
+**Voxtral requires a GPU.** You need Docker with NVIDIA GPU support (`nvidia-container-toolkit`) and at least 16GB of GPU memory. For CPU-only deployments, consider using Whisper via [Speaches](https://github.com/MLT-OSS/speaches) instead.
+{{< /callout >}}
+
+1. Deploy Voxtral using the vLLM container image with GPU support.
 
    ```yaml {paths="audio-deploy"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
    metadata:
-     name: audio-model
+     name: voxtral-vllm
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      replicas: 1
      selector:
        matchLabels:
-         app: audio-model
+         app: voxtral-vllm
      template:
        metadata:
          labels:
-           app: audio-model
+           app: voxtral-vllm
        spec:
          containers:
-         - name: audio-model
-           image: voxtral/audio-model:latest
+         - name: voxtral-vllm
+           image: ghcr.io/virtuos/vllm-voxtral:latest
            ports:
            - containerPort: 8000
              name: http
+           env:
+           - name: VLLM_DISABLE_COMPILE_CACHE
+             value: "1"
+           resources:
+             limits:
+               nvidia.com/gpu: "1"
+             requests:
+               nvidia.com/gpu: "1"
    ---
    apiVersion: v1
    kind: Service
    metadata:
-     name: audio-model-service
+     name: voxtral-service
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      selector:
-       app: audio-model
+       app: voxtral-vllm
      ports:
      - port: 80
        targetPort: 8000
@@ -78,11 +90,17 @@ If you are running the audio model inside your cluster (e.g., Voxtral via vLLM),
    EOF
    ```
 
+   The deployment uses:
+   - `ghcr.io/virtuos/vllm-voxtral:latest` — a community Docker image that runs `vllm serve mistralai/Voxtral-Mini-4B-Realtime-2602` with optimal settings
+   - Port `8000` internally (vLLM default) exposed as port `80` on the Service
+   - NVIDIA GPU reservation (1 GPU)
+   - `VLLM_DISABLE_COMPILE_CACHE=1` environment variable for reliable inference
+
 2. Wait for the pod to be ready.
 
    ```sh
    kubectl wait --for=condition=ready pod \
-     -l app=audio-model \
+     -l app=voxtral-vllm \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
      --timeout=300s
    ```
@@ -96,21 +114,20 @@ kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
-  name: audio-model
+  name: voxtral-audio
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   ai:
     provider:
       openai:
-        model: my-audio-model
-      host: audio-model-service.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
+        model: voxtral-small-2507
+      host: voxtral-service.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
       port: 80
   policies:
     ai:
       routes:
-        "/v1/chat/completions": "Completions"
         "/v1/audio/transcriptions": "Passthrough"
-        "/v1/audio/speech": "Passthrough"
+        "/v1/audio/translations": "Passthrough"
         "/v1/models": "Passthrough"
         "*": "Passthrough"
 EOF
@@ -125,7 +142,7 @@ EOF
 | `host` | The in-cluster DNS name of the Service pointing to the audio model. |
 | `port` | The port the audio model listens on. |
 | `policies.ai.routes["/v1/audio/transcriptions"]` | Routes audio transcription requests with `Passthrough` processing. Agentgateway forwards the multipart form data and response without modification. |
-| `policies.ai.routes["/v1/audio/speech"]` | Routes text-to-speech requests with `Passthrough` processing. |
+| `policies.ai.routes["/v1/audio/translations"]` | Routes audio translation requests (to English) with `Passthrough` processing. |
 | `policies.ai.routes["*"]` | Catches any unmatched paths and forwards them as `Passthrough`. |
 
 ### Step 4: Create an HTTPRoute
@@ -137,7 +154,7 @@ kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: audio-model-route
+  name: voxtral-audio-route
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   parentRefs:
@@ -149,7 +166,7 @@ spec:
             type: PathPrefix
             value: /audio
       backendRefs:
-        - name: audio-model
+        - name: voxtral-audio
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
           group: agentgateway.dev
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -191,36 +208,9 @@ curl --request POST \
 {{% /tab %}}
 {{< /tabs >}}
 
-### Step 6: Send text-to-speech requests
-
-Test the speech generation endpoint.
-
-{{< tabs >}}
-{{% tab name="Cloud Provider LoadBalancer" %}}
-```sh
-curl --request POST \
-  --url "http://${INGRESS_GW_ADDRESS}:80/audio/v1/audio/speech" \
-  --header 'Authorization: Bearer $AUDIO_API_KEY' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "model": "voxtral-small-2507",
-    "input": "Hello, this is a test of the text-to-speech endpoint.",
-    "voice": "alloy"
-  }' --output speech-output.wav
-{{% /tab %}}
-{{% tab name="Port-forward for local testing" %}}
-```sh
-curl --request POST \
-  --url "http://localhost:8080/audio/v1/audio/speech" \
-  --header 'Authorization: Bearer $AUDIO_API_KEY' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "model": "voxtral-small-2507",
-    "input": "Hello, this is a test of the text-to-speech endpoint.",
-    "voice": "alloy"
-  }' --output speech-output.wav
-{{% /tab %}}
-{{< /tabs >}}
+{{< callout type="info" >}}
+**Supported audio formats:** WAV, MP3, MKV, WEBM and other formats supported by the underlying model. For Voxtral, recommended formats include WebM and WAV.
+{{< /callout >}}
 
 {{< /steps %}}
 
@@ -232,11 +222,15 @@ The table below lists the audio-specific endpoints that can be configured via `P
 |----------|------------|-------------|
 | `/v1/audio/transcriptions` | `Passthrough` | Transcribes audio files to text. Agentgateway forwards the `multipart/form-data` payload and the JSON response without modification. |
 | `/v1/audio/translations` | `Passthrough` | Translates audio files to English. Similar to transcriptions but outputs English text. |
-| `/v1/audio/speech` | `Passthrough` | Generates speech audio from text input. Agentgateway forwards the JSON request and returns the audio binary response as-is. |
 | `/v1/models` | `Passthrough` | Lists available models. |
 
 {{< callout type="info" >}}
 When a route is set to `Passthrough`, agentgateway does not apply any LLM-specific policies (such as cost tracking, rate limiting, or prompt guards) to those requests. The requests are forwarded exactly as received.
+{{< /callout >}}
+
+
+{{< callout type="warning" >}}
+**Voxtral is speech-to-text only.** It does not support text-to-speech (`/v1/audio/speech`). For TTS, you would need a separate model deployment (e.g., OpenAI TTS, Coqui TTS).
 {{< /callout >}}
 
 ## Cleanup
@@ -244,11 +238,11 @@ When a route is set to `Passthrough`, agentgateway does not apply any LLM-specif
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```shell
-kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} audio-model -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete httproute audio-model-route -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete svc audio-model-service -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete deployment audio-model -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete secret audio-model-secret -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} voxtral-audio -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete httproute voxtral-audio-route -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete svc voxtral-service -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete deployment voxtral-vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete secret voxtral-audio-secret -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
