@@ -165,11 +165,12 @@ Test the audio model by sending a transcription request.
 ```sh
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
 
-curl "http://${INGRESS_GW_ADDRESS}:80/audio/v1/audio/transcriptions" \
-  -H "Authorization: Bearer ${AUDIO_API_KEY}" \
-  -F "file=@/path/to/audio.wav" \
-  -F "model=my-audio-model" | jq
-```
+curl --request POST \
+  --url "http://${INGRESS_GW_ADDRESS}:80/audio/v1/audio/transcriptions" \
+  --header 'Authorization: Bearer $AUDIO_API_KEY' \
+  --header 'Content-Type: multipart/form-data' \
+  --form model=voxtral-small-2507 \
+  --form 'file=@./testdata/sample-audio.webm' | jq
 {{% /tab %}}
 {{% tab name="Port-forward for local testing" %}}
 In one terminal, start a port-forward to the gateway.
@@ -181,11 +182,12 @@ kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agent
 In a second terminal, send a request.
 
 ```sh
-curl "http://localhost:8080/audio/v1/audio/transcriptions" \
-  -H "Authorization: Bearer ${AUDIO_API_KEY}" \
-  -F "file=@/path/to/audio.wav" \
-  -F "model=my-audio-model" | jq
-```
+curl --request POST \
+  --url "http://localhost:8080/audio/v1/audio/transcriptions" \
+  --header 'Authorization: Bearer $AUDIO_API_KEY' \
+  --header 'Content-Type: multipart/form-data' \
+  --form model=voxtral-small-2507 \
+  --form 'file=@./testdata/sample-audio.webm' | jq
 {{% /tab %}}
 {{< /tabs >}}
 
@@ -196,27 +198,27 @@ Test the speech generation endpoint.
 {{< tabs >}}
 {{% tab name="Cloud Provider LoadBalancer" %}}
 ```sh
-curl "http://${INGRESS_GW_ADDRESS}:80/audio/v1/audio/speech" \
-  -H "Authorization: Bearer ${AUDIO_API_KEY}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "my-audio-model",
+curl --request POST \
+  --url "http://${INGRESS_GW_ADDRESS}:80/audio/v1/audio/speech" \
+  --header 'Authorization: Bearer $AUDIO_API_KEY' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "model": "voxtral-small-2507",
     "input": "Hello, this is a test of the text-to-speech endpoint.",
     "voice": "alloy"
-  }' --output speech.wav
-```
+  }' --output speech-output.wav
 {{% /tab %}}
 {{% tab name="Port-forward for local testing" %}}
 ```sh
-curl "http://localhost:8080/audio/v1/audio/speech" \
-  -H "Authorization: Bearer ${AUDIO_API_KEY}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "my-audio-model",
+curl --request POST \
+  --url "http://localhost:8080/audio/v1/audio/speech" \
+  --header 'Authorization: Bearer $AUDIO_API_KEY' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "model": "voxtral-small-2507",
     "input": "Hello, this is a test of the text-to-speech endpoint.",
     "voice": "alloy"
-  }' --output speech.wav
-```
+  }' --output speech-output.wav
 {{% /tab %}}
 {{< /tabs >}}
 
