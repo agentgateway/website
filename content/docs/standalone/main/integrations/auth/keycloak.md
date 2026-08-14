@@ -21,13 +21,6 @@ MCP clients follow the [MCP authorization specification](https://modelcontextpro
 
 For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}}).
 
-## Why use Keycloak with agentgateway? {#why-keycloak}
-
-- **Open source**: Self-hosted identity management.
-- **Standards based**: Support for OAuth 2.0, OpenID Connect (OIDC), and Security Assertion Markup Language (SAML).
-- **Enterprise features**: User federation, single sign-on (SSO), and multi-factor authentication (MFA).
-- **Fine-grained authorization**: Role-based and attribute-based access.
-
 ## Before you begin {#before-you-begin}
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).

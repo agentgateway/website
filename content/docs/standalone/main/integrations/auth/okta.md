@@ -26,14 +26,6 @@ When you set `provider.okta`, agentgateway bridges these gaps as follows:
 
 For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}}).
 
-## Why use Okta with agentgateway? {#why-okta}
-
-- **Enterprise single sign-on (SSO)**: Centralized identity for organizations.
-- **Directory integration**: Active Directory and Lightweight Directory Access Protocol (LDAP) sync.
-- **Lifecycle management**: Automated provisioning and deprovisioning.
-- **Compliance**: SOC 2, HIPAA, and FedRAMP certified.
-- **API access management**: OAuth 2.0 and OpenID Connect (OIDC) for APIs.
-
 ## Before you begin {#before-you-begin}
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).

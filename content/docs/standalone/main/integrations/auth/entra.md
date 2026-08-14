@@ -38,7 +38,7 @@ For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link
 
 {{< doc-test paths="entra-mcp-authn" >}}
 # WHAT THIS TEST VALIDATES:
-#   * Step 2: the Simplified (MCP) config on this page loads and runs, including
+#   * Step 2: the config on this page loads and runs, including
 #     the ${...} environment variable references, which agentgateway expands at
 #     load time.
 #   * Step 3: an unauthenticated MCP initialize returns 401 with the documented
@@ -61,8 +61,6 @@ For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link
 #   * The Microsoft Entra admin center steps in Step 1. UI-only: registering the
 #     app, exposing the API, and creating the secret have no scriptable
 #     equivalent here.
-#   * The Routing-based config tab in Step 2. Display-only: it is an alternative
-#     spelling of the Simplified config that the test runs.
 #   * The confidential (Web platform) clientSecret injection described in
 #     "Public vs. confidential clients". It only applies on the proxied token
 #     endpoint, which this test cannot exercise.
@@ -137,8 +135,6 @@ export MOCK_IDP_CLAIMS='{"roles":["mcp.admin"]}'
 
 1. Create a `config.yaml` file that exposes a sample MCP server on port 3000 and protects it with the `entra` provider.
 
-   {{< tabs >}}
-   {{< tab name="Simplified (MCP)" >}}
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    mcp:
@@ -169,51 +165,6 @@ export MOCK_IDP_CLAIMS='{"roles":["mcp.admin"]}'
          cmd: npx
          args: ["@modelcontextprotocol/server-everything"]
    ```
-   {{< /tab >}}
-   {{< tab name="Routing-based" >}}
-   ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   gateways:
-     default:
-       port: 3000
-   routes:
-   - backends:
-     - mcp:
-         targets:
-         - name: everything
-           stdio:
-             cmd: npx
-             args: ["@modelcontextprotocol/server-everything"]
-     matches:
-     - path:
-         exact: /mcp
-     - path:
-         exact: /.well-known/oauth-protected-resource/mcp
-     - path:
-         pathPrefix: /.well-known/oauth-authorization-server/mcp
-     policies:
-       cors:
-         allowOrigins: ["*"]
-         allowHeaders: ["*"]
-         exposeHeaders: ["Mcp-Session-Id"]
-       mcpAuthentication:
-         mode: strict
-         issuer: ${ENTRA_ISSUER}
-         audiences:
-         - api://${ENTRA_CLIENT_ID}
-         - ${ENTRA_CLIENT_ID}
-         provider:
-           entra: {}
-         clientId: ${ENTRA_CLIENT_ID}
-         resourceMetadata:
-           resource: http://localhost:3000/mcp
-           scopesSupported:
-           - api://${ENTRA_CLIENT_ID}/mcp_access
-           bearerMethodsSupported:
-           - header
-   ```
-   {{< /tab >}}
-   {{< /tabs >}}
 
    {{< reuse "agw-docs/snippets/review-table.md" >}}
 
@@ -225,11 +176,10 @@ export MOCK_IDP_CLAIMS='{"roles":["mcp.admin"]}'
    | `clientId` | Your app registration's Application (client) ID. Entra has no Dynamic Client Registration, so agentgateway answers registration requests with this ID. |
    | `clientSecret` | Required only for confidential (Web platform) app registrations. See [Public vs. confidential clients](#client-secret). |
    | `resourceMetadata` | The protected resource metadata that agentgateway serves to MCP clients, which you inspect in [Step 3](#verify). |
-   | `matches` | Routing-based configs only. The route must match the `/.well-known/oauth-authorization-server/<path>` prefix so that agentgateway can serve the bridged metadata and proxy the `authorize` and `token` endpoints. The Simplified config sets this up for you. |
    | `jwks` | Optional. When omitted, agentgateway defaults to `https://login.microsoftonline.com/<tenant-id>/discovery/v2.0/keys`. |
 
    {{< doc-test paths="entra-mcp-authn" >}}
-   # The Simplified (MCP) config from the tab above, with jwks pointed at the
+   # The config from the block above, with jwks pointed at the
    # local mock's keys because the tenant in this test does not exist.
    cat <<'EOF' > config.yaml
    mcp:

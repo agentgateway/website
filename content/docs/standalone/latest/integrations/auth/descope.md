@@ -25,14 +25,6 @@ Descope supports [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707) resource ind
 
 For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}}).
 
-## Why use Descope with agentgateway? {#why-descope}
-
-- **MCP-native OAuth 2.1 compliance**: [MCP Servers](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers) let you protect your MCP gateway with a fully OAuth 2.1 compliant provider. Descope supports both [Client ID Metadata Documents (CIMD)](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers/registration-methods#client-id-metadata-documents-cimd) and [Dynamic Client Registration (DCR)](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers/registration-methods#dynamic-client-registration-dcr) as registration methods.
-- **Agent Directory**: View all of your [agentic identities](https://docs.descope.com/agentic-identity-hub/core-components/agents) within one centralized identity and access management (IAM) platform.
-- **Machine-to-machine access**: The [client credentials flow](https://docs.descope.com/agentic-identity-hub/core-components/clients#client-credentials) covers agents and backends that need unattended access.
-- **Policies**: Enforce [policy](https://docs.descope.com/policies) rules for agent access to downstream services, together with agentgateway authorization rules that use JWT `roles` claims.
-- **User consent for agents**: [Visual consent flows](https://docs.descope.com/flows) let users approve which MCP scopes and tools an agent can access.
-
 ## Before you begin {#before-you-begin}
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).

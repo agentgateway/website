@@ -16,7 +16,7 @@ MCP authentication enables OAuth 2.0 protection for MCP servers, helping to impl
 
 MCP authentication is configured at the route level under `policies.mcpAuthentication`. Because the policy runs at the route level, you can use JWT claims from MCP auth in other route-level policies, such as authorization, rate limiting, and transformations.
 
-MCP authentication uses a connect-time model: the OAuth flow happens once when the client first connects, not on each tool call. After the initial authentication, the access token is reused for all subsequent requests within the session.
+MCP authentication uses a connect-time model, sometimes called *eager auth*: the OAuth flow happens once when the client first connects, not on each tool call. After the initial authentication, the access token is reused for all subsequent requests within the session.
 
 > [!NOTE]
 > {{< reuse "agw-docs/snippets/mcp-policy-note.md" >}}
@@ -62,12 +62,10 @@ Other identity providers that fully comply with the OAuth 2.0 specifications mig
 | [`descope`]({{< link-hextra path="/integrations/auth/descope" >}}) | https://api.descope.com/{project-id}/.well-known/jwks.json | OIDC discovery | Rewrites agentic issuers to the project-level JWKS URL. `clientId` recommended, because DCR requires a management key. |
 | [`entra`]({{< link-hextra path="/integrations/auth/entra" >}}) | Derived from the tenant's v2.0 discovery document | Entra v2.0 discovery | Strips the RFC 8707 `resource` parameter and proxies `authorize` and `token`. Requires `clientId`. |
 | [`keycloak`]({{< link-hextra path="/integrations/auth/keycloak" >}}) | {issuer}/protocol/openid-connect/certs | OIDC discovery | Proxies DCR, because Keycloak sends CORS headers on its registration endpoint only for origins that you allow in a realm policy. |
-| [`okta`]({{< link-hextra path="/integrations/auth/okta" >}}) | {issuer}/.well-known/jwks.json | OIDC discovery | Appends the first audience to the authorization endpoint and proxies DCR to the org-level endpoint. Set `jwks` explicitly. |
+| [`okta`]({{< link-hextra path="/integrations/auth/okta" >}}) `*` | {issuer}/.well-known/jwks.json | OIDC discovery | Appends the first audience to the authorization endpoint and proxies DCR to the org-level endpoint. Set `jwks` explicitly. |
 | Not set | {issuer}/.well-known/jwks.json | RFC 8414 | Standards-compliant behavior with no provider-specific adaptations. |
-- `*` Microsoft Entra ID deviates from the MCP authorization specification in the most ways, and the `entra` provider bridges each gap. For the details and an end-to-end setup, see the [Microsoft Entra ID guide]({{< link-hextra path="/integrations/auth/entra" >}}).
 
-- `†` The `okta` provider derives `{issuer}/.well-known/jwks.json`, but Okta publishes keys at `{issuer}/v1/keys`. Always set `jwks` explicitly when you use the `okta` provider. For more information, see the [Okta guide]({{< link-hextra path="/integrations/auth/okta" >}}).
-
+`*` Okta publishes keys at `{issuer}/v1/keys`, not at the `{issuer}/.well-known/jwks.json` URL that agentgateway derives, so always set `jwks` explicitly. For more information, see the [Okta guide]({{< link-hextra path="/integrations/auth/okta" >}}).
 
 ### Configuration example
 

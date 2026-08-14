@@ -22,14 +22,6 @@ When you set `provider.auth0`, agentgateway bridges this gap as follows:
 
 For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}}).
 
-## Why use Auth0 with agentgateway? {#why-auth0}
-
-- **Managed identity**: No infrastructure to maintain.
-- **Social login**: Google, GitHub, Microsoft, and more.
-- **Enterprise single sign-on (SSO)**: Security Assertion Markup Language (SAML), Lightweight Directory Access Protocol (LDAP), and Active Directory.
-- **Multi-factor authentication (MFA)**: Built in to Auth0.
-- **API protection**: Authentication based on JSON Web Tokens (JWTs).
-
 ## Before you begin {#before-you-begin}
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
@@ -249,13 +241,13 @@ Agentgateway runs in the foreground, so run the following commands in another te
    {"resource":"http://localhost:3000/mcp","authorization_servers":["http://localhost:3000/mcp"],"mcp_protocol_version":"2025-06-18","resource_type":"mcp-server","bearer_methods_supported":["header"],"scopes_supported":["read:tools"]}
    ```
 
-3. Confirm that agentgateway appends your audience to Auth0's authorization endpoint, which is the workaround described in [Why the Auth0 provider is needed](#why).
+3. Confirm that agentgateway appends your audience to Auth0's authorization endpoint.
 
    ```sh {paths="auth0-mcp-authn"}
    curl -s http://localhost:3000/.well-known/oauth-authorization-server
    ```
 
-   The `authorization_endpoint` carries an `audience` query parameter that Auth0's own discovery document does not include. Without it, Auth0 would issue an opaque token instead of a JWT for your API.
+   The `authorization_endpoint` carries an `audience` query parameter that Auth0's own discovery document does not include.
 
    ```json
    ...
@@ -527,7 +519,7 @@ EOF
 
 ## Connect an MCP client {#connect}
 
-Point your MCP client at the gateway's MCP endpoint, `http://localhost:3000/mcp`. The client discovers the authorization server through the gateway, and redirects the user to Auth0 to log in and consent. Because the gateway appends your `audience` to the authorization endpoint, Auth0 returns a JWT for your API that agentgateway can validate.
+Point your MCP client at the gateway's MCP endpoint, `http://localhost:3000/mcp`. The client discovers the authorization server through the gateway, and redirects the user to Auth0 to log in and consent.
 
 ## Learn more
 

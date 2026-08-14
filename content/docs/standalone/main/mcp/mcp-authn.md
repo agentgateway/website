@@ -6,17 +6,9 @@ prev: /mcp/connect
 test: skip
 ---
 
-MCP authentication enables OAuth 2.0 protection for MCP servers, helping to implement the [MCP Authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization). Agentgateway can act as a resource server, validating JWTs and exposing protected resource metadata.
+MCP authentication protects MCP servers with OAuth 2.0. Agentgateway acts as a resource server: it validates the tokens that your authorization server issues, serves the protected resource metadata that MCP clients discover, and adapts to the OAuth behavior of each supported identity provider.
 
-Authentication uses a connect-time model: the OAuth flow happens once when the client first connects, not on each tool call. This type of connection is sometimes called "eager auth." After the initial authentication, the access token is reused for all subsequent requests within the session.
-
-Because the `mcpAuthentication` policy runs at the route level, you can use claims from the validated token in other route-level policies, such as [MCP authorization]({{< link-hextra path="/mcp/mcp-authz" >}}), rate limiting, and transformations.
-
-## Configure MCP authentication
-
-The `mcpAuthentication` policy reference covers all deployment scenarios, including the authorization server proxy, resource server only, and passthrough modes, along with the supported identity providers, JWT claim validation, and authentication modes.
-
-For the full reference and examples, see [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}}).
+For the policy reference, including the authorization server proxy, resource server only, and passthrough scenarios, the supported providers, authentication modes, and JWT claim validation, see [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}}).
 
 ## Identity provider guides
 
