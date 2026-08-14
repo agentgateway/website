@@ -229,10 +229,6 @@ When a route is set to `Passthrough`, agentgateway does not apply any LLM-specif
 {{< /callout >}}
 
 
-{{< callout type="warning" >}}
-**Voxtral is speech-to-text only.** It does not support text-to-speech (`/v1/audio/speech`). For TTS, you would need a separate model deployment (e.g., OpenAI TTS, Coqui TTS).
-{{< /callout >}}
-
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
