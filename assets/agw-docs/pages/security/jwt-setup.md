@@ -93,6 +93,10 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
    ```      
    
 2. Register a client with Keycloak. The client uses dynamic client registration (DCR), so no administrator creates it, and Keycloak returns the client ID and secret that the next step uses.
+
+   > [!NOTE]
+   > The Keycloak instance in this guide allows anonymous DCR, which is why you can register this client without an administrator credential. Use this shortcut only in a local test environment. In production, create machine clients through your identity provider's normal process, and do not allow DCR clients to use the client credentials grant.
+
    ```sh {paths="jwt-claims"}
    REGISTRATION=$(curl --fail --silent --show-error \
      -H "Content-Type: application/json" \
@@ -108,7 +112,7 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
    echo $KEYCLOAK_CLIENT
    ```
 
-3. Get an access token for the client by using the client credentials grant. A service that calls your API uses this grant to authenticate as itself, with no user involved. This token identifies the client, not a person, so it carries no username. To see a client authenticate on behalf of a signed-in user instead, see the [MCP auth guide]({{< link-hextra path="/mcp/auth/setup/" >}}).
+3. Get an access token for the client by using the client credentials grant. A service that calls your API uses this grant to authenticate as itself, with no user involved. This token identifies the client, not a person, so it carries no username.
    ```sh {paths="jwt-claims"}
    ACCESS_TOKEN=$(curl -s -u "${KEYCLOAK_CLIENT}:${KEYCLOAK_SECRET}" \
      -d grant_type=client_credentials \
@@ -164,7 +168,9 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
 
 Authentication proves who sent the request. Authorization decides what that identity is allowed to do. After agentgateway validates the JWT, the claims are available to Common Expression Language (CEL) expressions through the `jwt` variable, so you can write access rules against them in the same {{< reuse "agw-docs/snippets/policy.md" >}}.
 
-The following example allows the client that you registered, and denies every other identity.
+This distinction matters when DCR is enabled. Registration lets a client obtain a token from the identity provider, but it does not grant that client access to your backends. Authorization is what decides which of those identities the gateway accepts.
+
+The following example allows only the client that you registered, and denies every other identity.
 
 1. Update the `jwt-auth-policy` to add an authorization rule.
    ```yaml {paths="jwt-claims"}
