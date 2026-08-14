@@ -127,9 +127,6 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
    echo $KEYCLOAK_CLIENT
    ```
 
-   > [!NOTE]
-   > Keycloak also permits anonymous client registration, which MCP clients use in the [MCP auth guide]({{< link-hextra path="/mcp/auth/setup/" >}}). However, Keycloak marks an anonymously registered client as requiring user consent, and the password grant cannot answer a consent prompt. The initial access token registers the client without that requirement.
-
 3. Get an access token for `user1` from Keycloak by using the password grant type.
    ```sh {paths="jwt-claims"}
    ACCESS_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
