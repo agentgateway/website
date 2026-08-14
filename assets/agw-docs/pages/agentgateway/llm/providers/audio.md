@@ -1,41 +1,16 @@
-Configure audio models like [Voxtral Small](https://huggingface.co/mistralai/Voxtral-Small-24B-2507) or [OpenAI Whisper](https://platform.openai.com/docs/guides/speech-to-text) through {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Audio models expose endpoints like `/v1/audio/transcriptions` and `/v1/models` that are handled via `Passthrough` routing — agentgateway forwards the request and response without parsing or modifying the payload.
+Configure self-hosted audio models like [Voxtral Small](https://huggingface.co/mistralai/Voxtral-Small-24B-2507) through {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Audio models expose endpoints like `/v1/audio/transcriptions` and `/v1/models` that are handled via `Passthrough` routing — agentgateway forwards the request and response without parsing or modifying the payload.
 
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-## Set up access to your audio model
+## Set up and expose your audio model
 
 {{% steps %}}
 
-### Step 1: Get an API key
+### Step 1: Deploy the audio model (self-hosted)
 
-1. Obtain an API key for your audio model provider (e.g., OpenAI, or self-hosted models like Voxtral Small).
-
-2. If your provider requires authentication, save the API key in an environment variable.
-
-   ```sh
-   export AUDIO_API_KEY='<your-api-key>'
-   ```
-
-3. Create a Kubernetes secret to store your API key.
-
-   ```yaml {paths="audio-setup"}
-   kubectl apply -f- <<EOF
-   apiVersion: v1
-   kind: Secret
-   metadata:
-     name: voxtral-audio-secret
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   type: Opaque
-   stringData:
-     Authorization: $AUDIO_API_KEY
-   EOF
-   ```
-
-### Step 2: Deploy the audio model (self-hosted)
-
-If you are running the audio model inside your cluster (e.g., Voxtral Small via vLLM), deploy the model and expose it via a Service.
+Deploy the audio model inside your cluster (e.g., Voxtral Small via vLLM) and expose it via a Service.
 
 {{< callout type="warning" >}}
 **Voxtral Small requires a Docker environment with NVIDIA GPU support (`nvidia-container-toolkit`).**
@@ -115,6 +90,20 @@ If you are running the audio model inside your cluster (e.g., Voxtral Small via 
      --timeout=300s
    ```
 
+### Step 2: Verify the model is responding
+
+Verify the vLLM model is responding by querying its health endpoint.
+
+```sh
+curl --request GET \
+  --url "http://$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} voxtral-service -o=jsonpath='{.status.loadBalancer.ingress[0].ip}'):8000/v1/models" \
+  2>/dev/null || \
+curl --request GET \
+  --url "http://$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} voxtral-service -o=jsonpath='{.spec.clusterIP}'):8000/v1/models"
+```
+
+You should see a JSON response listing the model.
+
 ### Step 3: Create the LLM backend with Passthrough routes
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource with `ai.routes` to forward audio endpoints via `Passthrough` processing.
@@ -192,7 +181,6 @@ export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/name
 
 curl --request POST \
   --url "http://${INGRESS_GW_ADDRESS}:80/audio/v1/audio/transcriptions" \
-  --header 'Authorization: Bearer $AUDIO_API_KEY' \
   --header 'Content-Type: multipart/form-data' \
   --form model=voxtral-small-24b-2507 \
   --form 'file=@./testdata/sample-audio.webm' | jq
@@ -209,7 +197,6 @@ In a second terminal, send a request.
 ```sh
 curl --request POST \
   --url "http://localhost:8080/audio/v1/audio/transcriptions" \
-  --header 'Authorization: Bearer $AUDIO_API_KEY' \
   --header 'Content-Type: multipart/form-data' \
   --form model=voxtral-small-24b-2507 \
   --form 'file=@./testdata/sample-audio.webm' | jq
@@ -245,7 +232,6 @@ kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} voxtral-audio -n {{<
 kubectl delete httproute voxtral-audio-route -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete svc voxtral-service -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete deployment voxtral-vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete secret voxtral-audio-secret -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
