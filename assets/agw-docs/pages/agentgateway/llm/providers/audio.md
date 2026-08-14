@@ -38,7 +38,7 @@ Configure audio models like [Voxtral Small](https://huggingface.co/mistralai/Vox
 If you are running the audio model inside your cluster (e.g., Voxtral Small via vLLM), deploy the model and expose it via a Service.
 
 {{< callout type="warning" >}}
-**Voxtral Small requires significant GPU resources.** You need Docker with NVIDIA GPU support (`nvidia-container-toolkit`) and approximately **55 GB of GPU RAM** for the full 24B model (requires 2 GPUs). For smaller deployments, consider using [Voxtral Mini](https://huggingface.co/mistralai/Voxtral-Mini-3B-2507) which requires much less GPU memory.
+**Voxtral Small requires significant GPU resources.** You need Docker with NVIDIA GPU support (`nvidia-container-toolkit`). The full 24B model requires approximately **55 GB of GPU RAM** in bf16/fp16 (run with `--tensor-parallel-size 2` across 2 GPUs). For single-GPU deployments, use [Voxtral Mini](https://huggingface.co/mistralai/Voxtral-Mini-3B-2507) or a quantized variant which requires much less memory.
 {{< /callout >}}
 
 1. Deploy Voxtral Small using the official vLLM OpenAI-compatible image.
@@ -83,9 +83,9 @@ If you are running the audio model inside your cluster (e.g., Voxtral Small via 
              name: http
            resources:
              limits:
-               nvidia.com/gpu: "2"
+               nvidia.com/gpu: "1"
              requests:
-               nvidia.com/gpu: "2"
+               nvidia.com/gpu: "1"
    ---
    apiVersion: v1
    kind: Service
@@ -106,8 +106,7 @@ If you are running the audio model inside your cluster (e.g., Voxtral Small via 
    - `vllm/vllm-openai:latest` — the official vLLM OpenAI-compatible server image
    - `vllm serve mistralai/Voxtral-Small-24B-2507` with Mistral-specific configuration
    - Port `8000` internally (vLLM default) exposed as port `80` on the Service
-   - NVIDIA GPU reservation (2 GPUs for 55 GB VRAM)
-   - `--tensor-parallel-size 2` to split the model across 2 GPUs
+   - NVIDIA GPU reservation (1 GPU — for bf16/fp16 full model use `--tensor-parallel-size 2` with 2 GPUs)
 
 2. Wait for the pod to be ready.
 
