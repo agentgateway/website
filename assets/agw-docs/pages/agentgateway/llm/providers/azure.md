@@ -16,8 +16,6 @@ You can authenticate to Azure with an API key or with implicit Entra ID authenti
 {{< version include-if="main" >}}
 The Agentgateway proxy can use explicit managed identity authentication only when it can reach an Azure managed identity endpoint. Choose `systemAssigned` for the host identity. Choose `userAssigned` and provide one identifier: client ID, object ID, or resource ID. Do not configure both identity types. Managed identity and workload identity use different credential sources.
 
-> [!IMPORTANT]
-> Existing Kubernetes configurations that put `clientId`, `objectId`, or `resourceId` directly under `managedIdentity` must move the identifier under `userAssigned`. Reapply the resource after updating the Agentgateway CRDs because stored objects are not converted to the new shape automatically.
 {{< /version >}}
 
 ## Set up access to Azure

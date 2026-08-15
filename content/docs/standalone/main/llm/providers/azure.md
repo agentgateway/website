@@ -182,9 +182,6 @@ agentgateway -f config-azure-openai.yaml --validate-only
 
 For advanced Azure AI scenarios, use the traditional listener/route configuration format. The following tabs show examples for different authentication methods.
 
-> [!IMPORTANT]
-> Managed identity configuration now names the identity type with `systemAssigned` or `userAssigned`. Rename the standalone `userAssignedIdentity` field to `userAssigned`. The legacy `managedIdentity: {}` form still selects a system-assigned identity in standalone mode, but new configurations should spell it as `systemAssigned: {}`.
-
 {{< tabs >}}
 
 {{% tab name="Foundry (implicit auth)" %}}
