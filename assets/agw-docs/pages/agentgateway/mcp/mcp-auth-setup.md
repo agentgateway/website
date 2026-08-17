@@ -306,6 +306,82 @@ EOF
       {{< reuse-image-light src="img/mcp-inspector-fetch.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-inspector-fetch-dark.png" >}}
 
+{{< doc-test paths="mcp-auth-setup" >}}
+# Automated equivalent of the MCP inspector walkthrough above. An MCP client
+# discovers the authorization server through the gateway, registers itself with
+# DCR, sends the user through a browser login with PKCE, and calls the MCP
+# endpoint with the resulting token. No administrator credential is used.
+GW="http://${INGRESS_GW_ADDRESS}:80"
+REDIRECT="http://localhost:9999/callback"
+COOKIES=$(mktemp)
+# `sed -n 1p` rather than `head -1`: head closes the pipe early, which raises
+# SIGPIPE in the upstream command and trips `set -o pipefail`.
+location_of() { grep -i '^location:' | tail -1 | tr -d '\r' | sed 's/^[Ll]ocation: //'; }
+form_action_of() { grep -o 'action="[^"]*"' | sed -n '1p' | sed 's/action="//; s/"$//; s/&amp;/\&/g'; }
+
+# 1. Discovery. The client learns the authorization server from the gateway.
+AS_METADATA=$(curl --fail --silent --show-error "$GW/.well-known/oauth-authorization-server/mcp")
+REGISTRATION_ENDPOINT=$(jq -r .registration_endpoint <<<"$AS_METADATA")
+AUTHORIZATION_ENDPOINT=$(jq -r .authorization_endpoint <<<"$AS_METADATA")
+TOKEN_ENDPOINT=$(jq -r .token_endpoint <<<"$AS_METADATA")
+
+# 2. Dynamic client registration.
+REGISTRATION=$(curl --fail --silent --show-error -H "Content-Type: application/json" \
+  -d "{\"client_name\":\"doc test mcp client\",\"redirect_uris\":[\"$REDIRECT\"],\"grant_types\":[\"authorization_code\"],\"response_types\":[\"code\"],\"token_endpoint_auth_method\":\"client_secret_basic\"}" \
+  "$REGISTRATION_ENDPOINT")
+CLIENT_ID=$(jq -r .client_id <<<"$REGISTRATION")
+CLIENT_SECRET=$(jq -r .client_secret <<<"$REGISTRATION")
+
+# 3. PKCE verifier and S256 challenge.
+VERIFIER=$(openssl rand -hex 32)
+CHALLENGE=$(printf '%s' "$VERIFIER" | openssl dgst -binary -sha256 | openssl base64 | tr '+/' '-_' | tr -d '=')
+
+# 4. Sign in as user1 on the Keycloak login form.
+LOGIN_PAGE=$(curl --silent -c "$COOKIES" -b "$COOKIES" -L \
+  "$AUTHORIZATION_ENDPOINT?client_id=$CLIENT_ID&response_type=code&scope=openid&redirect_uri=$REDIRECT&code_challenge=$CHALLENGE&code_challenge_method=S256&state=doc-test")
+LOGIN_FORM=$(form_action_of <<<"$LOGIN_PAGE")
+if [ -z "$LOGIN_FORM" ]; then echo "no Keycloak login form at the authorization endpoint"; exit 1; fi
+LOCATION=$(curl --silent -c "$COOKIES" -b "$COOKIES" -o /dev/null -D - -X POST "$LOGIN_FORM" \
+  --data-urlencode "username=user1" --data-urlencode "password=password" | location_of)
+
+# 5. Approve the consent screen. Keycloak requires consent for an anonymously
+#    registered client, so a real MCP client shows this screen to the user too.
+CODE=$(sed -n 's/.*[?&]code=\([^&]*\).*/\1/p' <<<"$LOCATION")
+if [ -z "$CODE" ]; then
+  CONSENT_PAGE=$(curl --silent -c "$COOKIES" -b "$COOKIES" -L "$LOCATION")
+  CONSENT_FORM=$(form_action_of <<<"$CONSENT_PAGE")
+  case "$CONSENT_FORM" in /*) CONSENT_FORM="${KEYCLOAK_URL}${CONSENT_FORM}" ;; esac
+  CONSENT_CODE=$(grep -o 'name="code" value="[^"]*"' <<<"$CONSENT_PAGE" | sed -n '1p' | sed 's/.*value="//; s/"$//')
+  LOCATION=$(curl --silent -c "$COOKIES" -b "$COOKIES" -o /dev/null -D - -X POST "$CONSENT_FORM" \
+    --data-urlencode "code=$CONSENT_CODE" --data-urlencode "accept=Yes" | location_of)
+  CODE=$(sed -n 's/.*[?&]code=\([^&]*\).*/\1/p' <<<"$LOCATION")
+fi
+if [ -z "$CODE" ]; then echo "the login flow returned no authorization code"; exit 1; fi
+
+# 6. Exchange the code for a token by using the PKCE verifier.
+MCP_USER_TOKEN=$(curl --fail --silent --show-error -u "$CLIENT_ID:$CLIENT_SECRET" \
+  -X POST "$TOKEN_ENDPOINT" \
+  -d grant_type=authorization_code -d "code=$CODE" -d "redirect_uri=$REDIRECT" \
+  -d "code_verifier=$VERIFIER" | jq -r .access_token)
+if [ -z "$MCP_USER_TOKEN" ] || [ "$MCP_USER_TOKEN" = "null" ]; then echo "code exchange returned no token"; exit 1; fi
+
+# 7. The token carries the claims that the policy checks.
+jq -R --arg audience "$MCP_RESOURCE" '
+  split(".") | .[1] | gsub("-"; "+") | gsub("_"; "/") | @base64d | fromjson
+  | if ([.aud] | flatten | index($audience)) == null then error("aud does not contain \($audience)") else . end
+  | if (.groups // [] | index("users")) == null then error("token has no users group") else . end
+' >/dev/null <<<"$MCP_USER_TOKEN"
+
+# 8. The gateway accepts the token on the MCP endpoint.
+code=$(curl -s -o /dev/null -w '%{http_code}' "$GW/mcp" -X POST \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Authorization: Bearer $MCP_USER_TOKEN" \
+  -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"doc-test","version":"1.0"}},"id":1}')
+if [ "$code" != "200" ]; then echo "expected 200 from /mcp with a DCR user token, got $code"; exit 1; fi
+echo "DCR, authorization code with PKCE, and MCP access all succeeded"
+{{< /doc-test >}}
+
 ## Clean up
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
