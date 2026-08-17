@@ -253,6 +253,30 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
    ```
 
 {{< doc-test paths="traffic-split-llm" >}}
+# Traffic split: point both model backends at the httpbun mock LLM so the split
+# assertion below needs no provider API key. httpbun echoes the model that the
+# backend pinned, so the response still carries the model name that this page's
+# output is about.
+{{< reuse "agw-docs/snippets/deploy-mock-llm.md" >}}
+kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} openai-mini-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type=merge --patch-file /dev/stdin <<EOF
+spec:
+  ai:
+    provider:
+      host: httpbun.default.svc.cluster.local
+      port: 3090
+      path: /llm/chat/completions
+EOF
+kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} openai-premium-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type=merge --patch-file /dev/stdin <<EOF
+spec:
+  ai:
+    provider:
+      host: httpbun.default.svc.cluster.local
+      port: 3090
+      path: /llm/chat/completions
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="traffic-split-llm" >}}
 # Test that traffic is being split between models
 # Send multiple requests and verify we get valid responses with model names
 YAMLTest -f - <<'EOF'
