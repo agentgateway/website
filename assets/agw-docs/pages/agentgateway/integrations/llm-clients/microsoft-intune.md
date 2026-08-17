@@ -97,7 +97,7 @@ mechanisms. Start with clients that provide native managed policy.
 | --- | --- | --- | --- |
 | Codex | `model_provider` and `model_providers.agentgateway` | Deploy Codex managed configuration. Use a macOS preference profile or a Windows remediation. | Strong managed startup configuration. |
 | Claude Code | `ANTHROPIC_BASE_URL` | Deploy native Claude Code managed settings through a macOS preference profile, Windows registry policy, or `managed-settings.json`. | Strong native managed policy. |
-| Claude Desktop | Gateway connection, a subscription credential helper or Entra sign-in, workspace restrictions, and managed MCP servers | Build and test the configuration in Claude Desktop, export the native `.mobileconfig` or ADMX policy, and deploy it with Intune. | Strong native managed policy. Managed settings override local configuration. |
+| Claude Desktop | Gateway connection, a gateway-key or subscription credential helper, Entra sign-in, workspace restrictions, and managed MCP servers | Build and test the configuration in Claude Desktop, export the native `.mobileconfig` or ADMX policy, and deploy it with Intune. | Strong native managed policy. Managed settings override local configuration. |
 | Cursor | **Override OpenAI Base URL** in Cursor settings | Seed and audit the user setting only after validating its on-disk schema for the deployed Cursor version. | Remediation-based. |
 | Devin Desktop | `http.proxy` in the editor settings | Merge the setting into the user's editor configuration and remediate only that key. | Remediation-based. |
 | VS Code Continue | The model entry in `~/.continue/config.json` | Deploy the configuration file or merge the agentgateway model entry with a user-context script. | Remediation-based. |
@@ -586,26 +586,26 @@ through agentgateway.
 3. Check that the request appears in the agentgateway proxy logs.
 
 {{< conditional-text include-if="kubernetes" >}}
-   ```sh
-   kubectl logs deployment/agentgateway-proxy \
-     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --follow \
-     --since=5s
-   ```
+```sh
+kubectl logs deployment/agentgateway-proxy \
+  -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+  --follow \
+  --since=5s
+```
 {{< /conditional-text >}}
 
 {{< conditional-text include-if="standalone" >}}
-   Review the terminal output from the `agentgateway` process or the logs from
-   the service that runs agentgateway. Confirm that the request uses the
-   expected listener, route, and model.
+Review the terminal output from the `agentgateway` process or the logs from the
+service that runs agentgateway. Confirm that the request uses the expected
+listener, route, and model.
 {{< /conditional-text >}}
 
-   Start the log stream before sending the client request so that unrelated
-   traffic is easier to distinguish. Correlate the request by time; access logs
-   do not need to include prompt text. Confirm the managed hostname, expected
-   route and API path, upstream provider, and a successful status. No matching
-   entry indicates a client, DNS, listener, or network problem. An unauthorized
-   response indicates an authentication problem.
+Start the log stream before sending the client request so that unrelated
+traffic is easier to distinguish. Correlate the request by time; access logs do
+not need to include prompt text. Confirm the managed hostname, expected route
+and API path, upstream provider, and a successful status. No matching entry
+indicates a client, DNS, listener, or network problem. An unauthorized response
+indicates an authentication problem.
 
 4. For a client managed by a recurring macOS shell script or Windows
    remediation, change the gateway setting, wait for the next script run, and

@@ -8,11 +8,22 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
 2. Install [Claude Desktop](https://claude.com/download).
-3. Decide how the proxy authenticates callers, and meet the requirements for that path.
+3. Choose how the proxy authenticates callers.
 
-   * **A gateway API key**, which [Use a gateway API key](#gateway-api-key) covers. You need an Anthropic API key for the proxy to send upstream and a [virtual API key]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) for Claude Desktop.
-   * **A per-user token from a Claude subscription**, which [Configure Claude Desktop](#configure-claude-desktop) covers. You need a Claude Pro, Max, Team, or Enterprise subscription, and the [Claude Code CLI](https://code.claude.com/docs) (`npm install -g @anthropic-ai/claude-code`), which provides the `claude setup-token` command.
-   * **A per-user token from your identity provider**, which [Authenticate users with your identity provider](#sso) covers. You need an OIDC provider and an Anthropic API key for the proxy to send upstream.
+   | Method | When to use | Upstream billing |
+   | -- | -- | -- |
+   | **[Gateway API key](#gateway-api-key)** | Recommended starting point. Agentgateway validates a client key and adds a separately managed Anthropic API key upstream. | Anthropic API account |
+   | **[Identity provider](#sso)** | Recommended for an enterprise rollout. Agentgateway validates each user's OIDC token and adds a separately managed Anthropic API key upstream. | Anthropic API account |
+   | **[Claude subscription passthrough](#configure-claude-desktop)** | Advanced option for preserving per-user Claude subscription usage. Agentgateway passes each user's token upstream and does not independently authenticate the caller. | User's Claude subscription |
+
+   For a gateway API key, you need an Anthropic API key for the proxy and a
+   [virtual API key]({{< link-hextra
+   path="/llm/cost-controls/virtual-keys/" >}}) for Claude Desktop. For
+   subscription passthrough, you need a Claude Pro, Max, Team, or Enterprise
+   subscription and the [Claude Code CLI](https://code.claude.com/docs), which
+   provides the `claude setup-token` command. For identity-provider
+   authentication, you need an OIDC provider and an Anthropic API key for the
+   proxy.
 
 ## Get the gateway URL {#gateway-url}
 
@@ -31,7 +42,25 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 
 ## Set up the Anthropic backend
 
-1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for the Anthropic provider. This initial configuration omits a provider API key for the Claude subscription path. The gateway API key and interactive sign-in sections configure a separate upstream credential.
+1. Create a Kubernetes Secret for the Anthropic API key that agentgateway sends
+   upstream. This provider credential is separate from the gateway key that
+   Claude Desktop sends to agentgateway.
+
+   ```bash
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: anthropic-secret
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   type: Opaque
+   stringData:
+     Authorization: "$ANTHROPIC_API_KEY"
+   EOF
+   ```
+
+2. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for the Anthropic
+   provider and reference the provider credential.
 
    ```bash
    kubectl apply -f- <<EOF
@@ -45,6 +74,9 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
        provider:
          anthropic: {}
      policies:
+       auth:
+         secretRef:
+           name: anthropic-secret
        ai:
          routes:
            '/v1/messages': Messages
@@ -53,15 +85,12 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
    EOF
    ```
 
-   > [!IMPORTANT]
-   > In subscription mode, do not configure `policies.auth.secretRef`. The
-   > bearer token that each user creates with `claude setup-token` must pass
-   > through agentgateway to Anthropic. Likewise, do not apply a strict virtual
-   > API key policy to the entire `Gateway`. If another client uses virtual API
-   > keys, target that client's `HTTPRoute`; otherwise the policy rejects the
-   > Claude subscription token before it reaches this backend.
+   The `Authorization` value from `anthropic-secret` is sent upstream as the
+   Anthropic `x-api-key`. Do not distribute this provider credential to Claude
+   Desktop users.
 
-2. Create an `{{< reuse "agw-docs/snippets/policy.md" >}}` to raise the body buffer limit to 10 MB for the OAuth token flow.
+3. Create an `{{< reuse "agw-docs/snippets/policy.md" >}}` to raise the body
+   buffer limit to 10 MB for Claude Desktop and Cowork requests.
 
    ```bash
    kubectl apply -f- <<EOF
@@ -93,7 +122,7 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
    >         value: oauth-2025-04-20
    > ```
 
-3. Create an `HTTPRoute` that matches the `/claude` path prefix and rewrites it to `/` before forwarding to the backend. Because the policy in the previous step targets this route, create both resources before you check the policy status.
+4. Create an `HTTPRoute` that matches the `/claude` path prefix and rewrites it to `/` before forwarding to the backend. Because the policy in the previous step targets this route, create both resources before you check the policy status.
 
    ```bash
    kubectl apply -f- <<EOF
@@ -125,7 +154,99 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
    EOF
    ```
 
-## Configure Claude Desktop with a Claude subscription {#configure-claude-desktop}
+## Use a gateway API key {#gateway-api-key}
+
+You can use the same client-side values that the standalone **Client Setup** page produces. The Kubernetes Admin UI does not generate these values, so configure the gateway and Claude Desktop manually.
+
+1. Verify that the `anthropic-desktop` backend references `anthropic-secret` in
+   `policies.auth`, as configured in [Set up the Anthropic
+   backend](#set-up-the-anthropic-backend). For more information, see
+   [Anthropic provider]({{< link-hextra path="/llm/providers/anthropic/" >}}).
+2. Generate a client API key and store it in a Kubernetes Secret. Use a
+   separate entry for each user or device when you need independent attribution
+   or revocation.
+
+   ```bash
+   export CLAUDE_GATEWAY_API_KEY="agw_$(openssl rand -hex 24)"
+
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: claude-desktop-client-keys
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   type: Opaque
+   stringData:
+     claude-desktop: "$CLAUDE_GATEWAY_API_KEY"
+   EOF
+   ```
+
+   For key metadata, hashing, and cost controls, see [Virtual
+   keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
+
+3. Apply strict API key authentication to only the Claude Desktop
+   `HTTPRoute`.
+
+   ```bash
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: claude-desktop-api-key
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: claude-desktop
+     traffic:
+       apiKeyAuthentication:
+         mode: Strict
+         secretRef:
+           name: claude-desktop-client-keys
+   EOF
+   ```
+
+   Target the `agentgateway-proxy` `Gateway` only when every attached route
+   expects an agentgateway key.
+4. In Claude Desktop, go to **Developer → Configure Third Party Inference → Gateway**.
+5. For **Gateway base URL**, enter the URL from [Get the gateway URL](#gateway-url). Include `/claude` for the shared-hostname route in this guide, but use only the origin when a dedicated hostname matches `/`.
+6. For **Credential kind**, select **Static API key**. Enter
+   `$CLAUDE_GATEWAY_API_KEY` in **Gateway API key**, and select **Bearer** for
+   the auth scheme.
+7. Under **Models**, add the full model ID that the backend exposes, or verify
+   that the gateway returns it from `GET /v1/models`.
+8. Click **Test connection**, and then click **Apply Changes**. Fully quit
+   Claude Desktop and reopen it.
+9. Send a harmless prompt and confirm that the agentgateway request log records
+   `/v1/messages` with HTTP 200. Then send a request without the gateway key and
+   confirm that the route returns HTTP 401. The negative test verifies that the
+   route does not admit unauthenticated callers.
+
+Claude Desktop sends Anthropic Messages API requests to `/v1/messages`. Agentgateway can translate those requests for another provider, but a route that exposes only the OpenAI-compatible `/v1/chat/completions` API is not sufficient.
+
+For a managed rollout, see [Manage gateway API keys with Microsoft
+Intune]({{< link-hextra
+path="/integrations/llm-clients/microsoft-intune/#claude-gateway-api-key" >}}).
+
+## Optional: Use Claude subscription passthrough {#configure-claude-desktop}
+
+Subscription passthrough preserves per-user Claude subscription billing, but
+agentgateway does not independently authenticate the caller. Remove the
+provider credential from the backend so that the user's bearer token can pass
+through to Anthropic.
+
+```bash
+kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} anthropic-desktop \
+  -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+  --type=json \
+  -p='[{"op":"remove","path":"/spec/policies/auth"}]'
+```
+
+Do not apply a strict virtual API key policy to this route. If you are
+converting an existing gateway-key configuration, remove its route-level API
+key policy first. Never remove a Gateway-level policy unless you have verified
+that no other attached route depends on it.
 
 1. Get a bearer token for your Claude account. Store the value in a safe place.
 
@@ -184,7 +305,7 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
    provider](#sso).
 
 6. Open **Models** and add at least one full model ID that the subscription can
-   use, such as `claude-opus-4-6`. Do not use an alias such as `opus`. The
+   use, such as `claude-opus-5`. Do not use an alias such as `opus`. The
    first entry is the default. Turn off **Model discovery**, or leave it unset;
    an explicit model list makes discovery unnecessary.
 
@@ -192,6 +313,13 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
    configured model. If no explicit model is configured, the test first calls
    `<base-url>/v1/models` and fails when the gateway or provider does not make
    that endpoint available to the subscription token.
+
+   > [!NOTE]
+   > With subscription passthrough, the connection test might return HTTP 429
+   > with `rate_limit_error` even when normal Cowork inference works. Apply the
+   > configuration, send a harmless prompt, and check the agentgateway request
+   > log. If the actual `/v1/messages` request returns HTTP 200, treat the
+   > connection-test result as a false negative.
 
 8. Click **Apply Changes**, then fully quit Claude Desktop and reopen it. Claude Desktop reads its configuration only at launch.
 
@@ -211,22 +339,6 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 For a managed rollout of this subscription configuration, see [Manage Claude
 subscriptions with Microsoft Intune]({{< link-hextra
 path="/integrations/llm-clients/microsoft-intune/#claude-subscription" >}}).
-
-## Use a gateway API key {#gateway-api-key}
-
-You can use the same client-side values that the standalone **Client Setup** page produces. The Kubernetes Admin UI does not generate these values, so configure the gateway and Claude Desktop manually.
-
-1. Give the `anthropic-desktop` backend an Anthropic API key. Follow [Anthropic provider]({{< link-hextra path="/llm/providers/anthropic/" >}}) to create a provider credential Secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}}. This credential is sent upstream and is separate from the key that Claude Desktop sends to agentgateway.
-2. Follow [Virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) to create a client API key and a strict API key authentication policy. Target the `claude-desktop` `HTTPRoute`. Target the `agentgateway-proxy` `Gateway` only when every attached route expects an agentgateway virtual key; a Gateway-level policy also rejects Claude subscription tokens on other routes.
-3. In Claude Desktop, go to **Developer → Configure Third Party Inference → Gateway**.
-4. For **Gateway base URL**, enter the URL from [Get the gateway URL](#gateway-url), including the `/claude` path.
-5. For **Credential kind**, select **Static API key**. Enter the client API key from step 2 in **Gateway API key**.
-6. Under **Models**, add the full model ID that the backend exposes, or verify
-   that the gateway returns it from `GET /v1/models`.
-7. Click **Test connection**, and then click **Apply Changes**. Fully quit
-   Claude Desktop and reopen it.
-
-Claude Desktop sends Anthropic Messages API requests to `/v1/messages`. Agentgateway can translate those requests for another provider, but a route that exposes only the OpenAI-compatible `/v1/chat/completions` API is not sufficient.
 
 ## Authenticate users with your identity provider {#sso}
 
@@ -385,7 +497,7 @@ The following example shows the Linux form. On macOS and Windows, write every va
     "bearerTokenType": "id_token"
   },
   "modelDiscoveryEnabled": false,
-  "inferenceModels": ["claude-opus-4-6"],
+  "inferenceModels": ["claude-opus-5"],
   "inferenceCustomHeaders": {
     "X-Tenant-Id": "acme"
   }
@@ -411,11 +523,14 @@ For every available key and for the per-region profiles that a multi-region depl
 | Symptom | Likely cause and action |
 | -- | -- |
 | The connection test calls `/claude/v1/models` on a dedicated Claude hostname | Remove `/claude` from the base URL, or update the `HTTPRoute` to match and rewrite that prefix. |
-| `api key authentication failure` appears in agentgateway logs | A virtual API key policy is targeting the shared `Gateway`. Target only the `HTTPRoute` that uses virtual keys. |
+| The gateway API key connection returns HTTP 401 | Confirm that Claude Desktop sends the client key stored in the policy's Secret and that the strict API key policy is attached to the Claude Desktop `HTTPRoute`. |
+| A subscription request logs `api key authentication failure` | A virtual API key policy is protecting the subscription route or its shared `Gateway`. Remove that policy from the subscription route; scope policies needed by other clients to their own `HTTPRoute`. |
 | The test needs at least one model after `/v1/models` fails | Add a full model ID under **Models** and disable or skip model discovery. |
-| Anthropic returns `authentication_error` | Generate a new token with `claude setup-token`, confirm that the auth scheme is **Bearer**, and make sure the backend does not inject a provider API key. |
-| Anthropic returns HTTP 400 | Add or forward `anthropic-beta: oauth-2025-04-20` as described in [Set up the Anthropic backend](#set-up-the-anthropic-backend). |
-| Anthropic returns HTTP 429 with `rate_limit_error` | The request reached Anthropic, but the account or plan is at a usage limit or is temporarily throttled. Check the Claude usage indicator or `/usage`, wait for the reset, or choose a model available within the plan. See the [Claude error reference](https://code.claude.com/docs/en/errors#usage-limits). |
+| Anthropic returns `authentication_error` in gateway API key or OIDC mode | Confirm that `policies.auth.secretRef` points to a Secret whose `Authorization` entry contains a valid Anthropic API key. |
+| Anthropic returns `authentication_error` in subscription mode | Generate a new token with `claude setup-token`, confirm that the auth scheme is **Bearer**, and make sure the backend does not inject a provider API key. |
+| Anthropic returns HTTP 400 in subscription mode | Add or forward `anthropic-beta: oauth-2025-04-20` as described in [Set up the Anthropic backend](#set-up-the-anthropic-backend). |
+| The subscription connection test returns HTTP 429, but a normal prompt succeeds | The connection test can produce a false negative with subscription passthrough. Confirm that the real `/v1/messages` request returns HTTP 200 in the agentgateway log, and use actual inference as the final validation. |
+| Normal inference returns HTTP 429 with `rate_limit_error` | The request reached Anthropic, but the subscription or API account might be at a usage limit or temporarily throttled. Check the applicable Anthropic usage dashboard or Claude usage indicator, wait for the reset, or choose an available model. See the [Claude error reference](https://code.claude.com/docs/en/errors#usage-limits). |
 | No request appears in the proxy logs | Check the managed base URL, DNS, certificate, route attachment, and network path. |
 
 ## Cleanup
@@ -423,9 +538,11 @@ For every available key and for the per-region profiles that a multi-region depl
 1. Remove the resources that you created.
 
    ```bash
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} claude-desktop-api-key -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
    kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} claude-desktop-buffer -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    kubectl delete httproute claude-desktop -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} anthropic-desktop -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete secret claude-desktop-client-keys anthropic-secret -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
    ```
 
 2. If you set up [Interactive sign-in](#sso), remove those resources too. Keep the JWKS backend if another policy uses it.

@@ -1,13 +1,13 @@
 Use Microsoft Intune to deploy a managed Claude Desktop configuration that
 routes inference through agentgateway. The workflow applies to agentgateway
-running in Kubernetes or standalone mode and supports two credential models:
-a per-user Claude subscription token from a credential helper, or Microsoft
-Entra ID with a centrally managed Anthropic provider credential.
+running in Kubernetes or standalone mode and supports three credential models:
+an agentgateway API key, Microsoft Entra ID, or an advanced per-user Claude
+subscription passthrough configuration.
 
 Intune installs the application and enforces its endpoint configuration. The
-credential model determines whether agentgateway passes each user's Claude
-subscription token upstream or validates an Entra identity before adding a
-centrally managed Anthropic credential.
+credential model determines whether agentgateway validates a gateway key or an
+Entra identity before adding a centrally managed Anthropic credential, or
+passes each user's Claude subscription token upstream.
 
 ### Prepare the rollout
 
@@ -28,16 +28,59 @@ centrally managed Anthropic credential.
    pilot user group. Do not begin with a tenant-wide assignment.
 
 {{< callout type="warning" >}}
-The Entra workflow below uses a centrally managed Anthropic provider
-credential. It does not establish per-user Anthropic subscription or seat
-attribution. Do not put an Anthropic API key, subscription token, or another
-upstream provider secret in an Intune profile.
+The gateway API key and Entra workflows use a centrally managed Anthropic
+provider credential. They do not establish per-user Anthropic subscription or
+seat attribution. Do not put an Anthropic API key, subscription token, shared
+gateway key, or another secret directly in an Intune profile.
 {{< /callout >}}
 
-### Manage Claude subscription mode {#claude-subscription}
+### Manage gateway API key mode {#claude-gateway-api-key}
 
-Claude subscription mode preserves each user's Claude seat and usage
-attribution. The user authenticates to Anthropic with a bearer token from
+Gateway API key mode is the recommended starting point. Claude Desktop sends a
+client key that agentgateway validates, and agentgateway replaces it with a
+separately managed Anthropic API key for the upstream request. Complete the
+[Claude Desktop gateway API key setup]({{< link-hextra
+path="/integrations/llm-clients/claude-desktop/#gateway-api-key" >}}) for your
+agentgateway mode before you build the Intune profile.
+
+Use a separate key for each user or device when practical so that you can
+attribute usage and revoke access without rotating every client. Do not embed
+one shared key in the exported profile. Instead, deploy an organization-owned
+credential helper that retrieves the assigned gateway key from Keychain,
+Credential Manager, or an internal secret broker. The helper prints only the
+key to standard output and must not log it.
+
+The following logical configuration shows the values to test before export.
+
+```json
+{
+  "inferenceProvider": "gateway",
+  "inferenceGatewayBaseUrl": "https://claude.example.com",
+  "inferenceCredentialKind": "helper-script",
+  "inferenceCredentialHelper": "/absolute/path/to/agentgateway-key-helper",
+  "inferenceGatewayAuthScheme": "bearer",
+  "modelDiscoveryEnabled": false,
+  "inferenceModels": [
+    {
+      "name": "claude-opus-5",
+      "anthropicFamilyTier": "opus"
+    }
+  ]
+}
+```
+
+Test that the helper works as the intended user, including with
+`CLAUDE_HELPER_CONTEXT=setup-test`. Confirm that **Test connection** succeeds,
+normal inference returns HTTP 200 in the agentgateway request log, and a
+request without the gateway key returns HTTP 401. Export and deploy the
+resulting profile as described in the platform sections below, but skip the
+Entra registration and Conditional Access sections.
+
+### Manage Claude subscription passthrough {#claude-subscription}
+
+Claude subscription passthrough is an advanced option that preserves each
+user's Claude seat and usage attribution. The user authenticates to Anthropic
+with a bearer token from
 `claude setup-token`; agentgateway passes that token upstream instead of
 injecting a centrally managed Anthropic API key. Complete the [Claude
 subscription setup]({{< link-hextra
@@ -68,7 +111,7 @@ add at least one full model ID under **Models** and turn off model discovery.
   "modelDiscoveryEnabled": false,
   "inferenceModels": [
     {
-      "name": "claude-opus-4-6",
+      "name": "claude-opus-5",
       "anthropicFamilyTier": "opus"
     }
   ]
@@ -87,6 +130,14 @@ helper with `CLAUDE_HELPER_CONTEXT=setup-test`, and background refreshes must
 not stop for an interactive prompt. Export and deploy the resulting profile as
 described in the platform sections below, but skip the Entra registration and
 Conditional Access sections.
+
+{{< callout type="info" >}}
+With subscription passthrough, **Test connection** might return HTTP 429 with
+`rate_limit_error` even when normal Cowork inference works. Apply the
+configuration, send a harmless prompt, and inspect the agentgateway request
+log. If the real `/v1/messages` request returns HTTP 200, treat the connection
+test as a false negative and use actual inference as the final validation.
+{{< /callout >}}
 
 ### Choose the Entra sign-in flow {#claude-entra}
 
@@ -171,7 +222,7 @@ managed profile.
    | Scopes | `openid profile email offline_access` |
    | Gateway sign-in flow (`inferenceGatewayOidcAuthFlow`) | **Broker** for a compliant-device production policy; otherwise **Browser** |
    | Model discovery | **Off** when you deploy a fixed model list |
-   | Models | One or more full model IDs, such as `claude-opus-4-6`; the first entry is the default |
+   | Models | One or more full model IDs, such as `claude-opus-5`; the first entry is the default |
 
 4. In **Workspace restrictions**, set `disableDeploymentModeChooser` when users
    must not sign in directly to Claude.ai.
