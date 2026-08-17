@@ -126,4 +126,6 @@ Based on these results, I'm going to switch my local setup to agentgateway and u
 
 Because each gateway handled a different workload in this test, I followed up with [Part 2](/blog/2026-06-26-benchmarking-agentgateway-vs-litellm-part-2/) using a fixed 3,000 QPS target for both gateways to make the comparison more apples-to-apples.
 
+I later revisited this comparison with [LiteLLM's Rust mode](/blog/2026-08-13-benchmarking-agentgateway-vs-litellm-rust-mode/).
+
 The complete benchmark scripts and raw results are available in the GitHub [repository](https://github.com/linsun/litellm-agw-perf) if you'd like to reproduce the numbers yourself.
