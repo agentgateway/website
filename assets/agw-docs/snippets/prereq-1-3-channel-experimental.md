@@ -22,10 +22,10 @@
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml
    ```
 
-5. **Important**: To use experimental Gateway API features in kgateway, you must enable the `KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES` environment variable in your kgateway controller deployment. This setting defaults to `false` and must be explicitly enabled. For example, if you installed kgateway via Helm, add the following to your Helm values and upgrade your installation.
+5. Optional: Experimental Gateway API features are controlled by the `AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES` environment variable in your {{< reuse "agw-docs/snippets/kgateway.md" >}} controller deployment. This setting is enabled by default, so you do not have to change anything. To set it explicitly, add the following to your Helm values and upgrade your installation.
    
    ```yaml
    controller:
      extraEnv:
-       KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES: "true"
+       AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES: "true"
    ```

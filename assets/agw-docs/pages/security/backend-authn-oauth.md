@@ -279,8 +279,10 @@ EOF
    | `grantType` | `TokenExchange` (default, RFC 8693) or `JwtBearer` (RFC 7523). |
    | `clientAuth` | Client authentication for the token endpoint. `method` is `ClientSecretBasic` (default), `ClientSecretPost`, or `PrivateKeyJwt`. Use `secretRef` to read the client secret from a Kubernetes Secret. |
    | `audiences`, `scopes`, `resources` | The `audience`, `scope`, and `resource` parameters sent to the token endpoint. `resources` are [RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707) resource indicators. |
-   | `subjectToken` | Where to read the incoming credential and its `tokenType` (`AccessToken`, `Jwt`, and so on). Defaults to the `Authorization: Bearer` header. |
-   | `actorToken` | Optional RFC 8693 delegation actor token (`TokenExchange` grant only). |
+   | `subjectToken.source` | Where the gateway reads the incoming credential from. Set exactly one of `header`, `queryParameter`, `cookie`, or `expression`, where `expression` is a CEL expression that reads the credential from the request, such as a claim of a validated JWT. Defaults to the `Authorization` header with the `Bearer` prefix. |
+   | `subjectToken.tokenType` | The type that the gateway reports for that credential. Use a built-in name such as `AccessToken` (the default), `Jwt`, or `IdToken`, or a custom absolute URI. See [Token types](#token-types). |
+   | `actorToken` | Optional RFC 8693 delegation actor token (`TokenExchange` grant only). Takes the same `tokenType` values as `subjectToken`. |
+   | `requestedTokenType` | Optional token type to request, limited to `AccessToken`, `Jwt`, or `IdToken`, and valid only with the `TokenExchange` grant type. The response must return the type that you request. See [Request a token type](#requested-token-type). |
    | `location` | Where to place the exchanged token in the backend request. Defaults to the `Authorization` header. |
    | `additionalParams` | Extra form parameters appended to the token request. Values are CEL expressions. |
    | `cache` | In-memory token cache. Defaults to 8192 entries. Set `inMemory.maxEntries: 0` to disable. |
@@ -359,6 +361,58 @@ echo $INBOUND_TOKEN
      "sub": "4f5b414b-1f66-4251-ae2c-fc7f488ab141"
    }
    ```
+
+## Token types {#token-types}
+
+The `subjectToken.tokenType` and `actorToken.tokenType` fields accept a built-in name (`AccessToken`, `Jwt`, or `IdToken`), or any absolute URI without a fragment for an authorization server that defines its own token exchange profile. The gateway expands a built-in name to its `urn:ietf:params:oauth:token-type:*` form, and passes a custom URI through unchanged.
+
+For example, set `subjectToken.tokenType` to the type that your authorization server expects.
+
+```yaml
+subjectToken:
+  source:
+    header:
+      name: authorization
+      prefix: "Bearer "
+  tokenType: "urn:company:domain:human"
+```
+
+The gateway sends that value verbatim as the `subject_token_type` form parameter. An `actorToken.tokenType` value travels the same way, as `actor_token_type`.
+
+An invalid value is rejected after you apply the policy, not by the API server. The policy reports `Accepted: True` with the reason `PartiallyValid` and the following message, and the data plane refuses it, so every request on the route fails with a `400` and the message `invalid request`.
+
+```
+oauth subjectToken tokenType "not a uri" must be a built-in token type or an absolute URI without a fragment
+```
+
+### Request a token type {#requested-token-type}
+
+Unlike the subject and actor token types, `requestedTokenType` is a closed set. Only `AccessToken`, `Jwt`, and `IdToken` can be requested, and the API server rejects the policy otherwise.
+
+| Value | Result |
+| -- | -- |
+| A custom URI | `Unsupported value: "urn:company:domain:human": supported values: "AccessToken", "Jwt", "IdToken", "IdJag"` |
+| `IdJag` | `requestedTokenType IdJag is only supported by crossAppAccess`. The value appears in the list because the type list is shared with [Cross App Access]({{< link-hextra path="/security/backend-authn-cross-app-access/" >}}). |
+| Any value, with the `JwtBearer` grant type | `requestedTokenType is only valid with TokenExchange grantType` |
+
+When you set `requestedTokenType`, the gateway sends `requested_token_type` on the token request, then compares the `issued_token_type` of the response against it. A mismatch fails the exchange with a `500`, and the request never reaches the backend.
+
+```
+backend authentication failed: token exchange returned issued_token_type urn:ietf:params:oauth:token-type:jwt, expected urn:ietf:params:oauth:token-type:access_token
+```
+
+> [!NOTE]
+> When you omit `requestedTokenType`, the gateway sends no `requested_token_type` parameter, and it does not check `issued_token_type` at all. The authorization server chooses the type, and the gateway accepts whatever the response returns. Set the field when the type of the issued token matters to the backend.
+
+### Support for non-compliant providers {#oauth-warnings}
+
+The gateway accepts the following three settings for compatibility with providers that do not accept the standards-compliant forms. Each one logs a warning in the proxy and still forwards traffic. A future release might reject them, so prefer [RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707) resource URIs, valid scope tokens, and header or cookie placement where your provider allows it.
+
+| Setting | Warning in the proxy log |
+| -- | -- |
+| A `resources` entry that is not an absolute URI without a fragment | `oauth token exchange resource is not an absolute URI without a fragment` |
+| A `scopes` entry with characters outside the [RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749) scope-token grammar, such as a space, a quotation mark, a backslash, a control character, or a non-ASCII character | `oauth token exchange scopes contains an invalid OAuth scope-token` |
+| `location.queryParameter`, which carries the exchanged token in a URI query parameter | `oauth token exchange is configured to forward the exchanged bearer token in a URI query parameter` |
 
 <!--
 

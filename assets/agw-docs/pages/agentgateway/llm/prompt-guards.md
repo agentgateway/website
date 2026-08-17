@@ -2,7 +2,7 @@ Use custom regex patterns and built-in PII detectors to filter LLM requests and 
 
 ## About regex prompt guards
 
-Regex-based prompt guards let you inspect LLM requests and responses against custom regex patterns or built-in PII detectors. Use the `reject` action to block requests that match a pattern, or the `mask` action to redact sensitive data in responses before they reach the client.
+Regex-based prompt guards let you inspect LLM requests and responses against custom regex patterns or built-in PII detectors. Use the `Reject` action to block content that matches a pattern, or the `Mask` action to redact the matched content and continue. Both actions are available for requests and for responses.
 
 ### Built-in prompt guard patterns
 
@@ -225,6 +225,8 @@ Use the {{< reuse "agw-docs/snippets/policy.md" >}} resource and the `promptGuar
 
 In the next step, you instruct agentgateway to mask credit card numbers that are returned by the LLM.
 
+> [!WARNING]
+> Masking applies only to a buffered response. When the client sets `"stream": true`, the LLM response is streamed, and agentgateway cannot rewrite content that is already on its way to the client. A response guard that uses `action: Mask` passes the matched content through unmodified, and the client receives no error. To protect a streamed response, use `action: Reject` instead, and review the guardrails overview for the `streaming` field that a streamed response requires.
 
 1. Add the following credit card response matcher to the {{< reuse "agw-docs/snippets/policy.md" >}} resource. This time, use the built-in credit card regex match instead of a custom one.
    

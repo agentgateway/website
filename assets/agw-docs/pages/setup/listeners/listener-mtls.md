@@ -45,47 +45,15 @@ Throughout this guide, you use self-signed TLS certificates for the Certificate 
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
 
-4. Ensure that you installed {{< reuse "agw-docs/snippets/kgateway.md" >}} with the `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true` Helm flag to use experimental Kubernetes Gateway API features. For an example, see the [Get started guide]({{< link-hextra path="/quickstart" >}}).
+4. Experimental Kubernetes Gateway API features are enabled by default in {{< reuse "agw-docs/snippets/kgateway.md" >}}. To set the feature gate explicitly, install or upgrade with the `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true` Helm flag. For an example, see the [Get started guide]({{< link-hextra path="/quickstart" >}}).
    
 
 
 ## Create TLS certificates 
 
-Create self-signed TLS certificates that you use for the mutual TLS connection between your client application (`curl`) and the gateway proxy. 
+Create self-signed TLS certificates that you use for the mutual TLS connection between your client application (`curl`) and the gateway proxy. The Gateway uses the server certificate to terminate incoming TLS connections.
 
-> [!WARNING]
-> Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trusted Certificate Authority. 
-
-
-1. Create the `example_certs` directory and navigate to this directory. 
-   ```sh
-   mkdir example_certs && cd example_certs
-   ```
-
-2. Create self-signed certificates for the Certificate Authority (CA) that you later use to sign the server and client certificates. 
-   ```sh
-   # Create CA private key
-   openssl genrsa -out ca-key.pem 2048
-
-   # Create CA certificate (valid for 1 year)
-   openssl req -new -x509 -days 365 -key ca-key.pem -out ca-cert.pem \
-     -subj "/CN=Test CA/O=Test Org"
-   ```
-
-3. Create the server certificates for the Gateway that is signed by the CA that you created in the previous step. The Gateway uses these certificates to terminate incoming TLS connections. 
-   ```sh
-   # Create server private key
-   openssl genrsa -out server-key.pem 2048
-
-   # Create server certificate signing request
-   openssl req -new -key server-key.pem -out server.csr \
-     -subj "/CN=example.com/O=Test Org"
-
-   # Create server certificate signed by CA (valid for 1 year)
-   openssl x509 -req -days 365 -in server.csr -CA ca-cert.pem -CAkey ca-key.pem \
-     -CAcreateserial -out server-cert.pem \
-     -extensions v3_req -extfile <(echo "[v3_req]"; echo "subjectAltName=DNS:example.com,DNS:*.example.com")
-   ```
+{{< reuse "agw-docs/snippets/create-ca-server-certs.md" >}}
 
 4. Store the server certificate and key in a Kubernetes secret. 
    ```yaml

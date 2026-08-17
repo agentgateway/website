@@ -31,3 +31,5 @@ Agentgateway automatically includes these LLM-specific trace attributes.
 | `gen_ai.usage.input_tokens` | Input token count, including the tokens read from or written to the prompt cache. See [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}). |
 | `gen_ai.usage.output_tokens` | Output token count. |
 | `gen_ai.provider.name` | LLM provider (openai, anthropic, etc.). |
+
+Tool calls are not in this list, because the gateway does not collect them automatically. To record them, reference the `llm.toolCalls` CEL field in a tracing or access log attribute, as described in [Tool calls]({{< link-hextra path="/llm/observability/#tool-calls" >}}).

@@ -63,4 +63,16 @@ This example configures an {{< reuse "agw-docs/snippets/agentgateway.md" >}} bac
    | `spec.policies.tunnel.backendRef.port` | The port the proxy listens on |
    | `spec.policies.tls.insecureSkipVerify` | Skip TLS certificate validation when connecting to the upstream backend. Set to `All` to skip all verification or `Hostname` to skip only hostname verification. Use with caution — only in trusted environments. |
 
+   {{< version include-if="main" >}}
+   If your forward proxy inspects TLS traffic and re-signs the upstream certificate with its own CA, verify that CA instead of skipping verification. Replace `insecureSkipVerify` with `caCertificateRefs`, which reads the CA certificate from the `ca.crt` key of a ConfigMap (the default) or a Secret in the same namespace as the {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+   ```yaml
+     policies:
+       tls:
+         caCertificateRefs:
+         - name: proxy-ca
+           kind: Secret
+   ```
+   {{< /version >}}
+
 3. Agentgateway now routes all outbound connections from `idp-proxied` through the `squid-proxy` tunnel. When the control plane needs to fetch JWKS keys, it does so via the proxy.

@@ -2,9 +2,14 @@
 
 You might want to test how to restrict access to your applications to authenticated users, such as with external auth or JWT policies. You can install Keycloak in your cluster as an OpenID Connect (OIDC) provider.
 
-The following steps install Keycloak in your cluster, and configure two user credentials as follows.
+The following steps install Keycloak in your cluster and configure a `users` group with two members.
 * Username: `user1`, password: `password`, email: `user1@example.com`
 * Username: `user2`, password: `password`, email: `user2@solo.io`
+
+> [!WARNING]
+> This example uses default credentials and removes Keycloak policies that restrict anonymous dynamic client registration (DCR). Use the example only in a local test environment.
+>
+> You can keep DCR enabled in production. Restrict redirect hosts, client templates, scopes, protocol mappers, full-scope access, and client limits. Require user consent, and prevent DCR clients from using service accounts or the client credentials grant.
 
 Install and configure Keycloak:
 
@@ -63,75 +68,138 @@ EOF
    ```
 5. Set the Keycloak admin token. If you see a parsing error, try running the `curl` command by itself. You might notice that your internet provider or network rules are blocking the requests. If so, you can update your security settings or change the network so that the request can be processed.
    ```shell {paths="setup-keycloak"}
-   export KEYCLOAK_TOKEN=$(curl -d "client_id=admin-cli" -d "username=admin" -d "password=admin" -d "grant_type=password" "$KEYCLOAK_URL/realms/master/protocol/openid-connect/token" | jq -r .access_token)
-   echo $KEYCLOAK_TOKEN
+   export KEYCLOAK_TOKEN=$(curl --fail --silent --show-error \
+     -d client_id=admin-cli \
+     -d username=admin \
+     -d password=admin \
+     -d grant_type=password \
+     "$KEYCLOAK_URL/realms/master/protocol/openid-connect/token" \
+     | jq -r .access_token)
    ```
 
-6. Use the admin token to configure Keycloak with the two users for testing purposes. If you get a `401 Unauthorized` error, run the previous command and try again.
+6. Use the administrator token to configure Keycloak for MCP authentication. If this command returns `401 Unauthorized`, refresh the token in the previous step.
    ```shell {paths="setup-keycloak"}
-   # Create initial token to register the client
-   read -r client token <<<$(curl -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" -X POST -H "Content-Type: application/json" -d '{"expiration": 0, "count": 1}' $KEYCLOAK_URL/admin/realms/master/clients-initial-access | jq -r '[.id, .token] | @tsv')
-   export KEYCLOAK_CLIENT=${client}
-   echo $KEYCLOAK_CLIENT
+   # Use the exact public MCP server URL that clients connect to
+   export MCP_RESOURCE=${MCP_RESOURCE:-http://localhost:8080/mcp}
 
-   # Register the client
-   read -r id secret <<<$(curl -k -X POST -d "{ \"clientId\": \"${KEYCLOAK_CLIENT}\" }" -H "Content-Type:application/json" -H "Authorization: bearer ${token}" ${KEYCLOAK_URL}/realms/master/clients-registrations/default| jq -r '[.id, .secret] | @tsv')
-   export KEYCLOAK_SECRET=${secret}
-   echo $KEYCLOAK_SECRET
+   # Create a realm-default scope with audience and group mappers
+   curl --fail --silent --show-error \
+     -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+     -H "Content-Type: application/json" \
+     -d "$(jq -n --arg audience "$MCP_RESOURCE" '{
+       name: "mcp",
+       protocol: "openid-connect",
+       protocolMappers: [
+         {
+           name: "mcp-audience",
+           protocol: "openid-connect",
+           protocolMapper: "oidc-audience-mapper",
+           config: {
+             "included.custom.audience": $audience,
+             "access.token.claim": "true"
+           }
+         },
+         {
+           name: "groups",
+           protocol: "openid-connect",
+           protocolMapper: "oidc-group-membership-mapper",
+           config: {
+             "claim.name": "groups",
+             "full.path": "false",
+             "access.token.claim": "true"
+           }
+         }
+       ]
+     }')" \
+     "$KEYCLOAK_URL/admin/realms/master/client-scopes"
 
-   # Add allowed redirect URIs
-   curl -k -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" -X PUT -H "Content-Type: application/json" -d '{"serviceAccountsEnabled": true, "directAccessGrantsEnabled": true, "authorizationServicesEnabled": true, "redirectUris": ["*"]}' $KEYCLOAK_URL/admin/realms/master/clients/${id}
+   export KEYCLOAK_SCOPE_ID=$(curl --fail --silent --show-error \
+     -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+     "$KEYCLOAK_URL/admin/realms/master/client-scopes" \
+     | jq -r '.[] | select(.name == "mcp") | .id')
 
-   # Add the group attribute in the JWT token returned by Keycloak
-   curl -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" -X POST -H "Content-Type: application/json" -d '{"name": "group", "protocol": "openid-connect", "protocolMapper": "oidc-usermodel-attribute-mapper", "config": {"claim.name": "group", "jsonType.label": "String", "user.attribute": "group", "id.token.claim": "true", "access.token.claim": "true"}}' $KEYCLOAK_URL/admin/realms/master/clients/${id}/protocol-mappers/models
+   # Add the scope to all current and future clients
+   curl --fail --silent --show-error -X PUT \
+     -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+     "$KEYCLOAK_URL/admin/realms/master/default-default-client-scopes/$KEYCLOAK_SCOPE_ID"
+
+   # Create a group for users who can access the MCP server
+   curl --fail --silent --show-error \
+     -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+     -H "Content-Type: application/json" \
+     -d '{"name":"users"}' \
+     "$KEYCLOAK_URL/admin/realms/master/groups"
+
+   export KEYCLOAK_GROUP_ID=$(curl --fail --silent --show-error \
+     -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+     "$KEYCLOAK_URL/admin/realms/master/groups?search=users&exact=true" \
+     | jq -r '.[] | select(.name == "users") | .id')
 
    # Create first user
-   curl -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" -X POST -H "Content-Type: application/json" -d '{"username": "user1", "email": "user1@example.com", "firstName": "Alice", "lastName": "Doe", "enabled": true, "attributes": {"group": "users"}, "credentials": [{"type": "password", "value": "password", "temporary": false}]}' $KEYCLOAK_URL/admin/realms/master/users
+   curl --fail --silent --show-error \
+     -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+     -H "Content-Type: application/json" \
+     -d '{"username":"user1","email":"user1@example.com","firstName":"Alice","lastName":"Doe","enabled":true,"credentials":[{"type":"password","value":"password","temporary":false}]}' \
+     "$KEYCLOAK_URL/admin/realms/master/users"
 
    # Create second user
-   curl -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" -X POST -H "Content-Type: application/json" -d '{"username": "user2", "email": "user2@solo.io", "firstName": "Bob", "lastName": "Doe", "enabled": true, "attributes": {"group": "users"}, "credentials": [{"type": "password", "value": "password", "temporary": false}]}' $KEYCLOAK_URL/admin/realms/master/users
-
-   # Remove the trusted-hosts client registration policies (testing-purpose only)
-   trusted_hosts=$(curl -v -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
-    "${KEYCLOAK_URL}/admin/realms/master/components?type=org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy" \
-    | jq -r '
-     if type=="array" then
-       .[] | select(.providerId=="trusted-hosts") | .id
-     else
-       empty
-    end
-   ')
-
-   curl -X DELETE \
+   curl --fail --silent --show-error \
      -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
-     "${KEYCLOAK_URL}/admin/realms/master/components/${trusted_hosts}"
+     -H "Content-Type: application/json" \
+     -d '{"username":"user2","email":"user2@solo.io","firstName":"Bob","lastName":"Doe","enabled":true,"credentials":[{"type":"password","value":"password","temporary":false}]}' \
+     "$KEYCLOAK_URL/admin/realms/master/users"
 
-   # Remove the allowed-client-templates client registration policies (testing-purpose only)
+   # Add both users to the group
+   for username in user1 user2; do
+     user_id=$(curl --fail --silent --show-error \
+       -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+       "$KEYCLOAK_URL/admin/realms/master/users?username=$username&exact=true" \
+       | jq -r '.[0].id')
+     curl --fail --silent --show-error -X PUT \
+       -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+       "$KEYCLOAK_URL/admin/realms/master/users/$user_id/groups/$KEYCLOAK_GROUP_ID"
+   done
 
-   allowed_client_templates=$(curl -v \
-    -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
-    "${KEYCLOAK_URL}/admin/realms/master/components?type=org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy" \
-    | jq -r '
-    .[]
-     | select(.providerId=="allowed-client-templates" and .subType=="anonymous")
-     | .id
-   ')
-
-   curl -X DELETE \
+   # Relax anonymous DCR policies for this local test only
+   registration_policies=$(curl --fail --silent --show-error \
      -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
-     "${KEYCLOAK_URL}/admin/realms/master/components/${allowed_client_templates}"
+     "$KEYCLOAK_URL/admin/realms/master/components?type=org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy")
+
+   for policy_id in $(jq -r '.[] | select(
+     (.providerId == "trusted-hosts") or
+     (.providerId == "allowed-client-templates" and .subType == "anonymous")
+   ) | .id' <<<"$registration_policies"); do
+     curl --fail --silent --show-error -X DELETE \
+       -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+       "$KEYCLOAK_URL/admin/realms/master/components/$policy_id"
+   done
    ```
+
+{{< doc-test paths="setup-keycloak" >}}
+curl --fail --silent --show-error \
+  -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+  "$KEYCLOAK_URL/admin/realms/master/client-scopes/$KEYCLOAK_SCOPE_ID/protocol-mappers/models" \
+  | jq -e --arg audience "$MCP_RESOURCE" '
+    any(.[]; .protocolMapper == "oidc-audience-mapper" and .config["included.custom.audience"] == $audience) and
+    any(.[]; .protocolMapper == "oidc-group-membership-mapper" and .config["claim.name"] == "groups")
+  ' >/dev/null
+
+curl --fail --silent --show-error \
+  -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+  "$KEYCLOAK_URL/admin/realms/master/groups/$KEYCLOAK_GROUP_ID/members" \
+  | jq -e '[.[].username] | sort == ["user1", "user2"]' >/dev/null
+{{< /doc-test >}}
 
 7. Open the Keycloak frontend.
-   ```
+   ```sh
    open $KEYCLOAK_URL
    ```
 
 8. Log in to the admin console, and enter `admin` as the username and `admin` as your password. 
 
-9. In the Keycloak admin console, go to **Users**, and verify that the users that created earlier are displayed. You might need to click on **View all users** to see them. 
+9. In the Keycloak admin console, go to **Users**, and verify that the users that you created are displayed. You might need to click **View all users**.
 
-10. In the Keycloak admin console, go to **Clients**, and verify that you can see a client ID that equals the output of `$KEYCLOAK_CLIENT`. 
+10. Go to **Groups**, select **users**, and verify that both users are listed on the **Members** tab.
 
 ## Retrieve JWKS path and issuer URL {#configure}
 

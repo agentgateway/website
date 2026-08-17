@@ -16,7 +16,7 @@ test:
 
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} can compute the realized USD cost of each LLM request when you provide a model cost catalog. With a catalog in place, {{< reuse "agw-docs/snippets/agentgateway.md" >}} attributes cost per request in access logs, traces, and metrics, and exposes the values to CEL expressions as `llm.cost` and `llm.costRates`.
 
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} does not ship a built-in catalog. Costs are computed only when you configure one (for example, a catalog that you generate with [`agctl costs import`](#generate-a-catalog-with-agctl)).
+{{< reuse "agw-docs/snippets/cost-catalog-default.md" >}}
 
 In Kubernetes mode, you deliver the catalog as a ConfigMap and reference it from a Gateway-level {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
 

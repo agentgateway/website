@@ -9,6 +9,8 @@ Configure [GitHub Copilot](https://github.com/features/copilot) in VS Code to ro
 2. Install VS Code with the [GitHub Copilot extension](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot).
 3. Have a GitHub Copilot Business or Enterprise subscription.
 
+{{< reuse "agw-docs/snippets/llm-client-setup-callout.md" >}}
+
 ## Example agentgateway configuration
 
 ```yaml {paths="copilot-validate"}

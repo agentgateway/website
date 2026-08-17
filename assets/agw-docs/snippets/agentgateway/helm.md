@@ -4,14 +4,14 @@
    {{% tab name="Standard" %}}
    ```sh {paths="standard"}
    export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version.md" >}}
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v${GWAPI_VERSION}/standard-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v$GWAPI_VERSION/standard-install.yaml
    ```
    {{% /tab %}}
    {{% tab name="Experimental" %}}
    CRDs in the experimental channel are required to use some experimental features in the Gateway API. Guides that require experimental CRDs note this requirement in their prerequisites.
    ```sh {paths="experimental"}
    export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v${GWAPI_VERSION}/experimental-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v$GWAPI_VERSION/experimental-install.yaml
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -93,7 +93,7 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/ag
 
 {{% /tab %}}
 {{% tab name="Experimental" %}}
-To use experimental Gateway API features, include the experimental feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`. When using a development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, also add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
+Experimental Gateway API features are enabled by default. To set the experimental feature gate explicitly, include `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true`. When using a development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, also add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
 
 
 
@@ -102,7 +102,7 @@ To use experimental Gateway API features, include the experimental feature gate,
 helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
 --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
 --set controller.image.pullPolicy=Always \
---set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true
+--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true
 ```
 
 
