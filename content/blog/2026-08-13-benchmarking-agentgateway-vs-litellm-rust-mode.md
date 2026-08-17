@@ -109,8 +109,8 @@ Agentgateway handled **over 36× more requests per second** while maintaining su
 
 | Gateway | Avg CPU | Peak CPU | Avg Memory | Peak Memory |
 |---------|---------|----------|------------|-------------|
-| agentgateway | 199% | 482% | **26 MB** | 34 MB |
-| LiteLLM (rust: true) | 69% | 204% | **2.15 GB** | 2.15 GB |
+| agentgateway | 199% | 482% | **26 MiB** | 34 MiB |
+| LiteLLM (rust: true) | 69% | 204% | **2.15 GiB** | 2.15 GiB |
 
 ### Raw benchmark output
 
