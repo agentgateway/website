@@ -30,30 +30,7 @@ In this example, the transformation applies after routing and targets a specific
    EOF
    ```
 
-   {{< doc-test paths="change-response-status" >}}
-   YAMLTest -f - <<'EOF'
-   - name: verify response status is 401 when foo=bar query parameter is present
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/response-headers?foo=bar"
-       method: GET
-       headers:
-         host: www.example.com
-     source:
-       type: local
-     expect:
-       statusCode: 401
-   - name: verify response status is 403 when foo=bar query parameter is absent
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/response-headers?foo=baz"
-       method: GET
-       headers:
-         host: www.example.com
-     source:
-       type: local
-     expect:
-       statusCode: 403
-   EOF
-   {{< /doc-test >}}
+   {{< doc-test paths="change-response-status" file="products/agentgateway/main/traffic-management/transformations/status.sh" >}}{{< /doc-test >}}
 
 2. Send a request to the httpbin app and include the `foo=bar` query parameter. Verify that you get back a 401 HTTP response code.
 

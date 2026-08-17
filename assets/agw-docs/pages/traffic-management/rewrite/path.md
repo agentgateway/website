@@ -104,52 +104,11 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/api-spec/ma
    ...
    ```
 
-{{< doc-test paths="path-rewrite-prefix" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-rewrite HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-rewrite
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
+{{< doc-test paths="path-rewrite-prefix" file="products/agentgateway/main/traffic-management/rewrite/path-rewrite-prefix-wait.sh" >}}{{< /doc-test >}}
 
-{{< doc-test paths="path-rewrite-prefix" >}}
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: rewrite.example" && break
-  sleep 2
-done
-{{< /doc-test >}}
+{{< doc-test paths="path-rewrite-prefix" file="products/agentgateway/main/traffic-management/rewrite/path-rewrite-prefix-warmup.sh" >}}{{< /doc-test >}}
 
-{{< doc-test paths="path-rewrite-prefix" >}}
-YAMLTest -f - <<'EOF'
-- name: path rewrite prefix - /headers rewrites to /anything
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /headers
-    method: GET
-    headers:
-      host: "rewrite.example"
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.url"
-        comparator: contains
-        value: "/anything"
-EOF
-{{< /doc-test >}}
+{{< doc-test paths="path-rewrite-prefix" file="products/agentgateway/main/traffic-management/rewrite/path-rewrite-prefix-assert.sh" >}}{{< /doc-test >}}
 
 ### External services
 
@@ -353,52 +312,11 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/api-spec/ma
    ...
    ```
 
-{{< doc-test paths="path-rewrite-full" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-rewrite HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-rewrite
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
+{{< doc-test paths="path-rewrite-full" file="products/agentgateway/main/traffic-management/rewrite/path-rewrite-full-wait.sh" >}}{{< /doc-test >}}
 
-{{< doc-test paths="path-rewrite-full" >}}
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: rewrite.example" && break
-  sleep 2
-done
-{{< /doc-test >}}
+{{< doc-test paths="path-rewrite-full" file="products/agentgateway/main/traffic-management/rewrite/path-rewrite-full-warmup.sh" >}}{{< /doc-test >}}
 
-{{< doc-test paths="path-rewrite-full" >}}
-YAMLTest -f - <<'EOF'
-- name: path rewrite full - /headers rewrites to /anything
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /headers
-    method: GET
-    headers:
-      host: "rewrite.example"
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.url"
-        comparator: contains
-        value: "/anything"
-EOF
-{{< /doc-test >}}
+{{< doc-test paths="path-rewrite-full" file="products/agentgateway/main/traffic-management/rewrite/path-rewrite-full-assert.sh" >}}{{< /doc-test >}}
 
 ### External services
 

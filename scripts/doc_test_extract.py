@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 import re
 import textwrap
 from dataclasses import dataclass, field
@@ -77,8 +78,15 @@ def _load_link_version_map(repo_root: Path) -> Dict[str, str]:
 
 
 class Extractor:
-    def __init__(self, repo_root: Path, definition: dict):
+    def __init__(self, repo_root: Path, definition: dict, docs_tests_root: Optional[Path] = None):
         self.repo_root = repo_root
+        # Root of a `docs-tests` checkout, used to resolve `{{< doc-test file="..." >}}`
+        # external content. Defaults to a sibling directory of repo_root, matching how
+        # this repo and docs-tests are cloned side by side on disk. This is independent
+        # of repo_root: content read from here is never relativized against repo_root,
+        # so none of the existing repo_root-relative manifest/script logic needs to
+        # change to support it.
+        self.docs_tests_root = (docs_tests_root or (repo_root.parent / "docs-tests")).resolve()
         self.definition = definition
         options = definition.get("options", {})
         self.follow_reuse = bool(options.get("follow_reuse", True))
@@ -408,7 +416,23 @@ class Extractor:
             paths = [x.strip() for x in params.get("paths", "").split(",") if x.strip()]
             start_line = text[: match.start()].count("\n") + 1
 
-            content = textwrap.dedent(body).strip("\n")
+            external_file = params.get("file")
+            if external_file:
+                # Content lives in docs-tests, not inline. The shortcode body is
+                # expected to be empty in this form: {{< doc-test paths="..."
+                # file="..." >}}{{< /doc-test >}}. Resolved against docs_tests_root,
+                # never repo_root, so this never touches the repo_root-relative
+                # manifest/script logic elsewhere in this file.
+                resolved = (self.docs_tests_root / external_file).resolve()
+                if not resolved.exists():
+                    raise FileNotFoundError(
+                        f"doc-test file not found: {external_file} "
+                        f"(resolved to {resolved}, from {source_file}:{start_line}; "
+                        f"docs_tests_root={self.docs_tests_root})"
+                    )
+                content = resolved.read_text(encoding="utf-8").strip("\n")
+            else:
+                content = textwrap.dedent(body).strip("\n")
             if not content:
                 continue
 
@@ -626,15 +650,24 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Generate executable doc test scripts from markdown path selectors.")
     parser.add_argument("--definition", required=True, help="Path to JSON test definition file")
     parser.add_argument("--repo-root", default=".", help="Workspace root")
+    parser.add_argument(
+        "--docs-tests-root",
+        default=None,
+        help="Path to a docs-tests checkout, for {{< doc-test file=\"...\" >}} external "
+        "content. Defaults to a sibling 'docs-tests' directory next to --repo-root. "
+        "Can also be set via the DOCS_TESTS_ROOT environment variable.",
+    )
     parser.add_argument("--output-script", help="Override output script path")
     parser.add_argument("--output-manifest", help="Override output manifest path")
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
     definition_path = (repo_root / args.definition).resolve() if not Path(args.definition).is_absolute() else Path(args.definition)
+    docs_tests_root_value = args.docs_tests_root or os.environ.get("DOCS_TESTS_ROOT")
+    docs_tests_root = Path(docs_tests_root_value).resolve() if docs_tests_root_value else None
 
     definition = json.loads(definition_path.read_text(encoding="utf-8"))
-    extractor = Extractor(repo_root=repo_root, definition=definition)
+    extractor = Extractor(repo_root=repo_root, definition=definition, docs_tests_root=docs_tests_root)
     extractor.walk()
 
     blocks = extractor.select_blocks()
