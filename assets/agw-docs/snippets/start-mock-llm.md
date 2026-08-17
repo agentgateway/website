@@ -33,4 +33,5 @@ HTTPServer(("127.0.0.1", 3091), Handler).serve_forever()
 PY
 python3 mock-llm.py &
 MOCK_LLM_PID=$!
-for _ in $(seq 1 20); do curl -sf -o /dev/null -m 2 -X POST http://localhost:3091 -d '{}' && break; sleep 1; done
+for _ in $(seq 1 20); do curl -sf -o /dev/null -m 2 -X POST http://localhost:3091 -d '{}' && break; sleep 1; done \
+  || { echo "mock LLM did not start within 20 s"; exit 1; }
