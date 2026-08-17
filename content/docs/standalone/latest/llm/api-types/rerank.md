@@ -39,7 +39,10 @@ routes:
   - ai:
       name: cohere
       provider:
-        cohere: {}
+        custom:
+          formats:
+          - type: rerank
+      hostOverride: api.cohere.ai:443
   policies:
     ai:
       routes:
