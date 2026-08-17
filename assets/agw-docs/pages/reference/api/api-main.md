@@ -4768,6 +4768,8 @@ _Appears in:_
 | `Embeddings` | RouteTypeEmbeddings processes OpenAI `/v1/embeddings` format requests.<br /> |
 | `Realtime` | RouteTypeRealtime processes OpenAI `/v1/realtime` requests.<br /> |
 | `Rerank` | RouteTypeRerank processes Cohere `/v2/rerank` format requests.<br /> |
+| `GenerateContent` | RouteTypeGenerateContent processes Gemini `models/\{model\}:generateContent`<br />and `models/\{model\}:streamGenerateContent` format requests.<br /> |
+| `GeminiCountTokens` | RouteTypeGeminiCountTokens processes Gemini `models/\{model\}:countTokens`<br />format requests.<br /> |
 
 
 
