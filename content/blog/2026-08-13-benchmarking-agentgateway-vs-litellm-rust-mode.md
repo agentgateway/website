@@ -103,7 +103,7 @@ The benchmark uses:
 | agentgateway | **35,502 QPS** | **0.863 ms** | **1.644 ms** | **1.972 ms** |
 | LiteLLM (rust: true) | 984 QPS | 32.139 ms | 48.528 ms | 71.451 ms |
 
-agentgateway handled **over 36× more requests per second** while maintaining sub-2 ms P99 latency.
+Agentgateway handled **over 36× more requests per second** while maintaining sub-2 ms P99 latency.
 
 ### CPU & Memory
 
