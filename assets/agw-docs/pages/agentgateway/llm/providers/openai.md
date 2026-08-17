@@ -155,6 +155,53 @@ YAMLTest -f - <<'EOF'
       intervalSeconds: 2
 EOF
 {{< /doc-test >}}
+
+{{< doc-test paths="openai-setup" >}}
+# ============================================================================
+# Doc test coverage for this guide (these comments are not rendered on the page)
+# ============================================================================
+# WHAT THIS TEST VALIDATES:
+#   * "Set up access to OpenAI": the Secret, the AgentgatewayBackend with the
+#     `openai` provider and its `policies.auth.secretRef`, and the HTTPRoute are
+#     all accepted, and the backend reports Accepted=True.
+#   * "Step 4": a request along the documented route reaches the provider and
+#     comes back as an OpenAI-shaped chat completion with token usage.
+#
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * A live completion from OpenAI itself. This setup is the shared prerequisite
+#     for most of the LLM guides, so the backend created above is patched to point
+#     at the httpbun mock LLM. That keeps every guide that chains this path free of
+#     a provider API key and bills nothing, while still exercising the whole
+#     gateway side of the request: the route, the auth policy, the provider wiring,
+#     and the response parsing that produces the token usage.
+#     To reproduce the guide against the real provider, skip this block and export
+#     a real OPENAI_API_KEY.
+{{< reuse "agw-docs/snippets/deploy-mock-llm.md" >}}
+kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type=merge --patch-file /dev/stdin <<EOF
+spec:
+  ai:
+    provider:
+      host: httpbun.default.svc.cluster.local
+      port: 3090
+      path: /llm/chat/completions
+EOF
+YAMLTest -f - <<'EOF'
+- name: wait for the openai backend to settle after the mock LLM patch
+  wait:
+    target:
+      kind: AgentgatewayBackend
+      metadata:
+        namespace: agentgateway-system
+        name: openai
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
    
 ### Step 4: Send a request to the LLM
 

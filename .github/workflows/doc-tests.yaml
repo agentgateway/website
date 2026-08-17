@@ -225,7 +225,12 @@ jobs:
         env:
           SHARD_TESTS: ${{ matrix.tests }}
           DEBUG_MODE: true
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # Doc tests never call a real LLM provider: guides that configure one are
+          # tested against a mock (httpbun in Kubernetes, a local mock LLM for the
+          # standalone binary). Agentgateway fails to start when a `$VAR` reference
+          # in a config cannot be resolved, so the variable still has to be set —
+          # the value is deliberately a placeholder, not a secret.
+          OPENAI_API_KEY: doc-tests-placeholder
           PYTHONUNBUFFERED: '1'
           # Used by the install-agentgateway-binary snippet's `gh run download` of the
           # nightly release-binary-linux artifact from agentgateway/agentgateway.
