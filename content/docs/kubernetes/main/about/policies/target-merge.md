@@ -80,7 +80,7 @@ A tie is easiest to hit with `frontend`, because a `frontend` policy has at most
 
 To avoid a tie, set a given field or section in only one policy per target.
 
-## Merge strategy overrides {#strategy}
+## Merge strategy overrides for traffic policies {#strategy}
 
 `AgentgatewayPolicy.spec.strategy.inheritance` changes how `traffic` policies merge. It's valid only on policies that set `traffic`. The Kubernetes API server rejects a policy that sets the `inheritance` block alongside the `frontend` or `backend` block. Frontend and backend policy merging always follows the `frontend` and `backend` precedence orders in the [Merge precedence](#merging-precedence) table and never uses `inheritance`.
 
