@@ -13,7 +13,7 @@ The steps in this guide run agentgateway on the same machine as Claude Desktop a
 3. Decide how the proxy authenticates callers, and meet the requirements for that path.
 
    * **A gateway API key**, which [Use Client Setup with a gateway API key](#client-setup) covers. Configure an LLM model and a [virtual API key]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) in agentgateway.
-   * **A shared token from a Claude subscription**, which [Configure agentgateway with a Claude subscription](#configure-agentgateway) covers. You need a Claude Teams or Pro subscription, and the [Claude Code CLI](https://code.claude.com/docs) (`npm install -g @anthropic-ai/claude-code`), which provides the `claude setup-token` command.
+   * **A per-user token from a Claude subscription**, which [Configure agentgateway with a Claude subscription](#configure-agentgateway) covers. You need a Claude Pro, Max, Team, or Enterprise subscription, and the [Claude Code CLI](https://code.claude.com/docs) (`npm install -g @anthropic-ai/claude-code`), which provides the `claude setup-token` command.
    * **A per-user token from your identity provider**, which [Authenticate users with your identity provider](#sso) covers. You need an OIDC provider and an Anthropic API key for the proxy to send upstream.
 
 ## Use Client Setup with a gateway API key {#client-setup}
@@ -65,6 +65,11 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
    agentgateway -f config.yaml
    ```
 
+The backend deliberately has no `backendAuth` policy. In subscription mode,
+the bearer token that each user creates with `claude setup-token` must pass
+through agentgateway to Anthropic. Do not add a provider API key or apply a
+virtual API key policy to this route.
+
 > [!NOTE]
 > Claude Code automatically sends the `anthropic-beta: oauth-2025-04-20` header required for OAuth-based authentication. Claude Desktop may require this header to be set as well depending on your client version. If requests fail with a 400 error, add the following to the `passthrough` route policy in your config:
 >
@@ -75,7 +80,7 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
 >       anthropic-beta: oauth-2025-04-20
 > ```
 
-## Configure Claude Desktop with a Claude subscription
+## Configure Claude Desktop with a Claude subscription {#configure-claude-desktop}
 
 1. Get a bearer token for your Claude account.
 
@@ -95,9 +100,24 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
    http://127.0.0.1:4001/claude
    ```
 
-5. For the **Credential kind** dropdown, select `Static API key` and then in the **Gateway API key** field, enter the bearer token you copied in step 1. To authenticate each user with your identity provider instead of requiring users to pass the same shared token, see [Authenticate users with your identity provider](#sso).
+5. For **Credential kind**, select **Static API key**. For **Gateway auth
+   scheme**, select **Bearer**, and enter the token from step 1 in **Gateway
+   API key**. Each user must use their own subscription token. To authenticate
+   users with your identity provider and use a centrally managed provider
+   credential instead, see [Authenticate users with your identity
+   provider](#sso).
 
-6. Click **Apply Changes**, then fully quit Claude Desktop and reopen it. Claude Desktop reads its configuration only at launch.
+6. Open **Models** and add at least one full model ID that the subscription can
+   use, such as `claude-opus-4-6`. Do not use an alias such as `opus`. The
+   first entry is the default. Turn off **Model discovery**, or leave it unset;
+   an explicit model list makes discovery unnecessary.
+
+7. Click **Test connection**. Claude Desktop tests inference with the first
+   configured model. If no explicit model is configured, the test first calls
+   `<base-url>/v1/models` and fails when the gateway or provider does not make
+   that endpoint available to the subscription token.
+
+8. Click **Apply Changes**, then fully quit Claude Desktop and reopen it. Claude Desktop reads its configuration only at launch.
 
    > [!NOTE]
    > On macOS, Claude Desktop might not enter third-party inference mode from the settings panel alone. If the app still signs in to Anthropic after you reopen it, set `deploymentMode` to `3p` in the third-party configuration file, then quit and reopen the app again.
@@ -111,6 +131,10 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
    > open(p, 'w').write(json.dumps(d, indent=2))
    > EOF
    > ```
+
+For a managed rollout of this subscription configuration, see [Manage Claude
+subscriptions with Microsoft Intune]({{< link-hextra
+path="/integrations/llm-clients/microsoft-intune/#claude-subscription" >}}).
 
 ## Authenticate users with your identity provider {#sso}
 
@@ -209,10 +233,15 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    | Issuer URL | `https://login.microsoftonline.com/$TENANT_ID/v2.0` |
    | Bearer token | **ID token** |
    | Scopes | `openid profile email offline_access` |
+   | Model discovery | **Off** when you use a fixed model list |
+   | Models | One or more full model IDs that the backend exposes |
 
    {{< reuse "agw-docs/snippets/claude-desktop-id-token-warning.md" >}}
 
-6. Click **Apply Changes**, then fully quit Claude Desktop and reopen it. A browser window opens to your identity provider. After you sign in, Claude Desktop stores the token and refreshes it in the background through the `offline_access` scope.
+6. Click **Test connection**. Then click **Apply Changes**, fully quit Claude
+   Desktop, and reopen it. A browser window opens to your identity provider.
+   After you sign in, Claude Desktop stores the token and refreshes it in the
+   background through the `offline_access` scope.
 
 ## Send custom headers {#headers}
 
@@ -226,7 +255,7 @@ Configure and test one machine in developer mode first. When the connection work
 
 For an end-to-end Microsoft Intune rollout with Entra ID and managed-device
 enforcement, see [Manage Claude Desktop with Microsoft Intune]({{< link-hextra
-path="/integrations/llm-clients/microsoft-intune/#manage-claude-desktop" >}}).
+path="/integrations/llm-clients/microsoft-intune/#claude-entra" >}}).
 
 Managed configuration takes precedence over local settings, so a user cannot point the app at a different endpoint. The delivery mechanism differs per operating system.
 
@@ -249,6 +278,8 @@ The following example shows the Linux form. On macOS and Windows, write every va
     "scopes": "openid profile email offline_access",
     "bearerTokenType": "id_token"
   },
+  "modelDiscoveryEnabled": false,
+  "inferenceModels": ["claude-opus-4-6"],
   "inferenceCustomHeaders": {
     "X-Tenant-Id": "acme"
   }
@@ -268,6 +299,18 @@ info  request gateway=default/default listener=http route=claude-agent endpoint=
 ```
 
 If you configured gateway API key or OIDC authentication in strict mode, send a request without the `Authorization` header and confirm that agentgateway rejects it. This negative check verifies that the route does not admit unauthenticated requests.
+
+## Troubleshoot the connection
+
+| Symptom | Likely cause and action |
+| -- | -- |
+| The connection test calls an unexpected path such as `/claude/claude/v1/models` | Make the base URL match the route prefix exactly. Claude Desktop appends `/v1/models` and `/v1/messages`. |
+| `api key authentication failure` appears in agentgateway logs | A virtual API key policy is protecting the subscription route. Remove it from this route so that the subscription bearer token can pass upstream. |
+| The test needs at least one model after `/v1/models` fails | Add a full model ID under **Models** and disable or skip model discovery. |
+| Anthropic returns `authentication_error` | Generate a new token with `claude setup-token`, confirm that the auth scheme is **Bearer**, and make sure the backend does not inject a provider API key. |
+| Anthropic returns HTTP 400 | Add or forward `anthropic-beta: oauth-2025-04-20` as described in [Configure agentgateway with a Claude subscription](#configure-agentgateway). |
+| Anthropic returns HTTP 429 with `rate_limit_error` | The request reached Anthropic, but the account or plan is at a usage limit or is temporarily throttled. Check the Claude usage indicator or `/usage`, wait for the reset, or choose a model available within the plan. See the [Claude error reference](https://code.claude.com/docs/en/errors#usage-limits). |
+| No request appears in the agentgateway output | Check the base URL, agentgateway process, certificate for a remote host, DNS, and network path. |
 
 ## Next steps
 
