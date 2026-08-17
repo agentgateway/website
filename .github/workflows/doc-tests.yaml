@@ -187,6 +187,12 @@ jobs:
       - name: Checkout website repo
         uses: actions/checkout@v6
 
+      - name: Checkout docs-tests
+        uses: actions/checkout@v6
+        with:
+          repository: solo-io/docs-tests
+          path: docs-tests
+
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -230,6 +236,7 @@ jobs:
           # Used by the install-agentgateway-binary snippet's `gh run download` of the
           # nightly release-binary-linux artifact from agentgateway/agentgateway.
           GH_TOKEN: ${{ github.token }}
+          DOCS_TESTS_ROOT: ${{ github.workspace }}/docs-tests
         run: |
           FAILED=0
           TEST_INDEX=0

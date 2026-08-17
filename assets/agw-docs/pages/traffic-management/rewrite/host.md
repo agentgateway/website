@@ -78,52 +78,11 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    }
    ```
 
-{{< doc-test paths="host-rewrite" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-rewrite HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-rewrite
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
+{{< doc-test paths="host-rewrite" file="products/agentgateway/main/traffic-management/rewrite/host-rewrite-wait.sh" >}}{{< /doc-test >}}
 
-{{< doc-test paths="host-rewrite" >}}
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: rewrite.example" && break
-  sleep 2
-done
-{{< /doc-test >}}
+{{< doc-test paths="host-rewrite" file="products/agentgateway/main/traffic-management/rewrite/host-rewrite-warmup.sh" >}}{{< /doc-test >}}
 
-{{< doc-test paths="host-rewrite" >}}
-YAMLTest -f - <<'EOF'
-- name: host rewrite - rewrite.example rewrites host header to www.example.com
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /headers
-    method: GET
-    headers:
-      host: "rewrite.example"
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.headers.Host[0]"
-        comparator: equals
-        value: "www.example.com"
-EOF
-{{< /doc-test >}}
+{{< doc-test paths="host-rewrite" file="products/agentgateway/main/traffic-management/rewrite/host-rewrite-assert.sh" >}}{{< /doc-test >}}
 
 ## External service host rewrites
 
