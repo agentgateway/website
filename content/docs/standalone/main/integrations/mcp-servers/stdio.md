@@ -45,15 +45,15 @@ mcp:
 The MCP test server (`@modelcontextprotocol/server-everything`) is useful for testing:
 
 ```yaml
-backends:
-- mcp:
-    targets:
-    - name: test-server
-      stdio:
-        cmd: npx
-        args:
-          - "-y"
-          - "@modelcontextprotocol/server-everything"
+mcp:
+  port: 3000
+  targets:
+  - name: test-server
+    stdio:
+      cmd: npx
+      args:
+        - "-y"
+        - "@modelcontextprotocol/server-everything"
 ```
 
 ## Example: Filesystem MCP server
@@ -61,16 +61,16 @@ backends:
 Expose local filesystem access via MCP:
 
 ```yaml
-backends:
-- mcp:
-    targets:
-    - name: filesystem
-      stdio:
-        cmd: npx
-        args:
-          - "-y"
-          - "@modelcontextprotocol/server-filesystem"
-          - "/path/to/allowed/directory"
+mcp:
+  port: 3000
+  targets:
+  - name: filesystem
+    stdio:
+      cmd: npx
+      args:
+        - "-y"
+        - "@modelcontextprotocol/server-filesystem"
+        - "/path/to/allowed/directory"
 ```
 
 ## Why use agentgateway?

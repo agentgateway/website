@@ -2,7 +2,7 @@ Secure your Model Context Protocol (MCP) servers with OAuth 2.0 authentication b
 
 ## About this guide
 
-In this guide, you explore how to configure the agentgateway proxy to protect a static MCP server with MCP auth by using Keycloak as an identity provider. To authenticate with the MCP server, MCP clients such as the MCP inspector tool, can dynamically register with the identity provider to obtain a client ID. Then, the MCP client uses the client ID during the OAuth flow to obtain the JWT token. Finally, the MCP client uses the JWT token to authenticate with the MCP server and access its tools.
+In this guide, you configure the agentgateway proxy to protect a static MCP server with Keycloak. The MCP client uses dynamic client registration (DCR) with Keycloak and sends the user through the OAuth flow. DCR creates the client registration but does not grant access to the MCP server. Agentgateway validates the token audience and permits only members of the Keycloak `users` group.
 
 {{< reuse "agw-docs/pages/agentgateway/mcp/mcp-auth-vs-jwt.md" >}}
 
@@ -22,7 +22,7 @@ For more information, see the [JWT auth docs]({{< link-hextra path="/mcp/mcp-acc
 
 With Keycloak deployed and your MCP backend configured, you can now create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces authentication for the MCP backend.
 
-1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with MCP authentication configuration. MCP authentication is configured at the route level by using `traffic.jwtAuthentication` with the `mcp` extension field. The route-level placement aligns MCP auth with standard JWT authentication and allows you to use JWT claims in other route-level policies, such as authorization, rate limiting, and transformations.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with MCP authentication and authorization configuration. The policy validates the resource audience and uses a Common Expression Language (CEL) rule to require the Keycloak `users` group.
    ```yaml {paths="mcp-auth-setup"}
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -38,14 +38,14 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
      # Configure MCP authentication at the traffic (route) level
      traffic:
        jwtAuthentication:
-         # Validation mode: Strict requires all claims to be valid
+         # Require a valid JWT from one of the configured providers
          mode: Strict
          providers:
          - # Issuer URL - must match the 'iss' claim in JWT tokens
            issuer: "${KEYCLOAK_ISSUER}"
            # Expected audience in JWT tokens
            audiences:
-           - http://localhost:8080/mcp
+           - "${MCP_RESOURCE}"
            # JWKS configuration for token validation
            jwks:
              remote:
@@ -64,7 +64,7 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
            # MCP resource metadata for OAuth discovery
            resourceMetadata:
              # Resource identifier for this MCP server
-             resource: http://localhost:8080/mcp
+             resource: "${MCP_RESOURCE}"
              # Scopes supported by this MCP server
              scopesSupported:
              - email
@@ -73,6 +73,12 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
              - header
              - body
              - query
+       # Allow only tokens from members of the Keycloak users group
+       authorization:
+         action: Allow
+         policy:
+           matchExpressions:
+           - 'has(jwt.groups) && jwt.groups.exists(group, group == "users")'
    EOF
    ```
 
@@ -82,9 +88,10 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
    | `traffic.jwtAuthentication.providers[].jwks.remote.backendRef` | The Keycloak service for fetching JWKS public keys. |
    | `traffic.jwtAuthentication.providers[].jwks.remote.jwksPath` | The path to the JWKS endpoint to obtain public keys. |
    | `traffic.jwtAuthentication.providers[].audiences` | The purpose of the JWT token. This value must match the `aud` claim in JWT tokens. |
-   | `traffic.jwtAuthentication.mode` | The JWT validation mode. In this example, strict validation is enforced. This mode requires all claims to be valid for agentgateway to proceed with the OAuth flow. |
+   | `traffic.jwtAuthentication.mode` | The JWT validation mode. Strict mode requires a valid JWT from one of the configured providers. |
    | `traffic.jwtAuthentication.mcp.provider` | The identity provider that you use. In this example, Keycloak is used. |
    | `traffic.jwtAuthentication.mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. Includes the resource identifier, supported scopes, and bearer token methods. |
+   | `traffic.authorization.policy.matchExpressions` | CEL rules that authorize the verified JWT claims. This example requires membership in the Keycloak `users` group. |
 
 2. Verify that the policy was accepted.
    ```sh {paths="mcp-auth-setup"}
@@ -169,6 +176,23 @@ EOF
    ```
 
 {{< doc-test paths="mcp-auth-setup" >}}
+DCR_SERVICE_CLIENT=$(curl --fail --silent --show-error \
+  -H "Content-Type: application/json" \
+  -d '{
+    "client_name": "DCR service token test",
+    "grant_types": ["client_credentials"],
+    "token_endpoint_auth_method": "client_secret_basic"
+  }' \
+  "$KEYCLOAK_URL/realms/master/clients-registrations/openid-connect")
+
+DCR_SERVICE_CLIENT_ID=$(jq -r .client_id <<<"$DCR_SERVICE_CLIENT")
+DCR_SERVICE_CLIENT_SECRET=$(jq -r .client_secret <<<"$DCR_SERVICE_CLIENT")
+export DCR_SERVICE_TOKEN=$(curl --fail --silent --show-error \
+  -u "$DCR_SERVICE_CLIENT_ID:$DCR_SERVICE_CLIENT_SECRET" \
+  -d grant_type=client_credentials \
+  "$KEYCLOAK_URL/realms/master/protocol/openid-connect/token" \
+  | jq -r .access_token)
+
 YAMLTest -f - <<'EOF'
 - name: wait for mcp HTTPRoute to be accepted
   wait:
@@ -196,6 +220,17 @@ YAMLTest -f - <<'EOF'
       - name: www-authenticate
         comparator: contains
         value: resource_metadata
+  retries: 3
+- name: DCR service token without a user group returns 403
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/mcp"
+    method: GET
+    headers:
+      authorization: "Bearer ${DCR_SERVICE_TOKEN}"
+  source:
+    type: local
+  expect:
+    statusCode: 403
   retries: 3
 - name: resource metadata discovery returns 200
   http:
@@ -247,7 +282,7 @@ EOF
    4. Copy the authorization code into the **Authorization Code** field in the MCP inspector. Then, click **Continue** to start the **Request Authorization and acquire authorization code** phase.
       {{< reuse-image-light src="img/oauth-auth-code.png" >}}
       {{< reuse-image-dark srcDark="img/oauth-auth-code-dark.png" >}}
-   5. Click **Continue** to start the **Token Request** phase. In this phase, the authorization code is exchanged for a token. Verify that the **Authentication Complete** phase succeeds and that you get back a token from Keycloak.
+   5. Click **Continue** to start the **Token Request** phase. Verify that the **Authentication Complete** phase returns a token from Keycloak. The access token includes the MCP resource in `aud` and the `users` group in `groups`.
       {{< reuse-image-light src="img/oauth-token.png" >}}
       {{< reuse-image-dark srcDark="img/oauth-token-dark.png" >}}
    6. Connect to your MCP server.

@@ -486,6 +486,28 @@ def create_cluster_with_retries(cluster_name: str, repo_root: Path) -> Tuple[int
     return create_code, create_output
 
 
+PORT_FORWARD_RE = re.compile(r"\bkubectl\s+port-forward\b")
+
+
+def contains_port_forward(script_content: str) -> bool:
+    """Report whether the script would actually run `kubectl port-forward`.
+
+    Comment-only lines are ignored. A hidden `{{< doc-test >}}` block often
+    documents *why* a test avoids port-forwarding, and naming the command in that
+    comment used to reject the test even though nothing ran it. A line whose first
+    non-whitespace character is `#` is never executed by bash, so skipping those
+    cannot hide a real invocation. Trailing comments are deliberately left in
+    scope: telling a real `#` from one inside a quoted string or heredoc needs a
+    shell parser, and over-reporting is the safe direction here.
+    """
+    for line in script_content.splitlines():
+        if line.lstrip().startswith("#"):
+            continue
+        if PORT_FORWARD_RE.search(line):
+            return True
+    return False
+
+
 def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, context_base_dir: Optional[Path] = None, pause: bool = False, keep_cluster: bool = False) -> Dict:
     test_slug = sanitize_name(test_case.name)
     cluster_name = f"{cluster_prefix}-{test_slug}"[:50]
@@ -506,7 +528,7 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, con
     logger.info("=== Running test: %s (%s) ===", test_case.name, doc_rel)
 
     script_content = test_case.script_path.read_text(encoding="utf-8")
-    if re.search(r"\bkubectl\s+port-forward\b", script_content):
+    if contains_port_forward(script_content):
         logger.warning("SKIPPED (port-forward): %s", doc_rel)
         return {
             "status": "failed",

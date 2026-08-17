@@ -56,7 +56,7 @@ helm get values {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} -n {{< r
 7. Upgrade the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane Helm installation.
    * Make sure to include your Helm values when you upgrade either as a configuration file or with `--set` flags. Otherwise, any previous custom values that you set might be overwritten.{{< conditional-text include-if="kubernetes" >}}
    * When using the development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.{{< /conditional-text >}}
-   * To use experimental Gateway API features, include the experimental feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`.
+   * Experimental Gateway API features are enabled by default. To set the experimental feature gate explicitly, include `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true`.
    
    ```sh {paths="upgrade"}
    helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \

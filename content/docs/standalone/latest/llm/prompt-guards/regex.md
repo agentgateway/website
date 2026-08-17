@@ -384,6 +384,9 @@ echo "✓ A prompt matching no regex rule was not blocked by the prompt guard"
 
 You can also filter LLM responses to redact sensitive data before it reaches the client. When a match is found, agentgateway replaces built-in pattern matches with `<ENTITY_TYPE>` (for example, `<CREDIT_CARD>`) and custom pattern matches with `<masked>`. The following example masks credit card numbers in responses.
 
+> [!WARNING]
+> Masking applies only to a buffered response. When the client sets `"stream": true`, the LLM response is streamed, and agentgateway cannot rewrite content that is already on its way to the client. A response guard that uses `action: mask` passes the matched content through unmodified, and the client receives no error. To protect a streamed response, use `action: reject` and set `streaming: Enabled`. For more information, see [Streaming guardrails]({{< link-hextra path="/llm/prompt-guards/overview/#streaming-guardrails" >}}).
+
 1. Create a configuration that masks phone numbers in LLM responses by using the built-in `phoneNumber` pattern.
    ```yaml
    cat <<'EOF' > config.yaml

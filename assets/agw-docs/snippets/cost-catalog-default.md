@@ -1,0 +1,1 @@
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} does not ship a built-in catalog. Costs are computed only when you configure one (for example, a catalog that you generate with [`agctl costs import`](#generate-a-catalog-with-agctl)).

@@ -5,12 +5,12 @@ The following guide deploys a sample TCP echo app, sets up a TCP listener on the
 
 ## Before you begin
 
-1. Install the experimental channel of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} so that you can use TCPRoutes.
+1. To use TCPRoutes in {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} 1.3 - 1.5, install the experimental channel.
    ```sh
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
 
-2. Ensure that you installed {{< reuse "agw-docs/snippets/kgateway.md" >}} with the `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true` Helm flag to use experimental Kubernetes Gateway API features. For an example, see the [Get started guide]({{< link-hextra path="/quickstart" >}}).
+2. Experimental Kubernetes Gateway API features are enabled by default in {{< reuse "agw-docs/snippets/kgateway.md" >}}. To set the feature gate explicitly, install or upgrade with the `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true` Helm flag. For an example, see the [Get started guide]({{< link-hextra path="/quickstart" >}}).
 
 3. Deploy the sample TCP echo app.
 

@@ -265,7 +265,7 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
    | `identityProvider` | The user's IdP authorization server token endpoint, referenced as an {{< reuse "agw-docs/snippets/backend.md" >}} through `backendRef`, with the token endpoint `path`. Agentgateway sends the validated ID token as the RFC 8693 `subject_token` on this leg. |
    | `resourceAuthorizationServer` | The resource authorization server token endpoint, in the same shape as `identityProvider`. This leg uses the RFC 7523 JWT-bearer grant, with the ID-JAG from the IdP leg sent as the assertion. This is a separate client registration from the IdP one. |
    | `clientAuth` | Client authentication for each token endpoint. `method` is `ClientSecretBasic` (default), `ClientSecretPost`, or `PrivateKeyJwt`. Use `secretRef` to read the client secret from a Kubernetes Secret. |
-   | `subjectToken` | Optional source of the subject token for the exchange. `source` defaults to the `Authorization` Bearer header. When a route-level JWT policy validates the inbound token, it strips the `Authorization` header, so set `source.expression` to the `jwt.rawToken.unredacted()` CEL expression to read the validated token instead. |
+   | `subjectToken` | Optional source of the subject token for the exchange. `source` defaults to the `Authorization` Bearer header. When a route-level JWT policy validates the inbound token, it strips the `Authorization` header, so set `source.expression` to the `jwt.rawToken.unredacted()` CEL expression to read the validated token instead. For more information about other forms of sources, such as headers, query parameters, or cookies,  see [Choose where the subject token is read from](#subject-token-source). |
    | `audience` | Required identifier of the resource authorization server. The issued ID-JAG is bound to this value. |
    | `resources` | Optional protected resource or API identifiers ([RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707)), sent on the token exchange leg. Configure these explicitly when the authorization server expects them. |
    | `scopes` | Optional scopes to request. The authorization server might grant a subset. |
@@ -412,6 +412,47 @@ BAD_TOKEN=$(curl -s -o /dev/null -w '%{http_code}' "http://${INGRESS_GW_ADDRESS}
 echo "cross-app-access exchange verified"
 {{< /doc-test >}}
 
+## Choose where the subject token is read from {#subject-token-source}
+
+The `subjectToken.source` field selects where the gateway reads the subject credential from. Set one of the following four forms. A policy that sets none of them, or several of them, is rejected when you apply it, with the message `exactly one of the fields in [header queryParameter cookie expression] must be set`.
+
+| Form | Reads the credential from |
+| -- | -- |
+| `header` | The name of the request header. |
+| `queryParameter` | The name of the query parameter in the request URL. |
+| `cookie` | The name of the cookie. |
+| `expression` | A CEL expression that the gateway evaluates against the validated request, such as a claim of a JWT that a [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) policy validated. |
+
+When you omit `subjectToken`, the gateway reads the credential from the `Authorization` header with the `Bearer` prefix. The gateway does not fall back to another location.
+
+If the configured source yields no credential, the request fails with a `400` and the message `invalid request`, and the gateway does not call the identity provider. However, the policy can still report `Accepted: True` in that case, because an expression that names a missing claim is still well formed. Check the response code as well as the policy status after you change the source.
+
+You can also configure the location where the gateway checks for the subject token. Whichever form you choose, the gateway sends the credential to the identity provider as an ID token, with `subject_token_type` set to `urn:ietf:params:oauth:token-type:id_token`.
+
+After the exchange, the gateway removes the credential from the location that you configured, and forwards the remaining cookies and parameters unchanged. It then writes the exchanged access token to the `Authorization` header, replacing any credential that the client sent there. The backend therefore receives only the exchanged token, never the subject credential.
+
+> [!NOTE]
+> On MCP routes, the `queryParameter` form never matches, because the request that the policy inspects carries no query string. The exchange fails even when the parameter is present on the incoming request. Use a header, a cookie, or a CEL expression instead. Plain HTTP routes are not affected.
+
+<!--TODO 
+For more information, see [agentgateway#2799](https://github.com/agentgateway/agentgateway/issues/2799).
+-->
+
+### Read the subject token from a claim {#subject-token-claim}
+
+A client does not always present an ID token directly. In an MCP OAuth setup, for example, the client authenticates with an OAuth access token that carries the ID token as a claim. Validate the incoming token with a route-level JWT authentication policy, then point the subject source at the claim that carries the ID token, using the claim name that your authorization server issues.
+
+```yaml
+backend:
+  auth:
+    crossAppAccess:
+      subjectToken:
+        source:
+          expression: jwt.id_token
+```
+
+The `jwt` variable holds the claims of the token that the JWT authentication policy validated, so an expression can read only a claim that arrived signed. The gateway exchanges the ID token that it extracts from the claim. The access token that the client presented is not sent to either token endpoint.
+
 ## Private key JWT client authentication
 
 Enterprise IdPs such as Okta commonly require the `PrivateKeyJwt` client authentication method, in which the gateway authenticates with a signed JWT assertion instead of a client secret. Store the PEM-encoded signing key in a Kubernetes Secret and reference it with `signingKeyRef`. Because token endpoints are configured as backend references rather than raw URLs, `PrivateKeyJwt` requires an explicit `assertionAudience`.
@@ -433,8 +474,8 @@ clientAuth:
 The following parts of the Identity Assertion Authorization Grant draft are not yet supported:
 
 - DPoP sender-constrained tokens (RFC 9449).
-- `.well-known` endpoint discovery (RFC 8414, endpoints must be configured explicitly).
-- SAML or refresh-token subject types in the open source build (only OIDC ID tokens are used as the subject).
+- `.well-known` endpoint discovery (RFC 8414, endpoints must be configured explicitly).{{< conditional-text include-if="kubernetes" >}}
+- SAML and refresh-token subject types. Only an OIDC ID token can be the subject of the exchange.{{< /conditional-text >}}
 
 ## Cleanup
 

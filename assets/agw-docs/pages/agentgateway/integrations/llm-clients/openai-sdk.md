@@ -4,6 +4,8 @@ Use the OpenAI Python or Node.js SDK to send requests through agentgateway.
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
+{{< reuse "agw-docs/snippets/llm-client-setup-callout.md" >}}
+
 ## Example agentgateway configuration
 
 ```yaml
