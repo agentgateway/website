@@ -72,7 +72,7 @@ docker rm -f keycloak >/dev/null 2>&1 || true
    docker run -d --name keycloak -p 8080:8080 \
      -e KC_BOOTSTRAP_ADMIN_USERNAME=admin \
      -e KC_BOOTSTRAP_ADMIN_PASSWORD=admin \
-     quay.io/keycloak/keycloak:26.7 start-dev
+     quay.io/keycloak/keycloak:{{< reuse "agw-docs/versions/keycloak.md" >}} start-dev
    ```
 
 2. Wait for Keycloak to accept requests.
@@ -638,7 +638,7 @@ services:
       - keycloak
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.7
+    image: quay.io/keycloak/keycloak:{{< reuse "agw-docs/versions/keycloak.md" >}}
     ports:
       - "8080:8080"
     environment:
