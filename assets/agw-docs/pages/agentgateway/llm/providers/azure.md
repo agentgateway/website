@@ -13,6 +13,54 @@ Azure supports two endpoint types:
 
 You can authenticate to Azure with an API key or with implicit Entra ID authentication through `DefaultAzureCredential`. On Kubernetes, implicit authentication can obtain a token from managed identity or workload identity. It does not require a Kubernetes secret or `policies.auth`.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}
+### Use Microsoft Entra Workload ID on AKS
+
+First, [enable workload identity on the AKS cluster](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster), create a user-assigned managed identity, and grant that identity the least-privilege role required by the Azure AI resource. For example, the `Azure AI User` role grants access to Azure AI Foundry.
+
+Create a federated credential that trusts the service account used by the gateway proxy. By default, the deployer names this service account after the `Gateway`. For the default gateway from the quickstart, use this subject:
+
+```txt
+system:serviceaccount:{{< reuse "agw-docs/snippets/namespace.md" >}}:agentgateway-proxy
+```
+
+The subject must match the namespace and service account name exactly.
+
+Next, annotate the service account with the managed identity client ID and label the pod for the Azure workload identity webhook.
+
+```yaml
+kubectl apply --server-side -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+metadata:
+  name: azure-workload-identity
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  serviceAccount:
+    metadata:
+      annotations:
+        azure.workload.identity/client-id: <managed-identity-client-id>
+  deployment:
+    spec:
+      template:
+        metadata:
+          labels:
+            azure.workload.identity/use: "true"
+EOF
+```
+
+Attach the parameters to the gateway.
+
+```sh
+kubectl patch gateway agentgateway-proxy \
+  --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+  --type merge \
+  --patch '{"spec":{"infrastructure":{"parametersRef":{"group":"agentgateway.dev","kind":"AgentgatewayParameters","name":"azure-workload-identity"}}}}'
+```
+
+If the gateway already references an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, add these overlays to that resource instead.
+{{< /version >}}
+
 ## Set up access to Azure
 
 1. Retrieve the resource name and, if applicable, the project name from the [Azure AI Foundry portal](https://ai.azure.com/) or the [Azure portal](https://portal.azure.com/). For example:
@@ -107,6 +155,32 @@ You can authenticate to Azure with an API key or with implicit Entra ID authenti
    {{% /tab %}}
    {{< /tabs >}}
 
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}
+   **Workload identity**
+
+   After the AKS workload is configured, select workload identity in the backend.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: azure
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         azure:
+           resourceName: my-resource
+           resourceType: OpenAI
+           model: gpt-4.1-mini
+     policies:
+       auth:
+         azure:
+           workloadIdentity: {}
+   EOF
+   ```
+   {{< /version >}}
    {{% reuse "agw-docs/snippets/review-table.md" %}}{{< version exclude-if="1.1.x" >}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#azureconfig" >}}).{{< /version >}}
 
    | Setting     | Description |
