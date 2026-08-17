@@ -13,7 +13,8 @@ adds the centrally managed Anthropic credential to the upstream request.
    path="/integrations/llm-clients/claude-desktop/" >}}) guide through the
    Entra ID authentication steps for your agentgateway mode.
 2. Expose agentgateway through a stable HTTPS hostname that the managed devices
-   can resolve. Claude Desktop rejects plain HTTP for non-loopback addresses.
+   can resolve. Claude Desktop rejects plain HTTP for non-loopback addresses
+   with `baseUrl: must use https (or http on loopback)`.
 3. Enroll your [Windows
    devices](https://learn.microsoft.com/en-us/intune/device-enrollment/windows/guide)
    or [macOS

@@ -22,6 +22,19 @@ for authentication, authorization, rate limits, guardrails, and observability.
    client]({{< link-hextra path="/integrations/llm-clients/" >}}) that you plan
    to manage.
 
+{{< conditional-text include-if="kubernetes" >}}
+For Kubernetes, terminate TLS on the agentgateway proxy by following the
+[HTTPS listener guide]({{< link-hextra path="/setup/listeners/https/" >}}).
+Use a certificate whose subject alternative name matches the managed hostname
+and whose issuer is trusted by the client devices.
+{{< /conditional-text >}}
+{{< conditional-text include-if="standalone" >}}
+For standalone, terminate TLS on agentgateway by following the [HTTPS listener
+configuration]({{< link-hextra path="/configuration/listeners/#https-listeners"
+>}}). Use a certificate whose subject alternative name matches the managed
+hostname and whose issuer is trusted by the client devices.
+{{< /conditional-text >}}
+
 {{< callout type="warning" >}}
 Do not use a port-forward, localhost address, or temporary load balancer address
 in a managed configuration. Do not include an upstream LLM provider key or
@@ -118,10 +131,11 @@ wire_api = "responses"
 ```
 
 {{< callout type="warning" >}}
-Use a stable HTTPS address for production. Plain HTTP can be useful for an
-isolated connectivity test before TLS is ready, but it sends prompts and
-responses across the network without transport encryption. Do not use
-sensitive prompts or credentials during an HTTP test.
+Do not distribute a plain HTTP gateway URL. It sends prompts, responses, and
+credentials without transport encryption, and Claude Desktop rejects HTTP for
+any non-loopback address with `baseUrl: must use https (or http on loopback)`.
+Use a publicly trusted or organization-trusted certificate on the HTTPS
+listener before assigning the managed client configuration.
 {{< /callout >}}
 
 For more information about the client behavior, see [Codex]({{< link-hextra
@@ -205,10 +219,10 @@ are managed defaults, not supported `requirements.toml` constraints.
    gateway hostname, the expected route, and `http.status=200`. The access log
    does not need to contain the prompt text.
 7. If no entry appears, check that the task is local, Codex was fully
-   restarted, DNS resolves the managed hostname, and the configured `http` or
-   `https` scheme matches the Gateway listener. An unauthorized response
-   indicates a client or backend authentication problem rather than an Intune
-   delivery problem.
+   restarted, DNS resolves the managed hostname, the HTTPS listener serves a
+   trusted certificate for that hostname, and the managed URL uses `https`.
+   An unauthorized response indicates a client or backend authentication
+   problem rather than an Intune delivery problem.
 8. Add a conflicting provider or base URL to the user's `config.toml`, or start
    Codex with a conflicting `--config` value. Restart Codex and confirm that it
    starts with the managed agentgateway values.
