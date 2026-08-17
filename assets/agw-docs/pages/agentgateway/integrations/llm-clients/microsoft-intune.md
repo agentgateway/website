@@ -97,7 +97,7 @@ mechanisms. Start with clients that provide native managed policy.
 | --- | --- | --- | --- |
 | Codex | `model_provider` and `model_providers.agentgateway` | Deploy Codex managed configuration. Use a macOS preference profile or a Windows remediation. | Strong managed startup configuration. |
 | Claude Code | `ANTHROPIC_BASE_URL` | Deploy native Claude Code managed settings through a macOS preference profile, Windows registry policy, or `managed-settings.json`. | Strong native managed policy. |
-| Claude Desktop | Gateway connection, Entra sign-in, workspace restrictions, and managed MCP servers | Build and test the configuration in Claude Desktop, export the native `.mobileconfig` or ADMX policy, and deploy it with Intune. | Strong native managed policy. Managed settings override local configuration. |
+| Claude Desktop | Gateway connection, a subscription credential helper or Entra sign-in, workspace restrictions, and managed MCP servers | Build and test the configuration in Claude Desktop, export the native `.mobileconfig` or ADMX policy, and deploy it with Intune. | Strong native managed policy. Managed settings override local configuration. |
 | Cursor | **Override OpenAI Base URL** in Cursor settings | Seed and audit the user setting only after validating its on-disk schema for the deployed Cursor version. | Remediation-based. |
 | Devin Desktop | `http.proxy` in the editor settings | Merge the setting into the user's editor configuration and remediate only that key. | Remediation-based. |
 | VS Code Continue | The model entry in `~/.continue/config.json` | Deploy the configuration file or merge the agentgateway model entry with a user-context script. | Remediation-based. |
@@ -424,8 +424,9 @@ Codex and Claude Desktop without asking users to run local commands.
   instructions](https://github.com/agentgateway/agentgateway/tree/main/examples/microsoft-intune)
 
 Before you upload a script, edit its configuration block. Set the approved
-Codex URL including `/v1`, set the approved Claude Desktop URL including its
-route prefix, and enable only the clients required for the target group. The
+Codex URL including `/v1`, and set the approved Claude Desktop URL to match its
+route layout. Include a prefix such as `/claude` only when the route matches
+and rewrites it. Enable only the clients required for the target group. The
 optional installation check recognizes the common paths listed in the script.
 Add your organization's package path or disable that check and use the Intune
 managed-app report when the approved package uses a different path. Never add
@@ -513,9 +514,10 @@ network outage must not make every managed device noncompliant or unexpectedly
 affect Conditional Access.
 
 Before uploading a script, replace its example URL with the approved address.
-Include `/v1` for Codex and the configured route prefix, such as `/claude`, for
-Claude Desktop. Keep the expected URL aligned with the corresponding managed
-configuration policy.
+Include `/v1` for Codex. For Claude Desktop, include a route prefix such as
+`/claude` only when the `HTTPRoute` matches and rewrites it; use only the origin
+for a dedicated hostname that matches `/`. Keep the expected URL aligned with
+the corresponding managed configuration policy.
 
 Use separate compliance policies and assignments for the two clients. This
 prevents a device that requires only one client from being marked noncompliant

@@ -1,17 +1,19 @@
 Use Microsoft Intune to deploy a managed Claude Desktop configuration that
-routes inference through agentgateway and authenticates each user with
-Microsoft Entra ID. The workflow applies to agentgateway running in Kubernetes
-or standalone mode.
+routes inference through agentgateway. The workflow applies to agentgateway
+running in Kubernetes or standalone mode and supports two credential models:
+a per-user Claude subscription token from a credential helper, or Microsoft
+Entra ID with a centrally managed Anthropic provider credential.
 
-Intune installs the application and enforces its endpoint configuration. Entra
-ID authenticates the user, and agentgateway validates the identity before it
-adds the centrally managed Anthropic credential to the upstream request.
+Intune installs the application and enforces its endpoint configuration. The
+credential model determines whether agentgateway passes each user's Claude
+subscription token upstream or validates an Entra identity before adding a
+centrally managed Anthropic credential.
 
 ### Prepare the rollout
 
 1. Complete the [Claude Desktop]({{< link-hextra
-   path="/integrations/llm-clients/claude-desktop/" >}}) guide through the
-   Entra ID authentication steps for your agentgateway mode.
+   path="/integrations/llm-clients/claude-desktop/" >}}) guide for your
+   agentgateway mode and chosen credential model.
 2. Expose agentgateway through a stable HTTPS hostname that the managed devices
    can resolve. Claude Desktop rejects plain HTTP for non-loopback addresses
    with `baseUrl: must use https (or http on loopback)`.
@@ -22,17 +24,75 @@ adds the centrally managed Anthropic credential to the upstream request.
    in Intune.
 4. Install a supported Claude Desktop release on an unmanaged administrator
    workstation so that you can build and test the configuration before export.
-5. Create an Intune pilot device group and an Entra ID pilot user group. Do not
-   begin with a tenant-wide assignment.
+5. Create an Intune pilot device group. For Entra mode, also create an Entra ID
+   pilot user group. Do not begin with a tenant-wide assignment.
 
 {{< callout type="warning" >}}
-This workflow uses a centrally managed Anthropic provider credential. It does
-not establish per-user Anthropic subscription or seat attribution. Do not put
-an Anthropic API key, subscription token, or another upstream provider secret
-in an Intune profile.
+The Entra workflow below uses a centrally managed Anthropic provider
+credential. It does not establish per-user Anthropic subscription or seat
+attribution. Do not put an Anthropic API key, subscription token, or another
+upstream provider secret in an Intune profile.
 {{< /callout >}}
 
-### Choose the Entra sign-in flow
+### Manage Claude subscription mode {#claude-subscription}
+
+Claude subscription mode preserves each user's Claude seat and usage
+attribution. The user authenticates to Anthropic with a bearer token from
+`claude setup-token`; agentgateway passes that token upstream instead of
+injecting a centrally managed Anthropic API key. Complete the [Claude
+subscription setup]({{< link-hextra
+path="/integrations/llm-clients/claude-desktop/#configure-claude-desktop" >}})
+for your agentgateway mode before you build the Intune profile.
+
+Intune can enforce the gateway address, Bearer auth scheme, model list, and
+model-discovery setting, but do not put the user's token in the profile. A
+managed profile is readable by device administrators and cannot safely hold a
+per-user subscription credential. Instead, deploy an organization-owned
+credential helper that retrieves the token from per-user secure storage such
+as Keychain or Credential Manager. Each user obtains and stores their own
+token. The helper prints only the token to standard output and must not log it.
+For the helper contract, caching, and refresh behavior, see [Write a credential
+helper](https://claude.com/docs/third-party/claude-desktop/credential-helper).
+
+The following logical configuration shows the values to test before export.
+Use the absolute helper path for each operating system. In the in-app editor,
+add at least one full model ID under **Models** and turn off model discovery.
+
+```json
+{
+  "inferenceProvider": "gateway",
+  "inferenceGatewayBaseUrl": "https://claude.example.com",
+  "inferenceCredentialKind": "helper-script",
+  "inferenceCredentialHelper": "/absolute/path/to/claude-subscription-helper",
+  "inferenceGatewayAuthScheme": "bearer",
+  "modelDiscoveryEnabled": false,
+  "inferenceModels": [
+    {
+      "name": "claude-opus-4-6",
+      "anthropicFamilyTier": "opus"
+    }
+  ]
+}
+```
+
+The base URL must match the route layout. Use only the origin for a dedicated
+hostname whose `HTTPRoute` matches `/`, such as `https://claude.example.com`.
+Include `/claude` only when the route matches that prefix and rewrites it to
+`/`. Claude Desktop appends `/v1/models` and `/v1/messages` to the configured
+base URL.
+
+Test the helper under the intended user account and for noninteractive helper
+contexts before deployment. In particular, the connection test invokes the
+helper with `CLAUDE_HELPER_CONTEXT=setup-test`, and background refreshes must
+not stop for an interactive prompt. Export and deploy the resulting profile as
+described in the platform sections below, but skip the Entra registration and
+Conditional Access sections.
+
+### Choose the Entra sign-in flow {#claude-entra}
+
+Complete the [Claude Desktop Entra setup]({{< link-hextra
+path="/integrations/llm-clients/claude-desktop/#sso" >}}) for your agentgateway
+mode before you build the Intune profile.
 
 Claude Desktop supports two Entra sign-in flows for a Gateway connection.
 
@@ -103,13 +163,15 @@ managed profile.
    | Setting | Value |
    | --- | --- |
    | Inference provider | **Gateway** |
-   | Gateway base URL | The HTTPS agentgateway URL, including the `/claude` route prefix |
+   | Gateway base URL | The HTTPS agentgateway URL. Include `/claude` only when the route matches and rewrites that prefix. |
    | Credential kind | **Interactive sign-in** |
    | Issuer | `https://login.microsoftonline.com/TENANT_ID/v2.0` |
    | Client ID | The Entra Application (client) ID |
    | Bearer token | **ID token** |
    | Scopes | `openid profile email offline_access` |
    | Gateway sign-in flow (`inferenceGatewayOidcAuthFlow`) | **Broker** for a compliant-device production policy; otherwise **Browser** |
+   | Model discovery | **Off** when you deploy a fixed model list |
+   | Models | One or more full model IDs, such as `claude-opus-4-6`; the first entry is the default |
 
 4. In **Workspace restrictions**, set `disableDeploymentModeChooser` when users
    must not sign in directly to Claude.ai.
@@ -122,8 +184,9 @@ managed profile.
    network team. Blocking direct provider access is a separate network control;
    an Intune profile alone cannot prevent another application from bypassing
    agentgateway.
-7. Apply the configuration locally and test model discovery, inference, and
-   each managed MCP server.
+7. Apply the configuration locally and test model selection, inference, and
+   each managed MCP server. If you intentionally use discovery instead of a
+   fixed list, also test `GET /v1/models`.
 8. Verify that agentgateway logs the authenticated Entra identity and does not
    log bearer tokens or the upstream provider credential.
 
@@ -226,7 +289,9 @@ Test the following cases on Windows and macOS before expanding the rollout.
    Intune](#automate-verification-with-intune) with Claude Desktop enabled.
    Confirm that Intune reports success for the installation, effective managed
    gateway URL, and network checks. The script does not return managed
-   preference or registry contents.
+   preference or registry contents. It currently verifies the gateway URL, not
+   the model list; confirm the managed model settings in the read-only Claude
+   Desktop configuration window.
 4. Fully quit and reopen Claude Desktop instead of only closing its window. On
    macOS, use **Command-Q**. Open the third-party inference configuration and
    confirm that it is marked as organization-managed, read-only, and points to
