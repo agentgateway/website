@@ -414,10 +414,10 @@ policies:
 
 ## JWT claim validation
 
-By default, agentgateway requires the `exp` (expiration) claim to be present in every JWT. To change which claims are required, set the `jwtValidationOptions.requiredClaims` field. The following RFC 7519 registered claims are supported: `exp`, `nbf`, `aud`, `iss`, and `sub`.
+By default, agentgateway requires the `exp` (expiration) claim to be present in every JWT. To change which claims are required, set the `jwtValidationOptions.requiredClaims` field. The following RFC 7519 registered claims are supported: `exp`, `nbf`, `aud`, `iss`, and `sub`. Any other claim name that you list, such as `iat` or a custom claim, is ignored and logged as a warning.
 
 > [!NOTE]
-> The `requiredClaims` field controls only whether a claim must be *present*. When a claim is present, its value is always validated, whether or not you list the claim in `requiredClaims`. For example, an expired token is rejected because it carries an `exp` claim, even if you omit `exp` from `requiredClaims`.
+> The `requiredClaims` field controls only whether a claim must be present. It does not control whether the claim's value is checked. When one of the `exp`, `nbf`, `aud`, or `iss` claims is present in a token, agentgateway validates its value, whether or not you list the claim in `requiredClaims`. For example, an expired token is rejected because it carries an `exp` claim, even if you omit `exp` from `requiredClaims`. The `sub` claim is checked for presence only, and custom claims are never validated by this field. To enforce the value of a custom claim, use an [authorization policy]({{< link-hextra path="/configuration/security/mcp-authz" >}}) instead.
 
 Some identity providers issue tokens without an `exp` claim. To accept those tokens, set `requiredClaims` to an empty list.
 

@@ -23,11 +23,11 @@ Create an API and an application in Auth0, and collect the values that agentgate
 
 1. Make sure that you have access to an [Auth0 tenant](https://auth0.com/docs/get-started/auth0-overview/create-tenants). If you do not have one, you can create a free tenant.
 
-2. In the Auth0 Dashboard, go to **Applications > APIs** and click **Create API**. Enter a name such as `agentgateway MCP`, and set the **Identifier** to the resource URL that your MCP clients request, such as `https://mcp.example.com/mcp`. The identifier becomes the `aud` claim of the tokens that Auth0 issues.
+2. In the Auth0 Dashboard sidebar, expand the **Applications** section and click **APIs**. Then, click **Create API**. Enter a name such as `agentgateway MCP`, and set the **Identifier** to the resource URL that your MCP clients request, such as `https://mcp.example.com/mcp`. The identifier becomes the `aud` claim of the tokens that Auth0 issues.
 
 3. On the API's **Settings** tab, enable **Add Permissions in the Access Token**. Then, on the API's **Permissions** tab, define the permissions that your MCP server enforces, such as `read:tools`, and grant them to the users or applications that need access. You use this permission in the authorization rule that you configure later.
 
-4. Go to **Applications > Applications** and click **Create Application**. Choose **Native** for local MCP clients, or **Single Page Application** for browser-based clients. Both are public clients that use PKCE, which is what MCP clients require.
+4. In the Auth0 Dashboard sidebar, expand the **Applications** section and click **Applications**. Then, click **Create Application**. Choose **Native** for local MCP clients, or **Single Page Application** for browser-based clients. Both are public clients that use PKCE, which is what MCP clients require.
 
 5. On the application's **Settings** tab, note the **Domain** and the **Client ID**. Under **Application URIs**, add the callback URLs of the MCP clients that you plan to connect.
 

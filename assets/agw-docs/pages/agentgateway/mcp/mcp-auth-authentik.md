@@ -20,7 +20,7 @@ For more information about MCP auth, see the [About MCP auth]({{< link-hextra pa
 
 ## Install authentik {#install}
 
-Install authentik in your cluster to act as the authorization server.
+Install authentik in your cluster to act as the authorization server. The following steps install a minimal authentik instance that is enough to try out MCP auth. For production installs, sizing guidance, and the full set of Helm values, see the [authentik Kubernetes installation docs](https://docs.goauthentik.io/install-config/install/kubernetes/).
 
 1. Add the authentik Helm repository.
    ```sh {paths="setup-authentik"}
@@ -150,25 +150,59 @@ for i in $(seq 1 90); do
 done
 {{< /doc-test >}}
 
-2. Look up the flow, signing key, and scope IDs that the provider requires.
+2. Look up the flow, signing key, and scope IDs that the provider requires. The authentik worker creates the default flows, scope mappings, and self-signed signing certificate in the background, after the server starts answering API requests. Until that finishes, these lookups return no results, so the following commands retry until every value resolves.
    ```sh {paths="setup-authentik"}
    export AUTHENTIK_API=http://${AUTHENTIK_ADDRESS}/api/v3
    export AK_AUTH_HEADER="Authorization: Bearer ${AUTHENTIK_BOOTSTRAP_TOKEN}"
 
-   export AK_FLOW=$(curl -s -H "${AK_AUTH_HEADER}" \
-     "${AUTHENTIK_API}/flows/instances/?slug=default-provider-authorization-implicit-consent" | jq -r '.results[0].pk')
-   export AK_INVALIDATION_FLOW=$(curl -s -H "${AK_AUTH_HEADER}" \
-     "${AUTHENTIK_API}/flows/instances/?slug=default-invalidation-flow" | jq -r '.results[0].pk')
-   export AK_SIGNING_KEY=$(curl -s -H "${AK_AUTH_HEADER}" \
-     "${AUTHENTIK_API}/crypto/certificatekeypairs/?has_key=true" | jq -r '.results[0].pk')
-   export AK_SCOPES=$(curl -s -H "${AK_AUTH_HEADER}" \
-     "${AUTHENTIK_API}/propertymappings/provider/scope/" \
-     | jq -c '[.results[] | select(.scope_name=="openid" or .scope_name=="profile" or .scope_name=="email") | .pk]')
+   for i in $(seq 1 60); do
+     export AK_FLOW=$(curl -s -H "${AK_AUTH_HEADER}" \
+       "${AUTHENTIK_API}/flows/instances/?slug=default-provider-authorization-implicit-consent" | jq -r '.results[0].pk // empty')
+     export AK_INVALIDATION_FLOW=$(curl -s -H "${AK_AUTH_HEADER}" \
+       "${AUTHENTIK_API}/flows/instances/?slug=default-invalidation-flow" | jq -r '.results[0].pk // empty')
+     export AK_SIGNING_KEY=$(curl -s -H "${AK_AUTH_HEADER}" \
+       "${AUTHENTIK_API}/crypto/certificatekeypairs/?has_key=true" | jq -r '.results[0].pk // empty')
+     export AK_SCOPES=$(curl -s -H "${AK_AUTH_HEADER}" \
+       "${AUTHENTIK_API}/propertymappings/provider/scope/" \
+       | jq -c '[.results[] | select(.scope_name=="openid" or .scope_name=="profile" or .scope_name=="email") | .pk]')
+
+     AK_SCOPE_COUNT=$(echo "${AK_SCOPES}" | jq 'length' 2>/dev/null || echo 0)
+
+     if [ -n "${AK_FLOW}" ] && [ -n "${AK_INVALIDATION_FLOW}" ] \
+       && [ -n "${AK_SIGNING_KEY}" ] && [ "${AK_SCOPE_COUNT}" -eq 3 ]; then
+       echo "authentik finished bootstrapping"
+       break
+     fi
+     sleep 5
+   done
+
+   echo "Authorization flow: ${AK_FLOW}"
+   echo "Invalidation flow:  ${AK_INVALIDATION_FLOW}"
+   echo "Signing key:        ${AK_SIGNING_KEY}"
+   echo "Scopes:             ${AK_SCOPES}"
    ```
+
+   > [!IMPORTANT]
+   > Do not replace this loop with a single pass. The authentik server answers API requests several seconds before the worker finishes creating the default flows, scope mappings, and signing certificate. If the lookups run too early, one of them comes back empty, the provider in the next step fails validation, and the client ID comes back empty.
+
+   If any of these values are still empty after the loop finishes, check the authentik worker logs with `kubectl logs -n authentik deployment/authentik-worker`, and verify that `AUTHENTIK_BOOTSTRAP_TOKEN` matches the value that you installed authentik with.
+
+{{< doc-test paths="setup-authentik" >}}
+# Fail here rather than in the provider request below, so that a slow authentik
+# bootstrap is reported as a missing flow, key, or scope instead of an empty client ID.
+AK_SCOPE_COUNT=$(echo "${AK_SCOPES:-[]}" | jq 'length' 2>/dev/null || echo 0)
+if [ -z "${AK_FLOW:-}" ] || [ -z "${AK_INVALIDATION_FLOW:-}" ] \
+  || [ -z "${AK_SIGNING_KEY:-}" ] || [ "${AK_SCOPE_COUNT}" -ne 3 ]; then
+  echo "authentik did not finish creating its default objects in time"
+  echo "  flow=${AK_FLOW:-} invalidation_flow=${AK_INVALIDATION_FLOW:-} signing_key=${AK_SIGNING_KEY:-} scopes=${AK_SCOPES:-}"
+  kubectl logs -n authentik deployment/authentik-worker --tail=50 || true
+  exit 1
+fi
+{{< /doc-test >}}
 
 3. Create a public OAuth2 provider. MCP clients are public clients that use PKCE, because they cannot keep a client secret.
    ```sh {paths="setup-authentik"}
-   export AUTHENTIK_CLIENT_ID=$(curl -s -X POST -H "${AK_AUTH_HEADER}" -H "Content-Type: application/json" \
+   export AK_PROVIDER_RESPONSE=$(curl -s -X POST -H "${AK_AUTH_HEADER}" -H "Content-Type: application/json" \
      "${AUTHENTIK_API}/providers/oauth2/" -d "{
        \"name\": \"agentgateway-mcp\",
        \"authorization_flow\": \"${AK_FLOW}\",
@@ -180,29 +214,31 @@ done
        \"redirect_uris\": [{\"matching_mode\": \"regex\", \"url\": \".*\"}],
        \"sub_mode\": \"user_username\",
        \"include_claims_in_id_token\": true
-     }" | jq -r '.client_id')
+     }")
+
+   export AUTHENTIK_CLIENT_ID=$(echo "${AK_PROVIDER_RESPONSE}" | jq -r '.client_id // empty')
 
    echo "Client ID: ${AUTHENTIK_CLIENT_ID}"
    ```
 
-   If the client ID is empty, the provider was not created. Check that `AUTHENTIK_ADDRESS` still resolves and that `AUTHENTIK_BOOTSTRAP_TOKEN` matches the value you installed authentik with.
+   If the client ID is empty, the provider was not created. Print `${AK_PROVIDER_RESPONSE}` to see the error that authentik returned, and check that `AUTHENTIK_ADDRESS` still resolves and that `AUTHENTIK_BOOTSTRAP_TOKEN` matches the value you installed authentik with.
 
    The following table describes the settings that matter for MCP.
 
    | Setting | Description |
    | -- | -- |
-   | `client_type` | Must be `public`. MCP clients cannot keep a client secret, so they authenticate with PKCE instead. |
+   | `client_type` | Must be `public`. MCP clients run in places where a client secret cannot be kept confidential, such as a desktop app or a browser, so they prove their identity with PKCE instead of a secret. The client ID is not a secret. It is a public identifier that clients send in plain text on every authorization request, so it is safe to store in an MCP client's configuration. |
    | `property_mappings` | The scopes that the provider can issue. The `profile` scope is what puts the `groups` claim in the token, which the authorization rule reads. |
-   | `grant_types` | authentik rejects any grant that is not listed here with `invalid_grant`. MCP clients use `authorization_code`. |
+   | `grant_types` | Must include `authorization_code`, which is the grant that MCP clients use. authentik rejects a request for any grant that is not listed here with `invalid_grant`. |
    | `sub_mode` | Sets the `sub` claim to the username, which makes tokens easier to read while you test. |
 
    > [!WARNING]
    > The `.*` redirect URI matcher accepts **any** callback URL, so that you can connect different MCP clients while you test. Do not use it outside a test cluster. An authorization server that accepts any redirect URI lets an attacker intercept authorization codes by sending a victim through a crafted callback. In production, list only the callback URLs of the MCP clients that you allow.
 
-4. Create an application that uses the provider. The application slug appears in the issuer URL.
+4. Create an application that uses the provider. The `slug` field sets the application slug, which is the URL-safe name that authentik uses to build the provider's issuer URL, `http://<authentik-host>/application/o/<app-slug>/`. This example uses the slug `agentgateway-mcp`, so the issuer URL that you save later ends in `/application/o/agentgateway-mcp/`.
    ```sh {paths="setup-authentik"}
    export AK_PROVIDER_PK=$(curl -s -H "${AK_AUTH_HEADER}" \
-     "${AUTHENTIK_API}/providers/oauth2/?name=agentgateway-mcp" | jq -r '.results[0].pk')
+     "${AUTHENTIK_API}/providers/oauth2/?name=agentgateway-mcp" | jq -r '.results[0].pk // empty')
 
    curl -s -X POST -H "${AK_AUTH_HEADER}" -H "Content-Type: application/json" \
      "${AUTHENTIK_API}/core/applications/" -d "{
@@ -217,6 +253,7 @@ done
 # rather than letting an empty client ID flow into the policy below.
 if [ -z "${AUTHENTIK_CLIENT_ID:-}" ]; then
   echo "AUTHENTIK_CLIENT_ID is empty: the authentik OAuth2 provider was not created"
+  echo "authentik response: ${AK_PROVIDER_RESPONSE:-<none>}"
   exit 1
 fi
 if [ -z "${AK_PROVIDER_PK:-}" ] || [ "${AK_PROVIDER_PK}" = "null" ]; then
