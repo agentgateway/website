@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -563,9 +564,21 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, con
             text=True,
         )
 
+    # Run the script from a scratch directory rather than the repo root. Guides write
+    # their config files with relative paths (`cat <<EOF > config.yaml`), so running
+    # from the repo root drops those files into the working tree — 58 scenarios write
+    # a bare `config.yaml`, which is why .gitignore has an entry for it. Nothing in a
+    # generated script reads a repo path relatively, so cwd is free to move. The
+    # directory is recreated per scenario, so a stale file cannot mask a guide that
+    # forgets to write one.
+    work_dir = repo_root / "out" / "tests" / "work" / context_slug
+    if work_dir.exists():
+        shutil.rmtree(work_dir)
+    work_dir.mkdir(parents=True, exist_ok=True)
+
     try:
         time.sleep(2)
-        test_code, output = run_command(["bash", test_case.script_path.as_posix()], repo_root)
+        test_code, output = run_command(["bash", test_case.script_path.as_posix()], work_dir)
         checks = [line.strip() for line in output.splitlines() if line.strip().startswith("✓ ")]
         status = "passed" if test_code == 0 else "failed"
         if test_code != 0:

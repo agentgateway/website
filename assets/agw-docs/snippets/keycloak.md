@@ -17,9 +17,59 @@ Install and configure Keycloak:
    ```shell {paths="setup-keycloak"}
    kubectl create namespace keycloak
    ```
-2. Create the Keycloak deployment.
-   ```shell {paths="setup-keycloak"}
-   kubectl -n keycloak apply -f https://raw.githubusercontent.com/solo-io/gloo-mesh-use-cases/main/policy-demo/oidc/keycloak.yaml
+2. Create the Keycloak deployment and service. The service is of type `LoadBalancer` so that you can reach Keycloak from outside the cluster.
+   ```yaml {paths="setup-keycloak"}
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: keycloak
+     namespace: keycloak
+     labels:
+       app: keycloak
+   spec:
+     ports:
+     - name: http
+       port: 8080
+       targetPort: 8080
+     selector:
+       app: keycloak
+     type: LoadBalancer
+   ---
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: keycloak
+     namespace: keycloak
+     labels:
+       app: keycloak
+   spec:
+     replicas: 1
+     selector:
+       matchLabels:
+         app: keycloak
+     template:
+       metadata:
+         labels:
+           app: keycloak
+       spec:
+         containers:
+         - name: keycloak
+           image: quay.io/keycloak/keycloak:{{< reuse "agw-docs/versions/keycloak.md" >}}
+           args: ["start-dev"]
+           env:
+           - name: KC_BOOTSTRAP_ADMIN_USERNAME
+             value: "admin"
+           - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+             value: "admin"
+           ports:
+           - name: http
+             containerPort: 8080
+           readinessProbe:
+             httpGet:
+               path: /realms/master
+               port: 8080
+   EOF
    ```
 3. Wait for the Keycloak rollout to finish.
    ```shell {paths="setup-keycloak"}

@@ -70,7 +70,7 @@ Steps to deploy Keycloak:
        spec:
          containers:
          - name: keycloak
-           image: quay.io/keycloak/keycloak:26.5
+           image: quay.io/keycloak/keycloak:{{< reuse "agw-docs/versions/keycloak.md" >}}
            args: ["start-dev", "--import-realm", "--http-port=8080", "--features=preview"]
            env:
            - name: KEYCLOAK_ADMIN
