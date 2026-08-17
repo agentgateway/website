@@ -39,7 +39,7 @@ model_list:
       rust: true
 ```
 
-I also made sure I was using the latest LiteLLM build available for the test, LiteLLM `1.98.0`, which is newer than `1.94.0`.
+I also made sure I was using the latest LiteLLM build available for the test, LiteLLM `1.98.0`, and the latest agentgateway version, `1.4.1`.
 
 For the Anthropic benchmark, I used the `/v1/messages` API path, which was the supported path for the Rust mode configuration I tested.
 
