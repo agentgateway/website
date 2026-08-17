@@ -49,6 +49,9 @@ export AZURE_API_KEY="${AZURE_API_KEY:-test}"
 
 Before you can use Azure as an LLM provider, you must authenticate by using one of the standard [Azure authentication methods](https://learn.microsoft.com/en-us/azure/ai-services/authentication). In standalone mode, this authentication is configured with `llm.models[]` fields (for example, `params.apiKey` or `auth.azure`). In routing-based configurations, use `policies.backendAuth.azure`.
 
+> [!IMPORTANT]
+> Azure CLI authentication requires `az` or `azd` to be installed and signed in. Agentgateway calls the CLI when it needs a token. It does not open an interactive flow or run `az login` or `azd auth login` for you. Agentgateway does not bundle either command. Mounting a credential directory such as `~/.azure` makes cached login state available inside the container, but it does not install the CLI. Use Azure CLI authentication only when running Agentgateway directly on your local machine. If Agentgateway runs in a container, use an API key, client secret, managed identity, or workload identity.
+
 ## Configuration
 
 Azure supports two endpoint types:
