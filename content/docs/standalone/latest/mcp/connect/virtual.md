@@ -123,18 +123,18 @@ Multiplexing is a property of putting several targets in one backend, not of the
 {{% details title="Example multiplexing configuration" closed="false" %}}
 
 ```yaml
-backends:
-  - mcp:
-      # Multiple targets for multiplexing
-      targets:
-        - name: time
-          stdio:
-            cmd: uvx
-            args: ["--with", "mcp<2", "mcp-server-time"]
-        - name: everything
-          stdio:
-            cmd: npx
-            args: ["@modelcontextprotocol/server-everything"]
+mcp:
+  port: 3000
+  # Multiple targets for multiplexing
+  targets:
+  - name: time
+    stdio:
+      cmd: uvx
+      args: ["--with", "mcp<2", "mcp-server-time"]
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
 ```
 {{% /details %}}
 **Multiplexing vs. load balancing**
