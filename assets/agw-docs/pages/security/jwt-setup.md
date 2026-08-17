@@ -56,8 +56,8 @@ Configure an {{< reuse "agw-docs/snippets/policy.md" >}} to validate JWTs using 
    | `issuer` | The issuer URL that must match the `iss` claim in JWT tokens exactly. Agentgateway rejects tokens from other issuers.{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}} Agentgateway also rejects a token that has no `iss` claim.{{< /version >}}<br><br>Example value: `http://keycloak:8080/realms/master` |
    | `audiences` | List of allowed audience values. The JWT's `aud` claim must contain at least one of these values. Omit the field to accept any audience.{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}} An empty list also accepts any audience, and a non-empty list rejects a token that has no `aud` claim.{{< /version >}}<br><br>Example value: `["my-application"]` |
    | `jwks.remote.jwksPath` | The path to the JWKS endpoint on the identity provider, relative to the backend root. This endpoint returns the public keys used to verify JWT signatures.<br><br>Example value: `/realms/master/protocol/openid-connect/certs` |
-   | `jwks.remote.cacheDuration` | How long to cache the JWKS keys locally. This reduces load on the identity provider and improves performance. Keys are automatically refreshed when the cache expires.<br><br>Example value: `5m` (5 minutes) |
-   | `jwks.remote.backendRef` | Reference to the backend that hosts the identity provider. Agentgateway uses this to fetch the JWKS from the identity provider. For an in-cluster provider, reference a Kubernetes Service. For an external provider reached over TLS, reference an {{< reuse "/agw-docs/snippets/backend.md" >}} instead. See [External identity provider over TLS](#external-identity-provider-over-tls). <br><br>Example value: The Keycloak service |
+   | `jwks.remote.cacheDuration` | How long to cache the JWKS keys locally. This setting reduces load on the identity provider and improves performance. Keys are automatically refreshed when the cache expires.<br><br>Example value: `5m` (5 minutes) |
+   | `jwks.remote.backendRef` | Reference to the backend that hosts the identity provider. Agentgateway uses this value to fetch the JWKS keys from the identity provider. For an in-cluster provider, reference a Kubernetes Service. For an external provider that is reached over TLS, reference an {{< reuse "/agw-docs/snippets/backend.md" >}} instead. See [External identity provider over TLS](#external-identity-provider-over-tls). <br><br>Example value: The details of the Keycloak service |
 
 
 2. View the details of the policy. Verify that the policy is accepted.
@@ -96,7 +96,7 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
    
 2. Register a client with Keycloak. The client uses dynamic client registration (DCR), so no administrator creates it, and Keycloak returns the client ID and secret that the next step uses.
 
-   > [!NOTE]
+   > [!WARNING]
    > The Keycloak instance in this guide allows anonymous DCR, which is why you can register this client without an administrator credential. Use this shortcut only in a local test environment. In production, create machine clients through your identity provider's normal process, and do not allow DCR clients to use the client credentials grant.
 
    ```sh {paths="jwt-claims"}
@@ -170,11 +170,9 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
 
 Authentication proves who sent the request. Authorization decides what that identity is allowed to do. After agentgateway validates the JWT, the claims are available to Common Expression Language (CEL) expressions through the `jwt` variable, so you can write access rules against them in the same {{< reuse "agw-docs/snippets/policy.md" >}}.
 
-This distinction matters when DCR is enabled. Registration lets a client obtain a token from the identity provider, but it does not grant that client access to your backends. Authorization is what decides which of those identities the gateway accepts.
+This distinction matters when DCR is enabled. Registration lets a client obtain a token from the identity provider, but it does not grant that client access to your backends. Authorization is what decides what actions the client can perform.
 
-The following example allows only the client that you registered, and denies every other identity.
-
-1. Update the `jwt-auth-policy` to add an authorization rule.
+1. Update the `jwt-auth-policy` to add an authorization rule. The following example allows only the client that you registered, and denies every other identity.
    ```yaml {paths="jwt-claims"}
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
