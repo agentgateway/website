@@ -1,7 +1,7 @@
 ---
 title: "Benchmarking Agentgateway vs LiteLLM's Rust Mode"
 category: "Deep Dive"
-publishDate: 2026-08-13
+publishDate: 2026-08-17
 author: "Lin Sun"
 description: "A head-to-head proxy benchmark comparing agentgateway and LiteLLM's Rust mode on throughput, latency, CPU, and memory using Fortio and a mock Anthropic backend."
 ---
@@ -39,7 +39,7 @@ model_list:
       rust: true
 ```
 
-I also made sure I was using the latest LiteLLM build available for the test, LiteLLM `1.98.0`, and the latest agentgateway version, `1.4.1`.
+I also made sure I was using the latest LiteLLM build available for the test, LiteLLM `1.98.0`, and the new agentgateway version, `1.4.0`.
 
 For the Anthropic benchmark, I used the `/v1/messages` API path, which was the supported path for the Rust mode configuration I tested.
 
