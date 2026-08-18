@@ -22,7 +22,7 @@ flowchart LR
     AGW -- "Authorization: Bearer<br>access token" --> API[Downstream API]
 ```
 
-Cross App Access differs from [OAuth token exchange]({{< link-hextra path="/security/backend-authn-oauth/" >}}) in that it crosses a trust boundary: the IdP and the resource's authorization server are separate parties, so the gateway performs two exchanges and holds two client registrations, one at each token endpoint. For a single-leg exchange at one authorization server, use `oauthTokenExchange` instead.
+Cross App Access differs from [OAuth token exchange]({{< link-hextra path="/security/backend-authn/oauth-token-exchange/" >}}) in that it crosses a trust boundary: the IdP and the resource's authorization server are separate parties, so the gateway performs two exchanges and holds two client registrations, one at each token endpoint. For a single-leg exchange at one authorization server, use `oauthTokenExchange` instead.
 
 > [!NOTE]
 > To keep the demo self-contained, a single Keycloak instance acts as both parties: the user's IdP and the resource authorization server. In production, these parties are typically separate trust domains. For examples against separate providers, review the [traffic-cross-app-access examples](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-cross-app-access) in the upstream `agentgateway` repository. That example uses `xaa-dev` (hosted IdenX IdP + hosted resource authorization server) and `okta-auth0` (Okta IdP + Auth0 resource authorization server). These IdPs illustrate the two-party topology, but note that the configs are written for standalone mode, not Kubernetes.
@@ -491,5 +491,5 @@ kubectl delete service keycloak -n httpbin
 
 ## Next steps
 
-- Exchange the incoming credential for a per-backend token at a single authorization server with [OAuth token exchange]({{< link-hextra path="/security/backend-authn-oauth/" >}}).
+- Exchange the incoming credential for a per-backend token at a single authorization server with [OAuth token exchange]({{< link-hextra path="/security/backend-authn/oauth-token-exchange/" >}}).
 - Validate incoming JWTs with the [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) policy.

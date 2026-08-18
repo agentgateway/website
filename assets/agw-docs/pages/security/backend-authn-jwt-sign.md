@@ -12,7 +12,7 @@ Two behaviors are worth knowing before you configure the method:
 * **The token overwrites only what sits at its location.** By default, the gateway writes the `Authorization` header, replacing any credential that the client sent there. If you point `location` at a different header, query parameter, or cookie, the client's `Authorization` header is forwarded to the backend untouched. Remove it with a request filter if the upstream must not see it.
 
 > [!NOTE]
-> The `jwtSign` method is not the same as the `clientAuth.privateKeyJwt` setting on [Cross App Access]({{< link-hextra path="/security/backend-authn-cross-app-access/" >}}). The two share the signing implementation, but `privateKeyJwt` authenticates the gateway to an OAuth token endpoint, and `jwtSign` sends a signed JWT to the backend itself.
+> The `jwtSign` method is not the same as the `clientAuth.privateKeyJwt` setting on [Cross App Access]({{< link-hextra path="/security/backend-authn/cross-app-access/" >}}). The two share the signing implementation, but `privateKeyJwt` authenticates the gateway to an OAuth token endpoint, and `jwtSign` sends a signed JWT to the backend itself.
 
 ## Before you begin
 

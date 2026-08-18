@@ -94,7 +94,7 @@ Because the MCP `2026-07-28` support is new in this release, most of it is not y
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2534 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2529 -->
 
-Agentgateway supports MCP [Enterprise-Managed Authorization](https://modelcontextprotocol.io/extensions/auth/enterprise-managed-authorization) through the OAuth Identity Assertion Authorization Grant (ID-JAG), also known as Cross App Access (XAA). An enterprise identity provider can broker access between a client application and the MCP server without the end user completing a separate OAuth flow for each downstream app. For more information, see [Cross App Access (ID-JAG)]({{< link-hextra path="/security/backend-authn-cross-app-access/" >}}).
+Agentgateway supports MCP [Enterprise-Managed Authorization](https://modelcontextprotocol.io/extensions/auth/enterprise-managed-authorization) through the OAuth Identity Assertion Authorization Grant (ID-JAG), also known as Cross App Access (XAA). An enterprise identity provider can broker access between a client application and the MCP server without the end user completing a separate OAuth flow for each downstream app. For more information, see [Cross App Access (ID-JAG)]({{< link-hextra path="/security/backend-authn/cross-app-access/" >}}).
 
 ### OAuth token exchange backend authentication
 
@@ -105,7 +105,7 @@ Agentgateway supports MCP [Enterprise-Managed Authorization](https://modelcontex
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2316 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2518 -->
 
-Agentgateway can exchange an incoming token for a backend credential by using [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) OAuth 2.0 token exchange and the [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) JWT bearer grant. This release adds controller support, custom token types and OAuth 2.1 exchange defaults, the ability to inject multiple secret-sourced headers, and an override for the resolved secret key. For more information, see [OAuth token exchange]({{< link-hextra path="/security/backend-authn-oauth/" >}}).
+Agentgateway can exchange an incoming token for a backend credential by using [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) OAuth 2.0 token exchange and the [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) JWT bearer grant. This release adds controller support, custom token types and OAuth 2.1 exchange defaults, the ability to inject multiple secret-sourced headers, and an override for the resolved secret key. For more information, see [OAuth token exchange]({{< link-hextra path="/security/backend-authn/oauth-token-exchange/" >}}).
 
 ### Microsoft Entra ID as an MCP authentication provider
 
