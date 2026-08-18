@@ -85,9 +85,22 @@ agentgateway mode before you build the Intune profile.
 Use a separate key for each user or device when practical so that you can
 attribute usage and revoke access without rotating every client. Do not embed
 one shared key in the exported profile. Instead, deploy an organization-owned
-credential helper that retrieves the assigned gateway key from Keychain,
-Credential Manager, or an internal secret broker. The helper prints only the
-key to standard output and must not log it.
+credential helper. A helper is an executable that Claude Desktop runs with no
+arguments whenever it needs an inference credential. It runs as the signed-in
+user and retrieves the assigned gateway key from Keychain, Credential Manager,
+or an internal secret broker. On success, it returns exit code `0` and writes
+only the bare key to standard output. It can write nonsecret diagnostics to
+standard error and must return a nonzero exit code if retrieval fails.
+
+Claude Desktop sets `CLAUDE_HELPER_CONTEXT` so that the helper can distinguish
+an interactive request from a setup test, background operation, scheduled
+task, or mid-session refresh. It caches the result and re-runs the helper when
+the configured TTL expires or a credential must be refreshed. For the exact
+output formats and lifecycle, see [Write a credential
+helper](https://claude.com/docs/third-party/claude-desktop/credential-helper).
+For Intune packaging, secret-provisioning, and validation guidance, see the
+[agentgateway credential-helper
+checklist](https://github.com/agentgateway/agentgateway/tree/main/examples/microsoft-intune#provide-a-claude-desktop-credential-helper).
 
 The following configuration keys show the values to test before export.
 
@@ -131,9 +144,12 @@ managed profile is readable by device administrators and cannot safely hold a
 per-user subscription credential. Instead, deploy an organization-owned
 credential helper that retrieves the token from per-user secure storage such
 as Keychain or Credential Manager. Each user obtains and stores their own
-token. The helper prints only the token to standard output and must not log it.
-For the helper contract, caching, and refresh behavior, see [Write a credential
-helper](https://claude.com/docs/third-party/claude-desktop/credential-helper).
+token. The helper follows the same [credential-helper
+contract](https://claude.com/docs/third-party/claude-desktop/credential-helper)
+and returns that user's token instead of a gateway key. Use the [agentgateway
+credential-helper
+checklist](https://github.com/agentgateway/agentgateway/tree/main/examples/microsoft-intune#provide-a-claude-desktop-credential-helper)
+to package, provision, and validate it without exposing the token.
 
 The following configuration keys show the values to test before export.
 Use the absolute helper path for each operating system. In the in-app editor,
