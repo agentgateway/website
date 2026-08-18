@@ -15,6 +15,12 @@ Currently, the importer supports LiteLLM proxy configuration files. Support for 
 An imported configuration can be valid without being behaviorally identical to the source configuration. Review every compatibility finding and test the generated configuration before using it in production.
 {{< /callout >}}
 
+## Supported LiteLLM release
+
+The supported and tested LiteLLM release is [v1.98.0-rc.1](https://github.com/BerriAI/litellm/releases/tag/v1.98.0-rc.1). The importer accepts that release's file-based proxy configuration format when the models and settings are defined directly in the input file.
+
+Compatibility is field-based rather than whole-config parity. The importer converts only the [supported LiteLLM mappings](#supported-litellm-mappings) described in this guide and emits findings for other fields. It does not check a version value in the configuration or resolve LiteLLM `include` files. Combine included files into one input file before importing them.
+
 ## Before you begin
 
 - [Install an agentgateway binary]({{< link-hextra path="/deployment/binary/" >}}) that includes the `agentgateway import` command.
@@ -176,6 +182,7 @@ The importer focuses on file-based model and routing configuration. It does not 
 - Inbound API key policies from `master_key` and related security settings.
 - Budgets, per-user or per-team rate limits, caches, callbacks, logging, alerting, and other operational settings.
 - Secret-manager references and advanced authentication variants for individual providers.
+- Configurations split across LiteLLM `include` files unless you combine them into one input file first.
 - Model group aliases, condition-specific fallbacks, guardrails, MCP servers, custom prompt templates, and tokenizers.
 - Routing strategies other than the mappings described in this guide.
 
