@@ -45,13 +45,25 @@ another shared secret in an Intune profile or remediation script.
 
 Use four controls for each managed client.
 
-1. **Required application:** Deploy an approved client version as a required
-   Intune application. Use a [Win32 app on
-   Windows](https://learn.microsoft.com/en-us/intune/app-management/deployment/win32)
-   or an [unmanaged PKG app on
-   macOS](https://learn.microsoft.com/en-us/intune/app-management/deployment/add-unmanaged-pkg-macos).
-2. **Managed configuration:** Prefer the client's native enterprise policy
-   mechanism. Otherwise, deploy its user configuration with a platform script.
+1. **Required application:** Deploy the client as a required Intune
+   application. Use a [Win32 app on
+   Windows](https://learn.microsoft.com/en-us/intune/app-management/deployment/win32).
+   On macOS, use a [DMG
+   app](https://learn.microsoft.com/en-us/intune/app-management/deployment/add-dmg-macos)
+   when the vendor image contains the application bundle, or an [unmanaged PKG
+   app](https://learn.microsoft.com/en-us/intune/app-management/deployment/add-unmanaged-pkg-macos)
+   when the vendor supplies a PKG or the installation requires scripts or
+   custom packaging. For either macOS app type, set **Ignore app version** to
+   **Yes** for a self-updating client so that Intune detects the bundle instead
+   of reinstalling an older uploaded version. To enforce an exact version, set
+   it to **No**, control the client's auto-update behavior when supported, and
+   upload each approved replacement package.
+2. **Managed configuration:** See [Choose a management
+   method](#choose-a-management-method) to identify the supported mechanism for
+   each client. When the client supports native managed policy, deploy that
+   policy through Intune. Otherwise, use a platform script or remediation to
+   manage only the gateway-related settings without overwriting unrelated user
+   configuration.
 3. **Drift enforcement:** Prefer native managed policy, such as managed
    preferences on macOS. For a macOS client without native managed policy,
    deploy a recurring [Intune shell

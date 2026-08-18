@@ -34,7 +34,25 @@ seat attribution. Do not put an Anthropic API key, subscription token, shared
 gateway key, or another secret directly in an Intune profile.
 {{< /callout >}}
 
-### Manage gateway API key mode {#claude-gateway-api-key}
+### Choose one authentication model
+
+Choose exactly one of the following models before you build the managed
+profile. The credential settings are mutually exclusive.
+
+| Authentication model | When to use | Upstream credential | Billing |
+| --- | --- | --- | --- |
+| [Gateway API key](#claude-gateway-api-key) | Recommended starting point | Centrally managed Anthropic API key | Anthropic API account |
+| [Claude subscription passthrough](#claude-subscription) | Advanced option for preserving per-user seat usage | Per-user Claude subscription token | User's Claude subscription |
+| [Microsoft Entra ID](#claude-entra) | Recommended enterprise identity and Conditional Access model | Centrally managed Anthropic API key | Anthropic API account |
+
+{{< callout type="important" >}}
+Complete only one authentication option. Do not combine the gateway-key,
+subscription-token, and Entra credential settings in the same Claude Desktop
+profile. After completing one option, continue with [Build and test the managed
+configuration](#build-and-test-the-managed-configuration).
+{{< /callout >}}
+
+### Option 1: Use a gateway API key {#claude-gateway-api-key}
 
 Gateway API key mode is the recommended starting point. Claude Desktop sends a
 client key that agentgateway validates, and agentgateway replaces it with a
@@ -72,11 +90,10 @@ The following logical configuration shows the values to test before export.
 Test that the helper works as the intended user, including with
 `CLAUDE_HELPER_CONTEXT=setup-test`. Confirm that **Test connection** succeeds,
 normal inference returns HTTP 200 in the agentgateway request log, and a
-request without the gateway key returns HTTP 401. Export and deploy the
-resulting profile as described in the platform sections below, but skip the
-Entra registration and Conditional Access sections.
+request without the gateway key returns HTTP 401. Then continue with [Build and
+test the managed configuration](#build-and-test-the-managed-configuration).
 
-### Manage Claude subscription passthrough {#claude-subscription}
+### Option 2: Use Claude subscription passthrough {#claude-subscription}
 
 Claude subscription passthrough is an advanced option that preserves each
 user's Claude seat and usage attribution. The user authenticates to Anthropic
@@ -127,9 +144,8 @@ base URL.
 Test the helper under the intended user account and for noninteractive helper
 contexts before deployment. In particular, the connection test invokes the
 helper with `CLAUDE_HELPER_CONTEXT=setup-test`, and background refreshes must
-not stop for an interactive prompt. Export and deploy the resulting profile as
-described in the platform sections below, but skip the Entra registration and
-Conditional Access sections.
+not stop for an interactive prompt. Then continue with [Build and test the
+managed configuration](#build-and-test-the-managed-configuration).
 
 {{< callout type="info" >}}
 With subscription passthrough, **Test connection** might return HTTP 429 with
@@ -139,11 +155,13 @@ log. If the real `/v1/messages` request returns HTTP 200, treat the connection
 test as a false negative and use actual inference as the final validation.
 {{< /callout >}}
 
-### Choose the Entra sign-in flow {#claude-entra}
+### Option 3: Use Microsoft Entra ID {#claude-entra}
 
 Complete the [Claude Desktop Entra setup]({{< link-hextra
 path="/integrations/llm-clients/claude-desktop/#sso" >}}) for your agentgateway
 mode before you build the Intune profile.
+
+#### Choose the Entra sign-in flow
 
 Claude Desktop supports two Entra sign-in flows for a Gateway connection.
 
@@ -157,7 +175,7 @@ browser presents device identity only when the browser and operating system are
 configured to provide it. The broker provides the device identity directly and
 does not require a loopback callback.
 
-### Register Claude Desktop in Entra ID
+#### Register Claude Desktop in Entra ID
 
 1. In the Microsoft Entra admin center, go to **Entra ID > App registrations >
    New registration**.
@@ -185,7 +203,7 @@ The client is public and must not have a client secret. For more information,
 see [Register an application in Microsoft Entra
 ID](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app).
 
-### Prepare managed devices for broker sign-in
+#### Prepare managed devices for broker sign-in
 
 On Windows, Web Account Manager is part of the operating system. The device
 must be registered, joined, or hybrid joined to Entra ID. It must also report
@@ -203,47 +221,61 @@ both pilot platforms.
 
 ### Build and test the managed configuration
 
+After you complete exactly one authentication option, build a profile that
+contains only that option's credential settings plus the common settings in
+this section.
+
 Use an administrator workstation that does not already have a Claude Desktop
 managed profile.
 
 1. In Claude Desktop, enable developer mode from **Help > Troubleshooting >
    Enable Developer Mode**.
 2. Go to **Developer > Configure Third-Party Inference > Connection**.
-3. Configure the connection.
+3. Configure the values shared by all three authentication models.
 
    | Setting | Value |
    | --- | --- |
    | Inference provider | **Gateway** |
    | Gateway base URL | The HTTPS agentgateway URL. Include `/claude` only when the route matches and rewrites that prefix. |
-   | Credential kind | **Interactive sign-in** |
-   | Issuer | `https://login.microsoftonline.com/TENANT_ID/v2.0` |
-   | Client ID | The Entra Application (client) ID |
-   | Bearer token | **ID token** |
-   | Scopes | `openid profile email offline_access` |
-   | Gateway sign-in flow (`inferenceGatewayOidcAuthFlow`) | **Broker** for a compliant-device production policy; otherwise **Browser** |
    | Model discovery | **Off** when you deploy a fixed model list |
    | Models | One or more full model IDs, such as `claude-opus-5`; the first entry is the default |
 
-4. In **Workspace restrictions**, set `disableDeploymentModeChooser` when users
+4. Configure credentials for only the authentication model that you selected.
+
+   | Authentication model | Credential kind | Required settings |
+   | --- | --- | --- |
+   | Gateway API key | **Helper script** | Set the absolute credential-helper path and **Bearer** auth scheme. The helper returns the assigned agentgateway key. |
+   | Claude subscription passthrough | **Helper script** | Set the absolute credential-helper path and **Bearer** auth scheme. The helper returns the current user's Claude subscription token. |
+   | Microsoft Entra ID | **Interactive sign-in** | Set the issuer to `https://login.microsoftonline.com/TENANT_ID/v2.0`, the Entra Application (client) ID, **ID token**, scopes `openid profile email offline_access`, and **Broker** or **Browser** sign-in flow. |
+
+   For Entra ID, agentgateway must validate the token signature, exact issuer,
+   and application audience. Keep the issuer and client ID in the managed
+   profile aligned with the issuer and audience configured on agentgateway.
+5. In **Workspace restrictions**, set `disableDeploymentModeChooser` when users
    must not sign in directly to Claude.ai.
-5. In **Connectors & extensions**, configure `managedMcpServers` with the
+6. In **Connectors & extensions**, configure `managedMcpServers` with the
    organization-approved servers and explicit per-tool `toolPolicy` values.
    Set `isLocalDevMcpEnabled` to `false` when users must not add local MCP
    servers. Set `mcpPersistentAlwaysAllowEnabled` to `false` when approvals
    must not persist across sessions.
-6. Review **Egress Requirements** and give the exported hostname list to the
+7. Review **Egress Requirements** and give the exported hostname list to the
    network team. Blocking direct provider access is a separate network control;
    an Intune profile alone cannot prevent another application from bypassing
    agentgateway.
-7. Apply the configuration locally and test model selection, inference, and
+8. Apply the configuration locally and test model selection, inference, and
    each managed MCP server. If you intentionally use discovery instead of a
    fixed list, also test `GET /v1/models`.
-8. Verify that agentgateway logs the authenticated Entra identity and does not
-   log bearer tokens or the upstream provider credential.
+9. Verify the result for the selected model. In all modes, confirm that the
+   agentgateway log records the real `/v1/messages` request with HTTP 200 and
+   does not expose credentials.
 
-Agentgateway must validate the token signature, exact issuer, and application
-audience. Keep the Entra issuer and client ID in the managed client profile
-aligned with the issuer and audience configured on agentgateway.
+   - For a gateway API key, also confirm that a request without the key returns
+     HTTP 401.
+   - For subscription passthrough, use a real prompt as the final validation if
+     **Test connection** returns the documented false-negative HTTP 429.
+   - For Entra ID, confirm that the log records the authenticated identity and
+     that an invalid issuer, audience, expired token, or missing token is
+     rejected.
 
 ### Export the configuration
 
@@ -306,11 +338,11 @@ script](https://learn.microsoft.com/en-us/intune/device-management/tools/run-pow
 to write the exported values to the machine-policy key. Never include a
 provider credential in the script.
 
-### Add Conditional Access
+### Optional: Add Conditional Access for Entra ID
 
-After broker sign-in works on the pilot devices, create a Conditional Access
-policy that targets the Claude Desktop Entra enterprise application and pilot
-users.
+Complete this section only when you selected Microsoft Entra ID. After broker
+sign-in works on the pilot devices, create a Conditional Access policy that
+targets the Claude Desktop Entra enterprise application and pilot users.
 
 1. Start the policy in **Report-only** mode.
 2. Require multifactor authentication as appropriate for your organization.
@@ -348,8 +380,9 @@ Test the following cases on Windows and macOS before expanding the rollout.
    confirm that it is marked as organization-managed, read-only, and points to
    agentgateway.
 5. Start the agentgateway log stream as described in [Verify the
-   deployment](#verify-the-deployment). Sign in with a pilot Entra account,
-   start a new third-party inference conversation, and send a harmless prompt.
+   deployment](#verify-the-deployment). Authenticate with the authentication
+   model that you selected, start a new third-party inference conversation,
+   and send a harmless prompt.
 
    ```text
    Reply exactly: AGW-CLAUDE-VERIFY. Do not use tools.
@@ -357,26 +390,32 @@ Test the following cases on Windows and macOS before expanding the rollout.
 
    Then test model discovery and each managed MCP server.
 6. Correlate the inference request by its time. Confirm a successful
-   `POST /v1/messages` entry with the expected managed hostname, identity,
-   route, upstream provider, and `http.status=200`. The access log does not
-   need to contain the prompt text and must not contain the bearer token or
-   upstream provider credential. If no entry appears, check the full restart,
-   managed HTTPS URL, DNS, and network path. An unauthorized response indicates
-   an Entra token or agentgateway authentication-policy problem.
-7. Confirm that an invalid issuer, audience, expired token, and missing token
-   each receive an unauthorized response.
+   `POST /v1/messages` entry with the expected managed hostname, route,
+   upstream provider, and `http.status=200`. For Entra ID, also confirm the
+   authenticated identity. The access log does not need to contain the prompt
+   text and must not contain the client or upstream credential. If no entry
+   appears, check the full restart, managed HTTPS URL, DNS, and network path.
+7. Test the negative case for the selected model.
+
+   - For a gateway API key, confirm that a missing or invalid key receives an
+     unauthorized response from agentgateway.
+   - For Entra ID, confirm that an invalid issuer, audience, expired token, and
+     missing token each receive an unauthorized response from agentgateway.
+   - For subscription passthrough, confirm that an invalid subscription token
+     is rejected by Anthropic. Agentgateway does not independently authenticate
+     the caller in this mode.
 8. Try to save a local gateway URL or local third-party configuration. Fully
    restart Claude Desktop and confirm that the managed configuration remains
    effective.
 9. Confirm that only approved MCP servers are available and that each tool
     uses the configured approval policy.
-10. For broker mode, mark a pilot device noncompliant and confirm that
-    Conditional Access blocks a new sign-in.
-11. Remove a pilot user from the assigned Entra group and revoke the user's
-    sessions. Confirm that a new sign-in is blocked. A JWT that agentgateway
-   already accepted remains valid until its expiration unless you add a
-   separate token-revocation mechanism, so choose an appropriate token and
-   session lifetime.
+10. If you selected Entra broker mode, mark a pilot device noncompliant and
+    confirm that Conditional Access blocks a new sign-in.
+11. If you selected Entra ID, remove a pilot user from the assigned group and
+    revoke the user's sessions. Confirm that a new sign-in is blocked. A JWT
+    that agentgateway already accepted remains valid until its expiration
+    unless you add a separate token-revocation mechanism, so choose an
+    appropriate token and session lifetime.
 12. Confirm that endpoint network controls block direct inference traffic to
     unapproved providers.
 
