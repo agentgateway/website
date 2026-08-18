@@ -52,8 +52,19 @@ profile. After completing one option, continue with [Build and test the managed
 configuration](#build-and-test-the-managed-configuration).
 {{< /callout >}}
 
-The JSON examples below use the same keys that Claude Desktop saves from the
-in-app configuration window.
+{{< callout type="important" >}}
+The JSON blocks below are reference examples, not files to create or upload to
+Intune. Enter the equivalent values in **Developer > Configure Third-Party
+Inference**. Claude Desktop creates its local `<id>.json` file when you save
+the configuration. Use **Export** to create the `.mobileconfig` or Windows
+policy artifact that you deploy with Intune.
+
+Replace `https://claude.example.com` with the [stable HTTPS
+hostname](#before-you-begin) that exposes agentgateway. Use only the origin
+when the route matches `/`. Include a path such as `/claude` only when the
+route matches that prefix and rewrites it to `/`. Replace each example helper
+path with the fixed absolute path where Intune deploys your helper executable.
+{{< /callout >}}
 
 {{< callout type="info" >}}
 **Find the locally saved configuration**
@@ -102,7 +113,7 @@ For Intune packaging, secret-provisioning, and validation guidance, see the
 [agentgateway credential-helper
 checklist](https://github.com/agentgateway/agentgateway/tree/main/examples/microsoft-intune#provide-a-claude-desktop-credential-helper).
 
-The following configuration keys show the values to test before export.
+Enter and test the following gateway API key settings in Claude Desktop.
 
 ```json
 {
@@ -151,9 +162,9 @@ credential-helper
 checklist](https://github.com/agentgateway/agentgateway/tree/main/examples/microsoft-intune#provide-a-claude-desktop-credential-helper)
 to package, provision, and validate it without exposing the token.
 
-The following configuration keys show the values to test before export.
-Use the absolute helper path for each operating system. In the in-app editor,
-add at least one full model ID under **Models** and turn off model discovery.
+Enter and test the following subscription-passthrough settings in Claude
+Desktop. Add at least one full model ID under **Models** and turn off model
+discovery.
 
 ```json
 {
@@ -172,11 +183,8 @@ add at least one full model ID under **Models** and turn off model discovery.
 }
 ```
 
-The base URL must match the route layout. Use only the origin for a dedicated
-hostname whose `HTTPRoute` matches `/`, such as `https://claude.example.com`.
-Include `/claude` only when the route matches that prefix and rewrites it to
-`/`. Claude Desktop appends `/v1/models` and `/v1/messages` to the configured
-base URL.
+Claude Desktop appends `/v1/models` and `/v1/messages` to the configured base
+URL.
 
 Test the helper under the intended user account and for noninteractive helper
 contexts before deployment. In particular, the connection test invokes the
