@@ -23,8 +23,26 @@ To learn more about CEL, see the following resources:
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 {{< doc-test paths="transformations" >}}
+# ============================================================================
+# Doc test coverage for this guide (these comments are not rendered on the page)
+# ============================================================================
+# WHAT THIS TEST VALIDATES:
+#   * Both example configs are accepted by agentgateway (--validate-only), so the
+#     `transformation` field and its CEL expressions are correct.
+#   * "Configure LLM request transformations": a client request that asks for 5000
+#     max_tokens reaches the provider capped at 10.
+#   * "Conditionally set fields based on headers": the same request reaches the
+#     provider with 100 max_tokens as an admin user and 10 as a regular user.
+#
+# HOW THE ASSERTIONS WORK:
+#   The tests run against a local mock LLM instead of OpenAI, so no provider API
+#   key is needed and no live completion is billed. The mock reports the
+#   max_tokens value it received as usage.completion_tokens, so asserting on
+#   completion_tokens asserts what agentgateway actually sent upstream - which is
+#   what these transformations are documented to change.
 # Install agentgateway binary
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+{{< reuse "agw-docs/snippets/start-mock-llm.md" >}}
 {{< /doc-test >}}
 
 ## Configure LLM request transformations
@@ -57,9 +75,11 @@ To learn more about CEL, see the following resources:
    ```
 
    {{< doc-test paths="transformations" >}}
-   agentgateway -f config.yaml &
+   # Cap max_tokens: validate the documented config, then run it against the mock LLM.
+   {{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
+   agentgateway -f config-mock.yaml &
    AGW_PID=$!
-   trap 'kill $AGW_PID 2>/dev/null' EXIT
+   trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
    sleep 3
    {{< /doc-test >}}
 
@@ -149,9 +169,17 @@ EOF
 | `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use `request.headers` to access incoming HTTP headers and `llmRequest` to access the original LLM request body. |
 
 {{< doc-test paths="transformations" >}}
-agentgateway -f config.yaml &
+# Header-conditional max_tokens: restart the gateway on the second config, again
+# pointed at the mock LLM. This block must stay textually different from the
+# restart block in the previous section: the extractor silently drops a block whose
+# content is byte-identical to one it already selected, which would leave the
+# assertions below running against the previous section's config.
+kill $AGW_PID 2>/dev/null
+sleep 1
+{{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
+agentgateway -f config-mock.yaml &
 AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
+trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
 sleep 3
 {{< /doc-test >}}
 

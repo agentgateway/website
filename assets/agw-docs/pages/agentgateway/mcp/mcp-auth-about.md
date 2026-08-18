@@ -4,15 +4,7 @@ MCP authentication ensures that only authorized MCP clients can access MCP serve
 
 To secure your MCP server, you configure it with an authorization server. Typically, the authorization server is an identity provider (IdP) that you already use in your environment.
 
-### Supported IdPs
-
-Agentgateway currently includes built-in support for the following identity providers.
-
-| Provider | Details                                                       |
-| -------- | ------------------------------------------------------------- |
-| Keycloak | Adapts non-standard endpoints such as JWKS certificate paths. |
-| Auth0    | Uses standard well-known JWKS endpoint.                       |
-| Descope  | Uses standard well-known JWKS endpoint.                       |
+For example guides, review the [MCP auth section]({{< link-hextra path="/mcp/auth/">}}).
 
 ### Add other IdPs
 
