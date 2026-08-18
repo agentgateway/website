@@ -52,6 +52,19 @@ profile. After completing one option, continue with [Build and test the managed
 configuration](#build-and-test-the-managed-configuration).
 {{< /callout >}}
 
+The JSON examples below use the same keys that Claude Desktop saves from the
+in-app configuration window. On macOS, open the configuration picker in the
+upper-right corner and select **Reveal in Finder**. Saved configurations are in
+`~/Library/Application Support/Claude-3p/configLibrary/`. On Windows, find them
+in `%LOCALAPPDATA%\Claude-3p\configLibrary\`. The directory contains an
+`_meta.json` file that records the applied configuration and one `<id>.json`
+file for each saved configuration. Treat these files as sensitive because a
+configuration that uses a static credential can contain that credential.
+Inspect the file for troubleshooting, but use Claude Desktop's **Export**
+action to generate the Intune deployment artifact. For details, see the [Claude
+Desktop configuration
+reference](https://claude.com/docs/third-party/claude-desktop/configuration#how-keys-are-read).
+
 ### Option 1: Use a gateway API key {#claude-gateway-api-key}
 
 Gateway API key mode is the recommended starting point. Claude Desktop sends a
@@ -68,7 +81,7 @@ credential helper that retrieves the assigned gateway key from Keychain,
 Credential Manager, or an internal secret broker. The helper prints only the
 key to standard output and must not log it.
 
-The following logical configuration shows the values to test before export.
+The following configuration keys show the values to test before export.
 
 ```json
 {
@@ -114,7 +127,7 @@ token. The helper prints only the token to standard output and must not log it.
 For the helper contract, caching, and refresh behavior, see [Write a credential
 helper](https://claude.com/docs/third-party/claude-desktop/credential-helper).
 
-The following logical configuration shows the values to test before export.
+The following configuration keys show the values to test before export.
 Use the absolute helper path for each operating system. In the in-app editor,
 add at least one full model ID under **Models** and turn off model discovery.
 
