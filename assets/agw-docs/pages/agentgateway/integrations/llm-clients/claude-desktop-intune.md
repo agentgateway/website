@@ -298,21 +298,23 @@ managed profile.
    For Entra ID, agentgateway must validate the token signature, exact issuer,
    and application audience. Keep the issuer and client ID in the managed
    profile aligned with the issuer and audience configured on agentgateway.
-5. In **Workspace restrictions**, set `disableDeploymentModeChooser` when users
-   must not sign in directly to Claude.ai.
-6. In **Connectors & extensions**, configure `managedMcpServers` with the
-   organization-approved servers and explicit per-tool `toolPolicy` values.
-   Set `isLocalDevMcpEnabled` to `false` when users must not add local MCP
-   servers. Set `mcpPersistentAlwaysAllowEnabled` to `false` when approvals
-   must not persist across sessions.
-7. Review **Egress Requirements** and give the exported hostname list to the
-   network team. Blocking direct provider access is a separate network control;
-   an Intune profile alone cannot prevent another application from bypassing
-   agentgateway.
-8. Apply the configuration locally and test model selection, inference, and
-   each managed MCP server. If you intentionally use discovery instead of a
-   fixed list, also test `GET /v1/models`.
-9. Verify the result for the selected model. In all modes, confirm that the
+5. Review the remaining **Configure Third-Party Inference** settings and apply
+   them according to your organization's requirements. These optional settings
+   are not required to route inference through agentgateway, and their UI
+   labels can vary between Claude Desktop releases. See the [Claude Desktop
+   configuration
+   reference](https://claude.com/docs/third-party/claude-desktop/configuration)
+   and [MDM deployment
+   guide](https://claude.com/docs/third-party/claude-desktop/mdm).
+6. Ensure that managed devices can reach the agentgateway hostname. If users
+   must not access LLM providers directly, enforce that requirement with
+   separate network controls. A Claude Desktop or Intune configuration cannot
+   prevent another application from bypassing agentgateway.
+7. Apply the configuration locally and test model selection and inference. If
+   you configured managed MCP servers, test them separately. If you
+   intentionally use discovery instead of a fixed list, also test
+   `GET /v1/models`.
+8. Verify the result for the selected model. In all modes, confirm that the
    agentgateway log records the real `/v1/messages` request with HTTP 200 and
    does not expose credentials.
 
