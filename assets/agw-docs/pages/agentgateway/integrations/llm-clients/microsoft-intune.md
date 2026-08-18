@@ -1,8 +1,8 @@
 Use Microsoft Intune to install supported LLM clients, configure them to use
 agentgateway, and repair configuration drift. The endpoint-management workflow
 applies to both Kubernetes and standalone deployments. This guide uses Codex
-for a complete example and describes the management options for the other
-supported clients.
+and Claude Desktop for complete examples and describes the management options
+for the other supported clients.
 
 Intune manages the client endpoint. Agentgateway remains the enforcement point
 for authentication, authorization, rate limits, guardrails, and observability.
@@ -103,7 +103,10 @@ Apps](https://learn.microsoft.com/en-us/intune/app-management/discovered-apps).
 ## Choose a management method
 
 The supported clients expose different configuration and enforcement
-mechanisms. Start with clients that provide native managed policy.
+mechanisms. This guide provides end-to-end application deployment, managed
+configuration, drift enforcement, compliance, and verification examples for
+Codex and Claude Desktop. The other clients receive configuration-specific
+guidance. Start with clients that provide native managed policy.
 
 | Client | Configuration used by the agentgateway guide | Recommended Intune method | Enforcement level |
 | --- | --- | --- | --- |
@@ -352,10 +355,11 @@ management.
 
 ## Manage other clients
 
-The remaining supported clients do not currently provide the same complete
-managed-policy surface as Codex, Claude Code, or Claude Desktop. Pin and test a
-client version before you depend on its settings-file format, and update only
-the keys that route traffic through agentgateway.
+The Codex and Claude Desktop sections provide complete rollout examples. The
+Claude Code section provides native managed-settings guidance, and the
+remaining clients below provide configuration-specific guidance. Pin and test
+a client version before you depend on its settings-file format, and update
+only the keys that route traffic through agentgateway.
 
 ### Cursor
 
@@ -425,8 +429,9 @@ the model-provider configuration that routes LLM requests through agentgateway.
 
 ## Automate verification with Intune
 
-Use the example verification scripts in the agentgateway repository to check
-Codex and Claude Desktop without asking users to run local commands.
+The complete Codex and Claude Desktop workflows use the example verification
+scripts in the agentgateway repository so administrators can check both
+clients without asking users to run local commands.
 
 - [macOS shell
   script](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/verification/verify-agentgateway-clients-macos.sh)
@@ -646,6 +651,9 @@ indicates an authentication problem.
   Pin and test an approved client version before updating the Intune package.
 
 ## Next steps
+
+Review the client guides that underpin the two complete Intune examples, then
+apply the Gateway security controls appropriate for your deployment.
 
 {{< cards >}}
   {{< card path="/integrations/llm-clients/codex" title="Codex" subtitle="Configure and verify Codex with agentgateway" >}}
