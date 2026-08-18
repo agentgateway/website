@@ -17,7 +17,11 @@ An imported configuration can be valid without being behaviorally identical to t
 
 ## Supported LiteLLM release
 
-The supported and tested LiteLLM release is [v1.98.0-rc.1](https://github.com/BerriAI/litellm/releases/tag/v1.98.0-rc.1). The importer accepts that release's file-based proxy configuration format when the models and settings are defined directly in the input file.
+Use the following compatibility table to determine which LiteLLM release you can import with your agentgateway release.
+
+| LiteLLM release | agentgateway release | Status | Notes |
+| -- | -- | -- | -- |
+| [v1.98.0-rc.1](https://github.com/BerriAI/litellm/releases/tag/v1.98.0-rc.1) | 1.4 development version | Supported and tested | File-based proxy configuration with models and settings defined directly in the input file |
 
 Compatibility is field-based rather than whole-config parity. The importer converts only the [supported LiteLLM mappings](#supported-litellm-mappings) described in this guide and emits findings for other fields. It does not check a version value in the configuration or resolve LiteLLM `include` files. Combine included files into one input file before importing them.
 
@@ -26,10 +30,6 @@ Compatibility is field-based rather than whole-config parity. The importer conve
 - [Install an agentgateway binary]({{< link-hextra path="/deployment/binary/" >}}) that includes the `agentgateway import` command.
 - Locate the LiteLLM proxy configuration file that you want to import. The file must contain at least one `model_list` entry.
 - Make the environment variables referenced by the LiteLLM configuration available to agentgateway. The importer preserves environment references instead of copying secret values into the generated file.
-
-{{< callout type="info" >}}
-The importer is part of the agentgateway 1.4 development version and is not available in agentgateway 1.3.
-{{< /callout >}}
 
 ## Import a LiteLLM configuration
 
