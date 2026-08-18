@@ -147,10 +147,9 @@ wire_api = "responses"
 
 {{< callout type="warning" >}}
 Do not distribute a plain HTTP gateway URL. It sends prompts, responses, and
-credentials without transport encryption, and Claude Desktop rejects HTTP for
-any non-loopback address with `baseUrl: must use https (or http on loopback)`.
-Use a publicly trusted or organization-trusted certificate on the HTTPS
-listener before assigning the managed client configuration.
+credentials without transport encryption. Use a publicly trusted or
+organization-trusted certificate on the HTTPS listener before assigning the
+managed Codex configuration.
 {{< /callout >}}
 
 For more information about the client behavior, see [Codex]({{< link-hextra
