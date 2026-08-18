@@ -53,17 +53,25 @@ configuration](#build-and-test-the-managed-configuration).
 {{< /callout >}}
 
 The JSON examples below use the same keys that Claude Desktop saves from the
-in-app configuration window. On macOS, open the configuration picker in the
-upper-right corner and select **Reveal in Finder**. Saved configurations are in
-`~/Library/Application Support/Claude-3p/configLibrary/`. On Windows, find them
-in `%LOCALAPPDATA%\Claude-3p\configLibrary\`. The directory contains an
-`_meta.json` file that records the applied configuration and one `<id>.json`
-file for each saved configuration. Treat these files as sensitive because a
-configuration that uses a static credential can contain that credential.
-Inspect the file for troubleshooting, but use Claude Desktop's **Export**
-action to generate the Intune deployment artifact. For details, see the [Claude
-Desktop configuration
+in-app configuration window.
+
+{{< callout type="info" >}}
+**Find the locally saved configuration**
+
+- **macOS:** In Finder, select **Go > Go to Folder**, enter
+  `~/Library/Application Support/Claude-3p/configLibrary/`, and open the
+  applicable `<id>.json` file.
+
+- **Windows:** Press **Windows+R**, enter
+  `%LOCALAPPDATA%\Claude-3p\configLibrary\`, and open the applicable `<id>.json`
+  file.
+
+`_meta.json` identifies the currently applied configuration. Use these files
+for inspection only; they might contain static credentials. Use Claude
+Desktop's **Export** action to create the Intune deployment artifact. For
+details, see the [Claude Desktop configuration
 reference](https://claude.com/docs/third-party/claude-desktop/configuration#how-keys-are-read).
+{{< /callout >}}
 
 ### Option 1: Use a gateway API key {#claude-gateway-api-key}
 
