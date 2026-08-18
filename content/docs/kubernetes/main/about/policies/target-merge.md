@@ -84,10 +84,9 @@ To avoid a tie, set a given field or section in only one policy per target.
 
 `AgentgatewayPolicy.spec.strategy.inheritance` changes how `traffic` policies merge. It's valid only on policies that set `traffic`. The Kubernetes API server rejects a policy that sets the `inheritance` block alongside the `frontend` or `backend` block. Frontend and backend policy merging always follows the `frontend` and `backend` precedence orders in the [Merge precedence](#merging-precedence) table and never uses `inheritance`.
 
+The following `inheritance` values are supported for `traffic` policies:
+
 | Value | Behavior |
 | -- | -- |
 | `Default` | The default value. Fields from more-specific attachment points, such as routes and route rules, can override fields from less-specific attachment points, such as gateways and listeners. Use this value to set a `traffic` default at the Gateway that specific routes can override. |
-| `Override` | Blocks `traffic` policies at more-specific attachment points from contributing to the effective policy. Use this value when a less-specific policy, such as one at the Gateway level, must stay authoritative for everything below it. |
-
-> [!NOTE]
-> The less-specific policy is the one that overrides, not the one being overridden. A Gateway-level `traffic` policy with `inheritance: Override` locks its fields so that policies attached at more-specific points, such as routes or route rules, can't replace them.
+| `Override` | Blocks `traffic` policies at more-specific attachment points from contributing to the effective policy. Use this value when a less-specific policy, such as one at the Gateway level, must stay authoritative for everything below it. The less-specific policy is the one that overrides, not the one being overridden: a Gateway-level `traffic` policy with `inheritance: Override` locks its fields so that policies attached at more-specific points, such as routes or route rules, can't replace them. |
