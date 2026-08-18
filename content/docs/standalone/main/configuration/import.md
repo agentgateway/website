@@ -15,14 +15,6 @@ Currently, the importer supports LiteLLM proxy configuration files. Support for 
 An imported configuration can be valid without being behaviorally identical to the source configuration. Review every compatibility finding and test the generated configuration before using it in production.
 {{< /callout >}}
 
-## Supported LiteLLM release
-
-Use the following compatibility table to determine which LiteLLM release you can import with your agentgateway release.
-
-| LiteLLM release | agentgateway release | Status | Notes |
-| -- | -- | -- | -- |
-| [v1.98.0-rc.1](https://github.com/BerriAI/litellm/releases/tag/v1.98.0-rc.1) | 1.4 development version | Supported and tested | File-based proxy configuration with models and settings defined directly in the input file |
-
 Compatibility is field-based rather than whole-config parity. The importer converts only the [supported LiteLLM mappings](#supported-litellm-mappings) described in this guide and emits findings for other fields. It does not check a version value in the configuration or resolve LiteLLM `include` files. Combine included files into one input file before importing them.
 
 ## Before you begin
