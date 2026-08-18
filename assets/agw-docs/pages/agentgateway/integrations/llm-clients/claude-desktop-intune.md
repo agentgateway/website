@@ -135,9 +135,6 @@ retrieves the assigned key from Keychain, Credential Manager, or an internal
 secret broker and writes only the credential to standard output. For the
 output, error, caching, and refresh contract, see [Write a credential
 helper](https://claude.com/docs/third-party/claude-desktop/credential-helper).
-For Intune packaging, secret-provisioning, and validation guidance, see the
-[agentgateway credential-helper
-checklist](https://github.com/agentgateway/agentgateway/tree/main/examples/microsoft-intune#provide-a-claude-desktop-credential-helper).
 
 Confirm that **Test connection** succeeds, normal inference returns HTTP 200
 in the agentgateway request log, and a request without the gateway key returns
@@ -164,10 +161,7 @@ credential helper that retrieves the token from per-user secure storage such
 as Keychain or Credential Manager. Each user obtains and stores their own
 token. The helper follows the same [credential-helper
 contract](https://claude.com/docs/third-party/claude-desktop/credential-helper)
-and returns that user's token instead of a gateway key. Use the [agentgateway
-credential-helper
-checklist](https://github.com/agentgateway/agentgateway/tree/main/examples/microsoft-intune#provide-a-claude-desktop-credential-helper)
-to package, provision, and validate it without exposing the token.
+and returns that user's token instead of a gateway key.
 
 Enter and test the following subscription-passthrough settings in Claude
 Desktop. Add at least one full model ID under **Models** and turn off model
