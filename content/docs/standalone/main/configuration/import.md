@@ -11,9 +11,8 @@ Use the agentgateway configuration importer to migrate a file-based configuratio
 
 Currently, the importer supports LiteLLM proxy configuration files. Support for additional source gateways can be added to the same import command in future releases.
 
-{{< callout type="warning" >}}
-An imported configuration can be valid without being behaviorally identical to the source configuration. Review every compatibility finding and test the generated configuration before using it in production.
-{{< /callout >}}
+> [!WARNING]
+> An imported configuration can be valid without being behaviorally identical to the source configuration. Review every compatibility finding and test the generated configuration before using it in production.
 
 Compatibility is field-based rather than whole-config parity. The importer converts only the [supported LiteLLM mappings](#supported-litellm-mappings) described in this guide and emits findings for other fields. It does not check a version value in the configuration or resolve LiteLLM `include` files. Combine included files into one input file before importing them.
 
@@ -134,13 +133,34 @@ The importer emits one of the following statuses for every field that it consume
 
 Unknown or unhandled source fields are reported instead of being silently discarded. Keep the findings with your migration records so that you can account for every setting in the source configuration.
 
+### Review non-exact findings
+
+For example, add the following fields to the source configuration from the previous section to see how the importer reports settings that require additional review.
+
+```yaml
+router_settings:
+  routing_strategy: simple-shuffle
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+custom_section:
+  enabled: true
+```
+
+In addition to the `exact` findings for the imported models and credential, the importer reports the following findings.
+
+```text
+approximate: router_settings.routing_strategy: Approximated LiteLLM simple-shuffle with generated agentgateway routing; RPM is used only by weighted routes
+manual: general_settings.master_key: Requires manual review and was not emitted
+unsupported: custom_section: Unrecognized LiteLLM top-level field was not emitted
+```
+
 ## Supported LiteLLM mappings
 
 The importer currently handles the following common file-based LiteLLM settings.
 
 | LiteLLM configuration | Imported agentgateway configuration |
 | -- | -- |
-| Common provider prefixes | First-class providers for OpenAI, Azure and Azure AI, Anthropic, Bedrock, Gemini, Vertex AI, Ollama, Cohere, Hugging Face, Groq, Mistral, OpenRouter, Together AI, xAI, DeepInfra, DeepSeek, and Fireworks |
+| Common provider prefixes | First-class providers for OpenAI, Azure OpenAI, Azure AI Foundry, Anthropic, Bedrock, Gemini, Vertex AI, Ollama, Cohere, Hugging Face, Groq, Mistral, OpenRouter, Together AI, xAI, DeepInfra, DeepSeek, and Fireworks |
 | `model_name` and `litellm_params.model` | Public model names and provider-specific upstream model names |
 | Multiple deployments with the same `model_name` | Internal models behind a generated virtual model |
 | `credential_list` and `litellm_credential_name` | Reusable providers when the credential can be shared safely; otherwise, supported values are applied inline |
