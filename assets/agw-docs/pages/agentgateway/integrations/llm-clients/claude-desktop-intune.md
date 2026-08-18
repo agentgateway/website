@@ -30,8 +30,10 @@ passes each user's Claude subscription token upstream.
 {{< callout type="warning" >}}
 The gateway API key and Entra workflows use a centrally managed Anthropic
 provider credential. They do not establish per-user Anthropic subscription or
-seat attribution. Do not put an Anthropic API key, subscription token, shared
-gateway key, or another secret directly in an Intune profile.
+seat attribution. Never put the Anthropic provider key or a subscription token
+in an Intune profile. A static agentgateway client key is acceptable for a
+limited pilot, but the exported policy contains that key. Do not reuse one
+static key across a production fleet.
 {{< /callout >}}
 
 ### Choose one authentication model
@@ -41,7 +43,7 @@ profile. The credential settings are mutually exclusive.
 
 | Authentication model | When to use | Upstream credential | Billing |
 | --- | --- | --- | --- |
-| [Gateway API key](#claude-gateway-api-key) | Recommended starting point | Centrally managed Anthropic API key | Anthropic API account |
+| [Gateway API key](#claude-gateway-api-key) | Static key for an initial pilot; credential helper for production | Centrally managed Anthropic API key | Anthropic API account |
 | [Claude subscription passthrough](#claude-subscription) | Advanced option for preserving per-user seat usage | Per-user Claude subscription token | User's Claude subscription |
 | [Microsoft Entra ID](#claude-entra) | Recommended enterprise identity and Conditional Access model | Centrally managed Anthropic API key | Anthropic API account |
 
@@ -93,25 +95,11 @@ separately managed Anthropic API key for the upstream request. Complete the
 path="/integrations/llm-clients/claude-desktop/#gateway-api-key" >}}) for your
 agentgateway mode before you build the Intune profile.
 
-Use a separate key for each user or device when practical so that you can
-attribute usage and revoke access without rotating every client. Do not embed
-one shared key in the exported profile. Instead, deploy an organization-owned
-credential helper. A helper is an executable that Claude Desktop runs with no
-arguments whenever it needs an inference credential. It runs as the signed-in
-user and retrieves the assigned gateway key from Keychain, Credential Manager,
-or an internal secret broker. On success, it returns exit code `0` and writes
-only the bare key to standard output. It can write nonsecret diagnostics to
-standard error and must return a nonzero exit code if retrieval fails.
-
-Claude Desktop sets `CLAUDE_HELPER_CONTEXT` so that the helper can distinguish
-an interactive request from a setup test, background operation, scheduled
-task, or mid-session refresh. It caches the result and re-runs the helper when
-the configured TTL expires or a credential must be refreshed. For the exact
-output formats and lifecycle, see [Write a credential
-helper](https://claude.com/docs/third-party/claude-desktop/credential-helper).
-For Intune packaging, secret-provisioning, and validation guidance, see the
-[agentgateway credential-helper
-checklist](https://github.com/agentgateway/agentgateway/tree/main/examples/microsoft-intune#provide-a-claude-desktop-credential-helper).
+For an initial pilot, select **Static API key** and use a dedicated,
+revocable agentgateway client key. Do not use the Anthropic provider key. A
+static client key is stored in the local Claude Desktop configuration and in
+the exported Intune policy, where device administrators can recover it. Limit
+the assignment to the pilot group and rotate or revoke the key after testing.
 
 Enter and test the following gateway API key settings in Claude Desktop.
 
@@ -119,8 +107,8 @@ Enter and test the following gateway API key settings in Claude Desktop.
 {
   "inferenceProvider": "gateway",
   "inferenceGatewayBaseUrl": "https://claude.example.com",
-  "inferenceCredentialKind": "helper-script",
-  "inferenceCredentialHelper": "/absolute/path/to/agentgateway-key-helper",
+  "inferenceCredentialKind": "static",
+  "inferenceGatewayApiKey": "REPLACE_WITH_PILOT_GATEWAY_KEY",
   "inferenceGatewayAuthScheme": "bearer",
   "modelDiscoveryEnabled": false,
   "inferenceModels": [
@@ -132,11 +120,30 @@ Enter and test the following gateway API key settings in Claude Desktop.
 }
 ```
 
-Test that the helper works as the intended user, including with
-`CLAUDE_HELPER_CONTEXT=setup-test`. Confirm that **Test connection** succeeds,
-normal inference returns HTTP 200 in the agentgateway request log, and a
-request without the gateway key returns HTTP 401. Then continue with [Build and
-test the managed configuration](#build-and-test-the-managed-configuration).
+Before a broad production assignment, replace the static key with an
+organization-owned credential helper:
+
+```json
+{
+  "inferenceCredentialKind": "helper-script",
+  "inferenceCredentialHelper": "/absolute/path/to/agentgateway-key-helper"
+}
+```
+
+A helper is an executable that Claude Desktop runs with no arguments. It
+retrieves the assigned key from Keychain, Credential Manager, or an internal
+secret broker and writes only the credential to standard output. For the
+output, error, caching, and refresh contract, see [Write a credential
+helper](https://claude.com/docs/third-party/claude-desktop/credential-helper).
+For Intune packaging, secret-provisioning, and validation guidance, see the
+[agentgateway credential-helper
+checklist](https://github.com/agentgateway/agentgateway/tree/main/examples/microsoft-intune#provide-a-claude-desktop-credential-helper).
+
+Confirm that **Test connection** succeeds, normal inference returns HTTP 200
+in the agentgateway request log, and a request without the gateway key returns
+HTTP 401. When testing a helper, also run it as the intended user with
+`CLAUDE_HELPER_CONTEXT=setup-test`. Then continue with [Build and test the
+managed configuration](#build-and-test-the-managed-configuration).
 
 ### Option 2: Use Claude subscription passthrough {#claude-subscription}
 
@@ -289,7 +296,7 @@ managed profile.
 
    | Authentication model | Credential kind | Required settings |
    | --- | --- | --- |
-   | Gateway API key | **Helper script** | Set the absolute credential-helper path and **Bearer** auth scheme. The helper returns the assigned agentgateway key. |
+   | Gateway API key | **Static API key** for a pilot; **Helper script** for production | For a pilot, enter a dedicated agentgateway client key and select **Bearer**. For production, set the absolute credential-helper path instead. |
    | Claude subscription passthrough | **Helper script** | Set the absolute credential-helper path and **Bearer** auth scheme. The helper returns the current user's Claude subscription token. |
    | Microsoft Entra ID | **Interactive sign-in** | Set the issuer to `https://login.microsoftonline.com/TENANT_ID/v2.0`, the Entra Application (client) ID, **ID token**, scopes `openid profile email offline_access`, and **Broker** or **Browser** sign-in flow. |
 
@@ -326,6 +333,13 @@ managed profile.
 
 After every connection and policy test succeeds, use **Export** in Claude
 Desktop.
+
+{{< callout type="warning" >}}
+When **Static API key** is selected, the exported macOS profile or Windows
+policy contains the agentgateway client key. Assign it only to the pilot group.
+Before production rollout, switch to **Helper script** so that the managed
+policy contains a helper path instead of the credential.
+{{< /callout >}}
 
 - Export `.mobileconfig` for macOS. The profile contains the complete managed
   configuration in the `com.anthropic.claudefordesktop` preference domain.
