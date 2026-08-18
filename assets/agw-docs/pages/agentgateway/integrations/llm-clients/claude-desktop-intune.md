@@ -136,9 +136,10 @@ secret broker and writes only the credential to standard output. For the
 output, error, caching, and refresh contract, see [Write a credential
 helper](https://claude.com/docs/third-party/claude-desktop/credential-helper).
 
-Confirm that **Test connection** succeeds, normal inference returns HTTP 200
-in the agentgateway request log, and a request without the gateway key returns
-HTTP 401. When testing a helper, also run it as the intended user with
+From Claude Desktop, confirm that **Test connection** succeeds, normal
+inference returns HTTP 200 in the agentgateway request log, and a request
+without the gateway key returns HTTP 401. When testing a helper, also run it as
+the intended user with
 `CLAUDE_HELPER_CONTEXT=setup-test`. Then continue with [Build and test the
 managed configuration](#build-and-test-the-managed-configuration).
 
