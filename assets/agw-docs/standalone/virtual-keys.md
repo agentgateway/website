@@ -108,7 +108,7 @@ EOF
 
 | Setting | Description |
 | -- | -- |
-| `apiKey.mode` | Set to `strict` to require a valid API key for all requests. Use `optional` to allow unauthenticated requests. |
+| `apiKey.mode` | The API key authentication mode. `strict` requires a valid API key for all requests. `optional` (default) validates the key if one is present but allows unauthenticated requests. `permissive` never rejects requests, which is useful when later steps such as authorization or logging rely on API key claims. |
 | `apiKey.keys` | List of API keys. Each key has a `key` value and optional `metadata`. |
 | `key` | The API key value that users include in the `Authorization: Bearer <key>` header. |
 | `metadata` | Optional metadata associated with the key, such as a user identifier or tier. |
