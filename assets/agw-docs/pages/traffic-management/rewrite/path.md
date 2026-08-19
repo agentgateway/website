@@ -104,12 +104,6 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/api-spec/ma
    ...
    ```
 
-{{< doc-test paths="path-rewrite-prefix" file="products/agentgateway/main/traffic-management/rewrite/path-rewrite-prefix-wait.sh" >}}{{< /doc-test >}}
-
-{{< doc-test paths="path-rewrite-prefix" file="products/agentgateway/main/traffic-management/rewrite/path-rewrite-prefix-warmup.sh" >}}{{< /doc-test >}}
-
-{{< doc-test paths="path-rewrite-prefix" file="products/agentgateway/main/traffic-management/rewrite/path-rewrite-prefix-assert.sh" >}}{{< /doc-test >}}
-
 ### External services
 
 1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} that represents your external service. The following example creates an {{< reuse "/agw-docs/snippets/backend.md" >}} for the `httpbin.org` domain.
@@ -311,12 +305,6 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/api-spec/ma
    "json": null
    ...
    ```
-
-{{< doc-test paths="path-rewrite-full" file="products/agentgateway/main/traffic-management/rewrite/path-rewrite-full-wait.sh" >}}{{< /doc-test >}}
-
-{{< doc-test paths="path-rewrite-full" file="products/agentgateway/main/traffic-management/rewrite/path-rewrite-full-warmup.sh" >}}{{< /doc-test >}}
-
-{{< doc-test paths="path-rewrite-full" file="products/agentgateway/main/traffic-management/rewrite/path-rewrite-full-assert.sh" >}}{{< /doc-test >}}
 
 ### External services
 

@@ -92,8 +92,8 @@ Write `file:` values **version-relative** so a page can be copied between `main`
 
 ### 8. Generate and verify
 
-- From **website** directory: `python3 scripts/doc_test_run.py --repo-root . --generate-only`
-- From repo root: `python3 website/scripts/doc_test_run.py --repo-root website --generate-only`
+- From **website** directory: `python3 ../docs-tests/scripts/doc_test_run.py --repo-root . --generate-only`
+- From repo root: `python3 docs-tests/scripts/doc_test_run.py --repo-root website --generate-only`
 - Inspect `out/tests/generated/*.sh`: order of steps, no unresolved shortcodes, env vars and backgrounding correct.
 - Run a script manually, e.g. `bash out/tests/generated/<script-name>.sh` (standalone tests do not use a kind cluster; use `--generate-only` and run the script in an env that has the binary/Docker/etc.).
 
@@ -125,5 +125,5 @@ Write `file:` values **version-relative** so a page can be copied between `main`
 ## Reference
 
 - Full framework: [website/scripts/TEST_FRAMEWORK.md](website/scripts/TEST_FRAMEWORK.md)
-- Extractor: `website/scripts/doc_test_extract.py` (block selection, reuse resolution, block order sort)
-- Runner: `website/scripts/doc_test_run.py` (discovers `test:` pages, generates scripts, optional kind run)
+- Extractor: `docs-tests/scripts/doc_test_extract.py` (block selection, reuse resolution, block order sort)
+- Runner: `docs-tests/scripts/doc_test_run.py` (discovers `test:` pages, generates scripts, optional kind run)

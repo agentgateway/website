@@ -78,12 +78,6 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    }
    ```
 
-{{< doc-test paths="host-rewrite" file="products/agentgateway/main/traffic-management/rewrite/host-rewrite-wait.sh" >}}{{< /doc-test >}}
-
-{{< doc-test paths="host-rewrite" file="products/agentgateway/main/traffic-management/rewrite/host-rewrite-warmup.sh" >}}{{< /doc-test >}}
-
-{{< doc-test paths="host-rewrite" file="products/agentgateway/main/traffic-management/rewrite/host-rewrite-assert.sh" >}}{{< /doc-test >}}
-
 ## External service host rewrites
 
 1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} that represents your external service. The following example creates an {{< reuse "/agw-docs/snippets/backend.md" >}} for the `httpbin.org` domain. 

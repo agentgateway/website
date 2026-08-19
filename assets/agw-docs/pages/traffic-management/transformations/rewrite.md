@@ -33,8 +33,6 @@ For example, a request to `/users/12345` is forwarded upstream as `/users/id`.
    EOF
    ```
 
-   {{< doc-test paths="rewrite" file="products/agentgateway/main/traffic-management/transformations/rewrite.sh" >}}{{< /doc-test >}}
-
 2. Send a request to the httpbin app using a path with a numeric ID. Verify that you get back a 200 HTTP response code and that the `url` field in the response body shows the normalized path forwarded to the upstream.
 
    {{< tabs >}}
