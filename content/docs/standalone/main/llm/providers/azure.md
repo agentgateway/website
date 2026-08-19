@@ -371,7 +371,7 @@ To use system-assigned managed identity:
 * The Azure resource must have managed identity enabled.
 * The Azure resource identity must have permissions to and the network ability to access the Azure AI services.
 
-Select `systemAssigned` to use the identity of the Azure resource that runs Agentgateway.
+Leave `managedIdentity` empty to use the identity of the Azure resource that runs Agentgateway.
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -390,8 +390,7 @@ routes:
     backendAuth:
       azure:
         explicitConfig:
-          managedIdentity:
-            systemAssigned: {}
+          managedIdentity: {}
 ```
 
 {{< doc-test paths="azure" >}}
@@ -413,15 +412,14 @@ routes:
     backendAuth:
       azure:
         explicitConfig:
-          managedIdentity:
-            systemAssigned: {}
+          managedIdentity: {}
 EOF
 agentgateway -f config-adv-system-managed-identity.yaml --validate-only
 {{< /doc-test >}}
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
-| `backendAuth.azure.explicitConfig.managedIdentity.systemAssigned` | Use the system-assigned identity of the Azure resource that runs Agentgateway. |
+| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave the object empty to use the system-assigned identity. |
 {{< /reuse-append >}}
 
 {{% /tab %}}
@@ -453,7 +451,7 @@ routes:
       azure:
         explicitConfig:
           managedIdentity:
-            userAssigned:
+            userAssignedIdentity:
               clientId: "<your-managed-identity-client-id>"
               # OR use objectId or resourceId instead
               # objectId: "your-managed-identity-object-id"
@@ -480,7 +478,7 @@ routes:
       azure:
         explicitConfig:
           managedIdentity:
-            userAssigned:
+            userAssignedIdentity:
               clientId: "<your-managed-identity-client-id>"
               # OR use objectId or resourceId instead
               # objectId: "your-managed-identity-object-id"
@@ -491,7 +489,7 @@ agentgateway -f config-adv-user-managed-identity.yaml --validate-only
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
-| `backendAuth.azure.explicitConfig.managedIdentity.userAssigned` | Use a user-assigned managed identity. Specify exactly one of `clientId`, `objectId`, or `resourceId`. |
+| `backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity` | Use a user-assigned managed identity. Specify exactly one of `clientId`, `objectId`, or `resourceId`. |
 {{< /reuse-append >}}
 
 {{% /tab %}}

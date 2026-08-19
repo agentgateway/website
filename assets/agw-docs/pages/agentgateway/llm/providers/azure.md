@@ -14,7 +14,7 @@ Azure supports two endpoint types:
 You can authenticate to Azure with an API key or with implicit Entra ID authentication through `DefaultAzureCredential`. On Kubernetes, implicit authentication can obtain a token from managed identity or workload identity. It does not require a Kubernetes secret or `policies.auth`.
 
 {{< version include-if="main" >}}
-The Agentgateway proxy can use explicit managed identity authentication only when it can reach an Azure managed identity endpoint. Choose `systemAssigned` for the host identity. Choose `userAssigned` and provide one identifier: client ID, object ID, or resource ID. Do not configure both identity types. Managed identity and workload identity use different credential sources.
+The Agentgateway proxy can use explicit managed identity authentication only when it can reach an Azure managed identity endpoint. Leave `managedIdentity` empty to use the system-assigned identity. To use a user-assigned identity, set one identifier: `clientId`, `objectId`, or `resourceId`. Managed identity and workload identity use different credential sources.
 
 {{< /version >}}
 
@@ -134,8 +134,7 @@ The Agentgateway proxy can use explicit managed identity authentication only whe
      policies:
        auth:
          azure:
-           managedIdentity:
-             systemAssigned: {}
+           managedIdentity: {}
    EOF
    ```
 
@@ -159,8 +158,7 @@ The Agentgateway proxy can use explicit managed identity authentication only whe
        auth:
          azure:
            managedIdentity:
-             userAssigned:
-               clientId: <managed-identity-client-id>
+             clientId: <managed-identity-client-id>
    EOF
    ```
    {{< /version >}}
