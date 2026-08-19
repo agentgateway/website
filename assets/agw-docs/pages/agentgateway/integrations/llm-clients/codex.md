@@ -6,6 +6,14 @@ Configure [Codex](https://chatgpt.com/codex), the AI coding tool by OpenAI, to r
 2. Install either the [Codex CLI](https://learn.chatgpt.com/docs/codex/cli) or
    the [ChatGPT desktop app](https://chatgpt.com/download/).
 
+If agentgateway requires a virtual key, export the client credential before
+starting Codex. This is not the OpenAI provider key that agentgateway sends
+upstream.
+
+```sh
+export AGENTGATEWAY_API_KEY='<gateway-client-key>'
+```
+
 {{< reuse "agw-docs/snippets/llm-client-setup-callout.md" >}}
 
 ## Configure agentgateway
@@ -47,7 +55,9 @@ Point Codex at agentgateway through one of the following methods.
 To override the base URL for a single run, set `model_provider` and the provider's `name` and `base_url` (the `-c` values are TOML).
 
 ```sh
-codex -c 'model_provider="agentgateway"' -c 'model_providers.agentgateway.name="OpenAI via agentgateway"' -c 'model_providers.agentgateway.base_url="http://localhost:4000/v1"'
+codex -c 'model_provider="agentgateway"' \
+  -c 'model_providers.agentgateway.name="OpenAI via agentgateway"' \
+  -c 'model_providers.agentgateway.base_url="http://localhost:4000/v1"'
 ```
 
 {{% /tab %}}
@@ -78,6 +88,15 @@ codex --profile agentgateway
 
 {{% /tab %}}
 {{< /tabs >}}
+
+If the route requires a virtual key, add the following field to the
+`model_providers.agentgateway` table in the profile, user configuration, or
+CLI overrides. Codex sends the value of that environment variable as the
+gateway credential.
+
+```toml
+env_key = "AGENTGATEWAY_API_KEY"
+```
 
 #### Verify the CLI connection
 

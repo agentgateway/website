@@ -37,8 +37,10 @@ hostname and whose issuer is trusted by the client devices.
 
 {{< callout type="warning" >}}
 Do not use a port-forward, localhost address, or temporary load balancer address
-in a managed configuration. Do not include an upstream LLM provider key or
-another shared secret in an Intune profile or remediation script.
+in a managed configuration. Never include an upstream LLM provider key in an
+Intune profile or remediation script. A static agentgateway client key is
+acceptable only for a limited pilot because an administrator of the managed
+device can recover it.
 {{< /callout >}}
 
 ## Plan the Intune policy
@@ -124,6 +126,32 @@ For clients with an ordinary user settings file, detect and update only the
 gateway-related keys. Replacing the entire file can delete a user's unrelated
 editor, model, or accessibility settings.
 
+## Configure a gateway client key for the pilot
+
+Use one revocable agentgateway client key for the Codex and Claude Desktop
+pilot examples in this guide. Protect the OpenAI and Anthropic routes with the
+same [virtual key]({{< link-hextra
+path="/llm/cost-controls/virtual-keys/" >}}), and keep the provider credentials
+separate.
+
+| Credential | Purpose | Send to managed clients? |
+| --- | --- | --- |
+| Gateway client key | Authenticates Codex and Claude Desktop to agentgateway | Yes, for the pilot |
+| OpenAI provider key | Authenticates agentgateway to OpenAI | No |
+| Anthropic provider key | Authenticates agentgateway to Anthropic | No |
+
+You do not need a different gateway client key or client-key store for each
+application. In Kubernetes, configure the API key policies on both client
+HTTPRoutes to use the same virtual-key source. Do not apply the policy to a
+shared Gateway listener if another route, such as Claude subscription
+passthrough, must accept a different credential.
+
+Store the raw pilot key in a password manager while you build the client
+policies. The examples refer to it as `AGENTGATEWAY_API_KEY`. Before a broad
+production assignment, replace the shared static key with per-user,
+per-device, or identity-based credentials so that you can revoke access and
+attribute usage independently.
+
 ## Manage Codex
 
 Codex supports [managed
@@ -131,6 +159,29 @@ configuration](https://learn.chatgpt.com/docs/enterprise/managed-configuration)
 in the Codex CLI, IDE extension, and Codex in the ChatGPT desktop app. Managed
 configuration overrides the user's `config.toml` and CLI `--config` values
 when the client starts.
+
+### Choose a Codex authentication option
+
+Choose one authentication method for the custom agentgateway provider.
+
+| Method | When to use | Managed TOML |
+| --- | --- | --- |
+| Environment variable | Initial pilot | Set `env_key = "AGENTGATEWAY_API_KEY"`. Provision the variable with the pilot gateway client key. |
+| Command-backed bearer token | Production | Configure `model_providers.agentgateway.auth` to invoke an organization-owned credential helper. |
+
+This guide uses the environment-variable method. The variable must be
+available to the process that launches Codex. Setting it only in an interactive
+shell does not make it available to a Codex desktop application launched from
+the macOS Finder or Windows Start menu. Use your organization's secret
+delivery mechanism to provision the value in the intended user context. Do
+not place the raw value in the managed TOML.
+
+For production, a command-backed authentication helper can retrieve a
+short-lived or device-specific credential from Keychain, Credential Manager,
+or an internal secret broker. Do not combine `auth` with `env_key`,
+`experimental_bearer_token`, or `requires_openai_auth`. For the supported
+fields, see the [Codex configuration
+reference](https://developers.openai.com/codex/config-reference#configtoml).
 
 Create the following approved configuration. Replace the example hostname with
 the stable HTTPS address that exposes agentgateway. Keep the `/v1` suffix
@@ -143,6 +194,7 @@ model_provider = "agentgateway"
 name = "OpenAI via agentgateway"
 base_url = "https://llm.example.com/v1"
 wire_api = "responses"
+env_key = "AGENTGATEWAY_API_KEY"
 ```
 
 {{< callout type="warning" >}}
@@ -210,10 +262,20 @@ are managed defaults, not supported `requirements.toml` constraints.
    with Codex enabled. Confirm that Intune reports success for the
    installation, effective managed configuration, and network checks. The
    script reports only check results and does not return the decoded TOML.
-4. Fully quit Codex. On macOS, use **Command-Q** instead of only closing the
+4. From the intended user context, verify the gateway key independently. The
+   environment variable must contain the gateway client key, not the OpenAI
+   provider key.
+
+   ```sh
+   curl --fail-with-body \
+     --header "Authorization: Bearer $AGENTGATEWAY_API_KEY" \
+     "https://llm.example.com/v1/models?client_version=intune-verification"
+   ```
+
+5. Fully quit Codex. On macOS, use **Command-Q** instead of only closing the
    window. Reopen Codex so that it loads the managed defaults, and start a new
    local task. A cloud task does not run through the local managed provider.
-5. Start the agentgateway log stream as described in [Verify the
+6. Start the agentgateway log stream as described in [Verify the
    deployment](#verify-the-deployment), and then send a harmless prompt from
    the new task.
 
@@ -228,16 +290,18 @@ are managed defaults, not supported `requirements.toml` constraints.
    codex exec 'Reply exactly: AGW-CODEX-VERIFY. Do not use tools.'
    ```
 
-6. Correlate the request by its time. Codex might first send `GET /v1/models`.
+7. Correlate the request by its time. Codex might first send `GET /v1/models`.
    The decisive entry is a successful `POST /v1/responses` with the configured
    gateway hostname, the expected route, and `http.status=200`. The access log
    does not need to contain the prompt text.
-7. If no entry appears, check that the task is local, Codex was fully
+8. If no entry appears, check that the task is local, Codex was fully
    restarted, DNS resolves the managed hostname, the HTTPS listener serves a
    trusted certificate for that hostname, and the managed URL uses `https`.
-   An unauthorized response indicates a client or backend authentication
-   problem rather than an Intune delivery problem.
-8. Add a conflicting provider or base URL to the user's `config.toml`, or start
+   If the authenticated `curl` request succeeds but Codex returns HTTP 401,
+   confirm that `AGENTGATEWAY_API_KEY` is available to the Codex process and
+   restart the application. If both requests return HTTP 401, confirm that the
+   supplied value matches the virtual key configured on the route.
+9. Add a conflicting provider or base URL to the user's `config.toml`, or start
    Codex with a conflicting `--config` value. Restart Codex and confirm that it
    starts with the managed agentgateway values.
 
@@ -264,6 +328,7 @@ model_provider = "agentgateway"
 name = "OpenAI via agentgateway"
 base_url = "https://llm.example.com/v1"
 wire_api = "responses"
+env_key = "AGENTGATEWAY_API_KEY"
 '@
 
 if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
@@ -293,6 +358,7 @@ model_provider = "agentgateway"
 name = "OpenAI via agentgateway"
 base_url = "https://llm.example.com/v1"
 wire_api = "responses"
+env_key = "AGENTGATEWAY_API_KEY"
 '@
 
 New-Item -ItemType Directory -Path $directory -Force | Out-Null
@@ -446,14 +512,16 @@ and rewrites it. Enable only the clients required for the target group. The
 optional installation check recognizes the common paths listed in the script.
 Add your organization's package path or disable that check and use the Intune
 managed-app report when the approved package uses a different path. Never add
-a provider key, bearer token, or another secret.
+a gateway client key, provider key, bearer token, or another secret.
 
 The scripts perform these checks for every enabled client.
 
 1. Confirm that the application is installed in a recognized location when
    the installation check is enabled.
 2. Read the effective managed preference, file, or registry policy and confirm
-   the approved agentgateway URL. The scripts do not print the configuration.
+   the approved agentgateway URL. For Codex, also confirm that the TOML names
+   the approved credential environment variable. The scripts do not inspect
+   the variable's value or print the configuration.
 3. Connect to the approved URL and confirm that it returns an HTTP response. A
    `401` or `403` response passes this connectivity check because it proves
    that DNS, transport, and the protected Gateway listener are reachable.
@@ -530,10 +598,11 @@ network outage must not make every managed device noncompliant or unexpectedly
 affect Conditional Access.
 
 Before uploading a script, replace its example URL with the approved address.
-Include `/v1` for Codex. For Claude Desktop, include a route prefix such as
-`/claude` only when the `HTTPRoute` matches and rewrites it; use only the origin
-for a dedicated hostname that matches `/`. Keep the expected URL aligned with
-the corresponding managed configuration policy.
+Include `/v1` for Codex and keep `EXPECTED_CODEX_ENV_KEY` aligned with the
+managed TOML. For Claude Desktop, include a route prefix such as `/claude` only
+when the `HTTPRoute` matches and rewrites it; use only the origin for a
+dedicated hostname that matches `/`. Keep the expected values aligned with the
+corresponding managed configuration policy.
 
 Use separate compliance policies and assignments for the two clients. This
 prevents a device that requires only one client from being marked noncompliant

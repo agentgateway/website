@@ -19,6 +19,14 @@ requests to `/v1/responses`.
 export AGENTGATEWAY_BASE_URL="http://${INGRESS_GW_ADDRESS}/v1"
 ```
 
+If the route requires a virtual key, make the client key available to Codex.
+This value authenticates the client to agentgateway; it is not the OpenAI
+provider key that agentgateway sends upstream.
+
+```sh
+export AGENTGATEWAY_API_KEY='<gateway-client-key>'
+```
+
 > [!NOTE]
 > For a TLS-enabled gateway, set `AGENTGATEWAY_BASE_URL` to its HTTPS URL ending
 > in `/v1`.
@@ -74,6 +82,15 @@ codex --profile agentgateway
 
 {{% /tab %}}
 {{< /tabs >}}
+
+If the route requires a virtual key, add the following field to the
+`model_providers.agentgateway` table in the profile, user configuration, or
+CLI overrides. Codex sends the value of that environment variable as the
+gateway credential.
+
+```toml
+env_key = "AGENTGATEWAY_API_KEY"
+```
 
 #### Verify the CLI connection
 
