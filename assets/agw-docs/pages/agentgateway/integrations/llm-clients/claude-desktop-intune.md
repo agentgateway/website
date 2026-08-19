@@ -300,12 +300,12 @@ managed profile.
    profile aligned with the issuer and audience configured on agentgateway.
 5. Review the remaining **Configure Third-Party Inference** settings and apply
    them according to your organization's requirements. These optional settings
-   are not required to route inference through agentgateway, and their UI
-   labels can vary between Claude Desktop releases. See the [Claude Desktop
-   configuration
+   are not required to route inference through agentgateway. See the [Claude
+   Desktop configuration
    reference](https://claude.com/docs/third-party/claude-desktop/configuration)
    and [MDM deployment
-   guide](https://claude.com/docs/third-party/claude-desktop/mdm).
+   guide](https://claude.com/docs/third-party/claude-desktop/mdm) for additional
+   details.
 6. Ensure that managed devices can reach the agentgateway hostname. If users
    must not access LLM providers directly, enforce that requirement with
    separate network controls. A Claude Desktop or Intune configuration cannot
