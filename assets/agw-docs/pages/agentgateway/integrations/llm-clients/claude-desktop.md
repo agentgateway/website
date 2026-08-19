@@ -164,7 +164,9 @@ path="/integrations/llm-clients/microsoft-intune/#claude-subscription" >}}).
 
 The following steps use Microsoft Entra ID as the example identity provider. Any OpenID Connect (OIDC) provider works the same way. Substitute your own issuer URL, client ID, and JWKS URL.
 
-1. Register an application with your identity provider, and record the client ID and the issuer URL. Claude Desktop is a public client that receives the redirect on a loopback address, so configure the application accordingly.
+1. Register a public-client application with your identity provider, and
+   record the client ID and issuer URL. Do not create a client secret. The
+   following values configure Claude Desktop's browser flow.
 
    | Setting | Value |
    | -- | -- |
@@ -176,7 +178,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    > Two details about the redirect URI cause most failures:
    >
    > * Include the `/callback` path. Claude Desktop redirects to `http://127.0.0.1:<port>/callback`, and a registration of `http://127.0.0.1` alone does not match. On Entra ID, the mismatch returns `AADSTS50011`.
-   > * Register the URI as a native or desktop client, not a web client. Claude Desktop picks an ephemeral port for each sign-in. A native client registration accepts any loopback port, as described in [RFC 8252](https://datatracker.ietf.org/doc/html/rfc8252#section-7.3), and a web client registration requires an exact port match. On Entra ID, select the **Mobile and desktop applications** platform and set **Allow public client flows** to **Yes**.
+   > * Register the URI as a native or desktop client, not a web client. Claude Desktop picks an ephemeral port for each sign-in. A native client registration accepts any loopback port, as described in [RFC 8252](https://datatracker.ietf.org/doc/html/rfc8252#section-7.3), and a web client registration requires an exact port match. On Entra ID, select the **Mobile and desktop applications** platform. The browser and broker authorization-code flows do not require the legacy **Allow public client flows** toggle; leave it disabled.
 
 2. Save the identifiers from your registration and your Anthropic API key, so that agentgateway can resolve them. Agentgateway reads variable references in the configuration file from the environment at startup.
 
@@ -186,7 +188,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    export ANTHROPIC_API_KEY=<your-anthropic-api-key>
    ```
 
-3. Update your configuration file to validate the token on the route and to send an Anthropic API key upstream. Interactive sign-in puts the identity provider token in the `Authorization` header, so the proxy must supply the provider credential itself rather than pass a user token upstream.
+3. Update your configuration file to validate the token on the route and to send an Anthropic API key upstream. Interactive sign-in puts the identity provider token in the `Authorization` header, so the proxy must supply the provider credential itself rather than pass a user token upstream. Replace any client API key authentication on this route instead of requiring both authentication methods.
 
    ```yaml
    cat > config.yaml << 'EOF'
@@ -255,15 +257,17 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    | Issuer URL | `https://login.microsoftonline.com/$TENANT_ID/v2.0` |
    | Bearer token | **ID token** |
    | Scopes | `openid profile email offline_access` |
+   | Sign-in flow | **Browser** for this initial test; use the [Intune guide]({{< link-hextra path="/integrations/llm-clients/microsoft-intune/#claude-entra" >}}) to move managed devices to **Broker** |
    | Model discovery | **Off** when you use a fixed model list |
    | Models | One or more full model IDs that the backend exposes |
 
    {{< reuse "agw-docs/snippets/claude-desktop-id-token-warning.md" >}}
 
-6. Click **Test connection**. Then click **Apply Changes**, fully quit Claude
-   Desktop, and reopen it. A browser window opens to your identity provider.
-   After you sign in, Claude Desktop stores the token and refreshes it in the
-   background through the `offline_access` scope.
+6. From Claude Desktop, click **Test connection**. Then click **Apply Changes**,
+   fully quit Claude Desktop, and reopen it. A browser window opens to your
+   identity provider. After you sign in, send a real prompt and confirm a
+   successful request with the authenticated identity in the agentgateway
+   logs.
 
 ## Send custom headers {#headers}
 
@@ -294,6 +298,7 @@ The following example shows the Linux form. On macOS and Windows, write every va
   "inferenceProvider": "gateway",
   "inferenceGatewayBaseUrl": "https://agentgateway.example.com/claude",
   "inferenceCredentialKind": "interactive",
+  "inferenceGatewayOidcAuthFlow": "browser",
   "inferenceGatewayOidc": {
     "issuer": "https://login.microsoftonline.com/$TENANT_ID/v2.0",
     "clientId": "$CLIENT_ID",
@@ -328,6 +333,8 @@ If you configured gateway API key or OIDC authentication in strict mode, send a 
 | -- | -- |
 | The connection test calls an unexpected path such as `/claude/claude/v1/models` | Make the base URL match the route prefix exactly. Claude Desktop appends `/v1/models` and `/v1/messages`. |
 | The gateway API key connection returns HTTP 401 | Confirm that Claude Desktop sends the client key generated by Client Setup and that the route is protected by the matching virtual-key policy. |
+| Entra sign-in returns `api key authentication failure` | The Claude Desktop route still requires its old virtual API key. Replace that authentication with JWT validation; do not require both. |
+| Entra Test connection succeeds, but restart logs `InvalidToken` | An older managed profile restored a static key. Update the assigned profile to `interactive`, remove `inferenceGatewayApiKey`, sync the device, and fully restart Claude Desktop. |
 | A subscription request logs `api key authentication failure` | A virtual API key policy is protecting the subscription route. Remove it from this route so that the subscription bearer token can pass upstream. |
 | The test needs at least one model after `/v1/models` fails | Add a full model ID under **Models** and disable or skip model discovery. |
 | Anthropic returns `authentication_error` in gateway API key or OIDC mode | Confirm that the backend holds a valid Anthropic API key. |
