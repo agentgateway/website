@@ -228,17 +228,11 @@ def build_test_cases(
     return test_cases, sorted(set(tested_documents)), total_by_version, total_documents
 
 
-def generate_script_and_manifest(
-    repo_root: Path,
-    definition: Dict,
-    script_path: Path,
-    manifest_path: Path,
-    docs_tests_root: Optional[Path] = None,
-) -> None:
+def generate_script_and_manifest(repo_root: Path, definition: Dict, script_path: Path, manifest_path: Path) -> None:
     if yaml is None:
         raise RuntimeError("PyYAML is required. Install it with: pip install pyyaml")
 
-    extractor = Extractor(repo_root=repo_root, definition=definition, docs_tests_root=docs_tests_root)
+    extractor = Extractor(repo_root=repo_root, definition=definition)
     extractor.walk()
 
     blocks = extractor.select_blocks()
@@ -657,13 +651,6 @@ def write_report(
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate and run doc tests from page YAML front matter metadata.")
     parser.add_argument("--repo-root", default=".", help="Workspace root")
-    parser.add_argument(
-        "--docs-tests-root",
-        default=None,
-        help="Path to a docs-tests checkout, for {{< doc-test file=\"...\" >}} external "
-        "content. Defaults to a sibling 'docs-tests' directory next to --repo-root. "
-        "Can also be set via the DOCS_TESTS_ROOT environment variable.",
-    )
     parser.add_argument("--docs-glob", default="content/docs/**/*.md", help="Glob to discover markdown docs")
     parser.add_argument("--version", default="2.2.x", help="Default context.version")
     parser.add_argument("--product", default="kubernetes", help="Default context.product")
@@ -713,8 +700,6 @@ def main() -> int:
     repo_root = Path(args.repo_root).resolve()
     generated_dir = (repo_root / args.generated_dir).resolve()
     report_path = (repo_root / args.report_file).resolve()
-    docs_tests_root_value = args.docs_tests_root or os.environ.get("DOCS_TESTS_ROOT")
-    docs_tests_root = Path(docs_tests_root_value).resolve() if docs_tests_root_value else None
 
     if args.file:
         filter_test_name = args.test if len(args.file) == 1 else None
@@ -769,7 +754,7 @@ def main() -> int:
                 "manifest": test_case.manifest_path.relative_to(repo_root).as_posix(),
             },
         }
-        generate_script_and_manifest(repo_root, definition, test_case.script_path, test_case.manifest_path, docs_tests_root=docs_tests_root)
+        generate_script_and_manifest(repo_root, definition, test_case.script_path, test_case.manifest_path)
 
     if args.generate_only:
         write_report(report_path, tested_documents, {}, total_documents, total_by_version)
