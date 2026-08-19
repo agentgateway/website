@@ -4,14 +4,16 @@ description: Integrate with OpenTelemetry to collect and analyze request traces.
 weight: 90
 test:
   tracing:
-  - file: ${versionRoot}/quickstart/install.md
-    path: standard
-  - file: ${versionRoot}/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/observability/tracing.md
-    path: tracing
+    type: [schema, functional]
+    steps:
+    - file: ${versionRoot}/quickstart/install.md
+      path: standard
+    - file: ${versionRoot}/setup/gateway.md
+      path: all
+    - file: ${versionRoot}/install/sample-app.md
+      path: install-httpbin
+    - file: ${versionRoot}/observability/tracing.md
+      path: tracing
 ---
 
 Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and configure custom metadata for your traces with an {{< reuse "agw-docs/snippets/policy.md" >}}.

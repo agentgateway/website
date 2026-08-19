@@ -13,23 +13,27 @@ test:
   - file: ${versionRoot}/resiliency/retry/retry.md
     path: retry-in-httproute
   retry-in-agentgateway:
-  - file: ${versionRoot}/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/resiliency/retry/retry.md
-    path: retry-in-agentgateway
+    type: [schema, functional]
+    steps:
+    - file: ${versionRoot}/quickstart/install.md
+      path: experimental
+    - file: ${versionRoot}/setup/gateway.md
+      path: all
+    - file: ${versionRoot}/install/sample-app.md
+      path: install-httpbin
+    - file: ${versionRoot}/resiliency/retry/retry.md
+      path: retry-in-agentgateway
   retry-in-gatewaylistener:
-  - file: ${versionRoot}/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/resiliency/retry/retry.md
-    path: retry-in-gatewaylistener
+    type: [schema, functional]
+    steps:
+    - file: ${versionRoot}/quickstart/install.md
+      path: experimental
+    - file: ${versionRoot}/setup/gateway.md
+      path: all
+    - file: ${versionRoot}/install/sample-app.md
+      path: install-httpbin
+    - file: ${versionRoot}/resiliency/retry/retry.md
+      path: retry-in-gatewaylistener
 ---
 
 {{< reuse "agw-docs/pages/resiliency/retry/retry.md" >}}

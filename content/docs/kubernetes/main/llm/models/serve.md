@@ -4,13 +4,15 @@ weight: 20
 description: Expose an LLM model to clients with an AgentgatewayModel resource, including wildcard matching and provider credentials.
 test:
   serve-model:
-  - file: ${versionRoot}/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/llm/providers/httpbun.md
-    path: setup-httpbun-llm
-  - path: serve-model
+    type: [schema, functional]
+    steps:
+    - file: ${versionRoot}/quickstart/install.md
+      path: experimental
+    - file: ${versionRoot}/setup/gateway.md
+      path: all
+    - file: ${versionRoot}/llm/providers/httpbun.md
+      path: setup-httpbun-llm
+    - path: serve-model
 ---
 
 Expose an LLM model to clients with an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resource.

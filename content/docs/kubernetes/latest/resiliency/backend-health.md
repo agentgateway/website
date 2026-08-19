@@ -4,14 +4,16 @@ weight: 15
 description: Automatically evict and restore unhealthy backend endpoints with passive health checking.
 test:
   backend-health:
-  - file: ${versionRoot}/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/resiliency/backend-health.md
-    path: backend-health
+    type: [schema, functional]
+    steps:
+    - file: ${versionRoot}/quickstart/install.md
+      path: experimental
+    - file: ${versionRoot}/setup/gateway.md
+      path: all
+    - file: ${versionRoot}/install/sample-app.md
+      path: install-httpbin
+    - file: ${versionRoot}/resiliency/backend-health.md
+      path: backend-health
 ---
 
 {{< reuse "agw-docs/pages/resiliency/backend-health.md" >}}
