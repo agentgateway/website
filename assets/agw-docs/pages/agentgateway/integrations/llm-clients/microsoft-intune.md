@@ -544,15 +544,31 @@ because the other client is not configured.
 1. Download the macOS discovery script and rule JSON for the required client.
 2. In the Intune admin center, go to **Endpoint security > Device compliance >
    Scripts > Add > macOS** and upload the script.
-3. Set **Run this script using the logged on credentials** to **Yes**. Enable
-   signature enforcement when your organization signs scripts.
+3. The script resolves the signed-in console user and reads both per-user and
+   machine managed preferences, so it supports either the default system
+   context or logged-in-user context. If Intune displays an execution-context
+   setting, either context is supported. Enable signature enforcement when
+   your organization signs scripts.
 4. Create a macOS compliance policy, add **Custom Compliance**, select the
    discovery script, and upload the custom-compliance rule JSON.
 5. Assign the policy to the same pilot group as the client application and
    managed preference policies.
 
-Each macOS discovery script prints only `true` or `false` for its single
-Boolean rule.
+Each macOS discovery script returns one JSON object on a single line. For
+example:
+
+```json
+{"CodexGatewayConfigured":true}
+```
+
+```json
+{"ClaudeDesktopGatewayConfigured":true}
+```
+
+The setting name is case-sensitive and must match the corresponding
+`SettingName` in the rule JSON. The value is a JSON Boolean, not a quoted
+string. Each script returns exit code `0` for either discovered value. A
+nonzero exit code is reserved for a script execution error.
 
 ### Add client compliance on Windows
 
