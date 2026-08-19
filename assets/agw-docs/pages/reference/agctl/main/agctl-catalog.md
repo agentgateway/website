@@ -1,15 +1,15 @@
-Manage model cost catalogs
+Manage model catalogs
 
 ### Synopsis
 
-Manage agentgateway model cost catalogs.
+Manage agentgateway model catalogs.
 
 Use subcommands to import catalog data from supported sources.
 
 ### Options
 
 ```
-  -h, --help   help for costs
+  -h, --help   help for catalog
 ```
 
 ### Options inherited from parent commands
@@ -21,5 +21,5 @@ Use subcommands to import catalog data from supported sources.
 ### SEE ALSO
 
 * [agctl](../agctl/)	 - agctl controls and inspects Agentgateway resources
-* [agctl costs import](../agctl-costs-import/)	 - Import model costs
+* [agctl catalog import](../agctl-catalog-import/)	 - Import a model catalog
 

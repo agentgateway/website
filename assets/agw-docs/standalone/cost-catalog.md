@@ -45,23 +45,23 @@ For general LLM telemetry setup, see [Observe traffic]({{< link-hextra path="/ll
 
 ## Import costs (agctl)
 
-Use `agctl costs import` to generate a catalog file from a supported pricing source. The default source is `models.dev`.
+Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` to generate a catalog file from a supported pricing source. The default source is `models.dev`.
 
 ```sh
 mkdir -p costs
-agctl costs import --out ./costs/catalog.json
+agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import --out ./costs/catalog.json
 ```
 
 To keep the catalog smaller, import only the providers that you use.
 
 ```sh
-agctl costs import \
+agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import \
   --source models.dev \
   --providers anthropic,google,openai \
   --out ./costs/catalog.json
 ```
 
-For all flags, see the [`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}) reference.
+For all flags, see the {{< version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}){{< /version >}}{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}){{< /version >}} reference.
 
 ## Import costs (Admin UI)
 
@@ -165,7 +165,7 @@ The model catalog provides pricing data for spend visibility. To block or thrott
 
 ## Advanced: Catalog format
 
-Usually, you do not need to write catalog JSON by hand. Use `agctl costs import` or the Admin UI to generate the base catalog, then add overrides only when needed.
+Usually, you do not need to write catalog JSON by hand. Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` or the Admin UI to generate the base catalog, then add overrides only when needed.
 
 {{< reuse "agw-docs/snippets/model-catalog-json-format.md" >}}
 

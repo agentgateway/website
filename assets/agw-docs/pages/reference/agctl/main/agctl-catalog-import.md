@@ -1,16 +1,16 @@
-Import model costs
+Import a model catalog
 
 ### Synopsis
 
-Import a model cost catalog.
+Import a model catalog.
 
 Examples:
-	agctl costs import > catalog.json
-	agctl costs import --out ./costs/catalog.json
-	agctl costs import --source models.dev --providers anthropic,google,openai
+	agctl catalog import > catalog.json
+	agctl catalog import --out ./costs/catalog.json
+	agctl catalog import --source models.dev --providers anthropic,google,openai
 
 ```
-agctl costs import [flags]
+agctl catalog import [flags]
 ```
 
 ### Options
@@ -32,5 +32,5 @@ agctl costs import [flags]
 
 ### SEE ALSO
 
-* [agctl costs](../agctl-costs/)	 - Manage model cost catalogs
+* [agctl catalog](../agctl-catalog/)	 - Manage model catalogs
 
