@@ -143,8 +143,7 @@ separate.
 You do not need a different gateway client key or client-key store for each
 application. In Kubernetes, configure the API key policies on both client
 HTTPRoutes to use the same virtual-key source. Do not apply the policy to a
-shared Gateway listener if another route, such as Claude subscription
-passthrough, must accept a different credential.
+shared Gateway listener if another route must accept a different credential.
 
 Store the raw pilot key in a password manager while you build the client
 policies. The examples refer to it as `AGENTGATEWAY_API_KEY`. Before a broad
