@@ -513,14 +513,21 @@ Add your organization's package path or disable that check and use the Intune
 managed-app report when the approved package uses a different path. Never add
 a gateway client key, provider key, bearer token, or another secret.
 
+For Claude Desktop, also set the expected credential kind. The examples
+default to `static`. For Entra ID, set it to `interactive` and populate the
+expected OIDC flow (`browser` or `broker`), issuer, and client ID. The scripts
+then reject a leftover static key without returning its value.
+
 The scripts perform these checks for every enabled client.
 
 1. Confirm that the application is installed in a recognized location when
    the installation check is enabled.
 2. Read the effective managed preference, file, or registry policy and confirm
    the approved agentgateway URL. For Codex, also confirm that the TOML names
-   the approved credential environment variable. The scripts do not inspect
-   the variable's value or print the configuration.
+   the approved credential environment variable. For Claude Desktop, confirm
+   the expected credential kind and, in Entra mode, the OIDC flow, issuer,
+   client ID, ID-token setting, and absence of a static key. The scripts do not
+   inspect secret values or print the configuration.
 3. Connect to the approved URL and confirm that it returns an HTTP response. A
    `401` or `403` response passes this connectivity check because it proves
    that DNS, transport, and the protected Gateway listener are reachable.
@@ -601,7 +608,9 @@ Include `/v1` for Codex and keep `EXPECTED_CODEX_ENV_KEY` aligned with the
 managed TOML. For Claude Desktop, include a route prefix such as `/claude` only
 when the `HTTPRoute` matches and rewrites it; use only the origin for a
 dedicated hostname that matches `/`. Keep the expected values aligned with the
-corresponding managed configuration policy.
+corresponding managed configuration policy. For Entra ID, set the expected
+Claude credential kind to `interactive` and populate the expected OIDC flow,
+issuer, and client ID.
 
 Use separate compliance policies and assignments for the two clients. This
 prevents a device that requires only one client from being marked noncompliant

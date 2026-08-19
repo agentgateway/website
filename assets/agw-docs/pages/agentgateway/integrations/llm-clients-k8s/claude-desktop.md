@@ -346,7 +346,9 @@ path="/integrations/llm-clients/microsoft-intune/#claude-subscription" >}}).
 
 The following steps use Microsoft Entra ID as the example identity provider. Any OpenID Connect (OIDC) provider works the same way. Substitute your own issuer URL, client ID, and JWKS path.
 
-1. Register an application with your identity provider, and record the client ID and the issuer URL. Claude Desktop is a public client that receives the redirect on a loopback address, so configure the application accordingly.
+1. Register a public-client application with your identity provider, and
+   record the client ID and issuer URL. Do not create a client secret. The
+   following values configure Claude Desktop's browser flow.
 
    | Setting | Value |
    | -- | -- |
@@ -358,7 +360,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    > Two details about the redirect URI cause most failures:
    >
    > * Include the `/callback` path. Claude Desktop redirects to `http://127.0.0.1:<port>/callback`, and a registration of `http://127.0.0.1` alone does not match. On Entra ID, the mismatch returns `AADSTS50011`.
-   > * Register the URI as a native or desktop client, not a web client. Claude Desktop picks an ephemeral port for each sign-in. A native client registration accepts any loopback port, as described in [RFC 8252](https://datatracker.ietf.org/doc/html/rfc8252#section-7.3), and a web client registration requires an exact port match. On Entra ID, select the **Mobile and desktop applications** platform and set **Allow public client flows** to **Yes**.
+   > * Register the URI as a native or desktop client, not a web client. Claude Desktop picks an ephemeral port for each sign-in. A native client registration accepts any loopback port, as described in [RFC 8252](https://datatracker.ietf.org/doc/html/rfc8252#section-7.3), and a web client registration requires an exact port match. On Entra ID, select the **Mobile and desktop applications** platform. The browser and broker authorization-code flows do not require the legacy **Allow public client flows** toggle; leave it disabled.
 
 2. Save the identifiers from your registration, so that the following commands can refer to them.
 
@@ -386,6 +388,11 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    ```
 
 4. Create an `{{< reuse "agw-docs/snippets/policy.md" >}}` that requires a valid token on the Claude Desktop route.
+
+   If this route currently has a strict API key policy, remove that policy as
+   part of the transition. Do not attach both authentication policies to the
+   Claude Desktop route. Keep policies for other clients scoped to their own
+   routes.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -443,15 +450,16 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    | Issuer URL | `https://login.microsoftonline.com/$TENANT_ID/v2.0` |
    | Bearer token | **ID token** |
    | Scopes | `openid profile email offline_access` |
+   | Sign-in flow | **Browser** for this initial test; use the [Intune guide]({{< link-hextra path="/integrations/llm-clients/microsoft-intune/#claude-entra" >}}) to move managed devices to **Broker** |
    | Model discovery | **Off** when you use a fixed model list |
    | Models | One or more full model IDs that the backend exposes |
 
    {{< reuse "agw-docs/snippets/claude-desktop-id-token-warning.md" >}}
 
-7. Click **Test connection**. Then click **Apply Changes**, fully quit Claude
-   Desktop, and reopen it. A browser window opens to your identity provider.
-   After you sign in, Claude Desktop stores the token and refreshes it in the
-   background through the `offline_access` scope.
+7. From Claude Desktop, click **Test connection**. Then click **Apply Changes**,
+   fully quit Claude Desktop, and reopen it. A browser window opens to your
+   identity provider. After you sign in, send a real prompt to verify that the
+   saved configuration still works after restart.
 
 8. Confirm that the proxy sees the authenticated identity.
 
@@ -459,7 +467,8 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --tail=5
    ```
 
-   Each request now carries the `sub` claim of the signed-in user.
+   Confirm that the real `POST /v1/messages` request returns HTTP 200 and
+   carries the `sub` claim of the signed-in user.
 
 ## Send custom headers {#headers}
 
@@ -490,6 +499,7 @@ The following example shows the Linux form. On macOS and Windows, write every va
   "inferenceProvider": "gateway",
   "inferenceGatewayBaseUrl": "https://agentgateway.example.com/claude",
   "inferenceCredentialKind": "interactive",
+  "inferenceGatewayOidcAuthFlow": "browser",
   "inferenceGatewayOidc": {
     "issuer": "https://login.microsoftonline.com/$TENANT_ID/v2.0",
     "clientId": "$CLIENT_ID",
@@ -524,6 +534,8 @@ For every available key and for the per-region profiles that a multi-region depl
 | -- | -- |
 | The connection test calls `/claude/v1/models` on a dedicated Claude hostname | Remove `/claude` from the base URL, or update the `HTTPRoute` to match and rewrite that prefix. |
 | The gateway API key connection returns HTTP 401 | Confirm that Claude Desktop sends the client key stored in the policy's Secret and that the strict API key policy is attached to the Claude Desktop `HTTPRoute`. |
+| Entra sign-in returns `api key authentication failure` | The Claude Desktop route is still protected by its old virtual API key policy. Replace that policy with the JWT policy; do not require both. |
+| Entra Test connection succeeds, but restart logs `InvalidToken` | An older managed profile restored a static key. Update the assigned profile to `interactive`, remove `inferenceGatewayApiKey`, sync the device, and fully restart Claude Desktop. |
 | A subscription request logs `api key authentication failure` | A virtual API key policy is protecting the subscription route or its shared `Gateway`. Remove that policy from the subscription route; scope policies needed by other clients to their own `HTTPRoute`. |
 | The test needs at least one model after `/v1/models` fails | Add a full model ID under **Models** and disable or skip model discovery. |
 | Anthropic returns `authentication_error` in gateway API key or OIDC mode | Confirm that `policies.auth.secretRef` points to a Secret whose `Authorization` entry contains a valid Anthropic API key. |
