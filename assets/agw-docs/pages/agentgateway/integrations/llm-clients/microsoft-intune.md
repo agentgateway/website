@@ -140,10 +140,17 @@ separate.
 | OpenAI provider key | Authenticates agentgateway to OpenAI | No |
 | Anthropic provider key | Authenticates agentgateway to Anthropic | No |
 
-You do not need a different gateway client key or client-key store for each
-application. In Kubernetes, configure the API key policies on both client
-HTTPRoutes to use the same virtual-key source. Do not apply the policy to a
-shared Gateway listener if another route must accept a different credential.
+For the pilot, you do not need a different gateway client key or client-key
+store for each application. In Kubernetes, configure the API key policies on
+both client HTTPRoutes to use the same virtual-key source. Do not apply the
+policy to a shared Gateway listener if another route must accept a different
+credential.
+
+For production, use separate gateway client keys for each application or
+security boundary. Separate keys provide per-client attribution and let you
+rotate, revoke, and apply policy to one client without affecting the others.
+Entra ID mode does not use a gateway client key because agentgateway validates
+the signed-in user's JWT instead.
 
 Store the raw pilot key in a password manager while you build the client
 policies. The examples refer to it as `AGENTGATEWAY_API_KEY`. Before a broad
