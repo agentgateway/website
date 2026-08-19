@@ -264,10 +264,12 @@ are managed defaults, not supported `requirements.toml` constraints.
    reports **Succeeded**.
 2. On the Mac, open Company Portal, select the device, and select **Check
    status** to request the latest assigned configuration.
-3. Deploy the [macOS verification script](#automate-verification-with-intune)
-   with Codex enabled. Confirm that Intune reports success for the
-   installation, effective managed configuration, and network checks. The
-   script reports only check results and does not return the decoded TOML.
+3. Configure the macOS verification script with Codex enabled, and then follow
+   [Deploy the verification script on
+   macOS](#deploy-the-verification-script-on-macos). Confirm that Intune
+   reports success for the installation, effective managed configuration, and
+   network checks. The script reports only check results and does not return
+   the decoded TOML.
 4. From the intended user context, verify the gateway key independently. The
    environment variable must contain the gateway client key, not the OpenAI
    provider key.
@@ -541,13 +543,43 @@ The scripts perform these checks for every enabled client.
 
 ### Deploy the verification script on macOS
 
-1. In the Intune admin center, go to **Devices > By platform > macOS > Manage
-   devices > Scripts > Add** and upload the shell script.
-2. Set **Run script as signed-in user** to **Yes**. The effective Codex and
-   Claude Desktop settings are user-scoped.
-3. Select a frequency, assign the pilot group, and monitor **Device status** or
-   **User status**. Exit code `0` reports success; a nonzero exit code reports
-   one or more failed checks.
+1. Download
+   [`verify-agentgateway-clients-macos.sh`](https://github.com/agentgateway/agentgateway/blob/main/examples/microsoft-intune/verification/verify-agentgateway-clients-macos.sh).
+2. Edit the configuration block at the beginning of the script. For a
+   Codex-only assignment, set the approved URL and credential-variable name,
+   enable Codex, and disable Claude Desktop.
+
+   ```sh
+   EXPECTED_CODEX_BASE_URL="https://llm.example.com/v1"
+   EXPECTED_CODEX_ENV_KEY="AGENTGATEWAY_API_KEY"
+   VERIFY_CODEX=true
+   VERIFY_CLAUDE_DESKTOP=false
+   VERIFY_INSTALLATION=true
+   VERIFY_NETWORK=true
+   ```
+
+   Replace `https://llm.example.com/v1` with the managed Codex `base_url`.
+   Do not add the gateway key or another secret to the script. To verify both
+   clients in one assignment, leave both client flags enabled and configure
+   the expected Claude Desktop values too.
+3. Test the edited script locally from the intended user context. Resolve any
+   failed check before uploading it.
+4. In the Intune admin center, go to **Devices > By platform > macOS > Manage
+   devices > Scripts > Add**, provide a name, and upload the edited script.
+5. Set **Run script as signed-in user** to **Yes**. The effective Codex and
+   Claude Desktop settings are user-scoped. Enable signature enforcement only
+   when your organization signs the uploaded script.
+6. Select an execution frequency and retry behavior appropriate for the pilot.
+7. Assign the script to the same pilot group as the client configuration, and
+   create it.
+8. On the Mac, open Company Portal, select the device, and select **Check
+   status**. Script retrieval depends on the Intune management agent check-in,
+   which is separate from the normal MDM configuration sync.
+9. In Intune, reopen the script and review **Device status** or **User status**.
+   Exit code `0` reports success; a nonzero exit code reports one or more
+   failed checks. Use [Verify delivery and
+   execution](https://github.com/agentgateway/agentgateway/tree/main/examples/microsoft-intune#verify-delivery-and-execution)
+   to interpret pending or failed results and collect the sanitized log.
 
 The Mac must have the Microsoft Intune management agent. For prerequisites,
 scheduling, and reporting behavior, see [Use shell scripts on macOS devices in
