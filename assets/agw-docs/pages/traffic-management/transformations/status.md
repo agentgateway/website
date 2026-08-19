@@ -30,6 +30,8 @@ In this example, the transformation applies after routing and targets a specific
    EOF
    ```
 
+   {{< doc-test paths="change-response-status" file="products/agentgateway/main/traffic-management/transformations/status.sh" >}}{{< /doc-test >}}
+
 2. Send a request to the httpbin app and include the `foo=bar` query parameter. Verify that you get back a 401 HTTP response code.
 
    {{< tabs >}}

@@ -39,32 +39,27 @@ deps:
 # Doc tests run code blocks from markdown against a cluster. These targets support
 # generating scripts, running tests, fetching CI results, and injecting pass/fail
 # status into the markdown for the "Verified" badge.
-#
-# The scripts themselves live in the docs-tests repo, not here -- override
-# DOCS_TESTS_DIR if you haven't cloned it as a sibling of this repo.
 #----------------------------------------------------------------------------------
-
-DOCS_TESTS_DIR ?= ../docs-tests
 
 # Generate doc test scripts from markdown (no cluster needed)
 .PHONY: test-generate
 test-generate: deps
-	python3 $(DOCS_TESTS_DIR)/scripts/doc_test_run.py --repo-root . --generate-only
+	python3 scripts/doc_test_run.py --generate-only
 
 # Run all doc tests (requires kubeconfig / cluster access)
 .PHONY: test-run
 test-run: deps
-	python3 $(DOCS_TESTS_DIR)/scripts/doc_test_run.py --repo-root .
+	python3 scripts/doc_test_run.py
 
 # Download latest doc test results from GitHub Actions (main)
 .PHONY: test-artifacts-fetch
 test-artifacts-fetch:
-	bash $(DOCS_TESTS_DIR)/scripts/doc_test_fetch_artifacts.sh
+	bash scripts/doc_test_fetch_artifacts.sh
 
 # Write test pass/fail status into markdown front matter (for Verified badge)
 .PHONY: test-status
 test-status: deps
-	python3 $(DOCS_TESTS_DIR)/scripts/doc_test_inject_status.py --repo-root .
+	python3 scripts/doc_test_inject_status.py
 
 
 #----------------------------------------------------------------------------------

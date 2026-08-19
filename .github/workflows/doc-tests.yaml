@@ -26,20 +26,10 @@ jobs:
     outputs:
       matrix: ${{ steps.list.outputs.matrix }}
       has_tests: ${{ steps.list.outputs.has_tests }}
-      matrix_credentialed: ${{ steps.list.outputs.matrix_credentialed }}
-      has_credentialed_tests: ${{ steps.list.outputs.has_credentialed_tests }}
       dev_version: ${{ steps.dev-version.outputs.dev_version }}
     steps:
       - name: Checkout website repo
         uses: actions/checkout@v6
-
-      # Public repo, no token needed. The doc-test scripts live here now, not in this
-      # repo's own scripts/ dir -- see docs-tests/scripts/doc_test_run.py etc. below.
-      - name: Checkout docs-tests
-        uses: actions/checkout@v6
-        with:
-          repository: solo-io/docs-tests
-          path: docs-tests
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -89,15 +79,10 @@ jobs:
       - name: List test cases
         id: list
         run: |
-          # 'functional' and 'live' run here and block the PR ('functional' = static
-          # validation against a real cluster, 'live' = unauthenticated check against a
-          # real external endpoint). 'schema' (config-vs-schema, no cluster) has its own
-          # job below. 'credentialed' is discovered separately and only run on the daily
-          # schedule, non-blocking.
           if [ -n "$CHANGED_FILES" ]; then
-            TESTS=$(python3 docs-tests/scripts/doc_test_run.py --repo-root . --list-tests --types functional,live --file $CHANGED_FILES)
+            TESTS=$(python3 scripts/doc_test_run.py --repo-root . --list-tests --file $CHANGED_FILES)
           else
-            TESTS=$(python3 docs-tests/scripts/doc_test_run.py --repo-root . --list-tests --types functional,live)
+            TESTS=$(python3 scripts/doc_test_run.py --repo-root . --list-tests)
           fi
           COUNT=$(echo "$TESTS" | jq 'length')
           if [ "$COUNT" -gt 0 ]; then
@@ -107,21 +92,7 @@ jobs:
           fi
           MATRIX=$(echo "$TESTS" | jq -c '(length | [., 40] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | [.[].test] | join(", ") | if length > 80 then .[:77] + "..." else . end)})]}')
           echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
-          echo "Discovered $COUNT functional/live test case(s)"
-
-          # 'credentialed' is not filtered by changed files -- it only ever runs on the
-          # schedule trigger (see run-test-credentialed's `if:`), never on a PR, so
-          # there's no "changed" set to narrow it against.
-          TESTS_CREDENTIALED=$(python3 docs-tests/scripts/doc_test_run.py --repo-root . --list-tests --types credentialed)
-          COUNT_CREDENTIALED=$(echo "$TESTS_CREDENTIALED" | jq 'length')
-          if [ "$COUNT_CREDENTIALED" -gt 0 ]; then
-            echo "has_credentialed_tests=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_credentialed_tests=false" >> $GITHUB_OUTPUT
-          fi
-          MATRIX_CREDENTIALED=$(echo "$TESTS_CREDENTIALED" | jq -c '(length | [., 40] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | [.[].test] | join(", ") | if length > 80 then .[:77] + "..." else . end)})]}')
-          echo "matrix_credentialed=${MATRIX_CREDENTIALED}" >> $GITHUB_OUTPUT
-          echo "Discovered $COUNT_CREDENTIALED credentialed test case(s)"
+          echo "Discovered $COUNT test case(s)"
         env:
           CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
 
@@ -202,54 +173,6 @@ jobs:
           echo "dev_version=$RESOLVED" >> "$GITHUB_OUTPUT"
           echo "Resolved dev build version: $RESOLVED"
 
-  schema-check:
-    name: Schema validation (no cluster)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout website repo
-        uses: actions/checkout@v6
-
-      - name: Checkout docs-tests
-        uses: actions/checkout@v6
-        with:
-          repository: solo-io/docs-tests
-          path: docs-tests
-
-      - name: Checkout agentgateway (for CRD schemas)
-        uses: actions/checkout@v6
-        with:
-          repository: agentgateway/agentgateway
-          path: agentgateway-product
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.x'
-
-      - name: Install Python dependencies
-        run: pip install pyyaml jsonschema
-
-      - name: Run schema checks
-        run: |
-          mkdir -p out/tests/generated
-          python3 docs-tests/scripts/doc_test_schema_check.py \
-            --repo-root . \
-            --crd-dir agentgateway-product/controller/install/helm/agentgateway-crds/templates \
-            --docs-tests-root docs-tests \
-            --report-file out/tests/generated/test-results.yaml \
-            --verbose
-
-      # Named test-result-schema so it's picked up by the same test-result-* pattern the
-      # report job already downloads and merges -- no changes needed there. Writes a
-      # test-results.yaml in the exact shape doc_test_run.py writes (see write_report()).
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: test-result-schema
-          path: out/tests/generated/test-results.yaml
-          retention-days: 1
-
   run-test:
     name: "${{ matrix.shard_name }}"
     needs: discover
@@ -318,11 +241,11 @@ jobs:
           FAILED=0
           TEST_INDEX=0
           while IFS=$'\t' read -r file test; do
-            python3 docs-tests/scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
+            python3 scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
               --report-file "out/tests/generated/shard/${TEST_INDEX}/test-results.yaml" || FAILED=1
             TEST_INDEX=$((TEST_INDEX + 1))
           done < <(echo "$SHARD_TESTS" | jq -r '.[] | "\(.file)\t\(.test)"')
-          python3 docs-tests/scripts/merge_test_results.py out/tests/generated/shard/ out/tests/generated/test-results.yaml
+          python3 scripts/merge_test_results.py out/tests/generated/shard/ out/tests/generated/test-results.yaml
           exit $FAILED
 
       - name: Upload test results
@@ -342,118 +265,14 @@ jobs:
           retention-days: 1
           if-no-files-found: ignore
 
-  # 'credentialed' = checks against a real vendor (e.g. a real OpenAI key, a real Entra
-  # tenant). These never block a doc PR: they only run on the daily schedule, and
-  # continue-on-error means a credentialed failure never fails this workflow. Results
-  # are uploaded under a name that does NOT match report's `test-result-*` download
-  # pattern, so they never enter the blocking pass/fail gate.
-  #
-  # No credentialed scenario exists in this repo yet (matrix_credentialed is currently
-  # always empty -- every OSS traffic-management test that reaches 'live' or beyond
-  # needs a vendor this repo doesn't have; see the plan's Phase B/F notes on the Entra
-  # tenant gap), so this job is a structural no-op today: `has_credentialed_tests` stays
-  # 'false' and it skips. It starts doing real work the moment a page declares
-  # `type: credentialed` in its front matter. A dedicated summary/Slack step for this
-  # type is deliberately not built yet -- there's nothing to exercise it against; add
-  # one alongside the first real credentialed test.
-  run-test-credentialed:
-    name: "[credentialed, non-blocking] ${{ matrix.shard_name }}"
-    needs: discover
-    if: github.event_name == 'schedule' && needs.discover.outputs.has_credentialed_tests == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    continue-on-error: true
-
-    strategy:
-      matrix: ${{ fromJson(needs.discover.outputs.matrix_credentialed) }}
-      fail-fast: false
-    steps:
-      - name: Checkout website repo
-        uses: actions/checkout@v6
-
-      - name: Checkout docs-tests
-        uses: actions/checkout@v6
-        with:
-          repository: solo-io/docs-tests
-          path: docs-tests
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.x'
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version: 'stable'
-          cache: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 'lts/*'
-
-      - name: Install Python dependencies
-        run: pip install pyyaml
-
-      - name: Install cloud-provider-kind
-        run: go install sigs.k8s.io/cloud-provider-kind@latest
-
-      - name: Install yamltest
-        run: npm install -g yamltest@latest
-
-      - name: Run doc tests
-        env:
-          SHARD_TESTS: ${{ matrix.tests }}
-          DEBUG_MODE: true
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          PYTHONUNBUFFERED: '1'
-          GH_TOKEN: ${{ github.token }}
-          DOCS_TESTS_ROOT: ${{ github.workspace }}/docs-tests
-        run: |
-          FAILED=0
-          TEST_INDEX=0
-          while IFS=$'\t' read -r file test; do
-            python3 docs-tests/scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
-              --report-file "out/tests/generated/shard/${TEST_INDEX}/test-results.yaml" || FAILED=1
-            TEST_INDEX=$((TEST_INDEX + 1))
-          done < <(echo "$SHARD_TESTS" | jq -r '.[] | "\(.file)\t\(.test)"')
-          python3 docs-tests/scripts/merge_test_results.py out/tests/generated/shard/ out/tests/generated/test-results.yaml
-          exit $FAILED
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: credentialed-test-result-${{ strategy.job-index }}
-          path: out/tests/generated/test-results.yaml
-          retention-days: 1
-
-      - name: Upload test context (on failure)
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: credentialed-test-context-${{ strategy.job-index }}
-          path: out/tests/generated/context/
-          retention-days: 1
-          if-no-files-found: ignore
-
   report:
     name: Aggregate results and report
-    needs: [discover, run-test, schema-check]
+    needs: [discover, run-test]
     if: always() && needs.discover.outputs.has_tests == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout website repo
         uses: actions/checkout@v6
-
-      # Public repo, no token needed. The doc-test scripts live here now, not in this
-      # repo's own scripts/ dir -- see docs-tests/scripts/merge_test_results.py etc. below.
-      - name: Checkout docs-tests
-        uses: actions/checkout@v6
-        with:
-          repository: solo-io/docs-tests
-          path: docs-tests
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -470,7 +289,7 @@ jobs:
           path: collected-results/
 
       - name: Merge test results
-        run: python3 docs-tests/scripts/merge_test_results.py collected-results/ out/tests/generated/test-results.yaml
+        run: python3 scripts/merge_test_results.py collected-results/ out/tests/generated/test-results.yaml
 
       - name: Generate job summary
         id: summary
@@ -478,11 +297,11 @@ jobs:
           RESULTS_FILE=out/tests/generated/test-results.yaml
 
           # GitHub Step Summary (Markdown)
-          python3 docs-tests/scripts/report_summary.py "$RESULTS_FILE" >> "$GITHUB_STEP_SUMMARY"
+          python3 scripts/report_summary.py "$RESULTS_FILE" >> "$GITHUB_STEP_SUMMARY"
 
           # Slack Block Kit payload
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          SLACK_PAYLOAD=$(python3 docs-tests/scripts/report_summary.py --slack --run-url "$RUN_URL" "$RESULTS_FILE")
+          SLACK_PAYLOAD=$(python3 scripts/report_summary.py --slack --run-url "$RUN_URL" "$RESULTS_FILE")
           echo "slack_blocks<<EOF" >> "$GITHUB_OUTPUT"
           echo "$SLACK_PAYLOAD" | jq '.main' >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
@@ -503,7 +322,7 @@ jobs:
       - name: List untested docs
         if: always()
         run: |
-          python3 docs-tests/scripts/list_untested_docs.py \
+          python3 scripts/list_untested_docs.py \
             --docs-dir content/docs \
             --output out/tests/generated/untested-docs.txt
 

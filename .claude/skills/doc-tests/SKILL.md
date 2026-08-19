@@ -25,7 +25,7 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
    > **Critical**: Most Kubernetes topic pages (e.g. `content/docs/kubernetes/latest/resiliency/timeouts/request.md`) are thin wrappers that only contain `{{< reuse "agw-docs/pages/..." >}}`. **Always place doc-test blocks in the reuse file** (`assets/agw-docs/pages/...`), never in the content wrapper. This way both `latest` and `main` versions automatically inherit the tests — you only need to add them once.
 3. **Extractor** resolves `{{< reuse "..." >}}` from `assets/`, so the script is built from the expanded content. Reference the **content file** in `test:` sources; the extractor will follow reuse.
 4. **Block order**: Selected blocks are emitted in document order (by file and `start_line`). Hidden blocks (e.g. "start server in background") must appear *before* any visible block that depends on them (e.g. curl). The extractor sorts selected blocks by `(file_path, start_line)` so hidden blocks are not deferred to the end.
-5. **Byte-identical blocks are silently dropped**: `build_script()` in `docs-tests/scripts/doc_test_extract.py` keeps a `seen` set of block contents and skips any block whose content (after stripping leading and trailing newlines) exactly matches an earlier selected block. Only the **first** copy reaches the generated script — there is no warning. See "Repeated commands across sections" under step 3 for what this breaks and how to avoid it.
+5. **Byte-identical blocks are silently dropped**: `build_script()` in `scripts/doc_test_extract.py` keeps a `seen` set of block contents and skips any block whose content (after stripping leading and trailing newlines) exactly matches an earlier selected block. Only the **first** copy reaches the generated script — there is no warning. See "Repeated commands across sections" under step 3 for what this breaks and how to avoid it.
 
 ---
 
@@ -335,7 +335,8 @@ Before generating, review any `yaml`/`yml` fenced blocks tagged with `paths=` to
 
 ### 9. Generate and verify
 
-- From the repo root directory: `python3 ../docs-tests/scripts/doc_test_run.py --repo-root . --generate-only`
+- From the repo root directory: `python3 scripts/doc_test_run.py --repo-root . --generate-only`
+- From repo root: `python3 scripts/doc_test_run.py --generate-only`
 - Inspect `out/tests/generated/*.sh`: order of steps, no unresolved shortcodes, env vars and backgrounding correct.
 - Run a script manually, e.g. `bash out/tests/generated/<script-name>.sh` (standalone tests do not use a kind cluster; use `--generate-only` and run the script in an env that has the binary/Docker/etc.).
 
@@ -441,5 +442,5 @@ When in doubt, flag the failure to the user rather than silently adjusting the t
 ## Reference
 
 - Full framework: [scripts/TEST_FRAMEWORK.md](../../../scripts/TEST_FRAMEWORK.md)
-- Extractor: `docs-tests/scripts/doc_test_extract.py` (block selection, reuse resolution, block order sort)
-- Runner: `docs-tests/scripts/doc_test_run.py` (discovers `test:` pages, generates scripts, optional kind run)
+- Extractor: `scripts/doc_test_extract.py` (block selection, reuse resolution, block order sort)
+- Runner: `scripts/doc_test_run.py` (discovers `test:` pages, generates scripts, optional kind run)

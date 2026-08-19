@@ -4,14 +4,12 @@ weight: 20
 description: Gate and mutate MCP method calls with an external ExtMCP policy server.
 test:
   mcp-guardrails:
-    type: [schema, functional]
-    steps:
-    - file: ${versionRoot}/quickstart/install.md
-      path: experimental
-    - file: ${versionRoot}/setup/gateway.md
-      path: all
-    - file: ${versionRoot}/mcp/guardrails/setup.md
-      path: mcp-guardrails
+  - file: ${versionRoot}/quickstart/install.md
+    path: experimental
+  - file: ${versionRoot}/setup/gateway.md
+    path: all
+  - file: ${versionRoot}/mcp/guardrails/setup.md
+    path: mcp-guardrails
 ---
 
 Gate and mutate Model Context Protocol (MCP) method calls with an external policy server. For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/mcp/guardrails/about" >}}).

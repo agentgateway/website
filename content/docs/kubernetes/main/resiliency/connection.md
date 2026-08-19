@@ -14,28 +14,24 @@ test:
     path: connection-general
 
   connection-http1:
-    type: [schema, functional]
-    steps:
-    - file: ${versionRoot}/quickstart/install.md
-      path: experimental
-    - file: ${versionRoot}/setup/gateway.md
-      path: all
-    - file: ${versionRoot}/install/sample-app.md
-      path: install-httpbin
-    - file: ${versionRoot}/resiliency/connection.md
-      path: connection-http1
+  - file: ${versionRoot}/quickstart/install.md
+    path: experimental
+  - file: ${versionRoot}/setup/gateway.md
+    path: all
+  - file: ${versionRoot}/install/sample-app.md
+    path: install-httpbin
+  - file: ${versionRoot}/resiliency/connection.md
+    path: connection-http1
 
   connection-http2-flow:
-    type: [schema, functional]
-    steps:
-    - file: ${versionRoot}/quickstart/install.md
-      path: experimental
-    - file: ${versionRoot}/setup/gateway.md
-      path: all
-    - file: ${versionRoot}/install/sample-app.md
-      path: install-httpbin
-    - file: ${versionRoot}/resiliency/connection.md
-      path: connection-http2-flow
+  - file: ${versionRoot}/quickstart/install.md
+    path: experimental
+  - file: ${versionRoot}/setup/gateway.md
+    path: all
+  - file: ${versionRoot}/install/sample-app.md
+    path: install-httpbin
+  - file: ${versionRoot}/resiliency/connection.md
+    path: connection-http2-flow
 ---
 
 {{< reuse "agw-docs/pages/resiliency/connection.md" >}}

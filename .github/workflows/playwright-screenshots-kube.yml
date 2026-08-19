@@ -26,17 +26,9 @@ jobs:
       - name: Checkout website repo
         uses: actions/checkout@v6
 
-      # Public repo, no token needed. Cluster bring-up reuses the doc-tests machinery
-      # (docs-tests/scripts/doc_test_run.py), which lives here now, not in this repo's own
-      # scripts/ dir. Python + pyyaml, Go for cloud-provider-kind, and yamltest.
-      # kind/kubectl/helm are preinstalled on the runner (same assumption as
-      # .github/workflows/doc-tests.yaml).
-      - name: Checkout docs-tests
-        uses: actions/checkout@v6
-        with:
-          repository: solo-io/docs-tests
-          path: docs-tests
-
+      # Cluster bring-up reuses the doc-tests machinery (scripts/doc_test_run.py): Python +
+      # pyyaml, Go for cloud-provider-kind, and yamltest. kind/kubectl/helm are preinstalled on
+      # the runner (same assumption as .github/workflows/doc-tests.yaml).
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -99,7 +91,7 @@ jobs:
             page="content/docs/kubernetes/$v/observability/ui.md"
             echo "::group::kube capture — $v"
             group_open=1
-            python3 docs-tests/scripts/doc_test_run.py --repo-root . \
+            python3 scripts/doc_test_run.py --repo-root . \
               --file "$page" --test capture \
               --keep-cluster --keep-cluster-file "out/tests/kept-$v.txt"
 

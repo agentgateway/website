@@ -4,16 +4,14 @@ weight: 10
 description: Protect your applications from Cross-Site Request Forgery (CSRF) attacks.
 test:
   csrf:
-    type: [schema, functional]
-    steps:
-    - file: ${versionRoot}/quickstart/install.md
-      path: experimental
-    - file: ${versionRoot}/setup/gateway.md
-      path: all
-    - file: ${versionRoot}/install/sample-app.md
-      path: install-httpbin
-    - file: ${versionRoot}/security/csrf.md
-      path: csrf
+  - file: ${versionRoot}/quickstart/install.md
+    path: experimental
+  - file: ${versionRoot}/setup/gateway.md
+    path: all
+  - file: ${versionRoot}/install/sample-app.md
+    path: install-httpbin
+  - file: ${versionRoot}/security/csrf.md
+    path: csrf
 ---
 
 {{< reuse "agw-docs/pages/security/csrf.md" >}}

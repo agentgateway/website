@@ -32,6 +32,8 @@ In this example, you read a plain-text request header and add its base64-encoded
    EOF
    ```
 
+   {{< doc-test paths="encode" file="products/agentgateway/main/traffic-management/transformations/encode.sh" >}}{{< /doc-test >}}
+
 2. Send a request to the httpbin app and include the `x-user-id` request header. Verify that you get back a 200 HTTP response code and that the `x-user-id-encoded` response header contains the base64-encoded value.
 
    {{< tabs >}}
@@ -103,6 +105,8 @@ In this example, you take the encoded value from the encode example (`dXNlcjEyMw
              value: 'string(base64.decode(request.headers["x-user-id-encoded"]))'
    EOF
    ```
+
+   {{< doc-test paths="decode" file="products/agentgateway/main/traffic-management/transformations/decode.sh" >}}{{< /doc-test >}}
 
 2. Send a request to the httpbin app and include the base64-encoded value from the encode example in the `x-user-id-encoded` request header. Verify that you get back a 200 HTTP response code and that the `x-user-id-decoded` response header contains the original plain-text value.
 
