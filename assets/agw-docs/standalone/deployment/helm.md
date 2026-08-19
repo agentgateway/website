@@ -99,6 +99,24 @@ The chart creates the following resources. Each resource is named after the Helm
    ui: {}
    ```
 
+## Open the UI
+
+For quick access to the admin UI, port-forward the agentgateway Deployment and open the `/ui` path.
+
+<!--TODO secure UI
+To securely expose the UI on your own domain, see the guide.-->
+
+1. Port-forward the admin interface.
+
+   ```sh
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} 15000:15000
+   ```
+
+2. In your browser, open the `/ui` path.
+
+   <http://localhost:15000/ui>
+
 ## Configure agentgateway
 
 The `config` Helm value holds the entire agentgateway configuration file. Anything that you can write in a `config.yaml` for the binary, you can write in the Helm values file.
@@ -215,28 +233,6 @@ gateway:
       targetPort: 4000
       protocol: TCP
 ```
-
-## Open the admin UI
-
-{{< tabs >}}
-{{% tab name="Port-forward for local testing" %}}
-By default, the chart creates no Service for the admin port. To open the UI locally, port-forward the Deployment.
-
-1. Enable port-forwarding on the Kubernetes deployment.
-   
-   ```sh
-   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} 15000:15000
-   ```
-
-2. In your browser, open the `/ui` path.
-   
-   <http://localhost:15000/ui>
-{{% /tab %}}
-{{% tab name="Expose the UI with a gateway" %}}
-To serve the UI from a gateway listener instead, attach it to a gateway in the `ui` section of your configuration. Protect the listener with authentication, such as OpenID Connect (OIDC), before you expose it outside the cluster.
-{{% /tab %}}
-{{< /tabs >}}
 
 ## Other common values
 
