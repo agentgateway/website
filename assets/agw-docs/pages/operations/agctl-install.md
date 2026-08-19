@@ -12,7 +12,10 @@ Install `agctl`, the command-line tool that you use to inspect and debug agentga
 | `agctl proxy config` | Retrieve the runtime configuration that an agentgateway proxy has loaded, including binds, listeners, routes, backends, workloads, and services. |
 | `agctl proxy log` | Get or set log levels for the agentgateway proxy at runtime. |{{< version exclude-if="1.4.x,1.3.x,1.2.x" >}}
 | `agctl proxy profile` | Collect a CPU or heap [pprof](https://github.com/google/pprof) profile from an agentgateway proxy and write it to a file. |{{< /version >}}
-| `agctl controller log` | Get or set log levels for the agentgateway controller at runtime. |
+| `agctl controller log` | Get or set log levels for the agentgateway controller at runtime. |{{< version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+| `agctl costs` | Manage the model cost catalogs that price LLM requests, including importing catalog data from supported pricing sources. |{{< /version >}}{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+| `agctl catalog` | Manage the model catalogs that price LLM requests, including importing catalog data from supported pricing sources. |{{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+| `agctl migrate` | Migrate agentgateway resources to newer configurations. |{{< /version >}}
 | `agctl version` | Print version information for the `agctl` CLI. |
 | `agctl completion` | Turn on autocompletion for your shell in `bash`, `zsh`, `fish`, or `powershell`. |
 

@@ -38,3 +38,17 @@ To keep the provider's unmodified value in a CEL expression, custom log field, c
 To restore the previous behavior while you migrate, set the `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable to `true` on the proxy. In Kubernetes mode, set the variable in `spec.env` on an `AgentgatewayParameters` resource. Agentgateway plans to remove this variable after version 1.5, so treat it as a short-term migration aid and not as a supported configuration.
 
 For guidance on which field to read, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}). For the full list of fields in the CEL context, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
+
+## ⚠️ Deprecations {#v15-deprecations}
+
+### The `agctl costs` command is renamed to `agctl catalog`
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2927 -->
+
+The `agctl` command that manages model catalogs is renamed from `agctl costs` to `agctl catalog`, because a catalog entry now carries more than pricing data. The subcommand and its flags do not change: `agctl catalog import` takes the same `--source`, `--providers`, `--legacy`, `--pretty`, and `--out` flags that `agctl costs import` took, and it produces the same catalog JSON.
+
+The `agctl costs` command still runs the same code, but it is deprecated and reports that you must use `agctl catalog` instead. Agentgateway plans to remove `agctl costs` in a future release.
+
+**Actions to take**:
+
+Replace `agctl costs` with `agctl catalog` in any script or pipeline that generates a model catalog. For the flags and examples, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.

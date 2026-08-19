@@ -22,7 +22,7 @@ In Kubernetes mode, you deliver the catalog as a ConfigMap and reference it from
 
 ## Step 1: Prepare a catalog
 
-Prepare a catalog by creating your own JSON file or using the `agctl costs import` command.
+Prepare a catalog by creating your own JSON file or using the `agctl catalog import` command.
 
 ### Catalog JSON format
 
@@ -30,12 +30,12 @@ Prepare a catalog by creating your own JSON file or using the `agctl costs impor
 
 ### Generate a catalog with agctl
 
-Use `agctl costs import` to generate a catalog JSON file, then load it into a ConfigMap.
+Use `agctl catalog import` to generate a catalog JSON file, then load it into a ConfigMap.
 
-1. Generate a catalog from a supported source. By default, `agctl costs import` imports every provider that the proxy supports from [models.dev](https://models.dev). To import only a subset of providers, pass a comma-separated list to `--providers`.
+1. Generate a catalog from a supported source. By default, `agctl catalog import` imports every provider that the proxy supports from [models.dev](https://models.dev). To import only a subset of providers, pass a comma-separated list to `--providers`.
 
    ```sh
-   agctl costs import --pretty --providers openai,anthropic --out ./catalog.json
+   agctl catalog import --pretty --providers openai,anthropic --out ./catalog.json
    ```
 
 2. Create or update the ConfigMap from the generated file. The `--from-file` syntax sets the data key to `catalog.json`.
@@ -82,11 +82,11 @@ Use `agctl costs import` to generate a catalog JSON file, then load it into a Co
 
 4. Reference the ConfigMap from your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, as shown in the next section, [Configure a catalog as a ConfigMap](#step-2-configure-a-catalog-as-a-configmap).
 
-For all options, see the [`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}) reference.
+For all options, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
 
 ## Step 2: Configure a catalog as a ConfigMap
 
-1. Create a ConfigMap that holds the catalog JSON. The ConfigMap must be in the same namespace as the Gateway that references it. By default, the catalog is read from the `catalog.json` data key. If you used the `agctl costs import` command, you already created the ConfigMap.
+1. Create a ConfigMap that holds the catalog JSON. The ConfigMap must be in the same namespace as the Gateway that references it. By default, the catalog is read from the `catalog.json` data key. If you already created the ConfigMap in [Step 1](#generate-a-catalog-with-agctl), you can skip this step.
 
    ```yaml
    kubectl apply -f- <<EOF
