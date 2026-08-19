@@ -4,14 +4,16 @@ weight: 10
 description: Modify requests and responses with an external gRPC processing server.
 test:
   extproc:
-  - file: ${versionRoot}/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/traffic-management/extproc.md
-    path: extproc
+    type: [schema, functional]
+    steps:
+    - file: ${versionRoot}/quickstart/install.md
+      path: experimental
+    - file: ${versionRoot}/setup/gateway.md
+      path: all
+    - file: ${versionRoot}/install/sample-app.md
+      path: install-httpbin
+    - file: ${versionRoot}/traffic-management/extproc.md
+      path: extproc
 ---
 
 Modify aspects of an HTTP request or response with an external processing server. 
