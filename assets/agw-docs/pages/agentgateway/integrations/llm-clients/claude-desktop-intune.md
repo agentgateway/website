@@ -95,8 +95,11 @@ separately managed Anthropic API key for the upstream request. Complete the
 path="/integrations/llm-clients/claude-desktop/#gateway-api-key" >}}) for your
 agentgateway mode before you build the Intune profile.
 
-For an initial pilot, select **Static API key** and use a dedicated,
-revocable agentgateway client key. Do not use the Anthropic provider key. A
+For an initial pilot, select **Static API key** and use the revocable gateway
+client key from [Configure a gateway client key for the
+pilot](#configure-a-gateway-client-key-for-the-pilot). This is the same client
+key that the Codex example reads from `AGENTGATEWAY_API_KEY`; you do not need a
+Claude-specific client-key store. Do not use the Anthropic provider key. A
 static client key is stored in the local Claude Desktop configuration and in
 the exported Intune policy, where device administrators can recover it. Limit
 the assignment to the pilot group and rotate or revoke the key after testing.
@@ -108,7 +111,7 @@ Enter and test the following gateway API key settings in Claude Desktop.
   "inferenceProvider": "gateway",
   "inferenceGatewayBaseUrl": "https://claude.example.com",
   "inferenceCredentialKind": "static",
-  "inferenceGatewayApiKey": "REPLACE_WITH_PILOT_GATEWAY_KEY",
+  "inferenceGatewayApiKey": "REPLACE_WITH_SHARED_PILOT_GATEWAY_KEY",
   "inferenceGatewayAuthScheme": "bearer",
   "modelDiscoveryEnabled": false,
   "inferenceModels": [
@@ -291,7 +294,7 @@ managed profile.
 
    | Authentication model | Credential kind | Required settings |
    | --- | --- | --- |
-   | Gateway API key | **Static API key** for a pilot; **Helper script** for production | For a pilot, enter a dedicated agentgateway client key and select **Bearer**. For production, set the absolute credential-helper path instead. |
+   | Gateway API key | **Static API key** for a pilot; **Helper script** for production | For a pilot, enter the shared gateway client key and select **Bearer**. For production, set the absolute credential-helper path instead. |
    | Claude subscription passthrough | **Helper script** | Set the absolute credential-helper path and **Bearer** auth scheme. The helper returns the current user's Claude subscription token. |
    | Microsoft Entra ID | **Interactive sign-in** | Set the issuer to `https://login.microsoftonline.com/TENANT_ID/v2.0`, the Entra Application (client) ID, **ID token**, scopes `openid profile email offline_access`, and **Broker** or **Browser** sign-in flow. |
 
