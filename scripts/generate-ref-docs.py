@@ -31,8 +31,50 @@ HELM_CHARTS = [
     ("agentgateway-standalone", "agentgateway-standalone"),
 ]
 
+# Earliest doc version whose docs cover a chart, as (major, minor). The chart can ship in an
+# older release without the docs documenting it: agentgateway-standalone exists as far back as
+# v1.4.1, but standalone Helm docs start at 1.5. Keyed on DOC_VERSION ("1.5.x") rather than
+# LINK_VERSION ("main"/"latest") so that the gate keeps working once 1.5 becomes latest.
+CHART_MIN_DOC_VERSION = {
+    "agentgateway-standalone": (1, 5),
+}
 
-def generate_helm_docs(link_version: str, website_dir: str, kgateway_dir: str) -> bool:
+
+def chart_applies(dir_name: str, doc_version: str) -> bool:
+    """Whether the chart is documented for this doc version. Unset DOC_VERSION generates everything."""
+    minimum = CHART_MIN_DOC_VERSION.get(dir_name)
+    if minimum is None or not doc_version:
+        return True
+    try:
+        major, minor = (int(part) for part in doc_version.split(".")[:2])
+    except ValueError:
+        print(f"    Warning: cannot parse DOC_VERSION {doc_version!r}; generating {dir_name} anyway")
+        return True
+    return (major, minor) >= minimum
+
+
+
+def merge_cells(description: str, default: str) -> str:
+    """Fold a Default cell into a Description cell as a trailing sentence.
+
+    helm-docs always emits a default, even for an undocumented value, so the sentence is
+    appended whether or not there is a description to append it to.
+    """
+    description = description.strip()
+    default = default.strip()
+    if not default:
+        return description
+    sentence = f"The default value is {default}."
+    if not description:
+        return sentence
+    if description[-1] not in ".!?:":
+        description += "."
+    # Markdown cells cannot hold a blank line, so the paragraph break is literal HTML.
+    # The site renders goldmark with unsafe: true, so this passes through.
+    return f"{description}<br/><br/>{sentence}"
+
+
+def generate_helm_docs(link_version: str, website_dir: str, kgateway_dir: str, doc_version: str = "") -> bool:
     """Generate Helm chart reference docs for each chart in HELM_CHARTS."""
     print(f"  → Generating Helm docs for {link_version}")
 
@@ -41,6 +83,10 @@ def generate_helm_docs(link_version: str, website_dir: str, kgateway_dir: str) -
     generated_any = False
 
     for dir_name, file_name in HELM_CHARTS:
+        if not chart_applies(dir_name, doc_version):
+            print(f"    Skipping {file_name}: not documented for {doc_version}")
+            continue
+
         helm_path = os.path.join(kgateway_dir, "install", "helm", dir_name)
         if not os.path.exists(helm_path):
             print(f"    Warning: {helm_path} does not exist, skipping {file_name}")
@@ -77,23 +123,26 @@ def generate_helm_docs(link_version: str, website_dir: str, kgateway_dir: str) -
             if "[!NOTE]" not in content:
                 content = content.rstrip() + note
 
-        # Swap Default and Description columns
+        # helm-docs emits "| Key | Type | Default | Description |". Fold the default into the
+        # description as a trailing sentence and drop the column. A standalone Default column
+        # holds a code span, which the browser will not wrap, so it claims a disproportionate
+        # share of the table width and squeezes Description to a couple of words per line.
         swapped_lines = []
         in_table = False
         for line in content.splitlines():
             stripped = line.strip()
             if stripped.startswith("| Key ") and "Default" in line and "Description" in line:
                 in_table = True
-                swapped_lines.append("| Key | Type | Description | Default |")
+                swapped_lines.append("| Key | Type | Description |")
                 continue
             if in_table and stripped.startswith("|-----"):
-                swapped_lines.append("|-----|------|-------------|---------|")
+                swapped_lines.append("|-----|------|-------------|")
                 continue
             if in_table and stripped.startswith("|"):
                 parts = [p.strip() for p in line.split("|")]
                 if len(parts) >= 6:
                     key, typ, default, desc = parts[1], parts[2], parts[3], parts[4]
-                    swapped_lines.append(f"| {key} | {typ} | {desc} | {default} |")
+                    swapped_lines.append(f"| {key} | {typ} | {merge_cells(desc, default)} |")
                 else:
                     swapped_lines.append(line)
             else:
@@ -144,6 +193,7 @@ def main() -> None:
         print("Error: LINK_VERSION must be set (e.g. latest, main)")
         sys.exit(1)
 
+    doc_version = os.environ.get("DOC_VERSION", "").strip()
     website_dir = os.environ.get("WEBSITE_DIR", ".")
     kgateway_dir = os.environ.get("KGATEWAY_DIR", "agentgateway/controller")
 
@@ -153,7 +203,7 @@ def main() -> None:
 
     print(f"Generating Helm + metrics for {link_version} (agentgateway/controller at {kgateway_dir})")
     success = 0
-    if generate_helm_docs(link_version, website_dir, kgateway_dir):
+    if generate_helm_docs(link_version, website_dir, kgateway_dir, doc_version):
         success += 1
     if generate_metrics_docs(link_version, website_dir, kgateway_dir):
         success += 1

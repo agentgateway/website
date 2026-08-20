@@ -238,6 +238,7 @@ jobs:
       - name: Generate Helm and metrics docs
         run: |
           LINK_VERSION="${{ matrix.link_version }}" \
+          DOC_VERSION="${{ matrix.doc_version }}" \
           WEBSITE_DIR="website" \
           KGATEWAY_DIR="agentgateway/controller" \
           python3 website/scripts/generate-ref-docs.py

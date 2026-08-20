@@ -1,0 +1,29 @@
+{{- /*
+  Extension slot from docs-theme-extras (partials/docs/chrome-top.html).
+
+  This site renders its OWN navbar (`partials/nav.html`) and hides the theme's,
+  which is why its docs layouts used to be full forks of
+  layouts/docs/{single,list}.html. That fork is what kept the module's
+  `version-banner`, `page-badges`, `components/page-context-menu` and
+  `displayPagination` handling from ever reaching this site.
+
+  Everything site-specific now lives in this one file. Do NOT reinstate the
+  layout forks.
+
+  Note: the module default is called by its own name below. Calling
+  `partial "docs/chrome-top.html"` here would resolve back to THIS file and
+  recurse forever.
+*/ -}}
+<style>
+  /* Hide Hextra theme navbar on docs pages - we use custom nav.html instead */
+  .nav-container,
+  .hx\:sticky.hx\:top-0,
+  div.nav-container {
+    display: none !important;
+    visibility: hidden !important;
+  }
+</style>
+{{ partial "nav.html" . }}
+<div class="w-full z-10 pt-10 lg:pt-20">
+  {{ partial "docs/announcement-banner.html" . }}
+</div>
