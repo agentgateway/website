@@ -20,10 +20,4 @@
 
 2. Pass the file to Helm during the upgrade.
 
-   ```sh
-   helm upgrade -i {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
-     {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
-     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
-     -f values.yaml
-   ```
+   {{< reuse "agw-docs/standalone/helm-upgrade-command.md" >}}

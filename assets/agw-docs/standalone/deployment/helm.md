@@ -175,28 +175,6 @@ In `database` mode, you can add and edit the resources that the UI manages, such
 > [!IMPORTANT]
 > Treat the Helm values as the source of truth for the configuration file, and the UI as the way to manage the resources layered on top of it. To change a field that the UI does not manage, such as a listener or a bind, update your Helm values and upgrade the release.
 
-## Store configuration in a database
-
-To keep configuration changes that you make in the UI, run PostgreSQL and set the agentgateway configuration `mode` to `database` in your Helm values file. Agentgateway creates the schema that it needs on first startup, so no migration step is required.
-
-```yaml
-mode: database
-database:
-  postgres:
-    url: postgres://agw:secret@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
-config:
-  binds:
-  - port: 4000
-    listeners:
-    - routes:
-      - backends:
-        - host: httpbin.httpbin.svc.cluster.local:8000
-```
-
-The chart rejects a `database.postgres.url` value that does not begin with `postgres://` or `postgresql://`, and rejects the value entirely when `mode` is `readonly`.
-
-Both modes support more than one replica. To scale the deployment, set `replicaCount`.
-
 ## Expose listeners
 
 The Service sends port `80` to container port `4000` by default. To expose the ports that your configuration listens on, set `gateway.service.ports`. The following example exposes a listener on port `3000`.
