@@ -320,7 +320,10 @@ Now that the UI is securely exposed, log in.
 1. In your browser, open the UI on your hostname, such as `https://agentgateway.example.com/ui`.
 2. Verify that agentgateway redirects you to your IdP to log in.
 3. Log in with a user from your IdP.
-4. Verify that your IdP returns you to the UI and that the dashboard opens.
+4. Verify that your IdP returns you to the UI, and that the Admin UI opens on the **Gateway Overview**. The overview lists the available capabilities for LLM, MCP, and Traffic.
+
+   {{< reuse-image-light src="img/agentgateway-ui-landing.png" >}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-landing-dark.png" >}}
 
 For more information about what you can do in the UI, see [Admin UI]({{< link-hextra path="/operations/ui/" >}}).
 
