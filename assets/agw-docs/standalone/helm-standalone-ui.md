@@ -12,13 +12,7 @@ Agentgateway serves the UI in two places:
 2. Set up an identity provider (IdP), such as Keycloak or Microsoft Entra ID. Consider creating a client specifically for the UI, such as `agentgateway-ui`. For provider-specific setup, see the [identity provider integrations]({{< link-hextra path="/integrations/auth/" >}}).
 3. Get a TLS certificate and key for the hostname that you plan to serve the UI on.
 
-## Steps
-
-In this guide, you set up a separate gateway for UI traffic, secure the route to the UI, and expose the UI on your own domain.
-
-{{% steps %}}
-
-### Set up the gateway
+## Set up the gateway
 
 Give the UI a gateway of its own so that proxy traffic and UI traffic do not share a port. Keeping them apart lets you publish the proxy port while the UI port stays internal, and it lets you apply different authentication policies to the UI and proxy traffic.
 
@@ -89,7 +83,7 @@ Give the UI a gateway of its own so that proxy traffic and UI traffic do not sha
       200
       ```
 
-### Secure the UI with OIDC
+## Secure the UI with OIDC
 
 Add an authentication policy before you expose the UI port. The `ui.policies` section takes the same policies that a route takes, so you can use [OIDC]({{< link-hextra path="/configuration/security/oidc/" >}}) for browser logins, or [JWT]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), [basic]({{< link-hextra path="/configuration/security/basic-authn/" >}}), or [API key]({{< link-hextra path="/configuration/security/apikey-authn/" >}}) authentication for programmatic access. To restrict which authenticated users get in, add an [authorization policy]({{< link-hextra path="/configuration/security/http-authz/" >}}).
 
@@ -184,7 +178,7 @@ Add an authentication policy before you expose the UI port. The `ui.policies` se
 > [!IMPORTANT]
 > Agentgateway fetches the OIDC discovery document at startup, so the issuer must be reachable from the pod. When the fetch fails, the pod does not start, and the logs report `failed to decode oidc discovery response from uri`. If the pod enters `CrashLoopBackOff` after you add the policy, check the issuer URL and any egress restrictions.
 
-### Expose the UI
+## Expose the UI
 
 Now that the UI requires a login, terminate TLS on the admin gateway and expose it on its own LoadBalancer Service.
 
@@ -321,7 +315,7 @@ Agentgateway reads the certificate and key from the file system, so you mount th
    location: https://keycloak.example.com/realms/agentgateway/protocol/openid-connect/auth?response_type=code&client_id=agentgateway-ui&...
    ```
 
-### Log in to the UI
+## Log in to the UI
 
 Now that the UI is securely exposed, log in.
 
@@ -336,8 +330,6 @@ Now that the UI is securely exposed, log in.
 For more information about what you can do in the UI, see [Admin UI]({{< link-hextra path="/operations/ui/" >}}).
 
 To save the configuration changes that you make in the UI, [store config in a database]({{< link-hextra path="/deployment/helm/storage/" >}}). In the default read-only storage mode, the UI shows the running configuration, but a save fails because the chart mounts the configuration file read-only.
-
-{{% /steps %}}
 
 ## Cleanup
 
