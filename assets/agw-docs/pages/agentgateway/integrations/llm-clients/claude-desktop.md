@@ -179,6 +179,9 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    >
    > * Include the `/callback` path. Claude Desktop redirects to `http://127.0.0.1:<port>/callback`, and a registration of `http://127.0.0.1` alone does not match. On Entra ID, the mismatch returns `AADSTS50011`.
    > * Register the URI as a native or desktop client, not a web client. Claude Desktop picks an ephemeral port for each sign-in. A native client registration accepts any loopback port, as described in [RFC 8252](https://datatracker.ietf.org/doc/html/rfc8252#section-7.3), and a web client registration requires an exact port match. On Entra ID, select the **Mobile and desktop applications** platform. The browser and broker authorization-code flows do not require the legacy **Allow public client flows** toggle; leave it disabled.
+   > * Do not register the agentgateway hostname as the redirect URI. Claude
+   >   Desktop receives the authorization response, then sends the resulting
+   >   token to the gateway URL on inference requests.
 
 2. Save the identifiers from your registration and your Anthropic API key, so that agentgateway can resolve them. Agentgateway reads variable references in the configuration file from the environment at startup.
 
@@ -239,6 +242,10 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    | `jwtAuth.jwks.url` | The JWKS endpoint that agentgateway fetches signing keys from. |
    | `backendAuth.key` | The Anthropic API key that agentgateway sends upstream. Because the user token authenticates the caller, this credential no longer comes from the client. |
 
+   Use the issuer base URL shown in the example. Do not use the OpenID
+   discovery-document URL, which ends in `/.well-known/openid-configuration`,
+   as the issuer.
+
    For more detail on JWT validation, see [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}).
 
 4. Restart agentgateway to load the new configuration.
@@ -266,8 +273,10 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
 6. From Claude Desktop, click **Test connection**. Then click **Apply Changes**,
    fully quit Claude Desktop, and reopen it. A browser window opens to your
    identity provider. After you sign in, send a real prompt and confirm a
-   successful request with the authenticated identity in the agentgateway
-   logs.
+   successful `POST /v1/messages` request in the agentgateway logs. The request
+   must return HTTP 200 and include `jwt.sub` for the signed-in user. This
+   confirms that Claude Desktop sent the Entra ID token and that agentgateway
+   validated it before forwarding the request.
 
 ## Send custom headers {#headers}
 

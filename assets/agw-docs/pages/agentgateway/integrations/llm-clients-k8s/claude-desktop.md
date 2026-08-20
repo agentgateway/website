@@ -361,6 +361,9 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    >
    > * Include the `/callback` path. Claude Desktop redirects to `http://127.0.0.1:<port>/callback`, and a registration of `http://127.0.0.1` alone does not match. On Entra ID, the mismatch returns `AADSTS50011`.
    > * Register the URI as a native or desktop client, not a web client. Claude Desktop picks an ephemeral port for each sign-in. A native client registration accepts any loopback port, as described in [RFC 8252](https://datatracker.ietf.org/doc/html/rfc8252#section-7.3), and a web client registration requires an exact port match. On Entra ID, select the **Mobile and desktop applications** platform. The browser and broker authorization-code flows do not require the legacy **Allow public client flows** toggle; leave it disabled.
+   > * Do not register the agentgateway hostname as the redirect URI. Claude
+   >   Desktop receives the authorization response, then sends the resulting
+   >   token to the gateway URL on inference requests.
 
 2. Save the identifiers from your registration, so that the following commands can refer to them.
 
@@ -436,6 +439,10 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    | `jwks.remote.backendRef` | The backend that hosts the JWKS endpoint, from the previous step. |
    | `jwks.remote.jwksPath` | The path to the JWKS document on that host. |
 
+   Use the issuer base URL shown in the example. Do not use the OpenID
+   discovery-document URL, which ends in `/.well-known/openid-configuration`,
+   as the issuer.
+
    For more detail on JWT validation, see [JWT auth]({{< link-hextra path="/security/jwt/setup/" >}}).
 
 5. Give the backend its own credential. Interactive sign-in puts the identity provider token in the `Authorization` header, so the proxy must supply the LLM provider credential itself rather than pass a user token upstream. Follow [Anthropic provider]({{< link-hextra path="/llm/providers/anthropic/" >}}) to create a secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
@@ -468,7 +475,9 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    ```
 
    Confirm that the real `POST /v1/messages` request returns HTTP 200 and
-   carries the `sub` claim of the signed-in user.
+   includes `jwt.sub` for the signed-in user. This confirms that Claude
+   Desktop sent the Entra ID token and that agentgateway validated it before
+   forwarding the request.
 
 ## Send custom headers {#headers}
 

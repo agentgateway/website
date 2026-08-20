@@ -235,7 +235,10 @@ does not require a loopback callback.
 1. In the Microsoft Entra admin center, go to **Entra ID > App registrations >
    New registration**.
 2. Create a single-tenant registration, such as `Claude Desktop gateway`.
-3. Record the **Application (client) ID** and **Directory (tenant) ID**.
+3. On the application **Overview** page, record the **Application (client)
+   ID** and **Directory (tenant) ID**. The client ID configures Claude Desktop
+   and becomes the expected token audience on agentgateway. The tenant ID
+   forms the Entra issuer and JWKS URLs.
 4. Go to **Authentication**, add the **Mobile and desktop applications**
    platform, and configure the redirect URIs for your sign-in flow.
 
@@ -247,7 +250,9 @@ does not require a loopback callback.
 
    Replace `CLIENT_ID` in the Windows broker URI with the Application (client)
    ID. When you support both flows during a pilot, register all applicable
-   redirect URIs.
+   redirect URIs. These are Claude Desktop callback URIs. Do not substitute
+   the HTTPS agentgateway hostname, which is configured separately as the
+   Gateway base URL.
 5. Leave **Allow public client flows** disabled. Claude Desktop's browser and
    broker authorization-code flows do not require this legacy toggle.
 6. In **Enterprise applications**, open the service principal that corresponds
@@ -342,6 +347,8 @@ Update the existing profile rather than assigning both versions.
    For Entra ID, agentgateway must validate the token signature, exact issuer,
    and application audience. Keep the issuer and client ID in the managed
    profile aligned with the issuer and audience configured on agentgateway.
+   Use the issuer base URL, not the OpenID discovery-document URL that ends in
+   `/.well-known/openid-configuration`.
 5. Review the remaining **Configure Third-Party Inference** settings and apply
    them according to your organization's requirements. These optional settings
    are not required to route inference through agentgateway. See the [Claude
