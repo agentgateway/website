@@ -93,7 +93,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./config.yaml:/etc/agentgateway/config.yaml
+      - ./config.yaml:/config.yaml:ro
+    command: ["-f", "/config.yaml"]
     environment:
       - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic ${LANGFUSE_AUTH_HEADER}
       - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
@@ -109,7 +110,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./config.yaml:/etc/agentgateway/config.yaml
+      - ./config.yaml:/config.yaml:ro
+    command: ["-f", "/config.yaml"]
 
   langfuse:
     image: langfuse/langfuse:latest

@@ -274,6 +274,39 @@ EOF
    {{< /tabs >}}
 
 {{< doc-test paths="content-routing" >}}
+# Content routing: point the OpenAI backend at the httpbun mock LLM so the routing
+# assertion below needs no provider API key. httpbun echoes the requested model, so
+# the assertion still proves that a `gpt-*` model reached the OpenAI backend rather
+# than the Anthropic one. The Anthropic backend is left as documented: no assertion
+# on this page sends an Anthropic model, so nothing needs a live Anthropic key.
+{{< reuse "agw-docs/snippets/deploy-mock-llm.md" >}}
+kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} openai-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type=merge --patch-file /dev/stdin <<EOF
+spec:
+  ai:
+    provider:
+      host: httpbun.default.svc.cluster.local
+      port: 3090
+      path: /llm/chat/completions
+EOF
+YAMLTest -f - <<'EOF'
+- name: wait for openai-backend to settle after the mock LLM patch
+  wait:
+    target:
+      kind: AgentgatewayBackend
+      metadata:
+        namespace: agentgateway-system
+        name: openai-backend
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="content-routing" >}}
 YAMLTest -f - <<'EOF'
 - name: verify GPT model routes to OpenAI backend
   http:

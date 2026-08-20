@@ -217,6 +217,12 @@ Create a backend with multiple providers in the same priority group to enable lo
    ```
 
 {{< doc-test paths="load-balancing" >}}
+# The documented example load balances across OpenAI and Anthropic. The test
+# replaces it with two providers that both point at the httpbun mock LLM, so it
+# needs no provider API key at all and bills nothing. The shape under test is the
+# same as the documented one - two providers in a single priority group - which is
+# what the P2C behavior on this page depends on.
+{{< reuse "agw-docs/snippets/deploy-mock-llm.md" >}}
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -230,6 +236,9 @@ spec:
           - name: openai-gpt4
             openai:
               model: gpt-4o
+            host: httpbun.default.svc.cluster.local
+            port: 3090
+            path: /llm/chat/completions
             policies:
               auth:
                 secretRef:
@@ -237,6 +246,9 @@ spec:
           - name: openai-gpt35
             openai:
               model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
+            host: httpbun.default.svc.cluster.local
+            port: 3090
+            path: /llm/chat/completions
             policies:
               auth:
                 secretRef:
