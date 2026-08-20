@@ -56,7 +56,7 @@ Give the UI a gateway of its own so that proxy traffic and UI traffic do not sha
         deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} 4000:4000
       ```
 
-   2. Send a request to the `/ui` path. Confirm that the request returns a `404` not found code, because port `4000` now serves only your routes.
+   2. Send a request to the `/ui` path. Confirm that the request fails, because port `4000` now serves only your routes.
 
       ```sh
       curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/ui
@@ -65,7 +65,7 @@ Give the UI a gateway of its own so that proxy traffic and UI traffic do not sha
       Example output:
 
       ```txt
-      404
+      503
       ```
 
 4. Confirm that the UI answers on its own port.
@@ -276,7 +276,9 @@ Agentgateway reads the certificate and key from the file system, so you mount th
      -l app.kubernetes.io/name=agentgateway-standalone
    ```
 
-5. Get the external address of the UI Service.
+5. Get the external address of the UI Service, such as `34.xx.xxx.xx` in the following example.
+
+   {{< reuse "agw-docs/snippets/kind-loadbalancer-tip.md" >}}
 
    ```sh
    kubectl get svc {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-ui \
@@ -290,7 +292,7 @@ Agentgateway reads the certificate and key from the file system, so you mount th
    agentgateway-standalone-ui   LoadBalancer   10.xx.xxx.xx   34.xx.xxx.xx   443:31820/TCP   30s
    ```
 
-6. Create a DNS record that points your UI hostname, such as `agentgateway.example.com`, at the external address. The hostname must match both the certificate and the `REDIRECT_URI` value that you set earlier.
+6. In your DNS provider, create a DNS record that points your UI hostname, such as `agentgateway.example.com`, at the external address. The hostname must match both the certificate and the `REDIRECT_URI` value that you set earlier.
 
 7. Confirm that the gateway serves your certificate.
 
@@ -311,6 +313,12 @@ Agentgateway reads the certificate and key from the file system, so you mount th
 
    ```sh
    curl -s -o /dev/null -D- https://agentgateway.example.com/ui | grep -i location
+   ```
+
+   Example output:
+
+   ```
+   location: https://keycloak.example.com/realms/agentgateway/protocol/openid-connect/auth?response_type=code&client_id=agentgateway-ui&...
    ```
 
 ### Log in to the UI
