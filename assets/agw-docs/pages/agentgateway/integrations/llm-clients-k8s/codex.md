@@ -83,7 +83,25 @@ codex --profile agentgateway
 {{% /tab %}}
 {{< /tabs >}}
 
-If the route requires a virtual key, add the following field to the
+#### Choose a client authentication method
+
+Codex supports the following authentication methods for a custom model
+provider. Choose one method; do not combine them.
+
+| Method | Codex setting | Use with agentgateway |
+| --- | --- | --- |
+| Gateway client key from an environment variable | `env_key` | Tested in this guide. Codex sends the variable's value as a bearer credential. |
+| Command-backed bearer token | `model_providers.agentgateway.auth` | An organization-owned helper prints a short-lived or device-specific bearer token. The helper is responsible for acquiring and refreshing the credential. |
+| OpenAI authentication | `requires_openai_auth = true` | Codex uses its ChatGPT or OpenAI API-key login with the proxy. Use only after you configure and test agentgateway to accept that credential; this guide does not configure that path. |
+| No client authentication | Omit `env_key`, `auth`, and `requires_openai_auth` | Use only when another trusted control prevents unauthorized access to agentgateway. |
+
+Unlike Claude Desktop, a Codex custom provider does not have native settings
+for an arbitrary OIDC issuer, client ID, or browser-versus-broker flow. To send
+a Microsoft Entra ID token, an organization-owned command-backed helper must
+acquire and refresh the token. This is not a built-in Intune or Company Portal
+flow in Codex.
+
+For the gateway client key option, add the following field to the
 `model_providers.agentgateway` table in the profile, user configuration, or
 CLI overrides. Codex sends the value of that environment variable as the
 gateway credential.
@@ -91,6 +109,11 @@ gateway credential.
 ```toml
 env_key = "AGENTGATEWAY_API_KEY"
 ```
+
+For the supported custom-provider authentication fields and restrictions, see
+[Codex authentication](https://learn.chatgpt.com/docs/auth#alternative-model-providers)
+and the [Codex configuration
+reference](https://learn.chatgpt.com/docs/config-file/config-reference).
 
 #### Verify the CLI connection
 

@@ -149,8 +149,8 @@ credential.
 For production, use separate gateway client keys for each application or
 security boundary. Separate keys provide per-client attribution and let you
 rotate, revoke, and apply policy to one client without affecting the others.
-Entra ID mode does not use a gateway client key because agentgateway validates
-the signed-in user's JWT instead.
+Claude Desktop's Entra ID mode does not use a gateway client key because
+agentgateway validates the signed-in user's JWT instead.
 
 Store the raw pilot key in a password manager while you build the client
 policies. The examples refer to it as `AGENTGATEWAY_API_KEY`. Before a broad
@@ -172,8 +172,10 @@ Choose one authentication method for the custom agentgateway provider.
 
 | Method | When to use | Managed TOML |
 | --- | --- | --- |
-| Environment variable | Initial pilot | Set `env_key = "AGENTGATEWAY_API_KEY"`. Provision the variable with the pilot gateway client key. |
-| Command-backed bearer token | Production | Configure `model_providers.agentgateway.auth` to invoke an organization-owned credential helper. |
+| Gateway client key from an environment variable | Initial pilot and the complete example in this guide | Set `env_key = "AGENTGATEWAY_API_KEY"`. Provision the variable with the pilot gateway client key. |
+| Command-backed bearer token | Production extension point | Configure `model_providers.agentgateway.auth` to invoke an organization-owned credential helper that prints a short-lived or device-specific bearer token. |
+| OpenAI authentication | Advanced, separately tested deployments | Set `requires_openai_auth = true`. Codex uses its ChatGPT or OpenAI API-key login with the proxy. Agentgateway must be configured and tested to accept that credential. |
+| No client authentication | Only when another trusted access control protects agentgateway | Omit `env_key`, `auth`, and `requires_openai_auth`. Do not expose an unauthenticated route publicly. |
 
 This guide uses the environment-variable method. The variable must be
 available to the process that launches Codex. Setting it only in an interactive
@@ -182,12 +184,29 @@ the macOS Finder or Windows Start menu. Use your organization's secret
 delivery mechanism to provision the value in the intended user context. Do
 not place the raw value in the managed TOML.
 
+The Codex verification and compliance scripts in this guide validate this
+complete environment-variable example. Adapt and test the scripts before you
+use them to enforce a different Codex authentication method.
+
 For production, a command-backed authentication helper can retrieve a
 short-lived or device-specific credential from Keychain, Credential Manager,
 or an internal secret broker. Do not combine `auth` with `env_key`,
 `experimental_bearer_token`, or `requires_openai_auth`. For the supported
 fields, see the [Codex configuration
-reference](https://developers.openai.com/codex/config-reference#configtoml).
+reference](https://learn.chatgpt.com/docs/config-file/config-reference).
+
+{{< callout type="info" >}}
+Codex does not provide Claude Desktop's native custom-provider fields for an
+arbitrary OIDC issuer, client ID, or browser-versus-broker flow. A direct Entra
+ID integration requires an organization-owned command-backed helper that
+acquires and refreshes the Entra bearer token. Signing in to an Entra-backed
+ChatGPT workspace with `requires_openai_auth` is OpenAI authentication through
+the organization's SSO; it is not a direct Entra-issued token that
+agentgateway can validate with the Claude Desktop JWT policy.
+{{< /callout >}}
+
+For the distinction between these methods, see [Codex custom-provider
+authentication](https://learn.chatgpt.com/docs/auth#alternative-model-providers).
 
 Create the following approved configuration. Replace the example hostname with
 the stable HTTPS address that exposes agentgateway. Keep the `/v1` suffix
