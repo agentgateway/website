@@ -65,6 +65,7 @@ const SCRIPT_FOR = {
   openapi: 'serve-openapi-ui.sh',
   jwt: 'serve-jwt-ui.sh',
   costs: 'serve-costs-ui.sh',
+  storage: 'serve-storage-ui.sh',
 };
 const command = BIN
   ? `"${BIN}" -f fixtures/standalone-config.yaml`

@@ -130,6 +130,16 @@
       "$note": "llm/cost-controls/costs \u2014 LLM Costs catalog management page (sources + custom overrides).",
       "light": "assets/img/ui-cost-catalog.png",
       "dark": "assets/img/ui-cost-catalog-dark.png"
+    },
+    "agentgateway-ui-storage-add-server.png": {
+      "$note": "deployment/helm/storage \u2014 Add MCP server drawer, filled in. Captured via tests/storage.spec.ts against a PostgreSQL-backed (storage.mode: hybrid) gateway, where the UI can save.",
+      "light": "assets/img/agentgateway-ui-storage-add-server.png",
+      "dark": "assets/img/agentgateway-ui-storage-add-server-dark.png"
+    },
+    "agentgateway-ui-storage-server-saved.png": {
+      "$note": "deployment/helm/storage \u2014 MCP Servers list after saving, showing the 'Configuration saved' banner and the persisted target.",
+      "light": "assets/img/agentgateway-ui-storage-server-saved.png",
+      "dark": "assets/img/agentgateway-ui-storage-server-saved-dark.png"
     }
   }
 }

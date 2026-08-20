@@ -12,11 +12,11 @@ Agentgateway serves the UI in two places:
 2. Set up an identity provider (IdP), such as Keycloak or Microsoft Entra ID. Consider creating a client specifically for the UI, such as `agentgateway-ui`. For provider-specific setup, see the [identity provider integrations]({{< link-hextra path="/integrations/auth/" >}}).
 3. Get a TLS certificate and key for the hostname that you plan to serve the UI on.
 
-{{% steps %}}
-
 ## Steps
 
 In this guide, you set up a separate gateway for UI traffic, secure the route to the UI, and expose the UI on your own domain.
+
+{{% steps %}}
 
 ### Set up the gateway
 
@@ -352,13 +352,15 @@ To save the configuration changes that you make in the UI, [store config in a da
    EOF
    ```
 
+2. Upgrade the release with your values file.
+   
    {{< reuse "agw-docs/standalone/helm-upgrade-command.md" >}}
 
-2. Delete the Secrets that you created.
+3. Delete the Secrets that you created.
 
    ```sh
    kubectl delete secret agentgateway-ui-oidc agentgateway-ui-client agentgateway-ui-tls \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
-3. Remove the DNS record that you created for the UI hostname, and remove the UI client from your IdP.
+4. Remove the DNS record that you created for the UI hostname, and remove the UI client from your IdP.

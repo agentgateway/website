@@ -34,11 +34,11 @@ The database holds only the resources that the UI manages. Everything else, such
 1. [Install the standalone Helm chart]({{< link-hextra path="/deployment/helm/install/" >}}).
 2. Have a PostgreSQL instance available, or deploy one as shown in the following steps.
 
-{{% steps %}}
-
 ## Steps
 
 In this guide, you deploy PostgreSQL, switch the chart to database mode, and verify that configuration that you add in the UI survives a restart.
+
+{{% steps %}}
 
 ### Deploy PostgreSQL
 
@@ -158,23 +158,46 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
    "hybrid"
    ```
 
+### Add configuration in the UI
+
+Now that storage is writable, add an MCP server. The Admin UI and the config resource API write to the same place, so use whichever you prefer.
+
+{{< tabs >}}
+{{% tab name="Admin UI" %}}
+1. Open <http://localhost:15000/ui> in your browser.
+
+2. In the navigation, click **MCP** > **Servers**, then click **Add server**.
+
+3. Enter a **Server name**, such as `persisted-target`, keep the **Streamable HTTP** transport, and enter the **URL** of your MCP server, such as `http://example.com/mcp`.
+
+   {{< reuse-image-light src="img/agentgateway-ui-storage-add-server.png" >}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-storage-add-server-dark.png" >}}
+
+4. Click **Save server**. Agentgateway confirms with **Configuration saved** and lists the server. The save succeeds only because storage is writable. In the default read-only mode, the same action fails.
+
+   {{< reuse-image-light src="img/agentgateway-ui-storage-server-saved.png" >}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-storage-server-saved-dark.png" >}}
+{{% /tab %}}
+{{% tab name="API" %}}
+Send the same request that the UI sends.
+
+```sh
+curl -s -X PUT http://localhost:15000/api/config/resources/mcp.target \
+  -H 'Content-Type: application/json' \
+  -d '{"resources":[{"value":{"name":"persisted-target","mcp":{"host":"http://example.com/mcp"}}}]}'
+```
+{{% /tab %}}
+{{< /tabs >}}
+
 ### Verify that configuration persists
 
-1. Add an MCP target, either in the UI or with the following request. The UI uses the same API.
-
-   ```sh
-   curl -s -X PUT http://localhost:15000/api/config/resources/mcp.target \
-     -H 'Content-Type: application/json' \
-     -d '{"resources":[{"value":{"name":"persisted-target","mcp":{"host":"http://example.com/mcp/"}}}]}'
-   ```
-
-2. Review the effective configuration. Agentgateway merges the database overlay over the ConfigMap baseline, so the target appears alongside the routes that you set in your Helm values.
+1. Review the effective configuration. Agentgateway merges the database overlay over the ConfigMap baseline, so the server appears alongside the routes that you set in your Helm values.
 
    ```sh
    curl -s http://localhost:15000/api/config/effective | jq
    ```
 
-3. Restart the agentgateway pod.
+2. Restart the agentgateway pod.
 
    ```sh
    kubectl rollout restart deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
@@ -186,7 +209,7 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
      -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
-4. Port-forward the admin interface again, then confirm that the target survived the restart.
+3. Port-forward the admin interface again, then confirm that the server survived the restart. You can also refresh **MCP** > **Servers** in the UI and see it still listed.
 
    ```sh
    curl -s http://localhost:15000/api/config/resources | jq '.resources[].id'
