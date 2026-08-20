@@ -307,7 +307,7 @@ jobs:
             Generate reference documentation for agentgateway (${{ matrix.link_version }}).
 
             Source: agentgateway/agentgateway at `${{ matrix.ref }}`.
-            Updates API reference (including shared types such as CEL expression) and interactive kubespec widgets, Helm (agentgateway + agentgateway-crds), control plane metrics, and the agctl CLI reference for the ${{ matrix.link_version }} version.
+            Updates API reference (including shared types such as CEL expression) and interactive kubespec widgets, Helm (agentgateway + agentgateway-crds for Kubernetes mode, agentgateway-standalone for standalone mode), control plane metrics, and the agctl CLI reference for the ${{ matrix.link_version }} version.
 
             This PR was created automatically by the reference-docs workflow.
 
