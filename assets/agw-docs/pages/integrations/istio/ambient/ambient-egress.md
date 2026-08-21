@@ -54,9 +54,8 @@ Make sure an agentgateway-owned GatewayClass exists (commonly `agentgateway`).
 
 Create an ambient-enabled client namespace and a separate namespace for the egress waypoint.
 
-{{< callout type="info">}}
-Ambient-enabled means Istio configures ztunnel capture for workloads in the client namespace so outbound traffic is transparently intercepted and secured with mTLS, without sidecars.
-{{< /callout >}}
+> [!NOTE]
+> Ambient-enabled means Istio configures ztunnel capture for workloads in the client namespace so outbound traffic is transparently intercepted and secured with mTLS, without sidecars.
 
 ```yaml
 kubectl apply -f - <<EOF
