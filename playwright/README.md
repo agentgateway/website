@@ -285,6 +285,7 @@ setup the `reference-docs` workflow uses.
 | `fixtures/*-config.yaml` | Per-mode gateway configs (mcp, a2a, llm, virtual, openapi, jwt) + `standalone-config.yaml` (for `AGENTGATEWAY_BIN`) |
 | `fixtures/petstore-openapi.json` | Bundled Swagger Petstore spec served by the openapi mock |
 | `tests/smoke.spec.ts` `tests/landing.spec.ts` `tests/cel.spec.ts` | No-backend captures (run under `test:standalone`) |
+| `tests/welcome.spec.ts` | First-run welcome wizard — the one spec that must *not* `dismissWelcome` |
 | `tests/playground.spec.ts` | MCP playground (tools discovered + echo) |
 | `tests/virtual.spec.ts` | Multiplex playground (prefixed tools + echo + time) |
 | `tests/openapi.spec.ts` | OpenAPI → MCP (tool list + a `getInventory` call) |
@@ -302,6 +303,7 @@ setup the `reference-docs` workflow uses.
 | Script | Does |
 |---|---|
 | `test:standalone` | Capture/verify the no-backend specs (landing, cel, smoke) |
+| `test:welcome` | Capture/verify the first-run welcome wizard (no backend; pristine bootstrap config) |
 | `test:mcp` / `:a2a` / `:llm` / `:virtual` / `:openapi` / `:jwt` | Capture/verify one backend mode (brings up its backend + UI) |
 | `capture:all` | Run every mode in sequence (what CI runs); `clean:ui` between modes |
 | `update:all` | Same as `capture:all` but **regenerates** baselines (`--update-snapshots`) |

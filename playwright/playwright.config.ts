@@ -23,6 +23,8 @@ import { resolveImage } from './scripts/resolve-image.mjs';
  *                    from a different branch). Serves on ADMIN_ADDR (default :15000).
  *   CAPTURE_MODE     which environment webServer brings up:
  *                      ''      (default) — empty-config UI (smoke / landing / cel captures)
+ *                      welcome — pristine bootstrap config, no -f, so the first-run welcome
+ *                                wizard renders (welcome.spec.ts)
  *                      mcp     — server-everything + MCP config (playground.spec.ts)
  *                      a2a     — A2A guide config as a Traffic route (a2a-traffic.spec.ts)
  *                      llm     — mock OpenAI provider + LLM config (llm-playground.spec.ts)
@@ -58,6 +60,7 @@ const BASE_URL =
 // Pick the launcher. A local binary, a mode-specific setup script (which starts its own
 // backends + the container and cleans up on teardown), or the default empty-config image.
 const SCRIPT_FOR = {
+  welcome: 'serve-welcome-ui.sh',
   mcp: 'serve-populated-ui.sh',
   a2a: 'serve-a2a-ui.sh',
   llm: 'serve-llm-ui.sh',

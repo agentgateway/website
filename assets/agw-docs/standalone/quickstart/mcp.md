@@ -142,7 +142,7 @@ agentgateway
 Example output:
 
 ```
-info  app  serving UI at http://localhost:15000/ui
+info  app  serving UI at http://localhost:4000/ui
 ```
 
 {{< doc-test paths="mcp" >}}
@@ -173,8 +173,15 @@ sleep 3
 
 ### Step 3: Enable MCP
 
-1. Open the [agentgateway UI](http://localhost:15000/ui/).
-2. On the **Gateway Overview**, find the **MCP** row and click **Enable MCP**.
+The first time that you run the UI, the **Welcome to Agentgateway** wizard walks you through enabling LLM configuration. If you already did this, you can skip to the next step.
+
+1. Open the [agentgateway UI](http://localhost:4000/ui/). 
+2. From the welcome wizard, click **Enable MCP** and then click **Continue**.
+
+   {{< reuse-image-light src="img/ui-welcome-wizard.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-welcome-wizard-dark.png" >}}
+
+The **Gateway Overview** home page opens, with the **MCP** row enabled.
 
 ### Step 4: Add the MCP server
 
@@ -195,8 +202,9 @@ sleep 3
    {{< reuse-image-light src="img/ui-playground-tools.png" >}}
    {{< reuse-image-dark srcDark="img/ui-playground-tools-dark.png" >}}
 
-4. From the **Tool** list, select the `echo` tool. In the **Message** field, enter a string, such as `This is my first agentgateway setup`, and click **Call tool**.
-5. Verify that the **Result** card shows an `HTTP 200` response with your message echoed back.
+4. From the **Tool** dropdown list, select the `echo` tool. 
+5. In the **Message** field, enter a string, such as `This is my first agentgateway setup`, and click **Call tool**.
+6. Verify that the **Result** card shows an `HTTP 200` response with your message echoed back.
 
    {{< reuse-image-light src="img/ui-playground-tool-echo.png" >}}
    {{< reuse-image-dark srcDark="img/ui-playground-tool-echo-dark.png" >}}
