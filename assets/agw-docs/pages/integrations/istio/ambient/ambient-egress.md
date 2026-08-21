@@ -100,7 +100,7 @@ If you do label that namespace with `istio.io/dataplane-mode=ambient`, make sure
 opt out with `istio.io/dataplane-mode=none`; otherwise ztunnel capture can conflict with the
 waypoint's HBONE listener on port `15008`.
 
-## Step 4: Deploy an AGW-managed egress waypoint
+## Step 4: Deploy an egress waypoint
 
 Create AgentgatewayParameters for Istio integration and force the generated Service to `ClusterIP`.
 Then deploy a waypoint Gateway with:
