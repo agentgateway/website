@@ -969,7 +969,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source for Azure credentials, defaulting to a Kubernetes<br />`Secret`. The default Secret resolver expects `clientID`, `tenantID`, and<br />`clientSecret` keys. |  | Optional: \{\} <br /> |
-| `managedIdentity` _[AzureManagedIdentity](#azuremanagedidentity)_ | Managed identity authentication settings. |  | Optional: \{\} <br /> |
+| `managedIdentity` _[AzureManagedIdentity](#azuremanagedidentity)_ | Managed identity authentication settings. Leave this object empty to use<br />the system-assigned identity. To use a user-assigned identity, set one of<br />`clientId`, `objectId`, or `resourceId`. |  | AtMostOneOf: [clientId objectId resourceId] <br />Optional: \{\} <br /> |
 | `workloadIdentity` _[AzureWorkloadIdentity](#azureworkloadidentity)_ | Workload identity authentication settings. Uses the federated token and<br />Azure env vars projected into the data plane pod. Recommended on AKS with<br />Workload Identity enabled. |  | Optional: \{\} <br /> |
 
 
@@ -998,18 +998,21 @@ _Appears in:_
 
 
 
+AzureManagedIdentity configures authentication with an Azure managed
+identity. Leave all identifiers unset to use the system-assigned identity.
+To use a user-assigned identity, set one identifier.
 
-
-
+_Validation:_
+- AtMostOneOf: [clientId objectId resourceId]
 
 _Appears in:_
 - [AzureAuth](#azureauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `clientId` _string_ |  |  | Required: \{\} <br /> |
-| `objectId` _string_ |  |  | Required: \{\} <br /> |
-| `resourceId` _string_ |  |  | Required: \{\} <br /> |
+| `clientId` _string_ | Client ID of the user-assigned managed identity. |  | Optional: \{\} <br /> |
+| `objectId` _string_ | Object ID of the user-assigned managed identity. |  | Optional: \{\} <br /> |
+| `resourceId` _string_ | Resource ID of the user-assigned managed identity. |  | Optional: \{\} <br /> |
 
 
 #### AzureOpenAIConfig
@@ -1784,6 +1787,25 @@ _Appears in:_
 | `matchLabels` _object (keys:string, values:string)_ | Labels that must be present on each selected ConfigMap. |  | Required: \{\} <br /> |
 
 
+#### ContentScope
+
+_Underlying type:_ _string_
+
+Which category of request content a prompt guard inspects.
+
+
+
+_Appears in:_
+- [PromptguardRequest](#promptguardrequest)
+
+| Field | Description |
+| --- | --- |
+| `SystemPrompt` | The system/developer prompt.<br /> |
+| `Messages` | Regular user/assistant message text.<br /> |
+| `ToolOutput` | Tool call results fed back to the model.<br /> |
+| `ToolInput` | Tool call arguments, usually produced by the model.<br /> |
+
+
 #### CrossAppAccessAuth
 
 
@@ -1801,7 +1823,8 @@ _Appears in:_
 | `resourceAuthorizationServer` _[CrossAppAccessEndpoint](#crossappaccessendpoint)_ | Resource authorization server, used for the RFC 7523 jwt-bearer exchange. |  | ExactlyOneOf: [backendRef url] <br />Required: \{\} <br /> |
 | `audience` _[ShortString](#shortstring)_ | Identifier of the resource authorization server. The issued ID-JAG is bound to this audience. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `resources` _string array_ | Resources sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
-| `scopes` _string array_ | Scopes sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `scopes` _string array_ | Scopes requested when obtaining the ID-JAG from the identity provider. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `accessTokenScopes` _string_ | Scopes requested when exchanging the ID-JAG for an access token.<br />When omitted, defaults to Scopes. Set to an empty list to omit scope. |  | MaxItems: 64 <br />Optional: \{\} <br /> |
 | `subjectToken` _[CrossAppAccessSubjectToken](#crossappaccesssubjecttoken)_ | Subject token sent to the identity provider. Defaults to an OpenID Connect<br />ID token read from the Authorization Bearer header. |  | Optional: \{\} <br /> |
 | `cache` _[OAuthTokenCache](#oauthtokencache)_ | Response cache configuration. |  | Optional: \{\} <br /> |
 
@@ -4462,6 +4485,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `response` _[CustomResponse](#customresponse)_ | Custom response message to return to the client. If not specified, defaults to<br />`The request was rejected due to inappropriate content`. |  | Optional: \{\} <br /> |
+| `scope` _[ContentScope](#contentscope) array_ | Which parts of the request this guard inspects. When unset, defaults to<br />`SystemPrompt` and `Messages`. Tool call inputs and outputs are not<br />inspected unless `ToolInput`/`ToolOutput` are listed explicitly.<br />In APIs that send tool arguments as opaque JSON, such as Completions, the<br />arguments are masked as a single string, meaning a prompt guard has the<br />potential to rewrite the arguments into invalid JSON. |  | MaxItems: 4 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `regex` _[Regex](#regex)_ | Regular expression (regex) matching for prompt guards and data masking. |  | Optional: \{\} <br /> |
 | `webhook` _[Webhook](#webhook)_ | Webhook that receives requests for prompt guarding. |  | Optional: \{\} <br /> |
 | `openAIModeration` _[OpenAIModeration](#openaimoderation)_ | Passes prompt data through the OpenAI Moderations<br />endpoint.<br />See https://developers.openai.com/api/reference/resources/moderations for more information. |  | Optional: \{\} <br /> |
