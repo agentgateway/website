@@ -13,6 +13,11 @@ Azure supports two endpoint types:
 
 You can authenticate to Azure with an API key or with implicit Entra ID authentication through `DefaultAzureCredential`. On Kubernetes, implicit authentication can obtain a token from managed identity or workload identity. It does not require a Kubernetes secret or `policies.auth`.
 
+{{< version include-if="main" >}}
+The Agentgateway proxy can use explicit managed identity authentication only when it can reach an Azure managed identity endpoint. Leave `managedIdentity` empty to use the system-assigned identity. To use a user-assigned identity, set one identifier: `clientId`, `objectId`, or `resourceId`. Managed identity and workload identity use different credential sources.
+
+{{< /version >}}
+
 ## Set up access to Azure
 
 1. Retrieve the resource name and, if applicable, the project name from the [Azure AI Foundry portal](https://ai.azure.com/) or the [Azure portal](https://portal.azure.com/). For example:
@@ -106,6 +111,57 @@ You can authenticate to Azure with an API key or with implicit Entra ID authenti
    ```
    {{% /tab %}}
    {{< /tabs >}}
+
+   {{< version include-if="main" >}}
+   To use explicit managed identity authentication instead, apply one of the following {{< reuse "agw-docs/snippets/backend.md" >}} configurations.
+
+   **System-assigned managed identity**
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: azure
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         azure:
+           resourceName: my-resource
+           resourceType: OpenAI
+           model: gpt-4.1-mini
+     policies:
+       auth:
+         azure:
+           managedIdentity: {}
+   EOF
+   ```
+
+   **User-assigned managed identity**
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: azure
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         azure:
+           resourceName: my-resource
+           resourceType: OpenAI
+           model: gpt-4.1-mini
+     policies:
+       auth:
+         azure:
+           managedIdentity:
+             clientId: <managed-identity-client-id>
+   EOF
+   ```
+   {{< /version >}}
 
    {{% reuse "agw-docs/snippets/review-table.md" %}}{{< version exclude-if="1.1.x" >}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#azureconfig" >}}).{{< /version >}}
 

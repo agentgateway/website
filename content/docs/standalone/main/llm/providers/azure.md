@@ -371,7 +371,7 @@ To use system-assigned managed identity:
 * The Azure resource must have managed identity enabled.
 * The Azure resource identity must have permissions to and the network ability to access the Azure AI services.
 
-Leave the `managedIdentity` field empty so that the system assigns a managed identity to use.
+Leave `managedIdentity` empty to use the identity of the Azure resource that runs Agentgateway.
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -419,7 +419,7 @@ agentgateway -f config-adv-system-managed-identity.yaml --validate-only
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
-| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
+| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave the object empty to use the system-assigned identity. |
 {{< /reuse-append >}}
 
 {{% /tab %}}
@@ -428,9 +428,8 @@ agentgateway -f config-adv-system-managed-identity.yaml --validate-only
 
 To use user-assigned managed identity:
 * Agentgateway must run in an Azure resource, such as a VM or container instance.
-* The Azure resource must have managed identity enabled.
-* The Azure resource identity must have permissions to and the network ability to access the Azure AI services.
-* Create and assign a managed identity for the Azure resource to use.
+* Create a user-assigned identity and attach it to the Azure resource.
+* The selected identity must have permissions to and the network ability to access the Azure AI services.
 
 Specify the client ID of the user-assigned managed identity to use. You can also specify the object ID or resource ID instead.
 ```yaml
@@ -490,7 +489,7 @@ agentgateway -f config-adv-user-managed-identity.yaml --validate-only
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
-| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
+| `backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity` | Use a user-assigned managed identity. Specify exactly one of `clientId`, `objectId`, or `resourceId`. |
 {{< /reuse-append >}}
 
 {{% /tab %}}
