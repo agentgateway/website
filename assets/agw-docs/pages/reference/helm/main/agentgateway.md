@@ -90,6 +90,8 @@
 | proxy.image.registry | string | Set the default image registry. Set to override the global value.<br/><br/>The default value is `""`. |
 | proxy.image.repository | string | Set the default image repository.<br/><br/>The default value is `"agentgateway"`. |
 | proxy.image.tag | string | Set the default image tag.<br/><br/>The default value is `""`. |
+| rbac | object | Configure the RBAC permissions created for the controller.<br/><br/>The default value is `{"gatewayNamespaces":[]}`. |
+| rbac.gatewayNamespaces | list | Restrict namespaced write permissions to these namespaces. The namespaces must already exist. An empty list preserves the default cluster-wide write access. Cluster-wide read permissions and writes to cluster-scoped resources are unaffected. Restricting this list means only Gateways in these namespaces can be used.<br/><br/>The default value is `[]`. |
 | resources | object | Configure resource requests and limits for the container, such as 'limits.cpu: 100m' or 'requests.memory: 128Mi'.<br/><br/>The default value is `{"requests":{"cpu":"100m","memory":"128Mi"}}`. |
 | securityContext | object | Set the container-level security context, such as 'runAsNonRoot: true'.<br/><br/>The default value is `{}`. |
 | serviceAccount | object | Configure the service account for the deployment.<br/><br/>The default value is `{"annotations":{},"create":true,"name":""}`. |
