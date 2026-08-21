@@ -494,12 +494,29 @@ agentgateway -f config-adv-user-managed-identity.yaml --validate-only
 
 {{% /tab %}}
 {{% tab name="Workload identity" %}}
-**Workload identity**: Authenticate with Azure identity in Kubernetes clusters without the need to store credentials in the cluster.
+**Workload identity**: Authenticate from Kubernetes without storing Azure credentials in the cluster.
 
-To use workload identity:
-* Agentgateway must run in a Kubernetes cluster.
-* The Kubernetes cluster must use federated OIDC for authentication.
-* The federated identity must link the Azure identity with access to Azure AI services to the Kubernetes service account.
+On AKS, [enable Microsoft Entra Workload ID](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster), create a user-assigned managed identity, and grant that identity the least-privilege role required by the Azure AI resource. For example, the `Azure AI User` role grants access to Azure AI Foundry.
+
+Create a federated credential that trusts the service account used by Agentgateway. By default, the standalone Helm chart names the service account after the Helm release. For a release named `agentgateway` in the `agentgateway` namespace, use this subject:
+
+```txt
+system:serviceaccount:agentgateway:agentgateway
+```
+
+The subject must match the namespace and service account name exactly. Configure the chart to annotate that service account and label the pod for the Azure workload identity webhook.
+
+```yaml
+serviceAccount:
+  create: true
+  annotations:
+    azure.workload.identity/client-id: <managed-identity-client-id>
+
+podLabels:
+  azure.workload.identity/use: "true"
+```
+
+Then select workload identity in the Agentgateway configuration.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
