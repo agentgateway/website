@@ -2,47 +2,60 @@ In this guide, you deploy PostgreSQL, switch the chart to database mode, and ver
 
 ## About
 
-By default, the chart renders your Helm values into a ConfigMap and mounts it read-only at `/config`. The proxy reads that file at startup, and the Helm values remain the source of truth for the configuration.
+By default, the chart renders your Helm values into a ConfigMap and mounts it read-only at the `/config` path in your agentgateway pod. The proxy reads that file at startup, and the Helm values remain the source of truth for the configuration.
 
-
-Read-only storage keeps the deployment reproducible, but it also means that the admin UI cannot save anything. A save returns the following error, because the mounted ConfigMap cannot be written.
+Read-only storage keeps the deployment reproducible, but it also means that the admin UI cannot save anything. A save returns the following error, because write access to the mounted ConfigMap is denied.
 
 ```txt
 failed to write to file `/config/config.yaml`: Read-only file system (os error 30)
 ```
 
-To let the UI store configuration, run PostgreSQL and switch the chart to database mode. Agentgateway then treats the ConfigMap as a baseline and keeps UI-managed resources in the database, merging the two when it reads the configuration.
+To let the UI store configuration, connect a PostgreSQL instance to your agentgateway pod and switch the Helm chart to database mode. Agentgateway then treats the ConfigMap as a baseline and keeps UI-managed resources in the database. When you make updates to these resources via the UI, agentgateway merges the resources from the database with the baseline in the ConfigMap.
 
 ### Chart modes
 
 | Chart `mode` | Storage mode | Configuration source | UI saves |
 | --- | --- | --- | --- |
-| `readonly` (default) | `file` | The ConfigMap that the chart renders from your Helm values. | Rejected. |
-| `database` | `hybrid` | The ConfigMap as a baseline, with an overlay in PostgreSQL. | Stored in the database. |
+| `readonly` (default) | `file` | The Helm values that you provide to configure agentgateway. The values are translated and stored in a ConfigMap that is mounted to the agentgateway pod. | Config is read-only. UI updates are rejected. |
+| `database` | `hybrid` | The ConfigMap as a baseline, with an overlay in PostgreSQL. | Updates to resources that are editable via the UI are stored in the database. |
 
-The chart sets `config.storage.mode` and `config.database.url` for you based on the `mode` value, and overwrites anything that you set for those two fields directly. Set `mode` instead.
+Everything that you put in your Helm values is part of the baseline, including the fields that you can later edit in the UI. In `database` mode, agentgateway never writes back to the ConfigMap. Instead, it stores your UI edit in the database and layers it over the baseline value when it reads the configuration.
+
+To choose a mode, set the chart's `mode` value. Do not set the `config.storage.mode` or `config.database.url` fields in your Helm values, because the chart derives both fields from `mode` and overwrites anything that you set for them.
 
 ### What the database stores
 
-The database holds only the resources that the UI manages. Everything else, such as gateways, listeners, and routes, comes from your Helm values.
+The database holds only the resource types in the following table. Everything else in the configuration file, such as the `config` section and the structure of the file itself, comes from your Helm values by way of the ConfigMap.
 
-| Stored in the database | Stored in the ConfigMap |
+| Area | Resource types that the database can store |
 | --- | --- |
-| MCP targets, policies, and settings | Gateways and listeners |
-| LLM providers, models, virtual models, API keys, and policies | Routes and backends |
-| Traffic gateways, routes, and TCP routes | The `config` section, such as logging and storage |
-| UI policies and the model catalog | Authentication policies that you set in Helm values |
+| LLM | Providers, models, virtual models, API keys, and policies |
+| MCP | Targets, policies, and settings |
+| Traffic | Gateways, routes, and TCP routes |
+| UI | Policies and the model catalog |
 
 > [!IMPORTANT]
-> Saving the configuration file as a whole still fails in database mode, because the file itself remains read-only. Treat your Helm values as the source of truth for the file, and the UI as the way to manage the resources layered on top of it.
+> Even in database mode, you cannot save the configuration file as a whole in the UI's configuration editor, because the mounted file itself remains read-only. Treat your Helm values as the source of truth for the file, and the UI as the way to manage the resources that are layered on top of it.
 
-The database stores the resources within a configuration section, not the section itself. For example, agentgateway stores an MCP target in the database, but the `mcp` section that contains the target must already exist in the ConfigMap. Adding a section changes the file, so the UI cannot add one in database mode. **Enable LLM** and **Enable MCP** fail with the following error.
+### Sections must exist in the ConfigMap
+
+The database stores the resources within a configuration section, but not the section itself. Because adding a section changes the file, and the file is read-only, the UI cannot add a section in database mode. Your Helm values must already include the section, even when the section is empty.
+
+Consider the `mcp` section. The following Helm values let you add MCP servers in the UI, because the `mcp` section exists for agentgateway to store targets in.
+
+```yaml
+config:
+  mcp:
+    targets: []
+```
+
+Without that section, the UI navigation shows only **MCP** > **Get started**, and clicking **Enable MCP** fails with the following error, because enabling the capability requires adding the section to the file. The same is true for **LLM** and **Enable LLM**.
 
 ```txt
 File configuration is read-only in hybrid mode. Copy the diff and update the configuration file directly.
 ```
 
-The UI navigation also lists the pages for a capability only when the configuration includes its section. Until then, the **LLM** and **MCP** sections each show a single **Get started** link. To manage a capability in the UI, include an empty section for it in your Helm values, as shown in the following steps.
+To manage a capability in the UI, include an empty section for it in your Helm values, as shown in the **Storage settings and UI sections** tab in the following steps.
 
 ## Before you begin
 
@@ -53,7 +66,10 @@ The UI navigation also lists the pages for a capability only when the configurat
 
 For a production deployment, use a managed PostgreSQL instance or an operator that handles backups and failover. The following example deploys a single instance for testing.
 
-1. Create a Secret for the database credentials. The following example creates `agw / password` credentials
+> [!WARNING]
+> This example stores the database on an `emptyDir` volume, so the data exists only for the lifetime of the PostgreSQL pod. If that pod restarts or is rescheduled, the configuration that you saved in the UI is lost, and agentgateway falls back to the ConfigMap baseline. For anything beyond testing, back the database with a PersistentVolumeClaim, or use a managed PostgreSQL instance.
+
+1. Create a Secret for the database credentials. The following example creates the `agw` user with a `password` password.
 
    ```sh
    kubectl create secret generic agentgateway-postgres \
@@ -83,7 +99,7 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
        spec:
          containers:
          - name: postgres
-           image: postgres:16-alpine
+           image: postgres:{{< reuse "agw-docs/versions/postgres.md" >}}
            envFrom:
            - secretRef:
                name: agentgateway-postgres
@@ -198,26 +214,24 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
 Now that storage is writable, add an MCP server. The Admin UI and the config resource API write to the same place, so use whichever you prefer.
 
 > [!NOTE]
-> The Admin UI steps require the `mcp` section from the **Storage settings and UI sections** tab in the previous step. Without that section, the navigation shows only **MCP** > **Get started**, and **Enable MCP** fails because it changes the read-only file. The API creates the section for you when it stores the first MCP target, so you can use the API with either set of values.
+> The Admin UI steps require the `mcp` section from the **Storage settings and UI sections** tab in the previous step. For more information, see [Sections must exist in the ConfigMap](#sections-must-exist-in-the-configmap). The API steps work with either set of values, because the API creates the section for you when it stores the first MCP target.
 
 {{< tabs >}}
 {{% tab name="Admin UI" %}}
-1. Open <http://localhost:15000/ui> in your browser.
+1. Open the [Admin UI](http://localhost:15000/ui) in your browser.
 
 2. In the navigation, click **MCP** > **Servers**, then click **Add server**.
 
 3. Enter a **Server name**, such as `persisted-target`, keep the **Streamable HTTP** transport, and enter the **URL** of your MCP server, such as `http://example.com/mcp`.
 
-   {{< reuse-image-light src="img/agentgateway-ui-storage-add-server.png" >}}
-   {{< reuse-image-dark srcDark="img/agentgateway-ui-storage-add-server-dark.png" >}}
+   {{< reuse-image src="img/agentgateway-ui-storage-add-server.png" srcDark="img/agentgateway-ui-storage-add-server-dark.png" >}}
 
 4. Click **Save server**. Agentgateway confirms with **Configuration saved** and lists the server. The save succeeds only because storage is writable. In the default read-only mode, the same action fails.
 
-   {{< reuse-image-light src="img/agentgateway-ui-storage-server-saved.png" >}}
-   {{< reuse-image-dark srcDark="img/agentgateway-ui-storage-server-saved-dark.png" >}}
+   {{< reuse-image src="img/agentgateway-ui-storage-server-saved.png" srcDark="img/agentgateway-ui-storage-server-saved-dark.png" >}}
 {{% /tab %}}
 {{% tab name="API" %}}
-Send the same request that the UI sends.
+Send the same request that the UI sends when you save a server. The request is a `PUT` to the config resource API for the `mcp.target` resource type, and its body is the list of MCP targets that you want that resource type to hold. Agentgateway writes the targets in the body to the database, replacing any `mcp.target` resources that it stored before, and merges them over the `mcp` section in the ConfigMap. The following example stores one target that is named `persisted-target` and that proxies to an MCP server at `http://example.com/mcp`.
 
 ```sh
 curl -s -X PUT http://localhost:15000/api/config/resources/mcp.target \
@@ -262,7 +276,7 @@ curl -s -X PUT http://localhost:15000/api/config/resources/mcp.target \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
-3. Port-forward the admin interface again, then confirm that the server survived the restart. You can also refresh **MCP** > **Servers** in the UI and see it still listed.
+3. Port-forward the admin interface again, then confirm that the server is still available, even after the restart. You can also refresh **MCP** > **Servers** in the UI and see it still listed.
 
    ```sh
    kubectl port-forward -n agentgateway-system \
@@ -281,11 +295,44 @@ curl -s -X PUT http://localhost:15000/api/config/resources/mcp.target \
 
 ## Scale the deployment
 
-Both modes support more than one replica. In `readonly` mode, every replica reads the same ConfigMap. In `database` mode, every replica reads the same overlay, so a change that you make in the UI reaches all of them.
+Both storage modes support running more than one agentgateway proxy pod. In `readonly` mode, every agentgateway pod reads the same ConfigMap. In `database` mode, every agentgateway pod reads the same overlay from PostgreSQL, so a change that you make in the UI reaches all of them.
 
-```yaml
-replicaCount: 3
-```
+1. Add the `replicaCount` value to the values file that you created earlier, and set it to the number of agentgateway pods that you want to run. Keep the rest of your values, because the upgrade command passes the whole file and a value that you leave out returns to its default, which would send the release back to read-only storage.
+
+   ```yaml
+   replicaCount: 3
+   mode: database
+   database:
+     postgres:
+       url: postgres://agw:password@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+   config:
+     gateways:
+       default:
+         port: 4000
+     llm:
+       providers: []
+       models: []
+       virtualModels: []
+     mcp:
+       targets: []
+     routes:
+     - matches:
+       - path:
+           pathPrefix: /
+       backends:
+       - host: httpbin.httpbin.svc.cluster.local:8000
+   ```
+
+2. Upgrade the release with your values file.
+
+   {{< reuse "agw-docs/standalone/helm-upgrade-command.md" >}}
+
+3. Verify that the deployment scaled to three agentgateway pods.
+
+   ```sh
+   kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -l app.kubernetes.io/name=agentgateway-standalone
+   ```
 
 <!--TODO troubleshooting left hidden for now
 

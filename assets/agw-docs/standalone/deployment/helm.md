@@ -3,7 +3,7 @@ Deploy agentgateway as a standalone Kubernetes workload by using the standalone 
 Use this chart when you want the standalone agentgateway binary model, but you want Kubernetes to run and expose the process for you. The chart runs the same binary and reads the same configuration file that the binary and Docker deployments use. You supply that file through Helm values, and the chart renders it into a ConfigMap that the proxy reads at startup.
 
 > [!TIP]
-> Want a managed Kubernetes deployment? The chart does not install the agentgateway Kubernetes control plane or Gateway API resources. Instead, check out the [Kubernetes mode documentation](https://agentgateway.dev/docs/kubernetes/).
+> This chart installs agentgateway as a single, unmanaged Kubernetes deployment. You manage agentgateway config by upgrading the Helm values, and optionally adding a PostgreSQL database for editting the agentgateway config through the admin UI. If you want a managed Kubernetes solution that includes a control plane and Gateway API resources, see the [Kubernetes mode documentation](https://agentgateway.dev/docs/kubernetes/).
 
 ## Before you begin
 
@@ -58,7 +58,7 @@ The chart creates the following resources. Each resource is named after the Helm
 | ServiceAccount | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Identity for the proxy pod. |
 
 > [!NOTE]
-> The chart creates no PersistentVolumeClaim and no Service for the admin port. Configuration lives in the ConfigMap, and you reach the admin interface by port-forwarding the Deployment. To persist configuration changes that you make in the UI, see [Store configuration in a database](#store-configuration-in-a-database).
+> The chart creates no PersistentVolumeClaim and no Service for the admin port. Configuration lives in the ConfigMap, and you reach the admin interface by port-forwarding the Deployment. To persist configuration changes that you make in the UI, see [Store configuration in a database]({{< link-hextra path="/deployment/helm/storage/" >}}).
 
 ## Verify the installation
 
@@ -115,7 +115,9 @@ To securely expose the UI on your own domain, see the guide.-->
 
 2. In your browser, open the `/ui` path.
 
-   <http://localhost:15000/ui>
+   ```sh
+   open http://localhost:15000/ui
+   ```
 
 ## Configure agentgateway
 
@@ -146,7 +148,7 @@ Set the `mode` value instead of setting these fields directly.
 
 The configuration examples throughout the standalone documentation are complete configuration files, so you can copy one into the `config` value without changing its structure. Keep the following points in mind.
 
-* **Align the ports.** The guides commonly listen on port `3000` or `8080`, and the chart's Service sends port `80` to container port `4000`. Either change the port in the configuration, or set `gateway.service.ports` to match. See the "Expose listeners" section.
+* **Align the ports.** A Service port sends traffic to a `targetPort` on the pod, and that target port must be a port that your agentgateway configuration listens on. The chart's Service sends port `80` to container port `4000`, but the guides commonly configure a listener on port `3000` or `8080`, so the Service has no listener to send traffic to. Either change the listener in the configuration to port `4000`, or set `gateway.service.ports` so that the Service targets the port that your configuration uses. For more information, see [Expose listeners](#expose-listeners).
 * **Omit the schema comment.** The `# yaml-language-server: $schema=` line that the guides include is a comment for your editor. Helm does not preserve it when it renders the ConfigMap.
 * **Replace `stdio` MCP targets.** The proxy image contains no shell and no Node.js, so a target that starts a local process, such as `cmd: npx`, fails at startup with `mcp: failed to start stdio server: No such file or directory`. Use a remote target instead, or build an image that includes the command.
 
@@ -170,14 +172,14 @@ In the default `readonly` mode, the ConfigMap is mounted read-only, so a save fa
 failed to write to file `/config/config.yaml`: Read-only file system (os error 30)
 ```
 
-In `database` mode, you can add and edit the resources that the UI manages, such as MCP targets, LLM providers, models, and routes. Agentgateway stores them in PostgreSQL and merges them over the ConfigMap baseline at read time. Saving the configuration file as a whole still fails, because the file itself remains read-only. To set up this mode, see [Store configuration in a database](#store-configuration-in-a-database)
+In `database` mode, you can add and edit the resources that the UI manages, such as MCP targets, LLM providers, models, and routes. Agentgateway stores the configuration in PostgreSQL and merges them over the ConfigMap baseline at read time. Saving the configuration file as a whole still fails, because the file itself remains read-only. To set up this mode, see [Store configuration in a database]({{< link-hextra path="/deployment/helm/storage/" >}}).
 
 > [!IMPORTANT]
-> Treat the Helm values as the source of truth for the configuration file, and the UI as the way to manage the resources layered on top of it. To change a field that the UI does not manage, such as a listener or a bind, update your Helm values and upgrade the release.
+> Treat the Helm values as the source of truth for the configuration file, and the UI as the way to manage the resources that are layered on top of it. To change a field that the UI does not manage, such as a listener or a bind, update your Helm values and upgrade the release.
 
 ## Expose listeners
 
-The Service sends port `80` to container port `4000` by default. To expose the ports that your configuration listens on, set `gateway.service.ports`. The following example exposes a listener on port `3000`.
+The chart's default values configure a gateway named `default` that listens on container port `4000`, and a `LoadBalancer` Service that sends its port `80` to that container port. If your configuration listens on other ports, set `gateway.service.ports` so that the Service targets them. The following example exposes a listener on port `3000`.
 
 ```yaml
 gateway:
@@ -188,6 +190,8 @@ gateway:
       targetPort: 3000
       protocol: TCP
 ```
+
+Agentgateway does not read the `name` field, so you can choose any name that is a valid lowercase Kubernetes port name and is unique within the Service. Kubernetes requires a name when a Service exposes more than one port. The field that must match your configuration is `targetPort`, which must be a port that a gateway or bind in your configuration listens on.
 
 To expose listeners on separate Services, such as an internal Service and an external Service, add `gateway.extraServices`. Each entry creates a Service named `<release name>-<name>` that selects the same pods.
 
@@ -218,7 +222,12 @@ gateway:
 
 ## Upgrade
 
-Upgrade the release by running `helm upgrade` with the new chart version. Because the ConfigMap is rendered from your Helm values, an upgrade replaces the configuration file. In `database` mode, the resources that the UI stores in PostgreSQL are unaffected.
+Upgrade the release by running `helm upgrade` with a new chart version, new Helm values, or both.
+
+Because the ConfigMap is rendered from your Helm values, an upgrade replaces the entire configuration file, including any listener, bind, or route that you set in the `config` value. In `database` mode, the upgrade replaces only the ConfigMap baseline. The resources that the UI stores in PostgreSQL are unaffected, and agentgateway merges them over the new baseline.
+
+> [!NOTE]
+> The Deployment stores a checksum of the ConfigMap in its pod annotations, so a change to your `config` values rolls out new pods. Because the default `replicaCount` is `1`, expect a brief interruption in traffic during the rollout. To keep a pod serving traffic while the new pod starts, set `replicaCount` to a value greater than `1`.
 
 {{< tabs >}}
 {{% tab name="Upgrade version, reuse values" %}}

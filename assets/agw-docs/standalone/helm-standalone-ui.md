@@ -9,8 +9,8 @@ Agentgateway serves the UI in two places:
 ## Before you begin
 
 1. [Install the standalone Helm chart]({{< link-hextra path="/deployment/helm/install/" >}}).
-2. Set up an identity provider (IdP), such as Keycloak or Microsoft Entra ID. Consider creating a client specifically for the UI, such as `agentgateway-ui`. For provider-specific setup, see the [identity provider integrations]({{< link-hextra path="/integrations/auth/" >}}).
-3. Get a TLS certificate and key for the hostname that you plan to serve the UI on.
+2. Set up an identity provider (IdP), such as Keycloak or Microsoft Entra ID. Consider creating a client specifically for the UI, such as `agentgateway-ui`. For provider-specific setup instructions, see the [identity provider integrations]({{< link-hextra path="/integrations/auth/" >}}).
+3. Get a TLS certificate and key for the hostname that you plan to serve the UI on, such as from your DNS provider or your organization's certificate authority.
 
 ## Set up the gateway
 
@@ -85,7 +85,7 @@ Give the UI a gateway of its own so that proxy traffic and UI traffic do not sha
 
 ## Secure the UI with OIDC
 
-Add an authentication policy before you expose the UI port. The `ui.policies` section takes the same policies that a route takes, so you can use [OIDC]({{< link-hextra path="/configuration/security/oidc/" >}}) for browser logins, or [JWT]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), [basic]({{< link-hextra path="/configuration/security/basic-authn/" >}}), or [API key]({{< link-hextra path="/configuration/security/apikey-authn/" >}}) authentication for programmatic access. To restrict which authenticated users get in, add an [authorization policy]({{< link-hextra path="/configuration/security/http-authz/" >}}).
+Add an authentication policy before you publicly expose the UI. The `ui.policies` section in the agentgateway config takes the same policies that a route takes, so you can use [OIDC]({{< link-hextra path="/configuration/security/oidc/" >}}) for browser logins, or [JWT]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), [basic]({{< link-hextra path="/configuration/security/basic-authn/" >}}), or [API key]({{< link-hextra path="/configuration/security/apikey-authn/" >}}) authentication for programmatic access. To restrict which authenticated users get in, add an [authorization policy]({{< link-hextra path="/configuration/security/http-authz/" >}}) alongside the authentication policy.
 
 1. Save the details of the UI client that you created in your IdP as environment variables. The redirect URI must match the address that you expose the UI on in a later step, and it must be registered as a valid redirect URI in your IdP.
 
@@ -96,23 +96,21 @@ Add an authentication policy before you expose the UI port. The `ui.policies` se
    export REDIRECT_URI=https://agentgateway.example.com/oauth/callback
    ```
 
-2. Create a Secret that holds the session cookie encryption key. Agentgateway refuses to start when an `oidc` policy is set and this key is missing.
+2. Create a Secret that holds the session cookie encryption key and the OIDC client secret.
+
+   After a user logs in, agentgateway keeps the session in a browser cookie that it encrypts with the session cookie encryption key. The key is a random value that you generate, not a value that your IdP gives you. Agentgateway requires an AES-256-GCM key, which is 32 random bytes that are encoded as 64 hexadecimal characters. Agentgateway refuses to start when an `oidc` policy is set and this key is missing or is not that length.
 
    ```sh
-   kubectl create secret generic agentgateway-ui-oidc \
+   kubectl create secret generic agentgateway-ui-secrets \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --from-literal=OIDC_COOKIE_SECRET="$(python3 -c 'import os; print(os.urandom(32).hex())')"
-   ```
-
-3. Create a Secret that holds the OIDC client secret.
-
-   ```sh
-   kubectl create secret generic agentgateway-ui-client \
-     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --from-literal=OIDC_COOKIE_SECRET="$(openssl rand -hex 32)" \
      --from-literal=UI_CLIENT_SECRET="${UI_CLIENT_SECRET}"
    ```
 
-4. Add the OIDC policy to the `ui` section, point the chart at the cookie Secret, and pass the client secret to the pod as an environment variable.
+   > [!NOTE]
+   > You choose the Secret's name, and you pass it to the chart in the `oidc.cookieSecretName` value in the next step. However, the key within the Secret must be named `OIDC_COOKIE_SECRET`, because the chart reads that exact key. The client secret key can have any name, as long as the `extraEnv` entry that you add in the next step refers to the same name. This example keeps both values in one Secret, but you can also keep them in separate Secrets. In that case, set `oidc.cookieSecretName` to the Secret that holds the cookie key, and point the `extraEnv` entry at the Secret that holds the client secret.
+
+3. Add the OIDC policy to the `ui` section, point the chart at the Secret, and pass the client secret to the pod as an environment variable.
 
    The heredoc in this step is unquoted, so your shell substitutes the issuer, client ID, and redirect URI as it writes the file. The `\$UI_CLIENT_SECRET` reference is escaped, so it stays in the file as a literal `$UI_CLIENT_SECRET` that agentgateway resolves from the pod environment at startup. This way, the client secret stays in the Secret instead of the ConfigMap.
 
@@ -142,28 +140,28 @@ Add an authentication policy before you expose the UI port. The `ui.policies` se
        backends:
        - host: httpbin.httpbin.svc.cluster.local:8000
    oidc:
-     cookieSecretName: agentgateway-ui-oidc
+     cookieSecretName: agentgateway-ui-secrets
    extraEnv:
    - name: UI_CLIENT_SECRET
      valueFrom:
        secretKeyRef:
-         name: agentgateway-ui-client
+         name: agentgateway-ui-secrets
          key: UI_CLIENT_SECRET
    EOF
    ```
 
-5. Upgrade the release with your values file.
+4. Upgrade the release with your values file.
 
    {{< reuse "agw-docs/standalone/helm-upgrade-command.md" >}}
 
-6. Confirm that the pod is running.
+5. Confirm that the pod is running.
 
    ```sh
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
      -l app.kubernetes.io/name=agentgateway-standalone
    ```
 
-7. Port-forward the UI port again, and confirm that an unauthenticated request is redirected to your IdP.
+6. Port-forward the UI port again, and confirm that an unauthenticated request is redirected to your IdP.
 
    ```sh
    curl -s -o /dev/null -D- http://localhost:4001/ui | grep -i location
@@ -184,7 +182,7 @@ Now that the UI requires a login, terminate TLS on the admin gateway and expose 
 
 Agentgateway reads the certificate and key from the file system, so you mount them into the pod from a Kubernetes Secret. Because the UI usually needs different exposure than proxy traffic, give it a separate Service instead of adding the port to the main Service.
 
-1. Create a TLS Secret from the certificate and key for your UI hostname.
+1. Create a TLS Secret from the certificate and key for your UI hostname. This guide assumes that you already have a certificate for that hostname, such as one that you issued through your DNS provider or your organization's certificate authority. The certificate must be valid for the hostname that you create a DNS record for in a later step.
 
    ```sh
    kubectl create secret tls agentgateway-ui-tls \
@@ -192,7 +190,7 @@ Agentgateway reads the certificate and key from the file system, so you mount th
      --cert=ui-cert.pem --key=ui-key.pem
    ```
 
-2. Mount the Secret, add the `tls` settings to the admin gateway, and add a separate Service for the UI. The chart names the extra Service `<release name>-<name>`, such as `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-ui`.
+2. Mount the TLS Secret as a volume and configure the admin gateway to terminate TLS traffic on the gateway by using the certs from that Secret. You also expose the UI with a separate Service so that the UI and proxy traffic do not share the same service address. The chart names the extra Service `<release name>-<name>`, such as `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-ui`.
 
    ```yaml
    cat <<EOF > values.yaml
@@ -238,12 +236,12 @@ Agentgateway reads the certificate and key from the file system, so you mount th
        backends:
        - host: httpbin.httpbin.svc.cluster.local:8000
    oidc:
-     cookieSecretName: agentgateway-ui-oidc
+     cookieSecretName: agentgateway-ui-secrets
    extraEnv:
    - name: UI_CLIENT_SECRET
      valueFrom:
        secretKeyRef:
-         name: agentgateway-ui-client
+         name: agentgateway-ui-secrets
          key: UI_CLIENT_SECRET
    extraVolumes:
    - name: ui-tls
@@ -324,8 +322,7 @@ Now that the UI is securely exposed, log in.
 3. Log in with a user from your IdP.
 4. Verify that your IdP returns you to the UI, and that the Admin UI opens on the **Gateway Overview**. The overview lists the available capabilities for LLM, MCP, and Traffic.
 
-   {{< reuse-image-light src="img/agentgateway-ui-landing.png" >}}
-   {{< reuse-image-dark srcDark="img/agentgateway-ui-landing-dark.png" >}}
+   {{< reuse-image src="img/agentgateway-ui-landing.png" srcDark="img/agentgateway-ui-landing-dark.png" >}}
 
 For more information about what you can do in the UI, see [Admin UI]({{< link-hextra path="/operations/ui/" >}}).
 
@@ -359,7 +356,7 @@ To save the configuration changes that you make in the UI, [store config in a da
 3. Delete the Secrets that you created.
 
    ```sh
-   kubectl delete secret agentgateway-ui-oidc agentgateway-ui-client agentgateway-ui-tls \
+   kubectl delete secret agentgateway-ui-secrets agentgateway-ui-tls \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
