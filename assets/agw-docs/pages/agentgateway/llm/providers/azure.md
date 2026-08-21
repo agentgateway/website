@@ -14,6 +14,9 @@ Azure supports two endpoint types:
 You can authenticate to Azure with an API key or with implicit Entra ID authentication through `DefaultAzureCredential`. On Kubernetes, implicit authentication can obtain a token from managed identity or workload identity. It does not require a Kubernetes secret or `policies.auth`.
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}
+The Agentgateway proxy can use explicit managed identity authentication only when it can reach an Azure managed identity endpoint. Leave `managedIdentity` empty to use the system-assigned identity. To use a user-assigned identity, set one identifier: `clientId`, `objectId`, or `resourceId`. Managed identity and workload identity use different credential sources.
+
+
 ### Use Microsoft Entra Workload ID on AKS
 
 First, [enable workload identity on the AKS cluster](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster), create a user-assigned managed identity, and grant that identity the least-privilege role required by the Azure AI resource. For example, the `Azure AI User` role grants access to Azure AI Foundry.
@@ -59,7 +62,6 @@ kubectl patch gateway agentgateway-proxy \
 ```
 
 If the gateway already references an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, add these overlays to that resource instead.
-{{< /version >}}
 
 ## Set up access to Azure
 
@@ -156,6 +158,9 @@ If the gateway already references an {{< reuse "agw-docs/snippets/gatewayparamet
    {{< /tabs >}}
 
    {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}
+   
+   To use explicit managed identity authentication instead, apply one of the following {{< reuse "agw-docs/snippets/backend.md" >}} configurations.
+   
    **Workload identity**
 
    After the AKS workload is configured, select workload identity in the backend.
@@ -180,7 +185,55 @@ If the gateway already references an {{< reuse "agw-docs/snippets/gatewayparamet
            workloadIdentity: {}
    EOF
    ```
+
+   **System-assigned managed identity**
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: azure
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         azure:
+           resourceName: my-resource
+           resourceType: OpenAI
+           model: gpt-4.1-mini
+     policies:
+       auth:
+         azure:
+           managedIdentity: {}
+   EOF
+   ```
+
+   **User-assigned managed identity**
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: azure
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         azure:
+           resourceName: my-resource
+           resourceType: OpenAI
+           model: gpt-4.1-mini
+     policies:
+       auth:
+         azure:
+           managedIdentity:
+             clientId: <managed-identity-client-id>
+   EOF
+   ```
    {{< /version >}}
+
    {{% reuse "agw-docs/snippets/review-table.md" %}}{{< version exclude-if="1.1.x" >}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#azureconfig" >}}).{{< /version >}}
 
    | Setting     | Description |
