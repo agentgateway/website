@@ -2,7 +2,7 @@ Route AI traffic from an Istio ambient mesh through agentgateway to external pro
 
 ## About ambient mesh
 
-Solo.io and Google collaborated to develop {{< gloss "Ambient mesh" >}}ambient mesh{{< /gloss >}}, a sidecarless architecture for the Istio service mesh. Ambient mesh uses node-level ztunnels to route and secure Layer 4 traffic with mTLS. For Layer 7 policy and routing, ztunnel forwards traffic to waypoint proxies over [HBONE](https://istio.io/latest/docs/ambient/architecture/hbone/).
+Solo.io and Google collaborated to develop ambient mesh, a sidecarless architecture for the Istio service mesh. Ambient mesh uses node-level ztunnels to route and secure Layer 4 traffic with mTLS. For Layer 7 policy and routing, ztunnel forwards traffic to waypoint proxies over [HBONE](https://istio.io/latest/docs/ambient/architecture/hbone/).
 
 To learn more, see the [Istio ambient overview](https://istio.io/latest/docs/ambient/overview/) and the [waypoint configuration guide](https://istio.io/latest/docs/ambient/usage/waypoint/).
 
