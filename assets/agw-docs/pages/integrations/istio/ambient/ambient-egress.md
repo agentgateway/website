@@ -163,7 +163,7 @@ EOF
 kubectl -n agentgateway-egress wait --for=condition=Programmed gateway/agw-waypoint --timeout=2m
 ```
 
-## Step 5: Bind the external destination and configure AGW routing
+## Step 5: Bind the external destination and configure routing
 
 Create:
 
