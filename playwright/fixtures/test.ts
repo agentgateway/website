@@ -16,11 +16,30 @@ export const test = base.extend({
 
 export { expect };
 
+/**
+ * Clear the first-run "Welcome to Agentgateway" overlay.
+ *
+ * The overlay has two variants and which one renders depends on the config the gateway
+ * booted with: an empty config offers "Skip setup", while a config that already enables a
+ * capability (e.g. a gateway is defined) offers "Continue" instead. Handling only the first
+ * made this a silent no-op on the second — the capture then showed the modal rather than the
+ * page under test, which is a green test with the wrong image. Both are handled here.
+ */
 export async function dismissWelcome(page: Page): Promise<void> {
   const skip = page.getByRole('button', { name: /skip setup/i });
   await skip.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {});
   if (await skip.count()) {
     await skip.click();
+    await page.locator('.startup-shell').waitFor({ state: 'detached' }).catch(() => {});
+    return;
+  }
+
+  // "Continue" is a generic label that other pages use, so it is only safe to click while
+  // the welcome heading is on screen. Gating on the heading keeps this from reaching into
+  // an unrelated dialog on some future page.
+  const welcome = page.getByRole('heading', { name: /welcome to agentgateway/i });
+  if (await welcome.isVisible().catch(() => false)) {
+    await page.getByRole('button', { name: /^continue$/i }).first().click();
     await page.locator('.startup-shell').waitFor({ state: 'detached' }).catch(() => {});
   }
 }
