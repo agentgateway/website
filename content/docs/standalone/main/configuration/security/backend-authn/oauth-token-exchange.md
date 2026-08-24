@@ -1,6 +1,6 @@
 ---
 title: OAuth token exchange
-weight: 10
+weight: 40
 description: Exchange the incoming request credential for a per-backend token at an OAuth authorization server before forwarding the request.
 test:
   client-auth:

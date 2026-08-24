@@ -1,6 +1,6 @@
 ---
 title: Azure backend authentication
-weight: 18
+weight: 30
 description: Authenticate to an Azure service from the gateway with a Microsoft Entra ID token.
 ---
 

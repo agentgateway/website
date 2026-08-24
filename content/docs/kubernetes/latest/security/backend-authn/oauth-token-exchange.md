@@ -1,6 +1,6 @@
 ---
 title: OAuth token exchange
-weight: 30
+weight: 40
 description: Exchange the incoming request credential for a per-backend token at an OAuth authorization server before forwarding the request.
 aliases:
   - /docs/kubernetes/latest/security/backend-authn-oauth/

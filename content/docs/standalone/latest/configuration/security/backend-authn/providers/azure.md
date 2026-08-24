@@ -1,10 +1,10 @@
 ---
 title: Azure
-weight: 5
+weight: 30
 description: Authenticate to an Azure service from the gateway with a Microsoft Entra ID token.
 test:
   backend-authn-azure:
-  - file: ${versionRoot}/configuration/security/backend-authn/azure.md
+  - file: ${versionRoot}/configuration/security/backend-authn/providers/azure.md
     path: backend-authn-azure
 ---
 

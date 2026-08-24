@@ -1,6 +1,6 @@
 ---
 title: Signed JWT (jwtSign)
-weight: 25
+weight: 30
 description: Sign a short-lived JWT with your own private key on every request to a backend.
 test:
   jwt-sign:

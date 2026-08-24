@@ -1,131 +1,60 @@
-Backend authentication is how the gateway proves its own identity to an upstream service. It is separate from client authentication, which is how a client proves its identity to the gateway. A route can use both: the gateway validates the client credential, strips it, and then attaches its own credential to the request that it forwards.
+Backend authentication is how the gateway proves its own identity to an upstream service. Client authentication is the opposite direction: how a client proves its identity to the gateway. The two are separate settings, and most routes need both.
 
-## Backend authentication methods
+A request therefore carries up to two credentials at different points in its life. The client sends one to the gateway, and the gateway sends a different one to the backend. What connects them is that the client credential is often what the gateway uses to get the backend credential.
 
-{{< reuse "agw-docs/pages/security/backend-authn-methods.md" >}}
+## Choose a method
 
-## Where to configure backend authentication
+Start from what the upstream expects, not from what the client sends.
 
-Kubernetes has three places to set backend authentication, and they are not interchangeable.
-
-{{< reuse "agw-docs/snippets/review-configuration.md" >}}
-
-```yaml
-# Attach a policy to a backend, a route, or a gateway.
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-spec:
-  targetRefs:
-  - group: {{< reuse "agw-docs/snippets/group.md" >}}
-    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-    name: my-backend
-  backend:
-    auth:
-      secretRef:
-        name: my-credentials
----
-# Or set the credential inline on the backend that uses it.
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-spec:
-  policies:
-    auth:
-      secretRef:
-        name: my-credentials
-```
-
-| Resource | Field | Methods available |
+| The upstream expects | Use | Where the credential comes from |
 | -- | -- | -- |
-| {{< reuse "agw-docs/snippets/policy.md" >}} | `spec.backend.auth` | All methods. |
-| {{< reuse "agw-docs/snippets/backend.md" >}} | `spec.policies.auth` | All methods. |
-| {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} | `spec.policies.auth` | All methods except `crossAppAccess`{{< version exclude-if="1.4.x" >}} and `jwtSign`{{< /version >}}. |
+| A fixed API key or token | **Static key** | A value that you configure, or a Secret or file that you control |
+| The credential that the client already sent | **Passthrough** | The incoming request |
+| A token issued by AWS, Azure, or Google Cloud | **Cloud provider credentials** | The cloud provider, in exchange for the gateway's own identity |
+| A GitHub Copilot token | **Cloud provider credentials** | The environment of the gateway process |
+| A JWT signed by your private key, fresh on every request | **Signed JWT** | The gateway signs one per request from a key that you supply |
+| A narrower token, derived from the client's credential at one authorization server | **OAuth token exchange** | An authorization server, in exchange for the client credential |
+| A token from an authorization server that did not authenticate the user | **Cross App Access** | Two authorization servers, across a trust boundary |
 
-Choose the {{< reuse "agw-docs/snippets/policy.md" >}} resource when you want one credential to serve several backends, or when you want to attach the credential higher up, such as to a route or a gateway. Choose the inline `spec.policies.auth` field when the credential belongs to exactly one backend or model.
+The families in more detail:
 
-> [!IMPORTANT]
-> A policy that targets an {{< reuse "agw-docs/snippets/backend.md" >}} takes effect only if a route forwards traffic to that backend. If no route does, the policy reports `Attached=False` with the message `Policy is not attached`, and the gateway sends no credential. The `backendRefs` entry of the HTTPRoute must name the {{< reuse "agw-docs/snippets/backend.md" >}}, not the Kubernetes Service behind it.
+* **Static key.** The simplest case, and the right one whenever the backend issues you a long-lived credential. Prefer a Secret or a file over an inline value, so that the credential is not stored in the configuration.
+* **Passthrough.** Sends the client credential on to the backend unchanged. Use it when the backend validates the same credential that the gateway validated, such as two services that trust the same issuer.
+* **Cloud provider credentials.** The gateway authenticates as itself, using the identity of the workload it runs as. This is the method to reach for on a managed cluster, because it needs no stored secret: the cloud supplies the identity and the gateway exchanges it for a token. Each provider also accepts an explicit credential when the ambient identity is not the one you want.
+* **Signed JWT.** For an upstream that rejects durable credentials outright and wants a fresh keypair-signed JWT on each call. The Snowflake SQL API is the common example.
+* **OAuth token exchange.** Narrows or re-scopes the client's credential. Use it when the client identity should reach the backend, but not the client's original token, and when one authorization server can issue the new token.
+* **Cross App Access.** Token exchange across a trust boundary, using the OAuth Identity Assertion Authorization Grant. The identity provider that authenticated the user and the authorization server that guards the resource are different parties, so the gateway performs two exchanges and holds a client registration at each. For a single-leg exchange, use OAuth token exchange instead.
 
-## Where the credential comes from
+Two methods are not available everywhere. GitHub Copilot works in the standalone binary only, and Signed JWT arrived in 1.5.x. For the full matrix, see [Method availability](#method-availability-and-field-differences).
 
-Every method except `key` and `passthrough` reads its credential from a Kubernetes Secret, through a `secretRef` field. The default resolver reads a specific key from the Secret, which differs by method.
+## Combine methods
 
-<!--
-The version-gated row below has to stay LAST in this table. A gate that renders
-nothing leaves a blank line, which ends the table and silently drops every row
-after it.
+A policy sets **at most one** of the methods above. They are alternatives, not layers, and configuring two is rejected rather than applied in some order.
 
-Hugo parses shortcode syntax inside an HTML comment too, so do not write a sample
-gate here: an unclosed one fails the whole build.
--->
-| Field | Keys that the resolver reads |
-| -- | -- |
-| `auth.secretRef` | `Authorization`. Set `secretRef.key` to read a different key. |
-| `auth.aws.secretRef` | `accessKey` and `secretKey`, plus `sessionToken` for temporary credentials. |
-| `auth.azure.secretRef` | `clientID`, `tenantID`, and `clientSecret`. |
-| `auth.gcp.secretRef` | `credentials.json`. Set `secretRef.key` to read a different key. |
-{{< version exclude-if="1.4.x" >}}| `auth.jwtSign.signingKeyRef` | `signingKey`. |{{< /version >}}
+One mechanism is additive. A `credentials` list injects extra credentials, each to its own location, and it works either on its own or alongside a primary method. Use it for an upstream that wants two credentials on the same request, such as a bearer token and a subscription key.
 
-The Secret must be in the same namespace as the policy or backend that names it.
+## Backend authentication and client authentication
 
-The cloud methods do not need a Secret at all. When you omit `secretRef`, the gateway uses the ambient identity of the pod that it runs in, such as a Google service account through Workload Identity on GKE, an IAM role for a service account on EKS, or an Azure workload identity on AKS. Running without a long-lived secret is the recommended setup for each cloud, and each of the cloud pages describes the resolution order that the gateway follows.
+The two directions interact in one way that is easy to miss: **a client authentication policy removes the credential it validates.**
 
-## Send more than one credential
+A JWT, API key, or basic auth policy reads the client credential from a location, validates it, and then strips it from the request so the backend never sees it. That is usually what you want. It also means the credential is gone by the time backend authentication runs, which matters for two of the methods:
 
-Some upstreams want two credentials on the same request, such as a bearer token and a subscription key. The `credentials` list covers that case. Each entry names a Secret and the location to write the value to, and the list is independent of the primary method, so you can set it on its own or together with one.
+* **Passthrough puts it back.** The method exists for exactly this reason. On a route with no client authentication policy, passthrough does nothing, because nothing removed the credential in the first place.
+* **Token exchange and Cross App Access read the request.** Both take the subject token from a location on the incoming request, defaulting to the `Authorization` header with a `Bearer ` prefix. If a client authentication policy on the same route has already stripped that header, the exchange finds nothing to exchange.
 
-```yaml
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-spec:
-  targetRefs:
-  - group: {{< reuse "agw-docs/snippets/group.md" >}}
-    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-    name: my-backend
-  backend:
-    auth:
-      secretRef:
-        name: my-credentials
-      credentials:
-      - location:
-          header:
-            name: x-tenant-key
-        secretRef:
-          name: extra-credentials
-          key: tenant-key
-      - location:
-          queryParameter:
-            name: subscription
-        secretRef:
-          name: extra-credentials
-          key: subscription-key
-```
+> [!WARNING]
+> Do not point a client authentication policy and a token exchange at the same location. The JWT policy validates the token and strips it, the exchange then has no subject token, and the request fails with a `400` and a body of `invalid request`. The policy status looks healthy, and the reason appears only in the gateway log at debug level.
+>
+> ```
+> debug http::auth::oauth oauth token exchange subject token missing source=Header { name: "authorization", prefix: Some("Bearer ") }
+> ```
+>
+> Move one of the two. Either read the client token from a different header in the client authentication policy, or point `subjectToken` at the location where the credential actually is.
 
-The policy in the example sends three credentials on every request: the `Authorization` header from the primary `secretRef`, an `x-tenant-key` header, and a `subscription` query parameter.
+The other methods do not read the client credential at all, so they compose with any client authentication policy without further thought.
 
-For the full field reference and a worked example, see [Static keys and passthrough]({{< link-hextra path="/security/backend-authn/key/" >}}).
+## Backend authentication is not authorization
 
-## How the modes differ
+Backend authentication decides **what credential the gateway sends**. It does not decide **who is allowed through**. A route that attaches a static key to every backend request still forwards every request that reaches it.
 
-The standalone binary and Kubernetes configure the same features, but they do not use the same field names, and in several places they do not use the same shape either. Do not copy a configuration block from one mode to the other.
-
-<!--
-The version-gated row below has to stay LAST in this table, for the same reason
-as the table above it.
--->
-| Concern | Standalone | Kubernetes |
-| -- | -- | -- |
-| Field that holds the settings | `policies.backendAuth` | `spec.backend.auth` or `spec.policies.auth` |
-| Static key | `key.value`, either inline or `{file: <path>}` | `key`, an inline string |
-| Credential from a Secret | Not available. Read the value from a file instead. | `secretRef` |
-| Credential location | Nested under the method, such as `key.location` | A sibling field, `auth.location` |
-| Methods that accept `location` | Every method that writes a credential | `key`, `secretRef`, and `passthrough` only |
-| Entry in the `credentials` list | `location` and `key` | `location` and `secretRef` |
-| Google token type | `accessToken` and `idToken` | `AccessToken` and `IdToken` |
-| Azure credential source | Nested under `explicitConfig`, plus an `implicit` and a `developerImplicit` method | Set directly on `azure`, with no `developerImplicit` method |
-| OAuth client authentication method | `clientSecretBasic`, `clientSecretPost`, and `privateKeyJwt` | `ClientSecretBasic`, `ClientSecretPost`, and `PrivateKeyJwt` |
-{{< version exclude-if="1.4.x" >}}| Signing key for `jwtSign` | `signingKey`, either the PEM text or `{file: <path>}` | `signingKeyRef`, a Secret reference |{{< /version >}}
-
-> [!NOTE]
-> The capitalization differences are enforced, not cosmetic. The standalone binary rejects `AccessToken`, and the custom resources reject `accessToken`. A wrong case fails validation rather than falling back to a default.
-
-For the standalone equivalents of these pages, see [Backend authentication](https://agentgateway.dev/docs/standalone/latest/configuration/security/backend-authn/) in the standalone documentation.
+To decide which callers are allowed, and which tools or models they may reach, use an authorization policy alongside backend authentication. The two are complementary: authorization runs on the way in, backend authentication on the way out.
