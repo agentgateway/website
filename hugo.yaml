@@ -179,38 +179,27 @@ params:
       websites: https://searchbot.tryhelix.ai/
       bots: https://searchbot.tryhelix.ai/bots
 
-  # THE version list. One list, read by every part of the theme that needs to
-  # know which versions exist (docs-theme-extras CHANGELOG [0.2.2]).
+  # THE version list — the only one. Newest first. Every entry names the
+  # sections it applies to. The contract, in full, with a TOML and a YAML
+  # template: docs-theme-extras USAGE.md, "Versions and sections".
   #
-  # These entries carry no `sections` field, which means "every section" — and
-  # that is accurate here: standalone and kubernetes ship the same two versions.
-  # Previously each section carried its own copy of this list under
-  # `sections.<name>.versions`, so the same two entries were written out twice
-  # and had to be kept in step by hand. Tag an entry only when a version does
-  # NOT apply to every section, e.g.:
-  #
-  #   - version: "1.3.x"
-  #     linkVersion: "1.3.x"
-  #     sections: ["kubernetes"]
-  #
-  # This site had no top-level list at all before, which is what made it the
-  # repo that kept finding this bug class: anything reading `params.versions`
-  # directly saw NOTHING here. That is why link/link-hextra dropped the version
-  # segment from 311 hrefs, why flexsearch's version filter was inert, and why
-  # the non-latest-version noindex partial emitted nothing at all.
+  # Both sections happen to ship both versions, so the tags are identical — they
+  # are still written out, because omitting `sections` means "every section" and
+  # would silently claim any section added later ships these too.
   versions:
     - version: "1.5.x"
       dropdown: "main"
       linkVersion: "main"
+      sections: ["kubernetes", "standalone"]
     - version: "1.4.x"
       dropdown: "1.4 (latest)"
       linkVersion: "latest"
+      sections: ["kubernetes", "standalone"]
 
-  # Section registry. A section exists because it is a key here; that is how
-  # utils/section-segment.html recognizes a section segment in a URL. Empty
-  # tables now, since which versions a section has is expressed above.
+  # Section registry, alphabetical. A section exists because it is a key here.
+  # See docs-theme-extras USAGE.md, "Versions and sections".
   sections:
-    standalone: {}
     kubernetes: {}
+    standalone: {}
 
   gtmContainerID: "GTM-MDMTFJQC"
