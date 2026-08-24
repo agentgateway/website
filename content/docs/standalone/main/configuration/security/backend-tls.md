@@ -134,3 +134,100 @@ mcp:
 EOF
 agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}
+
+## Mutual TLS with a SPIFFE identity {#spiffe}
+
+Instead of pointing `cert` and `key` at files on disk, the gateway can present an X.509-SVID that it reads from the [SPIFFE](https://spiffe.io/) Workload API. The gateway verifies the backend against the SPIFFE trust bundle, and rotates both the certificate and the bundle automatically.
+
+Set the Workload API endpoint once, in the `config` section, and then set `backendTLS.spiffe` on each backend that originates mutual TLS.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+config:
+  spiffe:
+    endpoint: unix:///run/spire/agent.sock
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: upstream.example.com:8443
+    policies:
+      backendTLS:
+        spiffe: {}
+        # Accept only these upstream identities. Omit to accept any SVID
+        # that chains to the trust bundle of your trust domain.
+        subjectAltNames:
+        - spiffe://example.org/ns/default/sa/upstream
+```
+
+Review the following table for the fields that apply to a SPIFFE backend.
+
+| Field | Description |
+| -- | -- |
+| `config.spiffe.endpoint` | Address of the SPIFFE Workload API, such as `unix:///run/spire/agent.sock`. The gateway enables SPIFFE only when you set this field. |
+| `backendTLS.spiffe` | An empty object that turns on SPIFFE for this backend. Mutually exclusive with `cert`, `key`, `root`, `insecure`, `insecureHost`, and `keyExchangeGroups`. |
+| `backendTLS.subjectAltNames` | SPIFFE IDs that the gateway accepts in the certificate of the backend. Omit the field to accept any SVID that chains to the trust bundle. |
+
+> [!NOTE]
+> An SVID carries a `spiffe://` URI SAN and carries no DNS SAN, so a hostname check never applies to a SPIFFE backend. Pin an upstream identity with `subjectAltNames` rather than relying on the destination hostname.
+>
+> The gateway accepts only the SVIDs that chain to the trust bundle of its own trust domain. SPIFFE federation across trust domains is not supported.
+
+> [!WARNING]
+> A `backendTLS.spiffe` policy with no `config.spiffe.endpoint` passes validation, and then fails on each request with the message `backend TLS is configured for SPIFFE, but SPIFFE is not enabled`.
+
+To serve a listener with the same identity, see [Listeners]({{< link-hextra path="/configuration/listeners/#spiffe" >}}).
+
+{{< doc-test paths="backend-tls" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The SPIFFE backendTLS example is accepted, including that `spiffe: {}` and
+#     `subjectAltNames` coexist and that `config.spiffe.endpoint` is the enabling
+#     field.
+#   * That `spiffe` and `cert` are rejected together, which is the mistake a reader
+#     converting an existing backendTLS block is most likely to make.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * A real SPIFFE handshake. That needs a running Workload API provider and an
+#     SVID-serving upstream, which this page does not deploy. The Kubernetes SPIFFE
+#     guide covers the runtime path end to end.
+cat <<'EOF' > config-spiffe.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+config:
+  spiffe:
+    endpoint: unix:///run/spire/agent.sock
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: upstream.example.com:8443
+    policies:
+      backendTLS:
+        spiffe: {}
+        subjectAltNames:
+        - spiffe://example.org/ns/default/sa/upstream
+EOF
+agentgateway -f config-spiffe.yaml --validate-only
+
+# `spiffe` cannot be combined with file-based certificates.
+cat <<'EOF' > config-spiffe-invalid.yaml
+config:
+  spiffe:
+    endpoint: unix:///run/spire/agent.sock
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: upstream.example.com:8443
+    policies:
+      backendTLS:
+        spiffe: {}
+        cert: ./certs/cert.pem
+        key: ./certs/key.pem
+EOF
+if agentgateway -f config-spiffe-invalid.yaml --validate-only 2>/dev/null; then
+  echo "ERROR: spiffe + cert should have been rejected" >&2
+  exit 1
+fi
+{{< /doc-test >}}

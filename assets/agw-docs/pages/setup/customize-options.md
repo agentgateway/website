@@ -21,7 +21,8 @@ Review the built-in configurations that are provided via the [{{< reuse "agw-doc
 | `env` | Add custom environment variables to your agentgateway proxy deployment. To remove a default environment variable, set its value to `null`.  | 
 | `image` | Provide a custom image for the agentgateway proxy. This setting is useful if you deploy your proxy in an airgapped environment.  | 
 | `logging` | Change the log level and format of the agentgateway proxy logs.   | 
-| `resources` | Set resource limits and requests. For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/). | 
+| `resources` | Set resource limits and requests. For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/). | {{< version include-if="main" >}}
+| `spiffe` | Mount the SPIFFE Workload API socket into the proxy pod, so that listeners and backends can source their TLS identity from SPIFFE. For more information, see [SPIFFE workload identity]({{< link-hextra path="/security/spiffe/" >}}). |{{< /version >}}
 | `workload` | Select the Kubernetes workload kind for the managed Gateway data plane. |
 
 > [!NOTE]

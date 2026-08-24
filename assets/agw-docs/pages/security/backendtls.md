@@ -17,6 +17,57 @@ In a BackendTLSPolicy, the CA certificate that verifies the backend must come fr
 If you keep your CA certificates in Kubernetes Secrets, such as when a Secret is issued by cert-manager or synced from an external secret store, use the {{< reuse "agw-docs/snippets/policy.md" >}} resource instead. The `tls.caCertificateRefs` field in this resource takes an optional `kind` setting that you can set to `ConfigMap` (the default) or `Secret`. Either source must provide the certificate in a `ca.crt` key. For an example, see [CA certificate in a Secret](#secret-ca).
 
 The `tls.caCertificateRefs` field is available in each place that the {{< reuse "agw-docs/snippets/policy.md" >}} and {{< reuse "agw-docs/snippets/backend.md" >}} resources configure backend TLS, such as `spec.backend.tls` in a policy, `spec.policies.tls` in a backend, and the per-target `policies.tls` settings of an MCP or LLM backend.
+
+### Mutual TLS with a SPIFFE identity {#spiffe}
+
+The `tls.certificateSource` field selects where the gateway gets the client identity and the trust roots that it uses to connect to a backend. The field takes the following values.
+
+| Value | Description |
+| -- | -- |
+| `Inline` | The gateway uses the certificates that you reference in `mtlsCertificateRef` and `caCertificateRefs`, or the system trust roots when you omit both. This value is the default. |
+| `SPIFFE` | The gateway presents the X.509-SVID that it reads from the SPIFFE Workload API, and verifies the backend against the SPIFFE trust bundle. |
+
+Set `certificateSource` to `SPIFFE` to originate mutual TLS with the identity of the gateway, instead of a client certificate that you store in a Secret. The gateway rotates the SVID automatically.
+
+Before you use this value, enable the SPIFFE Workload API on your gateway. For the prerequisites and the setup steps, see [SPIFFE workload identity]({{< link-hextra path="/security/spiffe/" >}}).
+
+The following example originates mutual TLS to an in-cluster backend, and accepts only one upstream identity.
+
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: upstream-spiffe-tls
+  namespace: spiffe-demo
+spec:
+  targetRefs:
+  - kind: HTTPRoute
+    name: upstream
+    group: gateway.networking.k8s.io
+  backend:
+    tls:
+      certificateSource: SPIFFE
+      verifySubjectAltNames:
+      - spiffe://example.org/ns/spiffe-demo/sa/upstream
+```
+
+Review the following table for the fields that you can combine with `certificateSource: SPIFFE`.
+
+| Field | Behavior with `SPIFFE` |
+| -- | -- |
+| `verifySubjectAltNames` | Supported, and the way to pin an upstream identity. List the SPIFFE IDs that you accept. Omit the field to accept any SVID that chains to the trust bundle of the trust domain. |
+| `sni` | Supported. Sets the server name that the gateway sends in the handshake. |
+| `alpnProtocols` | Supported. |
+| `mtlsCertificateRef`, `caCertificateRefs`, `insecureSkipVerify` | Rejected. The gateway gets both the client identity and the trust roots from the Workload API, so these fields have no meaning. |
+| `keyExchangeGroups` | Rejected by the gateway at runtime. See the note that follows. |
+
+> [!NOTE]
+> An SVID carries a `spiffe://` URI SAN and carries no DNS SAN, so a hostname check never applies to a SPIFFE backend. Pin an upstream identity with `verifySubjectAltNames` rather than relying on the destination hostname.
+
+> [!WARNING]
+> Kubernetes accepts a policy that sets both `certificateSource: SPIFFE` and `keyExchangeGroups`, but the gateway rejects the combination when it loads the configuration. Requests to the backend then fail. Omit `keyExchangeGroups` on a SPIFFE backend.
+>
+> A policy that sets `certificateSource: SPIFFE` when no {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource enables `spiffe` also passes validation, and then fails on each request with the message `backend TLS is configured for SPIFFE, but SPIFFE is not enabled`.
 {{< /version >}}
 
 ## About this guide

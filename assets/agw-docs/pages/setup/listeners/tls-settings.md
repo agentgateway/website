@@ -54,3 +54,8 @@ The following settings are supported:
 | `handshakeTimeout` | The time it can take for the TLS handshake to complete in seconds. If not set, defaults to 15 seconds.  |
 
 
+{{< version include-if="main" >}}
+
+> [!IMPORTANT]
+> These settings do not apply to a listener that sources its certificate from SPIFFE. A SPIFFE listener uses its own negotiation profile, and the gateway rejects `cipherSuites`, `minProtocolVersion`, `maxProtocolVersion`, and `keyExchangeGroups` on such a listener. For more information, see [SPIFFE workload identity]({{< link-hextra path="/security/spiffe/" >}}).
+{{< /version >}}

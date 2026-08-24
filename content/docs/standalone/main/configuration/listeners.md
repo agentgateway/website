@@ -101,6 +101,98 @@ To generate a self-signed certificate for local testing, you can use `openssl`. 
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=localhost"
 ```
 
+### Source the certificate from SPIFFE {#spiffe}
+
+Instead of `cert` and `key` files, a listener can serve an X.509-SVID that the gateway reads from the [SPIFFE](https://spiffe.io/) Workload API. The gateway rotates the certificate and the trust bundle automatically, so you manage no certificate files.
+
+Set the Workload API endpoint in the `config` section, and then set `tls.spiffe` on the listener. Both fields are required. The gateway enables SPIFFE only when `config.spiffe.endpoint` is set.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+config:
+  spiffe:
+    endpoint: unix:///run/spire/agent.sock
+gateways:
+  default:
+    port: 443
+    protocol: HTTPS
+    tls:
+      spiffe: {}
+routes: []
+```
+
+A SPIFFE listener always requires mutual TLS. Every client must present an SVID that chains to the trust bundle of your trust domain. To read the verified identity of the caller in a policy, use the `source.spiffeId` attribute, which holds the SPIFFE ID as a string.
+
+> [!IMPORTANT]
+> The `spiffe` field is mutually exclusive with `cert`, `key`, and `root`. A SPIFFE listener also rejects `mode`, `cipherSuites`, `minTLSVersion`, `maxTLSVersion`, and `keyExchangeGroups`, because SPIFFE-sourced TLS uses its own negotiation profile.
+
+To get an SVID, the gateway needs a SPIFFE Workload API provider on the same host, such as a [SPIRE](https://spiffe.io/docs/latest/spire-about/) agent, with an entry registered for the gateway. To originate mutual TLS to a backend with the same identity, see [Backend TLS]({{< link-hextra path="/configuration/security/backend-tls/#spiffe" >}}).
+
+{{< doc-test paths="listeners" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The SPIFFE listener example is accepted, and that `config.spiffe.endpoint`
+#     plus `tls.spiffe: {}` is the complete opt-in.
+#   * That `spiffe` is rejected alongside `cert`/`key` and alongside `mode`, which
+#     are the two combinations the note above warns about.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * That the gateway obtains an SVID. `--validate-only` does not contact the
+#     Workload API, and no SPIRE agent runs in the test environment. The Kubernetes
+#     SPIFFE guide covers the runtime path end to end.
+cat <<'EOF' > config-spiffe.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+config:
+  spiffe:
+    endpoint: unix:///run/spire/agent.sock
+gateways:
+  default:
+    port: 443
+    protocol: HTTPS
+    tls:
+      spiffe: {}
+routes: []
+EOF
+agentgateway -f config-spiffe.yaml --validate-only
+
+# `spiffe` cannot be combined with file-based certificates.
+cat <<'EOF' > config-spiffe-cert.yaml
+config:
+  spiffe:
+    endpoint: unix:///run/spire/agent.sock
+gateways:
+  default:
+    port: 443
+    protocol: HTTPS
+    tls:
+      spiffe: {}
+      cert: cert.pem
+      key: key.pem
+routes: []
+EOF
+if agentgateway -f config-spiffe-cert.yaml --validate-only 2>/dev/null; then
+  echo "ERROR: spiffe + cert should have been rejected" >&2
+  exit 1
+fi
+
+# `spiffe` cannot be combined with tls.mode.
+cat <<'EOF' > config-spiffe-mode.yaml
+config:
+  spiffe:
+    endpoint: unix:///run/spire/agent.sock
+gateways:
+  default:
+    port: 443
+    protocol: HTTPS
+    tls:
+      spiffe: {}
+      mode: dynamicCa
+routes: []
+EOF
+if agentgateway -f config-spiffe-mode.yaml --validate-only 2>/dev/null; then
+  echo "ERROR: spiffe + mode should have been rejected" >&2
+  exit 1
+fi
+{{< /doc-test >}}
+
 By default, a listener will match any traffic on the port.
 To serve multiple hostnames on one port, add a named listener for each one under the gateway's `listeners` field and set the `hostname` field. Traffic is then routed based on the [hostname](https://en.wikipedia.org/wiki/Server_Name_Indication).
 The most exact match will be used, as well as the corresponding TLS certificates.

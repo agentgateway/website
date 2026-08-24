@@ -20,7 +20,7 @@ Attaches to: {{< badge content="Frontend" path="/configuration/overview/">}}
 #     with all three rule types (`allow`, `deny`, `require`) and the
 #     `source.address` / `source.port` CEL variables.
 #   * "Examples": all three example configs are accepted - the private-range
-#     allowlist (`cidr(...).containsIP(...)`), the mTLS `source.tls.identity`
+#     allowlist (`cidr(...).containsIP(...)`), the mTLS client-identity
 #     requirement, and the layered L4+L7 config that combines
 #     `networkAuthorization` with a route-level `authorization` policy.
 #   * Allowlist semantics from the "Evaluation order" list, rule 6: with the
@@ -45,7 +45,7 @@ Attaches to: {{< badge content="Frontend" path="/configuration/overview/">}}
 #     `networkAuthorization` config at all behaves like any other page's
 #     unauthenticated route), so a dedicated example would add no signal beyond
 #     what every other doc test on this site already demonstrates.
-#   * `source.tls.identity` and `source.tls.subject_alt_names` at runtime -
+#   * `source.identity` and `source.subjectAltNames` at runtime -
 #     requires config/traffic the page omits; the page shows no TLS listener or
 #     client certificate setup, so the mTLS example is only validated as config.
 #   * The route-level `authorization` JWT requirement in the layered example -
@@ -184,8 +184,12 @@ The following CEL variables are available in network authorization rules:
 |----------|------|-------------|
 | `source.address` | `string` | IP address of the downstream connection. |
 | `source.port` | `int` | Port of the downstream connection. |
-| `source.tls.identity` | `string` | Client certificate identity (if mTLS). |
-| `source.tls.subject_alt_names` | `list(string)` | Subject Alternative Names from the client certificate. |
+| `source.identity` | `object` | Identity of the downstream connection, when the client presents a certificate with a SPIFFE ID in the Istio format. Holds `trustDomain`, `namespace`, and `serviceAccount`. |
+| `source.subjectAltNames` | `list(string)` | Subject Alternative Names from the client certificate. |
+| `source.subject` | `string` | Subject of the client certificate. |
+| `source.issuer` | `string` | Issuer of the client certificate. |
+
+For the complete list of attributes and their types, see the [interactive CEL reference]({{< link-hextra path="/reference/cel/cel-context-interactive/" >}}).
 
 ## Examples
 
@@ -210,19 +214,25 @@ agentgateway -f config-private.yaml --validate-only
 
 ### Require mTLS client identity
 
+The `source.identity` attribute holds the identity that the gateway read from the verified client certificate. The attribute is an object, so compare its parts rather than a whole SPIFFE ID string. The gateway populates the attribute for a SPIFFE ID in the Istio format `spiffe://<trust-domain>/ns/<namespace>/sa/<service-account>`.
+
 ```yaml
 frontendPolicies:
   networkAuthorization:
     rules:
-    - require: 'source.tls.identity == "spiffe://cluster.local/ns/default/sa/my-service"'
+    - require: 'source.identity.trustDomain == "cluster.local" && source.identity.namespace == "default" && source.identity.serviceAccount == "my-service"'
 ```
 
 {{< doc-test paths="network-authz" >}}
+# NOTE: --validate-only does not type-check CEL field paths against the request
+# context, so a misspelled attribute passes here. The attribute names in this block
+# are checked against schema/cel.json in the agentgateway repo, which is what
+# generates the CEL reference page.
 cat <<'EOF' > config-mtls.yaml
 frontendPolicies:
   networkAuthorization:
     rules:
-    - require: 'source.tls.identity == "spiffe://cluster.local/ns/default/sa/my-service"'
+    - require: 'source.identity.trustDomain == "cluster.local" && source.identity.namespace == "default" && source.identity.serviceAccount == "my-service"'
 EOF
 agentgateway -f config-mtls.yaml --validate-only
 {{< /doc-test >}}
