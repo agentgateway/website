@@ -1,6 +1,11 @@
 {
   "$comment": "Maps a Playwright screenshot name (from toHaveScreenshot('NAME.png')) to its doc image destinations under assets/img/. `npm run sync-docs` copies the standalone-light baseline to `light` and standalone-dark to `dark`. `dark` is OPTIONAL \u2014 omit it for shots the docs only embed in light mode (most do, via {{< reuse-image >}} / {{< reuse-image-light >}}); the dark baselines are still captured + diffed for visual regression, just not published. Confirm paths against the guides before committing regenerated images.",
   "images": {
+    "ui-welcome-wizard.png": {
+      "$note": "Shared by standalone/quickstart/llm and standalone/quickstart/mcp — the first-run \"Welcome to Agentgateway\" wizard, captured untouched before any capability row is enabled.",
+      "light": "assets/img/ui-welcome-wizard.png",
+      "dark": "assets/img/ui-welcome-wizard-dark.png"
+    },
     "agentgateway-ui-landing.png": {
       "light": "assets/img/agentgateway-ui-landing.png",
       "dark": "assets/img/agentgateway-ui-landing-dark.png"
@@ -130,6 +135,16 @@
       "$note": "llm/cost-controls/costs \u2014 LLM Costs catalog management page (sources + custom overrides).",
       "light": "assets/img/ui-cost-catalog.png",
       "dark": "assets/img/ui-cost-catalog-dark.png"
+    },
+    "agentgateway-ui-storage-add-server.png": {
+      "$note": "deployment/helm/storage \u2014 Add MCP server drawer, filled in. Captured via tests/storage.spec.ts against a PostgreSQL-backed (storage.mode: hybrid) gateway, where the UI can save.",
+      "light": "assets/img/agentgateway-ui-storage-add-server.png",
+      "dark": "assets/img/agentgateway-ui-storage-add-server-dark.png"
+    },
+    "agentgateway-ui-storage-server-saved.png": {
+      "$note": "deployment/helm/storage \u2014 MCP Servers list after saving, showing the 'Configuration saved' banner and the persisted target.",
+      "light": "assets/img/agentgateway-ui-storage-server-saved.png",
+      "dark": "assets/img/agentgateway-ui-storage-server-saved-dark.png"
     }
   }
 }
