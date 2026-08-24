@@ -12,7 +12,7 @@ INFO state_manager  loaded config from File("/config/config.yaml")
 Two things are worth knowing before you edit.
 
 * **Not every field reloads.** The top-level `config` section holds startup settings, such as `adminAddr`, `storage`, `database`, `logging`, and `tracing`. Agentgateway applies those only when the process starts, with the exception of `config.modelCatalog`, which does reload. Everything else, including `gateways`, `routes`, `llm`, `mcp`, and `ui`, reloads in place. For more information, see [Fields that require a restart](#restart-required).
-* **The UI may also write to this file.** In the default storage mode, agentgateway writes the resources that you manage in the admin UI back to the same file. Your file is an output as well as an input. To keep the file as the only writer, or to send UI edits to a database instead, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+* **The UI might write to this file.** In the default storage mode in binary and Docker deployments, agentgateway writes the resources that you manage in the admin UI back to the same file. Your file is an output as well as an input. To keep the file as the only writer, or to send UI edits to a database instead, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
 
 ## Binary {#binary}
 
@@ -24,7 +24,7 @@ Edit the file that you passed to `agentgateway -f`, or the generated file in you
    INFO state_manager  loaded config from File("/home/example/.config/agentgateway/config.yaml")
    ```
 
-2. Edit the file. The following example adds a route to the `default` gateway.
+2. Edit the file in your editor. The following example adds a route to the `default` gateway.
 
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -46,9 +46,6 @@ Edit the file that you passed to `agentgateway -f`, or the generated file in you
    ```
 
 4. Confirm that the running configuration includes your change. For more information, see [Verify an update](#verify).
-
-> [!NOTE]
-> Agentgateway rewatches the file when an editor replaces it rather than writing in place, which is what most editors do, so you do not need to restart after saving from an editor.
 
 ## Docker {#docker}
 
@@ -72,22 +69,22 @@ The container reads the configuration from the path that you mounted, so you edi
    INFO state_manager  loaded config from File("/config/config.yaml")
    ```
 
-3. Confirm that the running configuration includes your change. For more information, see [Verify an update](#verify).
+3. **Optional**: If you mounted the configuration read-only, or if the change is to the `config` section, restart the container instead.
 
-If you mounted the configuration read-only, or if the change is to the `config` section, restart the container instead.
+   ```sh
+   docker restart <container-name>
+   ```
 
-```sh
-docker restart <container-name>
-```
+4. Confirm that the running configuration includes your change. For more information, see [Verify an update](#verify).
 
 ## Helm {#helm}
 
 With the Helm chart, you do not edit a file on the proxy. The `config` Helm value holds the entire agentgateway configuration file, and the chart renders it into the ConfigMap that the pod mounts. To change the configuration, change your values and upgrade the release.
 
-> [!TIP]
-> For possible agentgateway settings, check out the schema and interactive explorer tool in the [Configuration reference docs]({{< link-hextra path="/reference/configuration/" >}}).
+> [!WARNING]
+> The default replicas for your agentgateway Deployment is `1`. To avoid a brief interruption in traffic during the rollout, increase the `replicaCount` setting To keep a pod serving traffic while the new pod starts, set `replicaCount` to a value greater than `1`.
 
-1. Create or edit a Helm values file, such as `values.yaml`. Agentgateway's own top-level fields include a section that is also named `config`. That section ends up nested inside the `config` Helm value.
+1. Create or edit a Helm values file, such as `values.yaml`. Agentgateway's own top-level fields include a section that is also named `config`. That section ends up nested inside the `config` Helm value. For possible agentgateway settings, check out the schema and interactive explorer tool in the [Configuration reference docs]({{< link-hextra path="/reference/configuration/" >}}).
 
    ```yaml
    cat <<'EOF' > values.yaml
@@ -104,6 +101,7 @@ With the Helm chart, you do not edit a file on the proxy. The `config` Helm valu
      config:                  # agentgateway field: agentgateway's own 'config' section
        logging:
          level: info
+   replicaCount: 2            # run multiple replicas of the agentgateway proxy
    EOF
    ```
 
@@ -121,44 +119,100 @@ With the Helm chart, you do not edit a file on the proxy. The `config` Helm valu
 > [!IMPORTANT]
 > The upgrade replaces the whole configuration file, not just the fields that you changed. A value that you leave out of the values file returns to its chart default, so pass your complete values file on every upgrade, or use `--reuse-values` to keep the values from the previous revision. In `database` storage mode, the upgrade replaces only the ConfigMap baseline, and the resources that the UI stored in the database are unaffected.
 
-The Deployment stores a checksum of the ConfigMap in its pod annotations, so a change to your `config` values rolls out new pods rather than relying on the file watch. Because the default `replicaCount` is `1`, expect a brief interruption in traffic during the rollout. To keep a pod serving traffic while the new pod starts, set `replicaCount` to a value greater than `1`.
-
 ## Fields that require a restart {#restart-required}
 
-The top-level `config` section is read at startup. If you change a field in it, agentgateway reloads the file but keeps running with the previous value, and the change takes effect only after the process restarts. For example, setting `config.storage.mode` on a running instance leaves the storage mode unchanged until you restart.
+The top-level `config` section is read at startup. If you change a field in it, agentgateway reloads the file but keeps running with the previous value, and the change takes effect only after the process restarts. For example, setting `config.storage.mode` on a running instance leaves the storage mode unchanged until you restart. The `config.modelCatalog` setting is the exception. Agentgateway reloads the model cost catalog dynamically, so a catalog change does not need a restart.
 
 Restart agentgateway for the installation method that you use.
 
-| Method | Restart |
-| --- | --- |
-| Binary | Stop the process and run `agentgateway -f config.yaml` again. |
-| Docker | `docker restart <container-name>` |
-| Helm | A `helm upgrade` that changes the rendered ConfigMap rolls the pods for you. To restart without a configuration change, run `kubectl rollout restart deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}`. |
-
-`config.modelCatalog` is the exception. Agentgateway reloads the model cost catalog dynamically, so a catalog change does not need a restart.
+{{< tabs >}}
+{{% tab name="Binary" %}}
+1. Stop the current process, such as with `ctrl+c`.
+2. Restart the process.
+   ```sh
+   agentgateway -f config.yaml
+   ```
+{{% /tab %}}
+{{% tab name="Docker" %}}
+```sh
+docker restart <container-name>
+```
+{{% /tab %}}
+{{% tab name="Helm" %}}
+Choose from the following options:
+- To restart with a configuration change, upgrade the Helm installation:
+  {{< reuse "agw-docs/standalone/helm-upgrade-command.md" >}}
+- To restart without a configuration change:
+  ```sh
+  kubectl rollout restart deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+  ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Verify an update {#verify}
 
-Ask the running proxy what configuration it has loaded, rather than reading the file back. The admin API serves the effective configuration, which includes anything that a database overlay contributes in `hybrid` storage mode.
+Check the running proxy for the configuration that it loaded.
+
+### Before an update
+
+Before an update, check the configuration without running the proxy.
 
 ```sh
-curl -s http://localhost:15000/api/config/effective | jq
+agentgateway --validate-only -f config.yaml
 ```
 
-For a Helm release, port-forward the admin address first.
+### After an update
 
-```sh
-kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} 15000:15000
-```
+After an update, check what the admin API serves. This way, you can review anything that a database overlay contributes in `hybrid` storage mode.
 
 > [!NOTE]
 > The admin API is served on the admin address, which defaults to `localhost:15000`. If you attached the UI to a gateway, the same API is available on that gateway's port. For more information, see [Admin UI]({{< link-hextra path="/setup/ui/" >}}).
 
-To check a configuration file before you apply it, validate it without starting the proxy.
-
+{{< tabs >}}
+{{% tab name="Binary and Docker" %}}
 ```sh
-agentgateway --validate-only -f config.yaml
+curl -s http://localhost:15000/api/config/effective | jq
+```
+{{% /tab %}}
+{{% tab name="Helm" %}}
+1. Port-forward the admin address.
+
+   ```sh
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} 15000:15000
+   ```
+
+2. Check what the admin API serves.
+
+   ```sh
+   curl -s http://localhost:15000/api/config/effective | jq
+   ```
+
+{{% /tab %}}
+{{< /tabs >}}
+
+Example output:
+
+```json
+{
+  "config": {
+    "storage": {
+      "mode": "file"
+    }
+  },
+  "gateways": {
+    "default": {
+      "port": 4000
+    }
+  },
+  "llm": {
+    "models": []
+  },
+  "mcp": {
+    "targets": []
+  },
+  "ui": {}
+}
 ```
 
 ## Next steps

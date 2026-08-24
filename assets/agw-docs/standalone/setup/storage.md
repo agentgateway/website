@@ -250,9 +250,15 @@ To choose a mode, set the chart's `mode` value. Do not set the `config.storage.m
 
 ### Sections must exist in the ConfigMap
 
-Adding a capability in the UI adds a section to the configuration file, and in the Helm installation that file is read-only. So although the database can store the resources *within* a section, the UI cannot add the section itself.
+Adding a capability in the UI adds a section to the configuration file, and in the Helm installation that file is read-only. Although the database can store the resources within a section, the UI cannot add the section itself.
 
-Consider the `mcp` section. The following Helm values let you add MCP servers in the UI, because the `mcp` section exists for agentgateway to store targets in.
+Without a pre-existing section in the config for MCPs, LLMs, or gateways, the UI navigation shows a **Get started** path, but clicking **Enable** fails with the following error, because enabling the capability requires adding the section to the file.
+
+```txt
+File configuration is read-only in hybrid mode. Copy the diff and update the configuration file directly.
+```
+
+To manage a capability in the UI, include an empty section for it in your Helm values, as shown in the following example and in the following steps.
 
 ```yaml
 config:
@@ -260,25 +266,12 @@ config:
     targets: []
 ```
 
-Without that section, the UI navigation shows only **MCP** > **Get started**, and clicking **Enable MCP** fails with the following error, because enabling the capability requires adding the section to the file. The same is true for **LLM** and **Enable LLM**.
-
-```txt
-File configuration is read-only in hybrid mode. Copy the diff and update the configuration file directly.
-```
-
-To manage a capability in the UI, include an empty section for it in your Helm values, as shown in the **Storage settings and UI sections** tab in the following steps.
-
 > [!NOTE]
 > This constraint is specific to a read-only configuration file. In the binary and Docker installations, the file is writable, so the UI can add a section itself.
 
-### Before you begin
-
-1. [Install the standalone Helm chart]({{< link-hextra path="/setup/install/helm/" >}}).
-2. Have a PostgreSQL instance available, or deploy one as shown in the following steps.
-
 ### Deploy PostgreSQL
 
-For a production deployment, use a managed PostgreSQL instance or an operator that handles backups and failover. The following example deploys a single instance for testing.
+For a production deployment, use a managed PostgreSQL instance or an operator that handles sbackups and failover. The following example deploys a single instance for testing.
 
 > [!WARNING]
 > This example stores the database on an `emptyDir` volume, so the data exists only for the lifetime of the PostgreSQL pod. If that pod restarts or is rescheduled, the configuration that you saved in the UI is lost, and agentgateway falls back to the ConfigMap baseline. For anything beyond testing, back the database with a PersistentVolumeClaim, or use a managed PostgreSQL instance.

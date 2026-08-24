@@ -1,18 +1,41 @@
-Upgrade agentgateway to a new version. The steps differ by installation method, because each method delivers the agentgateway binary in a different way.
-
 ## About
 
 An upgrade replaces the agentgateway binary or image. It does not change your configuration, which lives in a file, a mounted volume, or a ConfigMap that the upgrade leaves alone. To change the configuration itself, see [Update your configuration]({{< link-hextra path="/setup/update/" >}}).
 
 Every method requires a restart of the agentgateway process, because a new binary cannot replace a running one in place. Plan for a brief interruption in proxy traffic, or run more than one instance behind a load balancer.
 
-Before you upgrade, review the [release notes](https://github.com/agentgateway/agentgateway/releases) for the version that you are moving to, and note the version that you are on so that you can roll back to it.
+## Before you begin
 
-```sh
-agentgateway --version
-```
+1. Review the [release notes highlights]({{< link path="/reference/release-notes/" >}}) and [GitHub release](https://github.com/agentgateway/agentgateway/releases) for the version that you are moving to.
 
-## Binary {#binary}
+2. **Optional**: Set the old version that you are on so that you can roll back to it, such as {{< reuse "agw-docs/versions/patch_n-1.md" >}} in the following example.
+
+   ```sh
+   agentgateway --version
+   ```
+
+   ```json
+   {
+     "version": "{{< reuse "agw-docs/versions/patch_n-1.md" >}}",
+     ...
+   }
+   ```
+
+   ```sh
+   export OLD_VERSION={{< reuse "agw-docs/versions/patch_n-1.md" >}}
+   ```
+
+3. Set the new version that you want to upgrade to as an environment variable, such as {{< reuse "agw-docs/versions/patch_n+1.md" >}} in the following example.
+
+   ```sh
+   export NEW_VERSION={{< reuse "agw-docs/versions/patch_n+1.md" >}}
+   ```
+
+## Upgrade
+
+The steps differ by installation method, because each method delivers the agentgateway binary in a different way.
+
+### Binary {#binary}
 
 Run the installation script again with the version that you want. The script detects the installed binary, replaces it, and leaves your configuration file untouched.
 
@@ -41,7 +64,7 @@ Run the installation script again with the version that you want. The script det
    {{< tabs >}}
    {{% tab name="Specific version" %}}
    ```sh
-   curl -sL https://agentgateway.dev/install | bash -s -- --version <version>
+   curl -sL https://agentgateway.dev/install | bash -s -- --version $NEW_VERSION
    ```
    {{% /tab %}}
    {{% tab name="Latest" %}}
@@ -49,6 +72,14 @@ Run the installation script again with the version that you want. The script det
 
    ```sh
    curl -sL https://agentgateway.dev/install | bash
+   ```
+   {{% /tab %}}
+   {{% tab name="Non-default installation directory" %}}
+   The script writes to `/usr/local/bin` by default, and uses `sudo` to do it. To install somewhere else, set `AGENTGATEWAY_INSTALL_DIR`, and pass `--no-sudo` when that directory is already writable by your user.
+   
+   ```sh
+   curl -sL https://agentgateway.dev/install | \
+     AGENTGATEWAY_INSTALL_DIR="$HOME/.local/bin" bash -s -- --no-sudo --version $NEW_VERSION
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -75,25 +106,7 @@ Run the installation script again with the version that you want. The script det
    agentgateway -f config.yaml
    ```
 
-The script writes to `/usr/local/bin` by default, and uses `sudo` to do it. To install somewhere else, set `AGENTGATEWAY_INSTALL_DIR`, and pass `--no-sudo` when that directory is already writable by your user.
-
-```sh
-curl -sL https://agentgateway.dev/install | \
-  AGENTGATEWAY_INSTALL_DIR="$HOME/.local/bin" bash -s -- --no-sudo --version <version>
-```
-
-> [!NOTE]
-> Running the script with the version that you already have downloads and rewrites the binary rather than exiting early. The result is the same binary, so a repeated run is harmless.
-
-### Roll back {#binary-rollback}
-
-Run the script again with the version that you upgraded from.
-
-```sh
-curl -sL https://agentgateway.dev/install | bash -s -- --version v1.4.0
-```
-
-## Docker {#docker}
+### Docker {#docker}
 
 Recreate the container from a new image tag, mounting the same configuration path. Your configuration file and any SQLite database in the mounted directory persist, because they live on the volume rather than in the container.
 
@@ -138,23 +151,7 @@ docker compose pull
 docker compose up -d
 ```
 
-### Roll back {#docker-rollback}
-
-Recreate the container from the previous tag. Because the configuration lives on the volume, no restore step is needed.
-
-```sh
-docker rm -f agentgateway
-docker run -d --name agentgateway \
-  --user "$(id -u):$(id -g)" \
-  -v "$PWD/agentgateway-config:/config" \
-  -p 4000:4000 \
-  cr.agentgateway.dev/agentgateway:v1.4.1
-```
-
-> [!WARNING]
-> Rolling back to an older version after agentgateway has written to a database can fail if the newer version changed the database schema. If you use `hybrid` storage mode, back up the database before you upgrade. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
-
-## Helm {#helm}
+### Helm {#helm}
 
 Upgrade the chart version. The chart re-renders the ConfigMap from your Helm values and rolls the Deployment.
 
@@ -212,8 +209,34 @@ Upgrade the chart version. The chart re-renders the ConfigMap from your Helm val
 
 Because the default `replicaCount` is `1`, expect a brief interruption in traffic during the rollout. To keep a pod serving traffic while the new pod starts, set `replicaCount` to a value greater than `1`.
 
-### Roll back {#helm-rollback}
+## Rollback
 
+Roll back to an earlier version.
+
+> [!WARNING]
+> Rolling back to an older version after agentgateway has written to a database can fail if the newer version changed the database schema. If you use `hybrid` storage mode, back up the database before you upgrade. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+
+{{< tabs >}}
+{{% tab name="Binary" %}}
+Run the script again with the version that you upgraded from.
+
+```sh
+curl -sL https://agentgateway.dev/install | bash -s -- --version v$OLD_VERSION
+```
+{{% /tab %}}
+{{% tab name="Docker" %}}
+Recreate the container from the previous tag. Because the configuration lives on the volume, no restore step is needed.
+
+```sh
+docker rm -f agentgateway
+docker run -d --name agentgateway \
+  --user "$(id -u):$(id -g)" \
+  -v "$PWD/agentgateway-config:/config" \
+  -p 4000:4000 \
+  cr.agentgateway.dev/agentgateway:v$OLD_VERSION
+```
+{{% /tab %}}
+{{% tab name="Helm" %}}
 Helm keeps the history of the release, so you can return to the previous revision.
 
 1. Review the revision history.
@@ -226,9 +249,11 @@ Helm keeps the history of the release, so you can return to the previous revisio
 2. Roll back to the revision that you want.
 
    ```sh
-   helm rollback {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} <revision> \
+   helm rollback {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} <$REVISION> \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Next steps
 

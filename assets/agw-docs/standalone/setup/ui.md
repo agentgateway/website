@@ -174,7 +174,7 @@ kill $AGW_CUSTOM_PID 2>/dev/null || true
 The default admin address binds to the container's own loopback interface, so publishing port 15000 with `-p 15000:15000` does not make it reachable from your host. You have two options.
 
 * **Serve the UI on a gateway instead**, which is what the generated configuration does. This is the better option, because you can attach authentication policies to the gateway.
-* **Bind the admin address to all interfaces** by setting `config.adminAddr` to `0.0.0.0:15000`, then publish that port. The admin address has no authentication. Do this only on a host where nothing untrusted can reach the published port.
+* **Bind the admin address to all interfaces** by setting `config.adminAddr` to `0.0.0.0:15000`, then publish that port. The admin address has no authentication. Do this only on a host where nothing untrusted can reach the published port, such as your personal workstation.
 
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -186,26 +186,14 @@ The default admin address binds to the container's own loopback interface, so pu
    ```
 
    ```sh
-   docker run \
+   docker run -d \
+     --name agentgateway \
      --user "$(id -u):$(id -g)" \
      -v "$PWD/config.yaml:/config.yaml" \
      -p 4000:4000 -p 15000:15000 \
-     cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}} \
+     cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}} \
      -f /config.yaml
    ```
-
-## Generate LLM client settings {#client-setup}
-
-The **LLM > Client Setup** page generates connection settings and snippets for curl, Claude Code, Claude Desktop, Codex CLI, OpenCode, Cursor, GitHub Copilot, Windsurf, and the OpenAI JavaScript and Python SDKs.
-
-1. Configure at least one LLM model and, if the gateway requires client authentication, a [virtual API key]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
-2. Open the **LLM** > **Client Setup** page in the UI, such as [http://localhost:15000/ui/llm/client-setup](http://localhost:15000/ui/llm/client-setup).
-3. Review the **Gateway base URL**, and select a model and virtual API key.
-4. Select the client from the **Integration** dropdown, and copy the generated settings or snippet.
-
-Client Setup does not create a route, model, authentication policy, or provider credential. It generates client-side values from the configuration that already exists. For client-specific prerequisites, see [LLM clients]({{< link-hextra path="/integrations/llm-clients/" >}}).
-
-The selected model appears only in recipes that accept a model setting. For example, the Claude Desktop recipe outputs a gateway URL and API key, but does not configure a model name in Claude Desktop.
 
 ## Secure the UI {#secure-the-ui}
 
@@ -213,7 +201,26 @@ To require users to authenticate, attach the UI to a gateway listener and apply 
 
 The `ui.policies` section takes the same policies that a route takes, so you can also use [JWT]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), [basic]({{< link-hextra path="/configuration/security/basic-authn/" >}}), or [API key]({{< link-hextra path="/configuration/security/apikey-authn/" >}}) authentication for programmatic access. To restrict which authenticated users get in, add an [authorization policy]({{< link-hextra path="/configuration/security/http-authz/" >}}) alongside the authentication policy.
 
+### Before you begin
+
+1. [Install standalone agentgateway]({{< link-hextra path="/setup/install/" >}}).
+2. Set up an identity provider (IdP), such as Keycloak or Microsoft Entra ID. Consider creating a client specifically for the UI, such as `agentgateway-ui`. For provider-specific setup instructions, see the [identity provider integrations]({{< link-hextra path="/integrations/auth/" >}}).
+3. Get a TLS certificate and key for the hostname that you plan to serve the UI on, such as from your DNS provider or your organization's certificate authority.
+4. Follow the steps for your installation path:
+- [Binary download or Docker container](#secure-binary-docker)
+- [Helm chart in Kubernetes](#helm-expose)
+
 ### Binary and Docker {#secure-binary-docker}
+
+If you downloaded the agentgateway binary or run agentgateway in a Docker container, add a gateway and UI policies to your configuration. The configuration is the same as in a Helm installation, because all three installation methods read the same file. You attach the UI to a gateway, apply an `oidc` policy, and terminate TLS on that gateway.
+
+What differs is how the address becomes reachable. Kubernetes gives the UI an external address through a LoadBalancer Service. A binary or a container has no equivalent, so you provide the network path yourself. Gateway listeners bind to all network interfaces, unlike the admin address, so a UI gateway is already reachable from other hosts that can route to the machine. To publish it more widely, do the following:
+
+* Run agentgateway on a host that has the address you want to serve the UI on, such as a VM with a public IP address.
+* Allow the gateway port through the host's firewall. In Docker, publish the port with `-p`.
+* Create a DNS record that points your UI hostname at that host. The hostname must match your TLS certificate and the `redirectURI` value in the `oidc` policy.
+
+You can also put your own reverse proxy or cloud load balancer in front of the host. In that case, terminate TLS on the proxy instead of on the gateway, and forward traffic to the gateway port.
 
 1. Set the `OIDC_COOKIE_SECRET` environment variable. Agentgateway requires this value to encrypt session cookies whenever an `oidc` policy is configured, and refuses to start without it. The key is an AES-256-GCM key, which is 32 random bytes encoded as 64 hexadecimal characters. It is a random value that you generate, not a value that your identity provider gives you.
 
@@ -221,7 +228,18 @@ The `ui.policies` section takes the same policies that a route takes, so you can
    export OIDC_COOKIE_SECRET="$(openssl rand -hex 32)"
    ```
 
-2. Add a `ui` section to your configuration file that attaches to a gateway and applies an `oidc` policy. The following example serves the UI on the `default` gateway on port 3000 and redirects unauthenticated users to the OIDC provider to log in. The optional `authorization` policy further restricts access to users whose email address ends in `@example.com`.
+2. Save the details of the UI client that you created in your IdP as environment variables. The redirect URI must match the address that you serve the UI on, and it must be registered as a valid redirect URI in your IdP. The following example uses a local address so that you can test the login flow first. When you expose the UI on a hostname, change this value to that hostname and register it in your IdP.
+
+   ```sh
+   export ISSUER_URL=https://keycloak.example.com/realms/agentgateway
+   export UI_CLIENT_ID=agentgateway-ui
+   export UI_CLIENT_SECRET=<client-secret>
+   export REDIRECT_URI=http://localhost:3000/oauth/callback
+   ```
+
+3. Add a `ui` section to your configuration file that attaches to a gateway and applies an `oidc` policy. The following example serves the UI on the `default` gateway on port 3000 and redirects unauthenticated users to the OIDC provider to log in. The optional `authorization` policy further restricts access to users whose email address ends in `@example.com`.
+
+   Agentgateway expands environment variables in the configuration file when it loads the file, so you can refer to the values that you exported in the previous step instead of writing the client secret into the file.
 
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -231,10 +249,10 @@ The `ui.policies` section takes the same policies that a route takes, so you can
    ui:
      policies:
        oidc:
-         issuer: http://localhost:7080/realms/agentgateway
-         clientId: agentgateway-browser
-         clientSecret: agentgateway-secret
-         redirectURI: http://localhost:3000/oauth/callback
+         issuer: ${ISSUER_URL}
+         clientId: ${UI_CLIENT_ID}
+         clientSecret: ${UI_CLIENT_SECRET}
+         redirectURI: ${REDIRECT_URI}
          scopes:
          - profile
          - email
@@ -243,28 +261,89 @@ The `ui.policies` section takes the same policies that a route takes, so you can
          - allow: jwt.email.endsWith("@example.com")
    ```
 
-3. Start agentgateway with the updated config. In Docker, pass the environment variable to the container with `-e OIDC_COOKIE_SECRET`.
+   > [!TIP]
+   > For the full list of `oidc` policy fields and a complete runnable Keycloak setup, see [OIDC browser authentication]({{< link-hextra path="/configuration/security/oidc" >}}) and the [`traffic-unified-gateway` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-unified-gateway) in the agentgateway repository.
 
+4. Start agentgateway with the updated config.
+
+   {{< tabs >}}
+   {{% tab name="Binary" %}}
    ```sh
    agentgateway -f config.yaml
    ```
+   {{% /tab %}}
+   {{% tab name="Docker" %}}
+   Pass each environment variable to the container with `-e`. The container gets its own environment, so the values that you exported in your shell are not available inside it unless you pass them.
 
-4. Open the UI at the gateway's address, such as [http://localhost:3000/ui/](http://localhost:3000/ui/). Instead of loading the UI directly, agentgateway redirects you to the OIDC provider to log in. After you authenticate, you are returned to the UI.
+   ```sh
+   docker run -d \
+     --name agentgateway \
+     --user "$(id -u):$(id -g)" \
+     -v "$PWD/config.yaml:/config.yaml" \
+     -p 3000:3000 \
+     -e OIDC_COOKIE_SECRET \
+     -e ISSUER_URL \
+     -e UI_CLIENT_ID \
+     -e UI_CLIENT_SECRET \
+     -e REDIRECT_URI \
+     cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}} \
+     -f /config.yaml
+   ```
 
-For the full list of `oidc` policy fields and a complete runnable Keycloak setup, see [OIDC browser authentication]({{< link-hextra path="/configuration/security/oidc" >}}) and the [`traffic-unified-gateway` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-unified-gateway) in the agentgateway repository.
+   > [!IMPORTANT]
+   > The container must be able to resolve and reach the `ISSUER_URL` value, and so must the browser, because agentgateway redirects the browser to that address to log in. An issuer on `localhost` refers to the container itself, not to your host. Use the IdP's routable address in both places.
+   {{% /tab %}}
+   {{< /tabs >}}
+
+5. Open the UI at the gateway's address, such as [http://localhost:3000/ui/](http://localhost:3000/ui/). Instead of loading the UI directly, agentgateway redirects you to the OIDC provider to log in. After you authenticate, you are returned to the UI.
+
+6. Optional: Serve the UI over HTTPS. Add a `tls` section to the gateway that the UI is attached to. Agentgateway reads the certificate and key from the file system, and setting `tls` also switches the gateway protocol to HTTPS. Use the certificate for the hostname that you created a DNS record for.
+
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   gateways:
+     default:
+       port: 3000
+       tls:
+         cert: /etc/agentgateway/tls/tls.crt
+         key: /etc/agentgateway/tls/tls.key
+   ```
+
+   In Docker, mount the certificate and key into the container at those paths.
+
+   ```sh
+   docker run -d \
+     --name agentgateway \
+     --user "$(id -u):$(id -g)" \
+     -v "$PWD/config.yaml:/config.yaml" \
+     -v "$PWD/tls:/etc/agentgateway/tls:ro" \
+     -p 3000:3000 \
+     -e OIDC_COOKIE_SECRET \
+     -e ISSUER_URL -e UI_CLIENT_ID -e UI_CLIENT_SECRET -e REDIRECT_URI \
+     cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}} \
+     -f /config.yaml
+   ```
+
+   Then, confirm that the gateway serves your certificate.
+
+   ```sh
+   echo | openssl s_client -connect agentgateway.example.com:3000 \
+     -servername agentgateway.example.com 2>/dev/null | openssl x509 -noout -subject -dates
+   ```
+
+   Example output:
+
+   ```txt
+   subject=CN=agentgateway.example.com
+   notBefore=Aug 24 17:20:56 2026 GMT
+   notAfter=Sep 23 17:20:56 2026 GMT
+   ```
+
+   For more certificate options, see [Gateways]({{< link-hextra path="/configuration/gateways/" >}}).
 
 ### Secure and expose the UI with Helm {#helm-expose}
 
 In a Helm installation, the UI needs a gateway of its own, an OIDC policy, TLS, and a Service, because the chart's defaults put the UI and your proxy traffic on the same address.
-
-> [!WARNING]
-> The `ui` section attaches to a gateway named `default` when you omit `ui.gateways`. Because the chart's default values include an empty `ui` section, a `default` gateway, and a `LoadBalancer` Service on port `80`, a default installation serves the UI and its APIs, including `/api/config`, on the same address as your proxy traffic. Complete this guide, or set `gateway.service.type` to `ClusterIP`, before you install the chart on a cluster that assigns external addresses.
-
-#### Before you begin
-
-1. [Install the standalone Helm chart]({{< link-hextra path="/setup/install/helm/" >}}).
-2. Set up an identity provider (IdP), such as Keycloak or Microsoft Entra ID. Consider creating a client specifically for the UI, such as `agentgateway-ui`. For provider-specific setup instructions, see the [identity provider integrations]({{< link-hextra path="/integrations/auth/" >}}).
-3. Get a TLS certificate and key for the hostname that you plan to serve the UI on, such as from your DNS provider or your organization's certificate authority.
 
 #### Set up the gateway
 
@@ -579,6 +658,19 @@ Now that the UI is securely exposed, log in.
    {{< reuse-image src="img/agentgateway-ui-landing.png" srcDark="img/agentgateway-ui-landing-dark.png" >}}
 
 To save the configuration changes that you make in the UI, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}). In the Helm chart's default read-only storage mode, the UI shows the running configuration, but a save fails because the chart mounts the configuration file read-only.
+
+## Generate LLM client settings {#client-setup}
+
+The **LLM > Client Setup** page generates connection settings and snippets for curl, Claude Code, Claude Desktop, Codex CLI, OpenCode, Cursor, GitHub Copilot, Windsurf, and the OpenAI JavaScript and Python SDKs.
+
+1. Configure at least one LLM model and, if the gateway requires client authentication, a [virtual API key]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
+2. Open the **LLM** > **Client Setup** page in the UI, such as [http://localhost:15000/ui/llm/client-setup](http://localhost:15000/ui/llm/client-setup).
+3. Review the **Gateway base URL**, and select a model and virtual API key.
+4. Select the client from the **Integration** dropdown, and copy the generated settings or snippet.
+
+Client Setup does not create a route, model, authentication policy, or provider credential. It generates client-side values from the configuration that already exists. For client-specific prerequisites, see [LLM clients]({{< link-hextra path="/integrations/llm-clients/" >}}).
+
+The selected model appears only in recipes that accept a model setting. For example, the Claude Desktop recipe outputs a gateway URL and API key, but does not configure a model name in Claude Desktop.
 
 ## Cleanup
 
