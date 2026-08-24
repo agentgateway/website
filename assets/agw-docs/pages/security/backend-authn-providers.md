@@ -23,20 +23,4 @@ Each provider resolves an implicit credential through a chain of sources, and st
 
 A provider method resolves its credential on the first request that needs it, not at startup. That first request therefore pays the cost of the exchange, and can take several seconds. The gateway caches the result, so later requests do not. A route that is slow only on its first call after a restart is showing this, not a misconfiguration.
 
-## Next
-
-{{% conditional-text include-if="standalone" %}}
-| Provider | Page |
-| -- | -- |
-| AWS | [AWS backend authentication]({{< link-hextra path="/configuration/security/backend-authn/providers/aws/" >}}) |
-| Azure | [Azure backend authentication]({{< link-hextra path="/configuration/security/backend-authn/providers/azure/" >}}) |
-| Google Cloud | [GCP backend authentication]({{< link-hextra path="/configuration/security/backend-authn/providers/gcp/" >}}) |
-| GitHub Copilot | [GitHub Copilot]({{< link-hextra path="/configuration/security/backend-authn/providers/copilot/" >}}) |
-{{% /conditional-text %}}
-{{% conditional-text include-if="kubernetes,agentgateway" %}}
-| Provider | Page |
-| -- | -- |
-| AWS | [AWS backend authentication]({{< link-hextra path="/security/backend-authn/providers/aws/" >}}) |
-| Azure | [Azure backend authentication]({{< link-hextra path="/security/backend-authn/providers/azure/" >}}) |
-| Google Cloud | [GCP backend authentication]({{< link-hextra path="/security/backend-authn/providers/gcp/" >}}) |
-{{% /conditional-text %}}
+## Guides

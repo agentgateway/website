@@ -412,15 +412,13 @@ EOF
 echo "clientAuth methods verified"
 {{< /doc-test >}}
 
+> [!NOTE]
+> The `privateKeyJwt` method is not the same as the `jwtSign` backend authentication method. Both sign a JWT with your private key, and they share the implementation, but `privateKeyJwt` authenticates agentgateway to the token endpoint, while [`jwtSign`]({{< link-hextra path="/configuration/security/backend-authn/" >}}) sends a signed JWT to the backend itself.
+
 Two details are worth knowing before you rely on the method.
 
 * **The method names are camelCase here.** The Kubernetes custom resources spell the same values in PascalCase, as `ClientSecretBasic`, `ClientSecretPost`, and `PrivateKeyJwt`. Agentgateway rejects the PascalCase spelling.
 * **The leaf public key of `certificate` must match `signingKey`.** A mismatch is logged and does not stop the configuration from loading, so the failure appears as a rejected assertion at the token endpoint rather than as a startup error.
-
-{{< version exclude-if="1.4.x" >}}
-> [!NOTE]
-> The `privateKeyJwt` method is not the same as the `jwtSign` backend authentication method. Both sign a JWT with your private key, and they share the implementation, but `privateKeyJwt` authenticates agentgateway to the token endpoint, while [`jwtSign`]({{< link-hextra path="/configuration/security/backend-authn/" >}}) sends a signed JWT to the backend itself.
-{{< /version >}}
 
 ## Configuration reference
 
