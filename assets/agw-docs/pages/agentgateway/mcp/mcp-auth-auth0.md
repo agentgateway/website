@@ -2,9 +2,9 @@ Secure your Model Context Protocol (MCP) servers with OAuth 2.0 authentication b
 
 ## About this guide
 
-In this guide, you configure the agentgateway proxy to protect a static MCP server with MCP auth by using Auth0 as the authorization server. Agentgateway includes a native `Auth0` provider that adapts to Auth0's OAuth behavior. When you set `provider: Auth0`, agentgateway serves Auth0's [RFC 8414](https://www.rfc-editor.org/rfc/rfc8414) authorization server metadata to MCP clients and appends your API identifier to Auth0's authorization endpoint as an `audience` query parameter.
+In this guide, you configure the agentgateway proxy to protect a static MCP server with MCP auth by using Auth0 as the authorization server. Agentgateway includes a native `Auth0` provider that adapts to Auth0's OAuth behavior. When you set `provider: Auth0`, agentgateway serves Auth0's [RFC 8414](https://www.rfc-editor.org/rfc/rfc8414.html) authorization server metadata to MCP clients and appends your API identifier to Auth0's authorization endpoint as an `audience` query parameter.
 
-The `audience` parameter matters. Auth0 does not support [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707) resource indicators, which MCP clients use to request a token for a specific resource. Without the parameter, Auth0 issues an opaque access token that agentgateway cannot validate as a JWT.
+The `audience` parameter matters. Auth0 does not support [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html) resource indicators, which MCP clients use to request a token for a specific resource. Without the parameter, Auth0 issues an opaque access token that agentgateway cannot validate as a JWT.
 
 For more information about MCP auth, see the [About MCP auth]({{< link-hextra path="/mcp/auth/about/" >}}) page.
 
