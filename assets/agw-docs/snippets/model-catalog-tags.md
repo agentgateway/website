@@ -1,4 +1,4 @@
-A tag is a freeform string on a model entry that describes the model rather than prices it. Tags let one catalog carry model attributes next to cost data, so you can change how {{< reuse "agw-docs/snippets/agentgateway.md" >}} treats a model by editing the catalog instead of the gateway configuration.
+A tag is a freeform string on a model entry that describes the model rather than pricing it. Tags let one catalog carry model attributes next to cost data, so you can change how {{< reuse "agw-docs/snippets/agentgateway.md" >}} treats a model by editing the catalog instead of the gateway configuration.
 
 Because tags are independent of pricing, a model entry can carry tags and no rates.
 
