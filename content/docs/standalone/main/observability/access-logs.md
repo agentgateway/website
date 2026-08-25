@@ -1,6 +1,6 @@
 ---
 title: Access logs
-weight: 30
+weight: 10
 description: Configure per-request structured access logs with CEL-based filtering, field enrichment, and OTLP export.
 ---
 
