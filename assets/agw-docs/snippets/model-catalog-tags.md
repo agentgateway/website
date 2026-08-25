@@ -32,7 +32,7 @@ The tags apply as follows.
 
 - A model entry that carries at least one tag from this table replaces the built-in list for that model. Only the formats that you tag are accepted, so list every format that the model serves.
 - A model entry with no tags, or with only tags outside this table, keeps the built-in list.
-- {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} lowercases the requested model name before it looks up tags. Write model names in the catalog in lowercase, otherwise the lookup misses and the built-in list applies.
+- {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} lowercases the requested model name before it looks up tags. Write model names in the catalog in lowercase; otherwise, the lookup misses, and the built-in list applies.
 - A client request in a format that the model does not accept fails with an unsupported conversion error that lists the accepted formats.
 
 These tags apply only to the `copilot` provider, which is available in standalone mode. Tag values outside this table are stored and merged, but {{< reuse "agw-docs/snippets/agentgateway.md" >}} does not act on them yet.
