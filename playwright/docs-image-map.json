@@ -136,13 +136,23 @@
       "light": "assets/img/ui-cost-catalog.png",
       "dark": "assets/img/ui-cost-catalog-dark.png"
     },
+    "agentgateway-ui-storage-file-add-server.png": {
+      "$note": "setup/storage \u2014 Add MCP server drawer, filled in, captured in the DEFAULT file storage mode via tests/storage-file.spec.ts. Pairs with the -server-saved shot below; the hybrid equivalents are agentgateway-ui-storage-add-server.png.",
+      "light": "assets/img/agentgateway-ui-storage-file-add-server.png",
+      "dark": "assets/img/agentgateway-ui-storage-file-add-server-dark.png"
+    },
+    "agentgateway-ui-storage-file-saved.png": {
+      "$note": "setup/storage \u2014 MCP Servers list after saving in file mode, showing the 'Configuration saved' banner and the target that agentgateway wrote into config.yaml.",
+      "light": "assets/img/agentgateway-ui-storage-file-saved.png",
+      "dark": "assets/img/agentgateway-ui-storage-file-saved-dark.png"
+    },
     "agentgateway-ui-storage-add-server.png": {
-      "$note": "setup/storage \u2014 Add MCP server drawer, filled in. Captured via tests/storage.spec.ts against a PostgreSQL-backed (storage.mode: hybrid) gateway, where the UI can save.",
+      "$note": "setup/storage \u2014 Add MCP server drawer, filled in. Captured via tests/storage.spec.ts against a PostgreSQL-backed (storage.mode: hybrid) gateway, where the UI can save. Shared by the Helm database-mode steps and the binary/Docker hybrid-mode steps; the file-mode pair is agentgateway-ui-storage-file-*.",
       "light": "assets/img/agentgateway-ui-storage-add-server.png",
       "dark": "assets/img/agentgateway-ui-storage-add-server-dark.png"
     },
     "agentgateway-ui-storage-server-saved.png": {
-      "$note": "setup/storage \u2014 MCP Servers list after saving, showing the 'Configuration saved' banner and the persisted target.",
+      "$note": "setup/storage \u2014 MCP Servers list after saving, showing the 'Configuration saved' banner and the persisted target. Shared by the Helm database-mode steps and the binary/Docker hybrid-mode steps.",
       "light": "assets/img/agentgateway-ui-storage-server-saved.png",
       "dark": "assets/img/agentgateway-ui-storage-server-saved-dark.png"
     }

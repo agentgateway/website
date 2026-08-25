@@ -3,3 +3,4 @@ playwright-report/
 test-results/
 .agw-runtime/
 .agw-welcome-runtime/
+.agw-file-runtime/

@@ -84,13 +84,34 @@ Use `file` mode when you want the admin UI to save your changes into the same co
    "file"
    ```
 
-2. Add an MCP server. You can use the admin UI, or send the same request that the UI sends when you save a server.
+2. Add an MCP server. The admin UI and the config resource API write to the same place, so use whichever you prefer.
+
+   {{< tabs >}}
+   {{% tab name="Admin UI" %}}
+   1. Open the [admin UI](http://localhost:15000/ui) in your browser.
+
+   2. In the navigation, click **MCP**. If your configuration file has no `mcp` section yet, the entry is **Get started**. Click it, then click **Enable** to have agentgateway add the section to your file. If the file already has an `mcp` section, the entry is **Servers** instead and you can skip this step.
+
+   3. On the **MCP Servers** page, click **Add server**.
+
+   4. Enter a **Server name**, such as `my-target`, keep the **Streamable HTTP** transport, and enter the **URL** of your MCP server, such as `http://example.com/mcp`.
+
+      {{< reuse-image src="img/agentgateway-ui-storage-file-add-server.png" srcDark="img/agentgateway-ui-storage-file-add-server-dark.png" >}}
+
+   5. Click **Save server**. Agentgateway writes the server into your configuration file, reloads the file, and confirms with **Configuration saved**.
+
+      {{< reuse-image src="img/agentgateway-ui-storage-file-saved.png" srcDark="img/agentgateway-ui-storage-file-saved-dark.png" >}}
+   {{% /tab %}}
+   {{% tab name="API" %}}
+   Send the same request that the UI sends when you save a server. The request is a `PUT` to the config resource API for the `mcp.target` resource type, and its body is the list of MCP targets that you want that resource type to hold.
 
    ```sh
    curl -s -X PUT http://localhost:15000/api/config/resources/mcp.target \
      -H 'Content-Type: application/json' \
      -d '{"resources":[{"value":{"name":"my-target","mcp":{"host":"http://example.com/mcp"}}}]}'
    ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 3. Review your configuration file. Agentgateway added the server, and created the `mcp` section because the file did not have one.
 
@@ -108,6 +129,9 @@ Use `file` mode when you want the admin UI to save your changes into the same co
          host: http://example.com/mcp
    ```
 
+   > [!NOTE]
+   > If you enabled MCP in the UI, the `mcp` section also has a `port` field, because **Enable** writes the capability's default port along with the empty `targets` list.
+
 Agentgateway preserves the schema comment at the top of the file, and reloads the file after it writes to it.
 
 > [!IMPORTANT]
@@ -118,6 +142,8 @@ Agentgateway preserves the schema comment at the top of the file, and reloads th
 Use `hybrid` mode when you want the configuration file to stay exactly as you wrote it, and UI edits to persist somewhere else. Agentgateway accepts a `postgres://` or `postgresql://` URL for PostgreSQL, and treats any other value as a SQLite database path.
 
 1. Set the storage mode and a database URL in your configuration file. A generated configuration already has the `database` field, which points at a SQLite file next to the configuration file. In that case, you add only the `storage` field.
+
+   The example also adds an empty `mcp` section. In `hybrid` mode agentgateway treats your file as a read-only baseline, so the UI cannot add a section to it, only resources within a section that already exists. For more information, see [Sections must exist in the file](#sections-must-exist).
 
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -131,6 +157,8 @@ Use `hybrid` mode when you want the configuration file to stay exactly as you wr
        port: 4000
    ui:
      gateways: default
+   mcp:
+     targets: []
    ```
 
 2. Restart agentgateway. The `config` section is applied at startup, so the new mode does not take effect until the process restarts. For more information, see [Fields that require a restart]({{< link-hextra path="/setup/update/#restart-required" >}}).
@@ -162,7 +190,27 @@ Use `hybrid` mode when you want the configuration file to stay exactly as you wr
    "hybrid"
    ```
 
-4. Add an MCP server, in the UI or through the config resource API.
+4. Add an MCP server. The admin UI and the config resource API write to the same place, so use whichever you prefer.
+
+   {{< tabs >}}
+   {{% tab name="Admin UI" %}}
+   1. Open the [admin UI](http://localhost:15000/ui) in your browser.
+
+   2. In the navigation, click **MCP** > **Servers**, then click **Add server**.
+
+   3. Enter a **Server name**, such as `persisted-target`, keep the **Streamable HTTP** transport, and enter the **URL** of your MCP server, such as `http://example.com/mcp`.
+
+      {{< reuse-image src="img/agentgateway-ui-storage-add-server.png" srcDark="img/agentgateway-ui-storage-add-server-dark.png" >}}
+
+   4. Click **Save server**. Agentgateway stores the server in the database, leaves your configuration file untouched, and confirms with **Configuration saved**.
+
+      {{< reuse-image src="img/agentgateway-ui-storage-server-saved.png" srcDark="img/agentgateway-ui-storage-server-saved-dark.png" >}}
+
+   > [!NOTE]
+   > The navigation offers **Servers** only because your configuration file already has an `mcp` section. Without it, the entry is **Get started**, and clicking **Enable** fails with `File configuration is read-only in hybrid mode`. For more information, see [Sections must exist in the file](#sections-must-exist).
+   {{% /tab %}}
+   {{% tab name="API" %}}
+   Send the same request that the UI sends when you save a server.
 
    ```sh
    curl -s -X PUT http://localhost:15000/api/config/resources/mcp.target \
@@ -175,8 +223,10 @@ Use `hybrid` mode when you want the configuration file to stay exactly as you wr
    ```json
    {"resources":[{"kind":"mcp.target","id":"persisted-target","value":{"name":"persisted-target","mcp":{"host":"http://example.com/mcp"}},"revision":1,"createdAt":"2026-08-21T21:51:21.951418797Z","updatedAt":"2026-08-21T21:51:21.951418797Z"}]}
    ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
-5. Confirm that your configuration file is unchanged. The `mcp` section that `file` mode would have added is absent, because agentgateway stored the server in the database instead.
+5. Confirm that your configuration file is unchanged. The `mcp` section is still the empty one that you wrote, because agentgateway stored the server in the database instead of adding it here. In `file` mode, the same save would have appended the target to this list.
 
    ```sh
    cat config.yaml
@@ -196,6 +246,8 @@ Use `hybrid` mode when you want the configuration file to stay exactly as you wr
        port: 4000
    ui:
      gateways: default
+   mcp:
+     targets: []
    ```
 
 6. Confirm that the effective configuration includes the server anyway. Agentgateway merges the stored resource over the file.
@@ -298,9 +350,9 @@ To choose a mode, set the chart's `mode` value. Do not set the `config.storage.m
 > [!IMPORTANT]
 > Even in database mode, you cannot save the configuration file as a whole in the UI's configuration editor, because the mounted file itself remains read-only. Treat your Helm values as the source of truth for the file, and the UI as the way to manage the resources that are layered on top of it.
 
-### Sections must exist in the ConfigMap
+### Sections must exist in the file {#sections-must-exist}
 
-Adding a capability in the UI adds a section to the configuration file, and in the Helm installation that file is read-only. Although the database can store the resources within a section, the UI cannot add the section itself.
+Adding a capability in the UI adds a section to the configuration file, and in `hybrid` mode agentgateway never writes that file. Although the database can store the resources within a section, the UI cannot add the section itself.
 
 Without a pre-existing section in the config for MCPs, LLMs, or gateways, the UI navigation shows a **Get started** path, but clicking **Enable** fails with the following error, because enabling the capability requires adding the section to the file.
 
@@ -317,7 +369,7 @@ config:
 ```
 
 > [!NOTE]
-> This constraint is specific to a read-only configuration file. In the binary and Docker installations, the file is writable, so the UI can add a section itself.
+> This constraint comes from `hybrid` mode, not from the read-only mount, so it applies to a binary or Docker installation in `hybrid` mode as well. Only `file` mode lets the UI add a section, because only `file` mode writes to your configuration file.
 
 ### Deploy PostgreSQL {#deploy-postgresql}
 
@@ -471,7 +523,7 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
 Now that storage is writable, add an MCP server. The admin UI and the config resource API write to the same place, so use whichever you prefer.
 
 > [!NOTE]
-> The admin UI steps require the `mcp` section from the **Storage settings and UI sections** tab in the previous step. For more information, see [Sections must exist in the ConfigMap](#sections-must-exist-in-the-configmap). The API steps work with either set of values, because the API creates the section for you when it stores the first MCP target.
+> The admin UI steps require the `mcp` section from the **Storage settings and UI sections** tab in the previous step. For more information, see [Sections must exist in the file](#sections-must-exist). The API steps work with either set of values, because the API creates the section for you when it stores the first MCP target.
 
 {{< tabs >}}
 {{% tab name="Admin UI" %}}

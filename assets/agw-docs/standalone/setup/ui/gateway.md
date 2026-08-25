@@ -19,7 +19,7 @@ A gateway of its own is also the prerequisite for the next two guides, because a
 Add a second gateway to your configuration and point the `ui` section at it. The configuration is the same in every installation method, because all three read the same file. What differs is how you deliver the file to the proxy.
 
 {{< tabs >}}
-{{% tab name="Binary and Docker" %}}
+{{% tab name="Binary" %}}
 1. Add a gateway for the UI to your configuration file, and point the `ui` section at it. The following example serves proxy traffic on port `4000` of the `default` gateway and the UI on port `4001` of the `admin` gateway.
 
    ```yaml
@@ -39,7 +39,7 @@ Add a second gateway to your configuration and point the `ui` section at it. The
      - host: httpbin.org:80
    ```
 
-2. Start agentgateway with the updated configuration. In Docker, publish both ports with `-p 4000:4000 -p 4001:4001`.
+2. Start agentgateway with the updated configuration.
 
    ```sh
    agentgateway -f config.yaml
@@ -73,6 +73,87 @@ Add a second gateway to your configuration and point the `ui` section at it. The
 
    ```txt
    404
+   ```
+{{% /tab %}}
+{{% tab name="Docker" %}}
+The container must publish the new UI port, so this change needs a container restart even though agentgateway reloads the `gateways` and `ui` sections in place.
+
+1. Add a gateway for the UI to the configuration file that you mount, and point the `ui` section at it. The following example serves proxy traffic on port `4000` of the `default` gateway and the UI on port `4001` of the `admin` gateway.
+
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   gateways:
+     default:
+       port: 4000
+     admin:
+       port: 4001
+   ui:
+     gateways: [admin]
+   routes:
+   - matches:
+     - path:
+         pathPrefix: /
+     backends:
+     - host: httpbin.org:80
+   ```
+
+2. Remove the running container.
+
+   ```sh
+   docker rm -f agentgateway
+   ```
+
+3. Start the container again, publishing both the proxy port and the new UI port.
+
+   ```sh
+   docker run -d \
+     --name agentgateway \
+     --user "$(id -u):$(id -g)" \
+     -v "$PWD/config.yaml:/config.yaml" \
+     -p 4000:4000 -p 4001:4001 \
+     cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}} \
+     -f /config.yaml
+   ```
+
+   > [!NOTE]
+   > If you followed the **Mount a directory** option in the [Docker installation]({{< link-hextra path="/setup/install/docker/" >}}), edit `config.yaml` inside the directory that you mounted, and keep your `-v "$PWD/agentgateway-config:/config"` mount and no `-f` option instead of the file mount in this example.
+
+4. Confirm the UI gateway address in the container logs.
+
+   ```sh
+   docker logs agentgateway | grep "serving UI"
+   ```
+
+   Example output:
+
+   ```txt
+   INFO app  serving UI at http://localhost:4001/ui
+   ```
+
+5. Confirm that the UI answers on its own port.
+
+   ```sh
+   curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4001/ui
+   ```
+
+   Example output:
+
+   ```txt
+   200
+   ```
+
+6. Confirm that the UI no longer answers on the proxy port, and that the proxy still serves your route. The response code for `/ui` depends on what your route does with that path. In this example, the request reaches httpbin, which returns a `404`.
+
+   ```sh
+   curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/ui
+   curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/get
+   ```
+
+   Example output:
+
+   ```txt
+   404
+   200
    ```
 {{% /tab %}}
 {{% tab name="Helm" %}}
