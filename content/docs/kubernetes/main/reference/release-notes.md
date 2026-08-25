@@ -1,11 +1,11 @@
 ---
 title: Release notes
 weight: 20
-description: Review the release notes for agentgateway.
+description: What's new, changed, and fixed in each agentgateway on Kubernetes release.
 test: skip
 ---
 
-Review the release notes for agentgateway.
+Review the release notes for agentgateway on Kubernetes.
 
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
