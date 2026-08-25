@@ -33,7 +33,7 @@ The normalized counts reach every feature that reads a token count. This include
 
 **Actions to take**: To keep the provider's unmodified value in a CEL expression, custom log field, custom metric, or rate limit descriptor, read `llm.providerInputTokens` or `llm.providerTotalTokens` instead. Review each token-based rate limit that you sized against a provider that excluded cached tokens, because requests now consume the limit sooner. Annotate the upgrade in any dashboard that trends input tokens, so that the step change is not read as a traffic change.
 
-To restore the previous behavior while you migrate, set the `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable to `true` in the environment that the agentgateway process runs in. Agentgateway plans to remove this variable after version 1.5, so treat it as a short-term migration aid and not as a supported configuration.
+To restore the previous behavior while you migrate, set the `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable to `true` for the agentgateway process. Agentgateway plans to remove this variable after version 1.5, so treat it as a short-term migration aid and not as a supported configuration.
 
 For guidance on which field to read, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}). For the full list of fields in the CEL context, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
 
@@ -111,9 +111,7 @@ The `agctl` command that manages model catalogs is renamed from `agctl costs` to
 
 The `agctl costs` command still runs the same code, but it is deprecated and reports that you must use `agctl catalog` instead. Agentgateway plans to remove `agctl costs` in a future release.
 
-**Actions to take**:
-
-Replace `agctl costs` with `agctl catalog` in any script or pipeline that generates a model catalog. For the flags and examples, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
+**Actions to take**: Replace `agctl costs` with `agctl catalog` in any script or pipeline that generates a model catalog. For the flags and examples, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
 
 ## 🔒 Security {#v15-security}
 
@@ -309,7 +307,7 @@ policies:
         onBudgetExceeded: Block
 ```
 
-Usage is charged after the LLM response, from the tokens or cost that the provider reports. A request whose provider does not report the unit that the budget needs is logged, but it is not charged and cannot be blocked after the fact. Budget state is held in memory and flushed to the database every five seconds, which keeps the database off the request path. Across replicas, a burst of traffic can therefore overshoot the limit. You can view and manage budgets in the admin UI.
+Usage is charged after the LLM response, from the tokens or cost that the provider reports. If a request's provider does not report the unit that the budget needs, agentgateway logs the request but cannot charge it or block it after the fact. Budget state is held in memory and flushed to the database every five seconds, which keeps the database off the request path. Across replicas, a burst of traffic can therefore overshoot the limit. You can view and manage budgets in the admin UI.
 
 Budgets depend on a database, so they require the `hybrid` storage mode and are available in standalone mode only. Omit `allowedModels` to leave a key unconstrained, and set an empty list to deny every model. Both fields work with `key` and `keyHash` entries.
 
@@ -361,7 +359,7 @@ For a worked example, see the [`traffic-egress-proxy` example](https://github.co
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2915 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2797 -->
 
-The `agctl` importer converts a LiteLLM proxy configuration into an agentgateway standalone configuration and reports what it could and could not translate. This release adds wildcard model names, including `*`, prefix wildcards, and suffix wildcards, and LiteLLM centralized credentials from `credential_list` and `litellm_credential_name`, which become reusable providers and provider references. The importer reports an explicit finding for a wildcard or credential that agentgateway cannot represent safely, rather than translating it incorrectly.
+The `agctl` importer converts a LiteLLM proxy configuration into an agentgateway standalone configuration and reports what it could and could not translate. This release adds wildcard model names, including `*`, prefix wildcards, and suffix wildcards. It also imports LiteLLM centralized credentials from `credential_list` and `litellm_credential_name`, which become reusable providers and provider references. The importer reports an explicit finding for a wildcard or credential that agentgateway cannot represent safely, rather than translating it incorrectly.
 
 For more information, see [Import a configuration]({{< link-hextra path="/configuration/import/" >}}).
 

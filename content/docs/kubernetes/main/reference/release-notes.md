@@ -31,9 +31,7 @@ Only the providers that previously excluded cached tokens report different value
 
 The normalized counts reach every feature that reads a token count. This includes the `gen_ai.usage.input_tokens` log and span field, the `agentgateway_gen_ai_client_token_usage` metric, token-based rate limits, and any CEL expression that reads `llm.inputTokens` or `llm.totalTokens`. Cost tracking and the `llm.cost` field do not change, because the model cost catalog already priced cache-read and cache-creation tokens separately.
 
-**Actions to take**: 
-
-To keep the provider's unmodified value in a CEL expression, custom log field, custom metric, or rate limit descriptor, read `llm.providerInputTokens` or `llm.providerTotalTokens` instead. Review each token-based rate limit that you sized against a provider that excluded cached tokens, because requests now consume the limit sooner. Annotate the upgrade in any dashboard that trends input tokens, so that the step change is not read as a traffic change.
+**Actions to take**: To keep the provider's unmodified value in a CEL expression, custom log field, custom metric, or rate limit descriptor, read `llm.providerInputTokens` or `llm.providerTotalTokens` instead. Review each token-based rate limit that you sized against a provider that excluded cached tokens, because requests now consume the limit sooner. Annotate the upgrade in any dashboard that trends input tokens, so that the step change is not read as a traffic change.
 
 To restore the previous behavior while you migrate, set the `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable to `true` on the proxy. In Kubernetes mode, set the variable in `spec.env` on an `AgentgatewayParameters` resource. Agentgateway plans to remove this variable after version 1.5, so treat it as a short-term migration aid and not as a supported configuration.
 
@@ -61,7 +59,7 @@ The `requiredClaims` field is unchanged and still defaults to `["exp"]`. The `is
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3110 -->
 
-In route delegation, a child `HTTPRoute` that has no `parentRefs` is attached to by a parent route. When the parent and the child are in different namespaces, the child never authorized that attachment. Agentgateway now requires a `ReferenceGrant` in the child's namespace that allows `HTTPRoute` references from the parent's namespace, which matches how Gateway API governs every other cross-namespace reference.
+In route delegation, a parent route attaches to a child `HTTPRoute` that has no `parentRefs`. When the parent and the child are in different namespaces, the attachment previously needed no authorization from the child. Agentgateway now requires a `ReferenceGrant` in the child's namespace that allows `HTTPRoute` references from the parent's namespace, matching how Gateway API governs every other cross-namespace reference.
 
 **Actions to take**: For each cross-namespace delegation, create a `ReferenceGrant` in the child route's namespace, as in the following example. Delegation within a single namespace is unaffected.
 
@@ -120,7 +118,7 @@ Most deployments are unaffected. When you supply a model cost catalog through th
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2951 -->
 
-Agentgateway no longer sends the Istio-specific identity type-length-value (TLV) field on HBONE connections. The TLV existed so that agentgateway could be sandwiched with ztunnel and pass its peer identity along, which is no longer a recommended pattern. Let agentgateway terminate mTLS directly instead.
+Agentgateway no longer sends the Istio-specific identity type-length-value (TLV) field on HBONE connections. The TLV existed so that agentgateway could be sandwiched with ztunnel and pass its peer identity along. That sandwich pattern is no longer recommended. Let agentgateway terminate mTLS directly instead.
 
 **Actions to take**: If you sandwich agentgateway with ztunnel and rely on the forwarded identity in an authorization policy, move that policy to agentgateway. Agentgateway sees the peer identity through the `source.tls.identity` and `source.spiffeId` CEL attributes. A sandwich deployment still works, but without native identity propagation. For the recommended patterns, see [Istio ambient mesh]({{< link-hextra path="/integrations/istio/" >}}).
 
@@ -134,9 +132,7 @@ The `agctl` command that manages model catalogs is renamed from `agctl costs` to
 
 The `agctl costs` command still runs the same code, but it is deprecated and reports that you must use `agctl catalog` instead. Agentgateway plans to remove `agctl costs` in a future release.
 
-**Actions to take**:
-
-Replace `agctl costs` with `agctl catalog` in any script or pipeline that generates a model catalog. For the flags and examples, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
+**Actions to take**: Replace `agctl costs` with `agctl catalog` in any script or pipeline that generates a model catalog. For the flags and examples, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
 
 ## 🔒 Security {#v15-security}
 
@@ -179,7 +175,7 @@ spiffe:
     csi: {}
 ```
 
-The socket comes from the SPIFFE Container Storage Interface (CSI) driver by default. The defaults are `csi.spiffe.io` for the driver name, `/spiffe-workload-api` for the mount path, and `spire-agent.sock` for the socket name. A `hostPath` source is also available, although it mounts an arbitrary host directory into the gateway pod, so prefer the CSI source and restrict `hostPath` to `GatewayClass`-level parameters that cluster administrators manage. Set `enabled: false` on a `Gateway`-level `AgentgatewayParameters` to opt one gateway out of SPIFFE that is turned on at the `GatewayClass` level.
+The socket comes from the SPIFFE Container Storage Interface (CSI) driver by default. The defaults are `csi.spiffe.io` for the driver name, `/spiffe-workload-api` for the mount path, and `spire-agent.sock` for the socket name. A `hostPath` source is also available, but it mounts an arbitrary host directory into the gateway pod. Prefer the CSI source, and restrict `hostPath` to `GatewayClass`-level parameters that cluster administrators manage. Set `enabled: false` on a `Gateway`-level `AgentgatewayParameters` to opt one gateway out of SPIFFE that is turned on at the `GatewayClass` level.
 
 Listeners and backends then opt in individually.
 
@@ -268,7 +264,7 @@ Scoping is currently supported by the regex guard. In APIs that send tool argume
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2868 -->
 
-The backend TLS configuration in an `AgentgatewayPolicy` can now read a CA bundle from a Kubernetes Secret as well as from a ConfigMap. Set `kind: Secret` on a `caCertificateRefs` entry, or set `kind: ConfigMap` explicitly. ConfigMap remains the default, so existing policies are unchanged. The controller watches the referenced Secret, so a CA rotation reaches dependent resources, and it does not fall back between a Secret and a ConfigMap that share a name.
+The backend TLS configuration in an `AgentgatewayPolicy` can now read a CA bundle from a Kubernetes Secret as well as from a ConfigMap. Set `kind: Secret` on a `caCertificateRefs` entry, or set `kind: ConfigMap` explicitly. ConfigMap remains the default, so existing policies are unchanged. The controller watches the referenced Secret, so a CA rotation reaches dependent resources. The controller does not fall back between a Secret and a ConfigMap that share a name.
 
 Gateway API `BackendTLSPolicy` still accepts only ConfigMap references, because its upstream API constrains it. For more information, see [Backend TLS]({{< link-hextra path="/security/backendtls/" >}}).
 
