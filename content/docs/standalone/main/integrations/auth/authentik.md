@@ -17,7 +17,7 @@ MCP clients follow the [MCP authorization specification](https://modelcontextpro
 
 - **Non-standard JWKS path.** authentik serves signing keys at `{issuer}/jwks/` instead of `{issuer}/.well-known/jwks.json`. Agentgateway derives the correct URL from your issuer.
 - **Metadata discovery.** Agentgateway fetches authentik's OpenID Connect discovery document at `{issuer}/.well-known/openid-configuration` and serves it to MCP clients as authorization server metadata.
-- **No Dynamic Client Registration in open source authentik.** authentik does not implement [RFC 7591](https://www.rfc-editor.org/rfc/rfc7591) in its open source builds, so its discovery document reports `registration_endpoint: null`. Agentgateway injects one that points back at the gateway and answers registration requests with the client that you pre-register in `clientId`. authentik 2026.8.0 adds a registration endpoint ([authentik#8751](https://github.com/goauthentik/authentik/issues/8751)), but only as an enterprise feature, so `clientId` remains the path for open source deployments.
+- **No Dynamic Client Registration in open source authentik.** authentik does not implement [RFC 7591](https://www.rfc-editor.org/rfc/rfc7591.html) in its open source builds, so its discovery document reports `registration_endpoint: null`. Agentgateway injects one that points back at the gateway and answers registration requests with the client that you pre-register in `clientId`. authentik 2026.8.0 adds a registration endpoint ([authentik#8751](https://github.com/goauthentik/authentik/issues/8751)), but only as an enterprise feature, so `clientId` remains the path for open source deployments.
 
 > [!IMPORTANT]
 > Setting `clientId` is required for open source authentik. Because those builds do not support Dynamic Client Registration, the pre-registered client in `clientId` is the only way for MCP clients to complete registration. If you omit it, registration requests fail.
@@ -29,7 +29,7 @@ For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link
 1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
 2. Install [Docker](https://docs.docker.com/get-started/get-docker/) to run authentik locally.
 3. Install [Node.js](https://nodejs.org/) so that `npx` can run the sample MCP server.
-4. Install [jq](https://jqlang.github.io/jq/) to read values out of authentik's API responses.
+4. Install [jq](https://jqlang.org/) to read values out of authentik's API responses.
 
 The steps use a local authentik instance so that you can complete the guide end to end. To use an existing authentik instance instead, skip to [Step 2](#register) and replace `http://localhost:9000` with your authentik URL throughout.
 
@@ -386,7 +386,7 @@ Real MCP clients get a token by sending the user through a browser login. To kee
    | `clientId` | The client ID of the public client that you created in authentik. Agentgateway returns this client to MCP clients that attempt Dynamic Client Registration. |
 
    > [!NOTE]
-   > authentik does not support [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707) resource indicators, and unlike Auth0 and Okta, it has no `audience` query parameter workaround. This is why `audiences` must be set to the client ID that authentik puts in the `aud` claim.
+   > authentik does not support [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html) resource indicators, and unlike Auth0 and Okta, it has no `audience` query parameter workaround. This is why `audiences` must be set to the client ID that authentik puts in the `aud` claim.
 
    {{< doc-test paths="authentik-mcp-authn" >}}
    cat <<EOF > config.yaml

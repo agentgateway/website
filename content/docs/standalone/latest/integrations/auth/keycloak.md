@@ -222,7 +222,7 @@ MCP clients register themselves with the authorization server instead of using a
    | Setting | Description |
    | ------- | ----------- |
    | `issuer` | The realm URL, in the form `http://<keycloak-host>/realms/<realm>`. This value must match the `iss` claim in the token. |
-   | `audiences` | The audience that your Keycloak realm issues, which is the value that the audience mapper in [Step 2](#realm) adds. Keycloak does not support [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707) resource indicators ([keycloak#10169](https://github.com/keycloak/keycloak/issues/10169)), and agentgateway has no workaround for this, so you must set the audience that the realm already mints. |
+   | `audiences` | The audience that your Keycloak realm issues, which is the value that the audience mapper in [Step 2](#realm) adds. Keycloak does not support [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html) resource indicators ([keycloak#10169](https://github.com/keycloak/keycloak/issues/10169)), and agentgateway has no workaround for this, so you must set the audience that the realm already mints. |
    | `provider.keycloak` | Enables the Keycloak-specific behavior described in [Why the Keycloak provider is needed](#why). Takes no fields. |
    | `jwks` | Optional. Because `provider.keycloak` is set, agentgateway derives the JWKS URL from the issuer. To fetch keys from somewhere else, such as a local file or an internal mirror, set `jwks` explicitly to override the derived URL. |
 
