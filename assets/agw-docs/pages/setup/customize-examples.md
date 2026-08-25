@@ -47,12 +47,12 @@ spec:
 EOF
 ```
 
-Set the value to `"false"` for an IPv4-only cluster. The following table shows what each value changes.
+The following table shows what each value changes.
 
 | `IPV6_ENABLED` | Listener bind address | Backend DNS lookups | Notes |
 | -- | -- | -- | -- |
 | `"true"` (default) | IPv6 wildcard address | IPv4 and IPv6 addresses, preferring IPv4 | The proxy skips IPv6 binds if IPv6 is disabled on the node's loopback interface. |
-| `"false"` | IPv4 wildcard address | IPv4 addresses only | A backend hostname that resolves only to an IPv6 address is unreachable. |
+| `"false"` | IPv4 wildcard address | IPv4 addresses only | Use this value for an IPv4-only cluster. A backend hostname that resolves only to an IPv6 address is unreachable. |
 
 ### Custom image {#custom-image}
 
