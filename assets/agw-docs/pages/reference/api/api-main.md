@@ -1398,6 +1398,24 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
 | `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
+| `mode` _[BackendTunnelMode](#backendtunnelmode)_ | How requests are sent through the proxy.<br />Defaults to `Auto`. | Auto | Optional: \{\} <br /> |
+
+
+#### BackendTunnelMode
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [BackendTunnel](#backendtunnel)
+
+| Field | Description |
+| --- | --- |
+| `Auto` | Auto uses CONNECT for TLS and non-HTTP transports, and absolute-form requests for plaintext HTTP.<br /> |
+| `Connect` | Connect uses CONNECT for all transports, including plaintext HTTP.<br /> |
 
 
 #### BackendWithAI
@@ -1902,6 +1920,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `backendRef` _[LocalBackendObjectReference](#localbackendobjectreference)_ | Kubernetes backend that serves this provider.<br />`backendRef` may target only a namespace-local Service or InferencePool.<br />If unset, host and port must be set on the parent provider. |  | Optional: \{\} <br /> |
+| `providerOverride` _[ShortString](#shortstring)_ | Provider identity used for cost-catalog lookup and telemetry.<br />Defaults to "custom" when unset. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `formats` _[ProviderFormatConfig](#providerformatconfig) array_ | Provider-native API formats this provider supports. |  | MaxItems: 6 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `model` _[ShortString](#shortstring)_ | Model name override, such as `gpt-oss`.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
@@ -1924,6 +1943,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `backendRef` _[LocalBackendObjectReference](#localbackendobjectreference)_ | Kubernetes backend that serves this provider.<br />`backendRef` may target only a namespace-local Service or InferencePool.<br />If unset, host and port must be set on the parent provider. |  | Optional: \{\} <br /> |
+| `providerOverride` _[ShortString](#shortstring)_ | Provider identity used for cost-catalog lookup and telemetry.<br />Defaults to "custom" when unset. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `formats` _[ProviderFormatConfig](#providerformatconfig) array_ | Provider-native API formats this provider supports. |  | MaxItems: 6 <br />MinItems: 1 <br />Required: \{\} <br /> |
 
 
@@ -2904,6 +2924,7 @@ _Appears in:_
 | `mode` _[JWTAuthenticationMode](#jwtauthenticationmode)_ | Validation mode for JWT authentication. | Strict | Optional: \{\} <br /> |
 | `providers` _[JWTProvider](#jwtprovider) array_ |  |  | MaxItems: 64 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `location` _[AuthorizationExtractionLocation](#authorizationextractionlocation)_ | Where JWT credentials are read from.<br />If omitted, credentials are read from the `Authorization` header with the `Bearer ` prefix. |  | ExactlyOneOf: [header queryParameter cookie expression] <br />Optional: \{\} <br /> |
+| `preserveToken` _boolean_ | Keeps a successfully validated JWT in its original location. By default, the gateway removes<br />the JWT after validation. When the token only needs to be forwarded to the selected backend,<br />prefer `backendAuth.passthrough` so it is not exposed to other policies in the request path. |  | Optional: \{\} <br /> |
 | `mcp` _[JWTMCPConfig](#jwtmcpconfig)_ | Enables MCP OAuth metadata endpoint handling<br />and MCP-specific authentication behavior on top of standard JWT validation.<br />When set, the gateway will serve the MCP OAuth metadata discovery endpoints. |  | Optional: \{\} <br /> |
 
 
