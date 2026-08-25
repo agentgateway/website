@@ -16,15 +16,17 @@ Clients talk to an LLM gateway in terms of models. They send a request with `"mo
 
 Historically in Kubernetes, you assembled that experience yourself from a listener, an `HTTPRoute` that matched on the request body, an {{< reuse "agw-docs/snippets/backend.md" >}} for each provider, and an {{< reuse "agw-docs/snippets/policy.md" >}} for the AI behavior. Every LLM deployment needed the same scaffolding, and that scaffolding stayed visible in your configuration.
 
-The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API removes the scaffolding. Each resource declares one client-facing model and attaches directly to a Gateway listener. Agentgateway derives the routing, so you configure only what is specific to your setup.
+The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API removes the scaffolding. Each resource declares one client-facing model and attaches to a parent, such as a Gateway listener. Agentgateway derives the routing, so you configure only what is specific to your setup.
 
-Every model that attaches to the same listener is aggregated into a single model table. From that table, the listener serves the following behavior.
+Every model that attaches to the same parent is aggregated into a single model table, called a *model router*. From that table, agentgateway serves the following behavior.
 
 - Model extraction from the request body.
 - The standard LLM API paths, such as `/v1/chat/completions`.
 - Model discovery on `/v1/models`.
 - Per-model provider routing.
 - OpenAI-compatible error responses for unknown models.
+
+The parent that you choose decides which model router a model joins, and where that router is served. For more information, see [Parent types](#parent-types).
 
 ### Model-centric vs. route-centric configuration
 
@@ -34,16 +36,33 @@ Both approaches are supported. Use this table to choose.
 |----------|--------|----------------|
 | Are you exposing LLM models to clients through the standard OpenAI-compatible paths? | Yes | `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` |
 | Do you want `/v1/models` discovery without configuring it? | Yes | `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` |
-| Do you need to route on custom paths, methods, or query parameters? | Yes | {{< reuse "agw-docs/snippets/backend.md" >}} and `HTTPRoute` |
+| Do you want to serve LLM paths under a path prefix, such as `/tenant-a/v1/chat/completions`? | Yes | `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` on an [`HTTPRoute` parent](#path-scoped-models-on-an-httproute) |
+| Do you need to route on methods, query parameters, or headers? | Yes | {{< reuse "agw-docs/snippets/backend.md" >}} and `HTTPRoute` |
 | Do you need to attach an {{< reuse "agw-docs/snippets/policy.md" >}} to an individual model? | Yes | {{< reuse "agw-docs/snippets/backend.md" >}} and `HTTPRoute` |
 | Do you need to route to non-LLM backends on the same listener? | Either | Both can share one listener |
 
 > [!NOTE]
-> An {{< reuse "agw-docs/snippets/policy.md" >}} cannot target an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`. Policies that you attach to the Gateway apply to every model on that listener. To scope a policy to one model, either use the inline `spec.policies` field on the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`, or use the {{< reuse "agw-docs/snippets/backend.md" >}} and `HTTPRoute` approach. For the policies that the inline field supports, see [Model policies](#model-policies).
+> An {{< reuse "agw-docs/snippets/policy.md" >}} cannot target an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`. Policies that you attach to the Gateway apply to every model on that listener. To scope a policy to a smaller set of models, you have three options: the inline `spec.policies` field on the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` for one model, an {{< reuse "agw-docs/snippets/policy.md" >}} that targets an [`HTTPRoute` rule](#path-scoped-models-on-an-httproute) for a group of models, or the {{< reuse "agw-docs/snippets/backend.md" >}} and `HTTPRoute` approach. For the policies that the inline field supports, see [Model policies](#model-policies).
+
+## Parent types
+
+Each `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` lists one or more parents in `spec.parentRefs`. The parent kind decides which model router the model joins, and which paths serve that router.
+
+| Parent kind | Model router | Paths |
+|-------------|--------------|-------|
+| `Gateway` | The listener's default router, shared by every model that attaches to the same listener. | The standard LLM paths at the listener root, such as `/v1/chat/completions` and `/v1/models`. |
+| `ListenerSet` | The same as a `Gateway` parent, for a listener that a `ListenerSet` contributes. | The standard LLM paths at the listener root. |
+| `HTTPRoute` | A separate router for the referenced route rule, with its own model table. | The standard LLM paths under the rule's path prefix, such as `/tenant-a/v1/chat/completions`. |
+
+A `Gateway` parent is the default choice. Use an `HTTPRoute` parent when one listener needs more than one independent set of models, or when a group of models needs its own policies. For more information, see [Path-scoped models on an HTTPRoute](#path-scoped-models-on-an-httproute).
+
+Models on different routers are isolated from each other. A request to one router's paths can select only the models on that router, and `/v1/models` on that router lists only those models.
 
 ## Listener opt-in
 
-A listener serves LLM traffic only when it explicitly allows the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind in `allowedRoutes.kinds`.
+A listener serves LLM traffic only when it explicitly allows the route kinds that its models attach through, in `allowedRoutes.kinds`. Allow the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` kind for models that attach directly to the listener, and the `HTTPRoute` kind for models that attach through a route.
+
+The following example allows models to attach directly to the listener.
 
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1
@@ -68,7 +87,7 @@ spec:
 
 Adding the route kind turns on the listener's built-in LLM paths. At first the listener has zero models, so every request returns a `model_not_found` error. Models become available as they attach.
 
-A listener can allow both `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` and `HTTPRoute`, so LLM endpoints and ordinary HTTP routes coexist on the same port. When you set `allowedRoutes.kinds`, the listener accepts only the kinds that you list, so include every kind that you need.
+A listener can allow both `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` and `HTTPRoute`, so LLM endpoints and ordinary HTTP routes coexist on the same port. When you set `allowedRoutes.kinds`, the listener accepts only the kinds that you list, so include every kind that you need. Models that attach through an `HTTPRoute` parent need only the `HTTPRoute` kind, because the route is what attaches to the listener.
 
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1
@@ -91,6 +110,109 @@ spec:
       - group: gateway.networking.k8s.io
         kind: HTTPRoute
 ```
+
+## Path-scoped models on an HTTPRoute
+
+A `Gateway` parent gives a listener one model router at the listener root. That is enough for a single set of models, but not when one listener must serve several independent sets. To create additional routers on the same listener, declare each one with an `HTTPRoute` and attach models to the route instead of the Gateway.
+
+Use an `HTTPRoute` parent for the following cases.
+
+- Serve the LLM paths under a path prefix, such as `/tenant-a/v1/chat/completions`.
+- Give one listener several model tables, so that `/v1/models` returns a different list per path.
+- Apply an {{< reuse "agw-docs/snippets/policy.md" >}} to a group of models rather than to one model or to the whole listener.
+
+### Route requirements
+
+An `HTTPRoute` is a valid parent for an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` only when it meets the following requirements. A route that does not opt in with an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` backend stays an ordinary route, and a route that opts in but breaks one of the other requirements is rejected.
+
+| Requirement | Detail |
+|-------------|--------|
+| Parent kind is `HTTPRoute` | Set `kind: HTTPRoute` and `group: gateway.networking.k8s.io` in the model's `spec.parentRefs` entry. |
+| The route is in the model's namespace | Cross-namespace references from a model to a route are not supported. |
+| One rule is selected | Set `sectionName` on the model's `parentRefs` entry to the `name` of the route rule. You can omit `sectionName` only when the route has exactly one rule. |
+| The rule has exactly one `backendRef` | The `backendRef` must set `group: agentgateway.dev`, `kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`, and `name: "*"`. This backend is what opts the rule in as a model router. A rule cannot mix it with other backends. |
+| The `backendRef` sets no port, weight other than 1, or filters | Omit `port`. Omit `weight`, or set it to `1`. Omit `filters`. If you set `namespace`, it must be the route's own namespace. |
+| Path matches use `PathPrefix` | An `Exact` or `RegularExpression` path match is rejected, because the router serves a set of paths under the prefix. A rule can have several matches as long as every path match uses `PathPrefix`. |
+| No `URLRewrite` or `RequestRedirect` filter on the rule | Agentgateway rewrites the prefix itself so that the provider receives the standard LLM path. Other rule-level filters, such as `RequestHeaderModifier`, and rule-level `timeouts` and `retry` are supported. |
+
+Requirements are checked per model. When a model's parent reference fails one of them, the model reports `Accepted: False` with the reason in the condition message. To check, run `kubectl get agentgatewaymodel <name> -n <namespace> -o yaml` and read `status.parents`.
+
+### Example
+
+The following `HTTPRoute` declares a model router under `/tenant-a`, and the model attaches to that route's `models` rule. The {{< reuse "agw-docs/snippets/policy.md" >}} targets the same rule, so it applies to every model on that router and to nothing else on the listener.
+
+The listener that the route attaches to must allow the `HTTPRoute` kind, as shown in [Listener opt-in](#listener-opt-in).
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: tenant-a-models
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  parentRefs:
+  - name: agentgateway-proxy
+    sectionName: http
+  rules:
+  # Name the rule so that models and policies can select it
+  - name: models
+    matches:
+    - path:
+        type: PathPrefix
+        value: /tenant-a
+    # The wildcard model backend is what turns this rule into a model router
+    backendRefs:
+    - group: agentgateway.dev
+      kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+      name: "*"
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+metadata:
+  name: gpt-5-mini
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: tenant-a-models
+    sectionName: models
+  provider: OpenAI
+  policies:
+    auth:
+      secretRef:
+        name: openai-secret
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: tenant-a-auth
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: tenant-a-models
+    sectionName: models
+  traffic:
+    basicAuthentication:
+      secretRef:
+        name: tenant-a-users
+```
+
+With this configuration, clients reach the router under the route's prefix.
+
+- `GET /tenant-a/v1/models` lists `gpt-5-mini` and no other models.
+- `POST /tenant-a/v1/chat/completions` with `"model": "gpt-5-mini"` serves the request.
+- Both paths require the basic authentication credentials that the policy sets.
+
+Agentgateway strips the `/tenant-a` prefix before it forwards the request, so the provider receives the standard `/v1/chat/completions` path.
+
+### Router scoping constraints
+
+- **A virtual model and the concrete models it selects must share one router.** A `weighted` or `conditional` virtual model resolves its targets by model name inside its own router's table. Attach the virtual model and its targets to the same parent, otherwise the request fails with `virtual_model_not_resolved`.
+- **A root-path model route cannot share a listener with directly attached models.** If a model-serving rule matches `/`, has no matches at all, or has a match with no path, then no `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` can attach directly to the same listener through a `Gateway` parent. Both would claim the same paths, so the model on the route is rejected with a conflict message. Give the route a distinct prefix, or move the directly attached models onto routes.
+- **The rule name is part of the router identity.** Renaming a route rule moves its models to a new router. If you omit the rule name, the rule's index in the list identifies the router instead, so reordering rules has the same effect.
 
 ## Concrete and virtual models
 
@@ -129,7 +251,7 @@ metadata:
   name: gpt-5-mini
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
-  # The Gateway listener that serves this model
+  # The parent that serves this model, here a Gateway listener
   parentRefs:
   - group: gateway.networking.k8s.io
     kind: Gateway
@@ -155,7 +277,7 @@ spec:
 
 | Field | Description |
 |-------|-------------|
-| `parentRefs` | The Gateway and listener that serve this model. The listener must allow the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind. Omit `sectionName` to attach to every eligible listener on the Gateway. |
+| [`parentRefs`](#parent-types) | The parents that serve this model. A `Gateway` or `ListenerSet` parent attaches the model to that parent's listeners, and `sectionName` selects one listener. An `HTTPRoute` parent attaches the model to one rule on that route, and `sectionName` selects the rule. |
 | [`match.model`](#model-matching) | The model name that selects this resource in a client request. Defaults to `metadata.name`. |
 | [`visibility`](#visibility) | Whether clients can request the model directly. Defaults to `Public`. |
 | [`provider`](#providers) | The provider that serves the model, such as `OpenAI`. |
@@ -297,8 +419,19 @@ For examples of each strategy, see [Virtual models]({{< link-hextra path="/llm/m
 - Virtual models must be `Public`. The restriction stops virtual models from targeting each other, which could otherwise create routing loops.
 - Virtual models cannot set `spec.policies`. Configure policies on the concrete target models instead.
 
+## Verify that a model attached
+
+Each `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` reports one entry in `status.parents` per parent reference, with an `Accepted` condition for the attachment and a `ResolvedRefs` condition for the references in the spec, such as virtual model targets and Secrets.
+
+```sh
+kubectl get agentgatewaymodel gpt-5-mini -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
+```
+
+`Accepted: False` means the parent did not accept the model, and the condition message states why. For an `HTTPRoute` parent, the message names the requirement that the route or the rule broke. For more information, see [Route requirements](#route-requirements).
+
+You can also confirm attachment from the data plane by listing the models on the router's `/v1/models` path, or by reading the `attachedRoutes` count on the Gateway listener.
+
 ## Known limitations
 
 - The API is experimental and turned off by default.
-- An {{< reuse "agw-docs/snippets/policy.md" >}} cannot target an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`.
-- Status is not yet reported on the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resource. The `status.parents` field stays empty even when a model serves traffic correctly. To confirm that models attached, check the Gateway listener's `attachedRoutes` count, or list the models on `/v1/models`.
+- An {{< reuse "agw-docs/snippets/policy.md" >}} cannot target an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` directly. To scope a policy to a group of models, target the `HTTPRoute` rule that the models attach to. For more information, see [Path-scoped models on an HTTPRoute](#path-scoped-models-on-an-httproute).
