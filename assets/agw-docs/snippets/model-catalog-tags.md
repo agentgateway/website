@@ -18,7 +18,7 @@ Because tags are independent of pricing, a model entry can carry tags and no rat
 
 ### Chat format tags
 
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} interprets one family of tag values today: the request formats that a GitHub Copilot model accepts. Copilot exposes different endpoints for different models, so {{< reuse "agw-docs/snippets/agentgateway.md" >}} keeps a built-in list per model and converts the client's request into a format on that list. Tag a model to replace the built-in list, for example when GitHub changes which endpoints a model serves.
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} interprets one family of tag values today: the request formats that a GitHub Copilot model accepts. Copilot exposes different endpoints for different models, so {{< reuse "agw-docs/snippets/agentgateway.md" >}} keeps a built-in list per model and converts the client's request into a format on that list. Tags override that list for a single model, which matters when GitHub changes which endpoints a model serves.
 
 | Tag | Request format |
 |-----|----------------|
