@@ -4,7 +4,7 @@ weight: 10
 description: Integrate agentgateway with OpenTelemetry for distributed tracing and observability
 ---
 
-Agentgateway natively supports OpenTelemetry (OTLP) for distributed tracing. You can also enable structured logging for request details. For metrics, agentgateway exposes a Prometheus-compatible `/metrics` endpoint. For more information, see [Prometheus metrics]({{< link-hextra path="/integrations/observability/prometheus/" >}}).
+Agentgateway natively supports OpenTelemetry (OTLP) for distributed tracing. You can also enable structured logging for request details. For metrics, agentgateway exposes a Prometheus-compatible `/metrics` endpoint. For more information, see [Prometheus metrics]({{< link-hextra path="/observability/metrics/prometheus/" >}}).
 
 ## Configuration
 
@@ -93,7 +93,7 @@ For LLM-specific attributes such as `gen_ai.operation.name` and `gen_ai.request.
 
 {{< cards >}}
   {{< card path="/integrations/observability/jaeger" title="Jaeger" subtitle="Distributed tracing with Jaeger" >}}
-  {{< card path="/integrations/observability/prometheus" title="Prometheus Metrics" subtitle="Metrics via Prometheus-compatible endpoint" >}}
+  {{< card path="/observability/metrics/prometheus/" title="Prometheus Metrics" subtitle="Metrics via Prometheus-compatible endpoint" >}}
   {{< card path="/mcp/mcp-observability" title="MCP Observability" subtitle="MCP-specific tracing and logging" >}}
   {{< card path="/llm/observability" title="LLM Observability" subtitle="AI-specific observability" >}}
 {{< /cards >}}

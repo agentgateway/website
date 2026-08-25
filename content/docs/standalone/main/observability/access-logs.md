@@ -29,11 +29,23 @@ config:
     format: json
 ```
 
-## Configure access log content
+## View access logs in the UI
 
-Use the `frontendPolicies.accessLog` section to filter, add, or remove fields from the access log. You can combine any of these settings to configure your access log content. 
+The agentgateway UI at [http://localhost:15000/ui](http://localhost:15000/ui) includes a **Logs** page that provides a richer view of access log data than stdout. For each request, the Logs page shows:
 
-### Filter which requests are logged
+- **Trajectory**: The request path from the client through agentgateway to the upstream provider, including any policy callouts if policies are configured.
+- **Conversation view**: For LLM traffic, the prompt and response are rendered as a readable conversation.
+- **Usage**: Token counts, cost, latency, and other per-request metrics
+
+To view access logs in the UI: 
+
+1. Open the [agentgateway admin UI](http://localhost:15000/ui). 
+2. Go to **Logs** and review the access logs that agentgateway captured for previous requests. Use the filter options to limit the number of access logs that are shown to you. For example, you can filter logs by model, providers, or users. Note that in order to filter logs by user, you must configure authentication in agentgateway. 
+3. To access richer access logs for LLM and MCP-related requests, such as to see the full conversation with your LLM, model flow, and the tokens that were used, open the logs settings and toggle **Include prompts and completions in logs**. Then, repeat the request to your backend to view the additional data. The following example shows a conversation with an LLM provider. 
+  
+   {{< reuse-image src="img/main/agw-access-log.png" srcDark="img/main/agw-access-log-dark.png" >}}
+
+## Filter requests
 
 Use a [CEL]({{< link-hextra path="/reference/cel/" >}}) expression to log only a subset of requests. Requests that do not match the expression are not logged. The following example produces access logs only for requests with a response code of 400 or greater.
 
@@ -44,7 +56,7 @@ frontendPolicies:
     filter: 'response.code >= 400'
 ```
 
-### Add custom fields
+## Add custom fields to logs
 
 You can add custom fields to every access log line by using CEL expressions that are evaluated against the request and response context.
 
@@ -65,7 +77,7 @@ frontendPolicies:
 
 For the full list of available fields, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables/" >}}). 
 
-### Remove fields
+## Remove fields from logs
 
 Remove fields from access log lines. The following example removes the source address and HTTP path that are included by default. 
 
@@ -95,7 +107,7 @@ frontendPolicies:
 
 ### OTLP-only filtering
 
-You can apply a separate filter specifically for OTLP export — for example, to send only errors to an external backend while still logging everything to stdout:
+You can apply a separate filter to the data that is applied during the OTLP export. For example, you might want to log all requests to stdout, but only send errors to an external OTLP backend. 
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config

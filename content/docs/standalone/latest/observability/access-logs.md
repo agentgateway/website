@@ -33,7 +33,7 @@ config:
 
 Use `frontendPolicies.accessLog` to filter, add, or remove fields from access log lines.
 
-### Filter which requests are logged
+### Filter requests
 
 Use a [CEL]({{< link-hextra path="/reference/cel/" >}}) expression to log only a subset of requests. Requests that do not match the expression are not logged.
 

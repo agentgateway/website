@@ -1,5 +1,5 @@
 ---
-title: Overview
+title: View and customize metrics
 weight: 10
 description: View and monitor agentgateway metrics for traffic, LLM, MCP, and connection insights.
 ---
@@ -17,21 +17,7 @@ curl http://localhost:15020/metrics
 Metrics are grouped under the `agentgateway_` prefix and follow the [OpenMetrics](https://openmetrics.io/) format. For an overview of available metrics, see the [metrics reference]({{< link path="/observability/metrics/reference/" >}}). 
 
 
-## Scrape metrics with Prometheus
-
-To scrape agentgateway metrics with Prometheus, add a scrape job to your `prometheus.yml`. The following example scrapes all metrics from the localhost port `15020`.
-
-```yaml
-scrape_configs:
-  - job_name: agentgateway
-    static_configs:
-      - targets:
-          - localhost:15020
-    scrape_interval: 15s
-```
-
-> [!NOTE]
-A Prometheus scrap cnfig is required when you use agentgateway as a binary or a Docker container. If you installed agentgateway on Kubernetes, the pod is automatically annotated with the `prometheus.io/scrape: "true"` and `prometheus.io/port: "15020"` annotations so that Prometheus can scape metrics without any additional configuration. 
+For instructions on setting up Prometheus to scrape agentgateway metrics, see [Prometheus]({{< link-hextra path="/observability/metrics/prometheus/" >}}).
 
 ## Add custom metric labels
 

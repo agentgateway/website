@@ -14,7 +14,7 @@ Agentgateway exposes three observability signals out of the box: **metrics**, **
   {{< card path="/observability/metrics/" title="Metrics" subtitle="Prometheus-compatible endpoint for request, LLM, MCP, and connection metrics" >}}
   {{< card path="/observability/traces/" title="Traces" subtitle="OTLP distributed tracing with OpenTelemetry semantic conventions for LLM and MCP traffic" >}}
   {{< card path="/observability/access-logs/" title="Access logs" subtitle="Per-request structured logs with CEL-based filtering, enrichment, and OTLP export" >}}
-  {{< card path="/observability/grafana/" title="Grafana dashboard" subtitle="Import the pre-built dashboard to visualize request, LLM, MCP, and connection metrics" >}}
+  {{< card path="/observability/metrics/grafana/" title="Grafana dashboard" subtitle="Import the pre-built dashboard to visualize request, LLM, MCP, and connection metrics" >}}
 {{< /cards >}}
 
 ## Observability by traffic type

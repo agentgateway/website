@@ -8,4 +8,4 @@ test: skip
 ---
 
 > [!NOTE]
-> This page has moved. See [Grafana dashboard]({{< link-hextra path="/observability/grafana/" >}}) for the current documentation.
+> This page has moved. See [Grafana dashboard]({{< link-hextra path="/observability/metrics/grafana/" >}}) for the current documentation.
