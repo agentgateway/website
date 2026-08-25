@@ -65,4 +65,4 @@ gcloud projects add-iam-policy-binding my-project \
 - [Vertex AI Provider]({{< link-hextra path="/llm/providers/vertex/" >}})
 - [Google Gemini Provider]({{< link-hextra path="/llm/providers/gemini/" >}})
 - [GCP Secret Manager Integration](https://cloud.google.com/security/products/secret-manager)
-- [Deployment Guide]({{< link-hextra path="/deployment/" >}})
+- [Install agentgateway]({{< link-hextra path="/setup/install/" >}})

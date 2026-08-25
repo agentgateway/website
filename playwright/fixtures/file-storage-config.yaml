@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Default (file) storage: agentgateway writes UI-managed resources straight back into this
+# file, adding the section when the file does not have one yet. This is what the binary and
+# Docker installations do out of the box, and it is what the "file mode" section of the
+# setup/storage guide walks through.
+#
+# The launcher copies this file into a WRITABLE mount, which is the whole point of the mode:
+# unlike the hybrid capture (serve-storage-ui.sh), no database is involved — a UI save lands
+# in the YAML on disk, and the spec asserts exactly that.
+#
+# The UI stays on the admin interface (:15000) so this mode behaves like every other capture.
+config:
+  storage:
+    mode: file
+gateways:
+  default:
+    port: 4000

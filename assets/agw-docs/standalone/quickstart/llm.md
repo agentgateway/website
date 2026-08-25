@@ -2,7 +2,7 @@ Configure the agentgateway binary to route requests to the [OpenAI](https://open
 
 ## Before you begin
 
-1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
+1. {{< version include-if="1.4.x" >}}[Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).{{< /version >}}{{< version exclude-if="1.4.x" >}}[Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).{{< /version >}}
 
    {{< tabs >}}
 {{% tab name="Latest" %}}
