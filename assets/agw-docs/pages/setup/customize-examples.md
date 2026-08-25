@@ -47,7 +47,15 @@ spec:
 EOF
 ```
 
-For an IPv4-only cluster, set the value to `"false"`. The proxy then binds only the IPv4 wildcard address, and because the default DNS lookup family is `Auto`, backend DNS resolution queries A records only.
+Set the value to `"false"` for an IPv4-only cluster. The following table shows what each value changes.
+
+| `IPV6_ENABLED` | Listener bind address | Backend DNS lookups |
+| -- | -- | -- |
+| `"true"` (default) | IPv6 wildcard address | IPv4 and IPv6 addresses, preferring IPv4 |
+| `"false"` | IPv4 wildcard address | IPv4 addresses only |
+
+> [!WARNING]
+> With `"false"`, a backend hostname that resolves only to an IPv6 address is unreachable.
 
 > [!NOTE]
 > Even when `IPV6_ENABLED` is `true`, the proxy skips IPv6 binds if IPv6 is disabled on the node's loopback interface. To set the equivalent value in a standalone agentgateway config file instead of an environment variable, use the `config.enableIpv6` field.
