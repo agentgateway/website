@@ -113,7 +113,7 @@ spec:
 
 ## Path-scoped models on an HTTPRoute
 
-A `Gateway` parent gives a listener one model router at the listener root. That is enough for a single set of models, but not when one listener must serve several independent sets. To create additional routers on the same listener, declare each one with an `HTTPRoute` and attach models to the route instead of the Gateway.
+A `Gateway` parent gives a listener one model router at the listener root. That setup is enough for a single set of models, but not when one listener must serve several independent sets. To create additional routers on the same listener, declare each one with an `HTTPRoute` and attach models to the route instead of the Gateway.
 
 Use an `HTTPRoute` parent for the following cases.
 
