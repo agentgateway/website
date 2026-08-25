@@ -29,6 +29,29 @@ spec:
 EOF
 ```
 
+### Enable or disable IPv6 {#ipv6}
+
+Control whether the agentgateway proxy binds and resolves IPv6 addresses with the `IPV6_ENABLED` environment variable. IPv6 is enabled by default, so set this variable explicitly only when you want to pin the behavior for a cluster, such as in a dual-stack environment where the proxy must listen on IPv6.
+
+```yaml
+kubectl apply --server-side -f- <<'EOF'
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+metadata:
+  name: agentgateway-ipv6-config
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  env:
+    - name: IPV6_ENABLED
+      value: "true"
+EOF
+```
+
+For an IPv4-only cluster, set the value to `"false"`. The proxy then binds only the IPv4 wildcard address, and because the default DNS lookup family is `Auto`, backend DNS resolution queries A records only.
+
+> [!NOTE]
+> Even when `IPV6_ENABLED` is `true`, the proxy skips IPv6 binds if IPv6 is disabled on the node's loopback interface. To set the equivalent value in a standalone agentgateway config file instead of an environment variable, use the `config.enableIpv6` field.
+
 ### Custom image {#custom-image}
 
 Use the `image` config to specify a custom container image, such as in airgapped environments.
