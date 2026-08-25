@@ -292,7 +292,7 @@ docker compose up -d
 
 ## Learn more
 
-- [Deployment Guide]({{< link-hextra path="/deployment/docker/" >}})
+- [Install with Docker]({{< link-hextra path="/setup/install/docker/" >}})
 - [Configuration Reference]({{< link-hextra path="/configuration/" >}})
 - [LLM Providers]({{< link-hextra path="/llm/providers/" >}})
 

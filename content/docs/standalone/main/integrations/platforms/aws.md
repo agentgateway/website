@@ -97,4 +97,4 @@ Create an IAM role for agentgateway with these permissions:
 
 - [Amazon Bedrock Provider]({{< link-hextra path="/llm/providers/bedrock/" >}})
 - [AWS Secrets Manager Integration](https://aws.amazon.com/secrets-manager/)
-- [Deployment Guide]({{< link-hextra path="/deployment/" >}})
+- [Install agentgateway]({{< link-hextra path="/setup/install/" >}})

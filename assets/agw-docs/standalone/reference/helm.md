@@ -1,6 +1,6 @@
 Review the Helm values that you can set for the `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` Helm chart, which deploys agentgateway in standalone mode on Kubernetes.
 
-To install the chart, see the [Helm deployment guide]({{< link-hextra path="/deployment/helm/" >}}).
+To install the chart, see [Install with Helm]({{< link-hextra path="/setup/install/helm/" >}}).
 
 > [!NOTE]
 > This chart deploys the standalone agentgateway proxy only. For the Helm values of the charts that deploy the agentgateway control plane and CRDs for Kubernetes mode, see the [Kubernetes mode Helm reference](https://agentgateway.dev/docs/kubernetes/main/reference/helm/).
