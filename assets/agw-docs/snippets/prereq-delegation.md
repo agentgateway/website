@@ -23,7 +23,40 @@
    kubectl create namespace team2
    ```
 
-5. Deploy the httpbin app into both namespaces. The httpbin app exposes endpoints such as `/anything/...`, `/headers`, and `/delay/N` that are useful for verifying routing and policy behavior.
+5. Allow the parent HTTPRoute to delegate to child HTTPRoutes in the `team1` and `team2` namespaces. A ReferenceGrant in the child namespace is required whenever the parent and the child are in different namespaces and the child does not name the parent in its own `parentRefs` field. Without the grant, the child HTTPRoute is never attached to the parent, and requests along the delegated path return a 404 response.
+   ```yaml {paths="route-delegation-prereq"}
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1beta1
+   kind: ReferenceGrant
+   metadata:
+     name: allow-delegation
+     namespace: team1
+   spec:
+     from:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     to:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+   ---
+   apiVersion: gateway.networking.k8s.io/v1beta1
+   kind: ReferenceGrant
+   metadata:
+     name: allow-delegation
+     namespace: team2
+   spec:
+     from:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     to:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+   EOF
+   ```
+
+6. Deploy the httpbin app into both namespaces. The httpbin app exposes endpoints such as `/anything/...`, `/headers`, and `/delay/N` that are useful for verifying routing and policy behavior.
    ```sh {paths="route-delegation-prereq"}
    curl -sL https://raw.githubusercontent.com/kgateway-dev/kgateway/main/examples/httpbin.yaml \
      | awk 'BEGIN{skip=0} /^kind: Namespace$/{skip=1} skip==0{print} /^---$/{skip=0}' \
@@ -69,7 +102,7 @@
    EOF
    {{< /doc-test >}}
 
-6. Verify that the httpbin apps are up and running.
+7. Verify that the httpbin apps are up and running.
    ```sh
    kubectl get pods -n team1
    kubectl get pods -n team2
