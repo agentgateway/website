@@ -2,7 +2,14 @@
 title: Metrics
 weight: 10
 description: View and monitor agentgateway metrics for traffic and performance insights
+aliases:
+  - /docs/reference/observability/metrics/
 ---
+
+> [!NOTE]
+> This page has moved. See [Metrics]({{< link-hextra path="/observability/metrics/" >}}) for the current documentation.
+
+
 
 The agentgateway comes with a built-in metrics endpoint that you can use to monitor traffic that is going through the agentgateway. Metrics are automatically collected by the agentgateway for every request that the agentgateway receives. 
 
