@@ -35,7 +35,7 @@ The tags apply as follows.
 - {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} lowercases the requested model name before it looks up tags. Write model names in the catalog in lowercase; otherwise, the lookup misses, and the built-in list applies.
 - A client request in a format that the model does not accept fails with an unsupported conversion error that lists the accepted formats.
 
-These tags apply only to the `copilot` provider, which is available in standalone mode. Tag values outside this table are stored and merged, but {{< reuse "agw-docs/snippets/agentgateway.md" >}} does not act on them yet.
+These tags apply only to the `copilot` provider, which is available in standalone mode. Tag values that are not listed in this table are stored and merged, but {{< reuse "agw-docs/snippets/agentgateway.md" >}} does not act on them yet.
 
 ### How tags merge
 
