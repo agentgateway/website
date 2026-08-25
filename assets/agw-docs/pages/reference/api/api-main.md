@@ -461,6 +461,7 @@ _Appears in:_
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#resourcerequirements-v1-core)_ | Compute resources required by this container. See<br />https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br />for details. |  | Optional: \{\} <br /> |
 | `shutdown` _[ShutdownSpec](#shutdownspec)_ | Shutdown delay configuration. How graceful planned or unplanned data<br />plane changes happen is in tension with how quickly rollouts of the data<br />plane complete. How long a data plane pod must wait for shutdown to be<br />perfectly graceful depends on how you have configured your `Gateway`<br />resources. |  | Optional: \{\} <br /> |
 | `istio` _[IstioSpec](#istiospec)_ | Istio integration settings. If enabled, agentgateway can natively connect to Istio-enabled pods with mTLS. |  | Optional: \{\} <br /> |
+| `spiffe` _[SpiffeSpec](#spiffespec)_ | SPIFFE integration settings. When set, the gateway sources its TLS identity (X.509-SVID)<br />and trust bundle from the local SPIFFE Workload API, and the controller<br />mounts the Workload API socket into the pod. Listeners and backends opt in to SPIFFE individually<br />(via the `agentgateway.dev/tls-certificate-source: SPIFFE` listener option and the<br />AgentgatewayPolicy `backend.tls.certificateSource: SPIFFE` field respectively). |  | Optional: \{\} <br /> |
 | `modelCatalog` _[ModelCatalogSpec](#modelcatalogspec)_ | Model cost catalog sources. Only effective when set on a Gateway-level<br />AgentgatewayParameters (via Gateway.spec.infrastructure.parametersRef);<br />ignored on GatewayClass-level parameters because ConfigMap references<br />are resolved from the Gateway's deployment namespace. |  | Optional: \{\} <br /> |
 
 
@@ -541,6 +542,7 @@ _Appears in:_
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#resourcerequirements-v1-core)_ | Compute resources required by this container. See<br />https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br />for details. |  | Optional: \{\} <br /> |
 | `shutdown` _[ShutdownSpec](#shutdownspec)_ | Shutdown delay configuration. How graceful planned or unplanned data<br />plane changes happen is in tension with how quickly rollouts of the data<br />plane complete. How long a data plane pod must wait for shutdown to be<br />perfectly graceful depends on how you have configured your `Gateway`<br />resources. |  | Optional: \{\} <br /> |
 | `istio` _[IstioSpec](#istiospec)_ | Istio integration settings. If enabled, agentgateway can natively connect to Istio-enabled pods with mTLS. |  | Optional: \{\} <br /> |
+| `spiffe` _[SpiffeSpec](#spiffespec)_ | SPIFFE integration settings. When set, the gateway sources its TLS identity (X.509-SVID)<br />and trust bundle from the local SPIFFE Workload API, and the controller<br />mounts the Workload API socket into the pod. Listeners and backends opt in to SPIFFE individually<br />(via the `agentgateway.dev/tls-certificate-source: SPIFFE` listener option and the<br />AgentgatewayPolicy `backend.tls.certificateSource: SPIFFE` field respectively). |  | Optional: \{\} <br /> |
 | `modelCatalog` _[ModelCatalogSpec](#modelcatalogspec)_ | Model cost catalog sources. Only effective when set on a Gateway-level<br />AgentgatewayParameters (via Gateway.spec.infrastructure.parametersRef);<br />ignored on GatewayClass-level parameters because ConfigMap references<br />are resolved from the Gateway's deployment namespace. |  | Optional: \{\} <br /> |
 | `deployment` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated<br />`Deployment` resource. |  | Optional: \{\} <br /> |
 | `daemonSet` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated<br />`DaemonSet` resource. |  | Optional: \{\} <br /> |
@@ -1345,6 +1347,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
+| `certificateSource` _[BackendTLSCertificateSource](#backendtlscertificatesource)_ | Source for the gateway's client identity and trust roots (`Inline` default, or `SPIFFE`). | Inline | Optional: \{\} <br /> |
 | `mtlsCertificateRef` _[LocalSecretObjectRef](#localsecretobjectref) array_ | Enables mutual TLS to the backend using `tls.key` and `tls.crt` from the<br />referenced credential source (defaulting to a Kubernetes `Secret`). An<br />optional `ca.cert`, if present, verifies the server certificate, but<br />`caCertificateRefs` takes priority. If unspecified, no client certificate<br />is used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `caCertificateRefs` _[LocalCACertificateRef](#localcacertificateref) array_ | CA certificate source to use to verify the server certificate. Omitted kind<br />and `ConfigMap` select a ConfigMap; `Secret` selects a Secret. The `ca.crt`<br />key is required. If unset, the system's trusted certificates are used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `insecureSkipVerify` _[InsecureTLSMode](#insecuretlsmode)_ | Originates TLS but skips verification of the backend's certificate<br />WARNING: insecure; only use if the risks are understood<br />Modes:<br />* `All` disables all TLS verification<br />* `Hostname` trusts the CA certificate but ignores hostname/SAN mismatches.<br />  Still insecure; prefer `verifySubjectAltNames` where possible. |  | Optional: \{\} <br /> |
@@ -1352,6 +1355,24 @@ _Appears in:_
 | `verifySubjectAltNames` _[ShortString](#shortstring) array_ | Subject Alternative Names (`SAN`)<br />to verify in the server certificate.<br />If not present, the destination hostname is automatically used. |  | MaxItems: 16 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `alpnProtocols` _[TinyString](#tinystring)_ | Application-Layer Protocol Negotiation (`ALPN`)<br />value to use in the TLS handshake.<br />If not present, defaults to `["h2", "http/1.1"]`. |  | MaxItems: 16 <br />MaxLength: 64 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `keyExchangeGroups` _[KeyExchangeGroup](#keyexchangegroup) array_ | Ordered list of key exchange groups for a TLS connection.<br />For example: `X25519_MLKEM768,X25519`. |  | Optional: \{\} <br /> |
+
+
+#### BackendTLSCertificateSource
+
+_Underlying type:_ _string_
+
+BackendTLSCertificateSource selects where the gateway's client identity and trust roots come
+from when originating TLS to a backend.
+
+
+
+_Appears in:_
+- [BackendTLS](#backendtls)
+
+| Field | Description |
+| --- | --- |
+| `Inline` | BackendTLSCertificateSourceInline uses the inline `mtlsCertificateRef`/`caCertificateRefs`<br />(or the system trust roots when unset). This is the default.<br /> |
+| `SPIFFE` | BackendTLSCertificateSourceSPIFFE sources the gateway's X.509-SVID and trust bundle from<br />the SPIFFE Workload API (mutual TLS).<br /> |
 
 
 #### BackendTunnel
@@ -1377,6 +1398,24 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
 | `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
+| `mode` _[BackendTunnelMode](#backendtunnelmode)_ | How requests are sent through the proxy.<br />Defaults to `Auto`. | Auto | Optional: \{\} <br /> |
+
+
+#### BackendTunnelMode
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [BackendTunnel](#backendtunnel)
+
+| Field | Description |
+| --- | --- |
+| `Auto` | Auto uses CONNECT for TLS and non-HTTP transports, and absolute-form requests for plaintext HTTP.<br /> |
+| `Connect` | Connect uses CONNECT for all transports, including plaintext HTTP.<br /> |
 
 
 #### BackendWithAI
@@ -1881,6 +1920,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `backendRef` _[LocalBackendObjectReference](#localbackendobjectreference)_ | Kubernetes backend that serves this provider.<br />`backendRef` may target only a namespace-local Service or InferencePool.<br />If unset, host and port must be set on the parent provider. |  | Optional: \{\} <br /> |
+| `providerOverride` _[ShortString](#shortstring)_ | Provider identity used for cost-catalog lookup and telemetry.<br />Defaults to "custom" when unset. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `formats` _[ProviderFormatConfig](#providerformatconfig) array_ | Provider-native API formats this provider supports. |  | MaxItems: 6 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `model` _[ShortString](#shortstring)_ | Model name override, such as `gpt-oss`.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
@@ -1903,6 +1943,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `backendRef` _[LocalBackendObjectReference](#localbackendobjectreference)_ | Kubernetes backend that serves this provider.<br />`backendRef` may target only a namespace-local Service or InferencePool.<br />If unset, host and port must be set on the parent provider. |  | Optional: \{\} <br /> |
+| `providerOverride` _[ShortString](#shortstring)_ | Provider identity used for cost-catalog lookup and telemetry.<br />Defaults to "custom" when unset. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `formats` _[ProviderFormatConfig](#providerformatconfig) array_ | Provider-native API formats this provider supports. |  | MaxItems: 6 <br />MinItems: 1 <br />Required: \{\} <br /> |
 
 
@@ -2883,6 +2924,7 @@ _Appears in:_
 | `mode` _[JWTAuthenticationMode](#jwtauthenticationmode)_ | Validation mode for JWT authentication. | Strict | Optional: \{\} <br /> |
 | `providers` _[JWTProvider](#jwtprovider) array_ |  |  | MaxItems: 64 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `location` _[AuthorizationExtractionLocation](#authorizationextractionlocation)_ | Where JWT credentials are read from.<br />If omitted, credentials are read from the `Authorization` header with the `Bearer ` prefix. |  | ExactlyOneOf: [header queryParameter cookie expression] <br />Optional: \{\} <br /> |
+| `preserveToken` _boolean_ | Keeps a successfully validated JWT in its original location. By default, the gateway removes<br />the JWT after validation. When the token only needs to be forwarded to the selected backend,<br />prefer `backendAuth.passthrough` so it is not exposed to other policies in the request path. |  | Optional: \{\} <br /> |
 | `mcp` _[JWTMCPConfig](#jwtmcpconfig)_ | Enables MCP OAuth metadata endpoint handling<br />and MCP-specific authentication behavior on top of standard JWT validation.<br />When set, the gateway will serve the MCP OAuth metadata discovery endpoints. |  | Optional: \{\} <br /> |
 
 
@@ -4849,6 +4891,85 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `min` _integer_ | Minimum time (in seconds) to wait before allowing Agentgateway to<br />terminate. Refer to the `CONNECTION_MIN_TERMINATION_DEADLINE`<br />environment variable for details. |  | Maximum: 3.1536e+07 <br />Minimum: 0 <br />Required: \{\} <br /> |
 | `max` _integer_ | Maximum time (in seconds) to wait before allowing Agentgateway to<br />terminate. Refer to the `TERMINATION_GRACE_PERIOD_SECONDS`<br />environment variable for details. |  | Maximum: 3.1536e+07 <br />Minimum: 0 <br />Required: \{\} <br /> |
+
+
+#### SpiffeCSISource
+
+
+
+SpiffeCSISource sources the SPIFFE Workload API socket from a CSI driver (the SPIFFE CSI driver).
+
+
+
+_Appears in:_
+- [SpiffeWorkloadAPISource](#spiffeworkloadapisource)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `driver` _string_ | CSI driver name. Defaults to `csi.spiffe.io`. |  | Optional: \{\} <br /> |
+
+
+#### SpiffeHostPathSource
+
+
+
+SpiffeHostPathSource sources the SPIFFE Workload API socket from a directory on the host node.
+
+Note: this mounts an arbitrary host directory (read-only) into the gateway pod, so anyone
+who can set it can read that directory's contents. Prefer the CSI source, and consider
+restricting hostPath to GatewayClass-level AgentgatewayParameters managed by cluster admins.
+
+
+
+_Appears in:_
+- [SpiffeWorkloadAPISource](#spiffeworkloadapisource)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `path` _string_ | Host directory containing the SPIFFE Workload API socket, e.g. `/run/spire/agent-sockets`. |  | MinLength: 1 <br />Required: \{\} <br /> |
+
+
+#### SpiffeSpec
+
+
+
+SpiffeSpec configures gateway-wide SPIFFE Workload API integration: where the Workload API
+socket comes from (mounted into the pod by the controller) and how long to wait for
+the initial connection.
+
+
+
+_Appears in:_
+- [AgentgatewayParametersConfigs](#agentgatewayparametersconfigs)
+- [AgentgatewayParametersSpec](#agentgatewayparametersspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `enabled` _boolean_ | Explicitly turns SPIFFE integration on or off for this gateway. When unset, the presence<br />of the spiffe block opts in. Set to false on a Gateway-level AgentgatewayParameters to opt<br />a gateway out of SPIFFE enabled at the GatewayClass level. |  | Optional: \{\} <br /> |
+| `source` _[SpiffeWorkloadAPISource](#spiffeworkloadapisource)_ | Volume source for the SPIFFE Workload API socket. When omitted (i.e. `spiffe: \{\}`),<br />the socket is sourced from the SPIFFE CSI driver with default settings. |  | AtMostOneOf: [csi hostPath] <br />Optional: \{\} <br /> |
+
+
+#### SpiffeWorkloadAPISource
+
+
+
+SpiffeWorkloadAPISource describes how the SPIFFE Workload API socket is mounted into the
+gateway pod. At most one of `csi` or `hostPath` may be set; when neither is set, the SPIFFE
+CSI driver is used. `mountPath` and `socketName` describe the container-side location of the
+socket and apply regardless of the source kind.
+
+_Validation:_
+- AtMostOneOf: [csi hostPath]
+
+_Appears in:_
+- [SpiffeSpec](#spiffespec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `csi` _[SpiffeCSISource](#spiffecsisource)_ | Source the Workload API socket from the SPIFFE CSI driver (the default). |  | Optional: \{\} <br /> |
+| `hostPath` _[SpiffeHostPathSource](#spiffehostpathsource)_ | Source the Workload API socket from a host directory. |  | Optional: \{\} <br /> |
+| `mountPath` _string_ | Mount path inside the container for the Workload API socket directory.<br />Must be an absolute path. Defaults to `/spiffe-workload-api`. |  | Pattern: `^/` <br />Optional: \{\} <br /> |
+| `socketName` _string_ | Socket filename within the mount directory. Defaults to `spire-agent.sock`. |  | Optional: \{\} <br /> |
 
 
 #### StaticBackend
