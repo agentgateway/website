@@ -11,7 +11,7 @@ You can either mount a directory and let agentgateway create a configuration fil
 {{< tabs >}}
 {{% tab name="Mount a directory" %}}
 
-Mount a writable directory at `/config`. Agentgateway generates a `config.yaml` file in that directory on the first start, and creates a SQLite database alongside it for local runtime features.
+Mount a writable directory at the `/config` path. Agentgateway generates a default configuration in the `config.yaml` file in that directory on the first start, and creates a SQLite database alongside it for local runtime features.
 
 ```sh
 mkdir agentgateway-config
@@ -23,7 +23,7 @@ docker run -d \
   cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}}
 ```
 
-The `--user` flag runs the container as your own user so that the container can read and write the mounted directory. The generated configuration sets up logging, serves the admin UI on the gateway, and looks similar to the following example.
+The `--user` flag runs the container as your own user so that the container can read and write the mounted directory. The generated configuration points agentgateway at a SQLite database, defines a `default` gateway, serves the admin UI on that default gateway, and looks similar to the following example.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -58,11 +58,11 @@ Agentgateway does not add anything to a file that you supply, so the UI is serve
 
 Keep the mount writable if you want to save configuration changes that you make in the UI. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
 
+> [!IMPORTANT]
+> The admin address defaults to `localhost:15000`, which is the container's own loopback interface, so publishing port 15000 does not make the admin UI reachable from your host. Reach the UI on a gateway port instead, as the generated configuration does. To publish the admin address itself, see [Reach the admin UI in a container]({{< link-hextra path="/setup/ui/gateway-ui/#docker-admin-addr" >}}).
+
 {{% /tab %}}
 {{< /tabs >}}
-
-> [!IMPORTANT]
-> The admin address defaults to `localhost:15000`, which is the container's own loopback interface, so publishing port 15000 does not make the admin UI reachable from your host. Reach the UI on a gateway port instead, as the generated configuration does. To publish the admin address itself, see [Reach the admin UI in a container]({{< link-hextra path="/setup/ui/#docker-admin-addr" >}}).
 
 ### Verify that the container runs
 
@@ -76,12 +76,12 @@ Example output:
 
 ```
 CONTAINER ID   IMAGE                                         COMMAND               CREATED         STATUS         PORTS                                         NAMES
-8bac1aad45ba   cr.agentgateway.dev/agentgateway:latest-dev   "/app/agentgateway"   5 seconds ago   Up 4 seconds   0.0.0.0:4000->4000/tcp, [::]:4000->4000/tcp   agentgateway
+8bac1aad45ba   cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}}   "/app/agentgateway"   5 seconds ago   Up 4 seconds   0.0.0.0:4000->4000/tcp, [::]:4000->4000/tcp   agentgateway
 ```
 
-### Find where the UI is served
+### Find the admin UI address
 
-Check the logs. Agentgateway logs which configuration file it loaded and where it serves the UI.
+Check the logs. Agentgateway logs which configuration file it loaded and where it serves the admin UI.
 
 ```sh
 docker logs agentgateway
@@ -147,7 +147,7 @@ Example output:
 
 ```
 NAME           IMAGE                                         COMMAND               SERVICE        CREATED         STATUS         PORTS
-agentgateway   cr.agentgateway.dev/agentgateway:latest-dev   "/app/agentgateway"   agentgateway   9 seconds ago   Up 8 seconds   0.0.0.0:4000->4000/tcp, [::]:4000->4000/tcp
+agentgateway   cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}}   "/app/agentgateway"   agentgateway   9 seconds ago   Up 8 seconds   0.0.0.0:4000->4000/tcp, [::]:4000->4000/tcp
 ```
 
 ### Open the admin UI
@@ -179,7 +179,7 @@ Agentgateway leaves the configuration file and the SQLite database in the mounte
 
 ## Next steps
 
-* [Set up the admin UI]({{< link-hextra path="/setup/ui/" >}}) to expose and secure the web interface.
+* [Set up the admin UI]({{< link-hextra path="/setup/ui/" >}}) to open, expose, and secure the web interface.
 * [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}).
 * [Update your configuration]({{< link-hextra path="/setup/update/" >}}) after the container is running.
 * [Upgrade agentgateway]({{< link-hextra path="/operations/upgrade/" >}}) to a new image tag.

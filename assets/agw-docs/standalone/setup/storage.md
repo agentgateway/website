@@ -1,12 +1,10 @@
-Choose where agentgateway stores the configuration that you manage in the admin UI.
-
 ## About
 
-Agentgateway always reads a configuration file at startup. What the `storage` setting controls is what happens when something *writes* configuration back, such as when you add an MCP server in the admin UI or send a request to the config resource API.
+Agentgateway always reads a configuration file at startup. To control how configuration updates are persisted while agentgateway is running, such as when you use the admin UI or send a request to the config resource API, decide on your storage mode.
 
 ### Storage modes
 
-Set the mode in the `config.storage.mode` field of your configuration file. Because the field is in the `config` section, agentgateway applies it at startup only, so a change to it takes effect after a restart.
+Set the mode in the `config.storage.mode` field of your configuration file. The mode values are `file`, `hybrid`, and `readOnly`, which are the literal values that the field accepts. Because the field is in the `config` section, agentgateway applies it at startup only, so a change to it takes effect after a restart.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -30,7 +28,10 @@ Review the following table to understand this configuration.
 | `hybrid` | Agentgateway keeps your configuration file as a read-only baseline and stores the resource in the database. At read time, it merges the stored resources over the baseline. | Yes |
 | `readOnly` | Agentgateway rejects the write with a `403` response and the message `UI is configured as read-only`. | No |
 
-In `hybrid` mode, agentgateway never writes back to your configuration file. Instead, it stores the resource in the database and layers it over the file value when it reads the configuration. That is what makes the mode useful for a read-only file, and it is also why the file remains the place to change anything that the UI does not manage, such as a gateway or a listener.
+In `hybrid` mode, agentgateway never writes back to your configuration file. Instead, it stores the resource in the database that you configure in the admin UI or API, and layers it over the file value when it reads the configuration. Note that you can only update certain resources through the admin UI or API. For more information, see [What the database stores](#what-the-database-stores).
+
+> [!NOTE]
+> The Helm chart uses its own `mode` value with the names `readonly` and `database`, which the chart translates into the `file` and `hybrid` values of `config.storage.mode`. For more information, see [Helm](#helm).
 
 ### What the database stores
 
@@ -43,23 +44,33 @@ The database holds only the resource types in the following table. Everything el
 | Traffic | Gateways, routes, and TCP routes |
 | UI | Policies and the model catalog |
 
+The overlay only adds resources. It does not replace a resource that your configuration file already defines. For example, in `hybrid` mode you can add a gateway in the UI, and agentgateway serves it alongside the gateways in your file. But if the resource that you store has the same name as one in your file, agentgateway rejects the write with a `409` response.
+
+```txt
+"config resource traffic.gateway/default conflicts with file-owned resource"
+```
+
+To change a resource that your configuration file already defines, or to change a field that the database cannot hold, such as anything in the top-level `config` section, edit the configuration file that agentgateway reads at startup.
+
 ### How each installation method differs
 
-The mode you want depends on whether your configuration file is writable, which is a property of how you installed agentgateway.
+All three modes are available in all three installation methods, because the mode is a field in the same configuration file that every method reads. What differs is whether that file is writable, and how you set the mode.
 
 | Method | Configuration file | Default behavior |
 | --- | --- | --- |
 | [Binary]({{< link-hextra path="/setup/install/binary/" >}}) | A local file, writable. | `file` mode. UI edits are saved to your file. A generated configuration also sets a SQLite database for local runtime features, so `hybrid` mode needs no extra setup. |
-| [Docker]({{< link-hextra path="/setup/install/docker/" >}}) | A mounted file or directory, writable unless you mount it read-only. | `file` mode. UI edits are saved to the file on your host. |
-| [Helm]({{< link-hextra path="/setup/install/helm/" >}}) | A ConfigMap that the chart renders from your values and mounts read-only. | The chart sets `file` mode, and because the mount is read-only, a UI save fails. Set the chart's `mode` value to `database` to switch to `hybrid` and store edits in PostgreSQL. |
+| [Docker]({{< link-hextra path="/setup/install/docker/" >}}) | A mounted file or directory, writable unless you mount it read-only. | `file` mode. UI edits are saved to the file on your host. `hybrid` mode requires an additional database setup. |
+| [Helm]({{< link-hextra path="/setup/install/helm/" >}}) | A ConfigMap that the chart renders from your values and mounts read-only. | The chart sets `file` mode, and because the mount is read-only, a UI save fails. Set the chart's `mode` value to `database` to switch to `hybrid` and store edits in [PostgreSQL](#deploy-postgresql). |
+
+In the binary and Docker installations, you set `config.storage.mode` in your file, so all three modes are available to you directly. In the Helm installation, the chart derives `config.storage.mode` from its own `mode` value and overwrites anything that you set for the field yourself, so the chart offers `file` and `hybrid` storage only.
 
 ## Binary and Docker {#binary-docker}
 
 With the binary and Docker installations, your configuration file is writable, so the default `file` mode works with no extra setup and the admin UI can save your changes.
 
-### Save UI edits to your configuration file {#file-mode}
+### `file` mode {#file-mode}
 
-No configuration is needed for this mode, because `file` is the default. The following steps confirm the behavior and show what agentgateway writes.
+Use `file` mode when you want the admin UI to save your changes into the same configuration file that you edit by hand. No configuration is needed for this mode, because `file` is the default. The following steps confirm the behavior and show what agentgateway writes.
 
 1. Confirm the storage mode that the running instance uses.
 
@@ -102,7 +113,7 @@ Agentgateway preserves the schema comment at the top of the file, and reloads th
 > [!IMPORTANT]
 > In this mode the UI is a writer of your configuration file, not only a reader. If you keep your configuration in version control, or if you generate it from another tool, use `readOnly` or `hybrid` mode so that a UI edit cannot overwrite it.
 
-### Store UI edits in a database {#binary-hybrid}
+### `hybrid` mode {#binary-hybrid}
 
 Use `hybrid` mode when you want the configuration file to stay exactly as you wrote it, and UI edits to persist somewhere else. Agentgateway accepts a `postgres://` or `postgresql://` URL for PostgreSQL, and treats any other value as a SQLite database path.
 
@@ -123,6 +134,21 @@ Use `hybrid` mode when you want the configuration file to stay exactly as you wr
    ```
 
 2. Restart agentgateway. The `config` section is applied at startup, so the new mode does not take effect until the process restarts. For more information, see [Fields that require a restart]({{< link-hextra path="/setup/update/#restart-required" >}}).
+
+   {{< tabs >}}
+   {{% tab name="Binary" %}}
+   Stop the current process, such as with `ctrl+c`, then start it again.
+
+   ```sh
+   agentgateway -f config.yaml
+   ```
+   {{% /tab %}}
+   {{% tab name="Docker" %}}
+   ```sh
+   docker restart <container-name>
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 3. Confirm the storage mode.
 
@@ -150,7 +176,29 @@ Use `hybrid` mode when you want the configuration file to stay exactly as you wr
    {"resources":[{"kind":"mcp.target","id":"persisted-target","value":{"name":"persisted-target","mcp":{"host":"http://example.com/mcp"}},"revision":1,"createdAt":"2026-08-21T21:51:21.951418797Z","updatedAt":"2026-08-21T21:51:21.951418797Z"}]}
    ```
 
-5. Confirm that your configuration file is unchanged, and that the effective configuration includes the server anyway. Agentgateway merges the stored resource over the file.
+5. Confirm that your configuration file is unchanged. The `mcp` section that `file` mode would have added is absent, because agentgateway stored the server in the database instead.
+
+   ```sh
+   cat config.yaml
+   ```
+
+   Example output:
+
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   config:
+     storage:
+       mode: hybrid
+     database:
+       url: sqlite:///config/data.db
+   gateways:
+     default:
+       port: 4000
+   ui:
+     gateways: default
+   ```
+
+6. Confirm that the effective configuration includes the server anyway. Agentgateway merges the stored resource over the file.
 
    ```sh
    curl -s http://localhost:15000/api/config/effective | jq -c '.mcp'
@@ -162,7 +210,7 @@ Use `hybrid` mode when you want the configuration file to stay exactly as you wr
    {"targets":[{"name":"persisted-target","mcp":{"host":"http://example.com/mcp"}}]}
    ```
 
-6. Restart agentgateway again, then confirm that the server is still stored.
+7. Restart agentgateway again, then confirm that the server is still stored.
 
    ```sh
    curl -s http://localhost:15000/api/config/resources | jq '.resources[].id'
@@ -174,9 +222,9 @@ Use `hybrid` mode when you want the configuration file to stay exactly as you wr
    "persisted-target"
    ```
 
-### Reject UI edits {#binary-readonly}
+### `readOnly` mode {#binary-readonly}
 
-Use `readOnly` mode when your configuration file is the only source of truth and you want the UI to be a viewer.
+Use `readOnly` mode when your configuration file is the only source of truth and you want the UI to have read access only.
 
 1. Set the mode in your configuration file.
 
@@ -236,7 +284,9 @@ To let the UI store configuration, connect a PostgreSQL instance to your agentga
 
 ### Chart modes
 
-| Chart `mode` | Storage mode | Configuration source | UI saves |
+In a Helm installation, you do not set `config.storage.mode` yourself. Instead, you set the chart's `mode` value, and the chart renders the equivalent agentgateway storage mode into the ConfigMap for you.
+
+| Chart `mode` | Equivalent storage mode | Configuration source | UI saves |
 | --- | --- | --- | --- |
 | `readonly` (default) | `file` | The Helm values that you provide to configure agentgateway. The values are translated and stored in a ConfigMap that is mounted to the agentgateway pod. | Config is read-only. UI updates are rejected. |
 | `database` | `hybrid` | The ConfigMap as a baseline, with an overlay in PostgreSQL. | Updates to resources that are editable in the UI are stored in the database. |
@@ -258,7 +308,7 @@ Without a pre-existing section in the config for MCPs, LLMs, or gateways, the UI
 File configuration is read-only in hybrid mode. Copy the diff and update the configuration file directly.
 ```
 
-To manage a capability in the UI, include an empty section for it in your Helm values, as shown in the following example and in the following steps.
+To allow the UI to configure sections in your configuration file, you must define these sections in your Helm values file, even if they are empty, as shown in the following example and in the following steps.
 
 ```yaml
 config:
@@ -269,9 +319,9 @@ config:
 > [!NOTE]
 > This constraint is specific to a read-only configuration file. In the binary and Docker installations, the file is writable, so the UI can add a section itself.
 
-### Deploy PostgreSQL
+### Deploy PostgreSQL {#deploy-postgresql}
 
-For a production deployment, use a managed PostgreSQL instance or an operator that handles sbackups and failover. The following example deploys a single instance for testing.
+For a production deployment, use a managed PostgreSQL instance or an operator that handles backups and failover. The following example deploys a single instance for testing.
 
 > [!WARNING]
 > This example stores the database on an `emptyDir` volume, so the data exists only for the lifetime of the PostgreSQL pod. If that pod restarts or is rescheduled, the configuration that you saved in the UI is lost, and agentgateway falls back to the ConfigMap baseline. For anything beyond testing, back the database with a PersistentVolumeClaim, or use a managed PostgreSQL instance.
