@@ -21,9 +21,42 @@
    ```sh {paths="route-delegation-prereq"}
    kubectl create namespace team1
    kubectl create namespace team2
-   ```
+   ```{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 
-5. Deploy the httpbin app into both namespaces. The httpbin app exposes endpoints such as `/anything/...`, `/headers`, and `/delay/N` that are useful for verifying routing and policy behavior.
+5. Allow the parent HTTPRoute to delegate to child HTTPRoutes in the `team1` and `team2` namespaces. A child HTTPRoute that omits the `parentRefs` field requires a ReferenceGrant in its own namespace when the parent is in a different namespace. Without the grant, the child is never attached to the parent, and requests along the delegated path return a 404 response. A child that names the parent in `parentRefs` does not need a grant.
+   ```yaml {paths="route-delegation-prereq"}
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1beta1
+   kind: ReferenceGrant
+   metadata:
+     name: allow-delegation
+     namespace: team1
+   spec:
+     from:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     to:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+   ---
+   apiVersion: gateway.networking.k8s.io/v1beta1
+   kind: ReferenceGrant
+   metadata:
+     name: allow-delegation
+     namespace: team2
+   spec:
+     from:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     to:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+   EOF
+   ```{{< /version >}}
+
+6. Deploy the httpbin app into both namespaces. The httpbin app exposes endpoints such as `/anything/...`, `/headers`, and `/delay/N` that are useful for verifying routing and policy behavior.
    ```sh {paths="route-delegation-prereq"}
    curl -sL https://raw.githubusercontent.com/kgateway-dev/kgateway/main/examples/httpbin.yaml \
      | awk 'BEGIN{skip=0} /^kind: Namespace$/{skip=1} skip==0{print} /^---$/{skip=0}' \
@@ -69,7 +102,7 @@
    EOF
    {{< /doc-test >}}
 
-6. Verify that the httpbin apps are up and running.
+7. Verify that the httpbin apps are up and running.
    ```sh
    kubectl get pods -n team1
    kubectl get pods -n team2
