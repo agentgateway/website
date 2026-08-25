@@ -31,7 +31,7 @@ EOF
 
 ### Enable or disable IPv6 {#ipv6}
 
-Control whether the agentgateway proxy binds and resolves IPv6 addresses with the `IPV6_ENABLED` environment variable. IPv6 is enabled by default, so set this variable explicitly only when you want to pin the behavior for a cluster, such as in a dual-stack environment where the proxy must listen on IPv6.
+Control whether the agentgateway proxy binds and resolves IPv6 addresses with the `IPV6_ENABLED` environment variable, or with the `config.enableIpv6` field in a standalone agentgateway config file. IPv6 is enabled by default, so set this variable explicitly only when you want to pin the behavior for a cluster, such as in a dual-stack environment where the proxy must listen on IPv6.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
@@ -49,16 +49,10 @@ EOF
 
 Set the value to `"false"` for an IPv4-only cluster. The following table shows what each value changes.
 
-| `IPV6_ENABLED` | Listener bind address | Backend DNS lookups |
-| -- | -- | -- |
-| `"true"` (default) | IPv6 wildcard address | IPv4 and IPv6 addresses, preferring IPv4 |
-| `"false"` | IPv4 wildcard address | IPv4 addresses only |
-
-> [!WARNING]
-> With `"false"`, a backend hostname that resolves only to an IPv6 address is unreachable.
-
-> [!NOTE]
-> Even when `IPV6_ENABLED` is `true`, the proxy skips IPv6 binds if IPv6 is disabled on the node's loopback interface. To set the equivalent value in a standalone agentgateway config file instead of an environment variable, use the `config.enableIpv6` field.
+| `IPV6_ENABLED` | Listener bind address | Backend DNS lookups | Notes |
+| -- | -- | -- | -- |
+| `"true"` (default) | IPv6 wildcard address | IPv4 and IPv6 addresses, preferring IPv4 | The proxy skips IPv6 binds if IPv6 is disabled on the node's loopback interface. |
+| `"false"` | IPv4 wildcard address | IPv4 addresses only | A backend hostname that resolves only to an IPv6 address is unreachable. |
 
 ### Custom image {#custom-image}
 
