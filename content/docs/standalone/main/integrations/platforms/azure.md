@@ -68,4 +68,4 @@ az role assignment create \
 
 - [Azure OpenAI Provider]({{< link-hextra path="/llm/providers/azure/" >}})
 - [Azure Key Vault Integration](https://azure.microsoft.com/en-us/products/key-vault/)
-- [Deployment Guide]({{< link-hextra path="/deployment/" >}})
+- [Install agentgateway]({{< link-hextra path="/setup/install/" >}})

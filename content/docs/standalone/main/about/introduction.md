@@ -32,6 +32,10 @@ Agentgateway comes with the following key features:
 
 {{< reuse "agw-docs/snippets/key-benefits.md" >}}
 
+## Standalone vs. Kubernetes modes
+
+{{< reuse "agw-docs/snippets/standalone-k8s-modes.md" >}}
+
 ## Policies
 
 Agentgateway provides {{< gloss "Policy" >}}policies{{< /gloss >}} to govern how traffic for MCP and A2A {{< gloss "Backend" >}}backends{{< /gloss >}} is managed, {{< gloss "Transformation" >}}transformed{{< /gloss >}}, and secured. 
