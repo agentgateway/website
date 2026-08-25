@@ -55,6 +55,14 @@ The `requiredClaims` field is unchanged and still defaults to `["exp"]`. The `is
 
 **Actions to take**: Confirm that your identity provider issues an `iss` claim in the tokens that reach agentgateway. Most providers do. If you accept tokens that have no `aud` claim, remove `audiences` from the policy or set it to an empty list, because a non-empty list now rejects those tokens. For the policy fields, see [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}).
 
+### AI policies on a backend merge with an attached policy
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2821 -->
+
+An AI policy set directly on a backend used to replace an attached AI policy in full. If the backend set even one field, every field of the attached policy was dropped, including prompt guards, prompt enrichment, defaults, transformations, model aliases, and prompt caching. The two policies now merge field by field, and the backend's value wins for a field that both of them set.
+
+**Actions to take**: Review each backend that sets an `ai` policy alongside an attached AI policy. A field that the attached policy sets, and the backend does not, now takes effect where it was previously ignored. Remove any field from the attached policy that you do not want the backend to inherit.
+
 ### The `MODEL_CATALOG_PATHS` environment variable is removed
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2772 -->
@@ -274,11 +282,14 @@ config:
 
 If you deploy the standalone Helm chart, its `mode: readonly` value already serves configuration from a read-only ConfigMap. For the chart modes, see [Store config in a database]({{< link-hextra path="/deployment/helm/storage/" >}}).
 
-### API keys can be limited to a set of models
+### API key budgets and model access
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3143 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3107 -->
 
-An API key entry now takes an optional `allowedModels` list of model patterns. A request that presents the key and asks for a model outside the list is rejected. Omitting the field leaves the key unconstrained, and an empty list denies every model.
+An API key entry now takes a `budgets` list that caps LLM spend for that key, and an `allowedModels` list that limits which models the key can reach.
+
+A budget has a name, a limit in `USD` or `Tokens`, a rolling window, and an action to take when the key exceeds the limit. The `Block` action rejects the request. The `Audit` action records the overage and lets the request through. Windows align to the Unix epoch rather than to the first request, so `1h` follows UTC clock hours and `24h` starts at midnight UTC.
 
 ```yaml
 policies:
@@ -288,9 +299,29 @@ policies:
       allowedModels:
       - "gpt-5*"
       - claude-sonnet-5
+      budgets:
+      - name: daily-spend
+        limit:
+          unit: USD
+          amount: 50
+        window:
+          rolling: 24h
+        onBudgetExceeded: Block
 ```
 
-The field works with both `key` and `keyHash` entries. For more information, see [API key authentication]({{< link-hextra path="/configuration/security/apikey-authn/" >}}).
+Usage is charged after the LLM response, from the tokens or cost that the provider reports. A request whose provider does not report the unit that the budget needs is logged, but it is not charged and cannot be blocked after the fact. Budget state is held in memory and flushed to the database every five seconds, which keeps the database off the request path. Across replicas, a burst of traffic can therefore overshoot the limit. You can view and manage budgets in the admin UI.
+
+Budgets depend on a database, so they require the `hybrid` storage mode and are available in standalone mode only. Omit `allowedModels` to leave a key unconstrained, and set an empty list to deny every model. Both fields work with `key` and `keyHash` entries.
+
+For more information, see [API key authentication]({{< link-hextra path="/configuration/security/apikey-authn/" >}}) and [Store config in a database]({{< link-hextra path="/deployment/helm/storage/" >}}).
+
+### JWT validation can preserve the original token
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3106 -->
+
+A JWT policy now takes a `preserveToken` field. Set it to `true` to keep a successfully validated JWT in the location that it arrived in, so that a backend can read the original token. The default is `false`, which removes the token after validation, as earlier releases did.
+
+For the policy fields, see [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}).
 
 ### Connection-level external authorization
 
@@ -318,6 +349,7 @@ For the fields available today, see the [Configuration reference]({{< link-hextr
 This release fills in the pieces that agentgateway needs to serve as an egress proxy for agent workloads.
 
 - **Dynamic backends for TCP**: A TCP route can use a dynamic backend, so the destination comes from the connection rather than from static configuration.
+- **CEL target selection**: A dynamic backend takes an optional `target` CEL expression that computes the `host:port` to dial. Use it to read a destination that external processing returned in `extproc.*` metadata, instead of having external processing rewrite the request authority. On a TCP route, the expression reads `source.*` and `destination.*`, where `destination.hostname` is the sniffed SNI. Omit `target` to keep dialing the destination that the request names.
 - **Tunnel mode**: The `backendTunnel` policy takes a `mode` field. The default `auto` mode uses `CONNECT` for TLS and non-HTTP transports, and absolute-form requests for plaintext HTTP. The `connect` mode uses `CONNECT` for everything. You can also attach policies to the connection with the tunnel proxy itself.
 - **Tunneling through a dynamic backend**: `CONNECT` requests can be tunneled through a dynamic proxy backend.
 - **Backend connection timeouts**: A backend can set `connectTimeout`, along with the related handshake, request, keepalive, and maximum connection duration settings.
@@ -426,6 +458,8 @@ The `x-ratelimit-limit`, `x-ratelimit-remaining`, and `x-ratelimit-reset` header
 
 - **Bedrock**: Amazon Nova multimodal embeddings and Cohere v4 embeddings are supported. This release also corrects `top_k` translation, handles image URLs consistently across input types, and mutates a guardrail payload in place so that the original structure is preserved.
 - **GitHub Copilot and DeepSeek**: Grok models are routed through the Responses API, and the DeepSeek preset advertises the Responses format.
+- **Prompt caching across formats**: OpenAI cache markers are translated into their Anthropic and Bedrock equivalents.
+- **Vertex AI embeddings**: `gemini-embedding-2` and later models are routed to the `:embedContent` endpoint, because Google no longer serves `:predict` for them. The `gemini-embedding-001` and `text-embedding-*` models stay on `:predict`. Because `:embedContent` embeds one input per call, a multi-input array now returns an explicit error instead of collapsing into a single vector.
 - **Token counting**: The count-tokens endpoint is routed by default, and an Anthropic thinking budget is capped by the request's maximum token count.
 - **Guardrail refactor**: Guardrails are restructured internally, and prompt guard logs record which pattern matched.
 - **Error handling**: Proxy errors are classified by the phase they occurred in, and the original upstream HTTP status code is preserved on an error response.
@@ -454,11 +488,13 @@ For more information, see the [MCP]({{< link-hextra path="/mcp/" >}}) docs.
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2888 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3148 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3149 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2683 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3138 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2986 -->
 
 - A redesigned logs view and conversation view.
+- A trajectory view for multi-turn agent activity, with tool call and result details.
 - The UI follows your system theme by default.
 - The CEL playground works when the UI is exposed through a gateway.
 - The LLM playground forwards its API key to MCP requests.
@@ -492,11 +528,29 @@ For more information, see [Admin UI]({{< link-hextra path="/operations/ui/" >}})
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3007 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2983 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3073 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2885 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2971 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2771 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2791 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2813 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2801 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3005 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2977 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2804 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3002 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3048 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3140 -->
 
 - Listener port swaps are reconciled dynamically, and a bind that transitions to an internal bind is stopped.
 - A negative duration is clamped to zero instead of being rejected, and upstream connect duration is recorded at full precision.
 - Invalid header modifications are rejected, and route policy application is more consistent.
 - An invalid inline JWKS reports an error, and an invalid JWT produces a clearer message.
 - A2A interface URL rewriting is correct when a path rewrite policy is active, and A2A v1.0 nested payloads record response telemetry and the context ID.
+- Bedrock virtual models no longer bypass the transformed model on the upstream path, and Bedrock streaming indexes, invalid function inputs, and image URL handling are fixed.
+- Gemini usage is extracted from the Cloud Code `response` envelope, and parallel tool calls are preserved across the Gemini and Completions conversions.
+- Anthropic streaming sets the role on the first delta, honors the final input usage, and no longer fails the whole request when a server tool errors.
+- A multi-turn request whose previous turn returned empty tool arguments no longer fails validation.
+- A file-mode `apiKey` policy keeps its keys when the field is omitted on an upsert.
+- The admin UI analytics summary no longer loops its request.
 
 For the complete list of fixes, see the [GitHub release notes](https://github.com/agentgateway/agentgateway/releases).

@@ -98,6 +98,14 @@ A default model router and route are still created per listener when an `Agentga
 
 **Actions to take**: Review any `AgentgatewayModel` whose `parentRef` names an `HTTPRoute`, and confirm that the route meets the requirements. A route that does not is reported in the model's status. For more information, see [Models]({{< link-hextra path="/llm/models/" >}}).
 
+### AI policies on a backend merge with an attached policy
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2821 -->
+
+An AI policy set directly on a backend used to replace an attached AI policy in full. If the backend set even one field, every field of the attached policy was dropped, including prompt guards, prompt enrichment, defaults, transformations, model aliases, and prompt caching. The two policies now merge field by field, and the backend's value wins for a field that both of them set.
+
+**Actions to take**: Review each `AgentgatewayBackend` that sets `spec.ai.groups[].providers[].policies.ai` alongside an `AgentgatewayPolicy` that sets `spec.backend.ai`. A field that the `AgentgatewayPolicy` sets, and the backend does not, now takes effect where it was previously ignored. Remove any field from the `AgentgatewayPolicy` that you do not want the backend to inherit.
+
 ### The `MODEL_CATALOG_PATHS` environment variable is removed
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2772 -->
@@ -276,6 +284,14 @@ A policy field that points at an external service now accepts a `url` as an alte
 
 For the fields, see the [API reference]({{< link-hextra path="/reference/api/" >}}).
 
+### Forward proxy authentication
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3098 -->
+
+When agentgateway acts as a forward proxy, a client can now authenticate with the `Proxy-Authorization` header instead of `Authorization`. Set the authentication policy's `location` to that header. Agentgateway reads the credential, strips the header before the request goes upstream, and marks it sensitive so that its value is not logged. A failed `CONNECT` authentication returns a `407` response with a `Proxy-Authenticate` header, as [RFC 9110](https://datatracker.ietf.org/doc/html/rfc9110) requires.
+
+For the policy fields, see the [API reference]({{< link-hextra path="/reference/api/" >}}).
+
 ### Egress proxying, TCP backends, and CONNECT tunneling
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3013 -->
@@ -337,6 +353,8 @@ For more information, see [Cost tracking]({{< link-hextra path="/llm/cost-contro
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3141 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2110 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3079 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2888 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3149 -->
 
 - **Protobuf metrics**: The `/metrics` and `/stats/prometheus` endpoints negotiate the response format from the `Accept` header, so a scraper that asks for `application/vnd.google.protobuf` gets protobuf instead of text.
 - **Native histograms**: The proxy can collect classic histogram buckets, native buckets, or both. Native histograms are exposed only through the Prometheus protobuf format, and classic remains the default because native histograms add scrape overhead.
@@ -344,6 +362,7 @@ For more information, see [Cost tracking]({{< link-hextra path="/llm/cost-contro
 - **LLM token timing in access logs**: Access logs record time-to-first-token and related timing for LLM requests.
 - **Generated metrics reference**: The metrics documentation is generated from the schema, so it stays in step with the code.
 - **CPU and heap profiles**: A new `agctl proxy profile` command collects pprof CPU and heap profiles from the proxy admin endpoint.
+- **Admin UI**: A redesigned logs view, clearer multi-turn conversation rendering, and a trajectory view for agent activity with tool call and result details.
 
 For more information, see [Observability]({{< link-hextra path="/observability/" >}}) and the [`agctl proxy profile`]({{< link-hextra path="/reference/agctl/agctl-proxy-profile/" >}}) reference.
 
@@ -380,6 +399,8 @@ For the full CEL surface, see the [CEL reference]({{< link-hextra path="/referen
 
 - **Bedrock**: Amazon Nova multimodal embeddings and Cohere v4 embeddings are supported. This release also corrects `top_k` translation, handles image URLs consistently across input types, and mutates a guardrail payload in place so that the original structure is preserved.
 - **GitHub Copilot and DeepSeek**: Grok models are routed through the Responses API, and the DeepSeek preset advertises the Responses format.
+- **Prompt caching across formats**: OpenAI cache markers are translated into their Anthropic and Bedrock equivalents.
+- **Vertex AI embeddings**: `gemini-embedding-2` and later models are routed to the `:embedContent` endpoint, because Google no longer serves `:predict` for them. The `gemini-embedding-001` and `text-embedding-*` models stay on `:predict`. Because `:embedContent` embeds one input per call, a multi-input array now returns an explicit error instead of collapsing into a single vector.
 - **Token counting**: The count-tokens endpoint is routed by default, and an Anthropic thinking budget is capped by the request's maximum token count.
 - **Failover authorization**: An `AgentgatewayModel` configures authorization correctly for its failover targets.
 - **Guardrail refactor**: Guardrails are restructured internally, and prompt guard logs record which pattern matched.
@@ -459,12 +480,30 @@ For the chart values, see the [Helm reference]({{< link-hextra path="/reference/
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3088 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3044 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2872 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2885 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2971 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2771 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2791 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2813 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2801 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3005 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2977 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2804 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3002 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2976 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3140 -->
 
 - Listener port swaps are reconciled dynamically, and a bind that transitions to an internal bind is stopped.
 - A negative duration is clamped to zero instead of being rejected, and upstream connect duration is recorded at full precision.
 - Invalid header modifications are rejected, route policy application is more consistent, and a `:authority` mutation is no longer a no-op for `CONNECT` requests.
 - Valid JWKS targets are restricted, an invalid inline JWKS reports an error, and an invalid JWT produces a clearer message.
 - A2A path rewriting is fixed, interface URL rewriting is correct when a path rewrite policy is active, and A2A v1.0 nested payloads record response telemetry and the context ID.
+- Bedrock virtual models no longer bypass the transformed model on the upstream path, and Bedrock streaming indexes, invalid function inputs, and image URL handling are fixed.
+- Gemini usage is extracted from the Cloud Code `response` envelope, and parallel tool calls are preserved across the Gemini and Completions conversions.
+- Anthropic streaming sets the role on the first delta, honors the final input usage, and no longer fails the whole request when a server tool errors.
+- A multi-turn request whose previous turn returned empty tool arguments no longer fails validation.
+- An `InferenceRouting` policy resolves for AI provider backends.
+- The admin UI analytics summary no longer loops its request.
 - Azure managed identity rejects multiple identity selectors and aligns its schema naming.
 - The controller validates with CEL that a port is a number.
 
