@@ -23,7 +23,7 @@ For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link
 
 ## Before you begin {#before-you-begin}
 
-1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
 2. Install [Docker](https://docs.docker.com/get-started/get-docker/) to run Keycloak locally.
 3. Install [Node.js](https://nodejs.org/) so that `npx` can run the sample MCP server.
 

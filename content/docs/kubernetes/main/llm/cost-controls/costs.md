@@ -206,6 +206,10 @@ To view the metric, port-forward the proxy and query the metrics endpoint:
 
 A rising `Missing` or `Unpriced` count means requests are flowing through models that your catalog does not price. Add the missing providers or models to your catalog and update the ConfigMap.
 
+## Model tags
+
+{{< reuse "agw-docs/snippets/model-catalog-tags.md" >}}
+
 {{< doc-test paths="costs" >}}
 # Create a catalog that prices the httpbun test model (gpt-4) and attach it to the Gateway
 # through a Gateway-level AgentgatewayParameters resource.

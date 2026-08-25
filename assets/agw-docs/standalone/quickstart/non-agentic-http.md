@@ -17,7 +17,7 @@ flowchart LR
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
-1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
+1. {{< version include-if="1.4.x" >}}[Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).{{< /version >}}{{< version exclude-if="1.4.x" >}}[Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).{{< /version >}}
 
    ```sh
    curl -sL https://agentgateway.dev/install | bash
