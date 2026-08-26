@@ -9,8 +9,6 @@ description: Review the metrics that are available in agentgateway.
 
 ## XDS
 
-(Kube-only, needs to be done via the workflow)
-
 These metrics track communication with an XDS management server (Kubernetes mode). They are registered in all deployments but only increment when an XDS connection is active.
 
 | Metric | Type | Unit | Description |
