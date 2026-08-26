@@ -1,5 +1,5 @@
 ---
-title: Access logs
+title: View and customize logs
 weight: 10
 description: Configure per-request structured access logs with CEL-based filtering, field enrichment, and OTLP export.
 ---
@@ -8,9 +8,9 @@ Agentgateway writes a structured access log line to stdout for every request it 
 
 ## Access log format
 
-By default, access logs are written in a structured key=value format:
+By default, access logs are written in a structured key=value format as shown in the following example. 
 
-```
+```console
 2025-12-12T21:56:02.809082Z	info	request gateway=agentgateway listener=http route=openai endpoint=api.openai.com:443
 src.addr=127.0.0.1:60862 http.method=POST http.host=localhost http.path=/openai http.version=HTTP/1.1
 http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai
@@ -31,7 +31,7 @@ config:
 
 ## View access logs in the UI
 
-The agentgateway UI at [http://localhost:15000/ui](http://localhost:15000/ui) includes a **Logs** page that provides a richer view of access log data than stdout. For each request, the Logs page shows:
+The agentgateway UI at [http://localhost:15000/ui](http://localhost:15000/ui) includes a **Logs** page that provides a richer view of access log data than what you see in the stdout output. For each request, the Logs page shows the following information: 
 
 - **Trajectory**: The request path from the client through agentgateway to the upstream provider, including any policy callouts if policies are configured.
 - **Conversation view**: For LLM traffic, the prompt and response are rendered as a readable conversation.
@@ -90,38 +90,3 @@ frontendPolicies:
       - http.path
 ```
 
-## Export access logs over OTLP
-
-Export access logs as OpenTelemetry `LogRecord` objects to any OTLP-compatible backend. Logs are exported in addition to stdout output.
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-frontendPolicies:
-  tracing:
-    host: localhost:4317
-    randomSampling: true
-  accessLog:
-    otlp:
-      host: localhost:4317
-```
-
-### OTLP-only filtering
-
-You can apply a separate filter to the data that is applied during the OTLP export. For example, you might want to log all requests to stdout, but only send errors to an external OTLP backend. 
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-frontendPolicies:
-  accessLog:
-    otlp:
-      host: localhost:4317
-      filter: 'response.code >= 400'
-      add:
-        trace_id: 'request.headers["x-trace-id"]'
-      remove:
-        - 'response.headers["set-cookie"]'
-```
-
-## Store access logs in a database
-
-For long-term storage and querying, agentgateway can write access logs to a database. See [Request logs]({{< link-hextra path="/integrations/observability/database/" >}}).
