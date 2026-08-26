@@ -6,7 +6,7 @@ Every method requires a restart of the agentgateway process, because a new binar
 
 ## Before you begin
 
-1. Review the [release notes highlights]({{< link path="/reference/release-notes/" >}}) and [GitHub release](https://github.com/agentgateway/agentgateway/releases) for the version that you are moving to.
+1. {{< reuse "agw-docs/standalone/operations/upgrade-release-notes.md" >}}
 
 2. **Optional**: Set the old version that you are on so that you can roll back to it, such as {{< reuse "agw-docs/versions/patch_n-1.md" >}} in the following example.
 

@@ -110,94 +110,11 @@ For quick access to the admin UI, port-forward the `{{< reuse "agw-docs/standalo
      deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} 15000:15000
    ```
 
-2. In your browser, open the `/ui` path.
-
-   ```sh
-   open http://localhost:15000/ui
-   ```
+2. In your browser, open the `/ui` path: [http://localhost:15000/ui](http://localhost:15000/ui)
 
 To give the UI its own gateway, secure it with OIDC, and expose it on your own hostname, see [Admin UI]({{< link-hextra path="/setup/ui/" >}}).
 
-## Customize the proxy config
-
-The `config` Helm value holds the entire agentgateway configuration file, so the configuration examples throughout the standalone documentation are complete files that you can copy into the `config` value without changing their structure. For the values file itself, see [Update your configuration]({{< link-hextra path="/setup/update/" >}}).
-
-Because the chart renders your Helm values into the ConfigMap that the proxy mounts, a configuration change usually means a `helm upgrade`. The exception is the resources that you can manage in the admin UI, such as MCP servers and LLM models. Those resources can be stored in a database instead of the ConfigMap, in which case the UI can change them without an upgrade. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
-
-Keep the following points in mind when you copy an example.
-
-* **Align the ports.** A Service sends traffic from its own `port` to a `targetPort` on the pod, and that target port must be a port that your agentgateway configuration listens on. The chart's defaults line up: the Service sends port `80` to container port `4000`, and the default configuration puts a gateway on port `4000`. Many of the standalone guides configure a listener on port `3000` or `8080` instead, because a binary or container has no Service to keep in sync. If you copy one of those examples as-is, the Service targets a port that nothing listens on. Either change the listener in the configuration to port `4000`, or set `gateway.service.ports` so that the Service targets the port that your configuration uses. For more information, see [Expose listeners](#expose-listeners).
-* **Omit the schema comment.** The `# yaml-language-server: $schema=` line that the guides include is a comment for your editor. Helm does not preserve it when it renders the ConfigMap.
-* **Replace `stdio` MCP targets.** The proxy image contains no shell and no Node.js, so a target that starts a local process, such as `cmd: npx`, fails at startup with `mcp: failed to start stdio server: No such file or directory`. Use a remote target instead, or build an image that includes the command.
-
-   ```yaml
-   config:
-     mcp:
-       port: 3000
-       targets:
-       - name: server-everything
-         mcp:
-           host: http://server-everything.default.svc.cluster.local:3000/mcp/
-   ```
-
-## Expose listeners
-
-The chart's default values configure a gateway named `default` that listens on container port `4000`, and a `LoadBalancer` Service that sends its own port `80` to that container port. If your configuration listens on other ports, set `gateway.service.ports` so that the Service targets them.
-
-Each entry in `gateway.service.ports` has three fields that matter.
-
-| Field | What it does |
-| --- | --- |
-| `port` | The port that clients connect to on the Service. Choose any value that you want to serve traffic on. |
-| `targetPort` | The port on the proxy pod that the Service sends traffic to. This value must match a port that a gateway or bind in your agentgateway configuration listens on. |
-| `name` | A label for the port. Agentgateway does not read this field, so you can choose any name that is a valid lowercase Kubernetes port name and is unique within the Service. Kubernetes requires a name when a Service exposes more than one port. |
-
-The following example adds a gateway named `mcp` on port `3000` and a matching Service port. Because setting `gateway.service.ports` replaces the chart's default entry, the example keeps the default `http` entry for the `default` gateway.
-
-```yaml
-gateway:
-  service:
-    ports:
-    - name: http
-      port: 80
-      targetPort: 4000
-      protocol: TCP
-    - name: mcp
-      port: 3000
-      targetPort: 3000
-      protocol: TCP
-config:
-  gateways:
-    default:
-      port: 4000
-    mcp:
-      port: 3000
-```
-
-To expose listeners on separate Services, such as an internal Service and an external Service, add `gateway.extraServices`. Each entry creates a Service named `<release name>-<name>` that selects the same pods.
-
-```yaml
-gateway:
-  extraServices:
-  - name: private-listener
-    type: ClusterIP
-    ports:
-    - name: private
-      port: 3000
-      targetPort: 3000
-      protocol: TCP
-  - name: public-listener
-    type: LoadBalancer
-    annotations:
-      service.beta.kubernetes.io/aws-load-balancer-type: nlb
-    ports:
-    - name: public
-      port: 80
-      targetPort: 4000
-      protocol: TCP
-```
-
-## Other common values
+## Common Helm values
 
 {{< reuse "agw-docs/standalone/helm-standalone-values-table.md" >}}
 
