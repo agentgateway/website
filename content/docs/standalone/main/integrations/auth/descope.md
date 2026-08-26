@@ -18,16 +18,16 @@ Descope publishes signing keys at the project level rather than under the agenti
 When you set `provider.descope`, agentgateway bridges these gaps as follows:
 
 - Rewrites an agentic issuer of the form `https://api.descope.com/v1/apps/agentic/<project-id>/<server-id>` to the project-level JWKS URL `https://api.descope.com/<project-id>/.well-known/jwks.json`.
-- Serves authorization server metadata from Descope's OpenID Connect discovery document, because Descope does not support the [RFC 8414](https://www.rfc-editor.org/rfc/rfc8414) path-based issuer format.
+- Serves authorization server metadata from Descope's OpenID Connect discovery document, because Descope does not support the [RFC 8414](https://www.rfc-editor.org/rfc/rfc8414.html) path-based issuer format.
 - Proxies Dynamic Client Registration through the gateway, deriving the management endpoint from the agentic issuer. You verify this in [Step 3](#verify).
 
-Descope supports [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707) resource indicators, so no audience workaround is needed.
+Descope supports [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html) resource indicators, so no audience workaround is needed.
 
 For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}}).
 
 ## Before you begin {#before-you-begin}
 
-1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
 2. Install [Node.js](https://nodejs.org/) so that `npx` can run the sample MCP server.
 3. Make sure that you have access to the [Descope Console](https://app.descope.com/) and permission to create an MCP Server and a Client.
 
@@ -382,7 +382,7 @@ Interactive MCP clients such as Claude or Cursor handle this automatically with 
 
 For backend agents, scripts, or testing without an interactive client, exchange Client credentials directly for a token with the [client credentials flow](https://docs.descope.com/agentic-identity-hub/auth-patterns#autonomous-access).
 
-1. Request a token. The `resource` parameter is Descope's [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707) resource indicator, which targets the token's `aud` claim at your MCP server.
+1. Request a token. The `resource` parameter is Descope's [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html) resource indicator, which targets the token's `aud` claim at your MCP server.
 
    ```sh {paths="descope-mcp-authn"}
    export TOKEN="$(curl -s -X POST "${DESCOPE_TOKEN_ENDPOINT}" \
