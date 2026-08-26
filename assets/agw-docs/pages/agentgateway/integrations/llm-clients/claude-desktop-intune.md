@@ -27,14 +27,13 @@ passes each user's Claude subscription token upstream.
 5. Create an Intune pilot device group. For Entra mode, also create an Entra ID
    pilot user group. Do not begin with a tenant-wide assignment.
 
-{{< callout type="warning" >}}
-The gateway API key and Entra workflows use a centrally managed Anthropic
-provider credential. They do not establish per-user Anthropic subscription or
-seat attribution. Never put the Anthropic provider key or a subscription token
-in an Intune profile. A static agentgateway client key is acceptable for a
-limited pilot, but the exported policy contains that key. Do not reuse one
-static key across a production fleet.
-{{< /callout >}}
+> [!WARNING]
+> The gateway API key and Entra workflows use a centrally managed Anthropic
+> provider credential. They do not establish per-user Anthropic subscription or
+> seat attribution. Never put the Anthropic provider key or a subscription token
+> in an Intune profile. A static agentgateway client key is acceptable for a
+> limited pilot, but the exported policy contains that key. Do not reuse one
+> static key across a production fleet.
 
 ### Choose one authentication model
 
@@ -47,44 +46,41 @@ profile. The credential settings are mutually exclusive.
 | [Claude subscription passthrough](#claude-subscription) | Advanced option for preserving per-user seat usage | Per-user Claude subscription token | User's Claude subscription |
 | [Microsoft Entra ID](#claude-entra) | Recommended enterprise identity and Conditional Access model | Centrally managed Anthropic API key | Anthropic API account |
 
-{{< callout type="important" >}}
-Complete only one authentication option. Do not combine the gateway-key,
-subscription-token, and Entra credential settings in the same Claude Desktop
-profile. After completing one option, continue with [Build and test the managed
-configuration](#build-and-test-the-managed-configuration).
-{{< /callout >}}
+> [!IMPORTANT]
+> Complete only one authentication option. Do not combine the gateway-key,
+> subscription-token, and Entra credential settings in the same Claude Desktop
+> profile. After completing one option, continue with [Build and test the managed
+> configuration](#build-and-test-the-managed-configuration).
 
-{{< callout type="important" >}}
-The JSON blocks below are reference examples, not files to create or upload to
-Intune. Enter the equivalent values in **Developer > Configure Third-Party
-Inference**. Claude Desktop creates its local `<id>.json` file when you save
-the configuration. Use **Export** to create the `.mobileconfig` or Windows
-policy artifact that you deploy with Intune.
+> [!IMPORTANT]
+> The JSON blocks below are reference examples, not files to create or upload to
+> Intune. Enter the equivalent values in **Developer > Configure Third-Party
+> Inference**. Claude Desktop creates its local `<id>.json` file when you save
+> the configuration. Use **Export** to create the `.mobileconfig` or Windows
+> policy artifact that you deploy with Intune.
+>
+> Replace `https://claude.example.com` with the [stable HTTPS
+> hostname](#before-you-begin) that exposes agentgateway. Use only the origin
+> when the route matches `/`. Include a path such as `/claude` only when the
+> route matches that prefix and rewrites it to `/`. Replace each example helper
+> path with the fixed absolute path where Intune deploys your helper executable.
 
-Replace `https://claude.example.com` with the [stable HTTPS
-hostname](#before-you-begin) that exposes agentgateway. Use only the origin
-when the route matches `/`. Include a path such as `/claude` only when the
-route matches that prefix and rewrites it to `/`. Replace each example helper
-path with the fixed absolute path where Intune deploys your helper executable.
-{{< /callout >}}
-
-{{< callout type="info" >}}
-**Find the locally saved configuration**
-
-- **macOS:** In Finder, select **Go > Go to Folder**, enter
-  `~/Library/Application Support/Claude-3p/configLibrary/`, and open the
-  applicable `<id>.json` file.
-
-- **Windows:** Press **Windows+R**, enter
-  `%LOCALAPPDATA%\Claude-3p\configLibrary\`, and open the applicable `<id>.json`
-  file.
-
-`_meta.json` identifies the currently applied configuration. Use these files
-for inspection only; they might contain static credentials. Use Claude
-Desktop's **Export** action to create the Intune deployment artifact. For
-details, see the [Claude Desktop configuration
-reference](https://claude.com/docs/third-party/claude-desktop/configuration#how-keys-are-read).
-{{< /callout >}}
+> [!NOTE]
+> **Find the locally saved configuration**
+>
+> - **macOS:** In Finder, select **Go > Go to Folder**, enter
+>   `~/Library/Application Support/Claude-3p/configLibrary/`, and open the
+>   applicable `<id>.json` file.
+>
+> - **Windows:** Press **Windows+R**, enter
+>   `%LOCALAPPDATA%\Claude-3p\configLibrary\`, and open the applicable `<id>.json`
+>   file.
+>
+> `_meta.json` identifies the currently applied configuration. Use these files
+> for inspection only; they might contain static credentials. Use Claude
+> Desktop's **Export** action to create the Intune deployment artifact. For
+> details, see the [Claude Desktop configuration
+> reference](https://claude.com/docs/third-party/claude-desktop/configuration#how-keys-are-read).
 
 ### Option 1: Use a gateway API key {#claude-gateway-api-key}
 
@@ -197,13 +193,12 @@ helper with `CLAUDE_HELPER_CONTEXT=setup-test`, and background refreshes must
 not stop for an interactive prompt. Then continue with [Build and test the
 managed configuration](#build-and-test-the-managed-configuration).
 
-{{< callout type="info" >}}
-With subscription passthrough, **Test connection** might return HTTP 429 with
-`rate_limit_error` even when normal Cowork inference works. Apply the
-configuration, send a harmless prompt, and inspect the agentgateway request
-log. If the real `/v1/messages` request returns HTTP 200, treat the connection
-test as a false negative and use actual inference as the final validation.
-{{< /callout >}}
+> [!NOTE]
+> With subscription passthrough, **Test connection** might return HTTP 429 with
+> `rate_limit_error` even when normal Cowork inference works. Apply the
+> configuration, send a harmless prompt, and inspect the agentgateway request
+> log. If the real `/v1/messages` request returns HTTP 200, treat the connection
+> test as a false negative and use actual inference as the final validation.
 
 ### Option 3: Use Microsoft Entra ID {#claude-entra}
 
@@ -316,13 +311,12 @@ this section.
 Use an administrator workstation that does not already have a Claude Desktop
 managed profile.
 
-{{< callout type="warning" >}}
-Managed settings take precedence over the values entered in Claude Desktop. A
-local connection test can succeed, but an older Intune profile can restore
-static API key settings after restart. Temporarily exclude the administrator
-workstation from the old profile or use an unmanaged workstation for authoring.
-Update the existing profile rather than assigning both versions.
-{{< /callout >}}
+> [!WARNING]
+> Managed settings take precedence over the values entered in Claude Desktop. A
+> local connection test can succeed, but an older Intune profile can restore
+> static API key settings after restart. Temporarily exclude the administrator
+> workstation from the old profile or use an unmanaged workstation for authoring.
+> Update the existing profile rather than assigning both versions.
 
 1. In Claude Desktop, enable developer mode from **Help > Troubleshooting >
    Enable Developer Mode**.
@@ -382,12 +376,11 @@ Update the existing profile rather than assigning both versions.
 After every connection and policy test succeeds, use **Export** in Claude
 Desktop.
 
-{{< callout type="warning" >}}
-When **Static API key** is selected, the exported macOS profile or Windows
-policy contains the agentgateway client key. Assign it only to the pilot group.
-Before production rollout, switch to **Helper script** so that the managed
-policy contains a helper path instead of the credential.
-{{< /callout >}}
+> [!WARNING]
+> When **Static API key** is selected, the exported macOS profile or Windows
+> policy contains the agentgateway client key. Assign it only to the pilot group.
+> Before production rollout, switch to **Helper script** so that the managed
+> policy contains a helper path instead of the credential.
 
 - Export `.mobileconfig` for macOS. The profile contains the complete managed
   configuration in the `com.anthropic.claudefordesktop` preference domain.
@@ -461,9 +454,8 @@ targets the Claude Desktop Entra enterprise application and pilot users.
 
 Avoid targeting all users and all resources while developing the policy. A
 misconfigured compliant-device requirement can also block the administrators
-who need to repair it. For deployment guidance, see [Require healthy and
-compliant devices with
-Intune](https://learn.microsoft.com/en-us/microsoft-365/solutions/manage-devices-with-intune-require-compliance?view=o365-worldwide).
+who need to repair it. For deployment guidance, see [Device compliance policies
+in Microsoft Intune](https://learn.microsoft.com/en-us/intune/device-security/compliance/overview).
 
 ### Verify Claude Desktop enforcement
 

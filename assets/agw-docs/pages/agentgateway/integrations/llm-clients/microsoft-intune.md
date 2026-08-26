@@ -35,13 +35,12 @@ configuration]({{< link-hextra path="/configuration/listeners/#https-listeners"
 hostname and whose issuer is trusted by the client devices.
 {{< /conditional-text >}}
 
-{{< callout type="warning" >}}
-Do not use a port-forward, localhost address, or temporary load balancer address
-in a managed configuration. Never include an upstream LLM provider key in an
-Intune profile or remediation script. A static agentgateway client key is
-acceptable only for a limited pilot because an administrator of the managed
-device can recover it.
-{{< /callout >}}
+> [!WARNING]
+> Do not use a port-forward, localhost address, or temporary load balancer address
+> in a managed configuration. Never include an upstream LLM provider key in an
+> Intune profile or remediation script. A static agentgateway client key is
+> acceptable only for a limited pilot because an administrator of the managed
+> device can recover it.
 
 ## Plan the Intune policy
 
@@ -91,16 +90,15 @@ macOS controls apply to an enrolled BYOD Mac, but the user can unenroll a
 personally owned device. Use compliance and Conditional Access policies when
 access must require continued enrollment.
 
-{{< callout type="info" >}}
-**Do not use Discovered apps to verify configuration delivery.** On a
-personally owned macOS device, Intune reports only apps that Intune manages. An
-independently installed Codex or Claude Desktop app might not appear. The
-Discovered apps report also normally refreshes every seven days from the
-device's enrollment date. Use **Device configuration**, the effective managed
-preference, and agentgateway request logs to verify this workflow. For more
-information, see [Intune Discovered
-Apps](https://learn.microsoft.com/en-us/intune/app-management/discovered-apps).
-{{< /callout >}}
+> [!NOTE]
+> **Do not use Discovered apps to verify configuration delivery.** On a
+> personally owned macOS device, Intune reports only apps that Intune manages. An
+> independently installed Codex or Claude Desktop app might not appear. The
+> Discovered apps report also normally refreshes every seven days from the
+> device's enrollment date. Use **Device configuration**, the effective managed
+> preference, and agentgateway request logs to verify this workflow. For more
+> information, see [Intune Discovered
+> Apps](https://learn.microsoft.com/en-us/intune/app-management/discovered-apps).
 
 ## Choose a management method
 
@@ -195,15 +193,14 @@ or an internal secret broker. Do not combine `auth` with `env_key`,
 fields, see the [Codex configuration
 reference](https://learn.chatgpt.com/docs/config-file/config-reference).
 
-{{< callout type="info" >}}
-Codex does not provide Claude Desktop's native custom-provider fields for an
-arbitrary OIDC issuer, client ID, or browser-versus-broker flow. A direct Entra
-ID integration requires an organization-owned command-backed helper that
-acquires and refreshes the Entra bearer token. Signing in to an Entra-backed
-ChatGPT workspace with `requires_openai_auth` is OpenAI authentication through
-the organization's SSO; it is not a direct Entra-issued token that
-agentgateway can validate with the Claude Desktop JWT policy.
-{{< /callout >}}
+> [!NOTE]
+> Codex does not provide Claude Desktop's native custom-provider fields for an
+> arbitrary OIDC issuer, client ID, or browser-versus-broker flow. A direct Entra
+> ID integration requires an organization-owned command-backed helper that
+> acquires and refreshes the Entra bearer token. Signing in to an Entra-backed
+> ChatGPT workspace with `requires_openai_auth` is OpenAI authentication through
+> the organization's SSO; it is not a direct Entra-issued token that
+> agentgateway can validate with the Claude Desktop JWT policy.
 
 For the distinction between these methods, see [Codex custom-provider
 authentication](https://learn.chatgpt.com/docs/auth#alternative-model-providers).
@@ -222,12 +219,11 @@ wire_api = "responses"
 env_key = "AGENTGATEWAY_API_KEY"
 ```
 
-{{< callout type="warning" >}}
-Do not distribute a plain HTTP gateway URL. It sends prompts, responses, and
-credentials without transport encryption. Use a publicly trusted or
-organization-trusted certificate on the HTTPS listener before assigning the
-managed Codex configuration.
-{{< /callout >}}
+> [!WARNING]
+> Do not distribute a plain HTTP gateway URL. It sends prompts, responses, and
+> credentials without transport encryption. Use a publicly trusted or
+> organization-trusted certificate on the HTTPS listener before assigning the
+> managed Codex configuration.
 
 For more information about the client behavior, see [Codex]({{< link-hextra
 path="/integrations/llm-clients/codex/" >}}).
@@ -253,12 +249,11 @@ TOML as a base64-encoded `config_toml_base64` value.
    <string>BASE64_ENCODED_TOML</string>
    ```
 
-   {{< callout type="warning" >}}
-   The Intune **Preference file** template accepts a `.plist` or `.xml` file,
-   but the uploaded file must contain only the key-value pairs. Do not add an
-   XML declaration, `DOCTYPE`, `<plist>`, or `<dict>` wrapper. Those elements
-   cause Intune to reject or incorrectly process this preference-file payload.
-   {{< /callout >}}
+   > [!WARNING]
+   > The Intune **Preference file** template accepts a `.plist` or `.xml` file,
+   > but the uploaded file must contain only the key-value pairs. Do not add an
+   > XML declaration, `DOCTYPE`, `<plist>`, or `<dict>` wrapper. Those elements
+   > cause Intune to reject or incorrectly process this preference-file payload.
 
 4. In the Intune admin center, go to **Devices > Manage devices >
    Configuration > Create > New policy**.
@@ -408,11 +403,10 @@ Change `managed_config.toml` on a pilot device. At the next evaluation, the
 detection script exits with code 1 and Intune runs the remediation script to
 restore the approved content.
 
-{{< callout type="info" >}}
-Intune Remediations restore the file on their configured schedule. Codex reads
-managed defaults at startup, so restart the client after remediation when you
-validate a policy change.
-{{< /callout >}}
+> [!NOTE]
+> Intune Remediations restore the file on their configured schedule. Codex reads
+> managed defaults at startup, so restart the client after remediation when you
+> validate a policy change.
 
 ## Manage Claude Code
 
@@ -620,12 +614,11 @@ for a one-time check. For recurring checks, review the enrollment, Windows
 edition, and licensing requirements for [Intune
 Remediations](https://learn.microsoft.com/en-us/intune/device-management/tools/deploy-remediations).
 
-{{< callout type="info" >}}
-These operational scripts are not custom compliance discovery scripts. Custom
-compliance requires platform-specific discovery output and a matching JSON
-rule definition. Use the dedicated artifacts described in [Add compliance
-reporting](#add-compliance-reporting).
-{{< /callout >}}
+> [!NOTE]
+> These operational scripts are not custom compliance discovery scripts. Custom
+> compliance requires platform-specific discovery output and a matching JSON
+> rule definition. Use the dedicated artifacts described in [Add compliance
+> reporting](#add-compliance-reporting).
 
 The network check does not send an LLM prompt and cannot prove that an
 interactive client request used agentgateway. After the script passes, complete
@@ -752,27 +745,27 @@ through agentgateway.
 2. Start the client and send a request.
 3. Check that the request appears in the agentgateway proxy logs.
 
-{{< conditional-text include-if="kubernetes" >}}
-```sh
-kubectl logs deployment/agentgateway-proxy \
-  -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  --follow \
-  --since=5s
-```
-{{< /conditional-text >}}
+   {{< conditional-text include-if="kubernetes" >}}
+   ```sh
+   kubectl logs deployment/agentgateway-proxy \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --follow \
+     --since=5s
+   ```
+   {{< /conditional-text >}}
 
-{{< conditional-text include-if="standalone" >}}
-Review the terminal output from the `agentgateway` process or the logs from the
-service that runs agentgateway. Confirm that the request uses the expected
-listener, route, and model.
-{{< /conditional-text >}}
+   {{< conditional-text include-if="standalone" >}}
+   Review the terminal output from the `agentgateway` process or the logs from the
+   service that runs agentgateway. Confirm that the request uses the expected
+   listener, route, and model.
+   {{< /conditional-text >}}
 
-Start the log stream before sending the client request so that unrelated
-traffic is easier to distinguish. Correlate the request by time; access logs do
-not need to include prompt text. Confirm the managed hostname, expected route
-and API path, upstream provider, and a successful status. No matching entry
-indicates a client, DNS, listener, or network problem. An unauthorized response
-indicates an authentication problem.
+   Start the log stream before sending the client request so that unrelated
+   traffic is easier to distinguish. Correlate the request by time; access logs do
+   not need to include prompt text. Confirm the managed hostname, expected route
+   and API path, upstream provider, and a successful status. No matching entry
+   indicates a client, DNS, listener, or network problem. An unauthorized response
+   indicates an authentication problem.
 
 4. For a client managed by a recurring macOS shell script or Windows
    remediation, change the gateway setting, wait for the next script run, and
