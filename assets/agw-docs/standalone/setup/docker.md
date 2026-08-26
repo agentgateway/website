@@ -11,7 +11,7 @@ You can either mount a directory and let agentgateway create a configuration fil
 {{< tabs >}}
 {{% tab name="Mount a directory" %}}
 
-Mount a writable directory at the `/config` path. Agentgateway generates a default configuration in the `config.yaml` file in that directory on the first start, and creates a SQLite database alongside it for local runtime features.
+Mount a writable directory at the `/config` path. Agentgateway generates a default configuration in the `config.yaml` file in that directory on the first start, and creates a SQLite database alongside it.
 
 ```sh
 mkdir agentgateway-config
@@ -23,7 +23,7 @@ docker run -d \
   {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}}
 ```
 
-The `--user` flag runs the container as your own user so that the container can read and write the mounted directory. The generated configuration points agentgateway at a SQLite database, defines a `default` gateway, serves the admin UI on that default gateway, and looks similar to the following example.
+The `--user` flag runs the container as your own user so that the container can read and write the mounted directory. The generated configuration points agentgateway at a SQLite database, defines a `default` gateway, serves the admin UI on that default gateway, and looks similar to the following example. The database powers the **Analytics** and **Logs** pages in the admin UI, and the other features that record data while agentgateway runs. For more information, see [Database]({{< link-hextra path="/setup/database/" >}}).
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -54,7 +54,7 @@ docker run -d \
   -f /config.yaml
 ```
 
-Agentgateway does not add anything to a file that you supply, so the UI is served on the admin address unless your file includes a `ui` section that attaches it to a gateway.
+Agentgateway does not add anything to a file that you supply, so the UI is served on the admin address unless your file includes a `ui` section that attaches it to a gateway. A file that you supply also has no database, so the **Analytics** and **Logs** pages are unavailable until you add one. Because the SQLite file needs a writable directory, mount a directory for it as well as the configuration file. For more information, see [Database]({{< link-hextra path="/setup/database/#own-file" >}}).
 
 Keep the mount writable if you want to save configuration changes that you make in the UI. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
 
@@ -180,6 +180,7 @@ Agentgateway leaves the configuration file and the SQLite database in the mounte
 ## Next steps
 
 * [Set up the admin UI]({{< link-hextra path="/setup/ui/" >}}) to open, expose, and secure the web interface.
+* [Set up a database]({{< link-hextra path="/setup/database/" >}}) for the **Analytics** and **Logs** pages, and for API key budgets.
 * [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}).
 * [Update your configuration]({{< link-hextra path="/setup/update/" >}}) after the container is running.
 * [Upgrade agentgateway]({{< link-hextra path="/operations/upgrade/" >}}) to a new image tag.

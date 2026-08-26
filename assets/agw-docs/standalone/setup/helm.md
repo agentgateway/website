@@ -46,6 +46,8 @@ helm upgrade -i agw \
 {{% /tab %}}
 {{< /tabs >}}
 
+### What the chart installs {#install-included}
+
 The chart creates the following resources. Each resource is named after the Helm release, which is `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` in these examples.
 
 | Resource | Name | Purpose |
@@ -57,8 +59,16 @@ The chart creates the following resources. Each resource is named after the Helm
 
 If you installed with a different release name or namespace, such as with the **Unique name and namespace** tab, adjust the resource names and the `-n` values in the commands throughout this documentation accordingly.
 
-> [!NOTE]
-> The chart creates no PersistentVolumeClaim and no Service for the admin port. The agentgateway configuration lives in the ConfigMap that the chart generates, and you reach the admin address by port-forwarding the `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` Deployment. Because the ConfigMap is mounted read-only, the admin UI cannot save configuration changes by default. To make the UI writable, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+### What the chart does not install
+
+Keep in mind that the Helm chart installation does not include the following features:
+
+* No PersistentVolumeClaim for persistent storage.
+* No Service for the admin port. Instead, you can reach the admin address by port-forwarding the `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` Deployment.
+* No writeable UI by default. To make the UI writable, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+* No database for features such as LLM analytics, LLM logs, API key budgets, and hybrid storage. To add a database, see [Database]({{< link-hextra path="/setup/database/#helm" >}}).
+  
+Also keep in mind that this standalone Kubernetes Deployment via Helm does not include the features of [{{< reuse "agw-docs/snippets/agentgateway.md" >}} for Kubernetes](https://docs.solo.io/agentgateway/kubernetes/latest/), such as a control plane, agentgateway custom resources, or additional services such as rate limiting, external auth, and WAF.
 
 ## Verify the installation
 
@@ -135,6 +145,7 @@ To give the UI its own gateway, secure it with OIDC, and expose it on your own h
 ## Next steps
 
 * [Set up the admin UI]({{< link-hextra path="/setup/ui/" >}}) to give the UI its own gateway and secure it with OIDC.
+* [Set up a database]({{< link-hextra path="/setup/database/#helm" >}}) so that the **Analytics** and **Logs** pages have data to show.
 * [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) so that the UI can save your changes.
 * [Update your configuration]({{< link-hextra path="/setup/update/" >}}) by upgrading your Helm values.
 * [Upgrade agentgateway]({{< link-hextra path="/operations/upgrade/" >}}) to a new chart version.

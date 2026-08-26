@@ -1,4 +1,4 @@
-Agentgateway records every request that flows through the proxy into a database. This data powers the [cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}) and the Analytics page in the Admin UI. You configure the database backend with a single `config.database.url` field, and the schema is created automatically on first startup — no migration step is required.
+Agentgateway records each LLM request that flows through the proxy into a database. This data powers the [cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}) and the **Analytics** page in the admin UI. You configure the database backend in the `config.database.url` field. Agentgateway creates the schema on the first startup, so no migration step is required.{{< version include-if="main" >}} For the steps to set up the database in each installation method, see [Database]({{< link-hextra path="/setup/database/" >}}).{{< /version >}}
 
 ## Backends
 
@@ -38,7 +38,7 @@ The schema is created automatically on first startup, so it is safe to restart a
 
 ## What is stored
 
-Agentgateway writes one record per proxied request. Each record captures:
+Agentgateway writes one record for each LLM request. Other proxy traffic, such as an HTTP route to a backend service, is not recorded, even when the request succeeds. Each record captures:
 
 - **Timing** — when the request started and completed, and total duration in milliseconds.
 - **HTTP** — response status code and any error message.
@@ -51,7 +51,7 @@ Optionally, agentgateway can also store the raw LLM prompt and completion JSON a
 
 ## What is not stored in the database
 
-The database holds only request log records. Everything else in agentgateway is stored in the configuration file (`config.yaml`).
+In the default `file` storage mode, the database holds request log records only, and the configuration file (`config.yaml`) holds everything else.
 
 | Item | Where it lives |
 | --- | --- |
@@ -61,6 +61,11 @@ The database holds only request log records. Everything else in agentgateway is 
 | Model cost catalog | JSON file(s) referenced from `config.modelCatalog` |
 | MCP server definitions | `config.yaml` |
 | Rate limit and CORS policies | `config.yaml` |
+
+{{< version include-if="main" >}}
+> [!NOTE]
+> The `hybrid` storage mode changes where some of these items live. In that mode, agentgateway also stores the resources that you manage in the admin UI in the same database, and layers them over the configuration file. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+{{< /version >}}
 
 ## Disable request logging
 

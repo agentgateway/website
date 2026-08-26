@@ -2,6 +2,9 @@
 
 Agentgateway always reads a configuration file at startup. To control how configuration updates are persisted while agentgateway is running, such as when you use the admin UI or send a request to the config resource API, decide on your storage mode.
 
+> [!NOTE]
+> This page covers the storage mode for agentgateway configuration only. For the `config.database` field, the choice between SQLite and PostgreSQL, and the other features that use the same database, see [Database]({{< link-hextra path="/setup/database/" >}}).
+
 ### Storage modes
 
 Set the mode in the `config.storage.mode` field of your configuration file. The mode values are `file`, `hybrid`, and `readOnly`, which are the literal values that the field accepts. Because the field is in the `config` section, agentgateway applies it at startup only, so a change to it takes effect after a restart.
