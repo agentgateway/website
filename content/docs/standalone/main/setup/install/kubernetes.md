@@ -5,6 +5,7 @@ description: Where to find the docs for the managed Kubernetes deployment model,
 test: skip
 aliases:
   - /docs/standalone/main/deployment/kubernetes/
+  - /docs/standalone/main/integrations/platforms/kubernetes/
 ---
 
 {{< reuse "agw-docs/standalone/setup/kubernetes.md" >}}
