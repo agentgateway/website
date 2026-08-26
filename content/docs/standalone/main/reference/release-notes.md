@@ -225,6 +225,39 @@ For more information, see the [MCP]({{< link-hextra path="/mcp/" >}}) docs.
 
 ### LLM {#v15-features-llm}
 
+#### API key budgets and model access
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3143 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3107 -->
+
+An API key entry now takes a `budgets` list that caps LLM spend for that key, and an `allowedModels` list that limits which models the key can reach.
+
+A budget has a name, a limit in `USD` or `Tokens`, a rolling window, and an action to take when the key exceeds the limit. The `Block` action rejects the request. The `Audit` action records the overage and lets the request through. Windows align to the Unix epoch rather than to the first request, so `1h` follows UTC clock hours and `24h` starts at midnight UTC.
+
+```yaml
+policies:
+  apiKey:
+    keys:
+    - key: "$TEAM_A_KEY"
+      allowedModels:
+      - "gpt-5*"
+      - claude-sonnet-5
+      budgets:
+      - name: daily-spend
+        limit:
+          unit: USD
+          amount: 50
+        window:
+          rolling: 24h
+        onBudgetExceeded: Block
+```
+
+Usage is charged after the LLM response, from the tokens or cost that the provider reports. If a request's provider does not report the unit that the budget needs, agentgateway logs the request but cannot charge it or block it after the fact. Budget state is held in memory and flushed to the database every five seconds, which keeps the database off the request path. Across replicas, a burst of traffic can therefore overshoot the limit. You can view and manage budgets in the admin UI.
+
+Budgets depend on a database, so they require the `hybrid` storage mode and are available in standalone mode only. Omit `allowedModels` to leave a key unconstrained, and set an empty list to deny every model. Both fields work with `key` and `keyHash` entries.
+
+For more information, see [API key authentication]({{< link-hextra path="/configuration/security/apikey-authn/" >}}) and [Store config in a database]({{< link-hextra path="/deployment/helm/storage/" >}}).
+
 #### Native Gemini inbound API
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2963 -->
@@ -310,39 +343,6 @@ promptGuard:
 ```
 
 Scoping is currently supported by the regex guard. In APIs that send tool arguments as opaque JSON, such as Completions, `toolInput` arguments are treated as a single string, so a masking rule can rewrite the arguments into invalid JSON. For more information, see [Prompt guards]({{< link-hextra path="/llm/prompt-guards/" >}}).
-
-#### API key budgets and model access
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3143 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3107 -->
-
-An API key entry now takes a `budgets` list that caps LLM spend for that key, and an `allowedModels` list that limits which models the key can reach.
-
-A budget has a name, a limit in `USD` or `Tokens`, a rolling window, and an action to take when the key exceeds the limit. The `Block` action rejects the request. The `Audit` action records the overage and lets the request through. Windows align to the Unix epoch rather than to the first request, so `1h` follows UTC clock hours and `24h` starts at midnight UTC.
-
-```yaml
-policies:
-  apiKey:
-    keys:
-    - key: "$TEAM_A_KEY"
-      allowedModels:
-      - "gpt-5*"
-      - claude-sonnet-5
-      budgets:
-      - name: daily-spend
-        limit:
-          unit: USD
-          amount: 50
-        window:
-          rolling: 24h
-        onBudgetExceeded: Block
-```
-
-Usage is charged after the LLM response, from the tokens or cost that the provider reports. If a request's provider does not report the unit that the budget needs, agentgateway logs the request but cannot charge it or block it after the fact. Budget state is held in memory and flushed to the database every five seconds, which keeps the database off the request path. Across replicas, a burst of traffic can therefore overshoot the limit. You can view and manage budgets in the admin UI.
-
-Budgets depend on a database, so they require the `hybrid` storage mode and are available in standalone mode only. Omit `allowedModels` to leave a key unconstrained, and set an empty list to deny every model. Both fields work with `key` and `keyHash` entries.
-
-For more information, see [API key authentication]({{< link-hextra path="/configuration/security/apikey-authn/" >}}) and [Store config in a database]({{< link-hextra path="/deployment/helm/storage/" >}}).
 
 #### Model catalog enhancements
 
