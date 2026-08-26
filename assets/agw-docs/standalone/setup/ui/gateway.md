@@ -111,7 +111,7 @@ The container must publish the new UI port, so this change needs a container res
      --user "$(id -u):$(id -g)" \
      -v "$PWD/config.yaml:/config.yaml" \
      -p 4000:4000 -p 4001:4001 \
-     cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}} \
+     {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
      -f /config.yaml
    ```
 
@@ -311,7 +311,7 @@ The default admin address binds to the container's own loopback interface, so pu
      --user "$(id -u):$(id -g)" \
      -v "$PWD/config.yaml:/config.yaml" \
      -p 4000:4000 -p 15000:15000 \
-     cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}} \
+     {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
      -f /config.yaml
    ```
 
