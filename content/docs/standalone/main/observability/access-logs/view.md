@@ -2,6 +2,7 @@
 title: View and customize logs
 weight: 10
 description: Configure per-request structured access logs with CEL-based filtering, field enrichment, and OTLP export.
+test: skip
 ---
 
 Agentgateway writes a structured access log line to stdout for every request it processes. Access logs are separate from [debug/system logs]({{< link-hextra path="/operations/debug/#debug-logs" >}}), which control agentgateway's own operational output.

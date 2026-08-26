@@ -603,4 +603,4 @@ Configuration is valid!
 * [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) so that the admin UI can save your changes.
 * [View LLM spend in the cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}).
 * [Set API key budgets]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}) that persist across restarts.
-* [Review what agentgateway stores]({{< link-hextra path="/integrations/observability/database/" >}}) in each request log record.
+* [Review what agentgateway stores]({{< link-hextra path="/observability/access-logs/database/" >}}) in each request log record.

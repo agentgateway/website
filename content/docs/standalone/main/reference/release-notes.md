@@ -488,7 +488,7 @@ For more information, see [Import a configuration]({{< link-hextra path="/config
 - **Generated metrics reference**: The metrics documentation is generated from the schema, so it stays in step with the code.
 - **CPU and heap profiles**: A new `agctl proxy profile` command collects pprof CPU and heap profiles from the admin endpoint.
 
-For more information, see [Observability]({{< link-hextra path="/reference/observability/" >}}) and the [`agctl proxy profile`]({{< link-hextra path="/reference/agctl/agctl-proxy-profile/" >}}) reference.
+For more information, see [Observability]({{< link-hextra path="/observability/" >}}) and the [`agctl proxy profile`]({{< link-hextra path="/reference/agctl/agctl-proxy-profile/" >}}) reference.
 
 #### Admin UI enhancements
 

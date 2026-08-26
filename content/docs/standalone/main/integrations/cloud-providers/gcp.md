@@ -198,8 +198,8 @@ gcloud secrets add-iam-policy-binding agentgateway-config \
 | [Google Gemini]({{< link-hextra path="/llm/providers/gemini/" >}}) | Direct Gemini API access with an API key |
 | [Secret Manager](https://cloud.google.com/security/products/secret-manager) | Storage for the configuration file and for the API keys of non-Google providers |
 | Cloud Load Balancing | Load balancing and TLS termination in front of the gateway port |
-| Cloud Monitoring | Metrics collection, through a [Prometheus]({{< link-hextra path="/integrations/observability/prometheus/" >}}) scrape |
-| Cloud Trace | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/integrations/observability/opentelemetry/" >}}) collector |
+| Cloud Monitoring | Metrics collection, through a [Prometheus]({{< link-hextra path="/observability/metrics/prometheus/" >}}) scrape |
+| Cloud Trace | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/observability/traces/configs/otel/" >}}) collector |
 
 ## Next steps
 

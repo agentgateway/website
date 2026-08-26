@@ -218,7 +218,7 @@ The `secretsmanager` statement is needed only if you also route to a non-AWS pro
 | [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) | Storage for the API keys of non-AWS providers |
 | AWS Application Load Balancer | Load balancing and TLS termination in front of the gateway port |
 | Amazon CloudWatch | Destination for the container logs configured by `awslogs` |
-| AWS X-Ray | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/integrations/observability/opentelemetry/" >}}) collector |
+| AWS X-Ray | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/observability/traces/configs/otel/" >}}) collector |
 
 ## Next steps
 

@@ -248,7 +248,7 @@ az role assignment create \
 | [Azure Key Vault](https://azure.microsoft.com/en-us/products/key-vault/) | Storage for the API keys of non-Azure providers |
 | Azure Application Gateway | Load balancing, TLS termination, and WAF in front of the gateway port |
 | Azure Monitor | Metrics and log collection |
-| Application Insights | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/integrations/observability/opentelemetry/" >}}) collector |
+| Application Insights | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/observability/traces/configs/otel/" >}}) collector |
 
 ## Next steps
 

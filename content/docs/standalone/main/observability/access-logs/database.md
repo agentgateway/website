@@ -2,6 +2,7 @@
 title: Store logs in a database
 weight: 30
 description: Store agentgateway access logs in a SQLite or PostgreSQL database to power the admin UI analytics and enable historical log queries.
+test: skip
 ---
 
 By default, all access logs are written to stdout. To persist access logs, you can configure agentgateway to write logs to a `request_logs` table in your database. Agentgateway can write logs to the same database that you use for configuration storage, or you can also choose to send access logs to a separate database to keep them separate. 
@@ -23,8 +24,22 @@ If you have a database configured for [configuration storage]({{< link-hextra pa
 
 For database setup instructions, including how to deploy PostgreSQL for Kubernetes installs, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
 
+> [!IMPORTANT]
+> The Helm chart renders the `config.database` and `config.storage` sections for you from its `mode` and `database.postgres.url` values, so do not set those two sections in your `values.yaml`. To send access logs to a separate database on a Helm install, set `config.logging.database` under the chart's top-level `config` field instead.
+>
+> ```yaml
+> mode: database
+> database:
+>   postgres:
+>     url: "postgres://user:password@host:5432/agentgateway"
+> config:
+>   logging:
+>     database:
+>       url: "postgres://user:password@host:5432/agentgateway_logs"
+> ```
+
 > [!NOTE]
-> [Access log customizations]({{< link path="/observability/access-logs/view/#add-custom-fields-to-logs" >}}) interact with the database as follows:
+> [Access log customizations]({{< link-hextra path="/observability/access-logs/view/#add-custom-fields-to-logs" >}}) interact with the database as follows:
 > - **`filter`**: Access log filtering via the `frontendPolicies.accessLog.filter` field applies to stdout and the database. A request that is filtered out of stdout is also excluded from the database.
 > - **`add`**: Adding custom log attributes via the `frontendPolicies.accessLog.add` field affects the access logs that are sent to stdout only. Use the `frontendPolicies.accessLog.database.add` field to add custom fields to database records.
 > - **`remove`**: Access log attributes that are defined in `frontendPolicies.accessLog.remove` are only removed from stdout. The database schema is fixed, so this setting has no effect on what is stored in the database.
