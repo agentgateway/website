@@ -1,4 +1,4 @@
-To run agentgateway as a container, follow the steps to start the container, verify that it runs, and open the admin UI. Agentgateway publishes the official images at `cr.agentgateway.dev/agentgateway`.
+To run agentgateway as a container, follow the steps to start the container, verify that it runs, and open the admin UI. Agentgateway publishes the official images at `{{< reuse "agw-docs/standalone/image-ref.md" >}}`.
 
 ## Run the container {#docker}
 
@@ -20,7 +20,7 @@ docker run -d \
   --user "$(id -u):$(id -g)" \
   -v "$PWD/agentgateway-config:/config" \
   -p 4000:4000 \
-  cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}}
+  {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}}
 ```
 
 The `--user` flag runs the container as your own user so that the container can read and write the mounted directory. The generated configuration points agentgateway at a SQLite database, defines a `default` gateway, serves the admin UI on that default gateway, and looks similar to the following example.
@@ -50,7 +50,7 @@ docker run -d \
   --user "$(id -u):$(id -g)" \
   -v "$PWD/config.yaml:/config.yaml" \
   -p 4000:4000 \
-  cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}} \
+  {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
   -f /config.yaml
 ```
 
@@ -76,7 +76,7 @@ Example output:
 
 ```
 CONTAINER ID   IMAGE                                         COMMAND               CREATED         STATUS         PORTS                                         NAMES
-8bac1aad45ba   cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}}   "/app/agentgateway"   5 seconds ago   Up 4 seconds   0.0.0.0:4000->4000/tcp, [::]:4000->4000/tcp   agentgateway
+8bac1aad45ba   {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}}   "/app/agentgateway"   5 seconds ago   Up 4 seconds   0.0.0.0:4000->4000/tcp, [::]:4000->4000/tcp   agentgateway
 ```
 
 ### Find the admin UI address
@@ -117,7 +117,7 @@ services:
   agentgateway:
     container_name: agentgateway
     restart: unless-stopped
-    image: cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}}
+    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}}
     # Replace with your user and group IDs, such as the output of: id -u && id -g
     user: "1000:1000"
     ports:
@@ -147,7 +147,7 @@ Example output:
 
 ```
 NAME           IMAGE                                         COMMAND               SERVICE        CREATED         STATUS         PORTS
-agentgateway   cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}}   "/app/agentgateway"   agentgateway   9 seconds ago   Up 8 seconds   0.0.0.0:4000->4000/tcp, [::]:4000->4000/tcp
+agentgateway   {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}}   "/app/agentgateway"   agentgateway   9 seconds ago   Up 8 seconds   0.0.0.0:4000->4000/tcp, [::]:4000->4000/tcp
 ```
 
 ### Open the admin UI

@@ -640,7 +640,7 @@ Both storage modes support running more than one agentgateway proxy pod. In `rea
 
    ```sh
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     -l app.kubernetes.io/name=agentgateway-standalone
+     -l app.kubernetes.io/name={{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}
    ```
 
 ## Cleanup
