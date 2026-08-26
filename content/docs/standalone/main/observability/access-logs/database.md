@@ -4,7 +4,7 @@ weight: 30
 description: Store agentgateway access logs in a SQLite or PostgreSQL database to power the admin UI analytics and enable historical log queries.
 ---
 
-By default, all access logs are written to stdout. To persist access logs, you can configure agentgateway to write logs to a `request_logs` table in your database. Agentgateway can write logs to the same database that you use for configuration storage, or you can also choose to send access log to a separate database to keep them separate. 
+By default, all access logs are written to stdout. To persist access logs, you can configure agentgateway to write logs to a `request_logs` table in your database. Agentgateway can write logs to the same database that you use for configuration storage, or you can also choose to send access logs to a separate database to keep them separate. 
 
 ## Set up the database
 

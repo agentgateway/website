@@ -104,7 +104,7 @@ Agentgateway pods are automatically annotated with `prometheus.io/scrape: "true"
 
    {{< reuse-image src="img/main/prometheus-query.png" srcDark="img/main/prometheus-query-dark.png"  >}}
 
-6. When you are done, remove the stack and the namespace.
+7. When you are done, remove the stack and the namespace.
 
    ```sh
    helm uninstall kube-prometheus-stack -n monitoring

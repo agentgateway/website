@@ -50,7 +50,7 @@ frontendPolicies:
 
 Use the `randomSampling` setting to control the fraction of requests for which spans are exported. Set `randomSampling: true` to sample 100% of requests, or provide a decimal between `0` and `1` for a percentage.
 
-In the following example, you want to samply 10% of requests. 
+In the following example, you want to sample 10% of requests.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config

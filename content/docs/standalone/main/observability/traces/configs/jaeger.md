@@ -6,7 +6,7 @@ description: Export agentgateway traces to Jaeger for local collection and visua
 
 [Jaeger](https://www.jaegertracing.io/) is an open-source distributed tracing platform that collects, stores, and visualizes traces. It is a quick way to get started with tracing for agentgateway because it ships with a built-in OTLP receiver, so you do not need a separate collector, and a web UI to browse and query spans.
 
-Jaeger works best for local development and testing. For production deployments, consider routing traces through an [OpenTelemetry Collector]({{< link path="/observability/traces/configs/otel/" >}}) so that you can fan out to multiple backends or apply processing pipelines to your traces before export them.
+Jaeger works best for local development and testing. For production deployments, consider routing traces through an [OpenTelemetry Collector]({{< link path="/observability/traces/configs/otel/" >}}) so that you can fan out to multiple backends or apply processing pipelines to your traces before exporting them.
 
 The way you set up Jaeger depends on how you installed agentgateway. 
 
