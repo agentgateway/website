@@ -58,7 +58,7 @@ The chart creates the following resources. Each resource is named after the Helm
 | ServiceAccount | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Identity for the proxy pod. |
 
 > [!NOTE]
-> The chart creates no PersistentVolumeClaim and no Service for the admin port. Configuration lives in the ConfigMap, and you reach the admin interface by port-forwarding the Deployment. To persist configuration changes that you make in the UI, see [Store configuration in a database]({{< link-hextra path="/deployment/helm/storage/" >}}).
+> The chart creates no PersistentVolumeClaim and no Service for the admin port. Configuration lives in the ConfigMap, and you reach the admin interface by port-forwarding the Deployment. To persist configuration changes that you make in the UI, see {{< version exclude-if="1.4.x" >}}[Store configuration in a database]({{< link-hextra path="/deployment/helm/storage/" >}}){{< /version >}}{{< version include-if="1.4.x" >}}[Store configuration in a database](#store-configuration-in-a-database){{< /version >}}.
 
 ## Verify the installation
 
@@ -66,7 +66,7 @@ The chart creates the following resources. Each resource is named after the Helm
 
    ```sh
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     -l app.kubernetes.io/name=agentgateway-standalone
+     -l app.kubernetes.io/name={{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}
    ```
 
    Example output:
@@ -172,10 +172,34 @@ In the default `readonly` mode, the ConfigMap is mounted read-only, so a save fa
 failed to write to file `/config/config.yaml`: Read-only file system (os error 30)
 ```
 
-In `database` mode, you can add and edit the resources that the UI manages, such as MCP targets, LLM providers, models, and routes. Agentgateway stores the configuration in PostgreSQL and merges them over the ConfigMap baseline at read time. Saving the configuration file as a whole still fails, because the file itself remains read-only. To set up this mode, see [Store configuration in a database]({{< link-hextra path="/deployment/helm/storage/" >}}).
+In `database` mode, you can add and edit the resources that the UI manages, such as MCP targets, LLM providers, models, and routes. Agentgateway stores the configuration in PostgreSQL and merges them over the ConfigMap baseline at read time. Saving the configuration file as a whole still fails, because the file itself remains read-only. To set up this mode, see {{< version exclude-if="1.4.x" >}}[Store configuration in a database]({{< link-hextra path="/deployment/helm/storage/" >}}){{< /version >}}{{< version include-if="1.4.x" >}}[Store configuration in a database](#store-configuration-in-a-database){{< /version >}}.
 
 > [!IMPORTANT]
 > Treat the Helm values as the source of truth for the configuration file, and the UI as the way to manage the resources that are layered on top of it. To change a field that the UI does not manage, such as a listener or a bind, update your Helm values and upgrade the release.
+
+{{% version include-if="1.4.x" %}}
+## Store configuration in a database
+
+To keep configuration changes that you make in the UI, run PostgreSQL and set the agentgateway configuration `mode` to `database` in your Helm values file. Agentgateway creates the schema that it needs on first startup, so no migration step is required.
+
+```yaml
+mode: database
+database:
+  postgres:
+    url: postgres://agw:secret@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+config:
+  binds:
+  - port: 4000
+    listeners:
+    - routes:
+      - backends:
+        - host: httpbin.httpbin.svc.cluster.local:8000
+```
+
+The chart rejects a `database.postgres.url` value that does not begin with `postgres://` or `postgresql://`, and rejects the value entirely when `mode` is `readonly`.
+
+Both modes support more than one replica. To scale the deployment, set `replicaCount`.
+{{% /version %}}
 
 ## Expose listeners
 

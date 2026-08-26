@@ -36,7 +36,7 @@ The following walkthrough runs a complete Cross App Access flow locally, with a 
 
 1. Make sure that you have the following tools installed.
 
-   - [agentgateway binary]({{< link-hextra path="/deployment/binary/" >}})
+   - [agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}})
    - [Docker](https://docs.docker.com/get-started/get-docker/)
    - `python3` and `curl`
 

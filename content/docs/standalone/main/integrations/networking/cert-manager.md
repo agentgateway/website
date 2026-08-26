@@ -140,4 +140,4 @@ spec:
 
 - [cert-manager Documentation](https://cert-manager.io/docs/)
 - [Listeners and TLS]({{< link-hextra path="/configuration/listeners" >}})
-- [Kubernetes Deployment]({{< link-hextra path="/integrations/platforms/kubernetes" >}})
+- [Kubernetes control plane]({{< link-hextra path="/setup/install/kubernetes/" >}})

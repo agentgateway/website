@@ -18,7 +18,7 @@ Compatibility is field-based rather than whole-config parity. The importer conve
 
 ## Before you begin
 
-- [Install an agentgateway binary]({{< link-hextra path="/deployment/binary/" >}}) that includes the `agentgateway import` command.
+- [Install an agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}) that includes the `agentgateway import` command.
 - Locate the LiteLLM proxy configuration file that you want to import. The file must contain at least one `model_list` entry.
 - Make the environment variables referenced by the LiteLLM configuration available to agentgateway. The importer preserves environment references instead of copying secret values into the generated file.
 

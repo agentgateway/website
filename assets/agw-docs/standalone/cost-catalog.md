@@ -93,6 +93,7 @@ config:
 
 Use overrides for contracted pricing, internally hosted models, or models that do not appear in the imported catalog.
 
+{{% version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 You can also load one or more catalog files with the `MODEL_CATALOG_PATHS` environment variable. Set it to a comma-separated list of file paths.
 
 ```sh
@@ -101,6 +102,12 @@ MODEL_CATALOG_PATHS=./costs/catalog.json,./costs/overrides.json agentgateway -f 
 
 > [!WARNING]
 > When `MODEL_CATALOG_PATHS` is set, it replaces any `config.modelCatalog` sources. Use one mechanism or the other.
+{{% /version %}}
+
+{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+> [!WARNING]
+> The `MODEL_CATALOG_PATHS` environment variable is removed. Agentgateway ignores it without an error, so a catalog that you loaded this way stops applying. List your catalog files under `config.modelCatalog` instead.
+{{% /version %}}
 
 ## Use cost data
 
@@ -169,34 +176,11 @@ Usually, you do not need to write catalog JSON by hand. Use `agctl {{< reuse "ag
 
 {{< reuse "agw-docs/snippets/model-catalog-json-format.md" >}}
 
-The following minimal example prices one OpenAI model and one tiered Gemini model.
+{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+## Model tags
 
-```json
-{
-  "providers": {
-    "openai": {
-      "models": {
-        "gpt-4o-mini": {
-          "rates": { "input": "0.15", "output": "0.6", "cacheRead": "0.075" }
-        }
-      }
-    },
-    "gcp.gemini": {
-      "models": {
-        "gemini-2.5-pro": {
-          "rates": { "input": "1.25", "output": "10", "cacheRead": "0.125" },
-          "tiers": [
-            {
-              "contextOver": 200000,
-              "rates": { "input": "2.5", "output": "15", "cacheRead": "0.25" }
-            }
-          ]
-        }
-      }
-    }
-  }
-}
-```
+{{< reuse "agw-docs/snippets/model-catalog-tags.md" >}}
+{{% /version %}}
 
 {{< doc-test paths="costs" >}}
 # Verify that agentgateway loads a catalog from a file source.
