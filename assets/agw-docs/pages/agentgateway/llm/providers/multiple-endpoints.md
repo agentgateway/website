@@ -12,17 +12,6 @@ Alternatively, you can define the routes in a separate {{< reuse "agw-docs/snipp
 
 Paths are matched in order, and the first match determines how the request is handled. The wildcard character `*` can be used to match anything. If no route is set, the route defaults to the Completions endpoint.
 
-{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-Clients that send the native Gemini format use two more route types.
-
-| Route type | Endpoints |
-|------------|-----------|
-| `GenerateContent` | `models/{model}:generateContent` and `models/{model}:streamGenerateContent` |
-| `GeminiCountTokens` | `models/{model}:countTokens` |
-
-Because the keys are matched as path suffixes, the method suffix on its own is enough to match whatever version prefix the client sends. The model name comes from the `models/{model}` path segment, so a single entry covers every Gemini model. Streaming requests must include the `alt=sse` query parameter.
-{{< /version >}}
-
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).

@@ -53,7 +53,13 @@ Two route types carry the format:
 
 Because the model name comes from the path, any Gemini model works without a per-model entry in your configuration. The `tunedModels/{model}` form is preserved as well.
 
-Native Gemini requests reach Gemini-family backends only, which means the Gemini API, Vertex AI with a Gemini model, or a custom provider that advertises the `generateContent` format. A native Gemini request that is routed to any other provider is rejected with an unsupported-conversion error rather than translated.
+Native Gemini requests reach Gemini-family backends only:
+
+- The Gemini API
+- Vertex AI with a Gemini model
+- A custom provider that advertises the `generateContent` format
+
+A native Gemini request that is routed to any other provider is rejected with an unsupported-conversion error rather than translated.
 
 > [!NOTE]
 > Prompt guards apply to `generateContent` and `streamGenerateContent`. They are skipped for `geminiCountTokens`, which counts tokens and never reaches a model. Thinking configuration in `generationConfig.thinkingConfig`, returned thought parts, and `thoughtsTokenCount` all pass through unchanged.
