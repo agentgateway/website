@@ -146,7 +146,7 @@ Review other common configurations when exporting access logs to an OTLP-compati
 
 ### Filter logs before export
 
-You can filter which access logs are exported to your OTLP backend by setting the `accessLog.otlp.filter` field. This filter is independent of the top-level `filter` (`frontendPolicies.accessLog.filter`), which controls what access logs are written to stdout and stored in the database. Because the two filters are evaluated separately, you can send a different subset of logs to stdout or your database, and to your OTLP backend. 
+You can filter which access logs are exported to your OTLP backend by setting the `accessLog.otlp.filter` field. When `otlp.filter` is not set, the top-level `filter` (`frontendPolicies.accessLog.filter`) is used as a fallback for OTLP export as well. When `otlp.filter` is set, it takes precedence over the top-level filter for OTLP export only, so you can send a different subset of logs to your OTLP backend than to stdout and the database.
 
 The following example sends only error responses to the OTLP collector while logging all requests to stdout.
 
@@ -159,7 +159,7 @@ frontendPolicies:
       filter: 'response.code >= 400'
 ```
 
-The following example logs only error responses to stdout and the database, but sends all requests to the OTLP collector.
+The following example logs only error responses to stdout, the database, and the OTLP collector. Because no `otlp.filter` is set, the top-level filter applies to all three backends.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -168,6 +168,18 @@ frontendPolicies:
     filter: 'response.code >= 400'
     otlp:
       host: localhost:4317
+```
+
+The following example logs only error responses to stdout and the database, but sends all requests to the OTLP collector. To override the top-level filter for OTLP, set `otlp.filter` explicitly.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    filter: 'response.code >= 400'
+    otlp:
+      host: localhost:4317
+      filter: 'true'
 ```
 
 ### Customize exported fields
