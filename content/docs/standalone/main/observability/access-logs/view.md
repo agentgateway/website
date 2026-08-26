@@ -38,11 +38,16 @@ To view access logs in the UI:
 
 1. Open the [agentgateway admin UI](http://localhost:15000/ui). 
 2. Go to **Logs** and review the access logs that agentgateway captured for your previous requests. Use the filter options to limit the number of access logs that are shown to you. For example, you can filter logs by model, providers, or users. Note that in order to filter logs by user, you must configure authentication in agentgateway. 
+
+   {{< reuse-image src="img/main/agentgateway-ui-logs.png" srcDark="img/main/agentgateway-ui-logs-dark.png" >}}
+
 3. Optional: Enable richer access logging for LLM and MCP-specific requests by going to the log **Settings** and toggling **Include prompts and completions in logs**. For every request that you sent through agentgateway, the following additional information is captured: 
    - **Trajectory**: Review the steps that your request took, including tool calls, and how many tokens were spent in each step. Each step is represented as a line. The longer the line is, the more tokens were used in that step.
    - **Conversation view**: See the details of your conversation with the LLM provider, such as the prompt that you sent and the reply that you got from the LLM. 
-  
-   {{< reuse-image src="img/main/agw-access-log.png" srcDark="img/main/agw-access-log-dark.png" >}}
+
+4. Select a log entry to open it and review its trajectory and conversation.
+
+   {{< reuse-image src="img/main/agentgateway-ui-log-detail.png" srcDark="img/main/agentgateway-ui-log-detail-dark.png" >}}
 
 ## Filter requests
 
