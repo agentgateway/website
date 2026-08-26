@@ -55,6 +55,41 @@ routes:
 > [!NOTE]
 > For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/llm/about/" >}}).
 
+## Provider format conversion
+
+A Messages request does not need a provider that speaks the Anthropic Messages format. When the selected provider advertises a different format, agentgateway converts the request on the way out and converts the reply back into the Messages shape, so the client receives Anthropic responses either way.
+
+Agentgateway uses the first of these formats that the provider advertises.
+
+| Order | Provider format | What happens |
+|-------|-----------------|--------------|
+| 1 | `messages` | The request is sent natively, with no conversion. |
+| 2 | `completions` | The request is converted to the OpenAI Chat Completions format. |
+| 3 | `responses` | The request is converted to the OpenAI Responses format. |
+
+Because `completions` comes before `responses`, a provider that advertises both is unaffected by the Responses conversion. That conversion applies to a provider that advertises `responses` and not `completions`.
+
+### Converting to the Responses format
+
+The Responses conversion covers a common agent subset:
+
+- Text and system instructions
+- Image inputs, supplied by URL, base64 data, or file ID
+- Function tools, tool choice, and the parallel tool-call preference
+- Assistant tool-use history, and tool results that are text
+- Structured output JSON schemas
+- Prompt cache breakpoints
+- Streaming and usage reporting
+
+> [!WARNING]
+> The Responses format has no equivalent for `stop_sequences` or `top_k`. Agentgateway accepts both fields and drops them, with no error and no warning to the client. A request that relies on a stop sequence to end generation behaves differently against a provider that advertises only `responses`.
+
+A Messages feature that the Responses format cannot represent at all fails before the upstream request is sent, and returns a `400` with an `unsupported conversion` message. These features fail this way:
+
+- Thinking and redacted-thinking history
+- Document, search-result, and server-tool content blocks
+- Tool results that are not text
+
 ## Using the API
 
 Send a request to the `/v1/messages` endpoint. The request is forwarded to the Anthropic API and the response is returned to the client.

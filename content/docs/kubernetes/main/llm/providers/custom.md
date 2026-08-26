@@ -68,8 +68,8 @@ shapes, declare each supported format and optionally set a per-format path.
 
 | Client request format | Preferred custom provider format |
 |-----------------------|----------------------------------|
-| OpenAI chat completions | `Completions` |
-| Anthropic messages | `Messages` |
+| OpenAI chat completions | `Completions`, then `Messages` |
+| Anthropic messages | `Messages`, then `Completions`, then `Responses` |
 | OpenAI responses | `Responses`, then `Completions` |
 | OpenAI embeddings | `Embeddings` |
 | Anthropic token count | `AnthropicTokenCount` |
@@ -78,6 +78,10 @@ shapes, declare each supported format and optionally set a per-format path.
 
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
+
+These fallbacks are not symmetric. An Anthropic Messages request can be served
+by a provider that declares only `Responses`, but a Chat Completions request
+cannot. To serve Chat Completions clients, declare `Completions` or `Messages`.
 
 ## Route to a host and port
 
