@@ -28,9 +28,11 @@ The following features do not work without a database. When you set up a databas
 | [`hybrid` configuration storage]({{< link-hextra path="/setup/storage/" >}}) | When enabled, hybrid mode stores UI edit to agentgateway configuration in the database. | Agentgateway does not start: `config.storage.mode=hybrid requires config.database.url`. |
 | [LLM API key budgets]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}) | API key budgets let you track LLM spend across restarts | Agentgateway does not start: `API key budgets require config.database to be configured`. |
 
-### Logging database
+### Access logging database
 
 Optionally, to keep request logs in a different database from the rest, you can set the `config.logging.database` field. Then, agentgateway writes request logs to the database in `config.logging.database`, and uses `config.database` for the other features.
+
+For more information, see [Store logs in a database]({{< link path="/observability/access-logs/database/" >}}).
 
 > [!IMPORTANT]
 > The `config.logging.database` field covers request logs only. It does not satisfy `hybrid` storage or API key budgets, because both features use the primary database. If you configure either feature with `config.logging.database` alone, agentgateway fails to start with the error in the preceding table.
