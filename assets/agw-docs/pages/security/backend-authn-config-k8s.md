@@ -32,7 +32,7 @@ spec:
 | -- | -- | -- |
 | {{< reuse "agw-docs/snippets/policy.md" >}} | `spec.backend.auth` | All methods. |
 | {{< reuse "agw-docs/snippets/backend.md" >}} | `spec.policies.auth` | All methods. |
-| {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} | `spec.policies.auth` | All methods except `crossAppAccess`{{< version exclude-if="1.4.x" >}} and `jwtSign`{{< /version >}}. |
+| {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} | `spec.policies.auth` | All methods except `crossAppAccess`{{< version exclude-if="1.4.x,2026.7.1" >}} and `jwtSign`{{< /version >}}. |
 
 Choose the {{< reuse "agw-docs/snippets/policy.md" >}} resource when one credential serves several backends, or when you want to attach the credential higher up, such as to a route or a gateway. Choose the inline `spec.policies.auth` field when the credential belongs to exactly one backend or model. For how the controller resolves a policy that targets more than one level, see [Targeting and merging]({{< link-hextra path="/about/policies/target-merge/" >}}).
 
@@ -57,7 +57,7 @@ gate here: an unclosed one fails the whole build.
 | `auth.aws.secretRef` | `accessKey` and `secretKey`, plus `sessionToken` for temporary credentials. |
 | `auth.azure.secretRef` | `clientID`, `tenantID`, and `clientSecret`. |
 | `auth.gcp.secretRef` | `credentials.json`. Set `secretRef.key` to read a different key. |
-{{< version exclude-if="1.4.x" >}}| `auth.jwtSign.signingKeyRef` | `signingKey`. |{{< /version >}}
+{{< version exclude-if="1.4.x,2026.7.1" >}}| `auth.jwtSign.signingKeyRef` | `signingKey`. |{{< /version >}}
 
 The Secret must be in the same namespace as the policy or backend that names it.
 
@@ -70,7 +70,7 @@ Each method has its own page.
 | Method | Page |
 | -- | -- |
 | Static keys, Secrets, passthrough, and extra credentials | [Static keys and passthrough]({{< link-hextra path="/security/backend-authn/key/" >}}) |
-| AWS, Azure, and Google Cloud | [Cloud provider credentials]({{< link-hextra path="/security/backend-authn/providers/" >}}) |{{< version exclude-if="1.4.x" >}}
+| AWS, Azure, and Google Cloud | [Cloud provider credentials]({{< link-hextra path="/security/backend-authn/providers/" >}}) |{{< version exclude-if="1.4.x,2026.7.1" >}}
 | Signed JWT | [Signed JWT (jwtSign)]({{< link-hextra path="/security/backend-authn/jwt-sign/" >}}) |{{< /version >}}
 | OAuth token exchange | [OAuth token exchange]({{< link-hextra path="/security/backend-authn/oauth-token-exchange/" >}}) |
 | Cross App Access | [Cross App Access (ID-JAG)]({{< link-hextra path="/security/backend-authn/cross-app-access/" >}}) |

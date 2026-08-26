@@ -39,6 +39,11 @@ Additionally, authentication can run in three different modes:
 * **Permissive**: Requests are never rejected. This is useful for usage of claims in later steps (authorization, logging, etc).  
   *Warning*: This allows requests without a JWT token!
 
+After it validates a token, agentgateway removes the token from the location that it was read from, so that the backend never receives the client's credential. Two settings change that.
+
+* Set `preserveToken: true` on the `jwtAuth` policy to leave the validated token where it was found. Use this setting when another policy on the same route reads the token from the request, such as an [OAuth token exchange]({{< link-hextra path="/configuration/security/backend-authn/oauth-token-exchange/" >}}) that takes it as the subject token.
+* Set the `passthrough` [backend authentication]({{< link-hextra path="/configuration/security/backend-authn/" >}}) method to forward the validated token to one backend. Prefer this form when only the backend needs the token, because it does not expose the credential to every policy that runs later.
+
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml

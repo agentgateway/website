@@ -195,8 +195,33 @@ The following table describes the most common `crossAppAccess` fields. For the f
 | `clientAuth` | Client authentication for each token endpoint. Supported methods are `clientSecretBasic`, `clientSecretPost`, and `privateKeyJwt`. |
 | `audience` | Required identifier of the resource authorization server. The issued ID-JAG is bound to this value. |
 | `resources` | Optional protected resource or API identifiers ([RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707)), sent on the token exchange leg. Configure these explicitly when the authorization server expects them. |
-| `scopes` | Optional scopes to request. The authorization server might grant a subset. |
+| `scopes` | Optional scopes to request on the IdP leg. The authorization server might grant a subset. These scopes are the ceiling for the ID-JAG. |
+| `accessTokenScopes` | Optional scopes to request on the resource authorization server leg, when the ID-JAG is exchanged for the access token. Omit the field to send `scopes` on both legs. Set it to an empty list to send no `scope` parameter on this leg. Naming a scope that is not in `scopes` is likely to be rejected as `invalid_scope`, because the ID-JAG is granted only the scopes in `scopes`. For more information, see [Scope the access token separately](#access-token-scopes). |
 | `cache` | Optional token cache configuration. Defaults to an in-memory cache with 8192 entries. Set `cache.defaultTtl` as a fallback for when the token response omits `expires_in` (defaults to `300s`), and `cache.maxEntries: 0` to disable caching. The cache duration is capped by the subject token's JWT `exp` claim when present. |
+
+## Scope the access token separately {#access-token-scopes}
+
+Cross App Access sends `scope` on both exchanges by default: to the IdP when it asks for the ID-JAG, and to the resource authorization server when it redeems that ID-JAG for an access token. Authorization servers disagree about whether the second `scope` is welcome. Keycloak uses it to request optional client scopes, as in the local example on this page. Others, including Okta Custom Authorization Server, reject a redemption request that carries a `scope` parameter at all, because the ID-JAG's own scope claim is already authoritative.
+
+Set `accessTokenScopes` to control the second leg on its own.
+
+| `accessTokenScopes` | Agentgateway sends |
+| -- | -- |
+| Omitted | `scopes` on both legs. This is the default. |
+| `[]` | No `scope` parameter on the redemption leg. Use this form with an authorization server that rejects the parameter. |
+| A list of scopes | Those scopes on the redemption leg, and `scopes` on the IdP leg. |
+
+In the following example, the gateway requests `todos.read` from the IdP and sends no `scope` when it redeems the ID-JAG.
+
+```yaml
+crossAppAccess:
+  audience: https://resource.idjag.demo
+  scopes:
+  - todos.read
+  accessTokenScopes: []
+```
+
+The ID-JAG is granted only the scopes that the IdP approved from `scopes`, and that set is the ceiling for the redemption leg. Asking for more is likely to fail with `invalid_scope`. Agentgateway logs a warning at startup when `accessTokenScopes` names a scope that is absent from `scopes`, but it does not reject the configuration, because the IdP is free to grant more than was requested.
 
 ## Private key JWT client authentication
 
