@@ -82,7 +82,7 @@ The `ui.policies` section takes the same policies that a route takes, so you can
      -e UI_CLIENT_ID \
      -e UI_CLIENT_SECRET \
      -e REDIRECT_URI \
-     cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}} \
+     {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
      -f /config.yaml
    ```
 
@@ -166,7 +166,7 @@ The `ui.policies` section takes the same policies that a route takes, so you can
 
    ```sh
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     -l app.kubernetes.io/name=agentgateway-standalone
+     -l app.kubernetes.io/name={{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}
    ```
 
 6. Port-forward the UI port again, and confirm that an unauthenticated request is redirected to your IdP.

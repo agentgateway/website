@@ -57,7 +57,7 @@ How the address becomes reachable depends on your installation method.
      -p 4000:4000 -p 4001:4001 \
      -e OIDC_COOKIE_SECRET \
      -e ISSUER_URL -e UI_CLIENT_ID -e UI_CLIENT_SECRET -e REDIRECT_URI \
-     cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}} \
+     {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
      -f /config.yaml
    ```
    {{% /tab %}}
@@ -165,7 +165,7 @@ For more certificate options, see [Gateways]({{< link-hextra path="/configuratio
 
    ```sh
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     -l app.kubernetes.io/name=agentgateway-standalone
+     -l app.kubernetes.io/name={{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}
    ```
 
 5. Get the external address of the UI Service, such as `34.xx.xxx.xx` in the following example.
@@ -181,7 +181,7 @@ For more certificate options, see [Gateways]({{< link-hextra path="/configuratio
 
    ```txt
    NAME                         TYPE           CLUSTER-IP     EXTERNAL-IP    PORT(S)         AGE
-   agentgateway-standalone-ui   LoadBalancer   10.xx.xxx.xx   34.xx.xxx.xx   443:31820/TCP   30s
+   {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-ui   LoadBalancer   10.xx.xxx.xx   34.xx.xxx.xx   443:31820/TCP   30s
    ```
 
 6. In your DNS provider, point your UI hostname, such as `agentgateway.example.com`, at the external address.

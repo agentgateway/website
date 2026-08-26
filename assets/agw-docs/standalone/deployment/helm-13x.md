@@ -58,7 +58,7 @@ Verify that the agentgateway pod is running.
 
 ```sh
 kubectl get pods -n agentgateway-system \
-  -l app.kubernetes.io/name=agentgateway-standalone
+  -l app.kubernetes.io/name={{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}
 ```
 
 Example output:
@@ -85,7 +85,7 @@ Check the gateway and admin Services.
 
 ```sh
 kubectl get svc -n agentgateway-system \
-  -l app.kubernetes.io/name=agentgateway-standalone
+  -l app.kubernetes.io/name={{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}
 ```
 
 ## Open the admin UI

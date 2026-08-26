@@ -157,7 +157,7 @@ rate(agentgateway_llm_tokens_total[5m])
 version: '3'
 services:
   agentgateway:
-    image: cr.agentgateway.dev/agentgateway:latest
+    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:latest
     ports:
       - "3000:3000"
       - "15020:15020"

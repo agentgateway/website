@@ -59,40 +59,7 @@ Run the installation script again with the version that you want. The script det
 
 2. Stop the running agentgateway process.
 
-3. Run the installation script with the target version. Replace `<version>` with any release tag from the [agentgateway releases page](https://github.com/agentgateway/agentgateway/releases), such as `v1.4.1`. The version must start with `v`, and the script adds it if you omit it.
-
-   {{< tabs >}}
-   {{% tab name="Specific version" %}}
-   ```sh
-   curl -sL https://agentgateway.dev/install | bash -s -- --version $NEW_VERSION
-   ```
-   {{% /tab %}}
-   {{% tab name="Latest" %}}
-   With no `--version` flag, the script installs the highest stable release, skipping drafts and pre-releases.
-
-   ```sh
-   curl -sL https://agentgateway.dev/install | bash
-   ```
-   {{% /tab %}}
-   {{% tab name="Non-default installation directory" %}}
-   The script writes to `/usr/local/bin` by default, and uses `sudo` to do it. To install somewhere else, set `AGENTGATEWAY_INSTALL_DIR`, and pass `--no-sudo` when that directory is already writable by your user.
-   
-   ```sh
-   curl -sL https://agentgateway.dev/install | \
-     AGENTGATEWAY_INSTALL_DIR="$HOME/.local/bin" bash -s -- --no-sudo --version $NEW_VERSION
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-
-   Example output, where the script reports the change that it is about to make:
-
-   ```txt
-   agentgateway v1.4.1 is available. Changing from version 1.4.0.
-   Downloading https://github.com/agentgateway/agentgateway/releases/download/v1.4.1/agentgateway-linux-amd64
-   Verifying checksum... Done.
-   Preparing to install agentgateway into /usr/local/bin
-   agentgateway installed into /usr/local/bin/agentgateway
-   ```
+{{< reuse "agw-docs/standalone/operations/upgrade-binary-install.md" >}}
 
 4. Verify the new version.
 
@@ -113,7 +80,7 @@ Recreate the container from a new image tag, mounting the same configuration pat
 1. Pull the new image.
 
    ```sh
-   docker pull cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}}
+   docker pull {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}}
    ```
 
 2. Stop and remove the running container. The configuration in your mounted directory is not affected.
@@ -129,7 +96,7 @@ Recreate the container from a new image tag, mounting the same configuration pat
      --user "$(id -u):$(id -g)" \
      -v "$PWD/agentgateway-config:/config" \
      -p 4000:4000 \
-     cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/image-tag.md" >}}
+     {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}}
    ```
 
 4. Verify the version that the new container runs.
@@ -165,7 +132,7 @@ Upgrade the chart version. The chart re-renders the ConfigMap from your Helm val
 
    ```txt
    NAME                    NAMESPACE           REVISION  STATUS    CHART                          APP VERSION
-   agentgateway-standalone agentgateway-system 3         deployed  agentgateway-standalone-1.4.0  1.4.0
+   {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} agentgateway-system 3         deployed  {{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}-{{< reuse "agw-docs/versions/n-patch.md" >}}  1.4.0
    ```
 
 2. Upgrade the release to the new chart version.
@@ -218,11 +185,7 @@ Roll back to an earlier version.
 
 {{< tabs >}}
 {{% tab name="Binary" %}}
-Run the script again with the version that you upgraded from.
-
-```sh
-curl -sL https://agentgateway.dev/install | bash -s -- --version v$OLD_VERSION
-```
+{{< reuse "agw-docs/standalone/operations/rollback-binary.md" >}}
 {{% /tab %}}
 {{% tab name="Docker" %}}
 Recreate the container from the previous tag. Because the configuration lives on the volume, no restore step is needed.
@@ -233,7 +196,7 @@ docker run -d --name agentgateway \
   --user "$(id -u):$(id -g)" \
   -v "$PWD/agentgateway-config:/config" \
   -p 4000:4000 \
-  cr.agentgateway.dev/agentgateway:v$OLD_VERSION
+  {{< reuse "agw-docs/standalone/image-ref.md" >}}:v$OLD_VERSION
 ```
 {{% /tab %}}
 {{% tab name="Helm" %}}
