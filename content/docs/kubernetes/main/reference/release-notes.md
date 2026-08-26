@@ -268,8 +268,10 @@ Transformations run before agentgateway converts a request into the provider's f
 
 ```yaml
 finalTransformations:
-  reasoning_effort: 'fail("remove")'
-  max_tokens: '600'
+- field: reasoning_effort
+  expression: 'fail("remove")'
+- field: max_tokens
+  expression: '600'
 ```
 
 For more information, see [Transformations]({{< link-hextra path="/llm/transformations/" >}}).
