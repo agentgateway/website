@@ -17,8 +17,8 @@ MCP clients follow the [MCP authorization specification](https://modelcontextpro
 
 When you set `provider.okta`, agentgateway bridges these gaps as follows:
 
-- Serves authorization server metadata from Okta's OpenID Connect discovery document, because Okta does not support the [RFC 8414](https://www.rfc-editor.org/rfc/rfc8414) path-based issuer format.
-- Appends your first configured audience to Okta's authorization endpoint as an `audience` query parameter, because Okta does not support [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707) resource indicators. You verify this in [Step 3](#verify).
+- Serves authorization server metadata from Okta's OpenID Connect discovery document, because Okta does not support the [RFC 8414](https://www.rfc-editor.org/rfc/rfc8414.html) path-based issuer format.
+- Appends your first configured audience to Okta's authorization endpoint as an `audience` query parameter, because Okta does not support [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html) resource indicators. You verify this in [Step 3](#verify).
 - Proxies Dynamic Client Registration through the gateway, because Okta does not send CORS headers on its registration endpoint. Okta's registration endpoint is relative to your org URL rather than the issuer, so agentgateway rewrites it to `https://<your-org>.okta.com/oauth2/v1/clients`.
 
 > [!IMPORTANT]
@@ -28,7 +28,7 @@ For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link
 
 ## Before you begin {#before-you-begin}
 
-1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
 2. Install [Node.js](https://nodejs.org/) so that `npx` can run the sample MCP server.
 3. Make sure that you have access to an [Okta org](https://developer.okta.com/signup/) and permission to create an authorization server and app integrations in the Okta Admin Console. A free developer org is sufficient.
 

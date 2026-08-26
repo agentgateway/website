@@ -32,7 +32,7 @@ For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link
 
 ## Before you begin {#before-you-begin}
 
-1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
 2. Install [Node.js](https://nodejs.org/) so that `npx` can run the sample MCP server.
 3. Make sure that you have access to a [Microsoft Entra ID tenant](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-create-new-tenant) and permission to register an application in the Microsoft Entra admin center. A free tenant is sufficient for development.
 

@@ -29,6 +29,6 @@ Agentgateway runs on all Kubernetes distributions. For more information, see the
 
 ## Learn more
 
-- [Deployment Guide]({{< link-hextra path="/deployment/" >}})
+- [Install agentgateway]({{< link-hextra path="/setup/install/" >}})
 - [Configuration Reference]({{< link-hextra path="/configuration/" >}})
 - [Agentgateway on Kubernetes documentation](https://agentgateway.dev/docs/kubernetes/)

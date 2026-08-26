@@ -1,5 +1,6 @@
-A model cost catalog is JSON with the following high-level structure. Field names are camelCase, and unknown fields are rejected.
+A model catalog is JSON with the following high-level structure. Field names are camelCase, and unknown fields are rejected.
 
+{{% version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 ```json
 {
   "providers": {
@@ -30,6 +31,41 @@ A model cost catalog is JSON with the following high-level structure. Field name
   }
 }
 ```
+{{% /version %}}
+
+{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+```json
+{
+  "providers": {
+    "<provider-id>": {
+      "models": {
+        "<model-name>": {
+          "rates": {
+            "input": "0.0",
+            "output": "0.0",
+            "cacheRead": "0.0",
+            "cacheWrite": "0.0",
+            "reasoning": "0.0",
+            "inputAudio": "0.0",
+            "outputAudio": "0.0"
+          },
+          "tiers": [
+            {
+              "contextOver": 200000,
+              "rates": {
+                "input": "0.0",
+                "output": "0.0"
+              }
+            }
+          ],
+          "tags": ["<tag>"]
+        }
+      }
+    }
+  }
+}
+```
+{{% /version %}}
 
 Key points:
 
@@ -37,6 +73,9 @@ Key points:
 - Rates are **strings** (exact decimals), in **USD per 1,000,000 tokens**.
 - If a rate is omitted, that token type is not priced for the model.
 - `tiers[]` is optional. Each tier selects alternate `rates` when the request context length is **over** the tier's `contextOver` value. Tiers must be ordered by strictly increasing `contextOver`.
+{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+- `tags[]` is optional. Tags describe a model instead of pricing it, so a model entry can carry tags with no rates at all. For more information, see [Model tags](#model-tags).
+{{% /version %}}
 
 The following minimal example prices two OpenAI models and one tiered Gemini model:
 
