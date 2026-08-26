@@ -2,11 +2,10 @@
 title: Observability
 weight: 120
 description: Monitor agentgateway with metrics, traces, and operational visibility
-aliases:
-  - /docs/reference/observability/
+prev: /docs/llm
+next: /docs/operations
 test: skip
 ---
 
-> [!NOTE]
-> This section has moved. See [Observability]({{< link-hextra path="/observability/" >}}) for the current documentation on metrics, traces, and access logs.
+Review metrics and trace requests that are served by the agentgateway. 
 
