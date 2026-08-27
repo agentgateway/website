@@ -1,12 +1,12 @@
 ---
 title: Jaeger
-weight: 10
+weight: 20
 description: Export agentgateway traces to Jaeger for local collection and visualization by using its built-in OTLP receiver and web UI.
 ---
 
 [Jaeger](https://www.jaegertracing.io/) is an open-source distributed tracing platform that collects, stores, and visualizes traces. It is a quick way to get started with tracing for agentgateway because it ships with a built-in OTLP receiver, so you do not need a separate collector, and a web UI to browse and query spans.
 
-Jaeger works best for local development and testing. For production deployments, consider routing traces through an [OpenTelemetry Collector]({{< link path="/observability/traces/configs/otel/" >}}) so that you can fan out to multiple backends or apply processing pipelines to your traces before exporting them.
+Jaeger works best for local development and testing. For production deployments, consider routing traces through an [OpenTelemetry Collector]({{< link-hextra path="/observability/traces/configs/otel/" >}}) so that you can fan out to multiple backends or apply processing pipelines to your traces before exporting them.
 
 The way you set up Jaeger depends on how you installed agentgateway. 
 
@@ -56,13 +56,13 @@ Install Jaeger into your cluster by using Helm and point agentgateway at the Jae
    kubectl get pods -n monitoring
    ```
 
-3. Update your agentgateway config to point at the Jaeger collector service.
+3. Update your agentgateway `values.yaml` to point at the Jaeger collector service. The chart takes the agentgateway configuration under the top-level `config` field.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   frontendPolicies:
-     tracing:
-       host: jaeger-collector.monitoring.svc.cluster.local:4317
-       randomSampling: true
+   config:
+     frontendPolicies:
+       tracing:
+         host: jaeger-collector.monitoring.svc.cluster.local:4317
+         randomSampling: true
    ```
 
 4. Apply the change with a Helm upgrade.

@@ -21,7 +21,7 @@
    ```sh {paths="route-delegation-prereq"}
    kubectl create namespace team1
    kubectl create namespace team2
-   ```{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+   ```{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x" >}}
 
 5. Allow the parent HTTPRoute to delegate to child HTTPRoutes in the `team1` and `team2` namespaces. A child HTTPRoute that omits the `parentRefs` field requires a ReferenceGrant in its own namespace when the parent is in a different namespace. Without the grant, the child is never attached to the parent, and requests along the delegated path return a 404 response. A child that names the parent in `parentRefs` does not need a grant.
    ```yaml {paths="route-delegation-prereq"}

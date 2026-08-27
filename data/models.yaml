@@ -407,7 +407,7 @@ categories:
       - name: "Amazon Bedrock"
         slug: "bedrock"
         model: "us.anthropic.claude-sonnet-4-20250514-v1:0"
-        envVar: "AWS_ACCESS_KEY_ID"
+        envVar: "AGW_AWS_ACCESS_KEY_ID"
         type: "native"
         providerType: "bedrock"
         host: "bedrock-runtime.{region}.amazonaws.com"
@@ -498,16 +498,17 @@ categories:
           EOF
 
 
-          # Step 2: Secret (IAM credentials)
-          export AWS_ACCESS_KEY_ID="<your-access-key>"
-          export AWS_SECRET_ACCESS_KEY="<your-secret-key>"
-          export AWS_SESSION_TOKEN="<your-session-token>"
+          # Step 2: Secret (IAM credentials). The AGW_ prefix keeps these out of
+          # the standard AWS variables that your own aws CLI session reads.
+          export AGW_AWS_ACCESS_KEY_ID="<your-access-key>"
+          export AGW_AWS_SECRET_ACCESS_KEY="<your-secret-key>"
+          export AGW_AWS_SESSION_TOKEN="<your-session-token>"
 
           kubectl create secret generic bedrock-secret \
             -n agentgateway-system \
-            --from-literal=accessKey="$AWS_ACCESS_KEY_ID" \
-            --from-literal=secretKey="$AWS_SECRET_ACCESS_KEY" \
-            --from-literal=sessionToken="$AWS_SESSION_TOKEN" \
+            --from-literal=accessKey="$AGW_AWS_ACCESS_KEY_ID" \
+            --from-literal=secretKey="$AGW_AWS_SECRET_ACCESS_KEY" \
+            --from-literal=sessionToken="$AGW_AWS_SESSION_TOKEN" \
             --type=Opaque \
             --dry-run=client -o yaml | kubectl apply -f -
 

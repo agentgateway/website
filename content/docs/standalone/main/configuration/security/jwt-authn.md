@@ -28,9 +28,12 @@ EOF
 
 JWT authentication requires a few parameters:
 
-* The **issuer** verifies that tokens come from the specified issuer (`iss`).
-* The **audiences** lists allowed audience values (`aud`)
+* The **issuer** verifies that tokens come from the specified issuer (`iss`). Agentgateway rejects a token from another issuer, and it also rejects a token that has no `iss` claim.
+* The **audiences** lists allowed audience values (`aud`). The token's `aud` claim must contain at least one of these values. Omit the field to accept any audience. An empty list also accepts any audience, and a non-empty list rejects a token that has no `aud` claim.
 * The **jwks** defines the list of public keys to verify against.
+
+> [!IMPORTANT]
+> In version 1.4 and earlier, a configured issuer matched only when the `iss` claim was present, and a non-empty `audiences` list matched only when the `aud` claim was present. A token that omitted the claim passed. From version 1.5, each claim is required, so a token that omits it is rejected. Setting `requiredClaims: []` does not restore the earlier behavior, because it removes only the claim requirements that you add yourself, not the ones that the configured `issuer` and `audiences` imply. If a client sends tokens without an `aud` claim, remove the `audiences` field instead of emptying `requiredClaims`.
 
 Additionally, authentication can run in three different modes:
 * **Strict**: A valid token, issued by a configured issuer, must be present.
