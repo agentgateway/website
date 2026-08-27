@@ -12,14 +12,14 @@ For **access token** authentication (used for most GCP services):
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: gcp-backend-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   targetRefs:
-    - group: agentgateway.dev
+    - group: {{< reuse "agw-docs/snippets/group.md" >}}
       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
       name: my-gcp-backend
   backend:
@@ -33,14 +33,14 @@ For **ID token** authentication (used for Cloud Run and other audience-based ser
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: gcp-backend-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   targetRefs:
-    - group: agentgateway.dev
+    - group: {{< reuse "agw-docs/snippets/group.md" >}}
       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
       name: my-gcp-backend
   backend:

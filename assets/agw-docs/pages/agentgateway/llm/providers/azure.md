@@ -9,6 +9,60 @@ Azure supports two endpoint types:
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
+## Authentication
+
+You can authenticate to Azure with an API key or with implicit Entra ID authentication through `DefaultAzureCredential`. On Kubernetes, implicit authentication can obtain a token from managed identity or workload identity. It does not require a Kubernetes secret or `policies.auth`.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.1.x,2.2.x,2.3.x" >}}
+You can also configure explicit managed identity or workload identity authentication in the {{< reuse "agw-docs/snippets/backend.md" >}}. Managed identity and workload identity use different credential sources. For either source, the proxy must be able to reach an Azure managed identity endpoint.
+
+### Use Microsoft Entra Workload ID on AKS
+
+To authenticate with Microsoft Entra Workload ID, prepare the AKS cluster and the proxy service account before you create the {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+1. [Enable workload identity on the AKS cluster](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster).
+
+2. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires. For example, the `Azure AI User` role grants access to Azure AI Foundry.
+
+3. Create a federated credential that trusts the service account that the proxy uses. By default, the deployer names this service account after the Gateway. For the default gateway from the quickstart, use the following subject. The subject must match the namespace and the service account name exactly.
+
+   ```txt
+   system:serviceaccount:{{< reuse "agw-docs/snippets/namespace.md" >}}:agentgateway-proxy
+   ```
+
+4. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that annotates the service account with the managed identity client ID, and that labels the proxy pod for the Azure workload identity webhook. If the gateway already refers to an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, add these overlays to that resource instead.
+
+   ```yaml
+   kubectl apply --server-side -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+   metadata:
+     name: azure-workload-identity
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     serviceAccount:
+       metadata:
+         annotations:
+           azure.workload.identity/client-id: <managed-identity-client-id>
+     deployment:
+       spec:
+         template:
+           metadata:
+             labels:
+               azure.workload.identity/use: "true"
+   EOF
+   ```
+
+5. Attach the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to the gateway.
+
+   ```sh
+   kubectl patch gateway agentgateway-proxy \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --type merge \
+     --patch '{"spec":{"infrastructure":{"parametersRef":{"group":"{{< reuse "agw-docs/snippets/group.md" >}}","kind":"{{< reuse "agw-docs/snippets/gatewayparameters.md" >}}","name":"azure-workload-identity"}}}}'
+   ```
+{{< /version >}}
+
 ## Set up access to Azure
 
 1. Retrieve the resource name and, if applicable, the project name from the [Azure AI Foundry portal](https://ai.azure.com/) or the [Azure portal](https://portal.azure.com/). For example:
@@ -84,8 +138,6 @@ Azure supports two endpoint types:
    ```
    {{% /tab %}}
    {{% tab name="Azure OpenAI (implicit auth)" %}}
-   When you use implicit Entra ID authentication, the gateway automatically obtains a token using `DefaultAzureCredential`. No secret or `policies.auth` is required. This works with managed identity, workload identity, or Azure CLI credentials.
-
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -105,7 +157,88 @@ Azure supports two endpoint types:
    {{% /tab %}}
    {{< /tabs >}}
 
-   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#azureconfig" >}}).
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.1.x,2.2.x,2.3.x" >}}
+
+   To use explicit managed identity or workload identity authentication instead of an API key, apply one of the following {{< reuse "agw-docs/snippets/backend.md" >}} configurations.
+
+   {{< tabs >}}
+   {{% tab name="Workload identity" %}}
+   To use workload identity, first prepare the AKS cluster as described in [Use Microsoft Entra Workload ID on AKS](#use-microsoft-entra-workload-id-on-aks). Then, select workload identity in the {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: azure
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         azure:
+           resourceName: my-resource
+           resourceType: OpenAI
+           model: gpt-4.1-mini
+     policies:
+       auth:
+         azure:
+           workloadIdentity: {}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab name="System-assigned managed identity" %}}
+   To use the identity of the Azure resource that runs the proxy, leave `managedIdentity` empty.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: azure
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         azure:
+           resourceName: my-resource
+           resourceType: OpenAI
+           model: gpt-4.1-mini
+     policies:
+       auth:
+         azure:
+           managedIdentity: {}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab name="User-assigned managed identity" %}}
+   To use an identity that you manage separately from the Azure resource, set the client ID of that identity. You can set the object ID or the resource ID instead.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: azure
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         azure:
+           resourceName: my-resource
+           resourceType: OpenAI
+           model: gpt-4.1-mini
+     policies:
+       auth:
+         azure:
+           managedIdentity:
+             clientId: <managed-identity-client-id>
+   EOF
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+   {{< /version >}}
+
+   {{% reuse "agw-docs/snippets/review-table.md" %}}{{< version exclude-if="1.1.x" >}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#azureconfig" >}}).{{< /version >}}
 
    | Setting     | Description |
    |-------------|-------------|
@@ -114,7 +247,9 @@ Azure supports two endpoint types:
    | `azure.resourceType` | The endpoint type: `OpenAI` for Azure OpenAI Service, or `Foundry` for Azure AI Foundry. |
    | `azure.model` | The model to use for requests, such as `gpt-4.1-mini`. |
    | `azure.projectName` | The Foundry project name. Required when `resourceType` is `Foundry`. |
-   | `azure.apiVersion` | Optional API version override. Defaults to `v1`. For legacy deployments, use a dated version like `2025-01-01-preview`. |
+   | `azure.apiVersion` | Optional API version override. Defaults to `v1`. For legacy deployments, use a dated version like `2025-01-01-preview`. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.1.x,2.2.x,2.3.x" >}}
+   | `policies.auth.azure.workloadIdentity` | Use Azure workload identity. Leave the object empty. The proxy uses the federated token and the Azure environment variables that the Azure workload identity webhook projects into the proxy pod. |
+   | `policies.auth.azure.managedIdentity` | Use an Azure managed identity. Leave the object empty to use the system-assigned identity. To use a user-assigned identity, set one of `clientId`, `objectId`, or `resourceId`. |{{< /version >}}
 
 5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 
@@ -267,6 +402,120 @@ Azure supports two endpoint types:
        "total_tokens": 47
      }
    }
+   ```
+
+## Use Claude models on Azure AI Foundry
+
+[Azure AI Foundry](https://ai.azure.com/) hosts Anthropic Claude models at native Anthropic endpoints. When you set `resourceType: Foundry` and a model name that starts with `claude-`, agentgateway automatically routes requests to the Anthropic-native path (`/anthropic/v1/messages`) instead of the OpenAI-compatible path, and injects the required `anthropic-version` header. No extra configuration is needed beyond specifying a Claude model name.
+
+> [!NOTE]
+> For more information about Claude models on Azure AI Foundry, see the [Microsoft documentation](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/how-to/use-foundry-models-claude).
+
+1. Create a Kubernetes secret to store your Azure AI Foundry API key.
+
+   ```sh
+   export AZURE_API_KEY=<insert your Azure AI Foundry API key>
+   ```
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: azure-claude-secret
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   type: Opaque
+   stringData:
+     Authorization: $AZURE_API_KEY
+   EOF
+   ```
+
+2. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource that uses the `azure` provider with `resourceType: Foundry` and a Claude model name.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: azure-claude
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         azure:
+           resourceName: my-foundry-resource
+           resourceType: Foundry
+           projectName: my-project
+           model: claude-3-5-haiku-20241022
+     policies:
+       auth:
+         secretRef:
+           name: azure-claude-secret
+   EOF
+   ```
+
+   {{% reuse "agw-docs/snippets/review-table.md" %}}
+
+   | Setting | Description |
+   |---------|-------------|
+   | `azure.resourceName` | The Azure AI Foundry resource name used to construct the endpoint hostname. |
+   | `azure.resourceType` | Set to `Foundry` to use Azure AI Foundry endpoints. |
+   | `azure.projectName` | The Foundry project name. |
+   | `azure.model` | The Claude model to use, for example `claude-3-5-haiku-20241022`. The model name must start with `claude-` to trigger routing to the Anthropic-native endpoint. |
+   | `policies.auth.secretRef` | References the secret that holds the Azure AI Foundry API key. The key is automatically sent in the `Authorization` header. |
+
+3. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: azure-claude
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - backendRefs:
+       - name: azure-claude
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+       matches:
+          - path:
+              type: PathPrefix
+              value: /azure-claude #Path  example
+   EOF
+   ```
+
+4. Send a request to verify the setup.
+
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/azure-claude" -H content-type:application/json -d '{
+     "max_tokens": 256,
+     "messages": [
+       {
+         "role": "user",
+         "content": "Hello!"
+       }
+     ]
+   }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/azure-claude" -H content-type:application/json -d '{
+     "max_tokens": 256,
+     "messages": [
+       {
+         "role": "user",
+         "content": "Hello!"
+       }
+     ]
+   }' | jq
    ```
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

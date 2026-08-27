@@ -243,19 +243,19 @@ EOF
 By default, ExtProc sends request headers, response headers, request trailers, and response trailers to the external processor, and streams request and response bodies. To change which request or response phases are sent to the external processor, configure `traffic.extProc.processingOptions`.
 
 > [!NOTE]
-> The default body mode is `FullDuplexStreamed`. If the external processor must inspect a complete body before the gateway forwards it, use `Buffered` or `BufferedPartial` and account for the 8KB buffer limit.
+> The default body mode is `FullDuplexStreamed`. If the external processor must inspect a complete body before the gateway forwards it, use `Buffered` or `BufferedPartial` and account for the gateway's body buffer limit, which defaults to 2 MiB.
 
 | Field | Default | Values | Description |
 | --- | --- | --- | --- |
 | `traffic.extProc.processingOptions.requestHeaderMode` | `Send` | `Send`, `Skip` | Send or skip request headers. |
 | `traffic.extProc.processingOptions.responseHeaderMode` | `Send` | `Send`, `Skip` | Send or skip response headers. |
-| `traffic.extProc.processingOptions.requestBodyMode` | `FullDuplexStreamed` | `None`, `Buffered`, `BufferedPartial`, `FullDuplexStreamed` | Control how request bodies are sent. `None` skips the body. `Buffered` buffers the full body and returns an error if the body is larger than 8KB. `BufferedPartial` buffers up to 8KB and sends that prefix if the body is larger. `FullDuplexStreamed` streams the body to the external processor. |
+| `traffic.extProc.processingOptions.requestBodyMode` | `FullDuplexStreamed` | `None`, `Buffered`, `BufferedPartial`, `FullDuplexStreamed` | Control how request bodies are sent. `None` skips the body. `Buffered` buffers the full body and returns an error if the body is larger than the gateway's body buffer limit, 2 MiB by default. `BufferedPartial` buffers up to that limit and sends the buffered prefix if the body is larger. `FullDuplexStreamed` streams the body to the external processor. |
 | `traffic.extProc.processingOptions.responseBodyMode` | `FullDuplexStreamed` | `None`, `Buffered`, `BufferedPartial`, `FullDuplexStreamed` | Control how response bodies are sent. The body modes behave the same as `requestBodyMode`, but apply to upstream responses. |
 | `traffic.extProc.processingOptions.requestTrailerMode` | `Send` | `Send`, `Skip` | Send or skip request trailers. |
 | `traffic.extProc.processingOptions.responseTrailerMode` | `Send` | `Send`, `Skip` | Send or skip response trailers. |
 | `traffic.extProc.processingOptions.allowModeOverride` | `false` | `true`, `false` | Allow `mode_override` values returned by the external processor in matching header responses to update later request and response processing phases for the same exchange. |
 
-The following example sends headers and trailers, buffers request bodies up to the 8KB limit, skips response bodies, and allows the external processor to override later processing phases after a matching header response.
+The following example sends headers and trailers, buffers request bodies up to the body buffer limit, skips response bodies, and allows the external processor to override later processing phases after a matching header response.
 
 ```yaml
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}

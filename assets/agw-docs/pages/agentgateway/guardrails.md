@@ -260,8 +260,7 @@ EOF
 | `backend.ai.promptGuard` | The AI prompt guarding configuration that you want to set up. In this example, you configure the webhook server for both request and response guardrails. |
 | `webhook.backendRef` | The reference to the webhook server service. The example webhook server is configured to use port 8000. |
 
-
-
+By default, agentgateway calls `POST /request` and `POST /response` on the webhook target.
 
 ### Step 3: Test the webhook server {#test-webhook-server}
 
@@ -396,6 +395,63 @@ EOF
    }
    ```
 
+
+### Customize the request path and headers {#webhook-headers}
+
+Use the `webhook.headers` field to set headers on the outgoing webhook request from [CEL expressions]({{< link-hextra path="/reference/cel/" >}}). Set this field when your webhook service hosts other endpoints and cannot dedicate its root path to the guardrail API, or when you want to forward context such as JWT claims to the webhook.
+
+Keys are either regular header names or the `:path`, `:method`, and `:authority` pseudo-headers. Expressions are evaluated against the original client request, not against the webhook request, so `request.*`, `jwt.*`, and `llmRequest.*` all refer to the request that the client sent to the gateway.
+
+For example, the following {{< reuse "agw-docs/snippets/policy.md" >}} forwards the JWT subject and a tenant header to the webhook server that you deployed in this guide. The example webhook server serves the default `/request` and `/response` paths, so this example does not override `:path`.
+
+```yaml
+kubectl apply -f - <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: openai-prompt-guard
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: openai
+  backend:
+    ai:
+      promptGuard:
+        request:
+        - webhook:
+            backendRef:
+              kind: Service
+              name: ai-guardrail-webhook
+              port: 8000
+            headers:
+              x-user: jwt.sub
+              x-tenant: request.headers["x-tenant"]
+              x-model: llmRequest.model
+        response:
+        - webhook:
+            backendRef:
+              kind: Service
+              name: ai-guardrail-webhook
+              port: 8000
+EOF
+```
+
+| Setting | Description |
+|---------|-------------|
+| `webhook.headers` | A map of header names, or the `:path`, `:method`, and `:authority` pseudo-headers, to CEL expressions. Each expression is evaluated against the original client request. |
+| `:path` | Replaces the default `/request` or `/response` path that agentgateway sends to the webhook target. The value is a CEL expression, so a literal path is a quoted string within single quotes, such as `'"/api/guardrails/request"'`. |
+
+To send the guardrail calls to a different path, set the `:path` pseudo-header. Your webhook service must serve that path.
+
+```yaml
+            headers:
+              ":path": '"/api/guardrails/request"'
+```
+
+> [!NOTE]
+> An expression that cannot be evaluated, such as `jwt.sub` on a request with no JWT, omits that header instead of failing the request. A `:path` expression that cannot be evaluated leaves the default `/request` or `/response` path in place. The `llmRequest.*` variables are available on request-phase webhooks only.
 
 ### Cleanup
 

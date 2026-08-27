@@ -4,9 +4,7 @@ In this guide, you configure your agentgateway proxy to connect to the remote [G
 
 ## Before you begin
 
-The example HTTPRoute in the following steps uses a CORS policy, which requires the experimental channel of the Kubernetes Gateway API.
-
-{{< reuse "agw-docs/snippets/prereq-x-channel.md" >}}
+{{< reuse "agw-docs/snippets/prereq.md" >}}
 
 ## Connect to the MCP server
 

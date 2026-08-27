@@ -2,7 +2,7 @@ Secure your Model Context Protocol (MCP) servers with OAuth 2.0 authentication b
 
 ## About this guide
 
-In this guide, you explore how to configure the agentgateway proxy to protect a static MCP server with MCP auth by using Keycloak as an identity provider. To authenticate with the MCP server, MCP clients such as the MCP inspector tool, can dynamically register with the identity provider to obtain a client ID. Then, the MCP client uses the client ID during the OAuth flow to obtain the JWT token. Finally, the MCP client uses the JWT token to authenticate with the MCP server and access its tools.
+In this guide, you configure the agentgateway proxy to protect a static MCP server with Keycloak. The MCP client uses dynamic client registration (DCR) with Keycloak and sends the user through the OAuth flow. DCR creates the client registration but does not grant access to the MCP server. Agentgateway validates the token audience and permits only members of the Keycloak `users` group.
 
 {{< reuse "agw-docs/pages/agentgateway/mcp/mcp-auth-vs-jwt.md" >}}
 
@@ -22,7 +22,7 @@ For more information, see the [JWT auth docs]({{< link-hextra path="/mcp/mcp-acc
 
 With Keycloak deployed and your MCP backend configured, you can now create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces authentication for the MCP backend.
 
-1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with MCP authentication configuration. MCP authentication is configured at the route level by using `traffic.jwtAuthentication` with the `mcp` extension field. The route-level placement aligns MCP auth with standard JWT authentication and allows you to use JWT claims in other route-level policies, such as authorization, rate limiting, and transformations.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with MCP authentication and authorization configuration. The policy validates the resource audience and uses a Common Expression Language (CEL) rule to require the Keycloak `users` group.
    ```yaml {paths="mcp-auth-setup"}
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -38,14 +38,14 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
      # Configure MCP authentication at the traffic (route) level
      traffic:
        jwtAuthentication:
-         # Validation mode: Strict requires all claims to be valid
+         # Require a valid JWT from one of the configured providers
          mode: Strict
          providers:
          - # Issuer URL - must match the 'iss' claim in JWT tokens
            issuer: "${KEYCLOAK_ISSUER}"
            # Expected audience in JWT tokens
            audiences:
-           - http://localhost:8080/mcp
+           - "${MCP_RESOURCE}"
            # JWKS configuration for token validation
            jwks:
              remote:
@@ -64,7 +64,7 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
            # MCP resource metadata for OAuth discovery
            resourceMetadata:
              # Resource identifier for this MCP server
-             resource: http://localhost:8080/mcp
+             resource: "${MCP_RESOURCE}"
              # Scopes supported by this MCP server
              scopesSupported:
              - email
@@ -73,6 +73,12 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
              - header
              - body
              - query
+       # Allow only tokens from members of the Keycloak users group
+       authorization:
+         action: Allow
+         policy:
+           matchExpressions:
+           - 'has(jwt.groups) && jwt.groups.exists(group, group == "users")'
    EOF
    ```
 
@@ -82,9 +88,10 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
    | `traffic.jwtAuthentication.providers[].jwks.remote.backendRef` | The Keycloak service for fetching JWKS public keys. |
    | `traffic.jwtAuthentication.providers[].jwks.remote.jwksPath` | The path to the JWKS endpoint to obtain public keys. |
    | `traffic.jwtAuthentication.providers[].audiences` | The purpose of the JWT token. This value must match the `aud` claim in JWT tokens. |
-   | `traffic.jwtAuthentication.mode` | The JWT validation mode. In this example, strict validation is enforced. This mode requires all claims to be valid for agentgateway to proceed with the OAuth flow. |
+   | `traffic.jwtAuthentication.mode` | The JWT validation mode. Strict mode requires a valid JWT from one of the configured providers. |
    | `traffic.jwtAuthentication.mcp.provider` | The identity provider that you use. In this example, Keycloak is used. |
    | `traffic.jwtAuthentication.mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. Includes the resource identifier, supported scopes, and bearer token methods. |
+   | `traffic.authorization.policy.matchExpressions` | CEL rules that authorize the verified JWT claims. This example requires membership in the Keycloak `users` group. |
 
 2. Verify that the policy was accepted.
    ```sh {paths="mcp-auth-setup"}
@@ -169,6 +176,23 @@ EOF
    ```
 
 {{< doc-test paths="mcp-auth-setup" >}}
+DCR_SERVICE_CLIENT=$(curl --fail --silent --show-error \
+  -H "Content-Type: application/json" \
+  -d '{
+    "client_name": "DCR service token test",
+    "grant_types": ["client_credentials"],
+    "token_endpoint_auth_method": "client_secret_basic"
+  }' \
+  "$KEYCLOAK_URL/realms/master/clients-registrations/openid-connect")
+
+DCR_SERVICE_CLIENT_ID=$(jq -r .client_id <<<"$DCR_SERVICE_CLIENT")
+DCR_SERVICE_CLIENT_SECRET=$(jq -r .client_secret <<<"$DCR_SERVICE_CLIENT")
+export DCR_SERVICE_TOKEN=$(curl --fail --silent --show-error \
+  -u "$DCR_SERVICE_CLIENT_ID:$DCR_SERVICE_CLIENT_SECRET" \
+  -d grant_type=client_credentials \
+  "$KEYCLOAK_URL/realms/master/protocol/openid-connect/token" \
+  | jq -r .access_token)
+
 YAMLTest -f - <<'EOF'
 - name: wait for mcp HTTPRoute to be accepted
   wait:
@@ -196,6 +220,17 @@ YAMLTest -f - <<'EOF'
       - name: www-authenticate
         comparator: contains
         value: resource_metadata
+  retries: 3
+- name: DCR service token without a user group returns 403
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/mcp"
+    method: GET
+    headers:
+      authorization: "Bearer ${DCR_SERVICE_TOKEN}"
+  source:
+    type: local
+  expect:
+    statusCode: 403
   retries: 3
 - name: resource metadata discovery returns 200
   http:
@@ -247,7 +282,7 @@ EOF
    4. Copy the authorization code into the **Authorization Code** field in the MCP inspector. Then, click **Continue** to start the **Request Authorization and acquire authorization code** phase.
       {{< reuse-image-light src="img/oauth-auth-code.png" >}}
       {{< reuse-image-dark srcDark="img/oauth-auth-code-dark.png" >}}
-   5. Click **Continue** to start the **Token Request** phase. In this phase, the authorization code is exchanged for a token. Verify that the **Authentication Complete** phase succeeds and that you get back a token from Keycloak.
+   5. Click **Continue** to start the **Token Request** phase. Verify that the **Authentication Complete** phase returns a token from Keycloak. The access token includes the MCP resource in `aud` and the `users` group in `groups`.
       {{< reuse-image-light src="img/oauth-token.png" >}}
       {{< reuse-image-dark srcDark="img/oauth-token-dark.png" >}}
    6. Connect to your MCP server.
@@ -270,6 +305,82 @@ EOF
 
       {{< reuse-image-light src="img/mcp-inspector-fetch.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-inspector-fetch-dark.png" >}}
+
+{{< doc-test paths="mcp-auth-setup" >}}
+# Automated equivalent of the MCP inspector walkthrough above. An MCP client
+# discovers the authorization server through the gateway, registers itself with
+# DCR, sends the user through a browser login with PKCE, and calls the MCP
+# endpoint with the resulting token. No administrator credential is used.
+GW="http://${INGRESS_GW_ADDRESS}:80"
+REDIRECT="http://localhost:9999/callback"
+COOKIES=$(mktemp)
+# `sed -n 1p` rather than `head -1`: head closes the pipe early, which raises
+# SIGPIPE in the upstream command and trips `set -o pipefail`.
+location_of() { grep -i '^location:' | tail -1 | tr -d '\r' | sed 's/^[Ll]ocation: //'; }
+form_action_of() { grep -o 'action="[^"]*"' | sed -n '1p' | sed 's/action="//; s/"$//; s/&amp;/\&/g'; }
+
+# 1. Discovery. The client learns the authorization server from the gateway.
+AS_METADATA=$(curl --fail --silent --show-error "$GW/.well-known/oauth-authorization-server/mcp")
+REGISTRATION_ENDPOINT=$(jq -r .registration_endpoint <<<"$AS_METADATA")
+AUTHORIZATION_ENDPOINT=$(jq -r .authorization_endpoint <<<"$AS_METADATA")
+TOKEN_ENDPOINT=$(jq -r .token_endpoint <<<"$AS_METADATA")
+
+# 2. Dynamic client registration.
+REGISTRATION=$(curl --fail --silent --show-error -H "Content-Type: application/json" \
+  -d "{\"client_name\":\"doc test mcp client\",\"redirect_uris\":[\"$REDIRECT\"],\"grant_types\":[\"authorization_code\"],\"response_types\":[\"code\"],\"token_endpoint_auth_method\":\"client_secret_basic\"}" \
+  "$REGISTRATION_ENDPOINT")
+CLIENT_ID=$(jq -r .client_id <<<"$REGISTRATION")
+CLIENT_SECRET=$(jq -r .client_secret <<<"$REGISTRATION")
+
+# 3. PKCE verifier and S256 challenge.
+VERIFIER=$(openssl rand -hex 32)
+CHALLENGE=$(printf '%s' "$VERIFIER" | openssl dgst -binary -sha256 | openssl base64 | tr '+/' '-_' | tr -d '=')
+
+# 4. Sign in as user1 on the Keycloak login form.
+LOGIN_PAGE=$(curl --silent -c "$COOKIES" -b "$COOKIES" -L \
+  "$AUTHORIZATION_ENDPOINT?client_id=$CLIENT_ID&response_type=code&scope=openid&redirect_uri=$REDIRECT&code_challenge=$CHALLENGE&code_challenge_method=S256&state=doc-test")
+LOGIN_FORM=$(form_action_of <<<"$LOGIN_PAGE")
+if [ -z "$LOGIN_FORM" ]; then echo "no Keycloak login form at the authorization endpoint"; exit 1; fi
+LOCATION=$(curl --silent -c "$COOKIES" -b "$COOKIES" -o /dev/null -D - -X POST "$LOGIN_FORM" \
+  --data-urlencode "username=user1" --data-urlencode "password=password" | location_of)
+
+# 5. Approve the consent screen. Keycloak requires consent for an anonymously
+#    registered client, so a real MCP client shows this screen to the user too.
+CODE=$(sed -n 's/.*[?&]code=\([^&]*\).*/\1/p' <<<"$LOCATION")
+if [ -z "$CODE" ]; then
+  CONSENT_PAGE=$(curl --silent -c "$COOKIES" -b "$COOKIES" -L "$LOCATION")
+  CONSENT_FORM=$(form_action_of <<<"$CONSENT_PAGE")
+  case "$CONSENT_FORM" in /*) CONSENT_FORM="${KEYCLOAK_URL}${CONSENT_FORM}" ;; esac
+  CONSENT_CODE=$(grep -o 'name="code" value="[^"]*"' <<<"$CONSENT_PAGE" | sed -n '1p' | sed 's/.*value="//; s/"$//')
+  LOCATION=$(curl --silent -c "$COOKIES" -b "$COOKIES" -o /dev/null -D - -X POST "$CONSENT_FORM" \
+    --data-urlencode "code=$CONSENT_CODE" --data-urlencode "accept=Yes" | location_of)
+  CODE=$(sed -n 's/.*[?&]code=\([^&]*\).*/\1/p' <<<"$LOCATION")
+fi
+if [ -z "$CODE" ]; then echo "the login flow returned no authorization code"; exit 1; fi
+
+# 6. Exchange the code for a token by using the PKCE verifier.
+MCP_USER_TOKEN=$(curl --fail --silent --show-error -u "$CLIENT_ID:$CLIENT_SECRET" \
+  -X POST "$TOKEN_ENDPOINT" \
+  -d grant_type=authorization_code -d "code=$CODE" -d "redirect_uri=$REDIRECT" \
+  -d "code_verifier=$VERIFIER" | jq -r .access_token)
+if [ -z "$MCP_USER_TOKEN" ] || [ "$MCP_USER_TOKEN" = "null" ]; then echo "code exchange returned no token"; exit 1; fi
+
+# 7. The token carries the claims that the policy checks.
+jq -R --arg audience "$MCP_RESOURCE" '
+  split(".") | .[1] | gsub("-"; "+") | gsub("_"; "/") | @base64d | fromjson
+  | if ([.aud] | flatten | index($audience)) == null then error("aud does not contain \($audience)") else . end
+  | if (.groups // [] | index("users")) == null then error("token has no users group") else . end
+' >/dev/null <<<"$MCP_USER_TOKEN"
+
+# 8. The gateway accepts the token on the MCP endpoint.
+code=$(curl -s -o /dev/null -w '%{http_code}' "$GW/mcp" -X POST \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Authorization: Bearer $MCP_USER_TOKEN" \
+  -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"doc-test","version":"1.0"}},"id":1}')
+if [ "$code" != "200" ]; then echo "expected 200 from /mcp with a DCR user token, got $code"; exit 1; fi
+echo "DCR, authorization code with PKCE, and MCP access all succeeded"
+{{< /doc-test >}}
 
 ## Clean up
 

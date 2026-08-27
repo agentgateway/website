@@ -6,6 +6,16 @@ Configure [Codex](https://chatgpt.com/codex), the AI coding tool by OpenAI, to r
 2. Install either the [Codex CLI](https://learn.chatgpt.com/docs/codex/cli) or
    the [ChatGPT desktop app](https://chatgpt.com/download/).
 
+If agentgateway requires a virtual key, export the client credential before
+starting Codex. This is not the OpenAI provider key that agentgateway sends
+upstream.
+
+```sh
+export AGENTGATEWAY_API_KEY='<gateway-client-key>'
+```
+
+{{< reuse "agw-docs/snippets/llm-client-setup-callout.md" >}}
+
 ## Configure agentgateway
 
 Start agentgateway with an OpenAI backend configuration. The wildcard `*` model name accepts any model. Codex sends the model in each request, so you do not need to pin a specific model.
@@ -45,7 +55,9 @@ Point Codex at agentgateway through one of the following methods.
 To override the base URL for a single run, set `model_provider` and the provider's `name` and `base_url` (the `-c` values are TOML).
 
 ```sh
-codex -c 'model_provider="agentgateway"' -c 'model_providers.agentgateway.name="OpenAI via agentgateway"' -c 'model_providers.agentgateway.base_url="http://localhost:4000/v1"'
+codex -c 'model_provider="agentgateway"' \
+  -c 'model_providers.agentgateway.name="OpenAI via agentgateway"' \
+  -c 'model_providers.agentgateway.base_url="http://localhost:4000/v1"'
 ```
 
 {{% /tab %}}
@@ -76,6 +88,38 @@ codex --profile agentgateway
 
 {{% /tab %}}
 {{< /tabs >}}
+
+#### Choose a client authentication method
+
+Codex supports the following authentication methods for a custom model
+provider. Choose one method; do not combine them.
+
+| Method | Codex setting | Use with agentgateway |
+| --- | --- | --- |
+| Gateway client key from an environment variable | `env_key` | Tested in this guide. Codex sends the variable's value as a bearer credential. |
+| Command-backed bearer token | `model_providers.agentgateway.auth` | An organization-owned helper prints a short-lived or device-specific bearer token. The helper is responsible for acquiring and refreshing the credential. |
+| OpenAI authentication | `requires_openai_auth = true` | Codex uses its ChatGPT or OpenAI API-key login with the proxy. Use only after you configure and test agentgateway to accept that credential; this guide does not configure that path. |
+| No client authentication | Omit `env_key`, `auth`, and `requires_openai_auth` | Use only when another trusted control prevents unauthorized access to agentgateway. |
+
+Unlike Claude Desktop, a Codex custom provider does not have native settings
+for an arbitrary OIDC issuer, client ID, or browser-versus-broker flow. To send
+a Microsoft Entra ID token, an organization-owned command-backed helper must
+acquire and refresh the token. This is not a built-in Intune or Company Portal
+flow in Codex.
+
+For the gateway client key option, add the following field to the
+`model_providers.agentgateway` table in the profile, user configuration, or
+CLI overrides. Codex sends the value of that environment variable as the
+gateway credential.
+
+```toml
+env_key = "AGENTGATEWAY_API_KEY"
+```
+
+For the supported custom-provider authentication fields and restrictions, see
+[Codex authentication](https://learn.chatgpt.com/docs/auth#alternative-model-providers)
+and the [Codex configuration
+reference](https://learn.chatgpt.com/docs/config-file/config-reference).
 
 #### Verify the CLI connection
 

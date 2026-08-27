@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -480,6 +481,28 @@ def create_cluster_with_retries(cluster_name: str, repo_root: Path) -> Tuple[int
     return create_code, create_output
 
 
+PORT_FORWARD_RE = re.compile(r"\bkubectl\s+port-forward\b")
+
+
+def contains_port_forward(script_content: str) -> bool:
+    """Report whether the script would actually run `kubectl port-forward`.
+
+    Comment-only lines are ignored. A hidden `{{< doc-test >}}` block often
+    documents *why* a test avoids port-forwarding, and naming the command in that
+    comment used to reject the test even though nothing ran it. A line whose first
+    non-whitespace character is `#` is never executed by bash, so skipping those
+    cannot hide a real invocation. Trailing comments are deliberately left in
+    scope: telling a real `#` from one inside a quoted string or heredoc needs a
+    shell parser, and over-reporting is the safe direction here.
+    """
+    for line in script_content.splitlines():
+        if line.lstrip().startswith("#"):
+            continue
+        if PORT_FORWARD_RE.search(line):
+            return True
+    return False
+
+
 def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, context_base_dir: Optional[Path] = None, pause: bool = False, keep_cluster: bool = False) -> Dict:
     test_slug = sanitize_name(test_case.name)
     cluster_name = f"{cluster_prefix}-{test_slug}"[:50]
@@ -500,7 +523,7 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, con
     logger.info("=== Running test: %s (%s) ===", test_case.name, doc_rel)
 
     script_content = test_case.script_path.read_text(encoding="utf-8")
-    if re.search(r"\bkubectl\s+port-forward\b", script_content):
+    if contains_port_forward(script_content):
         logger.warning("SKIPPED (port-forward): %s", doc_rel)
         return {
             "status": "failed",
@@ -541,9 +564,21 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, con
             text=True,
         )
 
+    # Run the script from a scratch directory rather than the repo root. Guides write
+    # their config files with relative paths (`cat <<EOF > config.yaml`), so running
+    # from the repo root drops those files into the working tree — 58 scenarios write
+    # a bare `config.yaml`, which is why .gitignore has an entry for it. Nothing in a
+    # generated script reads a repo path relatively, so cwd is free to move. The
+    # directory is recreated per scenario, so a stale file cannot mask a guide that
+    # forgets to write one.
+    work_dir = repo_root / "out" / "tests" / "work" / context_slug
+    if work_dir.exists():
+        shutil.rmtree(work_dir)
+    work_dir.mkdir(parents=True, exist_ok=True)
+
     try:
         time.sleep(2)
-        test_code, output = run_command(["bash", test_case.script_path.as_posix()], repo_root)
+        test_code, output = run_command(["bash", test_case.script_path.as_posix()], work_dir)
         checks = [line.strip() for line in output.splitlines() if line.strip().startswith("✓ ")]
         status = "passed" if test_code == 0 else "failed"
         if test_code != 0:

@@ -67,9 +67,43 @@ EOF
 
 Use the MCP endpoint URL from the previous step to configure your IDE. Replace `<MCP_URL>` with your endpoint, such as `http://localhost:8080/mcp/mcp` for port-forward setups.
 
-Review the following table of configuration details by IDE environment.
+> [!NOTE]
+> **Multiplexed tool names**: If your agentgateway backend routes to more than one [Virtual MCP]({{< link-hextra path="/mcp/virtual" >}}) target, agentgateway namespaces each tool and prompt name with its target name by default, for example `mcp-server-everything_echo`. When you add a second target, tools in your client's tool list might get new names because of this prefixing. Control it with the `prefixMode` field on the MCP backend; see [Virtual MCP]({{< link-hextra path="/mcp/virtual" >}}) for the available modes.
 
-{{< reuse "agw-docs/snippets/mcp-ide-comparison.md" >}}
+### Claude Desktop
+
+1. Add agentgateway to your Claude Desktop configuration file.
+
+   {{< tabs >}}
+   {{% tab name="macOS" %}}
+   Edit `~/Library/Application Support/Claude/claude_desktop_config.json`.
+
+   ```json
+   {
+     "mcpServers": {
+       "agentgateway": {
+         "url": "<MCP_URL>"
+       }
+     }
+   }
+   ```
+   {{% /tab %}}
+   {{% tab name="Windows" %}}
+   Edit `%APPDATA%\Claude\claude_desktop_config.json`.
+
+   ```json
+   {
+     "mcpServers": {
+       "agentgateway": {
+         "url": "<MCP_URL>"
+       }
+     }
+   }
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+2. Restart Claude Desktop and verify that the agentgateway tools appear in the MCP tools list.
 
 ### Claude Code
 
@@ -153,7 +187,6 @@ The `agentgateway` server shows up as **Connected**.
 
 2. Restart Devin Desktop and verify that agentgateway tools appear in the MCP tools list.
 
-
 ## Authentication
 
 If you configured [MCP auth]({{< link-hextra path="/mcp/auth/" >}}) on your agentgateway proxy, include the required headers in your client configuration. The following example shows a Bearer token.
@@ -167,7 +200,7 @@ claude mcp add agentgateway --transport http <MCP_URL> \
 ```
 {{% /tab %}}
 
-{{% tab name="JSON config (Cursor / VS Code / Devin Desktop)" %}}
+{{% tab name="JSON config (Claude Desktop / Cursor / VS Code / Devin Desktop)" %}}
 ```json
 {
   "mcpServers": {

@@ -30,23 +30,41 @@ flowchart TD
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 {{< doc-test paths="virtual-keys" >}}
+# ============================================================================
+# Doc test coverage for this guide (these comments are not rendered on the page)
+# ============================================================================
+# WHAT THIS TEST VALIDATES:
+#   * "Step 1": the virtual keys config is accepted by agentgateway
+#     (--validate-only), so the apiKey policy fields are correct.
+#   * "Step 3": a request with either virtual key is authenticated and proxied
+#     to the provider (200), and a request with an unknown key is rejected (401),
+#     which is the behavior the strict apiKey mode describes.
+#
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * The provider's response content. The test runs against a local mock LLM
+#     rather than OpenAI, so no provider API key is needed and no live completion
+#     is billed. Only the gateway behavior on this page is asserted.
+#   * "Configure token budgets" and "Monitor per-key spending" - those sections
+#     need a provider that returns realistic token counts and a Prometheus
+#     instance, so they are left to manual verification.
 # Install agentgateway binary
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+{{< reuse "agw-docs/snippets/start-mock-llm.md" >}}
 {{< /doc-test >}}
 
 {{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
 
 > [!NOTE]
-> You can manage virtual keys two ways: interactively in the built-in [Admin UI]({{< link-hextra path="/operations/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes. The config file is the source of truth for GitOps workflows.
+> You can manage virtual keys two ways: interactively in the built-in [UI]({{< link-hextra path="/operations/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes. The config file is the source of truth for GitOps workflows.
 
-## Set up virtual keys (Admin UI)
+## Set up virtual keys (UI)
 
-Set up virtual keys interactively through the Admin UI.
+Set up virtual keys interactively through the UI.
 
 1. Open [http://localhost:15000/ui/llm/keys](http://localhost:15000/ui/llm/keys) (**LLM > Virtual API Keys**). Configured keys and their metadata are listed here, where you can show, copy, edit, or delete each one.
 
-   {{< reuse-image-light src="img/ui-virtual-keys-list.png" alt="Admin UI Virtual API Keys page listing configured keys and metadata" >}}
-   {{< reuse-image-dark srcDark="img/ui-virtual-keys-list-dark.png" alt="Admin UI Virtual API Keys page listing configured keys and metadata" >}}
+   {{< reuse-image-light src="img/ui-virtual-keys-list.png" alt="UI Virtual API Keys page listing configured keys and metadata" >}}
+   {{< reuse-image-dark srcDark="img/ui-virtual-keys-list-dark.png" alt="UI Virtual API Keys page listing configured keys and metadata" >}}
 
 2. Click **New key**. Give the key a name, let {{< reuse "agw-docs/snippets/agentgateway.md" >}} auto-generate the key value (or paste your own), and add metadata such as a `user` entry to attribute usage. Click **Save key**.
 
@@ -90,7 +108,7 @@ EOF
 
 | Setting | Description |
 | -- | -- |
-| `apiKey.mode` | Set to `strict` to require a valid API key for all requests. Use `optional` to allow unauthenticated requests. |
+| `apiKey.mode` | The API key authentication mode. `strict` requires a valid API key for all requests. `optional` (default) validates the key if one is present but allows unauthenticated requests. `permissive` never rejects requests, which is useful when later steps such as authorization or logging rely on API key claims. |
 | `apiKey.keys` | List of API keys. Each key has a `key` value and optional `metadata`. |
 | `key` | The API key value that users include in the `Authorization: Bearer <key>` header. |
 | `metadata` | Optional metadata associated with the key, such as a user identifier or tier. |
@@ -102,9 +120,11 @@ agentgateway -f config.yaml
 ```
 
 {{< doc-test paths="virtual-keys" >}}
-agentgateway -f config.yaml &
+# Virtual keys: validate the documented config, then run it against the mock LLM.
+{{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
+agentgateway -f config-mock.yaml &
 AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
+trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
 sleep 3
 {{< /doc-test >}}
 

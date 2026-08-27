@@ -16,13 +16,13 @@ test:
 
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} can compute the realized USD cost of each LLM request when you provide a model cost catalog. With a catalog in place, {{< reuse "agw-docs/snippets/agentgateway.md" >}} attributes cost per request in access logs, traces, and metrics, and exposes the values to CEL expressions as `llm.cost` and `llm.costRates`.
 
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} does not ship a built-in catalog. Costs are computed only when you configure one (for example, a catalog that you generate with [`agctl costs import`](#generate-a-catalog-with-agctl)).
+{{< reuse "agw-docs/snippets/cost-catalog-default.md" >}}
 
 In Kubernetes mode, you deliver the catalog as a ConfigMap and reference it from a Gateway-level {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
 
 ## Step 1: Prepare a catalog
 
-Prepare a catalog by creating your own JSON file or using the `agctl costs import` command.
+Prepare a catalog by creating your own JSON file or using the `agctl catalog import` command.
 
 ### Catalog JSON format
 
@@ -30,12 +30,12 @@ Prepare a catalog by creating your own JSON file or using the `agctl costs impor
 
 ### Generate a catalog with agctl
 
-Use `agctl costs import` to generate a catalog JSON file, then load it into a ConfigMap.
+Use `agctl catalog import` to generate a catalog JSON file, then load it into a ConfigMap.
 
-1. Generate a catalog from a supported source. By default, `agctl costs import` imports every provider that the proxy supports from [models.dev](https://models.dev). To import only a subset of providers, pass a comma-separated list to `--providers`.
+1. Generate a catalog from a supported source. By default, `agctl catalog import` imports every provider that the proxy supports from [models.dev](https://models.dev). To import only a subset of providers, pass a comma-separated list to `--providers`.
 
    ```sh
-   agctl costs import --pretty --providers openai,anthropic --out ./catalog.json
+   agctl catalog import --pretty --providers openai,anthropic --out ./catalog.json
    ```
 
 2. Create or update the ConfigMap from the generated file. The `--from-file` syntax sets the data key to `catalog.json`.
@@ -82,11 +82,11 @@ Use `agctl costs import` to generate a catalog JSON file, then load it into a Co
 
 4. Reference the ConfigMap from your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, as shown in the next section, [Configure a catalog as a ConfigMap](#step-2-configure-a-catalog-as-a-configmap).
 
-For all options, see the [`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}) reference.
+For all options, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
 
 ## Step 2: Configure a catalog as a ConfigMap
 
-1. Create a ConfigMap that holds the catalog JSON. The ConfigMap must be in the same namespace as the Gateway that references it. By default, the catalog is read from the `catalog.json` data key. If you used the `agctl costs import` command, you already created the ConfigMap.
+1. Create a ConfigMap that holds the catalog JSON. The ConfigMap must be in the same namespace as the Gateway that references it. By default, the catalog is read from the `catalog.json` data key. If you already created the ConfigMap in [Step 1](#generate-a-catalog-with-agctl), you can skip this step.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -205,6 +205,10 @@ To view the metric, port-forward the proxy and query the metrics endpoint:
    ```
 
 A rising `Missing` or `Unpriced` count means requests are flowing through models that your catalog does not price. Add the missing providers or models to your catalog and update the ConfigMap.
+
+## Model tags
+
+{{< reuse "agw-docs/snippets/model-catalog-tags.md" >}}
 
 {{< doc-test paths="costs" >}}
 # Create a catalog that prices the httpbun test model (gpt-4) and attach it to the Gateway

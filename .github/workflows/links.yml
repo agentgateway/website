@@ -30,12 +30,16 @@ jobs:
         with:
           fetch-depth: 100
 
+      # No token needed: docs-link-checking is public, and checkout's `token` input defaults
+      # to github.token, which can read public repos in any org (same as the
+      # solo-io/docs-theme-extras checkout in framework-tests.yml). Keeping a cross-org PAT
+      # off this step is what lets the remaining GH_TOKEN usage be scoped to agentgateway
+      # alone. If this repo is ever made private, this step needs a token again.
       - name: Checkout shared link-checking scripts
         uses: actions/checkout@v4
         with:
           repository: solo-io/docs-link-checking
           path: docs-link-checking
-          token: ${{ secrets.GH_TOKEN }}
 
       - name: Set up Hugo
         uses: peaceiris/actions-hugo@v3
@@ -77,23 +81,6 @@ jobs:
             # a digit (main/latest start with a letter, so they pass through).
             --exclude-path 'public/docs/[^/]+/[0-9]'
             --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/docs/"
-            --remap "public/docs/observability public/docs/kubernetes/latest/observability"
-            --remap "public/docs/resiliency public/docs/kubernetes/latest/resiliency"
-            --remap "public/docs/security public/docs/kubernetes/latest/security"
-            --remap "public/docs/traffic-management public/docs/kubernetes/latest/traffic-management"
-            --remap "public/docs/about public/docs/standalone/latest/about"
-            --remap "public/docs/agent public/docs/standalone/latest/agent"
-            --remap "public/docs/configuration public/docs/standalone/latest/configuration"
-            --remap "public/docs/deployment public/docs/standalone/latest/deployment"
-            --remap "public/docs/faqs public/docs/standalone/latest/faqs"
-            --remap "public/docs/inference public/docs/standalone/latest/inference"
-            --remap "public/docs/integrations public/docs/standalone/latest/integrations"
-            --remap "public/docs/llm public/docs/standalone/latest/llm"
-            --remap "public/docs/mcp public/docs/standalone/latest/mcp"
-            --remap "public/docs/operations public/docs/standalone/latest/operations"
-            --remap "public/docs/quickstart public/docs/standalone/latest/quickstart"
-            --remap "public/docs/reference public/docs/standalone/latest/reference"
-            --remap "public/docs/tutorials public/docs/standalone/latest/tutorials"
             --format json
             --user-agent curl/8.4.0
             --output "${{ github.workspace }}/artifacts/agentgateway-oss-links.json"

@@ -1,17 +1,17 @@
-Use the agentgateway Admin UI to view and manage your standalone proxy configuration in real time.
+Use the agentgateway UI to view and manage your standalone proxy configuration in real time.
 
 ## About
 
-The agentgateway Admin UI is a built-in web interface that runs alongside the proxy on port 15000 by default. In standalone mode, the UI is fully interactive — you can inspect your current configuration and manage your proxy without restarting agentgateway.
+The agentgateway UI is a built-in web interface that runs alongside the proxy on port 15000 by default. In standalone mode, the UI is fully interactive — you can inspect your current configuration and manage your proxy without restarting agentgateway.
 
-The Admin UI is separate from the [Web UI integrations]({{< link-hextra path="/integrations/web-uis/" >}}), which are third-party AI chat frontends (such as Open WebUI or LibreChat) that you connect to agentgateway as a backend. The Admin UI is the management interface for agentgateway itself.
+The UI is separate from the [Web UI integrations]({{< link-hextra path="/integrations/web-uis/" >}}), which are third-party AI chat frontends (such as Open WebUI or LibreChat) that you connect to agentgateway as a backend. The UI is the management interface for agentgateway itself.
 
 {{< doc-test paths="ui-standalone-default,ui-standalone-custom-port" >}}
 # Install agentgateway binary for tests
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
-## Open the Admin UI {#open-admin-ui}
+## Open the UI {#open-admin-ui}
 
 1. Start agentgateway with a config file.
 
@@ -40,13 +40,13 @@ sleep 3
 2. Open [http://localhost:15000/ui/](http://localhost:15000/ui/) in your browser.
 
    {{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
-   The Admin UI opens on the **Gateway Overview**, which lists the available capabilities (LLM, MCP, and Traffic) and lets you enable the ones you want to operate.
+   The UI opens on the **Gateway Overview**, which lists the available capabilities (LLM, MCP, and Traffic) and lets you enable the ones you want to operate.
 
    {{< reuse-image-light src="img/agentgateway-ui-landing.png" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-ui-landing-dark.png" >}}
    {{< /version >}}
    {{< version include-if="1.2.x,1.1.x,1.0.x" >}}
-   The Admin UI dashboard shows your configured listeners and port bindings.
+   The UI dashboard shows your configured listeners and port bindings.
 
    {{< reuse-image-light src="img/1.2-earlier/agentgateway-ui-landing.png" >}}
    {{< reuse-image-dark srcDark="img/1.2-earlier/agentgateway-ui-landing-dark.png" >}}
@@ -54,7 +54,7 @@ sleep 3
 
 {{< doc-test paths="ui-standalone-default" >}}
 YAMLTest -f - <<'EOF'
-- name: Admin UI returns HTTP 200 on default port
+- name: UI returns HTTP 200 on default port
   http:
     url: "http://localhost:15000/ui/"
     method: GET
@@ -67,9 +67,24 @@ EOF
 kill $AGW_DEFAULT_PID 2>/dev/null || true
 {{< /doc-test >}}
 
-## Customize the Admin UI port {#customize-port}
+{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Generate LLM client settings {#client-setup}
 
-By default, the Admin UI binds to `localhost:15000`. To use a different address or port, set `adminAddr` in the `config` section of your config file.
+The **LLM > Client Setup** page generates connection settings and snippets for curl, Claude Code, Claude Desktop, Codex CLI, OpenCode, Cursor, GitHub Copilot, Windsurf, and the OpenAI JavaScript and Python SDKs.
+
+1. Configure at least one LLM model and, if the gateway requires client authentication, a [virtual API key]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
+2. Open [http://localhost:15000/ui/llm/client-setup](http://localhost:15000/ui/llm/client-setup).
+3. Review the **Gateway base URL**, and select a model and virtual API key.
+4. Select the client from the **Integration** dropdown, and copy the generated settings or snippet.
+
+Client Setup does not create a route, model, authentication policy, or provider credential. It generates client-side values from the configuration that already exists. For client-specific prerequisites, see [LLM clients]({{< link-hextra path="/integrations/llm-clients/" >}}).
+
+The selected model appears only in recipes that accept a model setting. For example, the Claude Desktop recipe outputs a gateway URL and API key, but does not configure a model name in Claude Desktop.
+{{< /version >}}
+
+## Customize the UI port {#customize-port}
+
+By default, the UI binds to `localhost:15000`. To use a different address or port, set `adminAddr` in the `config` section of your config file.
 
 1. Add or update the `adminAddr` field in your config file. The value must use `ip:port` format.
 
@@ -107,7 +122,7 @@ sleep 3
 
 {{< doc-test paths="ui-standalone-custom-port" >}}
 YAMLTest -f - <<'EOF'
-- name: Admin UI returns HTTP 200 on custom port
+- name: UI returns HTTP 200 on custom port
   http:
     url: "http://localhost:9090/ui/"
     method: GET
@@ -124,9 +139,9 @@ kill $AGW_CUSTOM_PID 2>/dev/null || true
 > If you change <code>adminAddr</code>, update any agentgateway admin API commands to use the new address. For example, change <code>curl http://localhost:15000/logging</code> to use the new port.
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
-## Secure the Admin UI {#secure-admin-ui}
+## Secure the UI {#secure-admin-ui}
 
-By default, the Admin UI is served on the local admin interface (`localhost:15000`) with no authentication. Anyone who can reach the admin address can inspect and manage your configuration. To require users to authenticate, attach the UI to a gateway listener and apply a browser [OIDC]({{< link-hextra path="/configuration/security/oidc" >}}) policy. When you attach the UI to a gateway, it is served on that gateway's port instead of the admin address, and all UI traffic must pass the policies that you attach.
+By default, the UI is served on the local admin interface (`localhost:15000`) with no authentication. Anyone who can reach the admin address can inspect and manage your configuration. To require users to authenticate, attach the UI to a gateway listener and apply a browser [OIDC]({{< link-hextra path="/configuration/security/oidc" >}}) policy. When you attach the UI to a gateway, it is served on that gateway's port instead of the admin address, and all UI traffic must pass the policies that you attach.
 
 1. Set the `OIDC_COOKIE_SECRET` environment variable. Agentgateway requires this value to encrypt session cookies whenever an `oidc` policy is configured. Set it to a random value before you start the gateway.
 

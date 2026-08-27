@@ -19,7 +19,7 @@ Run agentgateway as an ECS service with Fargate or EC2.
   "containerDefinitions": [
     {
       "name": "agentgateway",
-      "image": "ghcr.io/agentgateway/agentgateway:latest",
+      "image": "cr.agentgateway.dev/agentgateway:latest",
       "portMappings": [
         {"containerPort": 3000, "protocol": "tcp"}
       ],

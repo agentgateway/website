@@ -59,6 +59,9 @@ Streaming is useful for:
 
 With {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can still apply policies to your streaming responses, such as prompt guards, JWT auth, and rate limiting.
 
+> [!IMPORTANT]
+> Guardrails do not run on streamed responses until you set `promptGuard.streaming` to `Enabled`, and the `Mask` action never applies to a streamed response. Review [Streaming guardrails]({{< link-hextra path="/llm/guardrails/overview/#streaming" >}}) before you rely on a response guard to protect streamed traffic.
+
 ## Provider differences {#provider-differences}
 
 The streaming process differs for each LLM provider.
@@ -92,26 +95,9 @@ For more information, see the LLM provider docs:
 - [Anthropic](https://platform.claude.com/docs/en/build-with-claude/streaming)
 
 
-### TrafficPolicy for Gemini, Vertex {#policy}
+### Native streaming for Gemini, Vertex {#policy}
 
-Google uses an HTTP stream protocol which requires special handling. {{< reuse "agw-docs/snippets/agentgateway.md" >}} automatically handles this for Gemini and Vertex when you configure the route type with a {{< reuse "agw-docs/snippets/policy.md" >}}.
-
-In the {{< reuse "agw-docs/snippets/policy.md" >}} for the HTTPRoute to the LLM provider, set the `routeType` option to `CHAT_STREAMING`, such as the following example:
-
-```yaml
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-metadata:
-  name: gemini-opt
-  namespace: default
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: gemini
-  ai:
-    routeType: CHAT_STREAMING
-```
+Google uses an HTTP stream protocol that requires special handling. {{< reuse "agw-docs/snippets/agentgateway.md" >}} handles this automatically: when a request to a Gemini or Vertex AI provider sets `"stream": true`, agentgateway sends the request to the provider's native `streamGenerateContent` endpoint and translates the response back into the OpenAI-compatible stream format that your client expects. No extra policy configuration is required.
 
 For more information, see the LLM provider docs:
 

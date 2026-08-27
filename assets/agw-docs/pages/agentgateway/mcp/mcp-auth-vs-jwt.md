@@ -11,6 +11,8 @@ Review the following table for a quick comparison of MCP auth and JWT auth.
 | **Feature** | **MCP Auth** | **JWT Auth** |
 | :---- | :---- | :---- |
 | Goal | Full MCP OAuth flow (discovery, client registration, token validation) | Validate tokens and optional claim-based RBAC |
-| Policy section | `spec.backend.mcp.authentication` | `spec.traffic.jwtAuthentication` |
-| Target ref | `AgentgatewayBackend` | `Gateway` or `HTTPRoute` |
+| Policy section | `spec.traffic.jwtAuthentication`, including the `mcp` field | `spec.traffic.jwtAuthentication` |
+| Target ref | `Gateway` or `HTTPRoute` | `Gateway` or `HTTPRoute` |
 | Client registration | Dynamic registration with IdP | None (client has token) |
+
+MCP auth builds on JWT auth instead of replacing it, which is why both rows name the same policy section and target ref. Configure the shared `providers`, `mode`, and `location` fields the same way for either type of auth, then add the `mcp` field to turn on the MCP OAuth behavior. The `mcp` field contributes only the MCP-specific settings: `provider`, `clientId`, and `resourceMetadata`.

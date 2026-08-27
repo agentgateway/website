@@ -17,15 +17,31 @@ For more information about MCP auth, see the [About MCP auth]({{< link-hextra pa
    ```sh {paths="setup-entra"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
-4. Register an application in Microsoft Entra ID and collect the values that agentgateway needs.
-   1. Make sure that you have access to a [Microsoft Entra ID tenant](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-create-new-tenant). If you do not have one, you can create a free tenant for development purposes.
-   2. [Register an application](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app) in the Microsoft Entra admin center. For **Supported account types**, choose the option that fits your organization. Under **Redirect URI**, select the **Mobile and desktop applications** platform and add the callback URLs of the MCP clients that you plan to connect.
-   3. From the app's **Overview** page, note the **Directory (tenant) ID** and the **Application (client) ID**, and save them as environment variables.
-      ```bash
-      export ENTRA_TENANT_ID=<your-tenant-id>
-      export ENTRA_CLIENT_ID=<your-application-client-id>
-      ```
-   4. Select **Expose an API**. Next to **Application ID URI**, click **Set** and accept the default value of `api://${ENTRA_CLIENT_ID}`. Then click **Add a scope**, enter a scope name such as `mcp_access`, set **Who can consent** to **Admins and users**, and click **Add scope**.
+
+## Set up Entra ID
+
+Register an application in Microsoft Entra ID, and collect the values that agentgateway needs.
+
+1. Make sure that you have access to a [Microsoft Entra ID tenant](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-create-new-tenant). If you do not have one, you can create a free tenant for development purposes.
+
+2. [Register an application](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app) in the Microsoft Entra admin center. 
+   
+   1. For **Supported account types**, choose the option that fits your organization. 
+   2. Under **Redirect URI**, select the **Mobile and desktop applications** platform and add the callback URLs of the MCP clients that you plan to connect.
+
+3. From the app's **Overview** page, note the **Directory (tenant) ID** and the **Application (client) ID**, and save them as environment variables.
+      
+   ```bash
+   export ENTRA_TENANT_ID=<your-tenant-id>
+   export ENTRA_CLIENT_ID=<your-application-client-id>
+   ```
+
+4. Select **Expose an API**. 
+   
+   1. Next to **Application ID URI**, click **Set** and accept the default value of `api://${ENTRA_CLIENT_ID}`. 
+   2. Click **Add a scope**, enter a scope name such as `mcp_access`, set **Who can consent** to **Admins and users**, and click **Add scope**.
+
+5. Select **App roles** and click **Create app role**. Enter a display name and set the **Value** to `mcp.admin`. Then, assign the role to the users or groups that need access to your MCP server. You use this role in the authorization rule that you configure later.
 
 {{< doc-test paths="setup-entra" >}}
 # The controller fetches the provider's remote JWKS when it translates the policy,
@@ -76,9 +92,9 @@ Create a {{< reuse "agw-docs/snippets/backend.md" >}} that points to the Microso
 
 ## Configure MCP auth
 
-With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces Entra authentication for the MCP backend.
+With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces Entra authentication and authorization for the MCP backend.
 
-1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with MCP authentication configuration. MCP authentication is configured at the route level by using `traffic.jwtAuthentication` with the `mcp` extension field. The route-level placement aligns MCP auth with standard JWT authentication and lets you use JWT claims in other route-level policies, such as authorization, rate limiting, and transformations.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with MCP authentication and authorization configuration. MCP authentication is configured at the route level by using `traffic.jwtAuthentication` with the `mcp` extension field. The route-level placement aligns MCP auth with standard JWT authentication and lets you use JWT claims in other route-level policies, such as authorization, rate limiting, and transformations. In this example, a Common Expression Language (CEL) rule requires the `mcp.admin` app role.
    ```yaml {paths="setup-entra"}
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -123,6 +139,12 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
              - "api://${ENTRA_CLIENT_ID}/mcp_access"
              bearerMethodsSupported:
              - header
+       # Allow only tokens that carry the mcp.admin app role
+       authorization:
+         action: Allow
+         policy:
+           matchExpressions:
+           - '"mcp.admin" in jwt.roles'
    EOF
    ```
 
@@ -137,6 +159,7 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    | `mcp.provider` | The identity provider. Set to `Entra` to enable the native Entra bridging behavior. |
    | `mcp.clientId` | The Application (client) ID of your Entra app registration. Because Entra has no Dynamic Client Registration, agentgateway answers registration requests with this value. |
    | `mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. Includes the resource identifier, supported scopes, and bearer token methods. |
+   | `authorization.policy.matchExpressions` | CEL rules that authorize the claims in the verified JWT. Entra puts the app roles that you assign in the `roles` claim, so this example requires the `mcp.admin` app role. Requests that present a valid token without that role are denied with a 403 HTTP response code. |
 
 2. Verify that the policy was accepted.
    ```sh {paths="setup-entra"}
@@ -229,14 +252,19 @@ EOF
 {{< doc-test paths="setup-entra" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The Entra MCP auth resources (entra-jwks backend + BackendTLSPolicy, the
-#     mcp-entra-authn AgentgatewayPolicy with provider: Entra and clientId, and the
-#     updated HTTPRoute) are accepted, and the provider's JWKS resolves from the
-#     Entra `common` endpoint so the policy programs on the data plane.
+#     mcp-entra-authn AgentgatewayPolicy with provider: Entra, clientId, and the
+#     app role authorization rule, and the updated HTTPRoute) are accepted, and
+#     the provider's JWKS resolves from the Entra `common` endpoint so the policy
+#     programs on the data plane.
 #   * The gateway enforces the connect-time 401 challenge and serves the
-#     protected-resource metadata.
+#     protected-resource metadata. The discovery endpoints stay reachable with the
+#     authorization rule in place, because the rule applies only after a token is
+#     verified.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The full interactive OAuth sign-in flow requires a real user signing in to a
-#     configured Entra app registration, which an automated test cannot perform.
+#   * The full interactive OAuth sign-in flow and the 403 that the authorization
+#     rule returns for a token without the mcp.admin app role. Both require a real
+#     user signing in to a configured Entra app registration, which an automated
+#     test cannot perform.
 YAMLTest -f - <<'EOF'
 - name: wait for mcp HTTPRoute to be accepted
   wait:
@@ -298,6 +326,14 @@ Verify the auth flow with the [MCP inspector](https://github.com/modelcontextpro
 3. Click **Open Auth Settings** and run through the OAuth flow. During the flow, the MCP inspector discovers the bridged authorization server metadata, registers with your pre-configured `clientId`, and redirects you to Microsoft to sign in. After you sign in and the token is issued, agentgateway validates the Entra token and completes the connection.
 
 4. Verify that tool calls work without re-authentication. From the **Tools** tab, click **List Tools**, select the `fetch` tool, enter a URL such as `https://example.com/`, and click **Run Tool**. The call succeeds because the token from the initial connection is reused for all tool calls within the session.
+
+## Role-based authorization
+
+The policy that you created gates the MCP endpoint on the `mcp.admin` app role, which Entra puts in the `roles` claim of tokens that it issues to the users and groups that you assigned the role to. Authentication alone is not enough: any caller that Entra issues a token to for your app registration passes JWT validation, including daemon apps that use the client credentials flow to authorize themselves rather than a user. The authorization rule denies those tokens with a 403 HTTP response code.
+
+Because MCP authentication runs at the route level, every claim in the verified token is also available to other route-level policies, such as rate limiting and transformations. For more information about the rules that you can write, see [Authorization]({{< link-hextra path="/security/authorization/" >}}).
+
+To authorize individual tools instead of the whole MCP endpoint, use an MCP authorization policy. For more information, see [Tool access]({{< link-hextra path="/mcp/tool-access/" >}}).
 
 ## Clean up
 

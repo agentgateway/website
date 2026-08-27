@@ -45,6 +45,115 @@ When you configure multiple [priority groups]({{< link-hextra path="/llm/failove
 
 This combines the benefits of automatic intelligent load balancing with explicit priority-based failover control.
 
+
+## Load balancing across Pod replicas {#pod-replicas}
+
+When you register an LLM provider backend that points at an in-cluster Kubernetes Service with multiple Pod replicas behind it, the load balancing behavior depends on how the backend is configured.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}
+> [!NOTE]
+> This section covers the `host` and `port` fields of an **LLM provider**, not Kubernetes Services in general. When an HTTPRoute routes to a Service directly, the proxy load balances across that Service's endpoints with P2C, for LLM and non-LLM traffic alike. See [Load balancing]({{< link-hextra path="/traffic-management/load-balancing/" >}}).
+{{< /version >}}
+
+### Using `host`/`port` with a normal ClusterIP Service
+
+When you use the `host` and `port` fields (available on all provider types) to point at a normal Kubernetes Service with a `ClusterIP`, agentgateway resolves the provider to a single target rather than to the Service's endpoints. Load balancing across Pods is therefore left to kube-proxy and its iptables or IPVS rules, and agentgateway's P2C scoring does not apply.
+
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+metadata:
+  name: my-backend
+  namespace: agentgateway-system
+spec:
+  ai:
+    provider:
+      openai:
+        model: my-model
+      host: my-llm-service.my-namespace.svc.cluster.local  # Normal ClusterIP Service
+      port: 80
+```
+
+### Using `host`/`port` with a headless Service
+
+When you point `host`/`port` at a **headless Service** (`clusterIP: None`) backed by multiple pods, agentgateway re-resolves DNS periodically and can distribute traffic across the resolved Pod IPs. However, this is **not health-aware** — agentgateway does not monitor the health of individual Pod endpoints or evict unhealthy ones in this scenario.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-llm-service
+  namespace: my-namespace
+spec:
+  clusterIP: None  # Headless Service
+  selector:
+    app: my-llm
+  ports:
+  - port: 8000
+    targetPort: 8000
+---
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+metadata:
+  name: my-backend
+  namespace: agentgateway-system
+spec:
+  ai:
+    provider:
+      openai:
+        model: my-model
+      host: my-llm-service.my-namespace.svc.cluster.local  # Headless Service
+      port: 8000
+```
+
+### Using `custom` provider with `backendRef` (Recommended)
+
+For **health-aware P2C load balancing** across individual Pod replicas, use the `custom` provider type with the `backendRef` field. Agentgateway resolves the Service's `EndpointSlices` directly and applies its P2C load balancing and health scoring across individual Pods, bypassing kube-proxy entirely.
+
+> [!NOTE]
+> The `backendRef` field is only available for the `custom` provider type. Use this approach when you want agentgateway's health-aware load balancing across replicas of a self-hosted LLM backend. Because `backendRef` is namespace-local, the Service must be in the same namespace as the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
+
+1. Create a Service for your LLM backend.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: my-llm-service
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     selector:
+       app: my-llm
+     ports:
+     - port: 8000
+       targetPort: 8000
+       protocol: TCP
+   EOF
+   ```
+
+2. Create an {{< reuse "agw-docs/snippets/backend.md" >}} using the `custom` provider type with `backendRef`.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: my-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         custom:
+           model: my-model
+           backendRef:
+             name: my-llm-service
+             port: 8000
+   EOF
+   ```
+
+Agentgateway will automatically discover all Pod endpoints behind the Service and apply its P2C load balancing algorithm with health-aware scoring across them.
+
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
@@ -108,6 +217,12 @@ Create a backend with multiple providers in the same priority group to enable lo
    ```
 
 {{< doc-test paths="load-balancing" >}}
+# The documented example load balances across OpenAI and Anthropic. The test
+# replaces it with two providers that both point at the httpbun mock LLM, so it
+# needs no provider API key at all and bills nothing. The shape under test is the
+# same as the documented one - two providers in a single priority group - which is
+# what the P2C behavior on this page depends on.
+{{< reuse "agw-docs/snippets/deploy-mock-llm.md" >}}
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -121,6 +236,9 @@ spec:
           - name: openai-gpt4
             openai:
               model: gpt-4o
+            host: httpbun.default.svc.cluster.local
+            port: 3090
+            path: /llm/chat/completions
             policies:
               auth:
                 secretRef:
@@ -128,6 +246,9 @@ spec:
           - name: openai-gpt35
             openai:
               model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
+            host: httpbun.default.svc.cluster.local
+            port: 3090
+            path: /llm/chat/completions
             policies:
               auth:
                 secretRef:

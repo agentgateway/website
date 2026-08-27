@@ -17,27 +17,25 @@ mkdir agentgateway-config
 docker run \
   --user "$(id -u):$(id -g)" \
   -v "$PWD/agentgateway-config:/config" \
-  -p 3000:3000 -p 4000:4000 -p 127.0.0.1:15000:15000 \
+  -p 4000:4000 \
   cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}}
 ```
 
-When run in this mode, a configuration file will automatically be created, setting up logging and exposing the admin UI.
+When run in this mode, a configuration file will automatically be created, setting up logging and exposing the UI.
 The `user` is customized to run as the current user to ensure the container can read and write the configuration.
 
-If you want to provide an explicit file, you can also do so. By default, the agentgateway admin UI listens on localhost, which is not exposed outside of the container;
-the `ADMIN_ADDR` is set below to expose it and is optional.
+If you want to provide an explicit file, you can also do so:
 
 ```sh
 docker run \
   --user "$(id -u):$(id -g)" \
   -v "$PWD/config.yaml:/config.yaml" \
-  -p 3000:3000 -p 4000:4000 -p 127.0.0.1:15000:15000 \
-  -e ADMIN_ADDR=0.0.0.0:15000 \
+  -p 4000:4000 \
   cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}} \
   -f /config.yaml
 ```
 
-Open <http://localhost:15000/ui> to get started!
+Open <http://localhost:4000/ui> to get started!
 
 ## Docker Compose
 
@@ -57,11 +55,9 @@ services:
     # Replace with your user and group IDs, such as the output of: id -u && id -g
     user: "1000:1000"
     ports:
-      - "3000:3000"
       - "4000:4000"
-      - "127.0.0.1:15000:15000"
     volumes:
       - ./agentgateway-config:/config
 ```
 
-Open <http://localhost:15000/ui> to get started!
+Open <http://localhost:4000/ui> to get started!

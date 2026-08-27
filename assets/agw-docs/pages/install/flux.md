@@ -53,7 +53,7 @@ Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} by using Flux. The follow
 
 2. Create the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace and the `OCIRepository` and `HelmRelease` resources that install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} CRD and control plane charts into it. You might also need the following values:
    * **Development builds**: `controller.image.pullPolicy=Always` to ensure you get the latest image.
-   * **Experimental Gateway API features**: `controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true` to enable experimental features such as TCPRoutes.
+   * **Experimental Gateway API features**: `controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true` to set the feature gate for experimental features such as TCPRoutes explicitly. This setting is enabled by default.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -65,25 +65,25 @@ Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} by using Flux. The follow
    apiVersion: source.toolkit.fluxcd.io/v1
    kind: OCIRepository
    metadata:
-     name: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+     name: {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      interval: 5m
-     url: oci://cr.agentgateway.dev/charts/{{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+     url: oci://cr.agentgateway.dev/charts/{{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
      ref:
        tag: {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
    ---
    apiVersion: helm.toolkit.fluxcd.io/v2
    kind: HelmRelease
    metadata:
-     name: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+     name: {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      interval: 5m
-     releaseName: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+     releaseName: {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
      chartRef:
        kind: OCIRepository
-       name: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+       name: {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
      upgrade:
        strategy:
          name: RetryOnFailure
@@ -92,27 +92,27 @@ Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} by using Flux. The follow
    apiVersion: source.toolkit.fluxcd.io/v1
    kind: OCIRepository
    metadata:
-     name: {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+     name: {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      interval: 5m
-     url: oci://cr.agentgateway.dev/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+     url: oci://cr.agentgateway.dev/charts/{{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
      ref:
        tag: {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
    ---
    apiVersion: helm.toolkit.fluxcd.io/v2
    kind: HelmRelease
    metadata:
-     name: {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+     name: {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      dependsOn:
-       - name: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+       - name: {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
      interval: 5m
-     releaseName: {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+     releaseName: {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
      chartRef:
        kind: OCIRepository
-       name: {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+       name: {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
      upgrade:
        strategy:
          name: RetryOnFailure
@@ -122,7 +122,7 @@ Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} by using Flux. The follow
          image:
            pullPolicy: Always
          extraEnv:
-           KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES: "true"
+           AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES: "true"
    EOF
    ```
 
@@ -162,7 +162,7 @@ Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} by using Flux. The follow
 Now that you have {{< reuse "/agw-docs/snippets/kgateway.md" >}} set up and running, check out the following guides to expand your gateway capabilities.
 
 - [Set up your agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-- Review the [LLM consumption]({{< link-hextra path="/llm/" >}}), [inference routing]({{< link-hextra path="/inference/" >}}), [MCP]({{< link-hextra path="/mcp/" >}}), or [agent connectivity]({{< link-hextra path="/agent/" >}}) guides to learn more about common agentgateway use cases.
+- Review the [LLM consumption]({{< link-hextra path="/llm/" >}}), [inference routing]({{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}{{< link-hextra path="/inference/" >}}{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}{{< link-hextra path="/llm/inference/" >}}{{< /version >}}), [MCP]({{< link-hextra path="/mcp/" >}}), or [agent connectivity]({{< link-hextra path="/agent/" >}}) guides to learn more about common agentgateway use cases.
 
 ## Cleanup
 

@@ -67,11 +67,12 @@ Agentgateway exports traces directly to Phoenix without needing an OTel Collecto
 version: '3'
 services:
   agentgateway:
-    image: ghcr.io/agentgateway/agentgateway:latest
+    image: cr.agentgateway.dev/agentgateway:latest
     ports:
       - "3000:3000"
     volumes:
-      - ./config.yaml:/etc/agentgateway/config.yaml
+      - ./config.yaml:/config.yaml:ro
+    command: ["-f", "/config.yaml"]
 
   phoenix:
     image: arizephoenix/phoenix:latest

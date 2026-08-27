@@ -56,7 +56,7 @@ Access Grafana at [http://localhost:3001](http://localhost:3001) (default creden
 
 ## Add Prometheus data source
 
-1. Go to **Configuration** → **Data Sources**
+1. Go to **Connections** → **Data Sources**
 2. Click **Add data source**
 3. Select **Prometheus**
 4. Set URL to `http://prometheus:9090` (or your Prometheus URL)
@@ -66,7 +66,7 @@ Access Grafana at [http://localhost:3001](http://localhost:3001) (default creden
 
 For distributed tracing:
 
-1. Go to **Configuration** → **Data Sources**
+1. Go to **Connections** → **Data Sources**
 2. Click **Add data source**
 3. Select **Jaeger**
 4. Set URL to `http://jaeger:16686` (or your Jaeger URL)
@@ -157,7 +157,7 @@ rate(agentgateway_llm_tokens_total[5m])
 version: '3'
 services:
   agentgateway:
-    image: ghcr.io/agentgateway/agentgateway:latest
+    image: cr.agentgateway.dev/agentgateway:latest
     ports:
       - "3000:3000"
       - "15020:15020"

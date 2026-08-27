@@ -1,7 +1,7 @@
 ---
-title: Admin UI
+title: UI
 weight: 10
-description: Use the built-in Admin UI to inspect your Kubernetes agentgateway proxy configuration.
+description: Use the built-in UI to inspect your Kubernetes agentgateway proxy configuration.
 test:
   admin-ui:
   - file: content/docs/kubernetes/latest/install/helm.md

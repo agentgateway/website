@@ -40,11 +40,12 @@ The following Compose file runs agentgateway alongside Jaeger. To route traces t
 version: '3'
 services:
   agentgateway:
-    image: ghcr.io/agentgateway/agentgateway:latest
+    image: cr.agentgateway.dev/agentgateway:latest
     ports:
       - "3000:3000"
     volumes:
-      - ./config.yaml:/etc/agentgateway/config.yaml
+      - ./config.yaml:/config.yaml:ro
+    command: ["-f", "/config.yaml"]
     depends_on:
       - jaeger
 

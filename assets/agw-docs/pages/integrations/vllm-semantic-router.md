@@ -4,7 +4,7 @@ This integration is distinct from using [vLLM as an inference provider]({{< link
 
 ## How the integration works
 
-The following diagram shows the [cost-based routing example](/blog/2026-07-17-semantic-routing-llm-costs/). A coding agent requests the stable `auto` model, vSR selects a lower-cost or higher-capability model, and agentgateway forwards the request and records the result.
+The following diagram shows the [cost-based routing example](https://agentgateway.dev/blog/2026-07-17-semantic-routing-llm-costs/). A coding agent requests the stable `auto` model, vSR selects a lower-cost or higher-capability model, and agentgateway forwards the request and records the result.
 
 {{< reuse-image-light src="img/integrations/vllm-semantic-router-cost-routing.svg" alt="A coding agent sends model auto to agentgateway. Agentgateway asks vLLM Semantic Router to select a model, routes the request to a lower-cost or higher-capability model, and records catalog-priced telemetry." >}}
 {{< reuse-image-dark srcDark="img/integrations/vllm-semantic-router-cost-routing.svg" alt="A coding agent sends model auto to agentgateway. Agentgateway asks vLLM Semantic Router to select a model, routes the request to a lower-cost or higher-capability model, and records catalog-priced telemetry." >}}
@@ -19,16 +19,20 @@ The request follows these component boundaries:
 
 `PreRouting` is important when the vSR decision changes the model or adds a header that an HTTPRoute uses for matching. It makes the result available before agentgateway evaluates the route.
 
+When semantic caching is enabled, vSR can instead return a cached completion as an immediate ExtProc response. Agentgateway returns the response to the client without calling the configured backend.
+
 ## Choose an integration path
 
 The vSR and agentgateway projects provide complementary guides. Choose the one that matches the models and outcome that you want to evaluate.
 
 {{< cards >}}
 {{< card link="https://vllm-sr.ai/docs/installation/k8s/agentgateway/" title="Deploy vSR with agentgateway" icon="external-link" description="Follow the vSR project guide to deploy the components on Kubernetes and route to vLLM-compatible inference workloads.">}}
-{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing" title="Evaluate cost-based routing" icon="external-link" description="Use the agentgateway example to select between hosted model tiers and measure the result with a model cost catalog and OpenTelemetry.">}}
+{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/cost-based" title="Evaluate cost-based routing" icon="external-link" description="Select between hosted model tiers and measure the result with a model cost catalog and OpenTelemetry.">}}
+{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/tier-aware" title="Configure tier-aware routing" icon="external-link" description="Select separate vSR configurations and model pools for authenticated Basic, Standard, and Pro callers.">}}
+{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/semantic-cache" title="Configure semantic caching" icon="external-link" description="Reuse responses to semantically equivalent requests with the Redis-backed example.">}}
 {{< /cards >}}
 
-The vSR deployment guide owns the installation, Helm values, and semantic-router configuration. The agentgateway example owns the cost-routing policy and runnable gateway resources. Keeping those details with their projects avoids version drift in this integration overview.
+The vSR deployment guide owns the installation, Helm values, and semantic-router configuration. Each agentgateway example owns the policies and runnable gateway resources for its scenario. Keeping those details with their projects avoids version drift in this integration overview.
 
 > [!NOTE]
 > Current vSR examples require agentgateway 1.3.0 or later for the external-processing options that control request streaming and mode overrides.

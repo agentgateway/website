@@ -2,9 +2,58 @@
 title: Regex filters
 weight: 10
 description: Match and redact prompt content with custom regex patterns or agentgateway's built-in PII detectors.
+test:
+  regex:
+  - file: ${versionRoot}/llm/prompt-guards/regex.md
+    path: regex
 ---
 
 Use custom regex patterns and built-in PII detectors to filter LLM requests and responses.
+
+{{< doc-test paths="regex" >}}
+# ============================================================================
+# Doc test coverage for this guide (these comments are not rendered on the page)
+# ============================================================================
+# WHAT THIS TEST VALIDATES:
+#   * "Custom regex patterns": the credential-matching example config is accepted
+#     by agentgateway (--validate-only), covering `guardrails.request[].regex`
+#     with `action: reject`, `rules[].pattern`, and a `rejection` block that sets
+#     a status, headers, and body.
+#   * "PII detection" step 1: the config with both a custom-pattern rule and a
+#     `builtin: email` rule is accepted.
+#   * "PII detection" step 4: a request containing the SSN keyword is rejected
+#     with the documented status (400) and the exact documented error body
+#     (`content_policy_violation`). The `Social Security` pattern from the same
+#     rule is checked too, which the page describes but does not demonstrate.
+#   * "PII detection" step 5: a request containing an email address is rejected by
+#     the built-in `email` pattern with the documented `pii_detected` body,
+#     confirming the built-in patterns table is wired up and that the second
+#     guardrail is evaluated independently of the first.
+#   * "PII detection" step 3, partially: a prompt that matches no rule is NOT
+#     blocked by the guard. The test asserts the response is not a guard rejection
+#     rather than asserting success, so it holds whether or not a real API key is
+#     present.
+#   * "Mask PII in responses" step 1: the `action: mask` config with
+#     `builtin: phoneNumber` is accepted.
+#
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * The successful completion in "PII detection" step 3 and its example output -
+#     external dependency; a real response needs a live OpenAI key and bills a
+#     completion. Only that the guard does not block the request is asserted.
+#   * "Mask PII in responses" steps 2-3, including the `<PHONE_NUMBER>`
+#     replacement - external dependency; masking operates on a real LLM response
+#     body, so there is nothing to redact without a live provider call. The config
+#     is validated but the mask behavior is not.
+#   * The other built-in patterns (`phoneNumber`, `ssn`, `creditCard`, `caSin`) as
+#     request filters - display-only table rows; only `email` appears in a runnable
+#     example on this page.
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+
+# The example configs read the API key from the environment. Guard rejections
+# happen before any upstream call, so a placeholder is enough for the assertions
+# below; CI supplies a real key when one is available.
+export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
+{{< /doc-test >}}
 
 ## About regex prompt templating
 
@@ -57,6 +106,40 @@ llm:
             }
 ```
 
+{{< doc-test paths="regex" >}}
+cat <<'EOF' > config-custom.yaml
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      model: gpt-4o-mini
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
+      request:
+      - regex:
+          action: reject
+          rules:
+          - pattern: "password[=:]\\s*\\S+"
+          - pattern: "api[_-]?key[=:]\\s*\\S+"
+          - pattern: "secret[=:]\\s*\\S+"
+        rejection:
+          status: 400
+          headers:
+            set:
+              content-type: "application/json"
+          body: |
+            {
+              "error": {
+                "message": "Request contains credentials",
+                "type": "invalid_request_error",
+                "code": "credentials_detected"
+              }
+            }
+EOF
+agentgateway -f config-custom.yaml --validate-only
+{{< /doc-test >}}
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
@@ -66,7 +149,7 @@ llm:
 The following example rejects requests that contain PII data, such as Social Security Numbers (using a custom keyword pattern) or email addresses (using the built-in `email` pattern). When a request is blocked, agentgateway returns a custom error response.
 
 1. Create a configuration file with regex prompt guard policies.
-   ```yaml
+   ```yaml {paths="regex"}
    cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
@@ -195,9 +278,114 @@ The following example rejects requests that contain PII data, such as Social Sec
    }
    ```
 
+{{< doc-test paths="regex" >}}
+# Validate the config written by step 1, then run it in the background so the
+# step 4 and step 5 requests can be asserted. The visible "Start the agentgateway"
+# block is untagged because it runs in the foreground.
+agentgateway -f config.yaml --validate-only
+
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null' EXIT
+sleep 3
+{{< /doc-test >}}
+
+{{< doc-test paths="regex" >}}
+YAMLTest -f - <<'EOF'
+# Guard rejections are produced by agentgateway before the request reaches the
+# provider, so these assertions hold with a placeholder API key.
+- name: Step 4 - a request containing the SSN keyword is rejected
+  retries: 3
+  http:
+    url: "http://localhost:4000"
+    path: /v1/chat/completions
+    method: POST
+    headers:
+      content-type: application/json
+      accept-encoding: identity
+    body: |
+      {"model":"gpt-4o-mini","messages":[{"role":"user","content":"My SSN is 123-45-6789"}]}
+  source:
+    type: local
+  expect:
+    statusCode: 400
+    headers:
+      - name: content-type
+        comparator: contains
+        value: application/json
+    bodyJsonPath:
+      - path: "$.error.code"
+        comparator: equals
+        value: content_policy_violation
+      - path: "$.error.message"
+        comparator: equals
+        value: "Request rejected: Content contains sensitive information"
+      - path: "$.error.type"
+        comparator: equals
+        value: invalid_request_error
+- name: Step 4 rule - the Social Security pattern in the same rule also rejects
+  http:
+    url: "http://localhost:4000"
+    path: /v1/chat/completions
+    method: POST
+    headers:
+      content-type: application/json
+      accept-encoding: identity
+    body: |
+      {"model":"gpt-4o-mini","messages":[{"role":"user","content":"my Social Security number"}]}
+  source:
+    type: local
+  expect:
+    statusCode: 400
+    bodyJsonPath:
+      - path: "$.error.code"
+        comparator: equals
+        value: content_policy_violation
+- name: Step 5 - a request containing an email is rejected by the builtin pattern
+  http:
+    url: "http://localhost:4000"
+    path: /v1/chat/completions
+    method: POST
+    headers:
+      content-type: application/json
+      accept-encoding: identity
+    body: |
+      {"model":"gpt-4o-mini","messages":[{"role":"user","content":"Contact me at test@example.com"}]}
+  source:
+    type: local
+  expect:
+    statusCode: 400
+    bodyJsonPath:
+      - path: "$.error.code"
+        comparator: equals
+        value: pii_detected
+      - path: "$.error.message"
+        comparator: equals
+        value: "Request blocked: Contains email address"
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="regex" >}}
+# Step 3: confirm a prompt that matches no rule is not blocked by the guard. The
+# assertion is negative rather than a 200 check, because without a real API key the
+# upstream returns an auth error -- either way the guard must not have rejected it.
+CLEAN=$(curl -s --max-time 15 http://localhost:4000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello, how are you?"}]}')
+if grep -qE 'content_policy_violation|pii_detected' <<<"$CLEAN"; then
+  echo "FAIL: a prompt matching no regex rule was blocked by the prompt guard"
+  echo "$CLEAN"
+  exit 1
+fi
+echo "✓ A prompt matching no regex rule was not blocked by the prompt guard"
+{{< /doc-test >}}
+
 ## Mask PII in responses
 
 You can also filter LLM responses to redact sensitive data before it reaches the client. When a match is found, agentgateway replaces built-in pattern matches with `<ENTITY_TYPE>` (for example, `<CREDIT_CARD>`) and custom pattern matches with `<masked>`. The following example masks credit card numbers in responses.
+
+> [!WARNING]
+> Masking applies only to a buffered response. When the client sets `"stream": true`, the LLM response is streamed, and agentgateway cannot rewrite content that is already on its way to the client. A response guard that uses `action: mask` passes the matched content through unmodified, and the client receives no error. To protect a streamed response, use `action: reject` and set `streaming: Enabled`. For more information, see [Streaming guardrails]({{< link-hextra path="/llm/prompt-guards/overview/#streaming-guardrails" >}}).
 
 1. Create a configuration that masks phone numbers in LLM responses by using the built-in `phoneNumber` pattern.
    ```yaml
@@ -256,3 +444,25 @@ You can also filter LLM responses to redact sensitive data before it reaches the
    "system_fingerprint":"fp_a1ddba3226"}%    
    ```
 
+
+{{< doc-test paths="regex" >}}
+# The mask config is written to its own file so it does not overwrite the config.yaml
+# that the running gateway (and the assertions above) depend on.
+cat <<'EOF' > config-mask.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      model: gpt-4o-mini
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
+      response:
+      - regex:
+          action: mask
+          rules:
+          - builtin: phoneNumber
+EOF
+agentgateway -f config-mask.yaml --validate-only
+{{< /doc-test >}}

@@ -1,5 +1,10 @@
 Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
 
+{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+> [!NOTE]
+> Anthropic excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Anthropic reports. To read the Anthropic number itself, use `llm.providerInputTokens`. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).
+{{< /version >}}
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
@@ -664,14 +669,24 @@ Example output:
 {{% /tab %}}
 {{% tab name="AWS SigV4" %}}
 
-1. Make sure the agentgateway proxy pod has access to AWS credentials, for example through [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) or a Kubernetes secret with `accessKey`, `secretKey`, and optional `sessionToken`. For the secret-based approach:
+{{< reuse "agw-docs/snippets/aws-creds.md" >}}
+
+1. Make sure the agentgateway proxy pod has access to AWS credentials, for example through [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) or a Kubernetes secret with `accessKey`, `secretKey`, and optional `sessionToken`. For the secret-based approach, save the credentials as environment variables.
+
+   ```bash
+   export AGW_AWS_ACCESS_KEY_ID="<aws-access-key-id>"
+   export AGW_AWS_SECRET_ACCESS_KEY="<aws-secret-access-key>"
+   export AGW_AWS_SESSION_TOKEN="<aws-session-token>"
+   ```
+
+   Then, create the secret.
 
    ```yaml
    kubectl create secret generic anthropic-aws-creds \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --from-literal=accessKey="$AWS_ACCESS_KEY_ID" \
-     --from-literal=secretKey="$AWS_SECRET_ACCESS_KEY" \
-     --from-literal=sessionToken="$AWS_SESSION_TOKEN" \
+     --from-literal=accessKey="$AGW_AWS_ACCESS_KEY_ID" \
+     --from-literal=secretKey="$AGW_AWS_SECRET_ACCESS_KEY" \
+     --from-literal=sessionToken="$AGW_AWS_SESSION_TOKEN" \
      --type=Opaque \
      --dry-run=client -o yaml | kubectl apply -f -
    ```
@@ -740,6 +755,12 @@ Example output:
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
+
+## Use Claude on Azure AI Foundry
+
+To use Claude models through Azure AI Foundry, configure the `azure` provider with `resourceType: Foundry` and a `claude-*` model name. Agentgateway automatically routes requests to the Anthropic-native endpoint and injects the required headers — no additional configuration is needed.
+
+For setup instructions, see [Use Claude models on Azure AI Foundry]({{< link-hextra path="/llm/providers/azure/#use-claude-models-on-azure-ai-foundry" >}}).
 
 ## Connect to Claude Code
 

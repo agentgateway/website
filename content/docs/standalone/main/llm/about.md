@@ -150,7 +150,7 @@ Use `name: "*"` without setting `params.model` to accept any model name and pass
 llm:
   models:
   - name: "*"
-    provider: openai
+    provider: openAI
     params:
       apiKey: "$OPENAI_API_KEY"
 ```
@@ -166,7 +166,7 @@ This is the recommended approach when you want to expose all models from multipl
 llm:
   models:
   - name: "*"
-    provider: openai
+    provider: openAI
     params:
       apiKey: "$OPENAI_API_KEY"
     transformation:

@@ -15,23 +15,23 @@ Review the [release notes]({{< link-hextra path="/reference/release-notes/" >}})
 2. **Optional**: To check the new CRDs locally, download the CRDs to a `helm` directory.
 
    ```sh
-   helm template --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}  --output-dir ./helm
+   helm template --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}  --output-dir ./helm
    ```
 
 3. Upgrade the CRDs in your cluster.
    
    ```sh {paths="upgrade"}
-   helm upgrade -i --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
+   helm upgrade -i --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
    ```
 
 {{< doc-test paths="upgrade" >}}
-helm get values {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > values.yaml
+helm get values {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > values.yaml
 {{< /doc-test >}}
 
 4. Get the Helm values file for your current version.
       
    ```sh
-   helm get values {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > values.yaml
+   helm get values {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > values.yaml
    open values.yaml
    ```
 
@@ -43,12 +43,12 @@ helm get values {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse
      helm show values {{< reuse "/agw-docs/snippets/helm-path.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}
      ```
 
-   * **Get a file with all values**: You can get a `{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}/values.yaml` file for the upgrade version by pulling and inspecting the Helm chart locally.
+   * **Get a file with all values**: You can get a `{{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}/values.yaml` file for the upgrade version by pulling and inspecting the Helm chart locally.
       
      ```sh
      helm pull {{< reuse "/agw-docs/snippets/helm-path.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}
-     tar -xvf {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}-{{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}.tgz
-     open {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}/values.yaml
+     tar -xvf {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}-{{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}.tgz
+     open {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}/values.yaml
      ```
 
 6. Make any changes that you want by editing your `values.yaml` Helm values file or preparing the `--set` flags. For development {{< reuse "agw-docs/versions/patch-dev.md" >}} builds, include the `controller.image.pullPolicy=Always` setting or refer to the exact image digest to avoid using cached images.
@@ -56,10 +56,10 @@ helm get values {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse
 7. Upgrade the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane Helm installation.
    * Make sure to include your Helm values when you upgrade either as a configuration file or with `--set` flags. Otherwise, any previous custom values that you set might be overwritten.{{< conditional-text include-if="kubernetes" >}}
    * When using the development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.{{< /conditional-text >}}
-   * To use experimental Gateway API features, include the experimental feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`.
+   * Experimental Gateway API features are enabled by default. To set the experimental feature gate explicitly, include `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true`.
    
    ```sh {paths="upgrade"}
-   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
      -f values.yaml \
      --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} 
    ```
@@ -88,7 +88,7 @@ EOF
 1. Verify that the control plane runs the upgraded version.
    
    ```sh {paths="upgrade"}
-   kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} get pod -l app.kubernetes.io/name={{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -o jsonpath='{.items[0].spec.containers[0].image}'
+   kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} get pod -l app.kubernetes.io/name={{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} -o jsonpath='{.items[0].spec.containers[0].image}'
    ```
    
    Example output:

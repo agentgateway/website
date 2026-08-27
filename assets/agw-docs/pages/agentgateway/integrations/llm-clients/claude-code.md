@@ -7,6 +7,8 @@ The primary use case is routing Claude Code to non-Anthropic LLM backends (such 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. Install the [Claude Code CLI](https://code.claude.com/docs) (`npm install -g @anthropic-ai/claude-code`).
 
+{{< reuse "agw-docs/snippets/llm-client-setup-callout.md" >}}
+
 > [!NOTE]
 > The `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` environment variable disables Claude Code's experimental beta features. You typically **do not need** this variable when proxying to non-Anthropic backends or standard Anthropic routing.
 >
@@ -26,7 +28,7 @@ Route Claude Code to any OpenAI-compatible LLM provider (such as vLLM, Ollama, o
      - name: "*"
        provider: openAI
        params:
-         baseURL: "http://localhost:8000/v1"  # vLLM or similar OpenAI-compatible endpoint
+         baseUrl: "http://localhost:8000/v1"  # vLLM or similar OpenAI-compatible endpoint
          apiKey: "mock-key"  # Not used for local providers, but required by config
    EOF
    ```

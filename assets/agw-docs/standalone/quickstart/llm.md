@@ -2,63 +2,7 @@ Configure the agentgateway binary to route requests to the [OpenAI](https://open
 
 ## Before you begin
 
-1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
-
-   {{< tabs >}}
-{{% tab name="Latest" %}}
-
-To install the latest release:
-
-```sh
-curl -sL https://agentgateway.dev/install | bash
-```
-
-{{% /tab %}}
-{{% tab name="Specific version" %}}
-
-To install a specific version, pass the `--version` flag. Use any release tag from the [agentgateway releases page](https://github.com/agentgateway/agentgateway/releases), such as `{{< reuse "agw-docs/versions/n-patch.md" >}}`.
-
-```sh
-curl -sL https://agentgateway.dev/install | bash -s -- --version {{< reuse "agw-docs/versions/n-patch.md" >}}
-```
-{{% /tab %}}
-{{% tab name="Nightly build" %}}
-
-To install the nightly build for development and testing:
-
-1. Go to the [nightly release in GitHub Actions](https://github.com/agentgateway/agentgateway/actions/workflows/nightly.yml) and click the release that you want to use.
-2. From the URL, get the release number, such as `24873456345` in `https://github.com/agentgateway/agentgateway/actions/runs/24873456345`.
-3. Using the `gh` CLI, download the release for your OS. The following example uses macOS.
-
-   ```sh
-   gh run download 24873456345 -R agentgateway/agentgateway -n release-binary-mac
-   ```
-
-4. Make the binary file executable and move it to your binary location, such as in the following example.
-   
-   ```sh
-   chmod +x agentgateway
-   sudo mv agentgateway /usr/local/bin/agentgateway
-   ```
-
-5. Verify that you have the nightly release.
-
-   ```sh
-   agentgateway --version
-   ```
-
-   Example output:
-   ```json
-   {
-     "version": "0.0.0-alpha.813d7d0",
-     "git_revision": "813d7d0ab4757db7c8ed5a639bc63c0bb20ac116",
-     "rust_version": "1.95.0",
-     "build_profile": "release",
-     "build_target": "aarch64-apple-darwin"
-   }
-   ```
-{{% /tab %}}
-   {{< /tabs >}}
+{{< reuse "agw-docs/standalone/quickstart/install-prereq.md" >}}
 
 {{< doc-test paths="llm" >}}
 # For CI/tests: install the agentgateway binary to local bin without sudo.
@@ -67,7 +11,7 @@ To install the nightly build for development and testing:
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
-2. Get an [OpenAI API key](https://platform.openai.com/api-keys).
+3. Get an [OpenAI API key](https://platform.openai.com/api-keys).
 
 ## Steps
 
@@ -178,7 +122,7 @@ agentgateway
 Example output:
 
 ```
-info  app  serving UI at http://localhost:15000/ui
+info  app  serving UI at http://localhost:4000/ui
 ```
 
 {{< doc-test paths="llm" >}}
@@ -202,14 +146,19 @@ sleep 3
 
 ### Step 3: Enable LLM
 
-1. Open the [agentgateway UI](http://localhost:15000/ui/).
-2. On the **Gateway Overview**, find the **LLM** row and click **Enable LLM**.
+1. Open the [agentgateway UI](http://localhost:4000/ui/). 
+2. On the first run, the **Welcome to Agentgateway** wizard opens. Click **Enable LLM**, and then click **Continue**.
+
+   {{< reuse-image-light src="img/ui-welcome-wizard.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-welcome-wizard-dark.png" >}}
+
+The **Gateway Overview** home page opens, with rows for **LLM**, **MCP**, and **Traffic**.
 
 ### Step 4: Add a model
 
 1. In the **LLM** section of the navigation menu, click **Models**, and then click **Add model**.
 2. For the **Incoming model match**, enter the model name that clients send, such as `gpt-3.5-turbo`.
-3. From the **Provider** list, select **OpenAI**.
+3. From the **Provider** dropdown list, select **OpenAI**.
 4. For the **Provider API key**, click **Env var** and enter `OPENAI_API_KEY` (the variable you set in Step 1).
 5. Click **Save model**.
 
@@ -231,7 +180,7 @@ curl -s http://localhost:4000/v1/chat/completions \
   }' | jq .
 ```
 
-Or open the [LLM playground](http://localhost:15000/ui/llm/playground/), enter a prompt in the **User message** box, and click **Send**.
+Or open the [LLM playground](http://localhost:4000/ui/llm/playground/), enter a prompt in the **User message** box, and click **Send**.
 
 {{< reuse-image-light src="img/ui-llm-playground.png" >}}
 {{< reuse-image-dark srcDark="img/ui-llm-playground-dark.png" >}}

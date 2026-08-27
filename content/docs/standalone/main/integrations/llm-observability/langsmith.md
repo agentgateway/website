@@ -65,11 +65,12 @@ Agentgateway exports traces directly to LangSmith without needing an OTel Collec
 version: '3'
 services:
   agentgateway:
-    image: ghcr.io/agentgateway/agentgateway:latest
+    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:latest
     ports:
       - "3000:3000"
     volumes:
-      - ./config.yaml:/etc/agentgateway/config.yaml
+      - ./config.yaml:/config.yaml:ro
+    command: ["-f", "/config.yaml"]
     environment:
       - OTEL_EXPORTER_OTLP_HEADERS=x-api-key=${LANGSMITH_API_KEY}
       - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
@@ -78,4 +79,4 @@ services:
 ## Learn more
 
 - [LangSmith Documentation](https://docs.langchain.com/langsmith/observability)
-- [OpenTelemetry Integration]({{< link-hextra path="/integrations/observability/opentelemetry" >}})
+- [OpenTelemetry Integration]({{< link-hextra path="/observability/traces/setup/" >}})

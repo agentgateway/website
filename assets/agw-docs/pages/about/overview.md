@@ -74,6 +74,10 @@ No, but this demonstrates why [naming things](https://www.karlton.org/2017/12/na
 
 The Gateway API is an API which can be used to program an ingress or an API gateway.
 
+## Standalone vs. Kubernetes modes
+
+{{< reuse "agw-docs/snippets/standalone-k8s-modes.md" >}}
+
 ## Extensions
 
 {{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} provides the following extensions on top of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} to configure advanced routing, security, and resiliency capabilities.

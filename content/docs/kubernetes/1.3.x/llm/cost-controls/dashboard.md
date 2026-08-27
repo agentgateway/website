@@ -1,11 +1,11 @@
 ---
 title: Cost dashboard
 weight: 30
-description: View LLM spend, tokens, and traffic in the built-in Admin UI when running agentgateway on Kubernetes.
+description: View LLM spend, tokens, and traffic in the built-in UI when running agentgateway on Kubernetes.
 test: skip
 ---
 
-The built-in **Admin UI** includes a cost dashboard: the same **LLM > Analytics** page available in standalone mode. It plots spend, tokens, and calls over time, broken down by model, provider, user, group, or user agent. It works in Kubernetes too, but unlike standalone it is not enabled by default. The proxy ships without a request-log database, so the dashboard has nothing to show until you configure one.
+The built-in **UI** includes a cost dashboard: the same **LLM > Analytics** page available in standalone mode. It plots spend, tokens, and calls over time, broken down by model, provider, user, group, or user agent. It works in Kubernetes too, but unlike standalone it is not enabled by default. The proxy ships without a request-log database, so the dashboard has nothing to show until you configure one.
 
 ## Requirements
 
@@ -75,9 +75,9 @@ Two pieces of configuration power the dashboard:
 
 ## Open the dashboard
 
-Every request that flows through the proxy is now recorded and priced. Port-forward the proxy's Admin UI and open the Analytics page.
+Every request that flows through the proxy is now recorded and priced. Port-forward the proxy's UI and open the Analytics page.
 
-1. Port-forward the Admin UI port.
+1. Port-forward the UI port.
 
    ```sh
    kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
@@ -85,11 +85,11 @@ Every request that flows through the proxy is now recorded and priced. Port-forw
 
 2. Open [http://localhost:15000/ui/llm/analytics](http://localhost:15000/ui/llm/analytics). Send some LLM traffic through the gateway, then refresh to see traffic over time with a running tally of cost, tokens, and calls, plus a breakdown below the chart.
 
-   {{< reuse-image-light src="img/agentgateway-ui-kube-cost-dashboard.png" alt="agentgateway Analytics cost dashboard in the Kubernetes Admin UI" >}}
-   {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-cost-dashboard-dark.png" alt="agentgateway Analytics cost dashboard in the Kubernetes Admin UI" >}}
+   {{< reuse-image-light src="img/agentgateway-ui-kube-cost-dashboard.png" alt="agentgateway Analytics cost dashboard in the Kubernetes UI" >}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-cost-dashboard-dark.png" alt="agentgateway Analytics cost dashboard in the Kubernetes UI" >}}
 
 > [!NOTE]
-> In Kubernetes (xds) mode the Admin UI is read-only. You view the dashboard, but you manage configuration through Kubernetes resources rather than the UI.
+> In Kubernetes (xds) mode the UI is read-only. You view the dashboard, but you manage configuration through Kubernetes resources rather than the UI.
 
 ### Group by and measure
 

@@ -67,11 +67,12 @@ Agentgateway exports traces directly to Phoenix without needing an OTel Collecto
 version: '3'
 services:
   agentgateway:
-    image: ghcr.io/agentgateway/agentgateway:latest
+    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:latest
     ports:
       - "3000:3000"
     volumes:
-      - ./config.yaml:/etc/agentgateway/config.yaml
+      - ./config.yaml:/config.yaml:ro
+    command: ["-f", "/config.yaml"]
 
   phoenix:
     image: arizephoenix/phoenix:latest
@@ -92,4 +93,4 @@ config:
 ## Learn more
 
 - [Phoenix Documentation](https://arize.com/docs/phoenix)
-- [OpenTelemetry Integration]({{< link-hextra path="/integrations/observability/opentelemetry" >}})
+- [OpenTelemetry Integration]({{< link-hextra path="/observability/traces/setup/" >}})

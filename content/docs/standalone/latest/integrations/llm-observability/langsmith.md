@@ -65,11 +65,12 @@ Agentgateway exports traces directly to LangSmith without needing an OTel Collec
 version: '3'
 services:
   agentgateway:
-    image: ghcr.io/agentgateway/agentgateway:latest
+    image: cr.agentgateway.dev/agentgateway:latest
     ports:
       - "3000:3000"
     volumes:
-      - ./config.yaml:/etc/agentgateway/config.yaml
+      - ./config.yaml:/config.yaml:ro
+    command: ["-f", "/config.yaml"]
     environment:
       - OTEL_EXPORTER_OTLP_HEADERS=x-api-key=${LANGSMITH_API_KEY}
       - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf

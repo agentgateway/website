@@ -1,14 +1,14 @@
 ---
 title: Cost dashboard
 weight: 30
-description: View LLM spend, tokens, and traffic in the built-in Admin UI, grouped by model, provider, and user.
+description: View LLM spend, tokens, and traffic in the built-in UI, grouped by model, provider, and user.
 test:
   cost-dashboard:
   - file: ${versionRoot}/llm/cost-controls/dashboard.md
     path: cost-dashboard
 ---
 
-The [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}) guide prices every request and exposes the result to logs, metrics, and CEL. The built-in **Admin UI** turns that data into a visual dashboard: spend, tokens, and calls over time, broken down by model, provider, user, group, or user agent. No external Prometheus or Grafana is required.
+The [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}) guide prices every request and exposes the result to logs, metrics, and CEL. The built-in **UI** turns that data into a visual dashboard: spend, tokens, and calls over time, broken down by model, provider, user, group, or user agent. No external Prometheus or Grafana is required.
 
 The dashboard is populated from a local database that agentgateway writes for every request that flows through the proxy. Because the accounting happens in the gateway, your applications need no changes. They point at the proxy, and spend shows up next to tokens automatically.
 
@@ -21,7 +21,7 @@ Two pieces of configuration power the dashboard:
 
 ## Enable the dashboard
 
-1. Add `database` and `modelCatalog` to the `config` section of your config file. The `adminAddr` field controls where the Admin UI is served (default `localhost:15000`).
+1. Add `database` and `modelCatalog` to the `config` section of your config file. The `adminAddr` field controls where the UI is served (default `localhost:15000`).
 
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -96,13 +96,7 @@ Refresh the **Analytics** page and the request appears: tokens counted, cost cal
 The dashboard reads from the database at `config.database.url`. Agentgateway supports SQLite (default, single instance) and PostgreSQL. See [Request Log]({{< link-hextra path="/integrations/observability/database/" >}}) for full configuration details, including connection string format, credentials, and schema reference.
 
 {{< doc-test paths="cost-dashboard" >}}
-# Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
 
 # A catalog so modelCatalog loads and validates.

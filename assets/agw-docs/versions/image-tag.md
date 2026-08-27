@@ -1,0 +1,1 @@
+{{< version include-if="main" >}}latest-dev{{< /version >}}{{< version exclude-if="main" >}}v{{< reuse "agw-docs/versions/n-patch.md" >}}{{< /version >}}

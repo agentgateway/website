@@ -1,19 +1,25 @@
-Use {{< reuse "/agw-docs/snippets/kgateway.md" >}} as the ingress gateway for your ambient mesh. 
+Serve external traffic to workloads in an Istio ambient mesh through agentgateway as the ingress gateway.
 
 ## About ambient mesh
 
-Solo.io and Google collaborated to develop {{< gloss "Ambient mesh" >}}ambient mesh{{< /gloss >}}, a new "sidecarless" architecture for the Istio service mesh. Ambient mesh uses node-level ztunnels to route and secure Layer 4 traffic between pods with mutual TLS (mTLS). Waypoint proxies enforce Layer 7 traffic policies whenever needed. To onboard apps into the ambient mesh, you simply label the namespace the app belongs to. Because no sidecars need to be injected in to your apps, ambient mesh significantly reduces the complexity of adopting a service mesh.
+Solo.io and Google collaborated to develop ambient mesh, a sidecarless architecture for the Istio service mesh. Ambient mesh uses node-level ztunnels to route and secure Layer 4 traffic with mTLS. For Layer 7 policy and routing, ztunnel forwards traffic to waypoint proxies over [HBONE](https://istio.io/latest/docs/ambient/architecture/hbone/).
 
-To learn more about ambient, see the [ambient mesh documentation](https://ambientmesh.io/docs/about/). 
+To learn more, see the [Istio ambient overview](https://istio.io/latest/docs/ambient/overview/) and the [waypoint configuration guide](https://istio.io/latest/docs/ambient/usage/waypoint/).
 
 ## About this guide
 
-In this guide, you learn how to use {{< reuse "/agw-docs/snippets/kgateway.md" >}} as the ingress gateway to route traffic to the httpbin app that is part of an ambient service mesh. 
+In this guide, you configure agentgateway as the ingress gateway for an ambient mesh. An external client sends a request to agentgateway, which matches the request to an `HTTPRoute` and forwards it to an ambient-enabled backend. Because both the agentgateway proxy namespace and the backend namespace are ambient-enabled, ztunnel transparently secures the pod-to-pod traffic with mTLS over HBONE, without sidecars.
 
-This guide assumes that you run your ambient mesh in a single cluster and want to use {{< reuse "/agw-docs/snippets/kgateway.md" >}} as the ingress gateway to protect your ambient mesh services. 
+In this demo, the backend is an httpbin app in an ambient-enabled `httpbin` namespace.
 
-{{< reuse-image-light src="img/ambient-ingress.svg" width="600px" caption="Ingress gateway integration for an ambient mesh" >}}
-{{< reuse-image-dark srcDark="img/ambient-ingress.svg" width="600px" caption="Ingress gateway integration for an ambient mesh" >}}
+```mermaid
+flowchart LR
+  client[External client] -->|HTTP request<br/>host: www.example.com| gateway[agentgateway<br/>ingress gateway]
+  gateway -->|HBONE over ambient mTLS| ztunnel[Istio ztunnel]
+  ztunnel -->|Plain HTTP to app| backend[httpbin<br/>backend service]
+```
+
+External traffic terminates at the agentgateway ingress proxy on port `80`. From the proxy pod outward to the httpbin pod, ztunnel intercepts and secures the connection with mTLS on HBONE port `15008`.
 
 ## Before you begin
 
@@ -23,118 +29,262 @@ This guide assumes that you run your ambient mesh in a single cluster and want t
 
 {{< reuse "agw-docs/snippets/setup-ambient-mesh.md" >}}
 
-## Step 2: Set up the ingress gateway
+## Step 2: Run preflight checks
 
-To set up {{< reuse "/agw-docs/snippets/kgateway.md" >}} as the ingress gateway for your ambient mesh, you simply add all the namespaces that you want to secure to your ambient mesh, including the namespace that your gateway proxy is deployed to.
+Verify your current context, required control planes, and available GatewayClasses.
 
-1. Add the `httpbin` and optionally the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace to your ambient mesh. The label instructs istiod to configure a ztunnel socket on all the pods in that namespace so that traffic to these pods is secured via mutual TLS (mTLS). If you do not label the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace, the traffic from the gateway proxy to the app is not secured via mTLS.
+```sh
+kubectl config current-context
+kubectl get gatewayclass -o custom-columns=NAME:.metadata.name,CONTROLLER:.spec.controllerName
+kubectl -n istio-system get pods -l app=ztunnel
+kubectl -n agentgateway-system get deploy,pods
+```
+
+Make sure an agentgateway-owned GatewayClass exists (commonly `agentgateway`) and that a ztunnel pod is running on each node.
+
+## Step 3: Ambient-enable the gateway and backend namespaces
+
+For end-to-end ambient mTLS, both the namespace that runs the agentgateway ingress proxy and the namespace that runs the backend must be ambient-enabled. Label the `agentgateway-system` namespace, then create an ambient-enabled `httpbin` namespace and deploy httpbin plus a curl client for testing.
+
+> [!NOTE]
+> Ambient-enabled means Istio configures ztunnel capture for workloads in that namespace so traffic is transparently intercepted and secured with mTLS, without sidecars.
+
+```sh
+kubectl label ns agentgateway-system istio.io/dataplane-mode=ambient --overwrite
+```
+
+```yaml
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: httpbin
+  labels:
+    istio.io/dataplane-mode: ambient
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: httpbin
+  namespace: httpbin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin
+  namespace: httpbin
+  labels:
+    app: httpbin
+spec:
+  selector:
+    app: httpbin
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+  namespace: httpbin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      serviceAccountName: httpbin
+      containers:
+      - name: httpbin
+        image: docker.io/mccutchen/go-httpbin:v2.15.0
+        ports:
+        - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curl
+  namespace: httpbin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: curl
+  template:
+    metadata:
+      labels:
+        app: curl
+    spec:
+      containers:
+      - name: curl
+        image: curlimages/curl:8.10.1
+        command: ["sleep", "infinity"]
+EOF
+
+kubectl -n httpbin rollout status deploy/httpbin
+kubectl -n httpbin rollout status deploy/curl
+```
+
+Assigning httpbin its own ServiceAccount gives the backend a distinct SPIFFE identity (`spiffe://cluster.local/ns/httpbin/sa/httpbin`) that appears in ztunnel access logs in Step 6.
+
+If the `agentgateway-system` namespace was already running before you added the ambient label, restart any existing gateway proxy pods so ztunnel captures them:
+
+```sh
+kubectl -n agentgateway-system delete pod -l gateway.networking.k8s.io/gateway-name=ambient-ingress --ignore-not-found
+```
+
+## Step 4: Deploy the ingress Gateway and HTTPRoute
+
+Create a `Gateway` with `gatewayClassName: agentgateway` in the `agentgateway-system` namespace, and an `HTTPRoute` in the `httpbin` namespace that routes traffic to the httpbin Service.
+
+```yaml
+kubectl apply -f - <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: ambient-ingress
+  namespace: agentgateway-system
+spec:
+  gatewayClassName: agentgateway
+  listeners:
+  - name: http
+    port: 80
+    protocol: HTTP
+    hostname: www.example.com
+    allowedRoutes:
+      namespaces:
+        from: All
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: httpbin-ingress
+  namespace: httpbin
+spec:
+  parentRefs:
+  - name: ambient-ingress
+    namespace: agentgateway-system
+  hostnames:
+  - www.example.com
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: httpbin
+      port: 8000
+EOF
+
+kubectl -n agentgateway-system wait --for=condition=Programmed gateway/ambient-ingress --timeout=2m
+```
+
+Agentgateway provisions a Deployment and Service named after the `Gateway` (in this case `ambient-ingress`). The generated Service is exposed as a `LoadBalancer` by default; if your cluster does not assign an external IP, use `kubectl port-forward` in the next step.
+
+## Step 5: Send a request through the ingress gateway
+
+Port-forward the ingress Service and send a request with the matching `Host` header. If you have an external `LoadBalancer` IP, use it instead.
+
+```sh
+kubectl -n agentgateway-system port-forward svc/ambient-ingress 8888:80 &
+```
+
+```sh
+curl -sSi -m 10 http://127.0.0.1:8888/get -H "host: www.example.com"
+```
+
+Verify these response properties:
+
+1. HTTP status is `200`.
+2. The body shows httpbin echoing your request with `Host: www.example.com`.
+
+Example output:
+
+```console
+HTTP/1.1 200 OK
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+
+{
+  "args": {},
+  "headers": {
+    "Accept": [
+      "*/*"
+    ],
+    "Host": [
+      "www.example.com"
+    ],
+    "User-Agent": [
+      "curl/8.10.1"
+    ]
+  },
+  ...
+}
+```
+
+## Step 6: Verify ambient mTLS between the gateway and the backend
+
+Confirm that pod-to-pod traffic between the agentgateway ingress proxy and the httpbin backend is secured with mTLS. Because both namespaces are ambient-enabled, ztunnel transparently upgrades the connection to HBONE and stamps SPIFFE identities on the access log.
+
+1. Send a few more requests so ztunnel emits access logs.
    ```sh
-   kubectl label ns {{< reuse "agw-docs/snippets/namespace.md" >}} istio.io/dataplane-mode=ambient
-   kubectl label ns httpbin istio.io/dataplane-mode=ambient
+   for i in 1 2 3; do
+     curl -sSI -m 10 http://127.0.0.1:8888/get -H "host: www.example.com" > /dev/null
+   done
    ```
-   
-2. Send a request to the httpbin app and verify that you get back a 200 HTTP response code. All traffic from the gateway is automatically intercepted by a ztunnel that is co-located on the same node as the gateway. The ztunnel collects Layer 4 metrics before it forwards the request to the ztunnel that is co-located on the same node as the httpbin app. The connection between ztunnels is secured via mutual TLS.
-   {{< tabs >}}
-   {{% tab name="Cloud Provider LoadBalancer" %}}
+
+2. Grep ztunnel logs for the httpbin destination.
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:80/headers -H "host: www.example.com:80"
+   kubectl -n istio-system logs -l app=ztunnel --since=1m | \
+     grep 'dst.namespace="httpbin"'
    ```
 
-   Example output: 
-   ```console
-   HTTP/1.1 200 OK
-   ...
-   {
-    "headers": {
-      "Accept": [
-        "*/*"
-       ],
-       "Host": [
-         "www.example.com:8080"
-       ],
-       "User-Agent": [
-         "curl/8.7.1"
-       ],
-       "X-Envoy-Expected-Rq-Timeout-Ms": [
-         "15000"
-       ],
-       "X-Forwarded-Proto": [
-         "http"
-       ],
-      "X-Request-Id": [
-         "929c334b-e611-4aba-9bc6-ad6b2450db26"
-       ]
-     }
-   }
-   {{% /tab %}}
-   {{% tab name="Port-forward for local testing" %}}
-   1. Port-forward the `http` pod on port 8080. 
-      ```sh
-      kubectl port-forward deployment/http -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:8080
-      ```
-   
-   2. Send a request to the httpbin app and verify that you get back a 200 HTTP response code. 
-      ```sh
-      curl -i localhost:8080/headers -H "host: www.example.com"
-      ```
+3. Confirm that `src.identity` and `dst.identity` are SPIFFE URIs and that `dst.hbone_addr` is set. Both fields must be present.
 
-      Example output: 
-      ```
-      HTTP/1.1 200 OK
-      ...
-      {
-      "headers": {
-         "Accept": [
-         "*/*"
-         ],
-         "Host": [
-            "www.example.com:8080"
-         ],
-         "User-Agent": [
-            "curl/8.7.1"
-         ],
-         "X-Envoy-Expected-Rq-Timeout-Ms": [
-            "15000"
-         ],
-         "X-Forwarded-Proto": [
-            "http"
-         ],
-         "X-Request-Id": [
-            "929c334b-e611-4aba-9bc6-ad6b2450db26"
-         ]
-       }
-      }
-      ```
-   {{% /tab %}}
-   {{< /tabs >}}
+   Example output:
+   ```
+   info    access  connection complete     src.addr=10.244.0.11:46902 src.workload="ambient-ingress-59789747ff-x9f5d" src.namespace="agentgateway-system" src.identity="spiffe://cluster.local/ns/agentgateway-system/sa/ambient-ingress" dst.addr=10.244.0.8:15008 dst.hbone_addr=10.244.0.8:8080 dst.service="httpbin.httpbin.svc.cluster.local" dst.workload="httpbin-59bf87b48b-nk54x" dst.namespace="httpbin" dst.identity="spiffe://cluster.local/ns/httpbin/sa/httpbin" direction="inbound" bytes_sent=525 bytes_recv=249
+   ```
 
-3. Verify that traffic between the gateway proxy and the httpbin app is secured via mutual TLS. Because traffic in an ambient mesh is intercepted by the ztunnels that are co-located on the same node as the sending and receiving service, you can check the logs of the ztunnels. 
-   1. Find the `NODE` that the httpbin app runs on. 
-      ```sh
-      kubectl get pods -n httpbin -o wide
-      ```
-      
-      Example output: 
-      ```
-      NAME                       READY   STATUS    RESTARTS   AGE   IP           NODE                                                  NOMINATED NODE   READINESS GATES
-      httpbin-54cf575757-hdv8t   3/3     Running   0          22h   10.XX.X.XX   gke-ambient-default-pool-bb9a8da5-bdf4   <none>           <none>
-      ```
-   2. Find the ztunnel that runs on the same node as the httpbin app. 
-      ```sh
-      kubectl get pods -n istio-system -o wide | grep ztunnel
-      ```
-   3. Check the logs of that ztunnel instance and verify that the source and destination workloads have a SPIFFE ID. 
-      ```sh
-      kubectl logs <ztunnel-instance> -n istio-system
-      ```
-      
-      Example output: 
-      ```
-      2025-03-19T17:32:42.762545Z	info	http access	request complete	src.addr=10.0.71.117:42468 src.workload="http-9db6c8995-l54dw" src.namespace="{{< reuse "agw-docs/snippets/namespace.md" >}}" src.identity="spiffe://cluster.local/ns/{{< reuse "agw-docs/snippets/namespace.md" >}}/sa/http" dst.addr=10.0.65.144:15008 dst.hbone_addr=10.0.65.144:8080 dst.service="httpbin.httpbin.svc.cluster.local" dst.workload="httpbin-577649ddb-7nc8p" dst.namespace="httpbin" dst.identity="spiffe://cluster.local/ns/httpbin/sa/httpbin" direction="inbound" method=GET path="/headers" protocol=HTTP1 response_code=200 host="www.example.com:8080" user_agent="curl/8.7.1" request_id="4c5fc679-c5cd-4721-8735-51bcdbea6e0f" duration="0ms"
-      2025-03-19T17:32:46.810472Z	info	access	connection complete	src.addr=10.0.71.117:42468 src.workload="http-9db6c8995-l54dw" src.namespace="{{< reuse "agw-docs/snippets/namespace.md" >}}" src.identity="spiffe://cluster.local/ns/{{< reuse "agw-docs/snippets/namespace.md" >}}/sa/http" dst.addr=10.0.65.144:15008 dst.hbone_addr=10.0.65.144:8080 dst.service="httpbin.httpbin.svc.cluster.local" dst.workload="httpbin-577649ddb-7nc8p" dst.namespace="httpbin" dst.identity="spiffe://cluster.local/ns/httpbin/sa/httpbin" direction="inbound" bytes_sent=1290 bytes_recv=550 duration="6742ms"
-      ```
+   The presence of `src.identity` and `dst.identity` with SPIFFE URIs, plus `dst.hbone_addr` on port `15008`, confirms the connection is HBONE-encrypted between the two ambient-enabled namespaces.
 
+Optional: If Prometheus is installed in `istio-system`, query mTLS connection counters.
 
-## Next
+```sh
+kubectl -n istio-system exec deploy/prometheus -- sh -c 'wget -qO- "http://localhost:9090/api/v1/query?query=sum(increase(istio_tcp_connections_opened_total%7Bsource_workload_namespace%3D%22agentgateway-system%22%2Cdestination_workload_namespace%3D%22httpbin%22%2Cconnection_security_policy%3D%22mutual_tls%22%7D%5B5m%5D))"'
+```
 
-Now that you set up {{< reuse "/agw-docs/snippets/kgateway.md" >}} as the ingress gateway for your ambient mesh, you can further control and secure ingress traffic with [Policies]({{< link-hextra path="/about/policies/">}}).
+## Step 7: Add production ingress workflows
+
+Once the base flow works, layer additional agentgateway policies on the ingress `Gateway` or the `HTTPRoute` to control and observe traffic before it reaches your ambient-meshed backends:
+
+1. Client authentication and authorization, such as [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) and [authorization policies]({{< link-hextra path="/security/authorization/" >}}).
+  This lets you enforce identity-based access to backends behind the same ingress gateway.
+2. API key or basic auth, such as [API key auth]({{< link-hextra path="/security/apikey-auth/" >}}) or [basic auth]({{< link-hextra path="/security/basic-auth/" >}}).
+  Useful when clients cannot use OIDC or when you issue per-team ingress keys.
+3. Rate limiting, such as [HTTP rate limiting]({{< link-hextra path="/security/rate-limit-http/" >}}) or [global rate limiting]({{< link-hextra path="/security/rate-limit-global/" >}}).
+  Protects backends from spikes and abusive clients.
+4. Traffic shaping and resilience, such as [traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}), [retries]({{< link-hextra path="/resiliency/retry/retry/" >}}), and [request timeouts]({{< link-hextra path="/resiliency/timeouts/request/" >}}).
+  Improves reliability of ingress traffic to ambient backends.
+5. Observability, such as [access logs]({{< link-hextra path="/security/access-logging/" >}}) and [tracing]({{< link-hextra path="/observability/traces/" >}}).
+  Gives per-request visibility into ingress traffic for compliance and incident response.
+
+## Cleanup
+
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
+
+```sh
+kubectl -n httpbin delete httproute httpbin-ingress --ignore-not-found
+kubectl -n agentgateway-system delete gateway ambient-ingress --ignore-not-found
+kubectl -n httpbin delete deploy httpbin curl --ignore-not-found
+kubectl -n httpbin delete service httpbin --ignore-not-found
+kubectl -n httpbin delete serviceaccount httpbin --ignore-not-found
+kubectl delete namespace httpbin --ignore-not-found
+kubectl label ns agentgateway-system istio.io/dataplane-mode- --overwrite
+```

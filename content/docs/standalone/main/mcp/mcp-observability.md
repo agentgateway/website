@@ -27,7 +27,7 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
 
 1. {{< reuse "agw-docs/snippets/jaeger.md" >}}
 
-2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent. This example uses static tracing configuration. For per-route dynamic tracing configuration, see [Dynamic tracing]({{< link-hextra path="/reference/observability/traces#dynamic-tracing" >}}). 
+2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent. This example uses static tracing configuration. For per-route dynamic tracing configuration, see [Dynamic tracing]({{< link-hextra path="/observability/traces/setup/" >}}). 
    ```yaml
    cat <<EOF > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -93,11 +93,11 @@ The following CEL variables are available in access log policies but are **not**
 
 | Variable | Availability | Description |
 |----------|-------------|-------------|
-| `mcp.methodName` | Request-time | The MCP JSON-RPC method name, such as `tools/call` or `tools/list`. |
-| `mcp.sessionId` | Request-time | The MCP session ID. |
+| `mcp.methodName` | Post-request | The MCP JSON-RPC method name, such as `tools/call` or `tools/list`. |
+| `mcp.sessionId` | Post-request | The MCP session ID. |
 | `mcp.tool.name` | Request-time | The name of the tool being called. |
 | `mcp.tool.target` | Request-time | The target backend handling the tool call. |
-| `mcp.tool.arguments` | Request-time | The JSON arguments passed to the tool call. |
+| `mcp.tool.arguments` | Post-request | The JSON arguments passed to the tool call. |
 | `mcp.tool.result` | Post-request | The tool call result payload. |
 | `mcp.tool.error` | Post-request | The tool call error payload. |
 

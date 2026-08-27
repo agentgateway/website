@@ -284,8 +284,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `agentgateway.dev/v1alpha1` | | |
 | `kind` _string_ | `AgentgatewayBackend` | | |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | Optional: \{\} <br /> |
 | `spec` _[AgentgatewayBackendSpec](#agentgatewaybackendspec)_ | Desired backend configuration. |  | ExactlyOneOf: [ai static dynamicForwardProxy mcp aws a2a] <br />Required: \{\} <br /> |
 | `status` _[AgentgatewayBackendStatus](#agentgatewaybackendstatus)_ | Current backend status. |  | Optional: \{\} <br /> |
@@ -345,8 +345,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `agentgateway.dev/v1alpha1` | | |
 | `kind` _string_ | `AgentgatewayModel` | | |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | Optional: \{\} <br /> |
 | `spec` _[AgentgatewayModelSpec](#agentgatewaymodelspec)_ | Desired model configuration. |  | ExactlyOneOf: [provider virtualModel] <br />Required: \{\} <br /> |
 | `status` _[AgentgatewayModelStatus](#agentgatewaymodelstatus)_ | Current model attachment status. |  | Optional: \{\} <br /> |
@@ -366,8 +366,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `agentgateway.dev/v1alpha1` | | |
 | `kind` _string_ | `AgentgatewayModelList` | | |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `items` _[AgentgatewayModel](#agentgatewaymodel) array_ |  |  |  |
 
@@ -432,8 +432,8 @@ https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#gatewayinfrastruct
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `agentgateway.dev/v1alpha1` | | |
 | `kind` _string_ | `AgentgatewayParameters` | | |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | Optional: \{\} <br /> |
 | `spec` _[AgentgatewayParametersSpec](#agentgatewayparametersspec)_ | Desired data plane provisioning settings. |  | Required: \{\} <br /> |
 | `status` _[AgentgatewayParametersStatus](#agentgatewayparametersstatus)_ | Current status for these provisioning settings. |  | Optional: \{\} <br /> |
@@ -612,8 +612,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `agentgateway.dev/v1alpha1` | | |
 | `kind` _string_ | `AgentgatewayPolicy` | | |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | Optional: \{\} <br /> |
 | `spec` _[AgentgatewayPolicySpec](#agentgatewaypolicyspec)_ | Desired policy configuration. |  | ExactlyOneOf: [targetRefs targetSelectors] <br />Required: \{\} <br /> |
 | `status` _[PolicyStatus](#policystatus)_ | Current policy status. |  | Optional: \{\} <br /> |
@@ -1667,6 +1667,7 @@ _Appears in:_
 - [Tracing](#tracing)
 - [Transform](#transform)
 - [TransformationConditional](#transformationconditional)
+- [Webhook](#webhook)
 
 
 
@@ -2742,7 +2743,7 @@ _Appears in:_
 | `repository` _string_ | Image repository. |  | Optional: \{\} <br /> |
 | `tag` _string_ | Image tag. |  | Optional: \{\} <br /> |
 | `digest` _string_ | Image digest, such as `sha256:12345...`. |  | Optional: \{\} <br /> |
-| `pullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#pullpolicy-v1-core)_ | Image pull policy for the container. See<br />https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy<br />for details. |  | Optional: \{\} <br /> |
+| `pullPolicy` _[PullPolicy](https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy)_ | Image pull policy for the container. See<br />https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy<br />for details. |  | Optional: \{\} <br /> |
 
 
 #### InsecureTLSMode
@@ -3728,8 +3729,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `clientId` _string_ | Client ID sent to the token endpoint. |  | MinLength: 1 <br />Required: \{\} <br /> |
 | `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Secret providing the `clientSecret` key by default; override via<br />`secretRef.key`. When omitted, client_id is sent without a secret, which<br />is only valid with ClientSecretPost. |  | Optional: \{\} <br /> |
-| `privateKeyJwt` _[OAuthPrivateKeyJWT](#oauthprivatekeyjwt)_ | privateKeyJwt client assertion settings. Required when method is PrivateKeyJwt. |  | Optional: \{\} <br /> |
-| `method` _[OAuthClientAuthMethod](#oauthclientauthmethod)_ | Defaults to ClientSecretBasic. |  | Optional: \{\} <br /> |
+| `privateKeyJwt` _[OAuthPrivateKeyJWT](#oauthprivatekeyjwt)_ | Client assertion settings. Required when method is PrivateKeyJwt. |  | Optional: \{\} <br /> |
+| `method` _[OAuthClientAuthMethod](#oauthclientauthmethod)_ | Client authentication method. Defaults to ClientSecretBasic. |  | Optional: \{\} <br /> |
 
 
 #### OAuthClientAuthMethod
@@ -3813,10 +3814,29 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `signingKeyRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Secret providing the `signingKey` key by default with a PEM-encoded RSA<br />or EC private key; override the key name via `signingKeyRef.key`. |  | Required: \{\} <br /> |
+| `signingKeyRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | PEM-encoded RSA or EC private key; key defaults to `signingKey`. |  | Required: \{\} <br /> |
+| `certificateRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | PEM-encoded X.509 certificate chain, leaf first, for certificateHeader. The<br />leaf public key should match signingKeyRef; a mismatch only logs a warning<br />but the token endpoint will reject the assertions. Required when<br />certificateHeader is set. The key defaults to `certificate`. |  | Optional: \{\} <br /> |
+| `certificateHeader` _[OAuthPrivateKeyJWTCertificateHeader](#oauthprivatekeyjwtcertificateheader)_ | JWS certificate header. Required when certificateRef is set. |  | Optional: \{\} <br /> |
 | `alg` _[OAuthPrivateKeyJWTSigningAlgorithm](#oauthprivatekeyjwtsigningalgorithm)_ | JWS signing algorithm. Defaults to RS256. |  | Optional: \{\} <br /> |
 | `kid` _string_ | Optional JWS key ID header. |  | Optional: \{\} <br /> |
 | `assertionAudience` _string_ | Audience for the client assertion, typically the token endpoint URL. |  | MinLength: 1 <br />Required: \{\} <br /> |
+
+
+#### OAuthPrivateKeyJWTCertificateHeader
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [OAuthPrivateKeyJWT](#oauthprivatekeyjwt)
+
+| Field | Description |
+| --- | --- |
+| `x5c` |  |
+| `x5t#S256` |  |
 
 
 #### OAuthPrivateKeyJWTSigningAlgorithm
@@ -3835,6 +3855,7 @@ _Appears in:_
 | `RS256` |  |
 | `RS384` |  |
 | `RS512` |  |
+| `PS256` |  |
 | `ES256` |  |
 | `ES384` |  |
 
@@ -4887,6 +4908,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | Webhook server to reach.<br />Supported types: Service and Backend. |  | Required: \{\} <br /> |
+| `headers` _object (keys:string, values:[CELExpression](#celexpression))_ | CEL-computed headers to include in webhook requests. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `forwardHeaderMatches` _HTTPHeaderMatch array_ | HTTP header matches used to select the headers to forward to the webhook.<br />Request headers are used when forwarding requests and response headers<br />are used when forwarding responses.<br />By default, no headers are forwarded. |  | Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when the webhook guardrail is unavailable<br />or returns an error. `FailOpen` allows the request to continue.<br />`FailClosed` (default) rejects the request. |  | Optional: \{\} <br /> |
 

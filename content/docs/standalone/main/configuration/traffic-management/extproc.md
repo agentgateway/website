@@ -2,7 +2,15 @@
 title: External processing (ExtProc)
 weight: 16
 description: Use external gRPC servers to modify HTTP requests and responses.
+test:
+  extproc:
+  - file: ${versionRoot}/configuration/traffic-management/extproc.md
+    path: extproc
 ---
+
+{{< doc-test paths="extproc" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+{{< /doc-test >}}
 
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
 
@@ -93,19 +101,19 @@ routes:
 By default, ExtProc sends request headers, response headers, request trailers, and response trailers to the external processing service, and streams request and response bodies. To change which request or response phases are sent to the processor, configure `extProc.processingOptions`.
 
 > [!NOTE]
-> The default body mode is `fullDuplexStreamed`. If the external processor must inspect a complete body before agentgateway forwards it, use `buffered` or `bufferedPartial` and account for the 8KB ExtProc buffer limit. For general request and response body buffering outside of ExtProc, see [Body buffering]({{< link-hextra path="/configuration/traffic-management/buffer/" >}}).
+> The default body mode is `fullDuplexStreamed`. If the external processor must inspect a complete body before agentgateway forwards it, use `buffered` or `bufferedPartial` and account for the gateway's body buffer limit, which defaults to 2 MiB. To change the limit, set `frontendPolicies.http.maxBufferSize`. For general request and response body buffering outside of ExtProc, see [Body buffering]({{< link-hextra path="/configuration/traffic-management/buffer/" >}}).
 
 | Field | Default | Values | Description |
 | --- | --- | --- | --- |
 | `extProc.processingOptions.requestHeaderMode` | `send` | `send`, `skip` | Send or skip request headers. |
 | `extProc.processingOptions.responseHeaderMode` | `send` | `send`, `skip` | Send or skip response headers. |
-| `extProc.processingOptions.requestBodyMode` | `fullDuplexStreamed` | `none`, `buffered`, `bufferedPartial`, `fullDuplexStreamed` | Control how request bodies are sent. `none` skips the body. `buffered` buffers the full body and returns an error if the body is larger than 8KB. `bufferedPartial` buffers up to 8KB and sends that prefix if the body is larger. `fullDuplexStreamed` streams the body to the external processor. |
+| `extProc.processingOptions.requestBodyMode` | `fullDuplexStreamed` | `none`, `buffered`, `bufferedPartial`, `fullDuplexStreamed` | Control how request bodies are sent. `none` skips the body. `buffered` buffers the full body and returns an error if the body is larger than the gateway's body buffer limit, 2 MiB by default. `bufferedPartial` buffers up to that limit and sends the buffered prefix if the body is larger. `fullDuplexStreamed` streams the body to the external processor. |
 | `extProc.processingOptions.responseBodyMode` | `fullDuplexStreamed` | `none`, `buffered`, `bufferedPartial`, `fullDuplexStreamed` | Control how response bodies are sent. The body modes behave the same as `requestBodyMode`, but apply to upstream responses. |
 | `extProc.processingOptions.requestTrailerMode` | `send` | `send`, `skip` | Send or skip request trailers. |
 | `extProc.processingOptions.responseTrailerMode` | `send` | `send`, `skip` | Send or skip response trailers. |
 | `extProc.processingOptions.allowModeOverride` | `false` | `true`, `false` | Allow `mode_override` values returned by the external processor in matching header responses to update later request and response processing phases for the same exchange. |
 
-The following example sends headers and trailers, buffers request bodies up to the 8KB limit, skips response bodies, and allows the external processor to override later processing phases after a matching header response.
+The following example sends headers and trailers, buffers request bodies up to the body buffer limit, skips response bodies, and allows the external processor to override later processing phases after a matching header response.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -120,6 +128,7 @@ routes:
         sse:
           host: mcp.example.com
           port: 8080
+          path: /sse
   policies:
     extProc:
       host: "extproc.com:9000"
@@ -149,6 +158,7 @@ routes:
         sse:
           host: mcp.example.com
           port: 8080
+          path: /sse
   policies:
     extProc:
       conditional:
@@ -166,3 +176,78 @@ routes:
 ## Conditional execution
 
 To send only certain requests through external processing, use the `conditional` field. For example, you can route LLM chat traffic through a content filter and bypass the processor for every other request. For details, see [Conditional policies]({{< link-hextra path="/configuration/policies/conditional-policies" >}}).
+
+## Choose the destination from external processing {#dynamic-target}
+
+A dynamic backend dials whatever destination the request itself names, taken from the `:authority` header or the URI. That works when the client already knows where the request should go, but not when an external processor is the thing that decides, such as a control plane that picks a worker pod per request.
+
+An external processor can already return Envoy's standard `dynamic_metadata` alongside its verdict, and agentgateway exposes that metadata to CEL as `extproc.*`. Set a `target` expression on the dynamic backend to dial the destination directly from that metadata, rather than making the processor rewrite the request authority to communicate it.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    extProc:
+      host: "extproc.com:9000"
+  backends:
+  - dynamic:
+      target: 'extproc.workerIp + ":" + string(extproc.workerPort)'
+```
+
+{{< doc-test paths="extproc" >}}
+# WHAT THIS TEST VALIDATES:
+#   * A dynamic backend accepts a `target` CEL expression alongside an extProc policy.
+#   * Omitting `target` still validates, which is the pre-1.5 behavior the page describes.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * That the expression resolves at request time -- that needs a running external
+#     processor that returns dynamic metadata, which this guide does not stand up.
+cat <<'EOF' > config-dynamic-target.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    extProc:
+      host: "extproc.com:9000"
+  backends:
+  - dynamic:
+      target: 'extproc.workerIp + ":" + string(extproc.workerPort)'
+EOF
+agentgateway -f config-dynamic-target.yaml --validate-only
+cat <<'EOF' > config-dynamic-notarget.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - dynamic: {}
+EOF
+agentgateway -f config-dynamic-notarget.yaml --validate-only
+{{< /doc-test >}}
+
+| Field | Required | Description |
+| -- | -- | -- |
+| `dynamic.target` | No | CEL expression that computes the destination to dial. It must evaluate to a `host:port` string. When you omit it, agentgateway dials the destination that the request names, which is the behavior of a dynamic backend in earlier versions. |
+
+Agentgateway resolves the destination in a fixed order: an in-process override first, then the `target` expression, and finally the destination that the request names.
+
+Which CEL variables the expression can read depends on the route type.
+
+| Route type | Available to the expression | Fallback when `target` is unset |
+| -- | -- | -- |
+| HTTP route | The full request context, including `extproc.*` metadata that an `extProc` policy returned. | The request's `:authority` header or URI. |
+| TCP route | `source.*` and `destination.*`, where `destination.hostname` is the sniffed TLS SNI. | The sniffed SNI hostname and port. A TCP request that carries no SNI fails. |
+
+Review the following limits.
+
+- **The expression must return a string.** A value of any other type fails the request with `dynamic backend target expression must evaluate to a host:port string`.
+- **`inferenceRouting` cannot be combined with a dynamic backend.** A request that hits both fails with `inferenceRouting is not supported with dynamic backends`.
+
+> [!WARNING]
+> The expression selects the address that agentgateway connects to, so whatever supplies its input decides where traffic goes. When the expression reads `extproc.*`, you are trusting the external processor to choose the destination. Treat that processor as part of the gateway's trust boundary, run it over a connection you control, and do not build the target from client-supplied headers.
+

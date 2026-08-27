@@ -1,15 +1,17 @@
 <!-- Install-path design (decided 2026-07, PR #702): channel-keyed bundles. Standard = released build (helm-version-flag) + standard Gateway API CRDs (k8s-gw-version). Experimental = nightly build (patch-dev) + experimental Gateway API CRDs at the newest version (k8s-gw-version-exp) + feature gate. The nightly watches TCPRoute at v1 (needs Gateway API 1.6); released v1.3.x watches v1alpha2 (Gateway API 1.5). Revisit when main (1.4.x) ships as the next latest. See get-started.md for the full rationale. -->
-1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} version {{< reuse "agw-docs/versions/k8s-gw-version.md" >}}.
+1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}. The examples in this guide use Gateway API {{< reuse "agw-docs/versions/k8s-gw-version.md" >}} for the standard channel and {{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}} for the experimental channel, but you can use any version within the [supported range]({{< link-hextra path="/reference/versions/" >}}) by setting the variable accordingly.
    {{< tabs >}}
    {{% tab name="Standard" %}}
    ```sh {paths="standard"}
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
+   export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version.md" >}}
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v$GWAPI_VERSION/standard-install.yaml
    ```
    {{% /tab %}}
    {{% tab name="Experimental" %}}
    CRDs in the experimental channel are required to use some experimental features in the Gateway API. Guides that require experimental CRDs note this requirement in their prerequisites.
    ```sh {paths="experimental"}
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
+   export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v$GWAPI_VERSION/experimental-install.yaml
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -27,7 +29,7 @@
    1. **Optional**: To check the CRDs locally, download the CRDs to a `helm` directory.
 
       ```sh
-      helm template --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} --output-dir ./helm
+      helm template --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} --output-dir ./helm
       ```
 
    2. Deploy the {{< reuse "/agw-docs/snippets/kgateway.md" >}} CRDs by using Helm. This command creates the {{< reuse "agw-docs/snippets/namespace.md" >}} namespace and creates the {{< reuse "/agw-docs/snippets/kgateway.md" >}} CRDs in the cluster.
@@ -37,7 +39,7 @@
  ```sh {paths="standard"}
  helm upgrade -i --create-namespace \
    --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
+   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
  ```
  {{% /tab %}}
  {{% tab name="Experimental" %}}
@@ -45,7 +47,7 @@
  ```sh {paths="experimental"}
  helm upgrade -i --create-namespace \
    --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-   --version {{< reuse "agw-docs/versions/patch-dev.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
+   --version {{< reuse "agw-docs/versions/patch-dev.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
  ```
  {{% /tab %}}
       {{< /tabs >}}
@@ -57,12 +59,12 @@
       ```sh
       helm pull {{< reuse "agw-docs/snippets/helm-path.md" >}} --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
 
-      tar -xvf {{< reuse "agw-docs/snippets/helm-kgateway.md" >}}-{{< reuse "agw-docs/versions/helm-version-flag.md" >}}.tgz
+      tar -xvf {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}}-{{< reuse "agw-docs/versions/helm-version-flag.md" >}}.tgz
 
-      open {{< reuse "agw-docs/snippets/helm-kgateway.md" >}}/values.yaml
+      open {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}}/values.yaml
       ```
 
-   2. Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane by using Helm. If you modified the `values.yaml` file with custom installation values, add the `-f {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}/values.yaml` flag.
+   2. Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane by using Helm. If you modified the `values.yaml` file with custom installation values, add the `-f {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}/values.yaml` flag.
 
       {{< tabs >}}
 {{% tab name="Basic installation" %}}
@@ -71,7 +73,7 @@
 
 
 ```sh {paths="standard"}
-helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
 --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
 ```
 
@@ -83,24 +85,24 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw
 
 
 ```sh
-helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
 --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
--f {{< reuse "agw-docs/snippets/helm-kgateway.md" >}}/values.yaml
+-f {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}}/values.yaml
 ```
 
 
 {{% /tab %}}
 {{% tab name="Experimental" %}}
-To use experimental Gateway API features, include the experimental feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`. When using a development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, also add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
+Experimental Gateway API features are enabled by default. To set the experimental feature gate explicitly, include `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true`. When using a development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, also add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
 
 
 
 
 ```sh {paths="experimental"}
-helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
 --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
 --set controller.image.pullPolicy=Always \
---set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true
+--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true
 ```
 
 
@@ -109,7 +111,7 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw
 
       Example output:
       ```txt
-      NAME: {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+      NAME: {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}
       LAST DEPLOYED: Thu Feb 13 14:03:51 2025
       NAMESPACE: {{< reuse "agw-docs/snippets/namespace.md" >}}
       STATUS: deployed
@@ -127,7 +129,7 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw
 
    ```txt
    NAME                                      READY   STATUS    RESTARTS   AGE
-   {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}-78658959cd-cz6jt             1/1     Running   0          12s
+   {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}-78658959cd-cz6jt             1/1     Running   0          12s
    ```
 
 2. Verify that the `{{< reuse "/agw-docs/snippets/gatewayclass.md" >}}` GatewayClass is created. You can optionally take a look at how the GatewayClass is configured by adding the `-o yaml` option to your command.
