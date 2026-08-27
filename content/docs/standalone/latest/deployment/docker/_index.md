@@ -21,7 +21,7 @@ docker run \
   cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}}
 ```
 
-When run in this mode, a configuration file will automatically be created, setting up logging and exposing the admin UI.
+When run in this mode, a configuration file will automatically be created, setting up logging and exposing the UI.
 The `user` is customized to run as the current user to ensure the container can read and write the configuration.
 
 If you want to provide an explicit file, you can also do so:

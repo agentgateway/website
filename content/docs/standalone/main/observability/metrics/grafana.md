@@ -16,19 +16,16 @@ For binary and Docker deployments where the pre-built dashboard does not apply, 
 
 ## Before you begin
 
-[Set up a Prometheus instance]({{< link path="/observability/metrics/prometheus/" >}}) so that you can start collecting metrics and feeding them into Grafana. 
+[Set up a Prometheus instance]({{< link-hextra path="/observability/metrics/prometheus/" >}}) so that you can start collecting metrics and feeding them into Grafana. Do not run that guide's cleanup step until you finish this one, because both guides use the `monitoring` namespace.
+
+> [!NOTE]
+> The `kube-prometheus-stack` chart already installs Grafana as the `kube-prometheus-stack-grafana` service. If you set up Prometheus with that chart, skip steps 1 through 3 and port-forward `svc/kube-prometheus-stack-grafana` instead. Get its admin password with `kubectl get secret -n monitoring kube-prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode`.
 
 ## Use the pre-built Grafana dashboard (Kubernetes only)
 
 The pre-built dashboard includes the following sections:
 
-| Section | Panels |
-|---------|--------|
-| **Overview** | CPU and memory usage |
-| **Requests** | Request rate, request rate by gateway, by route, and by error reason |
-| **LLM** | Token usage (input/output), USD cost, request duration, time to first token, tokens per second |
-| **MCP** | MCP request rate, tool call rate by tool |
-| **TCP** | Downstream bytes received/sent, upstream connection duration |
+{{< reuse "agw-docs/snippets/agentgateway/grafana-dashboard-metrics.md" >}}
 
 1. Add the Grafana Helm repository and install Grafana.
    ```sh
@@ -56,7 +53,7 @@ The pre-built dashboard includes the following sections:
 6. Add a Prometheus data source.
    1. Go to **Connections** → **Add new connection**.
    2. Search for and select the **Prometheus** plugin, then click **Add new data source**.
-   3. Set the URL to your in-cluster Prometheus service, such as `http://prometheus-server.monitoring.svc.cluster.local`.
+   3. Set the URL to your in-cluster Prometheus service, such as `http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090`.
    4. Click **Save & Test**.
 
 7. Download the agentgateway dashboard JSON.
@@ -93,18 +90,55 @@ The pre-built dashboard includes the following sections:
    # ============================================================================
    # WHAT THIS TEST VALIDATES:
    #   * Step 1: the docker run command starts Grafana and its API becomes healthy.
+   #   * "Use the pre-built Grafana dashboard" step 7: the curl download URL resolves and
+   #     returns valid JSON whose `uid` is "agentgateway".
+   #   * Dashboard import (proxy for the manual UI steps 8-10): the dashboard imports into the
+   #     running Grafana through the API, and Grafana loads it.
    #
    # WHAT THIS TEST DOES NOT VALIDATE (and why):
    #   * "Add a Prometheus data source" - UI-only; no Prometheus is running in the test.
    #   * PromQL query examples - display-only, no metrics source.
+   #   * The manual "Upload dashboard JSON file" UI import - UI-only; the test imports the same
+   #     JSON through the Grafana API as a proxy.
    #   * That the dashboard panels render data - no agentgateway/Prometheus is wired up.
    # ============================================================================
    # Wait for the Grafana API to become available, then clean up when the test exits.
-   trap 'docker rm -f grafana >/dev/null 2>&1' EXIT
+   trap 'docker rm -f grafana >/dev/null 2>&1; rm -f agentgateway-dashboard.json' EXIT
    for i in $(seq 1 30); do
      curl -sf http://localhost:3001/api/health >/dev/null 2>&1 && break
      sleep 2
    done
+   # Confirm that the dashboard JSON downloaded in the Kubernetes section is the expected
+   # agentgateway dashboard, then import it through the API to mirror the manual
+   # "Upload dashboard JSON file" step.
+   curl -sL "https://raw.githubusercontent.com/agentgateway/agentgateway/main/controller/install/helm/agentgateway/files/agentgateway-dashboard.json" \
+     -o agentgateway-dashboard.json
+   jq -e '.uid == "agentgateway"' agentgateway-dashboard.json >/dev/null
+   jq '{dashboard: ., overwrite: true}' agentgateway-dashboard.json \
+     | curl -sf -u admin:admin -H "Content-Type: application/json" \
+         -X POST http://localhost:3001/api/dashboards/db -d @- >/dev/null
+   {{< /doc-test >}}
+
+   {{< doc-test paths="grafana" >}}
+   YAMLTest -f - <<'EOF'
+   # Confirm that Grafana loaded the imported Agentgateway dashboard. The Authorization header is
+   # "admin:admin" (the default Grafana credentials) base64-encoded for basic auth.
+   - name: Agentgateway dashboard is loaded in Grafana
+     retries: 10
+     http:
+       url: "http://localhost:3001/api/dashboards/uid/agentgateway"
+       method: GET
+       headers:
+         authorization: "Basic YWRtaW46YWRtaW4="
+     source:
+       type: local
+     expect:
+       statusCode: 200
+       bodyJsonPath:
+         - path: "$.dashboard.title"
+           comparator: contains
+           value: Agentgateway
+   EOF
    {{< /doc-test >}}
 
 2. Access the Grafana UI at [http://localhost:3001](http://localhost:3001). Use the `admin` username and `admin` password to log into Grafana.

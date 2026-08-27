@@ -20,20 +20,22 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    {{< tabs >}}
    {{% tab name="AWS credentials" %}}
 
+   {{< reuse "agw-docs/snippets/aws-creds.md" >}}
+
    1. Log in to the [AWS console](https://console.aws.amazon.com/console/home) and store your access credentials as environment variables.
       ```bash
-      export AWS_ACCESS_KEY_ID="<aws-access-key-id>"
-      export AWS_SECRET_ACCESS_KEY="<aws-secret-access-key>"
-      export AWS_SESSION_TOKEN="<aws-session-token>"
+      export AGW_AWS_ACCESS_KEY_ID="<aws-access-key-id>"
+      export AGW_AWS_SECRET_ACCESS_KEY="<aws-secret-access-key>"
+      export AGW_AWS_SESSION_TOKEN="<aws-session-token>"
       ```
 
    2. Create a secret with your Bedrock API key. Optionally provide the session token.
       ```yaml
       kubectl create secret generic bedrock-secret \
         -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-        --from-literal=accessKey="$AWS_ACCESS_KEY_ID" \
-        --from-literal=secretKey="$AWS_SECRET_ACCESS_KEY" \
-        --from-literal=sessionToken="$AWS_SESSION_TOKEN" \
+        --from-literal=accessKey="$AGW_AWS_ACCESS_KEY_ID" \
+        --from-literal=secretKey="$AGW_AWS_SECRET_ACCESS_KEY" \
+        --from-literal=sessionToken="$AGW_AWS_SESSION_TOKEN" \
         --type=Opaque \
         --dry-run=client -o yaml | kubectl apply -f -
       ```
@@ -65,7 +67,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
 2. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure your LLM provider. Make sure to reference the secret that holds your credentials to access the LLM. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: bedrock
