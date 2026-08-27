@@ -1,10 +1,11 @@
 # Generates Kubernetes API reference docs from agentgateway/agentgateway.
-# Version configuration is read directly from hugo.yaml (params.sections.standalone.versions).
+# Version configuration is read directly from hugo.yaml (params.versions, filtered to the
+# entries tagged for the standalone section).
 # Released versions resolve the latest matching tag dynamically via tagPrefix derived from the
 # version string (e.g. 1.0.x -> v1.0.*). The "main" linkVersion uses the main branch directly.
 #
 # workflow_dispatch inputs:
-#   doc_version: a specific version (e.g. 1.0.x), or "all" to run for every version in hugo.yaml
+#   doc_version: a specific version (e.g. 1.5.x), or "all" to run for every version in hugo.yaml
 name: Generate API reference docs for agentgateway
 
 on:
@@ -16,9 +17,9 @@ on:
   workflow_dispatch:
     inputs:
       doc_version:
-        description: 'Doc version to generate (must match a version in hugo.yaml), e.g. 1.0.x, or "all"'
+        description: 'Doc version to generate (must match a version in hugo.yaml), e.g. 1.5.x, or "all"'
         required: true
-        default: '1.0.x'
+        default: 'all'
 
 # Queue overlapping runs (e.g. nightly cron + a manual dispatch) so they don't force-push the same PR branches concurrently.
 concurrency:
@@ -62,7 +63,10 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           if [[ "${{ github.event_name }}" == "release" ]]; then
-            input_version="1.0.x"
+            # A docs-repo release is cut right after a version rotation, so regenerate
+            # every registered version rather than a hard-coded one that the rotation
+            # has since retired.
+            input_version="all"
           elif [[ "${{ github.event_name }}" == "schedule" ]]; then
             # Scheduled events carry no inputs; regenerate every version.
             input_version="all"
@@ -75,7 +79,16 @@ jobs:
           import yaml, json, sys
           with open('website/hugo.yaml') as f:
               cfg = yaml.safe_load(f)
-          versions = cfg['params']['sections']['standalone']['versions']
+          # hugo.yaml carries ONE top-level version list; each entry tags the
+          # sections it ships in (docs-theme-extras >= 0.2.2). An entry with no
+          # 'sections' key applies to every section.
+          versions = [
+              v for v in cfg['params']['versions']
+              if 'standalone' in v.get('sections', ['standalone'])
+          ]
+          if not versions:
+              print('Error: no versions tagged for the standalone section in hugo.yaml', file=sys.stderr)
+              sys.exit(1)
           print(json.dumps(versions))
           ")
 

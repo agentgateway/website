@@ -49,7 +49,7 @@ Run the installation script again with the version that you want. The script det
 
    ```json
    {
-     "version": "1.4.0",
+     "version": "{{< reuse "agw-docs/versions/patch_n-1.md" >}}",
      "git_revision": "90f7b25855fb5f5fbefcc16855206040cba9b77d",
      "rust_version": "1.89.0",
      "build_profile": "release",
@@ -132,7 +132,7 @@ Upgrade the chart version. The chart re-renders the ConfigMap from your Helm val
 
    ```txt
    NAME                    NAMESPACE           REVISION  STATUS    CHART                          APP VERSION
-   {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} agentgateway-system 3         deployed  {{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}-{{< reuse "agw-docs/versions/n-patch.md" >}}  1.4.0
+   {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} agentgateway-system 3         deployed  {{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}-{{< reuse "agw-docs/versions/patch_n-1.md" >}}  {{< reuse "agw-docs/versions/patch_n-1.md" >}}
    ```
 
 2. Upgrade the release to the new chart version.

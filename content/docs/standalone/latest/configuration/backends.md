@@ -326,3 +326,76 @@ The following configuration is from the [`traffic-aws-agentcore` example](https:
 curl -L https://agentgateway.dev/examples/traffic-aws-agentcore/config.yaml -o config5.yaml
 agentgateway -f config5.yaml --validate-only
 {{< /doc-test >}}
+
+## Session affinity
+
+When a backend resolves to more than one endpoint, agentgateway load balances across them, and two requests from the same client can land on different endpoints. Set the `sessionAffinity` backend policy to send every request that carries the same value to the same endpoint.
+
+A `source` CEL expression selects the value. Agentgateway hashes it and maps the hash to an endpoint with weighted rendezvous hashing, so each replica picks the same endpoint for the same value without sharing any state with the other replicas.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8080
+    policies:
+      sessionAffinity:
+        source: request.headers["x-session-id"]
+```
+
+{{< doc-test paths="backends" >}}
+# WHAT THIS TEST VALIDATES:
+#   * `sessionAffinity.source` is accepted on a routing-based backend, which is the
+#     only place it attaches. It is not a route policy: agentgateway rejects
+#     `routes[].policies.sessionAffinity` as an unknown field.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * That two requests with the same header reach the same endpoint -- the page
+#     configures a single endpoint, and proving the mapping needs several backend
+#     replicas and a way to identify which one answered.
+cat <<'EOF' > config-affinity.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8080
+    policies:
+      sessionAffinity:
+        source: request.headers["x-session-id"]
+EOF
+agentgateway -f config-affinity.yaml --validate-only
+{{< /doc-test >}}
+
+| Field | Required | Description |
+| -- | -- | -- |
+| `source` | Yes | CEL expression evaluated against the request. It must return a string or bytes value. Requests that produce the same value are sent to the same healthy endpoint. |
+
+Common expressions for `source` include the following.
+
+| Expression | Affinity per |
+| -- | -- |
+| `request.headers["x-session-id"]` | Session identifier that the client sends. |
+| `string(source.address)` | Client IP address. |
+| `jwt.sub` | Authenticated user, when a JWT policy runs on the same route. |
+
+### What session affinity does not do
+
+Session affinity is best-effort, and it is **not** session persistence. Agentgateway does not record which endpoint a value was sent to. It recomputes the mapping for each request from the value and the set of healthy endpoints, which has two consequences.
+
+- **The mapping moves when the endpoint set changes.** Adding, removing, or losing an endpoint remaps some values, so a client can be moved to a different endpoint mid-session. Rendezvous hashing keeps that disruption small, because only the values that mapped to the changed endpoint move, but it is not zero.
+- **A request that produces no usable value is not pinned.** Agentgateway falls back to normal load balancing when the expression fails to evaluate, returns a value that is not a string or bytes, or returns an empty value, such as a header the client did not send. The request still succeeds.
+
+Do not use session affinity to hold server-side state that only one endpoint has. Use it to improve cache hit rates, to keep a conversation on one replica when that is a preference rather than a requirement, or to make debugging easier.
+
+> [!TIP]
+> A fallback is silent by design, so a misconfigured expression looks the same as working affinity from the outside. Each miss is logged at `trace` level with the expression and the reason, so run agentgateway with trace logging when affinity does not appear to take effect. For more information, see [Trace requests]({{< link-hextra path="/operations/trace-requests/" >}}).
+
+Two other features choose an endpoint before affinity does, and they win when they apply: inference routing, and a stateful MCP session that is already pinned to an upstream. In practice they do not conflict, because they target different backends.
+
+> [!NOTE]
+> This policy is unrelated to the MCP [Session routing](#session-routing) section, which controls whether agentgateway keeps an MCP session with the upstream server. Session affinity chooses an endpoint; MCP session routing chooses how the MCP protocol session is managed.
+

@@ -63,7 +63,7 @@ Agentgateway checks static values against the STS limits when the resource is ac
 
 To see the tags on the bill, activate the keys as cost allocation tags in the AWS Billing console. New keys take up to 24 hours to become available for activation. Activated tags apply to usage from that point on.
 
-{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 ### Per-request metadata
 
 Bedrock also accepts per-call request metadata, which it records in the model invocation logs rather than on the bill. Session tags are bound per session and surface only as aggregated billing data. Request metadata is recorded per call, so it is where per-prompt attribution lives. You can query it in CloudWatch Logs Insights or Amazon Athena.
@@ -153,13 +153,13 @@ Where the value comes from decides what the bill is worth in a dispute.
 
 Keep the values low-cardinality on the bill. Every distinct set of session tags is its own STS session and its own set of line items in the Cost and Usage Report. Tag by team and cost center everywhere, and tag per user only where the chargeback question needs it.
 
-{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 Per-prompt detail belongs in request metadata and the invocation logs, not in session tags.
 {{% /version %}}
 
 ## Verify
 
-{{% version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{% version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 1. Open AWS CloudTrail and filter the event history by the event name `Converse` or `InvokeModel`.
 2. Open an event and confirm that `userIdentity.arn` ends with the session name that agentgateway resolved for the caller. One shared name for every request means that attribution is not working.
 
@@ -169,7 +169,7 @@ Per-prompt detail belongs in request metadata and the invocation logs, not in se
 
 3. In the AWS Billing console, confirm that the tag keys are activated as cost allocation tags. Then open Cost Explorer, filter by the Bedrock service, and group by one of the tag keys.
 {{% /version %}}
-{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 {{< tabs >}}
 {{% tab name="Amazon Bedrock" %}}
 1. Open AWS CloudTrail and filter the event history by the event name `Converse` or `InvokeModel`.

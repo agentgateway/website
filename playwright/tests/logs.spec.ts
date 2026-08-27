@@ -32,17 +32,12 @@ import type { Page } from '@playwright/test';
 // 0.0033, so there is 3x headroom and no need to loosen it further — a looser ratio here is
 // actively harmful, because it is wide enough to hide a whole changed field.
 
-// main only. 1.4.x (`latest`) ships a different Logs page — a card list (`.log-call-card`)
-// rather than this table, and with no Trajectory component at all, which landed in
-// agentgateway/agentgateway#3149 after the 1.4.1 cut. Without this guard the nightly's
-// `latest` pass fails on selectors that version does not have, and there is nothing to
-// capture for it: observability/access-logs/view.md exists only under standalone/main.
-// When 1.5 ships and `latest` moves to it, drop this guard and re-baseline both lines.
-const VERSION = process.env.DOC_VERSION || 'latest';
-test.skip(
-  VERSION !== 'main',
-  `Logs captures are main-only; DOC_VERSION=${VERSION} ships a different Logs UI`,
-);
+// Runs for both versions as of the 1.5 release. The main-only guard that lived here
+// existed because 1.4.x (`latest`) shipped a different Logs page — a card list
+// (`.log-call-card`) rather than this table, and no Trajectory component at all, which
+// landed in agentgateway/agentgateway#3149 after the 1.4.1 cut. `latest` is now 1.5,
+// which ships this UI, and observability/access-logs/view.md exists under both versions.
+// The `latest` baselines still need a first capture; see the release follow-ups.
 
 async function openLogs(page: Page) {
   await page.goto('/ui/llm/logs', { waitUntil: 'domcontentloaded' });

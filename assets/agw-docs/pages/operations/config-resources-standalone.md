@@ -2,25 +2,11 @@ Manage agentgateway resources such as API keys at runtime through the config res
 
 ## About
 
-Agentgateway serves a config resource API for reading and writing config resources at runtime, such as virtual API keys, models, routes, and policies. The UI calls this same API, so you can create, update, and revoke API keys from a script instead of the browser. For more information about where the UI and its API are served, see {{< version include-if="1.4.x" >}}[UI]({{< link-hextra path="/operations/ui/" >}}){{< /version >}}{{< version exclude-if="1.4.x" >}}[Launch the UI]({{< link-hextra path="/setup/ui/launch-ui/" >}}){{< /version >}}.
+Agentgateway serves a config resource API for reading and writing config resources at runtime, such as virtual API keys, models, routes, and policies. The UI calls this same API, so you can create, update, and revoke API keys from a script instead of the browser. For more information about where the UI and its API are served, see [Launch the UI]({{< link-hextra path="/setup/ui/launch-ui/" >}}).
 
 The config resource API is served wherever the UI is served, and the admin address always keeps a copy of it.
 
-{{< version include-if="1.4.x" >}}
-What `config.storage.mode` changes is where a write is stored, and whether the API lists the resource afterward.
-
-| `config.storage.mode` | Where a write is stored | Listed by the API |
-| -- | -- | -- |
-| `file` (default) | Agentgateway rewrites your config file in place | No |
-| `hybrid` | The database that `config.database.url` points to | Yes |
-
-In `file` mode, a create request or a delete request edits the config file that agentgateway loaded at startup. Agentgateway rewrites the whole file, so comments and quoting style in that file can change. Keep this in mind if you track the file in Git. A list request returns an empty array in `file` mode, even after a successful write.
-
-In `hybrid` mode, the config file becomes a read-only baseline. Agentgateway stores new resources in the database and merges them with the file at load time. Resources that the file owns cannot be changed through the API, and an attempt returns `409` with the message `file-owned config resource cannot be updated in hybrid mode`.
-{{< /version >}}
-{{< version exclude-if="1.4.x" >}}
 What `config.storage.mode` changes is where a write is stored, and whether the API lists the resource afterward. In `file` mode, agentgateway writes the resource into your config file, and a list request returns an empty array. In `hybrid` mode, agentgateway stores the resource in the database and the API lists it. For each mode, what the database holds, and how the modes differ per installation method, see [Storage modes]({{< link-hextra path="/setup/storage/" >}}).
-{{< /version >}}
 
 The rest of this guide uses `hybrid` mode, which supports the full set of operations.
 
@@ -28,11 +14,11 @@ The rest of this guide uses `hybrid` mode, which supports the full set of operat
 > The admin address (`127.0.0.1:15000` by default) has **no authentication**. Anyone who can reach it can list, create, update, or delete keys. Keep the admin address bound to localhost, which is the default, and never expose it externally.
 
 > [!NOTE]
-> Serving the UI on a gateway and applying an `oidc` policy, as described in {{< version include-if="1.4.x" >}}[Secure the UI]({{< link-hextra path="/operations/ui/#secure-admin-ui" >}}){{< /version >}}{{< version exclude-if="1.4.x" >}}[Secure the UI]({{< link-hextra path="/setup/ui/secure-ui/" >}}){{< /version >}}, protects the UI on that gateway's port only. The admin address continues to serve this API with no authentication. Network isolation remains the control for the admin address.
+> Serving the UI on a gateway and applying an `oidc` policy, as described in [Secure the UI]({{< link-hextra path="/setup/ui/secure-ui/" >}}), protects the UI on that gateway's port only. The admin address continues to serve this API with no authentication. Network isolation remains the control for the admin address.
 
 ## Before you begin
 
-1. Set `config.storage.mode` to `hybrid` and give agentgateway a database in `config.database.url`. A `sqlite://` URL creates the file for you, and a `postgres://` URL is also supported.{{< version exclude-if="1.4.x" >}} For more information, see [Database]({{< link-hextra path="/setup/database/" >}}).{{< /version >}}
+1. Set `config.storage.mode` to `hybrid` and give agentgateway a database in `config.database.url`. A `sqlite://` URL creates the file for you, and a `postgres://` URL is also supported. For more information, see [Database]({{< link-hextra path="/setup/database/" >}}).
 2. Add an `apiKey` policy to `llm.policies`. Agentgateway merges database-backed keys into this policy, so the policy must exist before you create a key. Set `keys` to an empty array to start with no keys in the file. Without the policy, a create returns `409` with the message `DB-backed API keys require llm.policies.apiKey`.
 
    ```yaml

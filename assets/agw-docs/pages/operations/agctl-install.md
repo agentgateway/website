@@ -2,7 +2,7 @@ Install `agctl`, the command-line tool that you use to inspect and debug agentga
 
 ## About
 
-`agctl` is the agentgateway command-line interface. Use `agctl` to inspect the configuration that an agentgateway proxy has loaded, capture detailed traces of requests as the proxy handles them, {{< version exclude-if="1.4.x,1.3.x,1.2.x" >}}collect CPU and heap profiles, {{< /version >}}and manage proxy and controller log levels. The CLI works against agentgateway running in Kubernetes or as a standalone binary on your workstation.
+`agctl` is the agentgateway command-line interface. Use `agctl` to inspect the configuration that an agentgateway proxy has loaded, capture detailed traces of requests as the proxy handles them, {{< version exclude-if="1.3.x,1.2.x" >}}collect CPU and heap profiles, {{< /version >}}and manage proxy and controller log levels. The CLI works against agentgateway running in Kubernetes or as a standalone binary on your workstation.
 
 `agctl` includes the following subcommands.
 
@@ -10,10 +10,10 @@ Install `agctl`, the command-line tool that you use to inspect and debug agentga
 | -- | -- |
 | `agctl proxy trace` | Capture a tap-style trace to analyze a copy of the next request that an agentgateway proxy handles. Renders the trace in an interactive, text-based terminal user interface (TUI) by default. Alternatively, you can format the output as JSON for piping to other tools. |
 | `agctl proxy config` | Retrieve the runtime configuration that an agentgateway proxy has loaded, including binds, listeners, routes, backends, workloads, and services. |
-| `agctl proxy log` | Get or set log levels for the agentgateway proxy at runtime. |{{< version exclude-if="1.4.x,1.3.x,1.2.x" >}}
+| `agctl proxy log` | Get or set log levels for the agentgateway proxy at runtime. |{{< version exclude-if="1.3.x,1.2.x" >}}
 | `agctl proxy profile` | Collect a CPU or heap [pprof](https://github.com/google/pprof) profile from an agentgateway proxy and write it to a file. |{{< /version >}}
-| `agctl controller log` | Get or set log levels for the agentgateway controller at runtime. |{{< version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-| `agctl costs` | Manage the model cost catalogs that price LLM requests, including importing catalog data from supported pricing sources. |{{< /version >}}{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+| `agctl controller log` | Get or set log levels for the agentgateway controller at runtime. |{{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+| `agctl costs` | Manage the model cost catalogs that price LLM requests, including importing catalog data from supported pricing sources. |{{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 | `agctl catalog` | Manage the model catalogs that price LLM requests, including importing catalog data from supported pricing sources. |{{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 | `agctl migrate` | Migrate agentgateway resources to newer configurations. |{{< /version >}}
 | `agctl version` | Print version information for the `agctl` CLI. |

@@ -35,8 +35,8 @@ Each method has its own page.
 | Method | Page |
 | -- | -- |
 | Static keys, passthrough, and extra credentials | [Static keys and passthrough]({{< link-hextra path="/configuration/security/backend-authn/key/" >}}) |
-| AWS, Azure, Google Cloud, and GitHub Copilot | [Cloud provider credentials]({{< link-hextra path="/configuration/security/backend-authn/providers/" >}}) |{{< version exclude-if="1.4.x" >}}
-| Signed JWT | [Signed JWT]({{< link-hextra path="/configuration/security/backend-authn/jwt-sign/" >}}) |{{< /version >}}
+| AWS, Azure, Google Cloud, and GitHub Copilot | [Cloud provider credentials]({{< link-hextra path="/configuration/security/backend-authn/providers/" >}}) |
+| Signed JWT | [Signed JWT]({{< link-hextra path="/configuration/security/backend-authn/jwt-sign/" >}}) |
 | OAuth token exchange | [OAuth token exchange]({{< link-hextra path="/configuration/security/backend-authn/oauth-token-exchange/" >}}) |
 | Cross App Access | [Cross App Access]({{< link-hextra path="/configuration/security/backend-authn/cross-app-access/" >}}) |
 

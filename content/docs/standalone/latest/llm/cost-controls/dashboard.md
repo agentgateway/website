@@ -93,7 +93,7 @@ Refresh the **Analytics** page and the request appears: tokens counted, cost cal
 
 ## Persistence and scaling
 
-The dashboard reads from the database at `config.database.url`. Agentgateway supports SQLite (default, single instance) and PostgreSQL. See [Request Log]({{< link-hextra path="/integrations/observability/database/" >}}) for full configuration details, including connection string format, credentials, and schema reference.
+The dashboard reads from the database at `config.database.url`. Agentgateway supports SQLite (default, single instance) and PostgreSQL. See [Request Log]({{< link-hextra path="/observability/access-logs/database/" >}}) for full configuration details, including connection string format, credentials, and schema reference.
 
 {{< doc-test paths="cost-dashboard" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}

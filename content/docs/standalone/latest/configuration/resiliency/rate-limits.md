@@ -182,6 +182,8 @@ localRateLimit:
 
 {{< reuse "agw-docs/snippets/ratelimit-responsetime.md" >}}
 
+The input count that agentgateway charges against the limit includes the tokens that the provider read from or wrote to its prompt cache. Providers disagree about whether their own input count includes cached tokens, so agentgateway normalizes the number first. For providers that exclude cached tokens, such as Anthropic and Amazon Bedrock, a cache-heavy request therefore consumes more capacity than the provider's reported input count. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).
+
 ## Configuration
 
 ### Local

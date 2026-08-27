@@ -58,6 +58,47 @@ The diagram shows content flowing through multiple guard layers. Each layer can:
 
 Both actions are available on the request path and the response path. A response guard can reject a response as well as mask it.
 
+## Guard scope {#scope}
+
+A request guard does not inspect the whole request. By default, a guard reads the system prompt and the text of regular user and assistant messages. Tool call content is left alone, so a Social Security number that a tool returns to the model reaches the provider unmasked.
+
+Set the `scope` field on a request guard to choose what the guard reads.
+
+```yaml
+spec:
+  backend:
+    ai:
+      promptGuard:
+        request:
+        - scope:
+          - SystemPrompt
+          - Messages
+          - ToolOutput
+          regex:
+            action: Mask
+            builtins:
+            - Ssn
+```
+
+| Value | What the guard reads |
+| -- | -- |
+| `SystemPrompt` | The system or developer prompt. |
+| `Messages` | Regular user and assistant message text. |
+| `ToolInput` | Tool call arguments, which the model usually produces. |
+| `ToolOutput` | Tool call results that are fed back to the model. |
+
+> [!WARNING]
+> A `scope` **replaces** the default, it does not add to it. A guard with `scope: [ToolOutput]` reads tool results and stops reading messages, so content that the guard used to catch passes through. To cover messages and tool results with one guard, list both values.
+
+Four rules govern the field:
+
+- **Omit `scope` to keep the default.** The default is `SystemPrompt` and `Messages`. The field takes 1 to 4 values, so an empty list is rejected.
+- **Only the `regex` and `bedrockGuardrails` guards accept a scope other than the default.** Any other guard type is rejected with `only regex and bedrockGuardrails guards support a non-default scope`. Other guard types always read the default.
+- **The field applies to request guards only.** A response guard has no `scope`.
+- **Masking `ToolInput` can produce invalid JSON.** In APIs that carry tool arguments as opaque JSON, such as chat completions, the whole argument string is treated as one piece of text. A rule that matches across the JSON punctuation rewrites the arguments into something the provider cannot parse. Prefer `ToolOutput`, or write a `ToolInput` pattern that matches only a value.
+
+For a worked example, see [Regex filters]({{< link-hextra path="/llm/guardrails/regex/#scope" >}}).
+
 ## Streaming guardrails {#streaming}
 
 By default, guardrails run only on buffered LLM traffic. When a client sets `"stream": true`, the LLM response is streamed to the client, and response guards do not run at all.
