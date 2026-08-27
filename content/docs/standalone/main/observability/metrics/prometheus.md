@@ -4,13 +4,13 @@ weight: 30
 description: Scrape agentgateway metrics with Prometheus.
 ---
 
-[Prometheus](https://prometheus.io/) is an open-source monitoring system that scrapes and stores time-series metrics. It is the standard way to collect and query agentgateway metrics, and is the data source behind the [Grafana dashboard]({{< link-hextra path="/observability/metrics/grafana/" >}}). Prometheus is well-suited for agentgateway because it handles high-cardinality label sets — such as per-route, per-model, and per-provider breakdowns — efficiently, and its query language (PromQL) makes it easy to build alerts and dashboards from those labels.
+[Prometheus](https://prometheus.io/) is an open-source monitoring system that scrapes and stores time-series metrics. It is the standard way to collect and query agentgateway metrics, and is the data source behind the [Grafana dashboard]({{< link-hextra path="/observability/metrics/grafana/" >}}). Prometheus is well-suited for agentgateway because it efficiently handles high-cardinality label sets, such as per-route, per-model, and per-provider breakdowns. Its query language (PromQL) makes it easy to build alerts and dashboards from those labels.
 
 Agentgateway is built to work with Prometheus out of the box:
 
 - It exposes a `/metrics` endpoint on port `15020` in the [OpenMetrics](https://openmetrics.io/) format, which Prometheus can scrape directly.
 - All metrics use the `agentgateway_` prefix and carry consistent route identifier labels so you can filter and aggregate by gateway, listener, and route without additional configuration.
-- On Kubernetes, agentgateway pods are automatically annotated with `prometheus.io/scrape: "true"` and `prometheus.io/port: "15020"`, so Prometheus picks them up without any manual scrape config.
+- On Kubernetes, the agentgateway chart annotates proxy pods with `prometheus.io/scrape: "true"` and `prometheus.io/port: "15020"` for Prometheus installs that use annotation-based discovery, and ships an optional `PodMonitor` for installs that run the Prometheus Operator.
 
 ## Set up Prometheus
 
@@ -62,9 +62,9 @@ Set up a Prometheus instance and use PromQL queries to query them. The steps to 
 {{% /tab %}}
 {{% tab name="Kubernetes (Helm)" %}}
 
-The recommended way to run Prometheus on Kubernetes is with the `kube-prometheus-stack` Helm chart, which installs Prometheus, Alertmanager, and Grafana together and automatically scrapes pods based on annotations.
+The recommended way to run Prometheus on Kubernetes is with the `kube-prometheus-stack` Helm chart, which installs Prometheus, Alertmanager, and Grafana together.
 
-Agentgateway pods are automatically annotated with `prometheus.io/scrape: "true"` and `prometheus.io/port: "15020"`, so no additional scrape configuration is needed. 
+The Prometheus Operator that this chart installs discovers scrape targets through `PodMonitor` and `ServiceMonitor` resources, not through the `prometheus.io/scrape` pod annotations. To scrape agentgateway, enable the `PodMonitor` that the agentgateway chart ships, and label it with the Prometheus release name so that the operator selects it.
 
 1. Add the Prometheus community Helm repository.
 
@@ -86,15 +86,33 @@ Agentgateway pods are automatically annotated with `prometheus.io/scrape: "true"
    kubectl get pods -n monitoring
    ```
 
-4. Port-forward the Prometheus UI service.
+4. Enable the agentgateway `PodMonitor` so that Prometheus scrapes the proxy's metrics endpoint. The `release` label must match the name of your `kube-prometheus-stack` release.
+
+   ```sh
+   helm upgrade -i {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --reuse-values \
+     --set monitoring.enabled=true \
+     --set monitoring.extraLabels.release=kube-prometheus-stack
+   ```
+
+5. Verify that the `PodMonitor` was created.
+
+   ```sh
+   kubectl get podmonitor -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+6. Port-forward the Prometheus UI service.
 
    ```sh
    kubectl port-forward -n monitoring svc/kube-prometheus-stack-prometheus 9090:9090
    ```
 
-5. Open the Prometheus UI [http://localhost:9090](http://localhost:9090) to query metrics.
+7. Open the Prometheus UI [http://localhost:9090](http://localhost:9090) to query metrics.
 
-6. Run a PromQL query to verify that agentgateway metrics are being scraped. In the Prometheus UI, enter the following query and click **Execute**.
+8. Run a PromQL query to verify that agentgateway metrics are being scraped. In the Prometheus UI, enter the following query and click **Execute**.
 
    ```promql
    agentgateway_requests_total
@@ -104,7 +122,7 @@ Agentgateway pods are automatically annotated with `prometheus.io/scrape: "true"
 
    {{< reuse-image src="img/main/prometheus-query.png" srcDark="img/main/prometheus-query-dark.png"  >}}
 
-7. When you are done, remove the stack and the namespace.
+9. When you are done, remove the stack and the namespace.
 
    ```sh
    helm uninstall kube-prometheus-stack -n monitoring

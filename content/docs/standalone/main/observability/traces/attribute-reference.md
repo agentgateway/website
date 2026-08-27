@@ -2,9 +2,10 @@
 title: Span attribute reference
 weight: 20
 description: Reference for the default HTTP, conditional, generative AI, and MCP span attributes emitted by agentgateway, including policy call child spans.
+test: skip
 ---
 
-The following default attributes are included in each span. Note that protocol-specific attributes, such as `gen_ai.*` and `mcp.*`, only appear when that type of traffic is processed. You can [add custom attributes](setup/#add-attributes) to your spans or [remove default ones](setup/#remove-attributes).
+The following default attributes are included in each span. Note that protocol-specific attributes, such as `gen_ai.*` and `mcp.*`, only appear when that type of traffic is processed. You can [add custom attributes]({{< link-hextra path="/observability/traces/setup/#add-attributes" >}}) to your spans or [remove default ones]({{< link-hextra path="/observability/traces/setup/#remove-attributes" >}}).
 
 ## Core HTTP attributes
 
