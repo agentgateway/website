@@ -86,7 +86,7 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
    | -- | -- |
    | `traffic.jwtAuthentication.providers[].issuer` | The OAuth 2.0 issuer URL from your identity provider. This must exactly match the `iss` claim in JWT tokens. Agentgateway validates this claim to ensure tokens come from the expected identity provider. |
    | `traffic.jwtAuthentication.providers[].jwks.remote.backendRef` | The Keycloak service for fetching JWKS public keys. |
-   | `traffic.jwtAuthentication.providers[].jwks.remote.jwksPath` | The path to the JWKS endpoint to obtain public keys. |
+   | `traffic.jwtAuthentication.providers[].jwks.remote.jwksPath` | The path to the JWKS endpoint to obtain public keys. {{< reuse "agw-docs/snippets/jwks-path.md" >}} |
    | `traffic.jwtAuthentication.providers[].audiences` | The purpose of the JWT token. This value must match the `aud` claim in JWT tokens. |
    | `traffic.jwtAuthentication.mode` | The JWT validation mode. Strict mode requires a valid JWT from one of the configured providers. |
    | `traffic.jwtAuthentication.mcp.provider` | The identity provider that you use. In this example, Keycloak is used. |
