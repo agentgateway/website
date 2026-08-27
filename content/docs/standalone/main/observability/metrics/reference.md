@@ -1,7 +1,8 @@
 ---
 title: Metrics reference
-weight: 20
+weight: 50
 description: Review the metrics that are available in agentgateway.
+test: skip
 ---
 
 > [!NOTE]
@@ -9,7 +10,7 @@ description: Review the metrics that are available in agentgateway.
 
 ## XDS
 
-These metrics track communication with an XDS management server (Kubernetes mode). They are registered in all deployments but only increment when an XDS connection is active.
+These metrics track communication with an XDS management server. They are registered only when agentgateway runs in Kubernetes mode against a control plane, and do not appear on the metrics endpoint of a standalone process.
 
 | Metric | Type | Unit | Description |
 | --- | --- | --- | --- |
@@ -67,5 +68,8 @@ The following metrics reflect the health of the agentgateway process itself and 
 | `agentgateway_build_info` | Info | — | Agentgateway build information. |
 | `agentgateway_config_synchronized` | Gauge | — | Whether the last configuration load/reload was successful or not, being synchronized with the on-disk configuration. |
 | `agentgateway_upstream_call_duration_seconds` | Histogram | seconds | Duration of outbound calls made by agentgateway (seconds). |
+| `agentgateway_tokio_num_workers` | Gauge | — | The number of worker threads that the async runtime uses. |
+| `agentgateway_tokio_num_alive_tasks` | Gauge | — | The number of tasks that are currently alive in the async runtime. |
+| `agentgateway_tokio_global_queue_depth` | Gauge | — | The number of tasks that are currently scheduled in the async runtime's global queue. |
 
 
