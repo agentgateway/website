@@ -154,7 +154,7 @@ Note the following details.
 
 * **Port 4000 carries LLM traffic.** When your configuration file defines no gateway, the implied `default` gateway serves LLM traffic on port `4000` and MCP traffic on port `3000`. Set `--port` to the port that carries the traffic you route. For more information, see [Configuration modes]({{< link-hextra path="/llm/configuration-modes/" >}}).
 * **The service account is the credential.** Because `auth.gcp` uses ADC, `--service-account` is what lets agentgateway call Vertex AI. No API key is needed in the deploy command or in the configuration file.
-* **A secret mount is read-only.** Set `config.storage.mode` to `readOnly` so that writes from the admin UI fail with a clear message instead of a filesystem error. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+* **A secret mount is read-only.** Set `config.storage.mode` to `readOnly` so that writes from the UI fail with a clear message instead of a filesystem error. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
 
 > [!IMPORTANT]
 > The example uses `--no-allow-unauthenticated`. A gateway that holds Vertex AI access is a credential of its own, so anyone who can reach it can spend against your project. If you do need public access, put an authentication policy in front of it. For more information, see [Authentication and identity]({{< link-hextra path="/integrations/auth/" >}}).
@@ -198,11 +198,11 @@ gcloud secrets add-iam-policy-binding agentgateway-config \
 | [Google Gemini]({{< link-hextra path="/llm/providers/gemini/" >}}) | Direct Gemini API access with an API key |
 | [Secret Manager](https://cloud.google.com/security/products/secret-manager) | Storage for the configuration file and for the API keys of non-Google providers |
 | Cloud Load Balancing | Load balancing and TLS termination in front of the gateway port |
-| Cloud Monitoring | Metrics collection, through a [Prometheus]({{< link-hextra path="/integrations/observability/prometheus/" >}}) scrape |
-| Cloud Trace | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/integrations/observability/opentelemetry/" >}}) collector |
+| Cloud Monitoring | Metrics collection, through a [Prometheus]({{< link-hextra path="/observability/metrics/prometheus/" >}}) scrape |
+| Cloud Trace | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/observability/traces/configs/otel/" >}}) collector |
 
 ## Next steps
 
 * [Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}}) for the full provider reference.
-* [Set up the admin UI]({{< link-hextra path="/setup/ui/" >}}) to serve the web interface on a gateway.
+* [Set up the UI]({{< link-hextra path="/setup/ui/" >}}) to serve the web interface on a gateway.
 * [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) before you mount a read-only secret.

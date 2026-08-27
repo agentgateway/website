@@ -1,8 +1,8 @@
 ## About
 
-Agentgateway serves the admin UI on the admin address, which is `localhost:15000` by default, and on the port of any gateway that you list in the `ui` section of your configuration file. A generated configuration lists the `default` gateway, so the UI is served on the gateway port as well. Agentgateway logs the address that it serves the UI on when it starts, so the log is the quickest way to find the UI.
+Agentgateway serves the UI on the port of any gateway that you list in the `ui` section of your configuration file. A generated configuration lists the `default` gateway, so the UI is served on the gateway port from the first start. Agentgateway logs the address that it serves the UI on when it starts, so the log is the quickest way to find the UI.
 
-For more information about the two locations, see [Admin UI]({{< link-hextra path="/setup/ui/" >}}).
+A copy of the UI is also served on the admin interface, which is `localhost:15000` by default. That copy is a local convenience, and the admin address is loopback-only, so a gateway is what you use to reach the UI from anywhere else. For more information, see [UI]({{< link-hextra path="/setup/ui/" >}}).
 
 ## Before you begin
 
@@ -31,7 +31,7 @@ For more information about the two locations, see [Admin UI]({{< link-hextra pat
 
 2. Open [http://localhost:15000/ui/](http://localhost:15000/ui/) in your browser.
 
-   The admin UI opens on the **Gateway Overview**, which lists the available capabilities (LLM, MCP, and Traffic) and lets you enable the ones you want to operate.
+   The UI opens on the **Gateway Overview**, which lists the available capabilities (LLM, MCP, and Traffic) and lets you enable the ones you want to operate.
 
    {{< reuse-image-light src="img/agentgateway-ui-landing.png" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-ui-landing-dark.png" >}}
@@ -55,12 +55,12 @@ The generated configuration that agentgateway writes into a mounted `/config` di
 
 2. Open [http://localhost:4000/ui/](http://localhost:4000/ui/) in your browser.
 
-If you mounted your own configuration file that has no `ui` section, the UI is served on the admin address instead, which is not reachable from your host. See [Reach the admin UI in a container]({{< link-hextra path="/setup/ui/gateway-ui/#docker-admin-addr" >}}).
+If you mounted your own configuration file that has no `ui` section, the UI is served only on the admin interface, which is not reachable from your host. Add a `ui` section that lists a gateway. For more information, see [Reach the UI in a container]({{< link-hextra path="/operations/debug/#docker-admin-addr" >}}).
 {{% /tab %}}
 {{% tab name="Helm" %}}
-The chart creates no Service for the admin port, so you reach the UI by port-forwarding the {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} Deployment.
+The chart creates no Service for the admin port, so you reach the UI by port-forwarding the {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} Deployment. A port-forward is fine for a quick look. To reach the UI without one, give it a gateway.
 
-1. Port-forward the {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} deployment on the admin UI port.
+1. Port-forward the {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} deployment on the admin port.
 
    ```sh
    kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
@@ -88,7 +88,7 @@ agentgateway -f /tmp/agw-ui-default.yaml &
 AGW_DEFAULT_PID=$!
 sleep 3
 YAMLTest -f - <<'EOF'
-- name: Admin UI returns HTTP 200 on default port
+- name: UI returns HTTP 200 on the admin address
   http:
     url: "http://localhost:15000/ui/"
     method: GET

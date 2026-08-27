@@ -1,11 +1,11 @@
 ---
 title: LLM playground
 weight: 85
-description: Send a test chat completion through the gateway in the agentgateway admin UI.
+description: Send a test chat completion through the gateway in the agentgateway UI.
 test: skip
 ---
 
-Use the built-in LLM playground in the agentgateway admin UI to send a chat completion request through your configured LLM provider. The playground sends a real request through the gateway, so you can confirm that your provider, model, and policies work before you point an application at agentgateway.
+Use the built-in LLM playground in the agentgateway UI to send a chat completion request through your configured LLM provider. The playground sends a real request through the gateway, so you can confirm that your provider, model, and policies work before you point an application at agentgateway.
 
 > [!NOTE]
 > The LLM playground is available in the agentgateway UI in version 1.3 and later.
