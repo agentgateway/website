@@ -27,29 +27,10 @@ For more information, see [About models]({{< link-hextra path="/llm/models/about
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
 2. Deploy the [httpbun mock LLM]({{< link-hextra path="/llm/providers/httpbun/" >}}). This guide routes to httpbun so that you do not need a provider API key. To use a real provider instead, remove the `baseURL` field from each model and follow [API keys]({{< link-hextra path="/llm/api-keys/" >}}).
-3. Enable the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API on the control plane. The API is experimental and disabled by default, so it is not available in a standard installation.
 
-   ```sh {paths="serve-model"}
-   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
-   --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
-   --reuse-values \
-   --set controller.image.pullPolicy=Always \
-   --set agentgatewayModels.enabled=true \
-   --wait
-   ```
+## Enable the AgentgatewayModel feature
 
-   This command uses the nightly development build, because the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is not yet in a released chart.
-
-   {{< doc-test paths="serve-model" >}}
-   kubectl rollout status deploy/agentgateway -n {{< reuse "agw-docs/snippets/namespace.md" >}} --timeout=300s
-   {{< /doc-test >}}
-
-4. Verify that the API is enabled. The command returns `true` when the feature gate is set.
-
-   ```sh
-   kubectl get deploy {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="AGW_ENABLE_AGENTGATEWAY_MODELS")].value}'
-   ```
+{{< reuse "agw-docs/snippets/agentgatewaymodel-enable.md" >}}
 
 ## Enable LLM serving on a listener
 

@@ -71,7 +71,7 @@ curl 'http://localhost:4000/v1/embeddings' \
 {{% /tab %}}
 {{% tab name="Other" %}}
 
-[View other LLM client integrations](/docs/standalone/main/integrations/llm-clients/).
+[View other LLM client integrations]({{< link-hextra path="/integrations/llm-clients/" >}}).
 
 {{% /tab %}}
 {{< /tabs >}}

@@ -207,6 +207,208 @@ EOF
    }
    ```
 
+{{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+## Transform requests after provider conversion
+
+The `transformations` field runs before agentgateway converts the request into the format that the provider expects. To write one, you must know how the conversion works, and you cannot change a field that the conversion itself adds.
+
+The `finalTransformations` field runs after the conversion instead. You only need to know the shape of the target API.
+
+The difference shows in the field names. When a client sends `max_tokens` to an OpenAI provider, the conversion renames the field to `max_completion_tokens`, so the provider receives the following request body.
+
+```json
+{
+  "model": "gpt-4",
+  "max_completion_tokens": 5000,
+  "messages": [{"role": "user", "content": "Tell me a short story"}]
+}
+```
+
+A `transformations` entry must target `max_tokens`, the name that the client sent. A `finalTransformations` entry must target `max_completion_tokens`, the name that the provider receives.
+
+{{< doc-test paths="llm-final-transformations" >}}
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openai
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  rules:
+    - backendRefs:
+        - name: openai
+          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+          group: {{< reuse "agw-docs/snippets/group.md" >}}
+          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="llm-final-transformations" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for openai HTTPRoute to be accepted before the post-conversion policy
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: openai
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that caps the converted field and removes a field from the provider request. The `min()` expression caps `max_completion_tokens` at 10. The `fail("remove")` expression always fails to evaluate, which deletes `reasoning_effort` from the request.
+
+   ```yaml {paths="llm-final-transformations"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: cap-converted-tokens
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app: agentgateway
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: openai
+     backend:
+       ai:
+         finalTransformations:
+         - field: max_completion_tokens
+           expression: "min(llmRequest.max_completion_tokens, 10)"
+         - field: reasoning_effort
+           expression: 'fail("remove")'
+   EOF
+   ```
+
+   {{< doc-test paths="llm-final-transformations" >}}
+   YAMLTest -f - <<'EOF'
+   - name: wait for cap-converted-tokens policy to be accepted
+     wait:
+       target:
+         kind: AgentgatewayPolicy
+         metadata:
+           namespace: agentgateway-system
+           name: cap-converted-tokens
+       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+       jsonPathExpectation:
+         comparator: equals
+         value: "True"
+       polling:
+         timeoutSeconds: 120
+         intervalSeconds: 2
+   EOF
+   {{< /doc-test >}}
+
+   | Setting | Description |
+   | -- | -- |
+   | `backend.ai.finalTransformations` | A list of transformations that apply to the converted provider request. You can specify up to 64 entries per policy. Entries take priority over `overrides` for the same field. |
+   | `field` | The name of the field to set in the converted request. Maximum 256 characters. |
+   | `expression` | A CEL expression that computes the value for the field. Maximum 16,384 characters. |
+
+   > [!WARNING]
+   > In a `finalTransformations` expression, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that reads a field which the converted body does not have, such as `llmRequest.max_tokens` for an OpenAI provider, fails to evaluate. A failed expression removes the target field, so a mistyped field name silently deletes the field that you meant to set. For more information about `fail()`, see [Validate and set request body defaults]({{< link-hextra path="/traffic-management/transformations/validate/" >}}).
+
+2. Verify that the {{< reuse "agw-docs/snippets/policy.md" >}} is accepted.
+
+   ```sh
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} cap-converted-tokens -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.status.ancestors[0].conditions[?(@.type=="Accepted")].status}'
+   ```
+
+3. Send a request that sets `max_tokens` and `reasoning_effort`. The conversion renames `max_tokens` to `max_completion_tokens`, and the transformation then caps that field at 10 and drops `reasoning_effort`. Verify that the `completion_tokens` value in the response is 10 or fewer and the `finish_reason` is set to `length`.
+
+   {{< tabs >}}
+
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" \
+   -H "content-type: application/json" \
+   -d '{
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
+     "max_tokens": 5000,
+     "reasoning_effort": "high",
+     "messages": [
+       {
+         "role": "user",
+         "content": "Tell me a short story"
+       }
+     ]
+   }' | jq
+   ```
+   {{% /tab %}}
+
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl "localhost:8080/v1/chat/completions" \
+   -H "content-type: application/json" \
+   -d '{
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
+     "max_tokens": 5000,
+     "reasoning_effort": "high",
+     "messages": [
+       {
+         "role": "user",
+         "content": "Tell me a short story"
+       }
+     ]
+   }' | jq
+   ```
+   {{% /tab %}}
+
+   {{< /tabs >}}
+
+   {{< doc-test paths="llm-final-transformations" >}}
+   YAMLTest -f - <<'EOF'
+   - name: verify request succeeds with post-conversion transformation applied
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+       method: POST
+       headers:
+         content-type: application/json
+       body: |
+         {"model": "gpt-4", "max_tokens": 5000, "reasoning_effort": "high", "messages": [{"role": "user", "content": "Tell me a short story"}]}
+     source:
+       type: local
+     expect:
+       statusCode: 200
+   EOF
+   {{< /doc-test >}}
+
+   Example output:
+
+   ```console {hl_lines=[5,15]}
+   {
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
+     "usage": {
+       "prompt_tokens": 12,
+       "completion_tokens": 10,
+       "total_tokens": 22
+     },
+     "choices": [
+       {
+         "message": {
+           "content": "Once upon a time, in a small village nestled",
+           "role": "assistant"
+         },
+         "index": 0,
+         "finish_reason": "length"
+       }
+     ],
+     ...
+   }
+   ```
+{{% /version %}}
+
 ## Inject LLM model information as response headers
 
 Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to inject LLM model information as response headers. This strategy is useful for detecting silent fallbacks, where a request is redirected to a different model without the client being notified. However, this setup might not be suitable for streaming responses.
@@ -432,6 +634,12 @@ kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} cap-max-tokens -n {{<
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 ```
 
-{{< doc-test paths="llm-transformations,llm-model-headers" >}}
+{{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+```shell {paths="llm-final-transformations"}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} cap-converted-tokens -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+```
+{{% /version %}}
+
+{{< doc-test paths="llm-transformations,llm-model-headers,llm-final-transformations" >}}
 kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 {{< /doc-test >}}

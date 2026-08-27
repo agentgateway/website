@@ -315,6 +315,113 @@ In the next step, you instruct agentgateway to mask credit card numbers that are
 
 
 
+{{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+## Scan tool call content {#scope}
+
+By default, a request guard reads the system prompt and regular message text only. Tool call results that come back to the model are not read, so PII that a tool returns reaches the provider untouched. Set the `scope` field to include `ToolOutput`.
+
+For what each scope value covers and the limits on the field, see [Guard scope]({{< link-hextra path="/llm/guardrails/overview/#scope" >}}).
+
+1. Create a {{< reuse "agw-docs/snippets/policy.md" >}} resource that rejects a request when a tool result contains a Social Security number.
+
+   ```yaml
+   kubectl apply -f - <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: tool-output-guard
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app: agentgateway
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: openai
+     backend:
+       ai:
+         promptGuard:
+           request:
+           - scope:
+             - ToolOutput
+             response:
+               message: "Tool output contains PII"
+             regex:
+               action: Reject
+               builtins:
+               - Ssn
+   EOF
+   ```
+
+   > [!WARNING]
+   > This guard reads tool results and nothing else. Because `scope` replaces the default rather than adding to it, the same Social Security number in a user message is no longer caught. To cover both, list `Messages` and `ToolOutput`.
+
+2. Verify that the {{< reuse "agw-docs/snippets/policy.md" >}} is accepted.
+
+   ```sh
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} tool-output-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.status.ancestors[0].conditions[?(@.type=="Accepted")].status}'
+   ```
+
+3. Send a request whose tool result contains a Social Security number. The guard rejects it before the request reaches the provider.
+
+   {{< tabs >}}
+
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" \
+   -H "content-type: application/json" \
+   -d '{
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
+     "messages": [
+       {"role": "user", "content": "look up my record"},
+       {"role": "assistant", "tool_calls": [{"id": "c1", "type": "function", "function": {"name": "lookup", "arguments": "{}"}}]},
+       {"role": "tool", "tool_call_id": "c1", "content": "record found for 123-45-6789"}
+     ]
+   }' | jq
+   ```
+   {{% /tab %}}
+
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl "localhost:8080/v1/chat/completions" \
+   -H "content-type: application/json" \
+   -d '{
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
+     "messages": [
+       {"role": "user", "content": "look up my record"},
+       {"role": "assistant", "tool_calls": [{"id": "c1", "type": "function", "function": {"name": "lookup", "arguments": "{}"}}]},
+       {"role": "tool", "tool_call_id": "c1", "content": "record found for 123-45-6789"}
+     ]
+   }' | jq
+   ```
+   {{% /tab %}}
+
+   {{< /tabs >}}
+
+   Example output, returned with a `403` status:
+
+   ```console
+   Tool output contains PII
+   ```
+
+4. Send the same Social Security number in a user message instead. The guard does not read messages while `scope` is set to `ToolOutput`, so the request reaches the provider and the number is not caught.
+
+   ```sh
+   curl "localhost:8080/v1/chat/completions" \
+   -H "content-type: application/json" \
+   -d '{
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
+     "messages": [{"role": "user", "content": "my ssn is 123-45-6789"}]
+   }' | jq
+   ```
+
+5. Delete the policy.
+
+   ```sh
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} tool-output-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+{{% /version %}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}

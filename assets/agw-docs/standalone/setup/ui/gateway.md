@@ -1,15 +1,15 @@
 ## About
 
-By default, agentgateway serves the admin UI on the admin address, and a generated configuration also attaches the UI to the same `default` gateway that serves your proxy traffic. Giving the UI a gateway of its own keeps UI traffic and proxy traffic on separate ports. Separate ports let you publish the proxy port while the UI port stays internal, and they let you apply different authentication policies to each.
+A generated configuration attaches the UI to the same `default` gateway that serves your proxy traffic. Giving the UI a gateway of its own keeps UI traffic and proxy traffic on separate ports. Separate ports let you publish the proxy port while the UI port stays internal, and they let you apply different authentication policies to each.
 
 A gateway of its own is also the prerequisite for the next two guides, because an authentication policy in `ui.policies` applies to the gateway that serves the UI, and a TLS certificate is configured on that gateway.
 
 ## Before you begin
 
 1. [Install standalone agentgateway]({{< link-hextra path="/setup/install/" >}}).
-2. [Launch the admin UI]({{< link-hextra path="/setup/ui/launch-ui/" >}}) so that you know where agentgateway serves it today.
+2. [Launch the UI]({{< link-hextra path="/setup/ui/launch-ui/" >}}) so that you know where agentgateway serves it today.
 
-{{< doc-test paths="ui-standalone-custom-port" >}}
+{{< doc-test paths="ui-standalone-gateway" >}}
 # Install agentgateway binary for tests
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
@@ -20,17 +20,17 @@ Add a second gateway to your configuration and point the `ui` section at it. The
 
 {{< tabs >}}
 {{% tab name="Binary" %}}
-1. Add a gateway for the UI to your configuration file, and point the `ui` section at it. The following example serves proxy traffic on port `4000` of the `default` gateway and the UI on port `4001` of the `admin` gateway.
+1. Add a gateway for the UI to your configuration file, and point the `ui` section at it. The following example serves proxy traffic on port `4000` of the `default` gateway and the UI on port `4001` of the `ui-gateway`.
 
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    gateways:
      default:
        port: 4000
-     admin:
+     ui-gateway:
        port: 4001
    ui:
-     gateways: [admin]
+     gateways: [ui-gateway]
    routes:
    - matches:
      - path:
@@ -78,17 +78,17 @@ Add a second gateway to your configuration and point the `ui` section at it. The
 {{% tab name="Docker" %}}
 The container must publish the new UI port, so this change needs a container restart even though agentgateway reloads the `gateways` and `ui` sections in place.
 
-1. Add a gateway for the UI to the configuration file that you mount, and point the `ui` section at it. The following example serves proxy traffic on port `4000` of the `default` gateway and the UI on port `4001` of the `admin` gateway.
+1. Add a gateway for the UI to the configuration file that you mount, and point the `ui` section at it. The following example serves proxy traffic on port `4000` of the `default` gateway and the UI on port `4001` of the `ui-gateway`.
 
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    gateways:
      default:
        port: 4000
-     admin:
+     ui-gateway:
        port: 4001
    ui:
-     gateways: [admin]
+     gateways: [ui-gateway]
    routes:
    - matches:
      - path:
@@ -157,7 +157,7 @@ The container must publish the new UI port, so this change needs a container res
    ```
 {{% /tab %}}
 {{% tab name="Helm" %}}
-1. Add an `admin` gateway to your Helm values file, and point the `ui` section at it. The following example serves proxy traffic such as httpbin routes on port `4000` of the default gateway and the UI on port `4001` of the admin gateway.
+1. Add a `ui-gateway` gateway to your Helm values file, and point the `ui` section at it. The following example serves proxy traffic such as httpbin routes on port `4000` of the default gateway and the UI on port `4001` of the `ui-gateway`.
 
    ```yaml
    cat <<'EOF' > values.yaml
@@ -165,10 +165,10 @@ The container must publish the new UI port, so this change needs a container res
      gateways:
        default:
          port: 4000
-       admin:
+       ui-gateway:
          port: 4001
      ui:
-       gateways: [admin]
+       gateways: [ui-gateway]
      routes:
      - matches:
        - path:
@@ -228,92 +228,61 @@ To reach the UI port from outside the cluster instead of through a port-forward,
 {{% /tab %}}
 {{< /tabs >}}
 
-> [!NOTE]
-> The UI gateway is an addition, not a replacement. Agentgateway continues to serve the UI and the admin API on the admin address, which is loopback-only by default. To turn the admin address off, see [Change the admin address](#customize-port).
-
-## Change the admin address {#customize-port}
-
-The admin address is `localhost:15000` in every installation method, whether or not the UI is also attached to a gateway. A gateway that serves the UI does not change the admin address, and changing the admin address does not change the gateway port. Set `adminAddr` in the `config` section of your configuration file to move the admin address, or to turn it off.
-
-The value must use `ip:port` format, and also accepts `unix:/path/to/socket` or `off`. Setting `off` disables the admin address altogether, including the admin API on it, which leaves a gateway in the `ui` section as the only way to reach the UI.
-
-1. Add or update the `adminAddr` field in your configuration file.
-
-   ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   config:
-     adminAddr: localhost:9090
-   ```
-
-2. Start agentgateway with the updated config. Because `adminAddr` is in the `config` section, a running instance keeps the previous address until you restart it.
-
-   ```sh
-   agentgateway -f config.yaml
-   ```
-
-   Example output:
-
-   ```
-   INFO app  serving UI at http://localhost:9090/ui
-   ```
-
-{{< doc-test paths="ui-standalone-custom-port" >}}
+{{< doc-test paths="ui-standalone-gateway" >}}
 pkill -f "agentgateway -f" 2>/dev/null || true
 sleep 1
-cat > /tmp/agw-ui-custom.yaml <<'EOF'
+cat > /tmp/agw-ui-gateway.yaml <<'EOF'
 config:
-  adminAddr: localhost:9090
+  adminAddr: localhost:15000
+gateways:
+  default:
+    port: 4000
+  ui-gateway:
+    port: 4001
+ui:
+  gateways: [ui-gateway]
+routes:
+- matches:
+  - path:
+      pathPrefix: /
+  backends:
+  - host: httpbin.org:80
 EOF
-agentgateway -f /tmp/agw-ui-custom.yaml &
-AGW_CUSTOM_PID=$!
+agentgateway -f /tmp/agw-ui-gateway.yaml &
+AGW_UI_GW_PID=$!
 sleep 3
-{{< /doc-test >}}
-
-3. Open the UI at the new address. In this example, navigate to [http://localhost:9090/ui/](http://localhost:9090/ui/).
-
-{{< doc-test paths="ui-standalone-custom-port" >}}
 YAMLTest -f - <<'EOF'
-- name: Admin UI returns HTTP 200 on custom port
+- name: UI is served on the UI gateway port
   http:
-    url: "http://localhost:9090/ui/"
+    url: "http://localhost:4001"
+    path: "/ui/"
     method: GET
   source:
     type: local
   expect:
     statusCode: 200
   retries: 3
+- name: admin interface endpoints are not served on the UI gateway
+  http:
+    url: "http://localhost:4001"
+    path: "/config_dump"
+    method: GET
+  source:
+    type: local
+  expect:
+    statusCode: 404
+  retries: 3
 EOF
-kill $AGW_CUSTOM_PID 2>/dev/null || true
+# The 404 above must mean "not routed here", not "endpoint does not exist".
+# Assert with curl rather than YAMLTest, because /config_dump is trailing-slash
+# sensitive and returns 404 as /config_dump/ even on the admin address.
+ADMIN_DUMP_CODE="$(curl -s -o /dev/null -w '%{http_code}' http://localhost:15000/config_dump)"
+test "$ADMIN_DUMP_CODE" = "200"
+kill $AGW_UI_GW_PID 2>/dev/null || true
 {{< /doc-test >}}
 
 > [!NOTE]
-> If you change <code>adminAddr</code>, update any agentgateway admin API commands to use the new address. For example, change <code>curl http://localhost:15000/logging</code> to use the new port.
-
-### Reach the admin UI in a container {#docker-admin-addr}
-
-The default admin address binds to the container's own loopback interface, so publishing port 15000 with `-p 15000:15000` does not make it reachable from your host. You have two options.
-
-* **Serve the UI on a gateway instead**, which is what the generated configuration does. This is the better option, because you can attach authentication policies to the gateway.
-* **Bind the admin address to all interfaces** by setting `config.adminAddr` to `0.0.0.0:15000`, then publish that port. The admin address has no authentication. Do this only on a host where nothing untrusted can reach the published port, such as your personal workstation.
-
-   ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   config:
-     adminAddr: 0.0.0.0:15000
-   gateways:
-     default:
-       port: 4000
-   ```
-
-   ```sh
-   docker run -d \
-     --name agentgateway \
-     --user "$(id -u):$(id -g)" \
-     -v "$PWD/config.yaml:/config.yaml" \
-     -p 4000:4000 -p 15000:15000 \
-     {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
-     -f /config.yaml
-   ```
+> The UI gateway is an addition, not a replacement. Agentgateway still serves a copy of the UI on the admin interface, which is loopback-only and which you do not need to change. Adding this gateway does not put the admin interface's debugging endpoints on it. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/setup/ui/#admin-interface" >}}).
 
 ## Next steps
 

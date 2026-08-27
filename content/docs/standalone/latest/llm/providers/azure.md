@@ -371,7 +371,7 @@ To use system-assigned managed identity:
 * The Azure resource must have managed identity enabled.
 * The Azure resource identity must have permissions to and the network ability to access the Azure AI services.
 
-Leave the `managedIdentity` field empty so that the system assigns a managed identity to use.
+Leave `managedIdentity` empty to use the identity of the Azure resource that runs agentgateway.
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -419,7 +419,7 @@ agentgateway -f config-adv-system-managed-identity.yaml --validate-only
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
-| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
+| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave the object empty to use the system-assigned identity. |
 {{< /reuse-append >}}
 
 {{% /tab %}}
@@ -428,9 +428,8 @@ agentgateway -f config-adv-system-managed-identity.yaml --validate-only
 
 To use user-assigned managed identity:
 * Agentgateway must run in an Azure resource, such as a VM or container instance.
-* The Azure resource must have managed identity enabled.
-* The Azure resource identity must have permissions to and the network ability to access the Azure AI services.
-* Create and assign a managed identity for the Azure resource to use.
+* Create a user-assigned identity and attach it to the Azure resource.
+* The selected identity must have permissions to and the network ability to access the Azure AI services.
 
 Specify the client ID of the user-assigned managed identity to use. You can also specify the object ID or resource ID instead.
 ```yaml
@@ -490,7 +489,7 @@ agentgateway -f config-adv-user-managed-identity.yaml --validate-only
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
-| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
+| `backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity` | Use a user-assigned managed identity. Specify exactly one of `clientId`, `objectId`, or `resourceId`. |
 {{< /reuse-append >}}
 
 {{% /tab %}}
@@ -514,22 +513,16 @@ On AKS, complete the following steps to prepare the cluster.
    system:serviceaccount:agentgateway:agentgateway
    ```
 
-4. Configure the Helm chart to annotate that service account with the client ID of the managed identity.
+4. Configure the Helm chart to annotate that service account, and to label the pod for the Azure workload identity webhook.
 
    ```yaml
    serviceAccount:
      create: true
      annotations:
        azure.workload.identity/client-id: <managed-identity-client-id>
-   ```
 
-5. Label the agentgateway pod so that the Azure workload identity webhook projects a federated token into it. The standalone Helm chart in this version has no value that adds labels to the pod, so patch the deployment after you install the chart.
-
-   ```sh
-   kubectl patch deployment agentgateway \
-     --namespace agentgateway \
-     --type merge \
-     --patch '{"spec":{"template":{"metadata":{"labels":{"azure.workload.identity/use":"true"}}}}}'
+   podLabels:
+     azure.workload.identity/use: "true"
    ```
 
 Then, select workload identity in the agentgateway configuration.
@@ -657,10 +650,10 @@ agentgateway -f config-claude-foundry.yaml --validate-only
 |---------|-------------|
 | `name` | The exact Claude model name to match in incoming requests, such as `claude-3-5-haiku-20241022`. Use `*` to match any model name. |
 | `provider` | Set to `azure` for Azure AI Foundry. |
-| `backendAuth.key.value` | The Azure AI Foundry API key. You can reference environment variables using the `$VAR_NAME` syntax. The key is automatically sent in the `Authorization` header. Other auth method can be applied [Backend authentication]({{< link-hextra path="/configuration/security/backend-authn/" >}}) |
+| `backendAuth.key.value` | The Azure AI Foundry API key. You can reference environment variables using the `$VAR_NAME` syntax. The key is automatically sent in the `Authorization` header. Other auth method can be applied [Backend authentication]({{< link-hextra path="/configuration/security/backend-authn/" >}})|
 | `params.azureResourceName` | The Azure AI Foundry resource name used to construct the endpoint hostname. |
 | `params.azureResourceType` | Set to `foundry` to use Azure AI Foundry endpoints. |
-| `params.azureProjectName` | The Foundry project name. |
+| `params.azureProjectName` | The Foundry project name.|
 
 After running agentgateway with this configuration, send a request to verify:
 

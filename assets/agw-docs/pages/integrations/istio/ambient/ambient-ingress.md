@@ -266,13 +266,13 @@ Once the base flow works, layer additional agentgateway policies on the ingress 
 
 1. Client authentication and authorization, such as [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) and [authorization policies]({{< link-hextra path="/security/authorization/" >}}).
   This lets you enforce identity-based access to backends behind the same ingress gateway.
-2. API key or basic auth, such as [API key auth]({{< link-hextra path="/security/apikey-auth/" >}}) or [basic auth]({{< link-hextra path="/security/basic-auth/" >}}).
+2. API key or basic auth, such as [API key auth]({{< link-hextra path="/security/apikey/" >}}) or [basic auth]({{< link-hextra path="/security/extauth/basic/" >}}).
   Useful when clients cannot use OIDC or when you issue per-team ingress keys.
 3. Rate limiting, such as [HTTP rate limiting]({{< link-hextra path="/security/rate-limit-http/" >}}) or [global rate limiting]({{< link-hextra path="/security/rate-limit-global/" >}}).
   Protects backends from spikes and abusive clients.
 4. Traffic shaping and resilience, such as [traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}), [retries]({{< link-hextra path="/resiliency/retry/retry/" >}}), and [request timeouts]({{< link-hextra path="/resiliency/timeouts/request/" >}}).
   Improves reliability of ingress traffic to ambient backends.
-5. Observability, such as [access logs]({{< link-hextra path="/security/access-logging/" >}}) and [tracing]({{< link-hextra path="/observability/traces/" >}}).
+5. Observability, such as [access logs]({{< link-hextra path="/security/access-logging/" >}}) and [tracing]({{< link-hextra path="/observability/tracing/" >}}).
   Gives per-request visibility into ingress traffic for compliance and incident response.
 
 ## Cleanup

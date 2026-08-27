@@ -1,4 +1,4 @@
-{{< reuse "agw-docs/snippets/review-table.md" >}}{{< version exclude-if="1.4.x" >}} For more information, see the [Helm reference docs]({{< link-hextra path="/reference/helm/" >}}).{{< /version >}}
+{{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [Helm reference docs]({{< link-hextra path="/reference/helm/" >}}).
 
 | Value | Use |
 | --- | --- |

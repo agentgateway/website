@@ -21,6 +21,15 @@ test:
     path: openai-setup
   - file: ${versionRoot}/llm/transformations.md
     path: llm-model-headers
+  llm-final-transformations:
+  - file: ${versionRoot}/quickstart/install.md
+    path: standard
+  - file: ${versionRoot}/setup/gateway.md
+    path: all
+  - file: ${versionRoot}/llm/providers/openai.md
+    path: openai-setup
+  - file: ${versionRoot}/llm/transformations.md
+    path: llm-final-transformations
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/transformations.md" >}}
