@@ -28,13 +28,60 @@ A native Gemini request that is routed to any other provider is rejected with an
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. Set up access to the [Gemini]({{< link-hextra path="/llm/providers/gemini/" >}}) or [Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}}) LLM provider.
 
+{{< doc-test paths="gemini-inbound" >}}
+# ============================================================================
+# Doc test coverage for this guide (these comments are not rendered on the page)
+# ============================================================================
+# WHAT THIS TEST VALIDATES:
+#   * "Step 1": the AgentgatewayBackend applies against the real CRD schema, so
+#     `GenerateContent` and `GeminiCountTokens` are confirmed to be valid values
+#     of the `policies.ai.routes` enum, and `provider.gemini` accepts the empty
+#     form with no `model` set. This is the main point of the test: the
+#     standalone docs spell these route types `generateContent` and
+#     `geminiCountTokens`, and the API server rejects that casing here.
+#   * "Step 2": the HTTPRoute applies and resolves its AgentgatewayBackend
+#     backendRef (ResolvedRefs=True), so the group/kind wiring in the example is
+#     correct.
+#   * "Step 4": a `:streamGenerateContent` request without `alt=sse` is rejected
+#     with the documented status (400) and the documented INVALID_ARGUMENT
+#     message. This check needs no provider, because agentgateway answers it
+#     before any upstream call.
+#
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * The request and response in "Step 3" - external dependency; a real
+#     generateContent call needs a live Gemini API key and bills for it, so the
+#     secret below holds a placeholder.
+#   * The `:countTokens` request mentioned at the end of "Step 3" - same
+#     external dependency.
+#   * A successful `alt=sse` stream in "Step 4" - same external dependency. Only
+#     the rejection path is asserted, because that one resolves locally.
+#   * The `tunedModels/{model}` form named in "About" - exercising it needs a
+#     real tuned model on a real project.
+#   * Vertex AI as the backend, named in "About" and "Before you begin" - the
+#     test configures the Gemini provider only.
+
+# The Backend in Step 1 references google-secret. Create it with a placeholder so
+# the test needs no real key: every assertion below resolves before agentgateway
+# calls the provider.
+kubectl apply -f- <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: google-secret
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+type: Opaque
+stringData:
+  Authorization: "${GOOGLE_KEY:-test}"
+EOF
+{{< /doc-test >}}
+
 ## Step 1: Add the Gemini route types
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} that maps the Gemini method suffixes to their route types. The default behavior routes all traffic as `Completions`, so the native Gemini paths must be mapped explicitly.
 
 If you already set up [multiple endpoints]({{< link-hextra path="/llm/providers/multiple-endpoints/" >}}), add these paths to your existing {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-```yaml
+```yaml {paths="gemini-inbound"}
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -69,7 +116,7 @@ EOF
 
 Create an HTTPRoute that routes the native Gemini paths to the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-```yaml
+```yaml {paths="gemini-inbound"}
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -92,6 +139,48 @@ spec:
       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 EOF
 ```
+
+{{< doc-test paths="gemini-inbound" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for the google-native backend with the Gemini route types to be accepted
+  wait:
+    target:
+      kind: AgentgatewayBackend
+      metadata:
+        namespace: agentgateway-system
+        name: google-native
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+- name: wait for the google-native HTTPRoute to resolve its backendRef
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: google-native
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="gemini-inbound" >}}
+# google-native is a new HTTPRoute name, so the data plane needs a moment to pick
+# it up. Any HTTP answer means the proxy knows the path; the assertion follows.
+for i in $(seq 1 60); do
+  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/v1beta/models/gemini-2.5-flash:generateContent" && break
+  sleep 2
+done
+{{< /doc-test >}}
 
 ## Step 3: Send a native Gemini request
 
@@ -165,11 +254,44 @@ Without `alt=sse`, the Gemini API streams a JSON array instead of server-sent ev
 }
 ```
 
+{{< doc-test paths="gemini-inbound" >}}
+YAMLTest -f - <<'EOF'
+- name: streamGenerateContent without alt=sse is rejected before the provider is called
+  retries: 1
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: "/v1beta/models/gemini-2.5-flash:streamGenerateContent"
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
+      {
+        "contents": [{"role": "user", "parts": [{"text": "Count to five"}]}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 400
+    bodyJsonPath:
+      - path: "$.error.status"
+        comparator: equals
+        value: "INVALID_ARGUMENT"
+      - path: "$.error.message"
+        comparator: contains
+        value: "streamGenerateContent requires alt=sse"
+EOF
+{{< /doc-test >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh
+```sh {paths="gemini-inbound"}
 kubectl delete httproute google-native -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} google-native -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
+
+{{< doc-test paths="gemini-inbound" >}}
+# Remove the placeholder secret that the test created before Step 1.
+kubectl delete secret google-secret -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+{{< /doc-test >}}
