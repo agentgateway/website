@@ -254,9 +254,9 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{< /tabs >}}
 
-## Access the Admin UI
+## Access the UI
 
-By default, the agentgateway admin UI listens on localhost. To access it from your host machine:
+By default, the agentgateway UI listens on localhost. To access it from your host machine:
 
 ```bash
 docker run -v "$PWD/config.yaml:/config.yaml" -p 3000:3000 \
@@ -311,7 +311,7 @@ docker compose up -d
 #   * The `docker run ...` commands and `curl` chat completions in each tab
 #     — External dependency: each needs a real provider API key/credentials
 #     and a live LLM endpoint, which the test cannot stand up.
-#   * The "Access the Admin UI" and "Docker Compose" sections — Display-only:
+#   * The "Access the UI" and "Docker Compose" sections — Display-only:
 #     no scriptable assertion without a running container and a real key.
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}

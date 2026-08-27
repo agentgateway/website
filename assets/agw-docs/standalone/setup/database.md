@@ -326,7 +326,7 @@ To add a database, choose one of the following options.
 | Option | Storage mode | Use it when |
 | --- | --- | --- |
 | [SQLite on a volume](#helm-sqlite) | The chart's default `readonly` mode | You want the **Analytics** and **Logs** pages, and you keep your Helm values as the only source of configuration. |
-| [PostgreSQL in database mode](#helm-postgres) | The chart's `database` mode | You also want the admin UI to save configuration changes, or you run more than one replica. |
+| [PostgreSQL in database mode](#helm-postgres) | The chart's `database` mode | You also want the UI to save configuration changes, or you run more than one replica. |
 
 ### Add SQLite on a volume {#helm-sqlite}
 
@@ -401,7 +401,7 @@ In the default `readonly` mode, the chart sets the storage mode and nothing else
    ```
 
 > [!NOTE]
-> This option gives the **Analytics** and **Logs** pages a database, but it does not make the admin UI writable. The ConfigMap stays read-only, so a UI save still fails. To make the UI writable, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+> This option gives the **Analytics** and **Logs** pages a database, but it does not make the UI writable. The ConfigMap stays read-only, so a UI save still fails. To make the UI writable, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
 
 ### Add PostgreSQL in database mode {#helm-postgres}
 
@@ -516,7 +516,7 @@ Agentgateway records LLM requests only, so send a request to an LLM model to con
    }
    ```
 
-4. Open the **LLM** > **Analytics** page in the admin UI, such as <http://localhost:15000/ui/llm/analytics>. The request appears in the chart and in the breakdown. For more information about the controls on the page, see [Cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}).
+4. Open the **LLM** > **Analytics** page in the UI, such as <http://localhost:15000/ui/llm/analytics>. The request appears in the chart and in the breakdown. For more information about the controls on the page, see [Cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}).
 
 <!--TODO troubleshooting
 
@@ -600,7 +600,7 @@ Configuration is valid!
 
 ## Next steps
 
-* [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) so that the admin UI can save your changes.
+* [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) so that the UI can save your changes.
 * [View LLM spend in the cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}).
 * [Set API key budgets]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}) that persist across restarts.
 * [Review what agentgateway stores]({{< link-hextra path="/observability/access-logs/database/" >}}) in each request log record.

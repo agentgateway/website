@@ -1,4 +1,4 @@
-To run agentgateway as a container, follow the steps to start the container, verify that it runs, and open the admin UI. Agentgateway publishes the official images at `{{< reuse "agw-docs/standalone/image-ref.md" >}}`.
+To run agentgateway as a container, follow the steps to start the container, verify that it runs, and open the UI. Agentgateway publishes the official images at `{{< reuse "agw-docs/standalone/image-ref.md" >}}`.
 
 ## Run the container {#docker}
 
@@ -23,7 +23,7 @@ docker run -d \
   {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}}
 ```
 
-The `--user` flag runs the container as your own user so that the container can read and write the mounted directory. The generated configuration points agentgateway at a SQLite database, defines a `default` gateway, serves the admin UI on that default gateway, and looks similar to the following example. The database powers the **Analytics** and **Logs** pages in the admin UI, and the other features that record data while agentgateway runs. For more information, see [Database]({{< link-hextra path="/setup/database/" >}}).
+The `--user` flag runs the container as your own user so that the container can read and write the mounted directory. The generated configuration points agentgateway at a SQLite database, defines a `default` gateway, serves the UI on that default gateway, and looks similar to the following example. The database powers the **Analytics** and **Logs** pages in the UI, and the other features that record data while agentgateway runs. For more information, see [Database]({{< link-hextra path="/setup/database/" >}}).
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -37,7 +37,7 @@ ui:
   gateways: default
 ```
 
-Because the generated configuration attaches the UI to the `default` gateway, the UI is served on the gateway port, not on the admin address.
+Because the generated configuration attaches the UI to the `default` gateway, the UI is served on the gateway port, not only on the admin interface.
 
 {{% /tab %}}
 {{% tab name="Mount a configuration file" %}}
@@ -54,12 +54,12 @@ docker run -d \
   -f /config.yaml
 ```
 
-Agentgateway does not add anything to a file that you supply, so the UI is served on the admin address unless your file includes a `ui` section that attaches it to a gateway. A file that you supply also has no database, so the **Analytics** and **Logs** pages are unavailable until you add one. Because the SQLite file needs a writable directory, mount a directory for it as well as the configuration file. For more information, see [Database]({{< link-hextra path="/setup/database/#own-file" >}}).
+Agentgateway does not add anything to a file that you supply, so the UI is served only on the admin interface unless your file includes a `ui` section that attaches it to a gateway. A file that you supply also has no database, so the **Analytics** and **Logs** pages are unavailable until you add one. Because the SQLite file needs a writable directory, mount a directory for it as well as the configuration file. For more information, see [Database]({{< link-hextra path="/setup/database/#own-file" >}}).
 
 Keep the mount writable if you want to save configuration changes that you make in the UI. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
 
 > [!IMPORTANT]
-> The admin address defaults to `localhost:15000`, which is the container's own loopback interface, so publishing port 15000 does not make the admin UI reachable from your host. Reach the UI on a gateway port instead, as the generated configuration does. To publish the admin address itself, see [Reach the admin UI in a container]({{< link-hextra path="/setup/ui/gateway-ui/#docker-admin-addr" >}}).
+> The admin interface defaults to `localhost:15000`, which is the container's own loopback interface, so publishing port 15000 does not make it reachable from your host. Reach the UI on a gateway port instead, as the generated configuration does. That is the supported path, and it is the only one that you can authenticate. For more information, see [Reach the UI in a container]({{< link-hextra path="/operations/debug/#docker-admin-addr" >}}).
 
 {{% /tab %}}
 {{< /tabs >}}
@@ -79,9 +79,9 @@ CONTAINER ID   IMAGE                                         COMMAND            
 8bac1aad45ba   {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}}   "/app/agentgateway"   5 seconds ago   Up 4 seconds   0.0.0.0:4000->4000/tcp, [::]:4000->4000/tcp   agentgateway
 ```
 
-### Find the admin UI address
+### Find the UI address
 
-Check the logs. Agentgateway logs which configuration file it loaded and where it serves the admin UI.
+Check the logs. Agentgateway logs which configuration file it loaded and where it serves the UI.
 
 ```sh
 docker logs agentgateway
@@ -96,7 +96,7 @@ info	app	serving UI at http://localhost:4000/ui
 info	proxy::gateway	started bind	bind="bind/4000"
 ```
 
-### Open the admin UI
+### Open the UI
 
 Open the address from the log output, such as <http://localhost:4000/ui>, to get started.
 
@@ -150,7 +150,7 @@ NAME           IMAGE                                         COMMAND            
 agentgateway   {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}}   "/app/agentgateway"   agentgateway   9 seconds ago   Up 8 seconds   0.0.0.0:4000->4000/tcp, [::]:4000->4000/tcp
 ```
 
-### Open the admin UI
+### Open the UI
 
 Open <http://localhost:4000/ui> to get started.
 
@@ -179,7 +179,7 @@ Agentgateway leaves the configuration file and the SQLite database in the mounte
 
 ## Next steps
 
-* [Set up the admin UI]({{< link-hextra path="/setup/ui/" >}}) to open, expose, and secure the web interface.
+* [Set up the UI]({{< link-hextra path="/setup/ui/" >}}) to open, expose, and secure the web interface.
 * [Set up a database]({{< link-hextra path="/setup/database/" >}}) for the **Analytics** and **Logs** pages, and for API key budgets.
 * [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}).
 * [Update your configuration]({{< link-hextra path="/setup/update/" >}}) after the container is running.

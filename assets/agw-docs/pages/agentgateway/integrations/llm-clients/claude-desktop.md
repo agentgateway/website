@@ -20,7 +20,7 @@ The steps in this guide run agentgateway on the same machine as Claude Desktop a
 
 {{< reuse "agw-docs/snippets/llm-client-setup-callout.md" >}}
 
-For Claude Desktop, Client Setup outputs the gateway URL and API key; it does not configure a model name in Claude Desktop. The gateway route must already accept the key and support the Anthropic Messages API at `/v1/messages`, and agentgateway must hold the upstream provider credential. An endpoint that exposes only the OpenAI-compatible `/v1/chat/completions` API is not sufficient. For more information about the UI, see [Admin UI]({{< link-hextra path="/operations/ui/" >}}).
+For Claude Desktop, Client Setup outputs the gateway URL and API key; it does not configure a model name in Claude Desktop. The gateway route must already accept the key and support the Anthropic Messages API at `/v1/messages`, and agentgateway must hold the upstream provider credential. An endpoint that exposes only the OpenAI-compatible `/v1/chat/completions` API is not sufficient. For more information about the UI, see [UI]({{< link-hextra path="/operations/ui/" >}}).
 
 To use a Claude subscription token instead of a gateway API key, continue with the following sections.
 

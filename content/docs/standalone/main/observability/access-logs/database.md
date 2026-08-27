@@ -1,7 +1,7 @@
 ---
 title: Store logs in a database
 weight: 30
-description: Store agentgateway access logs in a SQLite or PostgreSQL database to power the admin UI analytics and enable historical log queries.
+description: Store agentgateway access logs in a SQLite or PostgreSQL database to power the UI analytics and enable historical log queries.
 test: skip
 ---
 
@@ -115,4 +115,4 @@ frontendPolicies:
 
 ## Disable database logging
 
-To stop writing access logs to a database, remove both `config.logging.database` and `config.database` from your configuration. Access logs continue to go to stdout. The cost dashboard and analytics pages in the admin UI become unavailable, but all other functionality is unaffected.
+To stop writing access logs to a database, remove both `config.logging.database` and `config.database` from your configuration. Access logs continue to go to stdout. The cost dashboard and analytics pages in the UI become unavailable, but all other functionality is unaffected.

@@ -253,5 +253,5 @@ az role assignment create \
 ## Next steps
 
 * [Azure]({{< link-hextra path="/llm/providers/azure/" >}}) for the full provider reference, including Azure AI Foundry.
-* [Set up the admin UI]({{< link-hextra path="/setup/ui/" >}}) to serve the web interface on a gateway.
+* [Set up the UI]({{< link-hextra path="/setup/ui/" >}}) to serve the web interface on a gateway.
 * [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) before you mount a read-only file.
