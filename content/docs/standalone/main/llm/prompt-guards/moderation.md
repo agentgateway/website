@@ -38,7 +38,7 @@ In this configuration, agentgateway calls the Moderation API for each request an
      - name: "*"
        provider: openAI
        params:
-         model: gpt-4o-mini
+         model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
          apiKey: "$OPENAI_API_KEY"
        guardrails:
          request:
@@ -62,7 +62,7 @@ In this configuration, agentgateway calls the Moderation API for each request an
    curl -i http://localhost:4000/v1/chat/completions \
      -H "content-type: application/json" \
      -d '{
-       "model": "gpt-4o-mini",
+       "model": "gpt-3.5-turbo",
        "messages": [
          {
            "role": "user",
@@ -103,7 +103,7 @@ Because the gateway sets the parameter, a client cannot weaken the moderation th
          name: openai
          provider:
            openAI:
-             model: gpt-4o-mini
+             model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
              moderation:
                model: omni-moderation-latest
                policy:
@@ -139,7 +139,7 @@ Because the gateway sets the parameter, a client cannot weaken the moderation th
    curl -i http://localhost:3000/v1/chat/completions \
      -H "content-type: application/json" \
      -d '{
-       "model": "gpt-4o-mini",
+       "model": "gpt-3.5-turbo",
        "messages": [
          {
            "role": "user",
@@ -198,6 +198,3 @@ Inline moderation applies only where agentgateway builds the request that it sen
 * **The route type must be `completions` or `responses`.** Requests on a `passthrough` or `detect` route reach OpenAI unchanged, so the moderation parameter is not added.
 * **Clients keep their own `moderation` value when you omit the field.** If you do not configure `moderation`, a `moderation` value that a client sends passes through to OpenAI unchanged. OpenAI requires `moderation.model`, so a client value that omits it fails with `Missing required parameter: 'moderation.model'`. Configuring `moderation` on the backend avoids this, because agentgateway always sends a model.
 * **Moderation results reach the client only in OpenAI response formats.** A client that uses a different API format, such as the Anthropic Messages API, does not receive the moderation results.
-
-> [!NOTE]
-> The mode values are `block` and `score` in standalone mode. The Kubernetes mode documentation uses `Block` and `Score` in title case for the same fields.

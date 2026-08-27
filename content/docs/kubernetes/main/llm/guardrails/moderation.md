@@ -67,7 +67,7 @@ In this configuration, agentgateway calls the Moderation API for each request an
    curl -i "$INGRESS_GW_ADDRESS/openai" \
      -H "content-type: application/json" \
      -d '{
-       "model": "gpt-4o-mini",
+       "model": "gpt-3.5-turbo",
        "messages": [
          {
            "role": "user",
@@ -83,7 +83,7 @@ In this configuration, agentgateway calls the Moderation API for each request an
    curl -i "localhost:8080/openai" \
      -H "content-type: application/json" \
      -d '{
-       "model": "gpt-4o-mini",
+       "model": "gpt-3.5-turbo",
        "messages": [
          {
            "role": "user",
@@ -159,7 +159,7 @@ Because the gateway sets the parameter, a client cannot weaken the moderation th
    curl -i "$INGRESS_GW_ADDRESS/openai" \
      -H "content-type: application/json" \
      -d '{
-       "model": "gpt-4o-mini",
+       "model": "gpt-3.5-turbo",
        "messages": [
          {
            "role": "user",
@@ -175,7 +175,7 @@ Because the gateway sets the parameter, a client cannot weaken the moderation th
    curl -i "localhost:8080/openai" \
      -H "content-type: application/json" \
      -d '{
-       "model": "gpt-4o-mini",
+       "model": "gpt-3.5-turbo",
        "messages": [
          {
            "role": "user",
@@ -237,9 +237,6 @@ Inline moderation applies only where agentgateway builds the request that it sen
 * **The route type must be `Completions` or `Responses`.** Requests on a `Passthrough` or `Detect` route reach OpenAI unchanged, so the moderation parameter is not added. The [OpenAI provider guide]({{< link-hextra path="/llm/providers/openai/" >}}) sets `"*": "Passthrough"` as a catch-all, so give the chat completions and responses paths an explicit route type, as shown in the preceding example.
 * **Clients keep their own `moderation` value when you omit the field.** If you do not configure `moderation`, a `moderation` value that a client sends passes through to OpenAI unchanged. OpenAI requires `moderation.model`, so a client value that omits it fails with `Missing required parameter: 'moderation.model'`. Configuring `moderation` on the backend avoids this, because agentgateway always sends a model.
 * **Moderation results reach the client only in OpenAI response formats.** A client that uses a different API format, such as the Anthropic Messages API, does not receive the moderation results.
-
-> [!NOTE]
-> The mode values are `Block` and `Score` in Kubernetes mode. The standalone mode documentation uses `block` and `score` in lowercase for the same fields.
 
 ## Backend connection and authentication policies
 
