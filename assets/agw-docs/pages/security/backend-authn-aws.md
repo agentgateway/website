@@ -1,15 +1,13 @@
-Sign requests to an AWS service with AWS Signature Version 4, optionally through an assumed IAM role.
-
 ## About
 
 The `aws` backend authentication method signs each request that the gateway forwards with AWS Signature Version 4. Unlike the other methods, it does not add a bearer token. It computes a signature over the request and writes the AWS authentication headers, so the method runs last, after every other policy that changes the request.
 
-The method has two forms.
+Which credentials sign the request depends on the fields that you set. The method has two forms.
 
-* **Implicit.** You omit `secretRef` and the gateway uses the standard AWS credential chain, which on EKS means the IAM role of the service account of the gateway. No secret is stored in the cluster, so this is the recommended form.
-* **Explicit.** You name a Secret that holds an access key.
+* **Implicit.** You omit `secretRef` and the gateway uses the standard AWS credential chain. On EKS, that chain resolves to the Identity and Access Management (IAM) role of the service account of the gateway. No secret is stored in the cluster, so this is the recommended form.
+* **Explicit.** You set `secretRef` to name a Secret that holds an access key. Use this form when the gateway does not run on AWS, or when the ambient identity is not the one that the backend expects.
 
-Either form can assume an IAM role before it signs, with `assumeRole`.
+Both forms set the signing region and the service name the same way. On top of the implicit form, you can also set `assumeRole` to assume an IAM role before the gateway signs. `assumeRole` cannot be combined with `secretRef`, because the source credentials for the AWS Security Token Service (STS) call always come from the environment of the gateway.
 
 ## Before you begin
 
@@ -17,60 +15,125 @@ Either form can assume an IAM role before it signs, with `assumeRole`.
 
 You also need an AWS service to call, and an identity that is allowed to call it.
 
-## Configure AWS backend authentication
+## Use implicit credentials
+
+Omit both `secretRef` and `assumeRole`, and the gateway signs with the credentials of its own environment. On EKS, annotate the service account of the gateway for an IAM role and the gateway picks the role up automatically.
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
-{{< tabs >}}
-{{% tab name="Implicit credentials" %}}
-Omit `secretRef`, and the gateway uses the credentials of its own environment. On EKS, annotate the service account of the gateway for an IAM role and the gateway picks the role up automatically.
-
 ```yaml
-auth:
-  aws:
-    region: us-east-1
-    serviceName: bedrock
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: aws-backend-auth
+  namespace: httpbin
+spec:
+  targetRefs:
+  - group: {{< reuse "agw-docs/snippets/group.md" >}}
+    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+    name: my-bedrock-backend
+  backend:
+    auth:
+      aws:
+        region: us-east-1
+        serviceName: bedrock
+EOF
 ```
-{{% /tab %}}
-{{% tab name="Access key from a Secret" %}}
-Point at a Secret that holds an access key. The default resolver reads the `accessKey` and `secretKey` keys, and the `sessionToken` key when the credentials are temporary.
 
-```yaml
-auth:
-  aws:
-    secretRef:
-      name: aws-creds
-    region: us-west-2
-    serviceName: execute-api
-```
-{{% /tab %}}
-{{% tab name="Assumed role" %}}
-Assume an IAM role before signing. The ambient credentials of the gateway become the source credentials for the AWS Security Token Service (STS) call.
+The policy names no credential source at all, and that absence is what makes the credentials implicit. The two fields that the policy does set describe the request that the gateway signs, not the identity that signs it.
 
-```yaml
-auth:
-  aws:
-    region: us-east-1
-    serviceName: bedrock
-    assumeRole:
-      roleArn: arn:aws:iam::123456789012:role/agentgateway-bedrock
-      sessionName: agentgateway
-```
-{{% /tab %}}
-{{< /tabs >}}
+{{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Field | Description |
 | -- | -- |
-| `aws.secretRef` | Secret in the policy namespace that holds the credentials under the `accessKey` and `secretKey` keys, plus `sessionToken` for temporary credentials. Omit the field to use the credential chain of the environment. Cannot be combined with `assumeRole`. |
-| `aws.region` | Signing region, such as `us-east-1`. Set the field when the target service is in a different region from the gateway. A typed AWS backend may supply the region on its own. |
-| `aws.serviceName` | Signing service name, such as `bedrock`, `bedrock-agentcore`, or `execute-api`. A typed AWS backend may supply the name on its own. |
-| `aws.assumeRole` | IAM role to assume before signing. Cannot be combined with `secretRef`. |
+| `aws.region` | Signing region, such as `us-east-1`. Set the field when the target service is in a different region from the gateway. If you omit it, a typed AWS backend may supply the region. Otherwise the gateway uses the ambient AWS region. |
+| `aws.serviceName` | Signing service name, such as `bedrock`, `bedrock-agentcore`, or `execute-api`. Those three are examples and not the full set. The field takes any AWS SigV4 signing name, and the gateway does not validate it against a list. The signing name is the service element of the credential scope, which the AWS [Signature Version 4 signing elements](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv4-signing-elements.html) documentation describes. A typed AWS backend may supply the name on its own. |
 
-## Assume a role
+### How the gateway resolves an implicit credential
+
+The gateway uses the default credential chain of the AWS SDK. The chain tries the following sources in order and stops at the first one that returns credentials.
+
+1. **Environment variables:** `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN`.
+2. **Shared configuration files:** `~/.aws/config` and `~/.aws/credentials`.
+3. **Web identity token:** `AWS_WEB_IDENTITY_TOKEN_FILE` and `AWS_ROLE_ARN`. This is the source that IAM roles for service accounts and EKS Pod Identity use, and it is the one to expect in a cluster.
+4. **Container credentials:** the credential endpoint that Amazon ECS and other container hosts provide.
+5. **Instance metadata:** IMDSv2 on an EC2 instance.
+
+When you also set `assumeRole`, the credentials from this chain become the source credentials for the STS call. They no longer sign the request themselves.
+
+## Use an explicit access key from a Secret
+
+Point at a Secret that holds an access key. Use this form when the gateway does not run on AWS, or when it must sign as an identity other than its own.
+
+{{< reuse "agw-docs/snippets/aws-creds.md" >}}
+
+1. Save the access key of the identity that you want the gateway to sign as. Set a session token only for temporary credentials, such as the output of an STS call. Long-lived IAM user keys do not use one.
+
+   ```sh
+   export AGW_AWS_ACCESS_KEY_ID="<access-key>"
+   export AGW_AWS_SECRET_ACCESS_KEY="<secret-key>"
+   export AGW_AWS_SESSION_TOKEN=""
+   ```
+
+2. Create a Secret that holds the credentials under the keys that the default resolver reads: `accessKey`, `secretKey`, and `sessionToken`. Leave `sessionToken` empty for long-lived keys, because the resolver treats it as optional.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: aws-creds
+     namespace: httpbin
+   type: Opaque
+   stringData:
+     accessKey: ${AGW_AWS_ACCESS_KEY_ID}
+     secretKey: ${AGW_AWS_SECRET_ACCESS_KEY}
+     sessionToken: "${AGW_AWS_SESSION_TOKEN}"
+   EOF
+   ```
+
+3. Create a policy that points at the Secret.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: aws-backend-auth
+     namespace: httpbin
+   spec:
+     targetRefs:
+     - group: {{< reuse "agw-docs/snippets/group.md" >}}
+       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+       name: my-api-gateway-backend
+     backend:
+       auth:
+         aws:
+           secretRef:
+             name: aws-creds
+           region: us-west-2
+           serviceName: execute-api
+   EOF
+   ```
+
+   {{< reuse "agw-docs/snippets/review-table.md" >}}
+
+   | Field | Description |
+   | -- | -- |
+   | `aws.secretRef` | Secret in the policy namespace that holds the credentials. The default resolver reads the `accessKey` and `secretKey` keys, plus `sessionToken` for temporary credentials. Omit the field to use the credential chain of the environment. Cannot be combined with `assumeRole`. |
+   | `aws.region` and `aws.serviceName` | The same signing fields that the implicit form takes. See the table in [Use implicit credentials](#use-implicit-credentials). |
+
+## Assume an IAM role
 
 The `assumeRole` field calls STS with the ambient credentials of the gateway, and signs with the credentials that STS returns. The gateway caches the assumed credentials and refreshes them before they expire. Concurrent requests that need the same credentials share one STS call.
 
-The optional session name and session tags exist for cost attribution. Both accept either a static value or a CEL expression that the gateway evaluates against each request, which lets one gateway attribute cost per user or per team.
+Create the IAM role in AWS before you set the field. The role needs a permissions policy that allows the actions of the service that you call, such as `bedrock:InvokeModel` for Amazon Bedrock. It also needs a trust policy that allows the ambient identity of the gateway to assume it. Which permissions you attach therefore depends on the service that the backend fronts. For the steps, see [Create a role to delegate permissions to an AWS service](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-service.html) in the AWS documentation.
+
+The optional session name and session tags exist for cost attribution. Both accept either a static value or a Common Expression Language (CEL) expression that the gateway evaluates against each request. One gateway can therefore attribute cost per user or per team.
+
+> [!WARNING]
+> A CEL expression that does not produce a valid session name or tag value at request time causes the gateway to reject that request. An expression such as `jwt.sub` therefore makes the route depend on a client authentication policy that populates the JWT claims. Test the expression before you rely on it, because the failure is per-request and not visible in the policy status.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -112,21 +175,6 @@ EOF
 > [!NOTE]
 > A session tag reaches the Cost and Usage Report as `resourceTags/user:<TagKey>`, but only after you activate the tag key as a cost allocation tag in the AWS Billing console. Until you do, the tag is attached to the session and does not appear in any report.
 
-> [!WARNING]
-> A CEL expression that does not produce a valid session name or tag value at request time causes the gateway to reject that request. An expression such as `jwt.sub` therefore makes the route depend on a client authentication policy that populates the JWT claims. Test the expression before you rely on it, because the failure is per-request and not visible in the policy status.
-
-## How the gateway resolves an implicit credential
-
-When you omit `secretRef`, the gateway uses the default credential chain of the AWS SDK. The chain tries the following sources in order and stops at the first one that returns credentials.
-
-1. **Environment variables:** `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN`.
-2. **Shared configuration files:** `~/.aws/config` and `~/.aws/credentials`.
-3. **Web identity token:** `AWS_WEB_IDENTITY_TOKEN_FILE` and `AWS_ROLE_ARN`. This is the source that IAM roles for service accounts and EKS Pod Identity use, and it is the one to expect in a cluster.
-4. **Container credentials:** the credential endpoint that Amazon ECS and other container hosts provide.
-5. **Instance metadata:** IMDSv2 on an EC2 instance.
-
-When you also set `assumeRole`, the credentials from this chain are the source credentials for the STS call rather than the credentials that sign the request.
-
 ## Troubleshoot
 
 | Symptom | Cause |
@@ -143,4 +191,5 @@ When you also set `assumeRole`, the credentials from this chain are the source c
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} aws-backend-auth -n httpbin
+kubectl delete secret aws-creds -n httpbin --ignore-not-found
 ```

@@ -1,16 +1,14 @@
-Send a static credential to a backend, forward the credential that the client sent, or add a second credential alongside either one.
-
 ## About
 
-Three of the backend authentication methods send a credential that the gateway does not have to fetch from anywhere.
+Use one of the following backend authentication methods to send a static credential to your backend. The client may already send the credential that the backend expects. If it does not, the gateway must supply one of its own.
 
-* **`secretRef`** reads a static credential from a Kubernetes Secret. Use this method for an API key or a long-lived token.
-* **`key`** holds the credential inline in the resource. The value is stored in plain text in the cluster and in any Git repository that tracks the resource, so use `secretRef` instead wherever you can.
-* **`passthrough`** forwards the credential that the client sent. Use this method when the backend validates the same credential that the gateway validated.
+* **Kubernetes Secret** (`secretRef`) reads the credential from a Secret in the cluster. Use this method for an API key or a long-lived token.
+* **Inline** (`key`) holds the credential in the policy itself. The value is stored in plain text in the cluster and in any Git repository that tracks the resource, so use a Secret instead wherever you can.
+* **Passthrough** (`passthrough`) forwards the JWT that the client sent. Use this method when the backend validates the same token that the gateway validated.
 
-All three write the credential to the `Authorization` header with a `Bearer ` prefix by default. The `location` field changes where the credential goes.
+All three write the credential to the `Authorization` header with a `Bearer ` prefix by default. The `location` field changes where the gateway writes it.
 
-The `credentials` list is separate. It adds credentials rather than choosing one, so you can send a second or third credential on the same request.
+The `credentials` list is separate. It adds credentials rather than choosing one, so you can send a second or third credential on the same request. Set it on its own, or alongside one of the three methods.
 
 ## Before you begin
 
@@ -47,14 +45,14 @@ The `credentials` list is separate. It adds credentials rather than choosing one
    EOF
    ```
 
-   {{< reuse "agw-docs/snippets/review-table.md" >}}
+   {{< reuse "agw-docs/snippets/review-table.md" >}} The example sets `secretRef.name` only. The remaining fields are optional: you add the `secretRef.*` fields to the same `secretRef` block, and `location` alongside it.
 
    | Field | Description |
    | -- | -- |
    | `secretRef.name` | Required name of a Secret in the same namespace as the policy. |
    | `secretRef.key` | Key in the Secret that holds the credential. Defaults to `Authorization`. |
    | `secretRef.group` and `secretRef.kind` | Credential source other than a Secret. Omit both to use a Secret. Set both together, because setting one alone is rejected. |
-   | `location` | Where the gateway writes the credential. Defaults to the `Authorization` header with a `Bearer ` prefix. Set exactly one of `header`, `queryParameter`, or `cookie`. |
+   | `location` | Where the gateway writes the credential. Defaults to the `Authorization` header with a `Bearer ` prefix. Set exactly one of `header`, `queryParameter`, or `cookie`. For an example, see [Change the credential location](#change-the-credential-location). |
 
 3. Send a request through the gateway to the httpbin `/headers` endpoint, which reflects the headers that the backend received.
 
@@ -71,7 +69,7 @@ The `credentials` list is separate. It adds credentials rather than choosing one
    ```
 
 > [!WARNING]
-> Store the bare token in the Secret. The gateway strips a `Bearer ` prefix only from the default `Authorization` key, so a value of `Bearer my-backend-token` under that key still arrives as `Bearer my-backend-token`. Under any other key, the prefix is not stripped, and the same value arrives as `Bearer Bearer my-backend-token`.
+> Store the bare token in the Secret. The gateway strips a `Bearer ` prefix only when it reads the `Authorization` key, and then re-adds the prefix that the location defines. A value of `Bearer my-backend-token` under that key therefore still arrives as `Bearer my-backend-token`. Under any other key the prefix is not stripped, so the same value arrives as `Bearer Bearer my-backend-token`. Entries in the `credentials` list are never stripped, whichever key they read.
 
 {{< doc-test paths="backend-authn-key" >}}
 YAMLTest -f - <<'EOF'
@@ -105,11 +103,33 @@ grep -q 'Bearer my-backend-token' key-secretref.json || { echo "FAILED: the back
 echo "secretRef backend authentication verified"
 {{< /doc-test >}}
 
-## Change where the credential goes
+## Send an inline credential
 
-Set `location` to write the credential somewhere other than the `Authorization` header. The field is a sibling of `key`, `secretRef`, and `passthrough`, not a field inside them, and it applies to those three methods only.
+The `key` method holds the credential in the policy instead of a Secret. The value is stored in plain text in the cluster, and in any Git repository that tracks the resource. Use the method only when a Secret is not an option.
 
-1. Update the policy to send the credential as an `x-api-key` header instead. The example also reads a different Secret key, to show that the two settings are independent.
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: inline-backend-auth
+  namespace: httpbin
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: httpbin
+  backend:
+    auth:
+      key: my-backend-token
+```
+
+The value is a plain string, not a nested object, and it is capped at 2048 characters. The `key` method takes the same `location` field as `secretRef` and writes to the `Authorization` header with a `Bearer ` prefix by default. Unlike `secretRef`, it never strips a `Bearer ` prefix from the value that you set, so store the bare token here too.
+
+## Change the credential location
+
+Set the `location` field in your {{< reuse "agw-docs/snippets/policy.md" >}} resource to write the credential somewhere other than the `Authorization` header. The field is a sibling of `key`, `secretRef`, and `passthrough`, not a field inside them, and it applies to those three methods only.
+
+1. Update the policy to send the credential as an `x-api-key` header instead.
 
    ```yaml {paths="backend-authn-key"}
    kubectl apply -f- <<EOF
@@ -177,9 +197,11 @@ assert "authorization" not in h, h.get("authorization")
 print("custom credential location verified")'
 {{< /doc-test >}}
 
-## Forward the credential that the client sent
+## Pass through client credentials
 
-The `passthrough` method sends the client credential on to the backend. It exists because the client authentication policies remove the credential that they validate: a [JWT]({{< link-hextra path="/security/jwt/" >}}) or [API key]({{< link-hextra path="/security/apikey/" >}}) policy strips the credential before the gateway forwards the request. The `passthrough` method adds it back.
+If the client already sends the credential that the backend expects, forward it with the `passthrough` method. A client authentication policy strips the credential that it validates before the gateway forwards the request, so without `passthrough` the backend receives nothing.
+
+The method forwards a JWT only. It re-sends the token that a [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) policy validated on the route. An [API key]({{< link-hextra path="/security/apikey/" >}}) or basic auth credential is still stripped, and `passthrough` does not add it back.
 
 ```yaml
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -198,13 +220,20 @@ spec:
 ```
 
 > [!NOTE]
-> On a route with no client authentication policy, `passthrough` does nothing. Nothing removed the client credential, so it reaches the backend whether the method is set or not.
+> On a route with no JWT authentication policy, `passthrough` sends nothing, because no validated token exists for the gateway to re-add. If the route has an API key or a basic auth policy instead, that credential is stripped and `passthrough` does not restore it.
 
-The `location` field controls where the gateway writes the forwarded credential, which does not have to be where the client sent it. To read a JWT from the `Authorization` header and forward it as an `x-forwarded-token` header, set `location` to that header.
+The `passthrough` method has no field for where to read the credential from, because the gateway does not read it from the request at all. It re-sends the token that the JWT authentication policy already validated. The source is therefore wherever that policy's own `location` field reads from, which is the `Authorization` header by default.
+
+The `location` field on `passthrough` controls only where the gateway writes the token on the backend request. That location does not have to be where the client sent it. To read a JWT from the `Authorization` header and forward it as an `x-forwarded-token` header, set `location` to that header.
+
+> [!NOTE]
+> Prefer `passthrough` over the `preserveToken` field of the [JWT authentication]({{< link-hextra path="/security/jwt/setup/" >}}) policy. Both get the token to the backend. However, `preserveToken` leaves the token in its original location, where every policy that runs later can read it. The `passthrough` method re-adds the token only on the request that the gateway forwards to the backend.
 
 ## Send more than one credential
 
-Each entry in the `credentials` list names a Secret and a location. The list is additive, so the gateway sends every entry in it, plus the primary credential if a policy sets one.
+Use the `credentials` list when a backend wants two credentials on the same request, such as a bearer token and a subscription key. The list does not replace the methods in the previous sections, and it is not how you choose one of them. The list is additive. Each entry names a Secret and a location, and the gateway sends every entry in it. If the policy also sets a primary method, the gateway sends that credential too.
+
+The following example keeps `secretRef` as the primary credential and adds two more credentials from a second Secret. The primary credential still goes to the `Authorization` header. Each entry in the list carries its own location, and the policy-level `location` field does not apply to the list.
 
 1. Create a Secret with two more credentials in it.
 
@@ -255,7 +284,7 @@ Each entry in the `credentials` list names a Secret and a location. The list is 
    | -- | -- |
    | `credentials[].location` | Required location that the gateway writes this credential to. Set exactly one of `header`, `queryParameter`, or `cookie`. Each entry carries its own location, and the policy-level `location` field does not apply to the list. |
    | `credentials[].secretRef.name` | Required name of a Secret in the same namespace as the policy. |
-   | `credentials[].secretRef.key` | Key in the Secret that holds the credential. Defaults to `Authorization`, so set it for every entry that reads a Secret with more than one key in it. |
+   | `credentials[].secretRef.key` | Key in the Secret that holds the credential. Defaults to `Authorization`, so set it for every entry that reads a Secret with more than one key in it. Unlike the primary `secretRef`, an entry in the list never strips a `Bearer ` prefix from the value, whichever key it reads. |
 
 3. Send a request to the httpbin `/get` endpoint, which reflects the query string as well as the headers.
 
@@ -284,7 +313,7 @@ Each entry in the `credentials` list names a Secret and a location. The list is 
    }
    ```
 
-The `credentials` list also works with no primary method. Omit `secretRef` and the gateway sends only the entries in the list.
+The `credentials` list also works on its own, or alongside any other primary method. Omit `secretRef` and the gateway sends only the entries in the list. Set `passthrough` instead and the gateway forwards the client's JWT alongside them.
 
 {{< doc-test paths="backend-authn-key" >}}
 # WHAT THIS TEST VALIDATES:

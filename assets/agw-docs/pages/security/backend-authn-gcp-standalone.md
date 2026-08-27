@@ -1,5 +1,3 @@
-Authenticate to a Google Cloud service from agentgateway with a Google-issued token.
-
 ## Configuration examples
 
 To connect to a Google Cloud service, use `gcp`. Agentgateway reads [Application Default Credentials](https://docs.cloud.google.com/docs/authentication/application-default-credentials) from the environment and attaches a token to each request.

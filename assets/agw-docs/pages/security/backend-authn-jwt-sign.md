@@ -1,5 +1,3 @@
-Sign a short-lived JWT with your own private key on every request to a backend.
-
 ## About
 
 Some upstreams do not accept a durable credential at all. The Snowflake SQL API, for example, requires a JWT that is signed with the caller's private key on each call. The `key` and `secretRef` backend authentication methods cannot serve those upstreams, because they forward a static credential.
