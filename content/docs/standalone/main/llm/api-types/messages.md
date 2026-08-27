@@ -59,13 +59,16 @@ routes:
 
 A Messages request does not need a provider that speaks the Anthropic Messages format. When the selected provider advertises a different format, agentgateway converts the request on the way out and converts the reply back into the Messages shape, so the client receives Anthropic responses either way.
 
-Agentgateway uses the first of these formats that the provider advertises.
+Agentgateway uses the first of these formats that the provider supports.
 
 | Order | Provider format | What happens |
 |-------|-----------------|--------------|
 | 1 | `messages` | The request is sent natively, with no conversion. |
 | 2 | `completions` | The request is converted to the OpenAI Chat Completions format. |
 | 3 | `responses` | The request is converted to the OpenAI Responses format. |
+| 4 | Bedrock Converse | The request is converted to the Amazon Bedrock Converse format. |
+
+The first three rows are values that a `custom` provider declares in its `formats` list. Bedrock Converse is not one of those values. A [`bedrock` provider]({{< link-hextra path="/llm/providers/bedrock/" >}}) supports the Converse format and nothing else, so a Messages request that is routed to a Bedrock provider always takes the Converse conversion.
 
 Because `completions` comes before `responses`, a provider that advertises both is unaffected by the Responses conversion. That conversion applies to a provider that advertises `responses` and not `completions`.
 
