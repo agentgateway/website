@@ -79,6 +79,42 @@ shapes, declare each supported format and optionally set a per-format path.
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
 
+## Set the provider identity {#provider-override}
+
+A custom provider reports itself as `custom` in cost lookups and telemetry, because agentgateway has no first-class provider type to name it by. Every custom provider therefore shares one identity, which makes per-provider cost and usage impossible to separate.
+
+Set `custom.providerOverride` to the identity that you want agentgateway to use instead. The following {{< reuse "agw-docs/snippets/backend.md" >}} routes to a self-hosted Llama model and reports it as `vllm` rather than as `custom`.
+
+```yaml
+apiVersion: agentgateway.dev/v1alpha1
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+metadata:
+  name: self-hosted-llama
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  ai:
+    provider:
+      custom:
+        providerOverride: vllm
+        model: llama3.2
+        formats:
+        - type: Completions
+      host: llama.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
+      port: 8000
+```
+
+The value changes two things.
+
+| Consumer | Effect |
+| -- | -- |
+| Model cost catalog | Agentgateway looks up the model price under this provider name. Without a match in the catalog, the request is not priced, and `llm.cost` stays unset. |
+| Telemetry | The `gen_ai.provider.name` attribute on metrics, spans, and access logs carries this value rather than `custom`. |
+
+Set the field on the {{< reuse "agw-docs/snippets/backend.md" >}}, in `spec.ai.provider.custom` or `spec.ai.groups[].providers[].custom`, or on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}. On a model, the field is in `spec.custom`.
+
+> [!NOTE]
+> Choose a value that matches the provider name in your [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}). A value that no catalog entry uses is still reported in telemetry, but no cost is calculated for the request.
+
 ## Route to a host and port
 
 Use `host` and `port` when the LLM provider is reachable by DNS name or IP
