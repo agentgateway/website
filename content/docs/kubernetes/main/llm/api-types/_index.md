@@ -11,4 +11,3 @@ Clients reach a model through a specific API endpoint, such as the OpenAI Chat C
 
 This section covers the API types that take configuration of their own. For the full list of route types, and to map several endpoints on the same {{< reuse "agw-docs/snippets/backend.md" >}}, see [Multiple endpoints]({{< link-hextra path="/llm/providers/multiple-endpoints/" >}}).
 
-- [Gemini]({{< link-hextra path="/llm/api-types/gemini/" >}}): The native Gemini `models/{model}:generateContent`, `models/{model}:streamGenerateContent`, and `models/{model}:countTokens` endpoints for Gemini models.
