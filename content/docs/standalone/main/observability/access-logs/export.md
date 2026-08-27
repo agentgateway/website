@@ -113,13 +113,13 @@ Deploy the OTel Collector into your cluster by using the OpenTelemetry Helm char
    kubectl get pods -n monitoring
    ```
 
-5. Update your agentgateway `values.yaml` to send access logs to the collector service.
+5. Update your agentgateway `values.yaml` to send access logs to the collector service. The chart takes the agentgateway configuration under the top-level `config` field.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   frontendPolicies:
-     accessLog:
-       otlp:
-         host: otel-collector.monitoring.svc.cluster.local:4317
+   config:
+     frontendPolicies:
+       accessLog:
+         otlp:
+           host: otel-collector.monitoring.svc.cluster.local:4317
    ```
 
 6. Apply the change with a Helm upgrade.

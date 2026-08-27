@@ -1,7 +1,8 @@
 ---
 title: SaaS platform
-weight: 10
+weight: 30
 description: Export agentgateway traces to a cloud-hosted SaaS observability platform such as Langfuse over HTTPS.
+test: skip
 ---
 
 SaaS observability backends, such as Langfuse, are cloud-hosted services that require no local infrastructure and expose a public OTLP endpoint over HTTPS. Use `policies.requestHeaderModifier` to pass authentication credentials and `policies.backendTLS` to enable TLS. The same agentgateway configuration works regardless of whether you run the binary, Docker, or Helm.

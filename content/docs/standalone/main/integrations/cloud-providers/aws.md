@@ -166,9 +166,9 @@ Note the following details.
 * **Pin the image tag.** The example pins the tag for this documentation version rather than using `latest`, so that a new release does not change the running proxy without your involvement.
 
 > [!IMPORTANT]
-> Do not publish the admin address from an ECS task. The admin address has no authentication, and an ECS service is usually reachable from a load balancer. To reach the admin UI, serve it on a gateway instead, where you can attach an authentication policy. For more information, see [Serve the UI on a gateway]({{< link-hextra path="/setup/ui/gateway-ui/" >}}).
+> Do not publish the admin address from an ECS task. The admin address has no authentication, and an ECS service is usually reachable from a load balancer. To reach the UI, serve it on a gateway instead, where you can attach an authentication policy. For more information, see [Serve the UI on a gateway]({{< link-hextra path="/setup/ui/gateway-ui/" >}}).
 
-If the EFS volume is mounted read-only, or you bake the configuration file into your own image, set `config.storage.mode` to `readOnly` so that writes from the admin UI fail with a clear message instead of a filesystem error. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+If the EFS volume is mounted read-only, or you bake the configuration file into your own image, set `config.storage.mode` to `readOnly` so that writes from the UI fail with a clear message instead of a filesystem error. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
 
 ## Run on Amazon EKS
 
@@ -218,10 +218,10 @@ The `secretsmanager` statement is needed only if you also route to a non-AWS pro
 | [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) | Storage for the API keys of non-AWS providers |
 | AWS Application Load Balancer | Load balancing and TLS termination in front of the gateway port |
 | Amazon CloudWatch | Destination for the container logs configured by `awslogs` |
-| AWS X-Ray | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/integrations/observability/opentelemetry/" >}}) collector |
+| AWS X-Ray | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/observability/traces/configs/otel/" >}}) collector |
 
 ## Next steps
 
 * [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}}) for the full provider reference.
-* [Set up the admin UI]({{< link-hextra path="/setup/ui/" >}}) to serve the web interface on a gateway.
+* [Set up the UI]({{< link-hextra path="/setup/ui/" >}}) to serve the web interface on a gateway.
 * [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) before you mount a read-only file.
