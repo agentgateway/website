@@ -1,24 +1,25 @@
-Attribution is invoice-grade when the value that names a request survives all the way into the cloud provider's own billing records, so the numbers finance slices are the numbers the provider actually bills. This page configures that for Amazon Bedrock and Google Vertex AI. For the reasoning behind the term, see [Invoice-grade attribution on Amazon Bedrock with agentgateway](https://agentgateway.dev/blog/2026-08-19-invoice-grade-attribution-bedrock).
+Invoice-grade attribution means that the value that names a request reaches the cloud provider's own billing records. Finance then slices the same numbers that the provider charges. Agentgateway can also compute per-team spend from token counts and a price list, but that number is an estimate rather than the invoice. For the reasoning behind the term, see [Invoice-grade attribution on Amazon Bedrock with agentgateway](https://agentgateway.dev/blog/2026-08-19-invoice-grade-attribution-bedrock).
 
-A gateway sees every request and can compute what each team spent from token counts and a price list. It is worth disclosing that this number is merely an estimate: it is the gateway's arithmetic, and the invoice is the provider's. When the attribution value that agentgateway resolves rides the request into the provider's billing records, the bill itself is broken down by team, app, user, or the attribution value you choose, and finance reconciles against the number the provider charges.
-
-The values the operator configures are resolved at the gateway from an identity it validated, or assigned outright, and a caller cannot override them. How much a caller can influence depends on the layer. STS session tags ride the credential exchange: the keys are always the operator's and a caller cannot add or remove one, while a value is whatever the operator's expression resolves, which may deliberately read a caller header such as `request.headers["x-team"]`. Vertex labels and Bedrock request metadata ride the request, so there the operator chooses between merging caller-sent keys and replacing them.
+You configure the attribution values, and agentgateway resolves each one from an identity that it validated or from a static value that you assign.
 
 > [!NOTE]
-> Each cloud carries attribution differently. On Amazon Bedrock, the value rides the credentials for the upstream call as STS session tags and the role session name, and per-request metadata lands in the model invocation logs. On Google Vertex AI, the value rides the request as billing labels. The mechanisms do not overlap; configure each provider you use.
+> Invoice-grade attribution depends on the provider. The provider must accept a per-request attribution value and expose that value in its billing data. Providers with no equivalent billing dimension cannot support it. For those providers, attribute usage inside agentgateway instead, such as with [virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}) and an HTTPRoute to your LLM provider, such as [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}}).
-2. Apply a [JWT authentication policy]({{< link-hextra path="/security/jwt/setup/" >}}) to the route, so that `jwt.*` values are available to attribution expressions.
+1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
+2. Create the {{< reuse "agw-docs/snippets/backend.md" >}} and HTTPRoute for the LLM provider that you want to attribute, such as [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}}).
+3. Apply a [JWT authentication policy]({{< link-hextra path="/security/jwt/setup/" >}}) to the route, so that `jwt.*` values are available to attribution expressions.
 
 ## Amazon Bedrock
 
-Bedrock attributes inference cost to the IAM principal that made the call. For traffic through a gateway, the documented pattern is a per-caller session: agentgateway assumes a role for each request, with a session name and session tags derived from the caller's identity. The session name lands in AWS CloudTrail and in the Cost and Usage Report's IAM principal column; the tags surface as cost allocation tags in Cost Explorer and the Cost and Usage Report.
+Bedrock attributes inference cost to the IAM principal that made the call. For gateway traffic, the documented pattern is a per-caller session. Agentgateway assumes an AWS Identity and Access Management (IAM) role for each request. The session name and the session tags come from the caller's identity.
+
+The session name lands in AWS CloudTrail and in the IAM principal column of the Cost and Usage Report. The tags surface as cost allocation tags in Cost Explorer and in the Cost and Usage Report.
 
 ### Session identity and tags
 
-Configure `assumeRole` in the `auth.aws` settings of the {{< reuse "agw-docs/snippets/backend.md" >}}. The session name is either a static `sessionName` or a `sessionNameExpression`; each tag is either a static `value` or a CEL `expression` evaluated against the request.
+Configure `assumeRole` in the `auth.aws` settings of the {{< reuse "agw-docs/snippets/backend.md" >}}. The session name is either a static `sessionName` or a `sessionNameExpression`. Each tag is either a static `value` or a CEL `expression` that agentgateway evaluates against the request.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -53,20 +54,23 @@ EOF
 
 | Setting | Description |
 |---------|-------------|
-| `assumeRole.roleArn` | The role agentgateway assumes for each request. The workload's ambient credentials are the source credentials for STS, and must be allowed `sts:AssumeRole` and `sts:TagSession` on the role. |
-| `assumeRole.sessionName` | A static STS `RoleSessionName`, 2 to 64 characters matching `[\w+=,.@-]`. If unset, AWS generates a random name. |
-| `assumeRole.sessionNameExpression` | A CEL expression evaluated against each request to produce the session name, such as `jwt.sub`. A per-caller session name makes callers distinguishable in CloudTrail and in the Cost and Usage Report. Set either `sessionName` or `sessionNameExpression`, not both. |
-| `assumeRole.tags` | STS session tags passed to `AssumeRole`. Each tag has a `key` and exactly one of `value` (static) or `expression` (computed per request). Once a key is activated as a cost allocation tag, it appears in the Cost and Usage Report under `resourceTags/user:<key>`. STS allows at most 50 tags per role session. |
+| `assumeRole.roleArn` | The role that agentgateway assumes for each request. The ambient credentials of the workload are the source credentials for AWS Security Token Service (STS), and must be allowed `sts:AssumeRole` and `sts:TagSession` on the role. |
+| `assumeRole.sessionName` | A static STS `RoleSessionName`, 2 to 64 characters that match `[\w+=,.@-]`. If you do not set it, AWS generates a random name. |
+| `assumeRole.sessionNameExpression` | A CEL expression that agentgateway evaluates against each request to produce the session name, such as `jwt.sub`. A per-caller session name makes callers distinguishable in CloudTrail and in the Cost and Usage Report. Set either `sessionName` or `sessionNameExpression`, not both. |
+| `assumeRole.tags` | STS session tags that agentgateway passes to `AssumeRole`. Each tag has a `key` and exactly one of `value` for a static value or `expression` for a value that agentgateway computes per request. After you activate a key as a cost allocation tag, it appears in the Cost and Usage Report under `resourceTags/user:<key>`. STS allows at most 50 tags per role session, with keys up to 128 characters and values up to 256 characters. |
 
-Static values are validated against STS limits when the resource is accepted. Expressions are evaluated per request and fail closed: an expression that errors, or produces an empty or invalid value, rejects the request before any call to AWS is made, so no request reaches Bedrock unattributed.
+Agentgateway checks static values against the STS limits when the resource is accepted. Expressions are evaluated per request and fail closed. An expression that errors, or that produces an empty or invalid value, rejects the request before agentgateway calls AWS. No request reaches Bedrock unattributed.
 
-To see the tags on the bill, activate the keys as cost allocation tags in the AWS Billing console. New keys take up to 24 hours to appear for activation, and activated tags apply to usage from that point on.
+To see the tags on the bill, activate the keys as cost allocation tags in the AWS Billing console. New keys take up to 24 hours to become available for activation. Activated tags apply to usage from that point on.
 
+{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 ### Per-request metadata
 
-Bedrock also accepts per-call request metadata, recorded in the model invocation logs rather than on the bill. Session tags are bound per session and surface only as aggregated billing data; request metadata is recorded per call, so it is where per-prompt attribution lives, queryable in CloudWatch Logs Insights or Amazon Athena. Bedrock does not enforce it: a request that omits it succeeds, and the provider records whatever the caller sends. Setting it at the gateway is what makes it mandatory.
+Bedrock also accepts per-call request metadata, which it records in the model invocation logs rather than on the bill. Session tags are bound per session and surface only as aggregated billing data. Request metadata is recorded per call, so it is where per-prompt attribution lives. You can query it in CloudWatch Logs Insights or Amazon Athena.
 
-Set it with a `finalTransformations` entry in an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the route. Final transformations run after the request is converted to the provider's format, and the converted request is available to the expression as `llmRequest`; on the Converse API the field is `requestMetadata`.
+Bedrock does not require request metadata. A request that omits it still succeeds, and Bedrock records whatever the caller sends. Setting the metadata at the gateway is what makes it mandatory.
+
+Set the metadata with a `finalTransformations` entry in an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the route. Agentgateway applies a final transformation after it converts the request to the provider format. On the Converse API that Bedrock chat routes use, the field is `requestMetadata`.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -92,16 +96,23 @@ spec:
 EOF
 ```
 
-Two postures are available, because callers may send their own metadata through the `x-bedrock-metadata` header:
+Callers can send their own metadata in the `x-bedrock-metadata` header, so two postures are available:
 
-- **Merge** (above): the operator's keys win on conflict, and caller keys the operator did not claim survive. `coalesce` is required: `.merge` errors when the caller sent no metadata and the field is absent from the converted request, and `coalesce` then falls through to the literal. Without it, those requests would be forwarded without metadata, because a transformation whose expression errors leaves the field untouched.
-- **Replace**: an expression of `{"user": jwt.sub, "team": request.headers["x-team"]}` sets the operator's values and drops any caller metadata.
+- **Merge**, as in the previous example. Your keys win on conflict, and caller keys that you did not claim survive. The `coalesce` call is required, because `.merge` errors when the caller sent no metadata and the field is absent from the converted request. The `coalesce` call then falls through to the literal.
+- **Replace**. Your values are the only ones that reach Bedrock, and any caller metadata is dropped. Use an expression of `{"user": jwt.sub, "team": request.headers["x-team"]}` instead of the `coalesce` call.
 
-Request metadata is recorded only when model invocation logging is enabled in the region. Bedrock allows at most 16 entries, with keys and values up to 256 characters in a restricted character set; values outside those limits are rejected by Bedrock at request time. Final transformations set fields on the converted request body, which covers the Converse API used for chat routes; the `InvokeModel` family (embeddings, passthrough) takes metadata as a signed header instead, which this transformation does not set.
+> [!IMPORTANT]
+> A final transformation fails open, unlike a session tag. In a final transformation, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that fails to evaluate removes the target field instead of setting it, and the request still reaches the provider. A mistyped field name therefore drops attribution silently, and it also drops any metadata that the caller sent. For more information, see [Transform requests]({{< link-hextra path="/llm/transformations/" >}}).
+
+Bedrock records request metadata only when model invocation logging is enabled in the region. Bedrock allows at most 16 entries, with keys and values up to 256 characters in a restricted character set. Bedrock rejects values outside those limits at request time.
+
+A final transformation sets fields on the converted request body, which covers the Converse API that chat routes use. The `InvokeModel` family, such as embeddings and passthrough, takes metadata as a signed header instead, which this transformation does not set.
 
 ## Google Vertex AI
 
-On Vertex AI the attribution value rides the native `generateContent` request as billing labels, which land in the Google Cloud billing export. Without a transformation, the labels on the request are whatever the caller sent, and the transformation is what makes them operator-set. Configure the labels with a `finalTransformations` entry on the policy that targets the Vertex route; the same merge and replace postures apply, and callers may send their own `labels`.
+On Vertex AI, agentgateway sets billing labels on the native `generateContent` request, and those labels reach the Google Cloud billing export. Without a transformation, the labels on the request are whatever the caller sent. The transformation is what makes them yours.
+
+Create the {{< reuse "agw-docs/snippets/backend.md" >}} and HTTPRoute for [Google Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}}) first. Then configure the labels with a `finalTransformations` entry in an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the Vertex AI route. The same merge and replace postures apply, because callers can send their own `labels`.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -127,24 +138,72 @@ spec:
 EOF
 ```
 
-Google allows up to 64 labels per request, with keys and values up to 63 characters from a restricted character set. Values outside those limits are rejected by Vertex AI at request time. Billing export rows carry the labels next to the cost, so the export can be grouped by `labels.tenant` or any other key you set.
+To replace caller labels instead of merging them, use an expression of `{"tenant": jwt.sub, "cost_center": "platform"}`.
+
+Google allows up to 64 labels per request, with keys and values up to 63 characters from a restricted character set. Vertex AI rejects values outside those limits at request time. Billing export rows carry the labels next to the cost. You can group the export by `labels.tenant` or by any other key that you set.
+{{% /version %}}
 
 ## Choose attribution values
 
 Where the value comes from decides what the bill is worth in a dispute.
 
-- `jwt.*` values come from a token agentgateway validated under a JWT authentication policy. The value is a fact about who logged in, checked on every request.
-- Static values are assigned by the operator to the backend or route, for callers that do not log in, such as batch jobs and internal services.
-- `request.headers[...]` is the caller's word. Use it only for dimensions the caller is trusted to assert, such as an environment name, never for the identity that chargeback depends on.
+- `jwt.*` values come from a token that agentgateway validated under a JWT authentication policy. The value is a fact about who logged in, checked on every request.
+- Static values are the ones that you assign to the backend or route. Use them for callers that do not log in, such as batch jobs and internal services.
+- `request.headers[...]` is the caller's word. Use it only for dimensions that the caller is trusted to assert, such as an environment name. Never use it for the identity that chargeback depends on.
 
-Keep the values low-cardinality on the bill. Every distinct session tag set is its own STS session and its own line items in the Cost and Usage Report, so tag by team and cost center everywhere, and per user only where the chargeback question needs it. Per-prompt detail belongs in request metadata and the invocation logs, not in tags.
+Keep the values low-cardinality on the bill. Every distinct set of session tags is its own STS session and its own set of line items in the Cost and Usage Report. Tag by team and cost center everywhere, and tag per user only where the chargeback question needs it.
+
+{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+Per-prompt detail belongs in request metadata and the invocation logs, not in session tags.
+{{% /version %}}
 
 ## Verify
 
-- **AWS CloudTrail**: filter by event name `Converse` or `InvokeModel`. `userIdentity.arn` ends with the session name resolved for the caller, not one shared name for every request through the gateway.
-- **Bedrock model invocation logs**: each record carries `requestMetadata` with the keys you set.
-- **AWS Cost Explorer**: after the tag keys are activated, group Bedrock cost by any of them.
-- **Google Cloud billing export**: rows carry `labels.<key>` next to the Vertex AI cost.
+{{% version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+1. Open AWS CloudTrail and filter the event history by the event name `Converse` or `InvokeModel`.
+2. Open an event and confirm that `userIdentity.arn` ends with the session name that agentgateway resolved for the caller. One shared name for every request means that attribution is not working.
+
+   ```console
+   arn:aws:sts::123456789012:assumed-role/bedrock-invoke/alice@example.com
+   ```
+
+3. In the AWS Billing console, confirm that the tag keys are activated as cost allocation tags. Then open Cost Explorer, filter by the Bedrock service, and group by one of the tag keys.
+{{% /version %}}
+{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{< tabs >}}
+{{% tab name="Amazon Bedrock" %}}
+1. Open AWS CloudTrail and filter the event history by the event name `Converse` or `InvokeModel`.
+2. Open an event and confirm that `userIdentity.arn` ends with the session name that agentgateway resolved for the caller. One shared name for every request means that attribution is not working.
+
+   ```console
+   arn:aws:sts::123456789012:assumed-role/bedrock-invoke/alice@example.com
+   ```
+
+3. In the AWS Billing console, confirm that the tag keys are activated as cost allocation tags. Then open Cost Explorer, filter by the Bedrock service, and group by one of the tag keys.
+4. Query the Bedrock model invocation logs in CloudWatch Logs Insights and confirm that each record carries `requestMetadata` with the keys that you set.
+
+   ```
+   fields @timestamp, requestMetadata.user, requestMetadata.team
+   | sort @timestamp desc
+   | limit 20
+   ```
+{{% /tab %}}
+{{% tab name="Google Vertex AI" %}}
+1. Confirm that [Cloud Billing data export to BigQuery](https://cloud.google.com/billing/docs/how-to/export-data-bigquery) is enabled for the billing account.
+2. Query the detailed usage cost table and confirm that the label keys that you set appear next to the Vertex AI cost. Billing export rows appear within a few hours of the request.
+
+   ```sql
+   SELECT labels.value AS tenant, SUM(cost) AS cost
+   FROM `PROJECT.DATASET.gcp_billing_export_resource_v1_BILLING_ACCOUNT_ID`,
+     UNNEST(labels) AS labels
+   WHERE service.description = 'Vertex AI'
+     AND labels.key = 'tenant'
+   GROUP BY tenant
+   ORDER BY cost DESC
+   ```
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
 
 ## Learn more
 
