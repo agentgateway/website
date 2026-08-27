@@ -2,6 +2,8 @@
 title: Prometheus
 weight: 30
 description: Scrape agentgateway metrics with Prometheus.
+aliases:
+  - /docs/standalone/main/integrations/observability/prometheus/
 ---
 
 [Prometheus](https://prometheus.io/) is an open-source monitoring system that scrapes and stores time-series metrics. It is the standard way to collect and query agentgateway metrics, and is the data source behind the [Grafana dashboard]({{< link-hextra path="/observability/metrics/grafana/" >}}). Prometheus is well-suited for agentgateway because it efficiently handles high-cardinality label sets, such as per-route, per-model, and per-provider breakdowns. Its query language (PromQL) makes it easy to build alerts and dashboards from those labels.

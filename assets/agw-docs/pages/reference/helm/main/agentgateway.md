@@ -99,3 +99,4 @@
 | serviceAccount.create | bool | Specify whether a service account should be created.<br/><br/>The default value is `true`. |
 | serviceAccount.name | string | Set the name of the service account to use. If not set and create is true, a name is generated using the fullname template.<br/><br/>The default value is `""`. |
 | tolerations | list | Set tolerations for pod scheduling, such as 'key: "nvidia.com/gpu"'.<br/><br/>The default value is `[]`. |
+| topologySpreadConstraints | list | Configure how controller pods are spread across topology domains, such as nodes or zones.<br/><br/>The default value is `[]`. |

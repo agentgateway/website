@@ -2,6 +2,8 @@
 title: Jaeger
 weight: 20
 description: Export agentgateway traces to Jaeger for local collection and visualization by using its built-in OTLP receiver and web UI.
+aliases:
+  - /docs/standalone/latest/integrations/observability/jaeger/
 ---
 
 [Jaeger](https://www.jaegertracing.io/) is an open-source distributed tracing platform that collects, stores, and visualizes traces. It is a quick way to get started with tracing for agentgateway because it ships with a built-in OTLP receiver, so you do not need a separate collector, and a web UI to browse and query spans.

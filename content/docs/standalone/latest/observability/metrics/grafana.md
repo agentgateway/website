@@ -6,6 +6,8 @@ test:
   grafana:
   - file: ${versionRoot}/observability/metrics/grafana.md
     path: grafana
+aliases:
+  - /docs/standalone/latest/integrations/observability/grafana/
 ---
 
 [Grafana](https://grafana.com/) is an open-source visualization platform that turns time-series data into dashboards, graphs, and alerts. It is the standard way to visualize agentgateway metrics that are collected by [Prometheus]({{< link-hextra path="/observability/metrics/prometheus/" >}}), and supports correlating metrics with traces by adding Jaeger as a second data source in the same Grafana instance.

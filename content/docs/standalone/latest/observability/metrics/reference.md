@@ -3,6 +3,8 @@ title: Metrics reference
 weight: 50
 description: Review the metrics that are available in agentgateway.
 test: skip
+aliases:
+  - /docs/standalone/latest/reference/observability/metrics/
 ---
 
 > [!NOTE]
