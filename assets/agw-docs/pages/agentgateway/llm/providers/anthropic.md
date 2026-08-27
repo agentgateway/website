@@ -669,14 +669,24 @@ Example output:
 {{% /tab %}}
 {{% tab name="AWS SigV4" %}}
 
-1. Make sure the agentgateway proxy pod has access to AWS credentials, for example through [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) or a Kubernetes secret with `accessKey`, `secretKey`, and optional `sessionToken`. For the secret-based approach:
+{{< reuse "agw-docs/snippets/aws-creds.md" >}}
+
+1. Make sure the agentgateway proxy pod has access to AWS credentials, for example through [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) or a Kubernetes secret with `accessKey`, `secretKey`, and optional `sessionToken`. For the secret-based approach, save the credentials as environment variables.
+
+   ```bash
+   export AGW_AWS_ACCESS_KEY_ID="<aws-access-key-id>"
+   export AGW_AWS_SECRET_ACCESS_KEY="<aws-secret-access-key>"
+   export AGW_AWS_SESSION_TOKEN="<aws-session-token>"
+   ```
+
+   Then, create the secret.
 
    ```yaml
    kubectl create secret generic anthropic-aws-creds \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --from-literal=accessKey="$AWS_ACCESS_KEY_ID" \
-     --from-literal=secretKey="$AWS_SECRET_ACCESS_KEY" \
-     --from-literal=sessionToken="$AWS_SESSION_TOKEN" \
+     --from-literal=accessKey="$AGW_AWS_ACCESS_KEY_ID" \
+     --from-literal=secretKey="$AGW_AWS_SECRET_ACCESS_KEY" \
+     --from-literal=sessionToken="$AGW_AWS_SESSION_TOKEN" \
      --type=Opaque \
      --dry-run=client -o yaml | kubectl apply -f -
    ```

@@ -3,7 +3,7 @@ Deploy agentgateway as a standalone Kubernetes workload by using the standalone 
 Use this chart when you want the standalone agentgateway binary model, but you want Kubernetes to run and expose the process for you. The chart runs the same binary and reads the same configuration file that the binary and Docker deployments use. You supply that file through Helm values, and the chart renders it into a ConfigMap that the proxy reads at startup.
 
 > [!TIP]
-> This chart installs agentgateway as a single, unmanaged Kubernetes deployment. You manage agentgateway config by upgrading the Helm values, and optionally adding a PostgreSQL database for editting the agentgateway config through the admin UI. If you want a managed Kubernetes solution that includes a control plane and Gateway API resources, see the [Kubernetes mode documentation](https://agentgateway.dev/docs/kubernetes/).
+> This chart installs agentgateway as a single, unmanaged Kubernetes deployment. You manage agentgateway config by upgrading the Helm values, and optionally adding a PostgreSQL database for editting the agentgateway config through the UI. If you want a managed Kubernetes solution that includes a control plane and Gateway API resources, see the [Kubernetes mode documentation](https://agentgateway.dev/docs/kubernetes/).
 
 ## Before you begin
 
@@ -58,7 +58,7 @@ The chart creates the following resources. Each resource is named after the Helm
 | ServiceAccount | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Identity for the proxy pod. |
 
 > [!NOTE]
-> The chart creates no PersistentVolumeClaim and no Service for the admin port. Configuration lives in the ConfigMap, and you reach the admin interface by port-forwarding the Deployment. To persist configuration changes that you make in the UI, see [Store configuration in a database]({{< link-hextra path="/deployment/helm/storage/" >}}).
+> The chart creates no PersistentVolumeClaim and no Service for the admin port. Configuration lives in the ConfigMap, and you reach the admin interface by port-forwarding the Deployment. To persist configuration changes that you make in the UI, see {{< version exclude-if="1.4.x" >}}[Store configuration in a database]({{< link-hextra path="/deployment/helm/storage/" >}}){{< /version >}}{{< version include-if="1.4.x" >}}[Store configuration in a database](#store-configuration-in-a-database){{< /version >}}.
 
 ## Verify the installation
 
@@ -66,7 +66,7 @@ The chart creates the following resources. Each resource is named after the Helm
 
    ```sh
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     -l app.kubernetes.io/name=agentgateway-standalone
+     -l app.kubernetes.io/name={{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}
    ```
 
    Example output:
@@ -101,7 +101,7 @@ The chart creates the following resources. Each resource is named after the Helm
 
 ## Open the UI
 
-For quick access to the admin UI, port-forward the agentgateway Deployment and open the `/ui` path.
+For quick access to the UI, port-forward the agentgateway Deployment and open the `/ui` path.
 
 <!--TODO secure UI
 To securely expose the UI on your own domain, see the guide.-->
@@ -164,7 +164,7 @@ The configuration examples throughout the standalone documentation are complete 
 
 ### Edit the configuration in the UI
 
-The admin UI reads the running configuration in every mode. Whether you can save an edit depends on the `mode` value.
+The UI reads the running configuration in every mode. Whether you can save an edit depends on the `mode` value.
 
 In the default `readonly` mode, the ConfigMap is mounted read-only, so a save fails.
 
@@ -172,10 +172,34 @@ In the default `readonly` mode, the ConfigMap is mounted read-only, so a save fa
 failed to write to file `/config/config.yaml`: Read-only file system (os error 30)
 ```
 
-In `database` mode, you can add and edit the resources that the UI manages, such as MCP targets, LLM providers, models, and routes. Agentgateway stores the configuration in PostgreSQL and merges them over the ConfigMap baseline at read time. Saving the configuration file as a whole still fails, because the file itself remains read-only. To set up this mode, see [Store configuration in a database]({{< link-hextra path="/deployment/helm/storage/" >}}).
+In `database` mode, you can add and edit the resources that the UI manages, such as MCP targets, LLM providers, models, and routes. Agentgateway stores the configuration in PostgreSQL and merges them over the ConfigMap baseline at read time. Saving the configuration file as a whole still fails, because the file itself remains read-only. To set up this mode, see {{< version exclude-if="1.4.x" >}}[Store configuration in a database]({{< link-hextra path="/deployment/helm/storage/" >}}){{< /version >}}{{< version include-if="1.4.x" >}}[Store configuration in a database](#store-configuration-in-a-database){{< /version >}}.
 
 > [!IMPORTANT]
 > Treat the Helm values as the source of truth for the configuration file, and the UI as the way to manage the resources that are layered on top of it. To change a field that the UI does not manage, such as a listener or a bind, update your Helm values and upgrade the release.
+
+{{% version include-if="1.4.x" %}}
+## Store configuration in a database
+
+To keep configuration changes that you make in the UI, run PostgreSQL and set the agentgateway configuration `mode` to `database` in your Helm values file. Agentgateway creates the schema that it needs on first startup, so no migration step is required.
+
+```yaml
+mode: database
+database:
+  postgres:
+    url: postgres://agw:secret@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+config:
+  binds:
+  - port: 4000
+    listeners:
+    - routes:
+      - backends:
+        - host: httpbin.httpbin.svc.cluster.local:8000
+```
+
+The chart rejects a `database.postgres.url` value that does not begin with `postgres://` or `postgresql://`, and rejects the value entirely when `mode` is `readonly`.
+
+Both modes support more than one replica. To scale the deployment, set `replicaCount`.
+{{% /version %}}
 
 ## Expose listeners
 

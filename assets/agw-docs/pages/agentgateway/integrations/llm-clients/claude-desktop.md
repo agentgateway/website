@@ -10,21 +10,36 @@ The steps in this guide run agentgateway on the same machine as Claude Desktop a
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. Install [Claude Desktop](https://claude.com/download).
-3. Decide how the proxy authenticates callers, and meet the requirements for that path.
+3. Choose how the proxy authenticates callers.
 
-   * **A gateway API key**, which [Use Client Setup with a gateway API key](#client-setup) covers. Configure an LLM model and a [virtual API key]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) in agentgateway.
-   * **A shared token from a Claude subscription**, which [Configure agentgateway with a Claude subscription](#configure-agentgateway) covers. You need a Claude Teams or Pro subscription, and the [Claude Code CLI](https://code.claude.com/docs) (`npm install -g @anthropic-ai/claude-code`), which provides the `claude setup-token` command.
-   * **A per-user token from your identity provider**, which [Authenticate users with your identity provider](#sso) covers. You need an OIDC provider and an Anthropic API key for the proxy to send upstream.
+   | Method | When to use | Upstream billing |
+   | -- | -- | -- |
+   | **[Gateway API key](#gateway-api-key)** | Recommended starting point. Agentgateway validates a client key and adds a separately managed Anthropic API key upstream. | Anthropic API account |
+   | **[Identity provider](#sso)** | Recommended for an enterprise rollout. Agentgateway validates each user's OIDC token and adds a separately managed Anthropic API key upstream. | Anthropic API account |
+   | **[Claude subscription passthrough](#configure-agentgateway)** | Advanced option for preserving per-user Claude subscription usage. Agentgateway passes each user's token upstream and does not independently authenticate the caller. | User's Claude subscription |
 
-## Use Client Setup with a gateway API key {#client-setup}
+   For a gateway API key, configure an LLM model and a [virtual API
+   key]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) in
+   agentgateway. For subscription passthrough, you need a Claude Pro, Max,
+   Team, or Enterprise subscription and the [Claude Code
+   CLI](https://code.claude.com/docs), which provides the `claude setup-token`
+   command. For identity-provider authentication, you need an OIDC provider
+   and an Anthropic API key for the proxy to send upstream.
+
+## Use Client Setup with a gateway API key {#gateway-api-key}
 
 {{< reuse "agw-docs/snippets/llm-client-setup-callout.md" >}}
 
-For Claude Desktop, Client Setup outputs the gateway URL and API key; it does not configure a model name in Claude Desktop. The gateway route must already accept the key and support the Anthropic Messages API at `/v1/messages`, and agentgateway must hold the upstream provider credential. An endpoint that exposes only the OpenAI-compatible `/v1/chat/completions` API is not sufficient. For more information about the UI, see [Admin UI]({{< link-hextra path="/operations/ui/" >}}).
+For Claude Desktop, Client Setup outputs the gateway URL and API key; it does not configure a model name in Claude Desktop. The gateway route must already accept the key and support the Anthropic Messages API at `/v1/messages`, and agentgateway must hold the upstream provider credential. An endpoint that exposes only the OpenAI-compatible `/v1/chat/completions` API is not sufficient. For more information about the UI, see [UI]({{< link-hextra path="/operations/ui/" >}}).
 
-To use a Claude subscription token instead of a gateway API key, continue with the following sections.
+For a managed rollout, see [Manage gateway API keys with Microsoft
+Intune]({{< link-hextra
+path="/integrations/llm-clients/microsoft-intune/#claude-gateway-api-key" >}}).
 
-## Configure agentgateway with a Claude subscription {#configure-agentgateway}
+To preserve per-user subscription billing instead of using a gateway API key,
+continue with the following advanced configuration.
+
+## Optional: Use Claude subscription passthrough {#configure-agentgateway}
 
 Start agentgateway with the Teams configuration. Agentgateway listens on port `4001` and exposes Claude at the `/claude` path.
 
@@ -65,6 +80,11 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
    agentgateway -f config.yaml
    ```
 
+The backend deliberately has no `backendAuth` policy. In subscription mode,
+the bearer token that each user creates with `claude setup-token` must pass
+through agentgateway to Anthropic. Do not add a provider API key or apply a
+virtual API key policy to this route.
+
 > [!NOTE]
 > Claude Code automatically sends the `anthropic-beta: oauth-2025-04-20` header required for OAuth-based authentication. Claude Desktop may require this header to be set as well depending on your client version. If requests fail with a 400 error, add the following to the `passthrough` route policy in your config:
 >
@@ -75,7 +95,7 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
 >       anthropic-beta: oauth-2025-04-20
 > ```
 
-## Configure Claude Desktop with a Claude subscription
+## Configure Claude Desktop with a Claude subscription {#configure-claude-desktop}
 
 1. Get a bearer token for your Claude account.
 
@@ -95,9 +115,31 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
    http://127.0.0.1:4001/claude
    ```
 
-5. For the **Credential kind** dropdown, select `Static API key` and then in the **Gateway API key** field, enter the bearer token you copied in step 1. To authenticate each user with your identity provider instead of requiring users to pass the same shared token, see [Authenticate users with your identity provider](#sso).
+5. For **Credential kind**, select **Static API key**. For **Gateway auth
+   scheme**, select **Bearer**, and enter the token from step 1 in **Gateway
+   API key**. Each user must use their own subscription token. To authenticate
+   users with your identity provider and use a centrally managed provider
+   credential instead, see [Authenticate users with your identity
+   provider](#sso).
 
-6. Click **Apply Changes**, then fully quit Claude Desktop and reopen it. Claude Desktop reads its configuration only at launch.
+6. Open **Models** and add at least one full model ID that the subscription can
+   use, such as `claude-opus-5`. Do not use an alias such as `opus`. The
+   first entry is the default. Turn off **Model discovery**, or leave it unset;
+   an explicit model list makes discovery unnecessary.
+
+7. Click **Test connection**. Claude Desktop tests inference with the first
+   configured model. If no explicit model is configured, the test first calls
+   `<base-url>/v1/models` and fails when the gateway or provider does not make
+   that endpoint available to the subscription token.
+
+   > [!NOTE]
+   > With subscription passthrough, the connection test might return HTTP 429
+   > with `rate_limit_error` even when normal Cowork inference works. Apply the
+   > configuration, send a harmless prompt, and check the agentgateway request
+   > log. If the actual `/v1/messages` request returns HTTP 200, treat the
+   > connection-test result as a false negative.
+
+8. Click **Apply Changes**, then fully quit Claude Desktop and reopen it. Claude Desktop reads its configuration only at launch.
 
    > [!NOTE]
    > On macOS, Claude Desktop might not enter third-party inference mode from the settings panel alone. If the app still signs in to Anthropic after you reopen it, set `deploymentMode` to `3p` in the third-party configuration file, then quit and reopen the app again.
@@ -112,13 +154,19 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
    > EOF
    > ```
 
+For a managed rollout of this subscription configuration, see [Manage Claude
+subscriptions with Microsoft Intune]({{< link-hextra
+path="/integrations/llm-clients/microsoft-intune/#claude-subscription" >}}).
+
 ## Authenticate users with your identity provider {#sso}
 
 {{< reuse "agw-docs/snippets/claude-desktop-sso-overview.md" >}}
 
 The following steps use Microsoft Entra ID as the example identity provider. Any OpenID Connect (OIDC) provider works the same way. Substitute your own issuer URL, client ID, and JWKS URL.
 
-1. Register an application with your identity provider, and record the client ID and the issuer URL. Claude Desktop is a public client that receives the redirect on a loopback address, so configure the application accordingly.
+1. Register a public-client application with your identity provider, and
+   record the client ID and issuer URL. Do not create a client secret. The
+   following values configure Claude Desktop's browser flow.
 
    | Setting | Value |
    | -- | -- |
@@ -130,7 +178,10 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    > Two details about the redirect URI cause most failures:
    >
    > * Include the `/callback` path. Claude Desktop redirects to `http://127.0.0.1:<port>/callback`, and a registration of `http://127.0.0.1` alone does not match. On Entra ID, the mismatch returns `AADSTS50011`.
-   > * Register the URI as a native or desktop client, not a web client. Claude Desktop picks an ephemeral port for each sign-in. A native client registration accepts any loopback port, as described in [RFC 8252](https://datatracker.ietf.org/doc/html/rfc8252#section-7.3), and a web client registration requires an exact port match. On Entra ID, select the **Mobile and desktop applications** platform and set **Allow public client flows** to **Yes**.
+   > * Register the URI as a native or desktop client, not a web client. Claude Desktop picks an ephemeral port for each sign-in. A native client registration accepts any loopback port, as described in [RFC 8252](https://datatracker.ietf.org/doc/html/rfc8252#section-7.3), and a web client registration requires an exact port match. On Entra ID, select the **Mobile and desktop applications** platform. The browser and broker authorization-code flows do not require the legacy **Allow public client flows** toggle; leave it disabled.
+   > * Do not register the agentgateway hostname as the redirect URI. Claude
+   >   Desktop receives the authorization response, then sends the resulting
+   >   token to the gateway URL on inference requests.
 
 2. Save the identifiers from your registration and your Anthropic API key, so that agentgateway can resolve them. Agentgateway reads variable references in the configuration file from the environment at startup.
 
@@ -140,7 +191,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    export ANTHROPIC_API_KEY=<your-anthropic-api-key>
    ```
 
-3. Update your configuration file to validate the token on the route and to send an Anthropic API key upstream. Interactive sign-in puts the identity provider token in the `Authorization` header, so the proxy must supply the provider credential itself rather than pass a user token upstream.
+3. Update your configuration file to validate the token on the route and to send an Anthropic API key upstream. Interactive sign-in puts the identity provider token in the `Authorization` header, so the proxy must supply the provider credential itself rather than pass a user token upstream. Replace any client API key authentication on this route instead of requiring both authentication methods.
 
    ```yaml
    cat > config.yaml << 'EOF'
@@ -191,6 +242,10 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    | `jwtAuth.jwks.url` | The JWKS endpoint that agentgateway fetches signing keys from. |
    | `backendAuth.key` | The Anthropic API key that agentgateway sends upstream. Because the user token authenticates the caller, this credential no longer comes from the client. |
 
+   Use the issuer base URL shown in the example. Do not use the OpenID
+   discovery-document URL, which ends in `/.well-known/openid-configuration`,
+   as the issuer.
+
    For more detail on JWT validation, see [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}).
 
 4. Restart agentgateway to load the new configuration.
@@ -209,10 +264,19 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    | Issuer URL | `https://login.microsoftonline.com/$TENANT_ID/v2.0` |
    | Bearer token | **ID token** |
    | Scopes | `openid profile email offline_access` |
+   | Sign-in flow | **Browser** for this initial test; use the [Intune guide]({{< link-hextra path="/integrations/llm-clients/microsoft-intune/#claude-entra" >}}) to move managed devices to **Broker** |
+   | Model discovery | **Off** when you use a fixed model list |
+   | Models | One or more full model IDs that the backend exposes |
 
    {{< reuse "agw-docs/snippets/claude-desktop-id-token-warning.md" >}}
 
-6. Click **Apply Changes**, then fully quit Claude Desktop and reopen it. A browser window opens to your identity provider. After you sign in, Claude Desktop stores the token and refreshes it in the background through the `offline_access` scope.
+6. From Claude Desktop, click **Test connection**. Then click **Apply Changes**,
+   fully quit Claude Desktop, and reopen it. A browser window opens to your
+   identity provider. After you sign in, send a real prompt and confirm a
+   successful `POST /v1/messages` request in the agentgateway logs. The request
+   must return HTTP 200 and include `jwt.sub` for the signed-in user. This
+   confirms that Claude Desktop sent the Entra ID token and that agentgateway
+   validated it before forwarding the request.
 
 ## Send custom headers {#headers}
 
@@ -223,6 +287,10 @@ To supply a header value that changes over time, set a credential helper instead
 ## Roll out to your organization {#mdm}
 
 Configure and test one machine in developer mode first. When the connection works, click **Export** in the **Configure Third Party Inference** panel to produce a profile for your device management system, and distribute it with the tool that you already use, such as Jamf, Intune, Workspace ONE, or Group Policy. Users then receive the configuration on first launch and do not configure anything by hand.
+
+For an end-to-end Microsoft Intune rollout with Entra ID and managed-device
+enforcement, see [Manage Claude Desktop with Microsoft Intune]({{< link-hextra
+path="/integrations/llm-clients/microsoft-intune/#claude-entra" >}}).
 
 Managed configuration takes precedence over local settings, so a user cannot point the app at a different endpoint. The delivery mechanism differs per operating system.
 
@@ -239,12 +307,15 @@ The following example shows the Linux form. On macOS and Windows, write every va
   "inferenceProvider": "gateway",
   "inferenceGatewayBaseUrl": "https://agentgateway.example.com/claude",
   "inferenceCredentialKind": "interactive",
+  "inferenceGatewayOidcAuthFlow": "browser",
   "inferenceGatewayOidc": {
     "issuer": "https://login.microsoftonline.com/$TENANT_ID/v2.0",
     "clientId": "$CLIENT_ID",
     "scopes": "openid profile email offline_access",
     "bearerTokenType": "id_token"
   },
+  "modelDiscoveryEnabled": false,
+  "inferenceModels": ["claude-opus-5"],
   "inferenceCustomHeaders": {
     "X-Tenant-Id": "acme"
   }
@@ -264,6 +335,23 @@ info  request gateway=default/default listener=http route=claude-agent endpoint=
 ```
 
 If you configured gateway API key or OIDC authentication in strict mode, send a request without the `Authorization` header and confirm that agentgateway rejects it. This negative check verifies that the route does not admit unauthenticated requests.
+
+## Troubleshoot the connection
+
+| Symptom | Likely cause and action |
+| -- | -- |
+| The connection test calls an unexpected path such as `/claude/claude/v1/models` | Make the base URL match the route prefix exactly. Claude Desktop appends `/v1/models` and `/v1/messages`. |
+| The gateway API key connection returns HTTP 401 | Confirm that Claude Desktop sends the client key generated by Client Setup and that the route is protected by the matching virtual-key policy. |
+| Entra sign-in returns `api key authentication failure` | The Claude Desktop route still requires its old virtual API key. Replace that authentication with JWT validation; do not require both. |
+| Entra Test connection succeeds, but restart logs `InvalidToken` | An older managed profile restored a static key. Update the assigned profile to `interactive`, remove `inferenceGatewayApiKey`, sync the device, and fully restart Claude Desktop. |
+| A subscription request logs `api key authentication failure` | A virtual API key policy is protecting the subscription route. Remove it from this route so that the subscription bearer token can pass upstream. |
+| The test needs at least one model after `/v1/models` fails | Add a full model ID under **Models** and disable or skip model discovery. |
+| Anthropic returns `authentication_error` in gateway API key or OIDC mode | Confirm that the backend holds a valid Anthropic API key. |
+| Anthropic returns `authentication_error` in subscription mode | Generate a new token with `claude setup-token`, confirm that the auth scheme is **Bearer**, and make sure the backend does not inject a provider API key. |
+| Anthropic returns HTTP 400 in subscription mode | Add or forward `anthropic-beta: oauth-2025-04-20` as described in [Configure agentgateway with a Claude subscription](#configure-agentgateway). |
+| The subscription connection test returns HTTP 429, but a normal prompt succeeds | The connection test can produce a false negative with subscription passthrough. Confirm that the real `/v1/messages` request returns HTTP 200 in the agentgateway log, and use actual inference as the final validation. |
+| Normal inference returns HTTP 429 with `rate_limit_error` | The request reached Anthropic, but the subscription or API account might be at a usage limit or temporarily throttled. Check the applicable Anthropic usage dashboard or Claude usage indicator, wait for the reset, or choose an available model. See the [Claude error reference](https://code.claude.com/docs/en/errors#usage-limits). |
+| No request appears in the agentgateway output | Check the base URL, agentgateway process, certificate for a remote host, DNS, and network path. |
 
 ## Next steps
 

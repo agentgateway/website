@@ -7,11 +7,7 @@ Use the agentgateway binary to proxy requests to an open source MCP test server,
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
-1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
-
-   ```sh
-   curl -sL https://agentgateway.dev/install | bash
-   ```
+{{< reuse "agw-docs/standalone/quickstart/install-prereq.md" >}}
 
 ## Steps
 

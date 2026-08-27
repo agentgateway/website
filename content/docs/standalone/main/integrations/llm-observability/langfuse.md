@@ -89,7 +89,7 @@ For **Langfuse Cloud**, agentgateway exports traces directly without needing an 
 version: '3'
 services:
   agentgateway:
-    image: cr.agentgateway.dev/agentgateway:latest
+    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:latest
     ports:
       - "3000:3000"
     volumes:
@@ -106,7 +106,7 @@ For **self-hosted Langfuse**, you can point agentgateway directly to your instan
 version: '3'
 services:
   agentgateway:
-    image: cr.agentgateway.dev/agentgateway:latest
+    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:latest
     ports:
       - "3000:3000"
     volumes:
@@ -140,4 +140,4 @@ volumes:
 ## Learn more
 
 - [Langfuse Documentation](https://langfuse.com/docs)
-- [OpenTelemetry Integration]({{< link-hextra path="/integrations/observability/opentelemetry" >}})
+- [OpenTelemetry Integration]({{< link-hextra path="/observability/traces/setup/" >}})
