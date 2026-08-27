@@ -65,8 +65,8 @@
 /docs/standalone/latest/tutorials/openapi/ /docs/standalone/latest/mcp/connect/openapi 301
 /docs/standalone/latest/tutorials/tailscale-auth /docs/standalone/latest/integrations/auth/tailscale 301
 /docs/standalone/latest/tutorials/tailscale-auth/ /docs/standalone/latest/integrations/auth/tailscale 301
-/docs/standalone/latest/tutorials/telemetry /docs/standalone/latest/integrations/observability/opentelemetry 301
-/docs/standalone/latest/tutorials/telemetry/ /docs/standalone/latest/integrations/observability/opentelemetry 301
+/docs/standalone/latest/tutorials/telemetry /docs/standalone/latest/observability/traces/configs/otel 301
+/docs/standalone/latest/tutorials/telemetry/ /docs/standalone/latest/observability/traces/configs/otel 301
 /docs/standalone/latest/tutorials/tls /docs/standalone/latest/configuration/listeners 301
 /docs/standalone/latest/tutorials/tls/ /docs/standalone/latest/configuration/listeners 301
 # Kubernetes latest
@@ -147,3 +147,17 @@
 /docs/standalone/main/llm/virtual-keys /docs/standalone/main/llm/cost-controls/virtual-keys 301
 /docs/standalone/latest/llm/costs /docs/standalone/latest/llm/cost-controls/costs 301
 /docs/standalone/latest/llm/virtual-keys /docs/standalone/latest/llm/cost-controls/virtual-keys 301
+
+# Standalone observability section reorg (1.5: /integrations/observability/* -> /observability/*)
+/docs/standalone/latest/integrations/observability /docs/standalone/latest/observability 301
+/docs/standalone/latest/integrations/observability/opentelemetry /docs/standalone/latest/observability/traces/configs/otel 301
+/docs/standalone/latest/integrations/observability/jaeger /docs/standalone/latest/observability/traces/configs/jaeger 301
+/docs/standalone/latest/integrations/observability/grafana /docs/standalone/latest/observability/metrics/grafana 301
+/docs/standalone/latest/integrations/observability/prometheus /docs/standalone/latest/observability/metrics/prometheus 301
+/docs/standalone/latest/integrations/observability/database /docs/standalone/latest/observability/access-logs/database 301
+/docs/standalone/main/integrations/observability /docs/standalone/main/observability 301
+/docs/standalone/main/integrations/observability/opentelemetry /docs/standalone/main/observability/traces/configs/otel 301
+/docs/standalone/main/integrations/observability/jaeger /docs/standalone/main/observability/traces/configs/jaeger 301
+/docs/standalone/main/integrations/observability/grafana /docs/standalone/main/observability/metrics/grafana 301
+/docs/standalone/main/integrations/observability/prometheus /docs/standalone/main/observability/metrics/prometheus 301
+/docs/standalone/main/integrations/observability/database /docs/standalone/main/observability/access-logs/database 301
