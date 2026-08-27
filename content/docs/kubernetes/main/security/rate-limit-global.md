@@ -18,7 +18,7 @@ test:
 
 ## Compute a limit per request {#limit-override}
 
-By default, a descriptor carries only the values that identify the caller, and the rate limit service decides which limit to apply. To let the request decide the limit instead, set `limitOverride` on the descriptor. Agentgateway evaluates the CEL expression for each request and forwards the result to the rate limit service, which applies it in place of the limit in its own configuration.
+By default, the {{< reuse "agw-docs/snippets/policy.md" >}} names only the descriptor entries that identify the caller, such as the tenant or the client IP address. The limit itself lives in the rate limit service, in the `rate_limit` block that its ConfigMap holds for each descriptor. To let the request carry its own limit instead, set `limitOverride` on the descriptor. Agentgateway evaluates the CEL expression for each request and sends the result to the rate limit service, which applies it in place of the `rate_limit` value in its own configuration.
 
 Use this field when the limit belongs to the caller rather than to the route, such as a per-tenant quota that arrives in a JWT claim or a header.
 

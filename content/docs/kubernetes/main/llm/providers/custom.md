@@ -83,7 +83,7 @@ agentgateway rejects the request.
 
 A custom provider reports itself as `custom` in cost lookups and telemetry, because agentgateway has no first-class provider type to name it by. Every custom provider therefore shares one identity, which makes per-provider cost and usage impossible to separate.
 
-Set `custom.providerOverride` to the identity that you want agentgateway to use instead.
+Set `custom.providerOverride` to the identity that you want agentgateway to use instead. The following {{< reuse "agw-docs/snippets/backend.md" >}} routes to a self-hosted Llama model and reports it as `vllm` rather than as `custom`.
 
 ```yaml
 apiVersion: agentgateway.dev/v1alpha1
@@ -110,7 +110,7 @@ The value changes two things.
 | Model cost catalog | Agentgateway looks up the model price under this provider name. Without a match in the catalog, the request is not priced, and `llm.cost` stays unset. |
 | Telemetry | The `gen_ai.provider.name` attribute on metrics, spans, and access logs carries this value rather than `custom`. |
 
-Set the field on the {{< reuse "agw-docs/snippets/backend.md" >}}, in `spec.ai.provider.custom` or `spec.ai.groups[].providers[].custom`, or on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, in `spec.custom`.
+Set the field on the {{< reuse "agw-docs/snippets/backend.md" >}}, in `spec.ai.provider.custom` or `spec.ai.groups[].providers[].custom`, or on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}. On a model, the field is in `spec.custom`.
 
 > [!NOTE]
 > Choose a value that matches the provider name in your [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}). A value that no catalog entry uses is still reported in telemetry, but no cost is calculated for the request.

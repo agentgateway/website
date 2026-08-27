@@ -77,13 +77,11 @@ The `frontend` settings on this page tune the connections that clients open to t
    | `tcp.keepalive.retries` | Maximum number of keepalive probes to send before agentgateway drops the connection. The default is `9`. |
    | `http.requestTimeout` | Deadline for receiving a response from the backend. |
 
-2. Verify the settings in the proxy configuration.
+2. Port-forward the proxy admin port and verify the settings in the proxy configuration.
 
    ```sh
-   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
-   ```
-
-   ```sh
+   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000 &
+   sleep 2
    curl -s http://localhost:15000/config_dump | jq '[.policies[] | select(.policy.backend != null and .policy.backend.tcp != null)] | .[0]'
    ```
 
@@ -94,4 +92,4 @@ The `frontend` settings on this page tune the connections that clients open to t
    ```
 
 > [!NOTE]
-> A `backend` policy sets `tcp` and `http` fields only. The `handshakeTimeout`, `http1IdleTimeout`, `http2KeepaliveInterval`, `http2KeepaliveTimeout`, and `maxConnectionDuration` settings belong to the `frontend` section, and apply to incoming connections. For where each policy section can attach, see [Targeting and merging]({{< link-hextra path="/about/policies/target-merge/" >}}).
+> A `backend` policy sets `tcp` and `http` fields only. The `handshakeTimeout`, `http1IdleTimeout`, `http2KeepaliveInterval`, `http2KeepaliveTimeout`, and `maxConnectionDuration` settings belong to the `frontend` section, and apply to incoming connections. For more information about where each policy section attaches, see [Targeting and merging]({{< link-hextra path="/about/policies/target-merge/" >}}).

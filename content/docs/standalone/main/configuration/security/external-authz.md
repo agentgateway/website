@@ -317,12 +317,12 @@ To choose between multiple external authorization servers based on the request, 
 
 The `extAuthz` policy calls the authorization service once for each HTTP request. To call it once for each downstream connection instead, use the `networkExtAuthz` frontend policy.
 
-Use connection-level authorization in two cases.
+Scoping external authorization to a downstream connection is useful in the following cases.
 
 - The gateway carries TCP traffic that has no HTTP requests to authorize.
 - The connection is long-lived, and a callout on every request costs more than the decision is worth.
 
-Configure it under `frontendPolicies.networkExtAuthz`. It takes the same fields as `extAuthz`, with one restriction.
+Configure connection-level authorization under the `frontendPolicies.networkExtAuthz` section. The section takes the same fields as `extAuthz`, with one restriction.
 
 > [!IMPORTANT]
 > The `networkExtAuthz` policy calls the authorization service over HTTP only, so you must set `protocol.http` explicitly. The `protocol` field defaults to `grpc`, which means that a configuration that omits it fails to start with `frontendPolicies.networkExtAuthz only supports protocol.http`.
@@ -343,7 +343,7 @@ routes:
   - host: localhost:8080
 ```
 
-Because the policy runs before protocol handling, it also applies to a gateway that carries no HTTP traffic.
+Because the policy runs before protocol handling, it also applies to a gateway that carries non-HTTP traffic.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -363,7 +363,9 @@ tcpRoutes:
   - host: localhost:8080
 ```
 
-The two policies differ in what the authorization service sees and in what a denial affects.
+### Choose between request-level and connection-level authorization {#network-extauthz-compare}
+
+A gateway can carry an `extAuthz` policy, a `networkExtAuthz` policy, or both, so decide which policy a decision belongs in. The following table compares the request-level `extAuthz` policy that the rest of this page covers with the connection-level `networkExtAuthz` policy. The two policies differ in where they attach, in what the authorization service sees, and in what a denial affects.
 
 | | `extAuthz` | `networkExtAuthz` |
 | -- | -- | -- |
