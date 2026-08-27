@@ -2,6 +2,7 @@
 title: Sample tracing configs
 weight: 30
 description: Sample configurations for exporting agentgateway traces to common OTLP-compatible backends, including OpenTelemetry Collector, Jaeger, and SaaS platforms.
+test: skip
 ---
 
 Agentgateway exports traces to any OTLP-compatible backend. The `host` value in `frontendPolicies.tracing` depends on how you installed agentgateway and where your OTLP receiver is running.

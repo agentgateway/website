@@ -10,16 +10,18 @@ Note that this guide uses a Kubernetes secret that contains **long-lived IAM use
 
 Create a Kubernetes secret that contains your AWS access key and secret key. You must use a long-lived IAM user access keys (prefixed `AKIA`), not temporary STS/SSO credentials. {{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} uses this secret to connect to AWS Lambda for authentication and function invocation.
 
+{{< reuse "/agw-docs/snippets/aws-creds.md" >}}
+
 1. Save the AWS account and region that your Lambda instance exists in as environment variables.
    ```sh
    export REGION=<us-east-1>
    export ACCOUNT_ID=<account_id>
    ````
 
-2. Save your IAM user access key (prefixed `AKIA...`) and secret key as environment variables. Make sure that the `AWS_SESSION_TOKEN` is **not** set.
+2. Save your IAM user access key (prefixed `AKIA...`) and secret key as environment variables. Do not set a session token, because long-lived IAM user keys do not use one.
    ```bash
-   export AWS_ACCESS_KEY_ID="<AKIA-access-key>"
-   export AWS_SECRET_ACCESS_KEY="<secret-key>"
+   export AGW_AWS_ACCESS_KEY_ID="<AKIA-access-key>"
+   export AGW_AWS_SECRET_ACCESS_KEY="<secret-key>"
    ```
    If you do not have a long-lived IAM user access key pair, you can create one for your IAM user.
    * AWS console:
@@ -32,10 +34,13 @@ Create a Kubernetes secret that contains your AWS access key and secret key. You
      aws iam create-access-key --user-name <iam-user-name>
      ```
 
-3. Verify that these credentials have the appropriate permissions to interact with AWS Lambda.
+3. Verify that these credentials have the appropriate permissions to interact with AWS Lambda. The commands pass the credentials to the `aws` CLI for that command only, so your own AWS session is unchanged.
    ```bash
-   aws sts get-caller-identity --region ${REGION}
-   aws lambda invoke --function-name echo2 --region ${REGION} /tmp/out.json
+   AWS_ACCESS_KEY_ID=$AGW_AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AGW_AWS_SECRET_ACCESS_KEY \
+     aws sts get-caller-identity --region ${REGION}
+
+   AWS_ACCESS_KEY_ID=$AGW_AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AGW_AWS_SECRET_ACCESS_KEY \
+     aws lambda invoke --function-name echo2 --region ${REGION} /tmp/out.json
    ```
    If either command fails, grant the IAM user Lambda invocation permissions in one of the following ways, and re-run the test commands.
    * AWS console:
@@ -76,8 +81,8 @@ Create a Kubernetes secret that contains your AWS access key and secret key. You
    metadata:
      name: aws-creds
    stringData:
-     accessKey: ${AWS_ACCESS_KEY_ID}
-     secretKey: ${AWS_SECRET_ACCESS_KEY}
+     accessKey: ${AGW_AWS_ACCESS_KEY_ID}
+     secretKey: ${AGW_AWS_SECRET_ACCESS_KEY}
      sessionToken: ""
    type: Opaque
    EOF
