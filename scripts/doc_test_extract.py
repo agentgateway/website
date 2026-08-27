@@ -3,6 +3,7 @@
 import argparse
 import json
 import re
+import sys
 import textwrap
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -45,12 +46,39 @@ class FileResult:
 
 
 def _load_link_version_map(repo_root: Path) -> Dict[str, str]:
-    """Build a {linkVersion: version} mapping from hugo.yaml's params.sections.
+    """Build a {linkVersion: version} mapping from hugo.yaml's params.versions.
 
     Hugo's version shortcode resolves URL tokens like "latest" or "main" to
-    their canonical version strings (e.g. "2.2.x", "1.0.x") via this mapping.
-    The Python extractor must perform the same lookup so that include-if
-    comparisons work correctly.
+    their canonical version strings (e.g. "1.5.x", "1.4.x") via this mapping.
+    The Python extractor must perform the same lookup so that include-if and
+    exclude-if comparisons work correctly.
+
+    THERE IS EXACTLY ONE VERSION LIST: params.versions. An entry names the
+    sections it belongs to with a `sections:` tag, and omitting the tag means
+    "every section":
+
+        params:
+          versions:
+            - version: "1.5.x"
+              linkVersion: "main"
+              sections: ["kubernetes", "standalone"]
+
+    This reads that one list, and nothing else. It used to read a per-section
+    list at params.sections.<section>.versions, which docs-theme-extras removed
+    in 0.2.2 in favour of the tagged model above. Because this repo's hugo.yaml
+    moved with the theme, params.sections.kubernetes has been an empty table
+    ever since, so the mapping came out EMPTY and every include-if="1.5.x" or
+    exclude-if="1.4.x" silently stopped matching in generated doc tests. Only
+    the linkVersion tokens ("main"/"latest") still worked, which is why two
+    shared snippets keyed on canonical versions rendered an empty version
+    string and broke the install step of otherwise-unrelated tests.
+
+    Do not restore the per-section read as a fallback. The theme deleted its
+    own copy of it deliberately: it flattened every section's list and matched
+    the first hit without scoping to the page's section, so a standalone page
+    could gate against a kubernetes entry. One entry per version, tagged with
+    its sections, makes a duplicate linkVersion a config error rather than a
+    silent mismatch.
 
     Returns an empty dict if hugo.yaml is missing or cannot be parsed.
     """
@@ -66,13 +94,21 @@ def _load_link_version_map(repo_root: Path) -> Dict[str, str]:
     except Exception:
         return {}
     mapping: Dict[str, str] = {}
-    sections = data.get("params", {}).get("sections", {})
-    for section_data in sections.values():
-        for entry in section_data.get("versions", []):
-            link_ver = entry.get("linkVersion")
-            ver = entry.get("version")
-            if link_ver and ver:
-                mapping[link_ver] = ver
+    for entry in (data.get("params") or {}).get("versions") or []:
+        link_ver = entry.get("linkVersion")
+        ver = entry.get("version")
+        if link_ver and ver:
+            mapping[link_ver] = ver
+    if not mapping:
+        # An empty mapping is not a harmless default: it turns every
+        # canonical-version gate into a no-op, and the tests still pass while
+        # silently testing the wrong content. Say so rather than carry on.
+        print(
+            f"WARNING: {hugo_yaml} declares no params.versions entries with both "
+            "a version and a linkVersion. Every include-if/exclude-if on a "
+            "canonical version (for example 1.5.x) will not match.",
+            file=sys.stderr,
+        )
     return mapping
 
 
