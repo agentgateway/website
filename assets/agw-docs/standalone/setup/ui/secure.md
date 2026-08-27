@@ -5,12 +5,12 @@ To require users to authenticate, apply a browser [OIDC]({{< link-hextra path="/
 The `ui.policies` section takes the same policies that a route takes, so you can also use [JWT]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), [basic]({{< link-hextra path="/configuration/security/basic-authn/" >}}), or [API key]({{< link-hextra path="/configuration/security/apikey-authn/" >}}) authentication for programmatic access. To restrict which authenticated users get in, add an [authorization policy]({{< link-hextra path="/configuration/security/http-authz/" >}}) alongside the authentication policy.
 
 > [!NOTE]
-> A policy in `ui.policies` applies only to the gateways that the `ui` section lists. It does not apply to the admin address, which stays unauthenticated. The admin address is loopback-only by default. To turn it off, see [Change the admin address]({{< link-hextra path="/setup/ui/gateway-ui/#customize-port" >}}).
+> A policy in `ui.policies` applies only to the gateways that the `ui` section lists. It does not apply to the copy of the UI on the admin interface, which stays unauthenticated. That is safe by default, because the admin address is loopback-only, but it is a reason not to move it. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/setup/ui/#admin-interface" >}}).
 
 ## Before you begin
 
 1. [Install standalone agentgateway]({{< link-hextra path="/setup/install/" >}}).
-2. [Serve the UI on its own gateway]({{< link-hextra path="/setup/ui/gateway-ui/" >}}). The examples on this page apply the OIDC policy to the `admin` gateway on port `4001` that you created in that guide.
+2. [Serve the UI on its own gateway]({{< link-hextra path="/setup/ui/gateway-ui/" >}}). The examples on this page apply the OIDC policy to the `ui-gateway` on port `4001` that you created in that guide.
 3. Set up an IdP, such as Keycloak or Microsoft Entra ID. Consider creating a client specifically for the UI, such as `agentgateway-ui`. For provider-specific setup instructions, see the [identity provider integrations]({{< link-hextra path="/integrations/auth/" >}}).
 
 ## Binary and Docker {#secure-binary-docker}
@@ -30,7 +30,7 @@ The `ui.policies` section takes the same policies that a route takes, so you can
    export REDIRECT_URI=http://localhost:4001/oauth/callback
    ```
 
-3. Add an `oidc` policy to the `ui` section of your configuration file. The following example redirects unauthenticated users on the `admin` gateway to the OIDC provider to log in. The optional `authorization` policy further restricts access to users whose email address ends in `@example.com`.
+3. Add an `oidc` policy to the `ui` section of your configuration file. The following example redirects unauthenticated users on the `ui-gateway` to the OIDC provider to log in. The optional `authorization` policy further restricts access to users whose email address ends in `@example.com`.
 
    Agentgateway expands environment variables in the configuration file when it loads the file, so you can refer to the values that you exported in the previous step instead of writing the client secret into the file.
 
@@ -39,10 +39,10 @@ The `ui.policies` section takes the same policies that a route takes, so you can
    gateways:
      default:
        port: 4000
-     admin:
+     ui-gateway:
        port: 4001
    ui:
-     gateways: [admin]
+     gateways: [ui-gateway]
      policies:
        oidc:
          issuer: ${ISSUER_URL}
@@ -128,10 +128,10 @@ The `ui.policies` section takes the same policies that a route takes, so you can
      gateways:
        default:
          port: 4000
-       admin:
+       ui-gateway:
          port: 4001
      ui:
-       gateways: [admin]
+       gateways: [ui-gateway]
        policies:
          oidc:
            issuer: ${ISSUER_URL}
