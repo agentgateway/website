@@ -16,7 +16,7 @@ To learn more about CEL, see the following resources:
 - [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
 
 > [!NOTE]
-> Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway admin UI before using them in your configuration.
+> Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway UI before using them in your configuration.
 
 ## Before you begin
 

@@ -184,11 +184,13 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{% tab name="Amazon Bedrock" %}}
 
+{{< reuse "agw-docs/snippets/aws-creds.md" >}}
+
 ```bash
 # Set your AWS credentials
-export AWS_ACCESS_KEY_ID=your-access-key
-export AWS_SECRET_ACCESS_KEY=your-secret-key
-export AWS_REGION=us-east-1
+export AGW_AWS_ACCESS_KEY_ID=your-access-key
+export AGW_AWS_SECRET_ACCESS_KEY=your-secret-key
+export AGW_AWS_REGION=us-east-1
 
 # Create config for Amazon Bedrock
 cat <<'EOF' > config.yaml
@@ -202,11 +204,13 @@ llm:
       awsRegion: $AWS_REGION
 EOF
 
-# Run agentgateway
+# Run agentgateway. The container gets the standard AWS variable names, which
+# the AWS SDK and the $AWS_REGION reference in config.yaml resolve inside the
+# container only, so your own AWS session is unchanged.
 docker run -v "$PWD/config.yaml:/config.yaml" -p 3000:3000 \
-  -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
-  -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
-  -e AWS_REGION=$AWS_REGION \
+  -e AWS_ACCESS_KEY_ID=$AGW_AWS_ACCESS_KEY_ID \
+  -e AWS_SECRET_ACCESS_KEY=$AGW_AWS_SECRET_ACCESS_KEY \
+  -e AWS_REGION=$AGW_AWS_REGION \
   cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}} -f /config.yaml
 
 # Test with a chat completion
@@ -250,9 +254,9 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{< /tabs >}}
 
-## Access the Admin UI
+## Access the UI
 
-By default, the agentgateway admin UI listens on localhost. To access it from your host machine:
+By default, the agentgateway UI listens on localhost. To access it from your host machine:
 
 ```bash
 docker run -v "$PWD/config.yaml:/config.yaml" -p 3000:3000 \
@@ -307,7 +311,7 @@ docker compose up -d
 #   * The `docker run ...` commands and `curl` chat completions in each tab
 #     — External dependency: each needs a real provider API key/credentials
 #     and a live LLM endpoint, which the test cannot stand up.
-#   * The "Access the Admin UI" and "Docker Compose" sections — Display-only:
+#   * The "Access the UI" and "Docker Compose" sections — Display-only:
 #     no scriptable assertion without a running container and a real key.
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}

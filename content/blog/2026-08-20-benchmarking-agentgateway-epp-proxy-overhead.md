@@ -1,12 +1,12 @@
 ---
-title: "Measuring Agentgateway's Overhead as an Inference Gateway"
+title: "How Agentgateway Performs as an Inference Gateway"
 category: "Deep Dive"
 publishDate: 2026-08-20
 author: "Abhay Chaurasiya"
-description: "A GSoC 2026 project benchmarking how much latency Agentgateway adds as EPP's proxy sidecar, compared to a plain Kubernetes Service with no gateway at all."
+description: "A GSoC 2026 project measuring how agentgateway performs as an inference gateway — both as EPP's standalone sidecar and as a Gateway API data plane — compared to a plain Kubernetes Service with no gateway at all."
 ---
 
-# Measuring Agentgateway's Overhead as an Inference Gateway
+# How Agentgateway Performs as an Inference Gateway
 
 *A GSoC 2026 project summary — Abhay Chaurasiya, mentored by Nina Polshakova
 and Daneyon Hansen, CNCF*
@@ -39,9 +39,10 @@ routing takes more work per request than plain round-robin does, but until
 now nobody had actually measured how much.
 
 This project's goal was to build a real, repeatable way to measure that —
-how much latency agentgateway adds over a plain Kubernetes Service with no
-gateway at all — and to make that measurement something the project can
-keep running over time, not a one-off number.
+how agentgateway performs against a plain Kubernetes Service with no
+gateway at all, in both of the ways it can run (as EPP's standalone
+sidecar, and as an in-cluster Gateway) — and to make that measurement
+something the project can keep running over time, not a one-off number.
 
 ## What We Measured
 
@@ -60,8 +61,8 @@ Here is how the three setups compare under heavy load (60 QPS request-rate stage
 | TTFT p50 | 62.9s | 0.1s (-99.8%) | 0.2s (-99.7%) |
 | TTFT p90 | 135.6s | 0.2s (-99.8%) | 0.2s (-99.8%) |
 
-<img src="/img/blog/benchmarking-agentgateway-epp-proxy-overhead/standalone-throughput_vs_qps.png" width="900" alt="Throughput vs QPS, Kubernetes Service vs Agentgateway Standalone">
-<img src="/img/blog/benchmarking-agentgateway-epp-proxy-overhead/standalone-ttft_p90_vs_qps.png" width="900" alt="TTFT p90 vs QPS, Kubernetes Service vs Agentgateway Standalone">
+<img src="/img/blog/benchmarking-agentgateway-epp-proxy-overhead/standalone-throughput_vs_qps.svg" width="900" alt="Throughput vs QPS, Kubernetes Service vs Agentgateway Standalone">
+<img src="/img/blog/benchmarking-agentgateway-epp-proxy-overhead/standalone-ttft_p90_vs_qps.svg" width="900" alt="TTFT p90 vs QPS, Kubernetes Service vs Agentgateway Standalone">
 
 Notice that the latency gap isn't a constant "proxy tax" — it opens up as request load increases. At light load (3 QPS), all three setups perform almost identically. The difference only shows up once traffic ramps up and the plain Kubernetes Service starts piling requests behind whichever pod round-robin happens to hit (its TTFT p50 jumps from 0.5s to 62.9s). By contrast, agentgateway with EPP continuously routes traffic to pods with available capacity.
 
@@ -69,12 +70,12 @@ The one metric where round-robin looks lower on paper — inter-token latency (3
 
 Running agentgateway as an in-cluster Kubernetes Gateway (via Gateway API HTTPRoute + InferencePool) shows the same pattern: slightly lower peak throughput than standalone sidecar mode (14,241 vs 16,178 tokens/s, but still double plain round-robin) while keeping TTFT sub-second under load:
 
-<img src="/img/blog/benchmarking-agentgateway-epp-proxy-overhead/gateway-throughput_vs_qps.png" width="900" alt="Throughput vs QPS, Kubernetes Service vs Agentgateway on Kubernetes">
-<img src="/img/blog/benchmarking-agentgateway-epp-proxy-overhead/gateway-ttft_p90_vs_qps.png" width="900" alt="TTFT p90 vs QPS, Kubernetes Service vs Agentgateway on Kubernetes">
+<img src="/img/blog/benchmarking-agentgateway-epp-proxy-overhead/gateway-throughput_vs_qps.svg" width="900" alt="Throughput vs QPS, Kubernetes Service vs Agentgateway on Kubernetes">
+<img src="/img/blog/benchmarking-agentgateway-epp-proxy-overhead/gateway-ttft_p90_vs_qps.svg" width="900" alt="TTFT p90 vs QPS, Kubernetes Service vs Agentgateway on Kubernetes">
 
 ## How It's Built
 
-Instead of writing and maintaining custom benchmarking scripts, this uses [llm-d-benchmark](https://github.com/llm-d/llm-d-benchmark)'s tooling. A single command (`make -C controller benchmark`) spins up the test targets on a cluster, runs the load test through `inference-perf`, and generates comparison reports. It manages its own `llm-d-benchmark` checkout automatically so there is no manual setup needed.
+Instead of writing and maintaining custom benchmarking scripts, this uses [llm-d-benchmark](https://github.com/llm-d/llm-d-benchmark)'s tooling. A single command (`make benchmark`) spins up the test targets on a cluster, runs the load test through `inference-perf`, and generates comparison reports. It manages its own `llm-d-benchmark` checkout automatically so there is no manual setup needed.
 
 Working on this also turned up a few real upstream issues — a broken image tag in the `llm-d-router` release chart, and a missing CLI flag in `llm-d-benchmark`'s `standup` command (both filed, second one merged). While testing the GPU benchmark workflow locally, I caught another edge case: two guard clauses in the runner script were exiting with code 1 instead of returning 0 on the default Kind provider path, silently killing local runs. Because the upstream unit tests only covered the GKE branch, the issue went unnoticed — we patched it and verified the local Kind path end-to-end before merging.
 
@@ -86,8 +87,11 @@ Everything below is real, merged or open work, not a summary of intentions:
 - [#1758](https://github.com/agentgateway/agentgateway/pull/1758) - InferencePool targetRef support in AgentgatewayPolicy (merged)
 - [#2003](https://github.com/agentgateway/agentgateway/pull/2003) - fixed a misleading Chart.yaml appVersion placeholder (merged)
 - [#2073](https://github.com/agentgateway/agentgateway/pull/2073) - fixed a stale version reference and broken OCI URL in the syncer README (merged)
-- [#2526](https://github.com/agentgateway/agentgateway/pull/2526) - the benchmark comparison this post is about (open, awaiting final review)
+- [#2526](https://github.com/agentgateway/agentgateway/pull/2526) - the original benchmark comparison this post grew out of (superseded by the dedicated benchmarks repo below)
 - [#1816](https://github.com/agentgateway/agentgateway/pull/1816) - EPP ordered destination-endpoint fallback (open, in progress with mentor)
+
+**agentgateway/benchmarks**
+- [#1](https://github.com/agentgateway/benchmarks/pull/1) - the benchmark comparison this post is about, now in its own dedicated repo (open, awaiting final review)
 
 **llm-d/llm-d-router**
 - [#1600](https://github.com/llm-d/llm-d-router/pull/1600) - aligned agentgateway's standalone config with upstream GAIE's pseudo-service model (merged)
@@ -100,11 +104,11 @@ Everything below is real, merged or open work, not a summary of intentions:
 
 ## Current State
 
-The core comparison between a plain Service and agentgateway is built, automated, and tested end-to-end. Daneyon Hansen expanded this into a full campaign-based benchmark system covering three treatments (plain Service, agentgateway standalone, and agentgateway on Kubernetes), complete with automated GKE cluster provisioning/teardown and the H100 GPU results above. That campaign system is merged into PR [#2526](https://github.com/agentgateway/agentgateway/pull/2526), along with the local Kind-path fix, which we verified on a real cluster before merging.
+The core comparison between a plain Service and agentgateway is built, automated, and tested end-to-end. Daneyon Hansen expanded this into a full campaign-based benchmark system covering three treatments (plain Service, agentgateway standalone, and agentgateway on Kubernetes), complete with automated GKE cluster provisioning/teardown and the H100 GPU results above. That work, along with the local Kind-path fix we verified on a real cluster, has since moved into its own dedicated repo, [agentgateway/benchmarks](https://github.com/agentgateway/benchmarks/pull/1).
 
 ## Remaining Tasks and Future Work
 
-- Get PR #2526 merged upstream
+- Get agentgateway/benchmarks#1 merged upstream
 - Add additional workload profiles as requested by mentors
 
 **Future work: automated regression detection.** Right now, this benchmark runs on demand when triggered. The next step is a CI gate that compares a new run's tail latency against a stored baseline and fails the build if it crosses a threshold — the same fail-hard limit pattern I used on `MaxSearchResults` in Jaeger's MCP server earlier this year. I built and verified the core scripts (`check_regression.py`) locally against real project data, but keeping it off CI for now while we decide where the baseline data should live long-term (in-repo vs. cloud storage).
