@@ -61,6 +61,8 @@ llm:
           # - type: responses
           # - type: realtime
           # - type: anthropicTokenCount
+          # - type: generateContent
+          # - type: geminiCountTokens
           # - type: rerank
     params:
       apiKey: "$PERPLEXITY_API_KEY"

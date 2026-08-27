@@ -44,15 +44,28 @@ class FileResult:
     links: List[str] = field(default_factory=list)
 
 
-def _load_link_version_map(repo_root: Path) -> Dict[str, str]:
-    """Build a {linkVersion: version} mapping from hugo.yaml's params.sections.
+def _load_link_version_map(repo_root: Path, product: Optional[str] = None) -> Dict[str, str]:
+    """Build a {linkVersion: version} mapping from the Hugo config.
 
     Hugo's version shortcode resolves URL tokens like "latest" or "main" to
-    their canonical version strings (e.g. "2.2.x", "1.0.x") via this mapping.
+    their canonical version strings (e.g. "1.5.x", "1.4.x") via this mapping.
     The Python extractor must perform the same lookup so that include-if
     comparisons work correctly.
 
-    Returns an empty dict if hugo.yaml is missing or cannot be parsed.
+    Two config schemas are supported:
+
+    * docs-theme-extras v1.0.0 and later, where a single ``params.versions``
+      list holds every version and each entry tags the ``sections`` it applies
+      to. When ``product`` names a section, entries tagged for that section win
+      over entries that are not, so two sections with different version lists
+      each resolve correctly.
+    * The earlier per-section schema, where each ``params.sections.<name>``
+      carried its own ``versions`` list.
+
+    Both are read because a repo can be mid-migration. The current schema takes
+    precedence when a linkVersion appears in both.
+
+    Returns an empty dict if the config is missing or cannot be parsed.
     """
     if _yaml is None:
         return {}
@@ -65,14 +78,33 @@ def _load_link_version_map(repo_root: Path) -> Dict[str, str]:
         data = _yaml.safe_load(hugo_yaml.read_text(encoding="utf-8")) or {}
     except Exception:
         return {}
+    params = data.get("params") or {}
     mapping: Dict[str, str] = {}
-    sections = data.get("params", {}).get("sections", {})
+
+    # Current schema: one flat params.versions list tagged by section. Entries
+    # for this product are applied first so they win over other sections'.
+    versions = [e for e in (params.get("versions") or []) if isinstance(e, dict)]
+    tagged = [e for e in versions if product and product in (e.get("sections") or [])]
+    # setdefault keeps the first writer, so the tagged pass wins and repeating
+    # the full list afterwards only fills in linkVersions it did not cover.
+    for entry in tagged + versions:
+        link_ver = entry.get("linkVersion")
+        ver = entry.get("version")
+        if link_ver and ver:
+            mapping.setdefault(link_ver, ver)
+
+    # Legacy schema: params.sections.<name>.versions[].
+    sections = params.get("sections") or {}
     for section_data in sections.values():
-        for entry in section_data.get("versions", []):
+        if not isinstance(section_data, dict):
+            continue
+        for entry in section_data.get("versions") or []:
+            if not isinstance(entry, dict):
+                continue
             link_ver = entry.get("linkVersion")
             ver = entry.get("version")
             if link_ver and ver:
-                mapping[link_ver] = ver
+                mapping.setdefault(link_ver, ver)
     return mapping
 
 
@@ -90,10 +122,10 @@ class Extractor:
         self.product = definition.get("context", {}).get("product")
 
         # Map linkVersion tokens (e.g. "latest", "main") to canonical version
-        # strings (e.g. "2.2.x", "1.0.x") as defined in hugo.yaml.  This
+        # strings (e.g. "1.5.x", "1.4.x") as defined in hugo.yaml.  This
         # mirrors what Hugo's version.html shortcode does at build time so that
         # include-if comparisons resolve correctly.
-        self._link_version_map = _load_link_version_map(repo_root)
+        self._link_version_map = _load_link_version_map(repo_root, self.product)
         # Resolve the context version token to its canonical version string once.
         self._resolved_version = self._link_version_map.get(self.version, self.version) if self.version else self.version
 
