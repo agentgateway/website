@@ -136,7 +136,7 @@ llm:
 EOF
 ```
 
-The `team-a` key has a dollar budget that blocks, and the `team-b` key has a token budget that only records the overage. Review the following table to understand this configuration. Both limits are small so that you can reach them in a few requests. Use realistic limits in production.
+The `team-a` key has a dollar budget that blocks requests when the budget is exhausted, and the `team-b` key has a token budget that only records the overage. Review the following table to understand this configuration. Both limits are small so that you can reach them in a few requests. Use realistic limits in production.
 
 | Setting | Description |
 | -- | -- |
