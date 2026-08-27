@@ -68,8 +68,8 @@ shapes, declare each supported format and optionally set a per-format path.
 
 | Client request format | Preferred custom provider format |
 |-----------------------|----------------------------------|
-| OpenAI chat completions | `Completions` |
-| Anthropic messages | `Messages` |
+| OpenAI chat completions | `Completions`, then `Messages` |
+| Anthropic messages | `Messages`, then `Completions`, then `Responses` |
 | OpenAI responses | `Responses`, then `Completions` |
 | OpenAI embeddings | `Embeddings` |
 | Anthropic token count | `AnthropicTokenCount` |

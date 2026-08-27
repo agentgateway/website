@@ -17,7 +17,7 @@ Agentgateway exposes an **admin interface** on `127.0.0.1:15000` by default. The
 The admin interface is not how you operate agentgateway day to day, and most installations never touch it. You reach it when you are debugging a specific problem on the host that runs the proxy, and you use [`agctl`]({{< link-hextra path="/operations/agctl" >}}) rather than raw endpoints for most of that.
 
 > [!CAUTION]
-> The admin interface has no authentication and cannot be given any. It binds to the loopback interface, so only a client on the same host can reach it. Keep it that way. Endpoints such as `/quitquitquit` and `/config_dump` shut down the proxy and dump its full configuration to any caller that can open a connection.
+> The admin interface binds to the loopback interface, so only a client on the same host can reach it. Keep it that way. Endpoints such as `/quitquitquit` and `/config_dump` shut down the proxy and dump its full configuration to any caller that can open a connection.
 
 Do not confuse the admin interface with the [agentgateway UI]({{< link-hextra path="/setup/ui/" >}}), which is the web interface that you use to manage the proxy. The admin interface serves a copy of the UI as a convenience for local use, but the two are different surfaces: the UI belongs on a gateway, where you can authenticate it, and the debugging endpoints in the following table are served only on the admin address. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/setup/ui/#admin-interface" >}}).
 

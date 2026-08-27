@@ -466,3 +466,127 @@ llm:
 EOF
 agentgateway -f config-mask.yaml --validate-only
 {{< /doc-test >}}
+
+## Scan tool call content {#scope}
+
+By default, a request guard reads the system prompt and regular message text only. Tool call results that come back to the model are not read, so PII that a tool returns reaches the provider untouched. Set the `scope` field to include `toolOutput`.
+
+For what each scope value covers and the limits on the field, see [Guard scope]({{< link-hextra path="/llm/prompt-guards/overview/#scope" >}}).
+
+1. Create a configuration that rejects a request when a tool result contains a Social Security number.
+   ```yaml {paths="regex"}
+   cat <<'EOF' > config-scope.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         model: gpt-4o-mini
+         apiKey: "$OPENAI_API_KEY"
+       guardrails:
+         request:
+         - scope: [toolOutput]
+           regex:
+             action: reject
+             rules:
+             - builtin: ssn
+           rejection:
+             status: 400
+             body: |
+               {"error": {"message": "Tool output contains PII", "code": "pii_detected"}}
+   EOF
+   ```
+
+   > [!WARNING]
+   > This guard reads tool results and nothing else. Because `scope` replaces the default rather than adding to it, the same Social Security number in a user message is no longer caught. To cover both, use `scope: [messages, toolOutput]`.
+
+2. Start the agentgateway with the new configuration.
+   ```sh
+   agentgateway -f config-scope.yaml
+   ```
+
+   {{< doc-test paths="regex" >}}
+   # Guard scope: restart the gateway on config-scope.yaml. This comment keeps the
+   # block textually distinct from the earlier restart block, because the extractor
+   # drops a block whose content is byte-identical to one it already selected.
+   agentgateway -f config-scope.yaml --validate-only
+   kill $AGW_PID 2>/dev/null
+   sleep 1
+   agentgateway -f config-scope.yaml &
+   AGW_PID=$!
+   trap 'kill $AGW_PID 2>/dev/null' EXIT
+   sleep 3
+   {{< /doc-test >}}
+
+3. Send a request whose tool result contains a Social Security number. The guard rejects it before the request reaches the provider.
+   ```sh {paths="regex"}
+   curl -s http://localhost:4000/v1/chat/completions \
+   --header 'Content-Type: application/json' \
+   --data '{
+     "model": "gpt-4o-mini",
+     "messages": [
+       {"role": "user", "content": "look up my record"},
+       {"role": "assistant", "tool_calls": [{"id": "c1", "type": "function", "function": {"name": "lookup", "arguments": "{}"}}]},
+       {"role": "tool", "tool_call_id": "c1", "content": "record found for 123-45-6789"}
+     ]
+   }' | jq .
+   ```
+
+   Example output:
+   ```console
+   {"error": {"message": "Tool output contains PII", "code": "pii_detected"}}
+   ```
+
+4. Send the same Social Security number in a user message instead. The guard does not read messages while `scope` is set to `toolOutput`, so the request is forwarded to the provider.
+   ```sh {paths="regex"}
+   curl -s http://localhost:4000/v1/chat/completions \
+   --header 'Content-Type: application/json' \
+   --data '{
+     "model": "gpt-4o-mini",
+     "messages": [{"role": "user", "content": "my ssn is 123-45-6789"}]
+   }' | jq .
+   ```
+
+   The response comes from the provider rather than from the guard, which confirms that the guard let the request through.
+
+{{< doc-test paths="regex" >}}
+YAMLTest -f - <<'EOF'
+# The rejection is produced by the guard before the provider is reached, so this
+# assertion holds with the placeholder API key that the test workflow supplies.
+- name: Guard scope - a Social Security number in a tool result is rejected
+  retries: 3
+  http:
+    url: "http://localhost:4000"
+    path: /v1/chat/completions
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
+      {"model": "gpt-4o-mini", "messages": [{"role": "user", "content": "look up my record"}, {"role": "assistant", "tool_calls": [{"id": "c1", "type": "function", "function": {"name": "lookup", "arguments": "{}"}}]}, {"role": "tool", "tool_call_id": "c1", "content": "record found for 123-45-6789"}]}
+  source:
+    type: local
+  expect:
+    statusCode: 400
+    bodyJsonPath:
+      - path: "$.error.code"
+        comparator: equals
+        value: pii_detected
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="regex" >}}
+# Step 4: confirm the guard does NOT read messages while scope is toolOutput. Like
+# the step 3 check in "PII detection", this is a negative assertion rather than a
+# status check: without a real API key the upstream returns an auth error, and
+# either way what matters is that the guard did not reject the request.
+SCOPED=$(curl -s --max-time 15 http://localhost:4000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"my ssn is 123-45-6789"}]}')
+if grep -q 'pii_detected' <<<"$SCOPED"; then
+  echo "FAIL: the guard read a message although scope is limited to toolOutput"
+  echo "$SCOPED"
+  exit 1
+fi
+echo "✓ A scope of toolOutput leaves message text unread"
+{{< /doc-test >}}
