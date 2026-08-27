@@ -43,6 +43,43 @@ EOF
 
 By default, agentgateway calls `POST /request` and `POST /response` on the webhook target.
 
+## DeepKeep example
+
+You can use [DeepKeep](https://www.deepkeep.ai/) as an external guardrail provider by running the [DeepKeep agentgateway webhook adapter](https://github.com/gilarel/agentgateway-deepkeep-webhook). The adapter exposes the default Guardrail Webhook API paths that agentgateway calls and forwards checks to DeepKeep's pre-model and post-model moderation endpoints.
+
+Run the adapter with the DeepKeep connection settings for your environment.
+
+```sh
+docker run --rm -p 8000:8000 \
+  -e DEEPKEEP_BASE_URL=https://deepkeep.example \
+  -e DEEPKEEP_API_KEY=dk_... \
+  -e DEEPKEEP_MODEL=your-firewall-id \
+  ghcr.io/gilarel/agentgateway-deepkeep-webhook:latest
+```
+
+Then configure agentgateway to send request and response guardrail checks to the adapter.
+
+```yaml
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      model: gpt-3.5-turbo
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
+      request:
+      - webhook:
+          target:
+            host: localhost:8000
+      response:
+      - webhook:
+          target:
+            host: localhost:8000
+```
+
+The adapter maps DeepKeep `block`, `redact`, `modify`, and `alert` actions to the Guardrail Webhook API actions that agentgateway understands.
+
 ## Customize the request path and headers
 
 Use the `headers` field to set headers on the outgoing webhook request from [CEL expressions]({{< link-hextra path="/reference/cel/" >}}). Set this field when your webhook service hosts other endpoints and cannot dedicate its root path to the guardrail API, or when you want to forward context such as JWT claims to the webhook.

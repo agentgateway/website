@@ -3,7 +3,7 @@ Deploy agentgateway as a standalone Kubernetes workload by using the standalone 
 Use this chart when you want the standalone agentgateway binary model, but you want Kubernetes to run and expose the process for you. The chart runs the same binary and reads the same configuration file that the binary and Docker deployments use. You supply that file through Helm values, and the chart renders it into a ConfigMap that the proxy reads at startup.
 
 > [!TIP]
-> This chart installs agentgateway as a single, unmanaged Kubernetes deployment. You manage agentgateway config by upgrading the Helm values, and optionally adding a PostgreSQL database for editting the agentgateway config through the admin UI. If you want a managed Kubernetes solution that includes a control plane and Gateway API resources, see the [Kubernetes mode documentation](https://agentgateway.dev/docs/kubernetes/).
+> This chart installs agentgateway as a single, unmanaged Kubernetes deployment. You manage agentgateway config by upgrading the Helm values, and optionally adding a PostgreSQL database for editting the agentgateway config through the UI. If you want a managed Kubernetes solution that includes a control plane and Gateway API resources, see the [Kubernetes mode documentation](https://agentgateway.dev/docs/kubernetes/).
 
 ## Before you begin
 
@@ -101,7 +101,7 @@ The chart creates the following resources. Each resource is named after the Helm
 
 ## Open the UI
 
-For quick access to the admin UI, port-forward the agentgateway Deployment and open the `/ui` path.
+For quick access to the UI, port-forward the agentgateway Deployment and open the `/ui` path.
 
 <!--TODO secure UI
 To securely expose the UI on your own domain, see the guide.-->
@@ -164,7 +164,7 @@ The configuration examples throughout the standalone documentation are complete 
 
 ### Edit the configuration in the UI
 
-The admin UI reads the running configuration in every mode. Whether you can save an edit depends on the `mode` value.
+The UI reads the running configuration in every mode. Whether you can save an edit depends on the `mode` value.
 
 In the default `readonly` mode, the ConfigMap is mounted read-only, so a save fails.
 
