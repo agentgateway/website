@@ -158,9 +158,9 @@ For the policy fields, see [JWT authentication]({{< link-hextra path="/configura
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3016 -->
 
-A new `networkExtAuthz` frontend policy calls an external authorization service once for each downstream connection, instead of once for each HTTP request. Use it to authorize a whole connection, including TCP traffic that carries no HTTP requests, and to avoid a per-request callout on a long-lived connection. It takes the same configuration as the existing `extAuthz` policy.
+A new `networkExtAuthz` frontend policy calls an external authorization service once for each downstream connection, instead of once for each HTTP request. Use it to authorize a whole connection, including TCP traffic that carries no HTTP requests, and to avoid a per-request callout on a long-lived connection. It takes the same fields as the existing `extAuthz` policy, except that it calls the authorization service over HTTP only. Set `protocol.http` explicitly, because the field defaults to `grpc` and agentgateway rejects a `networkExtAuthz` policy that uses it.
 
-For per-request authorization, keep using [External authorization]({{< link-hextra path="/configuration/security/external-authz/" >}}). For the new field, see the [Configuration reference]({{< link-hextra path="/reference/configuration/" >}}).
+For per-request authorization, keep using [External authorization]({{< link-hextra path="/configuration/security/external-authz/#network-extauthz" >}}). For the new field, see the [Configuration reference]({{< link-hextra path="/reference/configuration/" >}}).
 
 #### Cross App Access and token exchange enhancements
 

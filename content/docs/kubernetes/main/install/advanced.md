@@ -120,12 +120,28 @@ controller:
     minAvailable: 50%
 ```
 
+## Namespace-scoped write permissions {#rbac-gateway-namespaces}
 
+By default, the controller holds cluster-wide write permissions for the objects that it provisions for a Gateway. To restrict those writes to the namespaces that hold your Gateways, set `rbac.gatewayNamespaces` in the controller Helm chart.
 
+```yaml
 
+rbac:
+  gatewayNamespaces:
+  - gateway-system
+  - team-a
+```
 
+The chart then creates a namespaced role in each listed namespace for the objects that the controller provisions, which are ConfigMaps, Secrets, Services, ServiceAccounts, Deployments, DaemonSets, HorizontalPodAutoscalers, and PodDisruptionBudgets. The cluster-wide role keeps read access to those objects.
 
+Review the following constraints before you set the field.
 
+| Constraint | Detail |
+| -- | -- |
+| Only listed namespaces can hold a Gateway | The controller cannot provision a Gateway in a namespace that the list omits. |
+| The namespaces must already exist | The chart does not create them. |
+| The default is an empty list | An empty list keeps the cluster-wide write access, so an upgrade does not change permissions on its own. |
+| Cluster-scoped access is unaffected | Cluster-wide read permissions, and writes to cluster-scoped resources such as GatewayClass and status subresources, do not change. |
 
-
+For the full list of chart values, see the [Helm reference]({{< link-hextra path="/reference/helm/" >}}).
 

@@ -312,3 +312,68 @@ agentgateway -f config2.yaml --validate-only
 ## Conditional execution
 
 To choose between multiple external authorization servers based on the request, use the `conditional` field. For example, you can send admin paths to a stricter authorization server and route every other request to a standard one. For details, see [Conditional policies]({{< link-hextra path="/configuration/policies/conditional-policies" >}}).
+
+## Connection-level external authorization {#network-extauthz}
+
+The `extAuthz` policy calls the authorization service once for each HTTP request. To call it once for each downstream connection instead, use the `networkExtAuthz` frontend policy.
+
+Use connection-level authorization in two cases.
+
+- The gateway carries TCP traffic that has no HTTP requests to authorize.
+- The connection is long-lived, and a callout on every request costs more than the decision is worth.
+
+Configure it under `frontendPolicies.networkExtAuthz`. It takes the same fields as `extAuthz`, with one restriction.
+
+> [!IMPORTANT]
+> The `networkExtAuthz` policy calls the authorization service over HTTP only, so you must set `protocol.http` explicitly. The `protocol` field defaults to `grpc`, which means that a configuration that omits it fails to start with `frontendPolicies.networkExtAuthz only supports protocol.http`.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  networkExtAuthz:
+    host: localhost:9000
+    protocol:
+      http: {}
+
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8080
+```
+
+Because the policy runs before protocol handling, it also applies to a gateway that carries no HTTP traffic.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  networkExtAuthz:
+    host: localhost:9000
+    protocol:
+      http: {}
+
+gateways:
+  default:
+    port: 3000
+    protocol: TCP
+tcpRoutes:
+- gateways: [default]
+  backends:
+  - host: localhost:8080
+```
+
+The two policies differ in what the authorization service sees and in what a denial affects.
+
+| | `extAuthz` | `networkExtAuthz` |
+| -- | -- | -- |
+| Runs | Once per HTTP request | Once per downstream connection |
+| Attaches to | Listener, route, or backend | Gateway or listener, under `frontendPolicies` |
+| Gateway protocol | HTTP gateways only | Any gateway protocol, including `TCP` |
+| Callout protocol | `grpc` (default) or `http` | `http` only |
+| Request data available | Method, path, headers, and body | Connection attributes only, because no request has been read yet |
+| A denial rejects | The single request | The whole connection, including every request that would have followed |
+
+You can set both policies at once. Use `networkExtAuthz` for a coarse decision that the connection either passes or fails, and `extAuthz` for a per-request decision that needs the path or the headers.
+
+For a CEL-based decision on the connection that does not call an external service, use [network authorization]({{< link-hextra path="/configuration/security/network-authz/" >}}) instead.

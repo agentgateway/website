@@ -374,7 +374,7 @@ This release fills in the pieces that agentgateway needs to serve as an egress p
 - **Dynamic backends for TCP**: A TCP route can use a dynamic backend, so the destination comes from the connection rather than from static configuration. The controller now translates TCP backends, which the proxy already supported.
 - **Tunnel mode**: The backend tunnel policy takes a `mode` field. The default `auto` mode uses `CONNECT` for TLS and non-HTTP transports, and absolute-form requests for plaintext HTTP. The `connect` mode uses `CONNECT` for everything. You can also attach policies to the connection with the tunnel proxy itself.
 - **Tunneling through a dynamic backend**: `CONNECT` requests can be tunneled through a dynamic proxy backend.
-- **Backend connection timeouts**: A backend policy sets `connectTimeout`, `handshakeTimeout`, `requestTimeout`, `http1IdleTimeout`, `http2KeepaliveInterval`, `http2KeepaliveTimeout`, and `maxConnectionDuration`.
+- **Backend connection timeouts**: The controller now translates the `backend.tcp` section of a policy, so `connectTimeout` and the `keepalive` settings take effect on connections to a destination. A policy that set them in an earlier version was accepted but had no effect. The `backend.http.requestTimeout` field sets the deadline for a response.
 
 For the tunnel proxy, see [Backend tunnel proxy]({{< link-hextra path="/llm/providers/backend-tunnel-proxy/" >}}), and for the timeout fields, see [Connection settings]({{< link-hextra path="/resiliency/connection/" >}}).
 
