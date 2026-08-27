@@ -6,6 +6,9 @@ description: Monitor agentgateway with metrics, distributed traces, and access l
 prev: /docs/integrations
 next: /docs/operations
 test: skip
+aliases:
+  - /docs/standalone/main/integrations/observability/
+  - /docs/standalone/main/reference/observability/
 ---
 
 Agentgateway exposes three observability signals out of the box: **metrics**, **distributed traces**, and **access logs**. You can use these signals individually or together with tools like Prometheus and Grafana to monitor traffic health, LLM performance, and MCP tool usage.
