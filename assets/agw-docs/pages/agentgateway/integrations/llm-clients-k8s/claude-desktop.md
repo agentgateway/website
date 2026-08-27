@@ -27,7 +27,7 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 > * **Terminate HTTPS on the proxy** and use `https://<hostname>`. Choose this option when you [roll out the configuration to your organization](#mdm), because each user's machine must reach the proxy over the network. To set up a certificate, see [HTTPS listeners]({{< link-hextra path="/setup/listeners/https/" >}}).
 
 > [!NOTE]
-> The Kubernetes Admin UI is read-only and does not currently show the standalone **LLM > Client Setup** generator. Configure the client with the same gateway URL and credential values manually. The client settings are not specific to a deployment mode; only the resources that configure agentgateway differ. Follow [agentgateway/agentgateway#2989](https://github.com/agentgateway/agentgateway/issues/2989) for the enhancement, and see [Admin UI]({{< link-hextra path="/observability/ui/" >}}) for more information about the current UI.
+> The Kubernetes UI is read-only and does not currently show the standalone **LLM > Client Setup** generator. Configure the client with the same gateway URL and credential values manually. The client settings are not specific to a deployment mode; only the resources that configure agentgateway differ. Follow [agentgateway/agentgateway#2989](https://github.com/agentgateway/agentgateway/issues/2989) for the enhancement, and see [UI]({{< link-hextra path="/observability/ui/" >}}) for more information about the current UI.
 
 ## Set up the Anthropic backend
 
@@ -176,7 +176,7 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 
 ## Use a gateway API key {#gateway-api-key}
 
-You can use the same client-side values that the standalone **Client Setup** page produces. The Kubernetes Admin UI does not generate these values, so configure the gateway and Claude Desktop manually.
+You can use the same client-side values that the standalone **Client Setup** page produces. The Kubernetes UI does not generate these values, so configure the gateway and Claude Desktop manually.
 
 1. Give the `anthropic-desktop` backend an Anthropic API key. Follow [Anthropic provider]({{< link-hextra path="/llm/providers/anthropic/" >}}) to create a provider credential Secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}}. This credential is sent upstream and is separate from the key that Claude Desktop sends to agentgateway.
 2. Follow [Virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) to create a client API key and a strict API key authentication policy. Target the `claude-desktop` `HTTPRoute` if the key must protect only this integration, or target the `agentgateway-proxy` `Gateway` to protect all of its routes.

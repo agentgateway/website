@@ -12,7 +12,7 @@ INFO state_manager  loaded config from File("/config/config.yaml")
 Two things are worth knowing before you edit.
 
 * **Not every field reloads.** The top-level `config` section holds startup settings, such as `adminAddr`, `storage`, `database`, `logging`, and `tracing`. Agentgateway applies those only when the process starts, with the exception of `config.modelCatalog`, which does reload. Everything else, including `gateways`, `routes`, `llm`, `mcp`, and `ui`, reloads in place. For more information, see [Fields that require a restart](#restart-required).
-* **The UI might write to this file.** In the default storage mode in binary and Docker deployments, agentgateway writes the resources that you manage in the admin UI back to the same file. Your file is an output as well as an input. To keep the file read-only, or to send UI edits to a database instead, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+* **The UI might write to this file.** In the default storage mode in binary and Docker deployments, agentgateway writes the resources that you manage in the UI back to the same file. Your file is an output as well as an input. To keep the file read-only, or to send UI edits to a database instead, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
 
 ### Fields that require a restart {#restart-required}
 
@@ -96,7 +96,7 @@ Edit the file that you passed to `agentgateway -f`, or the generated file in you
    ```
 
    > [!NOTE]
-   > The admin API is served in the same places as the admin UI. That is always the admin address, `localhost:15000` by default. If you also attached the UI to a gateway, the same API is available on that gateway's port. For more information, see [Admin UI]({{< link-hextra path="/setup/ui/" >}}).
+   > This API is the one that the UI itself calls, so it is served wherever the UI is served: the admin interface at `localhost:15000` by default, and the port of any gateway that the `ui` section lists. It is not the same as the admin interface's debugging endpoints, such as `/config_dump`, which are served only on the admin address. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/setup/ui/#admin-interface" >}}).
 
 ## Docker {#docker}
 
@@ -126,7 +126,7 @@ The container reads the configuration from the path that you mounted, so you edi
    docker restart <container-name>
    ```
 
-4. Confirm that the running configuration includes your change. Reach the admin API on a gateway port that you published, such as port 4000 in the generated configuration, because the admin address binds to the container's own loopback interface and is not reachable from your host. For more information, see [Reach the admin UI in a container]({{< link-hextra path="/setup/ui/gateway-ui/#docker-admin-addr" >}}).
+4. Confirm that the running configuration includes your change. Reach the admin API on a gateway port that you published, such as port 4000 in the generated configuration, because the admin address binds to the container's own loopback interface and is not reachable from your host. For more information, see [Reach the UI in a container]({{< link-hextra path="/operations/debug/#docker-admin-addr" >}}).
 
    ```sh
    curl -s http://localhost:4000/api/config/effective | jq

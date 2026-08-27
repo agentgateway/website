@@ -1,1 +1,1 @@
-https://agentgateway.dev/install
+https&#58;//agentgateway.dev/install

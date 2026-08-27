@@ -14,6 +14,8 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
 
 ## Set up AWS Bedrock guardrails
 
+{{< reuse "agw-docs/snippets/aws-creds.md" >}}
+
 1. Create a guardrail in the [AWS console](https://console.aws.amazon.com/bedrock/home#/guardrails) or via the AWS CLI.
 2. Retrieve your guardrail identifier and version. For more information, see the [AWS documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html).
    ```sh
@@ -38,18 +40,25 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
    }
    ```
 
-3. Create a Kubernetes secret with your AWS credentials. Make sure that you have permission to invoke the Bedrock Guardrails API.
+3. Save the AWS credentials that the gateway uses to invoke the Bedrock Guardrails API as environment variables.
+   ```bash
+   export AGW_AWS_ACCESS_KEY_ID="<aws-access-key-id>"
+   export AGW_AWS_SECRET_ACCESS_KEY="<aws-secret-access-key>"
+   export AGW_AWS_SESSION_TOKEN="<aws-session-token>"
+   ```
+
+4. Create a Kubernetes secret with those AWS credentials. Make sure that you have permission to invoke the Bedrock Guardrails API.
    ```sh
    kubectl create secret generic aws-secret \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --from-literal=accessKey="$AWS_ACCESS_KEY_ID" \
-     --from-literal=secretKey="$AWS_SECRET_ACCESS_KEY" \
-     --from-literal=sessionToken="$AWS_SESSION_TOKEN" \
+     --from-literal=accessKey="$AGW_AWS_ACCESS_KEY_ID" \
+     --from-literal=secretKey="$AGW_AWS_SECRET_ACCESS_KEY" \
+     --from-literal=sessionToken="$AGW_AWS_SESSION_TOKEN" \
      --type=Opaque \
      --dry-run=client -o yaml | kubectl apply -f -
    ```
 
-4. Configure the prompt guard. Add the ID, version, and region of your guardrail. 
+5. Configure the prompt guard. Add the ID, version, and region of your guardrail. 
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -94,7 +103,7 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
    The `policies` field supports more than the `aws` credential source shown here. You can choose a different authentication method or tune the connection that agentgateway opens to Bedrock, such as setting a request timeout or custom TLS. For all the options, see [Backend connection and authentication policies](#backend-connection-and-authentication-policies).
 
 
-5. Test the guardrail. The following commands assume that you set up your guardrail to block requests that contain email information. 
+6. Test the guardrail. The following commands assume that you set up your guardrail to block requests that contain email information. 
    {{< tabs >}}
    {{% tab name="OpenAI v1/chat/completions" %}}
    **Cloud Provider LoadBalancer**:

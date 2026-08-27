@@ -1,11 +1,11 @@
 ---
 title: Serve the UI on a gateway
 weight: 20
-description: Give the admin UI a gateway of its own so that UI traffic and proxy traffic do not share a port, and change the admin address.
+description: Give the UI a gateway of its own so that UI traffic and proxy traffic do not share a port.
 test:
-  admin-ui-custom-port:
+  ui-gateway:
   - file: ${versionRoot}/setup/ui/gateway-ui.md
-    path: ui-standalone-custom-port
+    path: ui-standalone-gateway
 ---
 
 {{< reuse "agw-docs/standalone/setup/ui/gateway.md" >}}
