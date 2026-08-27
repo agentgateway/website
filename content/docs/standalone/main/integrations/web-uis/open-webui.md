@@ -22,7 +22,7 @@ description: Front Open WebUI with agentgateway to centralize auth, audit, and r
 
 ## Before you begin
 
-1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}) or have a container image available.
+1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}) or have a container image available.
 2. Get an API key from your LLM provider, such as an [OpenAI API key](https://platform.openai.com/api-keys).
 3. Install [Docker](https://docs.docker.com/get-started/get-docker/) for running Open WebUI.
 
@@ -107,7 +107,7 @@ To run agentgateway and Open WebUI together, use the following `docker-compose.y
 ```yaml
 services:
   agentgateway:
-    image: cr.agentgateway.dev/agentgateway:latest
+    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:latest
     ports:
       - "3000:3000"
       - "15000:15000"

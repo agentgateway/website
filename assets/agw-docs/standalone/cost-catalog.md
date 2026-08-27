@@ -63,14 +63,14 @@ agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import \
 
 For all flags, see the {{< version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}){{< /version >}}{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}){{< /version >}} reference.
 
-## Import costs (Admin UI)
+## Import costs (UI)
 
-You can also manage the model cost catalog from the built-in [Admin UI]({{< link-hextra path="/operations/ui/" >}}).
+You can also manage the model cost catalog from the built-in [UI]({{< link-hextra path="/operations/ui/" >}}).
 
-1. Open the [Admin UI cost page](http://localhost:15000/ui/llm/costs) (**LLM > Costs**). The page lists your configured **Catalog sources** (files and ConfigMaps, merged in order) and any inline **Custom costs** overrides.
+1. Open the [UI cost page](http://localhost:15000/ui/llm/costs) (**LLM > Costs**). The page lists your configured **Catalog sources** (files and ConfigMaps, merged in order) and any inline **Custom costs** overrides.
 
-   {{< reuse-image-light src="img/ui-cost-catalog.png" alt="Admin UI LLM Costs page showing catalog sources and custom cost overrides" >}}
-   {{< reuse-image-dark srcDark="img/ui-cost-catalog-dark.png" alt="Admin UI LLM Costs page showing catalog sources and custom cost overrides" >}}
+   {{< reuse-image-light src="img/ui-cost-catalog.png" alt="UI LLM Costs page showing catalog sources and custom cost overrides" >}}
+   {{< reuse-image-dark srcDark="img/ui-cost-catalog-dark.png" alt="UI LLM Costs page showing catalog sources and custom cost overrides" >}}
 
 2. Press **Refresh base costs**. The UI fetches the latest base costs and configures `modelCatalog`. You can refresh again later to pull updated pricing and model data.
 
@@ -78,7 +78,7 @@ You can also manage the model cost catalog from the built-in [Admin UI]({{< link
 
 When you set up a fresh configuration for the first time, the UI automatically performs the refresh step.
 
-After you load a catalog, the same Admin UI visualizes your priced traffic. For more information, see [Cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}).
+After you load a catalog, the same UI visualizes your priced traffic. For more information, see [Cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}).
 
 ## Override catalog entries
 
@@ -93,6 +93,7 @@ config:
 
 Use overrides for contracted pricing, internally hosted models, or models that do not appear in the imported catalog.
 
+{{% version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 You can also load one or more catalog files with the `MODEL_CATALOG_PATHS` environment variable. Set it to a comma-separated list of file paths.
 
 ```sh
@@ -101,6 +102,12 @@ MODEL_CATALOG_PATHS=./costs/catalog.json,./costs/overrides.json agentgateway -f 
 
 > [!WARNING]
 > When `MODEL_CATALOG_PATHS` is set, it replaces any `config.modelCatalog` sources. Use one mechanism or the other.
+{{% /version %}}
+
+{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+> [!WARNING]
+> The `MODEL_CATALOG_PATHS` environment variable is removed. Agentgateway ignores it without an error, so a catalog that you loaded this way stops applying. List your catalog files under `config.modelCatalog` instead.
+{{% /version %}}
 
 ## Use cost data
 
@@ -165,38 +172,15 @@ The model catalog provides pricing data for spend visibility. To block or thrott
 
 ## Advanced: Catalog format
 
-Usually, you do not need to write catalog JSON by hand. Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` or the Admin UI to generate the base catalog, then add overrides only when needed.
+Usually, you do not need to write catalog JSON by hand. Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` or the UI to generate the base catalog, then add overrides only when needed.
 
 {{< reuse "agw-docs/snippets/model-catalog-json-format.md" >}}
 
-The following minimal example prices one OpenAI model and one tiered Gemini model.
+{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+## Model tags
 
-```json
-{
-  "providers": {
-    "openai": {
-      "models": {
-        "gpt-4o-mini": {
-          "rates": { "input": "0.15", "output": "0.6", "cacheRead": "0.075" }
-        }
-      }
-    },
-    "gcp.gemini": {
-      "models": {
-        "gemini-2.5-pro": {
-          "rates": { "input": "1.25", "output": "10", "cacheRead": "0.125" },
-          "tiers": [
-            {
-              "contextOver": 200000,
-              "rates": { "input": "2.5", "output": "15", "cacheRead": "0.25" }
-            }
-          ]
-        }
-      }
-    }
-  }
-}
-```
+{{< reuse "agw-docs/snippets/model-catalog-tags.md" >}}
+{{% /version %}}
 
 {{< doc-test paths="costs" >}}
 # Verify that agentgateway loads a catalog from a file source.
