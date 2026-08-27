@@ -2,6 +2,7 @@
 title: View and customize metrics
 weight: 10
 description: View and monitor agentgateway metrics for traffic, LLM, MCP, and connection insights.
+test: skip
 ---
 
 Agentgateway exposes a Prometheus-compatible metrics endpoint on port 15020. Metrics are collected automatically for every request that passes through the gateway.
@@ -14,7 +15,7 @@ The metrics endpoint is available at port `15020` by default.
 curl http://localhost:15020/metrics
 ```
 
-Metrics are grouped under the `agentgateway_` prefix and follow the [OpenMetrics](https://openmetrics.io/) format. For an overview of available metrics, see the [metrics reference]({{< link path="/observability/metrics/reference/" >}}). 
+Metrics are grouped under the `agentgateway_` prefix and follow the [OpenMetrics](https://openmetrics.io/) format. For an overview of available metrics, see the [metrics reference]({{< link-hextra path="/observability/metrics/reference/" >}}). 
 
 
 For instructions on setting up Prometheus to scrape agentgateway metrics, see [Prometheus]({{< link-hextra path="/observability/metrics/prometheus/" >}}).

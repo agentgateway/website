@@ -5,7 +5,7 @@ Now that the UI requires a login, serve it over HTTPS on a hostname of your own 
 How the address becomes reachable depends on your installation method.
 
 * **Kubernetes** gives the UI an external address through a LoadBalancer Service. Because the UI usually needs different exposure than proxy traffic, give it a Service of its own instead of adding the port to the main Service.
-* **A binary or a container** has no equivalent, so you provide the network path yourself. Gateway listeners bind to all network interfaces, unlike the admin address, so a UI gateway is already reachable from other hosts that can route to the machine. To publish it more widely, do the following:
+* **A binary or a container** has no equivalent, so you provide the network path yourself. Gateway listeners bind to all network interfaces, unlike the admin interface, so a UI gateway is already reachable from other hosts that can route to the machine. To publish it more widely, do the following:
    * Run agentgateway on a host that has the address you want to serve the UI on, such as a VM with a public IP address.
    * Allow the gateway port through the host's firewall. In Docker, publish the port with `-p`.
    * Create a DNS record that points your UI hostname at that host. The hostname must match your TLS certificate and the `redirectURI` value in the `oidc` policy.
@@ -14,7 +14,7 @@ How the address becomes reachable depends on your installation method.
 
 ## Before you begin
 
-1. [Serve the UI on its own gateway]({{< link-hextra path="/setup/ui/gateway-ui/" >}}). The examples on this page expose the `admin` gateway on port `4001` that you created in that guide.
+1. [Serve the UI on its own gateway]({{< link-hextra path="/setup/ui/gateway-ui/" >}}). The examples on this page expose the `ui-gateway` on port `4001` that you created in that guide.
 2. [Secure the UI]({{< link-hextra path="/setup/ui/secure-ui/" >}}) with an authentication policy. Add the policy before you expose the UI, because a gateway listener is as reachable as your other proxy traffic.
 3. Get a TLS certificate and key for the hostname that you plan to serve the UI on, such as from your DNS provider or your organization's certificate authority.
 4. Create a DNS record that points that hostname at the address you expose in the steps on this page. The hostname must match both the certificate and the `redirectURI` value in your `oidc` policy.
@@ -28,7 +28,7 @@ How the address becomes reachable depends on your installation method.
    gateways:
      default:
        port: 4000
-     admin:
+     ui-gateway:
        port: 4001
        tls:
          cert: /etc/agentgateway/tls/tls.crt
@@ -90,7 +90,7 @@ For more certificate options, see [Gateways]({{< link-hextra path="/configuratio
      --cert=ui-cert.pem --key=ui-key.pem
    ```
 
-2. Mount the TLS Secret as a volume and configure the admin gateway to terminate TLS traffic on the gateway by using the certs from that Secret. You also expose the UI with a separate Service so that the UI and proxy traffic do not share the same service address. The chart names the extra Service `<release name>-<name>`, such as `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-ui`.
+2. Mount the TLS Secret as a volume and configure the `ui-gateway` to terminate TLS traffic on the gateway by using the certs from that Secret. You also expose the UI with a separate Service so that the UI and proxy traffic do not share the same service address. The chart names the extra Service `<release name>-<name>`, such as `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-ui`.
 
    ```yaml
    cat <<EOF > values.yaml
@@ -113,13 +113,13 @@ For more certificate options, see [Gateways]({{< link-hextra path="/configuratio
      gateways:
        default:
          port: 4000
-       admin:
+       ui-gateway:
          port: 4001
          tls:
            cert: /etc/agentgateway/tls/tls.crt
            key: /etc/agentgateway/tls/tls.key
      ui:
-       gateways: [admin]
+       gateways: [ui-gateway]
        policies:
          oidc:
            issuer: ${ISSUER_URL}
@@ -220,11 +220,11 @@ The login flow is the same in every installation method, because the `oidc` poli
 1. In your browser, open the UI on your hostname, such as `https://agentgateway.example.com/ui`. In a local binary or Docker setup, use the gateway address instead, such as `http://localhost:4001/ui`.
 2. Verify that agentgateway redirects you to your IdP to log in.
 3. Log in with a user from your IdP.
-4. Verify that your IdP returns you to the UI, and that the admin UI opens on the **Gateway Overview**. The overview lists the available capabilities for LLM, MCP, and Traffic.
+4. Verify that your IdP returns you to the UI, and that the UI opens on the **Gateway Overview**. The overview lists the available capabilities for LLM, MCP, and Traffic.
 
    {{< reuse-image src="img/agentgateway-ui-landing.png" srcDark="img/agentgateway-ui-landing-dark.png" >}}
 
-For what you can do from here, see [Launch the admin UI]({{< link-hextra path="/setup/ui/launch-ui/" >}}).
+For what you can do from here, see [Launch the UI]({{< link-hextra path="/setup/ui/launch-ui/" >}}).
 
 To save the configuration changes that you make in the UI, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}). In the Helm chart's default read-only storage mode, the UI shows the running configuration, but a save fails because the chart mounts the configuration file read-only.
 
@@ -234,7 +234,7 @@ To save the configuration changes that you make in the UI, see [Configuration st
 
 {{< tabs >}}
 {{% tab name="Binary and Docker" %}}
-1. Remove the `tls` section and the `ui.policies` section from your configuration file, and remove the `admin` gateway if you no longer want a separate UI port.
+1. Remove the `tls` section and the `ui.policies` section from your configuration file, and remove the `ui-gateway` if you no longer want a separate UI port.
 
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -250,7 +250,7 @@ To save the configuration changes that you make in the UI, see [Configuration st
 3. Remove the DNS record that you created for the UI hostname, and remove the UI client from your IdP.
 {{% /tab %}}
 {{% tab name="Helm" %}}
-1. Return the UI to the admin address only, and remove the extra Service.
+1. Return the UI to the admin interface only, and remove the extra Service.
 
    ```yaml
    cat <<'EOF' > values.yaml
