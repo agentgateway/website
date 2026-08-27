@@ -16,7 +16,7 @@ export HTTPS_PROXY=http://127.0.0.1:3000
 
 The client then sends `CONNECT <host>:443` to agentgateway instead of connecting to the destination directly. What agentgateway does with that request depends on which of the two CONNECT handling modes you configure.
 
-| | Tunnel mode | Route mode |
+| Area | Tunnel mode | Route mode |
 | -- | -- | -- |
 | Configuration | `tunnelProtocol: connect` on a bind | `frontendPolicies.connect.mode: route` |
 | How a destination is matched | TLS SNI, through `tcpRoutes` hostnames | The CONNECT authority, through route `hostnames` |
