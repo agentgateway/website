@@ -10,7 +10,7 @@ The OpenAI Moderation API detects potentially harmful content across categories 
 
 Two separate features use the OpenAI Moderation API, and they have similar names. This page covers both. Read the following table to choose the one that fits your use case.
 
-| | Moderation prompt guard | Inline moderation |
+| Area | Moderation prompt guard | Inline moderation |
 | -- | -- | -- |
 | Configuration field | `openAIModeration`, in a guardrail | `moderation`, on the OpenAI provider of a backend |
 | What performs the check | agentgateway calls the Moderation API | OpenAI moderates as part of the completion request |
