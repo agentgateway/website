@@ -28,7 +28,7 @@ backendAuth:
 | `accessKeyId` and `secretAccessKey` | An explicit access key. Set both together, or omit both to use the credential chain. |
 | `sessionToken` | Session token that goes with a temporary access key. |
 | `region` | Signing region, such as `us-east-1`. Set the field when the target service is in a different region from agentgateway. A typed AWS backend may supply the region on its own. |
-| `serviceName` | Signing service name, such as `bedrock`, `bedrock-agentcore`, or `execute-api`. Those three are examples and not the full set. The field takes any AWS SigV4 signing name, and agentgateway does not validate it against a list. The signing name is the service element of the credential scope, which the AWS [Signature Version 4 signing elements](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv4-signing-elements.html) documentation describes. A typed AWS backend may supply the name on its own. |
+| `serviceName` | Signing service name, such as `bedrock`, `bedrock-agentcore`, or `execute-api`. The field can be any AWS SigV4 signing name, and agentgateway does not validate it against a list. The signing name is the service element of the credential scope, which the AWS [Signature Version 4 signing elements](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv4-signing-elements.html) documentation describes. A typed AWS backend may supply the name on its own. |
 | `assumeRole` | IAM role to assume before signing. Available with the credential chain only, so do not set an access key alongside it. |
 
 ### AWS credential resolution order
