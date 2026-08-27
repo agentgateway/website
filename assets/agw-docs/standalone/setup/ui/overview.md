@@ -41,7 +41,7 @@ They are not the same surface, and only one of them is meant to leave your machi
 **Attaching the UI to a gateway does not put the admin interface on that gateway.** The debugging endpoints stay on the admin address. A request to `/config_dump` on a gateway that serves the UI returns a `404` response, because the gateway serves only the UI and the UI API.
 
 > [!CAUTION]
-> The admin interface has no authentication and cannot be given any. Treat `config.adminAddr` as a setting that you do not change. Moving it to a routable address, such as `0.0.0.0:15000`, publishes shutdown and configuration-dump endpoints to anything that can reach that port.
+> The admin interface is separate from the UI. Typically, treat the admin interface address (`config.adminAddr`) as a setting that you do not change. Moving it to a routable address, such as `0.0.0.0:15000`, publishes shutdown and configuration-dump endpoints to anything that can reach that port.
 
 To reach the UI from another host, attach it to a gateway. That is the supported path, and it is the only one that you can authenticate. For the admin interface itself, see [Debug your setup]({{< link-hextra path="/operations/debug/" >}}).
 
