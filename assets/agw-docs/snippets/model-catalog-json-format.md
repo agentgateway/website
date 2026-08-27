@@ -1,6 +1,6 @@
 A model catalog is JSON with the following high-level structure. Field names are camelCase, and unknown fields are rejected.
 
-{{% version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{% version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 ```json
 {
   "providers": {
@@ -33,7 +33,7 @@ A model catalog is JSON with the following high-level structure. Field names are
 ```
 {{% /version %}}
 
-{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 ```json
 {
   "providers": {
@@ -73,7 +73,7 @@ Key points:
 - Rates are **strings** (exact decimals), in **USD per 1,000,000 tokens**.
 - If a rate is omitted, that token type is not priced for the model.
 - `tiers[]` is optional. Each tier selects alternate `rates` when the request context length is **over** the tier's `contextOver` value. Tiers must be ordered by strictly increasing `contextOver`.
-{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 - `tags[]` is optional. Tags describe a model instead of pricing it, so a model entry can carry tags with no rates at all. For more information, see [Model tags](#model-tags).
 {{% /version %}}
 

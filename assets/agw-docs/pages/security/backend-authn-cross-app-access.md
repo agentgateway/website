@@ -268,7 +268,7 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
    | `subjectToken` | Optional source of the subject token for the exchange. `source` defaults to the `Authorization` Bearer header. When a route-level JWT policy validates the inbound token, it strips the `Authorization` header, so set `source.expression` to the `jwt.rawToken.unredacted()` CEL expression to read the validated token instead. For more information about other forms of sources, such as headers, query parameters, or cookies,  see [Choose where the subject token is read from](#subject-token-source). |
    | `audience` | Required identifier of the resource authorization server. The issued ID-JAG is bound to this value. |
    | `resources` | Optional protected resource or API identifiers ([RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707)), sent on the token exchange leg. Configure these explicitly when the authorization server expects them. |
-   | `scopes` | Optional scopes to request on the identity provider leg. The authorization server might grant a subset. These scopes are the ceiling for the ID-JAG. |{{< version exclude-if="1.4.x,2026.7.1" >}}
+   | `scopes` | Optional scopes to request on the identity provider leg. The authorization server might grant a subset. These scopes are the ceiling for the ID-JAG. |{{< version exclude-if="2026.7.1" >}}
    | `accessTokenScopes` | Optional scopes to request on the resource authorization server leg, when the ID-JAG is exchanged for the access token. Omit the field to send `scopes` on both legs. Set it to an empty list to send no `scope` parameter on this leg. Naming a scope that is not in `scopes` is likely to be rejected as `invalid_scope`, because the ID-JAG is granted only the scopes in `scopes`. For more information, see [Scope the access token separately](#access-token-scopes). |{{< /version >}}
    | `cache` | Optional token cache configuration. Defaults to an in-memory cache with 8192 entries. Set `cache.defaultTtl` as a fallback for when the token response omits `expires_in` (defaults to `300s`), and `cache.maxEntries: 0` to disable caching. The cache duration is capped by the subject token's JWT `exp` claim when present. |
 
@@ -454,7 +454,7 @@ backend:
 
 The `jwt` variable holds the claims of the token that the JWT authentication policy validated, so an expression can read only a claim that arrived signed. The gateway exchanges the ID token that it extracts from the claim. The access token that the client presented is not sent to either token endpoint.
 
-{{< version exclude-if="1.4.x,2026.7.1" >}}
+{{< version exclude-if="2026.7.1" >}}
 ## Scope the access token separately {#access-token-scopes}
 
 Cross App Access sends `scope` on both exchanges by default: to the identity provider when it asks for the ID-JAG, and to the resource authorization server when it redeems that ID-JAG for an access token. Authorization servers disagree about whether the second `scope` is welcome. Keycloak uses it to request optional client scopes, as in the example on this page. Others, including Okta Custom Authorization Server, reject a redemption request that carries a `scope` parameter at all, because the ID-JAG's own scope claim is already authoritative.

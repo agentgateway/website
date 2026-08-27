@@ -187,12 +187,12 @@ params:
   # are still written out, because omitting `sections` means "every section" and
   # would silently claim any section added later ships these too.
   versions:
-    - version: "1.5.x"
+    - version: "1.6.x"
       dropdown: "main"
       linkVersion: "main"
       sections: ["kubernetes", "standalone"]
-    - version: "1.4.x"
-      dropdown: "1.4 (latest)"
+    - version: "1.5.x"
+      dropdown: "1.5 (latest)"
       linkVersion: "latest"
       sections: ["kubernetes", "standalone"]
 

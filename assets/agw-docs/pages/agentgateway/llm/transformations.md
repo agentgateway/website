@@ -207,7 +207,7 @@ EOF
    }
    ```
 
-{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 ## Transform requests after provider conversion
 
 The `transformations` field runs before agentgateway converts the request into the format that the provider expects. To write one, you must know how the conversion works, and you cannot change a field that the conversion itself adds.
@@ -634,7 +634,7 @@ kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} cap-max-tokens -n {{<
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 ```
 
-{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 ```shell {paths="llm-final-transformations"}
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} cap-converted-tokens -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 ```

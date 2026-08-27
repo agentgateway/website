@@ -52,7 +52,7 @@ A JWT, API key, or basic auth policy reads the client credential from a location
 > Any of the following fixes it.
 >
 > * **Read the validated token instead of the header.** Set the exchange's `subjectToken.source.expression` to the `jwt.rawToken.unredacted()` CEL expression, which reads the token from the JWT policy's own result rather than from the request.
-> * **Move one of the two locations.** Read the client credential from a different header in the client authentication policy, or point `subjectToken.source` at wherever the credential actually is.{{< version exclude-if="1.4.x,2026.7.1" >}}
+> * **Move one of the two locations.** Read the client credential from a different header in the client authentication policy, or point `subjectToken.source` at wherever the credential actually is.{{< version exclude-if="2026.7.1" >}}
 > * **Keep the credential in place.** Set `preserveToken: true` on the client authentication policy so that it leaves the validated token where it found it, and the exchange reads it as usual. The token then stays in the request for every policy that runs later, so prefer one of the other two options when only the exchange needs it.{{< /version >}}
 
 The other methods do not read the client credential at all, so they compose with any client authentication policy without further thought.

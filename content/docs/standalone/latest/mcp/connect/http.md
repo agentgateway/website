@@ -133,6 +133,37 @@ fi
 echo "PASS: no Mcp-Session-Id header in stateless mode"
 {{< /doc-test >}}
 
+## DNS rebinding protection {#dns-rebinding}
+
+A browser page on any origin can resolve a hostname it controls to `127.0.0.1` and then send requests to a locally bound server. This is a DNS rebinding attack, and it is why the MCP specification requires a server that listens on localhost to reject a `Host` or `Origin` header that does not name a loopback address.
+
+Agentgateway is usually a proxy in front of other servers rather than a browser-facing localhost server, so this check is off by default. Turn it on with `dnsRebindingProtection` when you run agentgateway on a developer machine and a browser can reach the MCP port.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  dnsRebindingProtection: true
+  targets:
+  - name: mcp
+    mcp:
+      host: http://localhost:3005/mcp/
+```
+
+When the check is on, agentgateway applies the following rules.
+
+| Rule | Behavior |
+| -- | -- |
+| Host must be loopback | The request authority must be `localhost`, `127.0.0.1`, or `[::1]`. A port is allowed. |
+| Origin must be loopback | If the request carries an `Origin` header, it must name one of the same three hosts. |
+| A missing Origin is allowed | A non-browser client and a same-origin request often omit the header, so agentgateway accepts a request that has no `Origin`. |
+| A duplicate Origin is rejected | `Origin` is a singleton header. Agentgateway rejects a request that carries more than one, rather than validating only the first. |
+
+A request that fails any rule receives a `403` response with the body `MCP DNS rebinding protection: Host/Origin must be localhost, 127.0.0.1, or [::1]`.
+
+> [!WARNING]
+> Do not turn this on for an agentgateway that serves MCP to clients over the network. Every request from a remote client names a non-loopback host, so agentgateway rejects all of them.
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}

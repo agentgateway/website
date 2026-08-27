@@ -61,7 +61,7 @@ agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import \
   --out ./costs/catalog.json
 ```
 
-For all flags, see the {{< version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}){{< /version >}}{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}){{< /version >}} reference.
+For all flags, see the {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}){{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}){{< /version >}} reference.
 
 ## Import costs (UI)
 
@@ -93,7 +93,7 @@ config:
 
 Use overrides for contracted pricing, internally hosted models, or models that do not appear in the imported catalog.
 
-{{% version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{% version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 You can also load one or more catalog files with the `MODEL_CATALOG_PATHS` environment variable. Set it to a comma-separated list of file paths.
 
 ```sh
@@ -104,7 +104,7 @@ MODEL_CATALOG_PATHS=./costs/catalog.json,./costs/overrides.json agentgateway -f 
 > When `MODEL_CATALOG_PATHS` is set, it replaces any `config.modelCatalog` sources. Use one mechanism or the other.
 {{% /version %}}
 
-{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 > [!WARNING]
 > The `MODEL_CATALOG_PATHS` environment variable is removed. Agentgateway ignores it without an error, so a catalog that you loaded this way stops applying. List your catalog files under `config.modelCatalog` instead.
 {{% /version %}}
@@ -176,7 +176,7 @@ Usually, you do not need to write catalog JSON by hand. Use `agctl {{< reuse "ag
 
 {{< reuse "agw-docs/snippets/model-catalog-json-format.md" >}}
 
-{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 ## Model tags
 
 {{< reuse "agw-docs/snippets/model-catalog-tags.md" >}}

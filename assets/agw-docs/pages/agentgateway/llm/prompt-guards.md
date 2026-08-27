@@ -315,7 +315,7 @@ In the next step, you instruct agentgateway to mask credit card numbers that are
 
 
 
-{{% version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 ## Scan tool call content {#scope}
 
 By default, a request guard reads the system prompt and regular message text only. Tool call results that come back to the model are not read, so PII that a tool returns reaches the provider untouched. Set the `scope` field to include `ToolOutput`.

@@ -21,6 +21,8 @@ Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{
 > [!TIP]
 > This policy is about authenticating incoming requests. For attaching API keys to outgoing requests, see [Backend Authentication](../backend-authn).
 
+## Configure API key authentication
+
 API Key authentication involves configuring a list of valid API keys, with associated metadata about the key (optional).
 
 Additionally, authentication can run in three different modes:
@@ -309,4 +311,136 @@ mcp:
       args: ["@modelcontextprotocol/server-everything"]
 EOF
 agentgateway -f config2-mcp.yaml --validate-only
+{{< /doc-test >}}
+
+## LLM budgets and model access
+
+An API key entry can carry two fields that apply to LLM traffic. The `budgets` field sets a per-key budget that caps what the key spends. The `allowedModels` field limits which models the key can reach. Both fields work with a `key` entry and with a `keyHash` entry.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+config:
+  database:
+    url: sqlite://budgets.db
+llm:
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-testkey-1
+        metadata:
+          name: team-a
+          user: test
+        allowedModels:
+        - "gpt-5*"
+        - claude-sonnet-5
+        budgets:
+        - name: daily-spend
+          limit:
+            unit: USD
+            amount: 50
+          window:
+            rolling: 24h
+          onBudgetExceeded: Block
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+
+| Setting | Description |
+| -- | -- |
+| `allowedModels` | Model name patterns that the key can reach. Each entry is an exact name or a pattern with one `*` wildcard. Omit the field to leave the key unconstrained, or set an empty list to deny every model. You cannot combine `*` with another pattern. |
+| `budgets` | List of budgets that are charged independently after each LLM response. |
+| `budgets[].name` | Names the budget within its key. The name must be unique among that key's budgets. |
+| `budgets[].limit.unit` | `USD` to cap realized cost, or `Tokens` to cap token usage. |
+| `budgets[].limit.amount` | The maximum usage in the window. A `Tokens` amount must be a whole number. A `USD` amount takes up to nine decimal places. |
+| `budgets[].window.rolling` | Length of the fixed usage window, such as `1h`, `24h`, or `30d`. Windows are aligned to the Unix epoch rather than to the key's first request. |
+| `budgets[].onBudgetExceeded` | `Block` to reject requests with a `429` after the limit is passed, or `Audit` to record the overage and allow the request. |
+
+Two requirements apply to `budgets` only, and agentgateway refuses to start if either is unmet:
+
+- The configuration must set `config.database.url`, because agentgateway stores budget counts in a database. Setting `config.logging.database.url` instead does not satisfy this requirement, because that field configures request logging only. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+- Every key that has a budget must set `metadata.name`, which identifies the key in budget counts, logs, and the admin API.
+
+The `allowedModels` field has neither requirement, so you can use it without a database.
+
+For a walkthrough that enforces both fields and checks the results, see [Per-key dollar or token budgets]({{< link-hextra path="/llm/cost-controls/budget-limits/per-key/" >}}).
+
+{{< doc-test paths="apikey-authn" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The budgets and allowedModels fields on an API key entry are accepted by
+#     agentgateway when config.database and metadata.name are both set.
+#   * The two documented startup errors are the ones agentgateway actually
+#     reports when each requirement is unmet, which is what the prose claims.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * Budget charging and model rejection at runtime. Those need an LLM
+#     provider and are covered by the budget-limits guide's doc test.
+cat <<'EOF' > config3.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+config:
+  database:
+    url: sqlite://budgets.db
+llm:
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-testkey-1
+        metadata:
+          name: team-a
+          user: test
+        allowedModels:
+        - "gpt-5*"
+        - claude-sonnet-5
+        budgets:
+        - name: daily-spend
+          limit:
+            unit: USD
+            amount: 50
+          window:
+            rolling: 24h
+          onBudgetExceeded: Block
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+EOF
+agentgateway -f config3.yaml --validate-only
+
+# A budget without config.database is rejected at startup.
+python3 - <<'PY'
+import pathlib
+src = pathlib.Path("config3.yaml").read_text()
+start = src.index("config:")
+end = src.index("llm:")
+pathlib.Path("config3-no-db.yaml").write_text(src[:start] + src[end:])
+PY
+# Capture the output first. Under `set -o pipefail` a pipeline would inherit
+# agentgateway's non-zero exit, which is the expected result here, not a failure.
+no_db_out=$(agentgateway -f config3-no-db.yaml --validate-only 2>&1 || true)
+echo "$no_db_out" | grep -q "API key budgets require config.database to be configured" \
+  || { echo "expected the documented config.database error, got: $no_db_out"; exit 1; }
+
+# A budget without metadata.name is rejected at startup.
+python3 - <<'PY'
+import pathlib
+src = pathlib.Path("config3.yaml").read_text()
+pathlib.Path("config3-no-name.yaml").write_text(src.replace("          name: team-a\n", ""))
+PY
+no_name_out=$(agentgateway -f config3-no-name.yaml --validate-only 2>&1 || true)
+echo "$no_name_out" | grep -q "API keys with budgets must have a metadata.name" \
+  || { echo "expected the documented metadata.name error, got: $no_name_out"; exit 1; }
+
+# allowedModels alone needs no database.
+python3 - <<'PY'
+import pathlib
+src = pathlib.Path("config3-no-db.yaml").read_text()
+start = src.index("        budgets:")
+end = src.index("  models:")
+pathlib.Path("config3-models-only.yaml").write_text(src[:start] + src[end:])
+PY
+agentgateway -f config3-models-only.yaml --validate-only
 {{< /doc-test >}}
