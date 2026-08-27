@@ -1,5 +1,3 @@
-Sign a short-lived JWT with your own private key on every request to a backend.
-
 ## About
 
 Some upstreams do not accept a durable credential at all. The Snowflake SQL API, for example, requires a JWT that is signed with the caller's private key on each call. With `jwtSign`, agentgateway mints the token itself: it loads a PEM-encoded RSA or EC private key, signs a JWT that carries the claims you configure, and writes that token to each request that it forwards to the backend. Nothing is cached, so agentgateway signs every request afresh.
