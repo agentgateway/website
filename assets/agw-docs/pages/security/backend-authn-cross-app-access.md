@@ -22,7 +22,7 @@ flowchart LR
     AGW -- "Authorization: Bearer<br>access token" --> API[Downstream API]
 ```
 
-Cross App Access differs from [OAuth token exchange]({{< link-hextra path="/security/backend-authn-oauth/" >}}) in that it crosses a trust boundary: the IdP and the resource's authorization server are separate parties, so the gateway performs two exchanges and holds two client registrations, one at each token endpoint. For a single-leg exchange at one authorization server, use `oauthTokenExchange` instead.
+Cross App Access differs from [OAuth token exchange]({{< link-hextra path="/security/backend-authn/oauth-token-exchange/" >}}) in that it crosses a trust boundary: the IdP and the resource's authorization server are separate parties, so the gateway performs two exchanges and holds two client registrations, one at each token endpoint. For a single-leg exchange at one authorization server, use `oauthTokenExchange` instead.
 
 > [!NOTE]
 > To keep the demo self-contained, a single Keycloak instance acts as both parties: the user's IdP and the resource authorization server. In production, these parties are typically separate trust domains. For examples against separate providers, review the [traffic-cross-app-access examples](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-cross-app-access) in the upstream `agentgateway` repository. That example uses `xaa-dev` (hosted IdenX IdP + hosted resource authorization server) and `okta-auth0` (Okta IdP + Auth0 resource authorization server). These IdPs illustrate the two-party topology, but note that the configs are written for standalone mode, not Kubernetes.
@@ -268,7 +268,8 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
    | `subjectToken` | Optional source of the subject token for the exchange. `source` defaults to the `Authorization` Bearer header. When a route-level JWT policy validates the inbound token, it strips the `Authorization` header, so set `source.expression` to the `jwt.rawToken.unredacted()` CEL expression to read the validated token instead. For more information about other forms of sources, such as headers, query parameters, or cookies,  see [Choose where the subject token is read from](#subject-token-source). |
    | `audience` | Required identifier of the resource authorization server. The issued ID-JAG is bound to this value. |
    | `resources` | Optional protected resource or API identifiers ([RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707)), sent on the token exchange leg. Configure these explicitly when the authorization server expects them. |
-   | `scopes` | Optional scopes to request. The authorization server might grant a subset. |
+   | `scopes` | Optional scopes to request on the identity provider leg. The authorization server might grant a subset. These scopes are the ceiling for the ID-JAG. |{{< version exclude-if="1.4.x,2026.7.1" >}}
+   | `accessTokenScopes` | Optional scopes to request on the resource authorization server leg, when the ID-JAG is exchanged for the access token. Omit the field to send `scopes` on both legs. Set it to an empty list to send no `scope` parameter on this leg. Naming a scope that is not in `scopes` is likely to be rejected as `invalid_scope`, because the ID-JAG is granted only the scopes in `scopes`. For more information, see [Scope the access token separately](#access-token-scopes). |{{< /version >}}
    | `cache` | Optional token cache configuration. Defaults to an in-memory cache with 8192 entries. Set `cache.defaultTtl` as a fallback for when the token response omits `expires_in` (defaults to `300s`), and `cache.maxEntries: 0` to disable caching. The cache duration is capped by the subject token's JWT `exp` claim when present. |
 
 ## Verify the exchange
@@ -453,6 +454,32 @@ backend:
 
 The `jwt` variable holds the claims of the token that the JWT authentication policy validated, so an expression can read only a claim that arrived signed. The gateway exchanges the ID token that it extracts from the claim. The access token that the client presented is not sent to either token endpoint.
 
+{{< version exclude-if="1.4.x,2026.7.1" >}}
+## Scope the access token separately {#access-token-scopes}
+
+Cross App Access sends `scope` on both exchanges by default: to the identity provider when it asks for the ID-JAG, and to the resource authorization server when it redeems that ID-JAG for an access token. Authorization servers disagree about whether the second `scope` is welcome. Keycloak uses it to request optional client scopes, as in the example on this page. Others, including Okta Custom Authorization Server, reject a redemption request that carries a `scope` parameter at all, because the ID-JAG's own scope claim is already authoritative.
+
+Set `accessTokenScopes` to control the second leg on its own.
+
+| `accessTokenScopes` | The gateway sends |
+| -- | -- |
+| Omitted | `scopes` on both legs. This is the default. |
+| `[]` | No `scope` parameter on the redemption leg. Use this form with an authorization server that rejects the parameter. |
+| A list of scopes | Those scopes on the redemption leg, and `scopes` on the identity provider leg. |
+
+In the following example, the gateway requests `todos.read` from the identity provider and sends no `scope` when it redeems the ID-JAG.
+
+```yaml
+crossAppAccess:
+  audience: https://resource.idjag.demo
+  scopes:
+  - todos.read
+  accessTokenScopes: []
+```
+
+The ID-JAG is granted only the scopes that the identity provider approved from `scopes`, and that set is the ceiling for the redemption leg. Asking for more is likely to fail with `invalid_scope`. The gateway logs a warning at startup when `accessTokenScopes` names a scope that is absent from `scopes`, but it does not reject the configuration, because the identity provider is free to grant more than was requested.
+
+{{< /version >}}
 ## Private key JWT client authentication
 
 Enterprise IdPs such as Okta commonly require the `PrivateKeyJwt` client authentication method, in which the gateway authenticates with a signed JWT assertion instead of a client secret. Store the PEM-encoded signing key in a Kubernetes Secret and reference it with `signingKeyRef`. Because token endpoints are configured as backend references rather than raw URLs, `PrivateKeyJwt` requires an explicit `assertionAudience`.
@@ -491,5 +518,5 @@ kubectl delete service keycloak -n httpbin
 
 ## Next steps
 
-- Exchange the incoming credential for a per-backend token at a single authorization server with [OAuth token exchange]({{< link-hextra path="/security/backend-authn-oauth/" >}}).
+- Exchange the incoming credential for a per-backend token at a single authorization server with [OAuth token exchange]({{< link-hextra path="/security/backend-authn/oauth-token-exchange/" >}}).
 - Validate incoming JWTs with the [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) policy.

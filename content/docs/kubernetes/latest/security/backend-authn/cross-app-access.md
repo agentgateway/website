@@ -1,6 +1,6 @@
 ---
 title: Cross App Access (ID-JAG)
-weight: 20
+weight: 50
 description: Call a downstream API as the authenticated end user with the OAuth Identity Assertion Authorization Grant.
 test:
   cross-app-access:
@@ -10,8 +10,10 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/security/backend-authn-cross-app-access.md
+  - file: ${versionRoot}/security/backend-authn/cross-app-access.md
     path: cross-app-access
+aliases:
+  - /docs/kubernetes/latest/security/backend-authn-cross-app-access/
 ---
 
 {{< reuse "agw-docs/pages/security/backend-authn-cross-app-access.md" >}}

@@ -10,8 +10,10 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/security/backend-authn-jwt-sign.md
+  - file: ${versionRoot}/security/backend-authn/jwt-sign.md
     path: jwt-sign
+aliases:
+  - /docs/kubernetes/main/security/backend-authn-jwt-sign/
 ---
 
 {{< reuse "agw-docs/pages/security/backend-authn-jwt-sign.md" >}}
