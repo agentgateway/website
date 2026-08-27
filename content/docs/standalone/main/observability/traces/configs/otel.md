@@ -2,6 +2,8 @@
 title: OpenTelemetry Collector (OTel)
 weight: 10
 description: Route agentgateway traces through an OpenTelemetry Collector to fan out to multiple backends or apply processing pipelines.
+aliases:
+  - /docs/standalone/main/integrations/observability/opentelemetry/
 ---
 
 The [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) is a vendor-agnostic proxy that receives, processes, and exports telemetry data. For production deployments, routing agentgateway traces through a collector lets you fan out to multiple backends, apply processing pipelines such as batching or filtering, and swap backends without changing your agentgateway configuration.
