@@ -303,7 +303,7 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
    | `finalTransformation` | A map of provider request field names to CEL expressions. Each key is the field to set in the converted request; each value is a CEL expression. Entries take priority over `overrides` for the same field. |
 
    > [!WARNING]
-   > In a `finalTransformation` expression, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that reads a field which the converted body does not have, such as `llmRequest.max_tokens` for an OpenAI provider, fails to evaluate. A failed expression removes the target field, so a mistyped field name silently deletes the field that you meant to set. For more information about `fail()`, see [Validate and set request body defaults]({{< link-hextra path="/traffic-management/transformations/validate/" >}}).
+   > In a `finalTransformation` expression, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that reads a field which the converted body does not have, such as `llmRequest.max_tokens` for an OpenAI provider, fails to evaluate. A failed expression removes the target field, so a mistyped field name silently deletes the field that you meant to set. For more information about the expression language, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
 
 2. Run the agentgateway.
 
