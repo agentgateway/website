@@ -14,6 +14,9 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
 
 ## Set up AWS Bedrock guardrails
 
+> [!NOTE]
+> A request guard reads the system prompt and regular message text by default. Bedrock Guardrails is one of two guard types that can also read tool call content, by setting the `scope` field. For the values and the limits on the field, see [Guard scope]({{< link-hextra path="/llm/guardrails/overview/#scope" >}}).
+
 1. Create a guardrail in the [AWS console](https://console.aws.amazon.com/bedrock/home#/guardrails) or via the AWS CLI.
 2. Retrieve your guardrail identifier and version. For more information, see the [AWS documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html).
    ```sh
