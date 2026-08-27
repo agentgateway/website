@@ -45,12 +45,27 @@ class FileResult:
 
 
 def _load_link_version_map(repo_root: Path) -> Dict[str, str]:
-    """Build a {linkVersion: version} mapping from hugo.yaml's params.sections.
+    """Build a {linkVersion: version} mapping from hugo.yaml.
 
     Hugo's version shortcode resolves URL tokens like "latest" or "main" to
     their canonical version strings (e.g. "2.2.x", "1.0.x") via this mapping.
     The Python extractor must perform the same lookup so that include-if
     comparisons work correctly.
+
+    Two config schemas are supported, because docs-theme-extras changed shape
+    in v1.0.0:
+
+      * v1.0.0 and later: a single flat `params.versions` list, where each
+        entry tags the `sections` that ship it. `params.sections` is only a
+        registry of section names.
+      * before v1.0.0: a `versions` list nested under each
+        `params.sections.<name>` entry.
+
+    An empty mapping is not harmless. Every `{{< version include-if="1.5.x" >}}`
+    block resolves to false, which silently empties version snippets such as
+    `agw-docs/versions/n-patch.md` and generates broken commands (for example
+    `helm upgrade --version` with no value). Both schemas are read so that the
+    mapping survives a config migration in either direction.
 
     Returns an empty dict if hugo.yaml is missing or cannot be parsed.
     """
@@ -65,14 +80,28 @@ def _load_link_version_map(repo_root: Path) -> Dict[str, str]:
         data = _yaml.safe_load(hugo_yaml.read_text(encoding="utf-8")) or {}
     except Exception:
         return {}
+    params = data.get("params", {}) or {}
     mapping: Dict[str, str] = {}
-    sections = data.get("params", {}).get("sections", {})
-    for section_data in sections.values():
-        for entry in section_data.get("versions", []):
+
+    def add(entries) -> None:
+        for entry in entries or []:
+            if not isinstance(entry, dict):
+                continue
             link_ver = entry.get("linkVersion")
             ver = entry.get("version")
             if link_ver and ver:
-                mapping[link_ver] = ver
+                mapping[str(link_ver)] = str(ver)
+
+    # Pre-v1.0.0 schema: params.sections.<name>.versions
+    sections = params.get("sections", {}) or {}
+    if isinstance(sections, dict):
+        for section_data in sections.values():
+            if isinstance(section_data, dict):
+                add(section_data.get("versions"))
+
+    # v1.0.0 and later: a single flat params.versions list.
+    add(params.get("versions"))
+
     return mapping
 
 
