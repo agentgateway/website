@@ -14,7 +14,9 @@ test:
     path: access-log-otlp
 ---
 
-Export access logs to an OpenTelemetry Collector or any OTLP-compatible logging backend. Log export happens in addition to stdout output, so you can send logs to a collector without losing local visibility.
+OpenTelemetry Protocol (OTLP) is a vendor-neutral standard for exporting telemetry data, including logs, metrics, and traces, to any OTLP-compatible backend. When you configure OTLP log export, agentgateway formats each access log as an OTLP `LogRecord` and sends it to an OpenTelemetry Collector, which can forward the data to backends, such as Loki, Elasticsearch, Grafana Cloud, or any other OTLP-compatible store.
+
+Log export happens in addition to the standard stdout output, so you can send logs to an OTLP collector without losing local visibility. You can also [filter which logs are exported](#filter-logs-before-export) independently of the stdout filter, and [customize the exported fields](#customize-exported-fields) independently of the stdout attributes.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
@@ -143,38 +145,129 @@ EOF
    kubectl logs deploy/opentelemetry-collector-logs -n telemetry | grep -A 20 "LogRecord"
    ```
 
-   Each proxied request appears as a `LogRecord` entry with attributes such as `gateway`, `http.method`, `http.path`, and `http.status`.
+   Each proxied request appears as a `LogRecord` entry with attributes, such as `gateway`, `http.method`, `http.path`, and `http.status`.
+
+   Example output: 
+   ```console
+   LogRecord #0
+   ObservedTimestamp: 2026-08-26 21:58:24.804400673 +0000 UTC
+   Timestamp: 1970-01-01 00:00:00 +0000 UTC
+   SeverityText: INFO
+   SeverityNumber: Info(9)
+   Body: Empty()
+   Attributes:
+     -> gateway: Str(agentgateway-system/agentgateway-proxy)
+     -> listener: Str(http)
+     -> route: Str(httpbin/httpbin)
+     -> endpoint: Str(10.244.0.7:8080)
+     -> src.addr: Str(127.0.0.1:35054)
+     -> http.method: Str(GET)
+     -> http.host: Str(www.example.com)
+     -> http.path: Str(/get)
+     -> http.version: Str(HTTP/1.1)
+     -> http.status: Int(200)
+     -> protocol: Str(http)
+     -> duration: Str(2ms)
+   Trace ID: 
+   Span ID: 
+   ```
 
 ## Filter logs before export
 
-You can filter which access logs are exported to the OTLP backend using the `otlp.filter` field. When `otlp.filter` is not set, the top-level `accessLog.filter` is used as a fallback for OTLP export as well. When `otlp.filter` is set, it takes precedence over the top-level filter for OTLP export only.
+You can filter which access logs are exported to the OTLP backend independently of what is written to stdout by using the `otlp.filter` field. When `otlp.filter` is not set, the [top-level `accessLog.filter`]({{< link path="/observability/access-logs/view/#filter-access-logs" >}}) setting is used as a fallback for the OTLP export as well. When `otlp.filter` is set, it takes precedence over the top-level filter for OTLP export only, so stdout and OTLP can each receive a different subset of logs.
 
-The following example sends only error responses to the OTLP collector while logging all requests to stdout.
+1. Update the {{< reuse "agw-docs/snippets/policy.md" >}} to add an `otlp.filter` expression. In this example, you want to send only error responses to the OTLP collector. However, you continue to log all requests to stdout.
 
-```yaml
-frontend:
-  accessLog:
-    otlp:
-      backendRef:
-        name: opentelemetry-collector-logs
-        namespace: telemetry
-        port: 4317
-      filter: 'response.code >= 400'
-```
+   ```yaml {paths="access-log-otlp"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: access-log-export
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     frontend:
+       accessLog:
+         otlp:
+           backendRef:
+             name: opentelemetry-collector-logs
+             namespace: telemetry
+             port: 4317
+           protocol: GRPC
+           filter: 'response.code >= 400'
+   EOF
+   ```
 
-The following example logs only error responses to stdout but sends all requests to the OTLP collector by setting an explicit `otlp.filter` that always evaluates to `true`.
+2. Send a successful request through agentgateway.
 
-```yaml
-frontend:
-  accessLog:
-    filter: 'response.code >= 400'
-    otlp:
-      backendRef:
-        name: opentelemetry-collector-logs
-        namespace: telemetry
-        port: 4317
-      filter: 'true'
-```
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -i http://$INGRESS_GW_ADDRESS:80/get -H "host: www.example.com"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -i localhost:8080/get -H "host: www.example.com"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+3. Check the collector logs for the last 10 seconds and verify that no `LogRecord` appears. Because the response code was `200`, the `otlp.filter` expression `response.code >= 400` does not match and nothing is exported.
+
+   ```sh
+   kubectl logs deploy/opentelemetry-collector-logs -n telemetry --since=10s | grep "LogRecord"
+   ```
+
+   The command returns no output if the filter is working correctly.
+
+4. Send a request that returns an error response.
+
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -i http://$INGRESS_GW_ADDRESS:80/status/500 -H "host: www.example.com"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -i localhost:8080/status/500 -H "host: www.example.com"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+5. Check the collector logs again and verify that a `LogRecord` now appears for the error response.
+
+   ```sh
+   kubectl logs deploy/opentelemetry-collector-logs -n telemetry | grep -A 5 "LogRecord"
+   ```
+
+   Example output:
+   ```console
+   LogRecord #0
+   ...
+     -> http.path: Str(/status/500)
+     -> http.status: Int(500)
+   ```
+
+> [!TIP]
+> To send all requests to the OTLP collector while restricting stdout to errors only, set `otlp.filter: 'true'` and add a top-level `filter` for stdout:
+> ```yaml
+> frontend:
+>   accessLog:
+>     filter: 'response.code >= 400'
+>     otlp:
+>       backendRef:
+>         name: opentelemetry-collector-logs
+>         namespace: telemetry
+>         port: 4317
+>       protocol: GRPC
+>       filter: 'true'
+> ```
 
 ## Customize exported fields
 

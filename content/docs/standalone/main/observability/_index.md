@@ -6,6 +6,7 @@ description: Monitor agentgateway with metrics, distributed traces, and access l
 prev: /docs/integrations
 next: /docs/operations
 test: skip
+disableCards: true
 ---
 
 Agentgateway exposes three observability signals out of the box: **metrics**, **distributed traces**, and **access logs**. You can use these signals individually or together with tools like Prometheus and Grafana to monitor traffic health, LLM performance, and MCP tool usage.
@@ -14,7 +15,6 @@ Agentgateway exposes three observability signals out of the box: **metrics**, **
   {{< card path="/observability/metrics/" title="Metrics" subtitle="Prometheus-compatible endpoint for request, LLM, MCP, and connection metrics" >}}
   {{< card path="/observability/traces/" title="Traces" subtitle="OTLP distributed tracing with OpenTelemetry semantic conventions for LLM and MCP traffic" >}}
   {{< card path="/observability/access-logs/" title="Access logs" subtitle="Per-request structured logs with CEL-based filtering, enrichment, and OTLP export" >}}
-  {{< card path="/observability/metrics/grafana/" title="Grafana dashboard" subtitle="Import the pre-built dashboard to visualize request, LLM, MCP, and connection metrics" >}}
 {{< /cards >}}
 
 ## Observability by traffic type
@@ -26,4 +26,4 @@ Different traffic types expose additional signal-specific fields.
 
 ## External LLM observability platforms
 
-For specialized LLM observability platforms with prompt logging, cost tracking, and evaluation capabilities — such as Langfuse, Langsmith, or Phoenix — see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
+For specialized LLM observability platforms with prompt logging, cost tracking, and evaluation capabilities, such as Langfuse, Langsmith, or Phoenix, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
