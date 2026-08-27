@@ -1,6 +1,9 @@
 ## About
 
-Agentgateway always reads a configuration file at startup. To control how configuration updates are persisted while agentgateway is running, such as when you use the admin UI or send a request to the config resource API, decide on your storage mode.
+Agentgateway always reads a configuration file at startup. To control how configuration updates are persisted while agentgateway is running, such as when you use the UI or send a request to the config resource API, decide on your storage mode.
+
+> [!NOTE]
+> This page covers the storage mode for agentgateway configuration only. For the `config.database` field, the choice between SQLite and PostgreSQL, and the other features that use the same database, see [Database]({{< link-hextra path="/setup/database/" >}}).
 
 ### Storage modes
 
@@ -28,7 +31,7 @@ Review the following table to understand this configuration.
 | `hybrid` | Agentgateway keeps your configuration file as a read-only baseline and stores the resource in the database. At read time, it merges the stored resources over the baseline. | Yes |
 | `readOnly` | Agentgateway rejects the write with a `403` response and the message `UI is configured as read-only`. | No |
 
-In `hybrid` mode, agentgateway never writes back to your configuration file. Instead, it stores the resource in the database that you configure in the admin UI or API, and layers it over the file value when it reads the configuration. Note that you can only update certain resources through the admin UI or API. For more information, see [What the database stores](#what-the-database-stores).
+In `hybrid` mode, agentgateway never writes back to your configuration file. Instead, it stores the resource in the database that you configure in the UI or API, and layers it over the file value when it reads the configuration. Note that you can only update certain resources through the UI or API. For more information, see [What the database stores](#what-the-database-stores).
 
 > [!NOTE]
 > The Helm chart uses its own `mode` value with the names `readonly` and `database`, which the chart translates into the `file` and `hybrid` values of `config.storage.mode`. For more information, see [Helm](#helm).
@@ -66,11 +69,11 @@ In the binary and Docker installations, you set `config.storage.mode` in your fi
 
 ## Binary and Docker {#binary-docker}
 
-With the binary and Docker installations, your configuration file is writable, so the default `file` mode works with no extra setup and the admin UI can save your changes.
+With the binary and Docker installations, your configuration file is writable, so the default `file` mode works with no extra setup and the UI can save your changes.
 
 ### `file` mode {#file-mode}
 
-Use `file` mode when you want the admin UI to save your changes into the same configuration file that you edit by hand. No configuration is needed for this mode, because `file` is the default. The following steps confirm the behavior and show what agentgateway writes.
+Use `file` mode when you want the UI to save your changes into the same configuration file that you edit by hand. No configuration is needed for this mode, because `file` is the default. The following steps confirm the behavior and show what agentgateway writes.
 
 1. Confirm the storage mode that the running instance uses.
 
@@ -84,11 +87,11 @@ Use `file` mode when you want the admin UI to save your changes into the same co
    "file"
    ```
 
-2. Add an MCP server. The admin UI and the config resource API write to the same place, so use whichever you prefer.
+2. Add an MCP server. The UI and the config resource API write to the same place, so use whichever you prefer.
 
    {{< tabs >}}
-   {{% tab name="Admin UI" %}}
-   1. Open the [admin UI](http://localhost:15000/ui) in your browser.
+   {{% tab name="UI" %}}
+   1. Open the [UI](http://localhost:15000/ui) in your browser.
 
    2. In the navigation, click **MCP**. If your configuration file has no `mcp` section yet, the entry is **Get started**. Click it, then click **Enable** to have agentgateway add the section to your file. If the file already has an `mcp` section, the entry is **Servers** instead and you can skip this step.
 
@@ -190,11 +193,11 @@ Use `hybrid` mode when you want the configuration file to stay exactly as you wr
    "hybrid"
    ```
 
-4. Add an MCP server. The admin UI and the config resource API write to the same place, so use whichever you prefer.
+4. Add an MCP server. The UI and the config resource API write to the same place, so use whichever you prefer.
 
    {{< tabs >}}
-   {{% tab name="Admin UI" %}}
-   1. Open the [admin UI](http://localhost:15000/ui) in your browser.
+   {{% tab name="UI" %}}
+   1. Open the [UI](http://localhost:15000/ui) in your browser.
 
    2. In the navigation, click **MCP** > **Servers**, then click **Add server**.
 
@@ -326,7 +329,7 @@ The UI still shows the running configuration in this mode. Only writes are rejec
 
 With the Helm chart, the configuration file is a ConfigMap that the chart renders from your Helm values and mounts read-only at the `/config` path. The proxy reads that file at startup, and the Helm values remain the source of truth.
 
-Read-only storage keeps the deployment reproducible, but it also means that the admin UI cannot save anything. A save returns the following error, because write access to the mounted ConfigMap is denied.
+Read-only storage keeps the deployment reproducible, but it also means that the UI cannot save anything. A save returns the following error, because write access to the mounted ConfigMap is denied.
 
 ```txt
 failed to write to file `/config/config.yaml`: Read-only file system (os error 30)
@@ -520,14 +523,14 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
 
 ### Add configuration in the UI
 
-Now that storage is writable, add an MCP server. The admin UI and the config resource API write to the same place, so use whichever you prefer.
+Now that storage is writable, add an MCP server. The UI and the config resource API write to the same place, so use whichever you prefer.
 
 > [!NOTE]
-> The admin UI steps require the `mcp` section from the **Storage settings and UI sections** tab in the previous step. For more information, see [Sections must exist in the file](#sections-must-exist). The API steps work with either set of values, because the API creates the section for you when it stores the first MCP target.
+> The UI steps require the `mcp` section from the **Storage settings and UI sections** tab in the previous step. For more information, see [Sections must exist in the file](#sections-must-exist). The API steps work with either set of values, because the API creates the section for you when it stores the first MCP target.
 
 {{< tabs >}}
-{{% tab name="Admin UI" %}}
-1. Open the [admin UI](http://localhost:15000/ui) in your browser.
+{{% tab name="UI" %}}
+1. Open the [UI](http://localhost:15000/ui) in your browser.
 
 2. In the navigation, click **MCP** > **Servers**, then click **Add server**.
 

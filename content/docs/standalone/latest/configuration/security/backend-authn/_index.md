@@ -212,11 +212,15 @@ backendAuth:
   aws:
     # Specify access key and session token
     # Alternatively, leaving this empty will use the standard AWS credential lookup (https://docs.aws.amazon.com/sdkref/latest/guide/access.html) based on the environment
-    accessKeyId: "$AWS_ACCESS_KEY_ID"
-    secretAccessKey: "$AWS_SECRET_ACCESS_KEY"
-    sessionToken: "$AWS_SESSION_TOKEN"
+    accessKeyId: "$AGW_AWS_ACCESS_KEY_ID"
+    secretAccessKey: "$AGW_AWS_SECRET_ACCESS_KEY"
+    sessionToken: "$AGW_AWS_SESSION_TOKEN"
     region: us-west-2
 ```
+
+Agentgateway expands environment variables in the configuration file, so the credentials can come from any variable that you choose.
+
+{{< reuse "agw-docs/snippets/aws-creds.md" >}}
 
 ## Token exchange methods
 
