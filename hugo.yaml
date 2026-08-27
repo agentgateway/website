@@ -179,27 +179,27 @@ params:
       websites: https://searchbot.tryhelix.ai/
       bots: https://searchbot.tryhelix.ai/bots
 
-  # Section-specific configurations
+  # THE version list — the only one. Newest first. Every entry names the
+  # sections it applies to. The contract, in full, with a TOML and a YAML
+  # template: docs-theme-extras USAGE.md, "Versions and sections".
+  #
+  # Both sections happen to ship both versions, so the tags are identical — they
+  # are still written out, because omitting `sections` means "every section" and
+  # would silently claim any section added later ships these too.
+  versions:
+    - version: "1.5.x"
+      dropdown: "main"
+      linkVersion: "main"
+      sections: ["kubernetes", "standalone"]
+    - version: "1.4.x"
+      dropdown: "1.4 (latest)"
+      linkVersion: "latest"
+      sections: ["kubernetes", "standalone"]
+
+  # Section registry, alphabetical. A section exists because it is a key here.
+  # See docs-theme-extras USAGE.md, "Versions and sections".
   sections:
-    standalone:
-      versions:
-        - version: "1.5.x"
-          dropdown: "main"
-          linkVersion: "main"
-          url: "/main"
-        - version: "1.4.x"
-          dropdown: "1.4 (latest)"
-          linkVersion: "latest"
-          url: "/latest"
-    kubernetes:
-      versions:
-        - version: "1.5.x"
-          dropdown: "main"
-          linkVersion: "main"
-          url: "/main"
-        - version: "1.4.x"
-          dropdown: "1.4 (latest)"
-          linkVersion: "latest"
-          url: "/latest"
+    kubernetes: {}
+    standalone: {}
 
   gtmContainerID: "GTM-MDMTFJQC"

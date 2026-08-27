@@ -239,7 +239,21 @@ Screenshots are pixel-compared, so captures must be byte-stable across runs:
 - **First-run overlay.** A "Welcome to Agentgateway" overlay (`.startup-shell`) intercepts
   clicks when the gateway has no config — always `dismissWelcome(page)` after `goto`.
 - **Pin viewport/scale.** Set in `playwright.config.ts` (1440×900, deviceScaleFactor 1).
-  Don't change these casually; every baseline would shift.
+  Don't change these casually; every baseline would shift. Note that the two projects spread
+  `devices['Desktop Chrome']`, whose own 1280×720 viewport wins over the top-level value — the
+  committed baselines are 1280×720.
+- **Never wait for `networkidle` on the Logs page.** It holds an open `/api/logs/tail` stream,
+  so the network never goes idle and the wait times out at 30s. Wait on rendered content.
+- **Not everything dynamic should be masked.** A mask paints a magenta rectangle into the
+  *published* image, which is fine for an MCP session id nobody reads but wrong for a timestamp
+  column a reader expects to see. `tests/logs.spec.ts` keeps its real timestamps and relies on
+  the config's default `maxDiffPixelRatio: 0.01`; measured drift across a deliberate three-hour
+  clock shift is 0.0033, so the default already has 3x headroom.
+- **Do not reach for a looser ratio to make a capture stable.** It hides content changes as
+  well as clock drift, and `--update-snapshots` will then *decline to rewrite* a stale baseline
+  because the old one still "passes" — which is how a masked baseline survived several
+  regeneration runs while this spec was being written. If a capture needs real slack, delete
+  the baseline rather than trusting `--update-snapshots` to replace it.
 
 ## Baselines and platforms
 
@@ -285,14 +299,17 @@ setup the `reference-docs` workflow uses.
 | `fixtures/*-config.yaml` | Per-mode gateway configs (mcp, a2a, llm, virtual, openapi, jwt) + `standalone-config.yaml` (for `AGENTGATEWAY_BIN`) |
 | `fixtures/petstore-openapi.json` | Bundled Swagger Petstore spec served by the openapi mock |
 | `tests/smoke.spec.ts` `tests/landing.spec.ts` `tests/cel.spec.ts` | No-backend captures (run under `test:standalone`) |
+| `tests/welcome.spec.ts` | First-run welcome wizard — the one spec that must *not* `dismissWelcome` |
 | `tests/playground.spec.ts` | MCP playground (tools discovered + echo) |
 | `tests/virtual.spec.ts` | Multiplex playground (prefixed tools + echo + time) |
 | `tests/openapi.spec.ts` | OpenAPI → MCP (tool list + a `getInventory` call) |
 | `tests/jwt.spec.ts` | Playground with a JWT in the Authorization header |
 | `tests/a2a-traffic.spec.ts` | A2A config shown as a Traffic route/listener (no A2A playground in the new UI) |
 | `tests/llm-playground.spec.ts` | LLM playground against the mock provider |
+| `tests/logs.spec.ts` | LLM > Logs list and a call's Trajectory + Conversation detail. Runs under `CAPTURE_MODE=costs`; **main only** |
 | `scripts/serve-*.sh` | Per-mode launchers: start backend(s) + UI container, clean up on exit |
 | `scripts/mock-*.mjs` | Deterministic mock backends (openai, mcp-time, petstore) |
+| `scripts/seed-costs-db.mjs` | Seeds the request-log SQLite DB for the `costs` mode: 800 rows for Analytics, plus three conversation rows with payloads for the Logs detail |
 | `scripts/sync-docs-images.mjs` | Copies baselines → `assets/img/` via `docs-image-map.json` |
 | `provisioners/kubernetes.ts` | Notes on the (not-yet-automated) Kubernetes capture path |
 | `__screenshots__/` | Committed baselines (light + dark per spec) |
@@ -302,6 +319,7 @@ setup the `reference-docs` workflow uses.
 | Script | Does |
 |---|---|
 | `test:standalone` | Capture/verify the no-backend specs (landing, cel, smoke) |
+| `test:welcome` | Capture/verify the first-run welcome wizard (no backend; pristine bootstrap config) |
 | `test:mcp` / `:a2a` / `:llm` / `:virtual` / `:openapi` / `:jwt` | Capture/verify one backend mode (brings up its backend + UI) |
 | `capture:all` | Run every mode in sequence (what CI runs); `clean:ui` between modes |
 | `update:all` | Same as `capture:all` but **regenerates** baselines (`--update-snapshots`) |

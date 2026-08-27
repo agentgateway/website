@@ -19,6 +19,9 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
 
 Configure the `guardrails` field under `llm.models[]` in your agentgateway configuration. You can apply guardrails to the `request` phase, the `response` phase, or both.
 
+> [!NOTE]
+> A request guard reads the system prompt and regular message text by default. Bedrock Guardrails is one of two guard types that can also read tool call content, by setting the `scope` field. For the values and the limits on the field, see [Guard scope]({{< link-hextra path="/llm/prompt-guards/overview/#scope" >}}).
+
 ```yaml
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config

@@ -11,6 +11,8 @@ The OpenAI Responses API (`/v1/responses`) is OpenAI's interface for stateful, m
 
 The [OpenAI Responses API](https://platform.openai.com/docs/api-reference/responses) is a unified interface that supports text and multimodal generation, built-in tools, and multi-turn conversation state. Agentgateway proxies these requests to your configured providers while providing token usage tracking, observability metrics, and policy enforcement.
 
+A provider that advertises the `responses` format also serves clients that send the [Anthropic Messages]({{< link-hextra path="/llm/api-types/messages/" >}}) format. Agentgateway converts a Messages request into a Responses request, and converts the buffered or streamed reply back. For the conversion order and its limits, see [Provider format conversion]({{< link-hextra path="/llm/api-types/messages/#provider-format-conversion" >}}).
+
 ## Route type configuration
 
 In the simplified `llm` configuration, agentgateway automatically maps `/v1/responses` requests to the `responses` route type, so no explicit route configuration is required.

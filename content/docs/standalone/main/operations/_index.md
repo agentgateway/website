@@ -1,10 +1,10 @@
 ---
 title: Operations
-description: Debug, inspect, and trace a running standalone agentgateway instance.
+description: Upgrade, debug, inspect, and trace a running standalone agentgateway instance.
 weight: 70
 icon: settings
 test: skip
 ---
 
-Manage your standalone agentgateway lifecycle, such as debugging.
+Manage your standalone agentgateway lifecycle, such as upgrading to a new version and debugging a running instance.
 
