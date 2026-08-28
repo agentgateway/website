@@ -45,7 +45,6 @@ scanRoots = [
 versionFromPath = "^/docs/kubernetes/(?<version>[^/]+)/"
 versions        = ["main", "latest", "2.2.x", "1.0.x"]
 
-
 # All checks default to enabled. No [checks] overrides are needed: agw-oss
 # runs the full default set. (The former `smoke`/`crossBrowser` toggles were
 # removed from the harness — smoke folded into the `content` project scoped by
