@@ -45,44 +45,6 @@ scanRoots = [
 versionFromPath = "^/docs/kubernetes/(?<version>[^/]+)/"
 versions        = ["main", "latest", "2.2.x", "1.0.x"]
 
-# Builds this source tree is rendered under, for the gateAxisCollision lint.
-#
-# WHY THE HUB ENTRY IS THE POINT. `conditional-text` gates on two axes — the
-# build condition and the page's section segment — through one token namespace,
-# so a token naming a section on one axis and a product on the other is true
-# twice and both sides of an intended either/or render. That cannot happen in
-# THIS repo's own build: here the condition IS the section, one axis, and every
-# page renders correctly. It happens in the docs hub, which mounts this same
-# `assets/agw-docs` tree under buildCondition "agentgateway" with `kubernetes`
-# and `standalone` registered as sections. Drop the hub entry and the lint has
-# nothing left to find.
-#
-# Five files hit this the first time it ran (operations/uninstall.md,
-# security/backend-authn-{cross-app-access,jwt-sign,oauth}.md,
-# snippets/debug-gateway.md) — each pairing include-if="kubernetes" with
-# include-if="agentgateway", which worked only while `kubernetes` was
-# unmatchable downstream. Fixed by gating the product axis directly:
-# exclude-if="agentgateway".
-#
-# The two OSS entries take `sections = []` deliberately. In `url` mode the
-# condition IS the section, so the sections are enumerated by having one entry
-# each; giving them a section list as well asks about states that cannot exist
-# (condition "kubernetes" with section "standalone") and reports every
-# legitimate section pair in the repo.
-[[gateAxes]]
-name      = "agentgateway.dev / kubernetes"
-condition = "kubernetes"
-sections  = []
-
-[[gateAxes]]
-name      = "agentgateway.dev / standalone"
-condition = "standalone"
-sections  = []
-
-[[gateAxes]]
-name      = "docs-hub / agentgateway"
-condition = "agentgateway"
-sections  = ["kubernetes", "standalone"]
 
 # All checks default to enabled. No [checks] overrides are needed: agw-oss
 # runs the full default set. (The former `smoke`/`crossBrowser` toggles were
