@@ -45,7 +45,7 @@ By default, agentgateway calls `POST /request` and `POST /response` on the webho
 
 ## DeepKeep example
 
-You can use [DeepKeep](https://www.deepkeep.ai/) as an external guardrail provider by running the [DeepKeep agentgateway webhook adapter](https://github.com/gilarel/agentgateway-deepkeep-webhook). The adapter exposes the default Guardrail Webhook API paths that agentgateway calls and forwards checks to DeepKeep's pre-model and post-model moderation endpoints.
+You can use [DeepKeep](https://www.deepkeep.ai/) as an external guardrail provider by running the [DeepKeep agentgateway webhook adapter](https://github.com/Deepkeepai/agentgateway-deepkeep-webhook). The adapter exposes the default Guardrail Webhook API paths that agentgateway calls and forwards checks to DeepKeep's pre-model and post-model moderation endpoints.
 
 Run the adapter with the DeepKeep connection settings for your environment.
 
@@ -54,7 +54,7 @@ docker run --rm -p 8000:8000 \
   -e DEEPKEEP_BASE_URL=https://deepkeep.example \
   -e DEEPKEEP_API_KEY=dk_... \
   -e DEEPKEEP_MODEL=your-firewall-id \
-  ghcr.io/gilarel/agentgateway-deepkeep-webhook:latest
+  ghcr.io/deepkeepai/agentgateway-deepkeep-webhook:latest
 ```
 
 Then configure agentgateway to send request and response guardrail checks to the adapter.
