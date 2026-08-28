@@ -42,7 +42,7 @@ Review the following table of common endpoints that can help troubleshoot your s
 | stats/prometheus | View metrics that Envoy emitted and sent to the built-in Prometheus instance. |
 {{< /conditional-text >}}
 
-{{< conditional-text include-if="kubernetes" >}}
+{{< conditional-text exclude-if="agentgateway" >}}
 ```sh
 kubectl port-forward deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000 &
 ```

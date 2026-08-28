@@ -258,7 +258,7 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
    EOF
    ```
 
-   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the {{< conditional-text include-if="kubernetes" >}}[API docs]({{< link-hextra path="/reference/api-kubespec/policies/#spec.backend.auth.crossAppAccess" >}}){{< /conditional-text >}}{{< conditional-text include-if="agentgateway" >}}[API docs](https://agentgateway.dev/docs/kubernetes/latest/reference/api-kubespec/policies/#spec.backend.auth.crossAppAccess){{< /conditional-text >}}.
+   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the {{< conditional-text exclude-if="agentgateway" >}}[API docs]({{< link-hextra path="/reference/api-kubespec/policies/#spec.backend.auth.crossAppAccess" >}}){{< /conditional-text >}}{{< conditional-text include-if="agentgateway" >}}[API docs](https://agentgateway.dev/docs/kubernetes/latest/reference/api-kubespec/policies/#spec.backend.auth.crossAppAccess){{< /conditional-text >}}.
 
    | Field | Description |
    | -- | -- |
