@@ -30,6 +30,10 @@ The two features are independent, and enabling one does not change the other. Yo
 In this configuration, agentgateway calls the Moderation API for each request and blocks the request itself when the content is flagged.
 
 1. Create a configuration file and add the OpenAI moderation model that you want to use.
+
+   > [!NOTE]
+   > To run this guard without blocking traffic, set `openAIModeration.action: audit`. The guard records what it detects and forwards the content unchanged. For more information, see [Audit mode](../overview/#audit).
+
    ```yaml
    cat <<EOF > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config

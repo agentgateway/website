@@ -59,6 +59,10 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
    ```
 
 5. Configure the prompt guard. Add the ID, version, and region of your guardrail. 
+   
+   > [!NOTE]
+   > To run this guard without blocking traffic, set `bedrockGuardrails.action: Audit`. The guard records what it detects and forwards the content unchanged. For more information, see [Audit mode](../overview/#audit).
+   
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -97,11 +101,7 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
    EOF
    ```
 
-   > [!NOTE]
-   > The `aws: {}` configuration uses the default AWS credential chain (IAM role, environment variables, or instance profile). For authentication details, see the [AWS authentication documentation](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/).
-
-   The `policies` field supports more than the `aws` credential source shown here. You can choose a different authentication method or tune the connection that agentgateway opens to Bedrock, such as setting a request timeout or custom TLS. For all the options, see [Backend connection and authentication policies](#backend-connection-and-authentication-policies).
-
+   The `aws: {}` configuration uses the default [AWS credential chain](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/) (IAM role, environment variables, or instance profile). The `policies` field supports more than the `aws` credential source shown here. You can choose a different authentication method or tune the connection that agentgateway opens to Bedrock, such as setting a request timeout or custom TLS. For all the options, see [Backend connection and authentication policies](#backend-connection-and-authentication-policies).
 
 6. Test the guardrail. The following commands assume that you set up your guardrail to block requests that contain email information. 
    {{< tabs >}}

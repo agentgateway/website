@@ -29,7 +29,11 @@ The two features are independent, and enabling one does not change the other. Yo
 
 In this configuration, agentgateway calls the Moderation API for each request and blocks the request itself when the content is flagged.
 
-1. Configure the prompt guard to use OpenAI Moderation:
+1. Configure the prompt guard to use OpenAI Moderation.
+   
+   > [!NOTE]
+   > To run this guard without blocking traffic, set `openAIModeration.action: Audit`. The guard records what it detects and forwards the content unchanged. For more information, see [Audit mode](../overview/#audit).
+   
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}

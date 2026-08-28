@@ -201,7 +201,7 @@ The following example rejects requests that contain PII data, such as Social Sec
 
    | Setting | Description |
    | -- | -- |
-   | `regex.action` | The action to take when a pattern matches. Use `reject` to block the request or `mask` to redact matched content. |
+   | `regex.action` | The action to take when a pattern matches. Use `mask` to redact matched content, `reject` to block the request, or `audit` to record the match and forward the content unchanged. Defaults to `mask`. For more information about `audit`, see [Audit mode](../overview/#audit). |
    | `regex.rules` | List of patterns to match against. |
    | `pattern` | A custom regex pattern. |
    | `builtin` | A built-in PII pattern. See [Built-in patterns](#built-in-patterns) for available options. |
