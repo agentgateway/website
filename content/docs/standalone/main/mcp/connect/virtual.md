@@ -44,8 +44,8 @@ Federate tools of multiple MCP servers on the agentgateway by using MCP {{< glos
 #     and "Example load balancing configuration") - display-only structural excerpts;
 #     neither is a complete config (no gateways/routes, and the backends entry omits
 #     its required `name`), so neither can be validated as written.
-#   * The step 3 optional CORS config - display-only; it is an abbreviated snippet
-#     ending in `...`, not a complete file.
+#   * The step 3 optional CORS config - display-only; it is a complete config, but the
+#     test exercises the downloaded config.yaml, which carries no CORS policy.
 #   * That load balancing distributes across backends by weight - requires
 #     config/traffic the page omits; the load balancing example is contrast material,
 #     not a walkthrough.
@@ -189,8 +189,8 @@ routes:
    * **Listener**: An HTTP listener is configured and bound on port 3000. It includes a basic route that matches all traffic to an MCP backend.
    * **Backend**: The MCP backend defines two **targets**: `time` and `everything`. Note that the target names cannot include underscores (`_`). These targets are multiplexed together and exposed as a single unified MCP server to clients. All tools from both targets are available, prefixed with their target name.
 
-3. Optional: To use the agentgateway UI playground later, add a `cors` policy to the route in your `config.yaml` file. The config automatically reloads when you save the file.
-      
+3. Optional: To use the agentgateway UI playground later, add a `cors` policy to the route. Replace the contents of your `config.yaml` file with the following complete example, which keeps both targets and adds the policy. The config automatically reloads when you save the file.
+
       ```yaml
       # yaml-language-server: $schema=https://agentgateway.dev/schema/config
       gateways:
@@ -205,7 +205,15 @@ routes:
         backends:
         - mcp:
             targets:
-      ...
+            - name: time
+              stdio:
+                cmd: uvx
+                # Constrain the MCP SDK until mcp-server-time supports mcp 2.x.
+                args: ["--with", "mcp<2", "mcp-server-time"]
+            - name: everything
+              stdio:
+                cmd: npx
+                args: ["@modelcontextprotocol/server-everything"]
       ```
 
 4. Run the agentgateway. 
