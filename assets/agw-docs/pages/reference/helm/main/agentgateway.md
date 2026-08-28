@@ -64,10 +64,11 @@
 | imagePullSecrets | list | Set a list of image pull secrets for Kubernetes to use when pulling container images from your own private registry instead of the default agentgateway registry.<br/><br/>The default value is `[]`. |
 | inferenceExtension | object | Configure the integration with the Gateway API Inference Extension project, which lets you use agentgateway to route to AI inference workloads like LLMs that run locally in your Kubernetes cluster. Documentation for Inference Extension can be found here: https://agentgateway.dev/docs/kubernetes/latest/inference/.<br/><br/>The default value is `{"enabled":false}`. |
 | inferenceExtension.enabled | bool | Enable Inference Extension support in the agentgateway controller.<br/><br/>The default value is `false`. |
-| istio | object | Control-plane-wide Istio mesh defaults.<br/><br/>The default value is `{"autoEnabled":false,"caAddress":"","clusterId":"","namespace":"","network":"","revision":""}`. |
+| istio | object | Control-plane-wide Istio mesh defaults.<br/><br/>The default value is `{"autoEnabled":false,"caAddress":"","clusterId":"","enabled":true,"namespace":"","network":"","revision":""}`. |
 | istio.autoEnabled | bool | Enable Istio integration by default on all built-in-class gateways.    When false (default), gateways opt in via AgentgatewayParameters spec.istio;    when true, individual gateways can opt out via spec.istio.enabled=false.<br/><br/>The default value is `false`. |
 | istio.caAddress | string | Istio CA address override;    Defaults to "https://istiod.istio-system.svc:15012".<br/><br/>The default value is `""`. |
 | istio.clusterId | string | Istio cluster ID (the istiod multiCluster clusterName) for mesh-integrated gateways.<br/><br/>The default value is `""`. |
+| istio.enabled | bool | Grant the controller permission to discover Istio ServiceEntry and WorkloadEntry resources.    Set to false only when the Istio CRDs are not installed. This controls RBAC generation; it    does not disable Istio integration in the controller.<br/><br/>The default value is `true`. |
 | istio.namespace | string | Namespace where the Istio control plane the controller integrates with is installed.    Defaults to "istio-system".<br/><br/>The default value is `""`. |
 | istio.network | string | Istio network for mesh-integrated gateways.<br/><br/>The default value is `""`. |
 | istio.revision | string | Revision of the Istio control plane the controller integrates with.   If unset, the default revision is used.<br/><br/>The default value is `""`. |
