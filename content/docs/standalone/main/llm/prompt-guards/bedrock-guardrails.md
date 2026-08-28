@@ -54,6 +54,7 @@ EOF
 
 | Setting | Description |
 | -- | -- |
+| `action` | Whether to enforce the verdict of the guard. Use `reject` to block flagged content, or `audit` to record the verdict and forward the content unchanged. Defaults to `reject`. For more information, see [Audit mode](../overview/#audit). |
 | `guardrailIdentifier` | The identifier of the Bedrock guardrail to apply. Retrieve this by running `aws bedrock list-guardrails`. |
 | `guardrailVersion` | The version of the guardrail. Use `DRAFT` for development or a specific version number for production. |
 | `region` | The AWS region where the guardrail is configured, such as `us-west-2`. |
