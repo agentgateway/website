@@ -91,7 +91,7 @@ Everything below is real, merged or open work, not a summary of intentions:
 - [#1816](https://github.com/agentgateway/agentgateway/pull/1816) - EPP ordered destination-endpoint fallback (open, in progress with mentor)
 
 **agentgateway/benchmarks**
-- [#1](https://github.com/agentgateway/benchmarks/pull/1) - the benchmark comparison this post is about, now in its own dedicated repo (open, awaiting final review)
+- [#1](https://github.com/agentgateway/benchmarks/pull/1) - the benchmark comparison this post is about, now in its own dedicated repo (merged)
 
 **llm-d/llm-d-router**
 - [#1600](https://github.com/llm-d/llm-d-router/pull/1600) - aligned agentgateway's standalone config with upstream GAIE's pseudo-service model (merged)
@@ -104,14 +104,13 @@ Everything below is real, merged or open work, not a summary of intentions:
 
 ## Current State
 
-The core comparison between a plain Service and agentgateway is built, automated, and tested end-to-end. Daneyon Hansen expanded this into a full campaign-based benchmark system covering three treatments (plain Service, agentgateway standalone, and agentgateway on Kubernetes), complete with automated GKE cluster provisioning/teardown and the H100 GPU results above. That work, along with the local Kind-path fix we verified on a real cluster, has since moved into its own dedicated repo, [agentgateway/benchmarks](https://github.com/agentgateway/benchmarks/pull/1).
+The core comparison between a plain Service and agentgateway is built, automated, and tested end-to-end. Daneyon Hansen expanded this into a full campaign-based benchmark system covering three treatments (plain Service, agentgateway standalone, and agentgateway on Kubernetes), complete with automated GKE cluster provisioning/teardown and the H100 GPU results above. That work, along with the local Kind-path fix we verified on a real cluster, has since moved into its own dedicated repo and merged as [agentgateway/benchmarks#1](https://github.com/agentgateway/benchmarks/pull/1).
 
 ## Remaining Tasks and Future Work
 
-- Get agentgateway/benchmarks#1 merged upstream
 - Add additional workload profiles as requested by mentors
 
-**Future work: automated regression detection.** Right now, this benchmark runs on demand when triggered. The next step is a CI gate that compares a new run's tail latency against a stored baseline and fails the build if it crosses a threshold — the same fail-hard limit pattern I used on `MaxSearchResults` in Jaeger's MCP server earlier this year. I built and verified the core scripts (`check_regression.py`) locally against real project data, but keeping it off CI for now while we decide where the baseline data should live long-term (in-repo vs. cloud storage).
+**Future work: automated regression detection.** Right now, this benchmark runs on demand when triggered. The next step is a CI gate that compares a new run's tail latency against a stored baseline and fails the build if it crosses a threshold — the same fail-hard limit pattern I used on `MaxSearchResults` in Jaeger's MCP server earlier this year. I built and verified the core scripts (`check_regression.py`) locally against real project data. This is coming as its own follow-up PR to keep agentgateway/benchmarks#1 focused, once we decide where the baseline data should live long-term (in-repo vs. cloud storage).
 
 ## Challenges and Lessons Learned
 
