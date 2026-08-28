@@ -106,10 +106,11 @@ EOF
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `backendRef` | Yes | Reference to the rate limit service. Supports `Service` or `Backend` kind. |
+| `backendRef` | Yes | Reference to the rate limit service. Supports `Service` or `Backend` kind.{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2026.7.1,2.3.x,2.2.x,2.1.x" >}} Required unless you set `url` instead. Set exactly one of the two.{{< /version >}} |
 | `backendRef.name` | Yes | Name of the Service or Backend. |
 | `backendRef.namespace` | Yes | Namespace where the service lives. |
-| `backendRef.port` | Yes | gRPC port (typically 8081). |
+| `backendRef.port` | Yes | gRPC port (typically 8081). |{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2026.7.1,2.3.x,2.2.x,2.1.x" >}}
+| `url` | No | The address of the rate limit service, such as `http://ratelimit.ratelimit.svc.cluster.local:8081`. Use this field instead of `backendRef` to point at the service directly, without creating an intermediate Kubernetes object. The URL must be origin-only, with no path. Mutually exclusive with `backendRef`. |{{< /version >}}
 | `domain` | Yes | Must match the `domain` in the rate limit service configuration. |
 | `descriptors` | Yes | Array of descriptor rules (max 16). Each rule extracts request attributes. |
 | `descriptors[].entries` | Yes | Array of descriptor entries (max 16). Each entry uses a CEL expression to extract a value. |
