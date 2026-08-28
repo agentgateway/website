@@ -1,5 +1,5 @@
 ---
 title: Traces
-weight: 30
+weight: 10
 description: Integrate with OpenTelemetry to collect and analyze request traces.
 ---
