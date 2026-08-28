@@ -189,7 +189,7 @@ routes:
    * **Listener**: An HTTP listener is configured and bound on port 3000. It includes a basic route that matches all traffic to an MCP backend.
    * **Backend**: The MCP backend defines two **targets**: `time` and `everything`. Note that the target names cannot include underscores (`_`). These targets are multiplexed together and exposed as a single unified MCP server to clients. All tools from both targets are available, prefixed with their target name.
 
-3. Optional: To use the agentgateway UI playground later, add a `cors` policy to the route. Replace the contents of your `config.yaml` file with the following complete example, which keeps both targets and adds the policy. The config automatically reloads when you save the file.
+3. Optional: To use the agentgateway UI playground later, add a `cors` policy to the route. Replace the contents of your `config.yaml` file with the following example, which keeps both targets and adds the policy. The configuration reloads automatically when you save the file.
 
       ```yaml
       # yaml-language-server: $schema=https://agentgateway.dev/schema/config
