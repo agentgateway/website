@@ -1,5 +1,5 @@
 ---
 title: Metrics
-weight: 20
+weight: 10
 description: Monitor agentgateway with Prometheus metrics, Grafana dashboards, and control plane health.
 ---

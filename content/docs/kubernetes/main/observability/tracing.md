@@ -1,7 +1,0 @@
----
-title: Tracing
-weight: 90
-description: Integrate with OpenTelemetry to collect and analyze request traces.
----
-
-{{< redirect path="observability/traces/setup/" >}}

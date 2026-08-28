@@ -1,11 +1,11 @@
 ## Step 1: Install Grafana Loki and Tempo {#grafana}
 
-Grafana is a suite of open source tools that help you analyze, visualize, and monitor data in your cluster. For the OTel stack, you install the following Grafana components:
+[Grafana](https://grafana.com/) is a suite of open source tools that help you analyze, visualize, and monitor data in your cluster. For the OTel stack, you install the following Grafana components:
 
-* **Loki**: A log aggregation system that indexes metadata about your logs as a set of labels, not the actual log contents. This way, Loki is more cost-efficient and performant than traditional log aggregation systems.
+* **[Loki](https://grafana.com/oss/loki/)**: A log aggregation system that indexes metadata about your logs as a set of labels, not the actual log contents. This way, Loki is more cost-efficient and performant than traditional log aggregation systems.
   > [!TIP]
   > Loki works best when you use structured logging in your applications, such as JSON format.
-* **Tempo**: A distributed tracing system that stores trace data in object storage (like Amazon S3) and integrates seamlessly with Grafana for visualization. Distributed tracing helps you see how requests move through a microservices environment, which helps you identify performance bottlenecks, debug issues, and otherwise monitor your system's health to ensure SLA compliance.
+* **[Tempo](https://grafana.com/oss/tempo/)**: A distributed tracing system that stores trace data in object storage (like Amazon S3) and integrates seamlessly with Grafana for visualization. Distributed tracing helps you see how requests move through a microservices environment, which helps you identify performance bottlenecks, debug issues, and otherwise monitor your system's health to ensure SLA compliance.
 
 Steps to install:
 
@@ -147,153 +147,16 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-## Step 2: Install the OTel Collector {#otel-collector}
+## Step 2: Install OTel Collectors for logs and traces {#otel-collector}
 
-The OpenTelemetry collector acts as a centralized agent that scrapes metrics from the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane and data plane gateway proxies. Then, the OTel collector exposes these metrics in Prometheus format so that other tools in your observability stack, such as Grafana, can in turn scrape the OTel collector and visualize the data.
+The [OTel Collectors](https://opentelemetry.io/docs/collector/) act as the routing hub for logs and traces. The gateway proxy pushes logs and traces to the collectors via OTLP, and each collector forwards data to [Loki](https://grafana.com/oss/loki/) for logs and [Tempo](https://grafana.com/oss/tempo/) for traces. Metrics are handled separately. [Prometheus](https://prometheus.io/) scrapes the control plane and agentgateway proxy metrics endpoints directly via PodMonitor and ServiceMonitor resources, which you set up in a later step.
 
-By using an OTel collector to aggregate metrics, you avoid having to configure each application individually to send their metrics to each backend observability tool. This setup simplifies your setup, lets you more easily change backends, improves reliability and debuggability, and lets you optimize preprocessing activities such as filtering, transforming, or enriching the metrics before scraping.
-
-You can deploy three separate OTel collectors that are optimized for the three different types of telemetry data: metrics, logs, and traces. This way, you can scale and optimize each collector based on your telemetry needs.
+Deploy separate collectors for logs and traces so you can scale and tune each one independently.
 
 > [!WARNING]
-> The example pipelines in all three OTel collectors set up the `debug` exporter. This exporter is useful for testing and validation purposes. However, for production scenarios, remove this exporter to avoid performance impacts.
+> The example pipelines in both OTel collectors set up the `debug` exporter. This exporter is useful for testing and validation purposes. However, for production scenarios, remove this exporter to avoid performance impacts.
 
-1. Deploy the metrics collector to handle numerical measurements and time-series data. Note that you can also use the `promexporter` endpoint with Prometheus to scrape metrics from the collector pod, if you prefer the `pull` model to the `push` model.
-
-   ```yaml {paths="otel-stack"}
-   helm upgrade --install opentelemetry-collector-metrics opentelemetry-collector \
-   --repo https://open-telemetry.github.io/opentelemetry-helm-charts \
-   --version {{< reuse "agw-docs/versions/otel-stack-collector.md" >}} \
-   --set mode=deployment \
-   --set image.repository="otel/opentelemetry-collector-contrib" \
-   --set command.name="otelcol-contrib" \
-   --namespace=telemetry \
-   --create-namespace \
-   -f -<<EOF
-   clusterRole:
-     create: true
-     rules:
-     - apiGroups:
-       - ''
-       resources:
-       - 'pods'
-       - 'nodes'
-       verbs:
-       - 'get'
-       - 'list'
-       - 'watch'
-   ports:
-     promexporter:
-       enabled: true
-       containerPort: 9099
-       servicePort: 9099
-       protocol: TCP
-   
-   command:
-     extraArgs:
-       - "--feature-gates=receiver.prometheusreceiver.EnableNativeHistograms"
-   
-   config:
-     receivers:
-       prometheus/agentgateway-dataplane:
-         config:
-           global:
-             scrape_protocols: [ PrometheusProto, OpenMetricsText1.0.0, OpenMetricsText0.0.1, PrometheusText0.0.4 ]
-           scrape_configs:
-           # Scrape the agentgateway proxy pods (data plane)
-           - job_name: agentgateway-dataplane
-             honor_labels: true
-             kubernetes_sd_configs:
-             - role: pod
-             relabel_configs:
-               - action: keep
-                 regex: agentgateway
-                 source_labels:
-                 - __meta_kubernetes_pod_label_gateway_networking_k8s_io_gateway_class_name
-               - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
-                 action: keep
-                 regex: true
-               - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
-                 action: replace
-                 target_label: __metrics_path__
-                 regex: (.+)
-               - action: replace
-                 source_labels:
-                 - __meta_kubernetes_pod_ip
-                 - __meta_kubernetes_pod_annotation_prometheus_io_port
-                 separator: ':'
-                 target_label: __address__
-               - action: labelmap
-                 regex: __meta_kubernetes_pod_label_(.+)
-               - source_labels: [__meta_kubernetes_namespace]
-                 action: replace
-                 target_label: namespace
-               - source_labels: [__meta_kubernetes_pod_name]
-                 action: replace
-                 target_label: pod
-       prometheus/agentgateway-controlplane:
-         config:
-           global:
-             scrape_protocols: [ PrometheusProto, OpenMetricsText1.0.0, OpenMetricsText0.0.1, PrometheusText0.0.4 ]
-           scrape_configs:
-           # Scrape the agentgateway controller pods (control plane)
-           - job_name: agentgateway-controlplane
-             honor_labels: true
-             kubernetes_sd_configs:
-             - role: pod
-             relabel_configs:
-               - action: keep
-                 regex: agentgateway
-                 source_labels:
-                 - __meta_kubernetes_pod_label_agentgateway
-               - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
-                 action: keep
-                 regex: true
-               - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
-                 action: replace
-                 target_label: __metrics_path__
-                 regex: (.+)
-               - action: replace
-                 source_labels:
-                 - __meta_kubernetes_pod_ip
-                 - __meta_kubernetes_pod_annotation_prometheus_io_port
-                 separator: ':'
-                 target_label: __address__
-               - action: labelmap
-                 regex: __meta_kubernetes_pod_label_(.+)
-               - source_labels: [__meta_kubernetes_namespace]
-                 action: replace
-                 target_label: namespace
-               - source_labels: [__meta_kubernetes_pod_name]
-                 action: replace
-                 target_label: pod
-     processors:
-       # The Prometheus receiver strips the `_info` suffix from OpenMetrics "info" metrics
-       # (such as agentgateway_build_info) and folds them into `target_info`. Some dashboards,
-       # including the Agentgateway dashboard's Memory and CPU panels, join on the original
-       # `*_info` series, so this processor restores the suffix for info-typed metrics.
-       transform/info-suffix:
-         metric_statements:
-           - context: metric
-             statements:
-               - set(metric.name, Concat([metric.name, "info"], "_")) where metric.metadata["prometheus.type"] == "info"
-     exporters:
-       prometheus:
-         endpoint: 0.0.0.0:9099
-       prometheusremotewrite/kube-prometheus-stack:
-         endpoint: http://kube-prometheus-stack-prometheus.telemetry.svc:9090/api/v1/write
-       debug:
-         verbosity: detailed
-     service:
-       pipelines:
-         metrics:
-           receivers: [prometheus/agentgateway-dataplane, prometheus/agentgateway-controlplane]
-           processors: [transform/info-suffix, batch]
-           exporters: [debug, prometheusremotewrite/kube-prometheus-stack]
-   EOF
-   ```
-
-2. Deploy the logs collector to process and forward application logs.
+1. Deploy the logs collector to process and forward application and access logs.
 
    ```yaml {paths="otel-stack"}
    helm upgrade --install opentelemetry-collector-logs opentelemetry-collector \
@@ -329,7 +192,7 @@ You can deploy three separate OTel collectors that are optimized for the three d
    EOF
    ```
 
-3. Deploy the traces collector to handle distributed tracing data.
+2. Deploy the traces collector to handle distributed tracing data.
 
    ```yaml {paths="otel-stack"}
    helm upgrade --install opentelemetry-collector-traces opentelemetry-collector \
@@ -365,7 +228,7 @@ You can deploy three separate OTel collectors that are optimized for the three d
    EOF
    ```
 
-4. Verify that the OpenTelemetry collector pods are running. 
+3. Verify that the OpenTelemetry collector pods are running. 
    
    ```sh
    kubectl get pods -n telemetry -l app.kubernetes.io/name=opentelemetry-collector
@@ -375,26 +238,11 @@ You can deploy three separate OTel collectors that are optimized for the three d
    ```console
    NAME                                               READY   STATUS    RESTARTS   AGE
    opentelemetry-collector-logs-676777487b-wbtkj      1/1     Running   0          56s
-   opentelemetry-collector-metrics-6cdbc47594-mfrzs   1/1     Running   0          69s
    opentelemetry-collector-traces-7696858cf9-tjllx    1/1     Running   0          51s
    ```
 
 {{< doc-test paths="otel-stack" >}}
 YAMLTest -f - <<'EOF'
-- name: wait for metrics collector deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: telemetry
-        name: opentelemetry-collector-metrics
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
 - name: wait for logs collector deployment to be ready
   wait:
     target:
@@ -428,7 +276,7 @@ EOF
 
 ## Step 3: Set up Prometheus {#prometheus}
 
-Prometheus is a monitoring system and time-series database that collects metrics from configured targets at given intervals. It's the de facto standard for metrics collection in cloud-native environments. You can use the PromQL query language to set up flexible queries and alerts based on the metrics.
+[Prometheus](https://prometheus.io/) is a monitoring system and time-series database that collects metrics from configured targets at given intervals. It's the de facto standard for metrics collection in cloud-native environments. You can use the [PromQL](https://prometheus.io/docs/prometheus/latest/querying/basics/) query language to set up flexible queries and alerts based on the metrics. This guide uses the [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) Helm chart, which bundles Prometheus, Grafana, and the Prometheus Operator.
 
 1. Deploy Prometheus in your cluster.
 
@@ -448,10 +296,12 @@ Prometheus is a monitoring system and time-series database that collects metrics
        podMonitorSelectorNilUsesHelmValues: false
        enableFeatures:
          - native-histograms
-       enableRemoteWriteReceiver: true
    grafana:
      enabled: true
      defaultDashboardsEnabled: true
+     sidecar:
+       dashboards:
+         searchNamespace: ALL
      datasources:
       datasources.yaml:
         apiVersion: 1
@@ -543,6 +393,66 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
+## Step 4: Enable metrics scraping {#enable-monitoring}
+
+Prometheus does not automatically scrape metrics from the {{< reuse "/agw-docs/snippets/agentgateway.md" >}} control plane and proxy metrics endpoints after you installed it. To enable scraping, set `monitoring.enabled=true` in the {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} Helm chart. This setting creates the following resources: 
+
+- A **ServiceMonitor** that scrapes the control plane deployment in the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace on port `9092`.
+- A **PodMonitor** that scrapes proxy pods in the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace for the `agentgateway` GatewayClass on port `15020`.
+
+> [!NOTE]
+> The PodMonitor only selects proxy pods **in the release namespace** and **for the `agentgateway` GatewayClass** by default. If your Gateway resources provision proxy pods in other namespaces, or if you use additional GatewayClasses, you need additional configuration. See [Scrape additional proxy pods]({{< link-hextra path="/observability/metrics/overview/#other-proxies" >}}) for the available options.
+
+1. Upgrade your {{< reuse "/agw-docs/snippets/agentgateway.md" >}} installation to enable the monitoring resources.
+
+   ```sh {paths="otel-stack"}
+   helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} \
+     {{< reuse "agw-docs/snippets/helm-path.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --reuse-values \
+     --set monitoring.enabled=true
+   ```
+
+   > [!TIP]
+   > The `monitoring.serviceMonitor.interval` field controls the scrape interval for both the ServiceMonitor and PodMonitor. If not set, both scrape every 15 seconds. To use a different interval, add `--set monitoring.serviceMonitor.interval=30s` to the command above.
+
+2. Verify that the ServiceMonitor and PodMonitor resources were created.
+
+   ```sh
+   kubectl get servicemonitor,podmonitor -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+   Example output:
+   ```console
+   NAME                                                     AGE
+   servicemonitor.monitoring.coreos.com/agentgateway        5s
+
+   NAME                                                     AGE
+   podmonitor.monitoring.coreos.com/agentgateway-proxy      5s
+   ```
+
+   Both resources are created. Prometheus begins scraping on the next collection cycle (15 seconds by default).
+
+{{< doc-test paths="otel-stack" >}}
+YAMLTest -f - <<'EOF'
+- name: verify ServiceMonitor for agentgateway control plane is created
+  command:
+    command: "kubectl get servicemonitor agentgateway -n {{< reuse "agw-docs/snippets/namespace.md" >}}"
+  source:
+    type: local
+  expect:
+    exitCode: 0
+- name: verify PodMonitor for agentgateway proxy is created
+  command:
+    command: "kubectl get podmonitor agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}"
+  source:
+    type: local
+  expect:
+    exitCode: 0
+EOF
+{{< /doc-test >}}
+
 {{< doc-test paths="otel-stack" >}}
 # ============================================================================
 # Doc test coverage for this guide (these comments are not rendered on the page)
@@ -551,22 +461,17 @@ EOF
 #   * Dashboard import: the "Explore Grafana dashboards" step confirms that Grafana loaded the
 #     imported Agentgateway dashboard (by uid). The metrics below back the dashboard's panels.
 #   * "Requests" panels: agentgateway_requests_total (data plane) is in Prometheus, which proves
-#     the data-plane scrape job works.
+#     the data-plane scrape job works via PodMonitor.
 #   * Control-plane scrape job: agentgateway_controller_reconciliations_total is in Prometheus,
-#     which proves the control-plane scrape job works. (This dashboard visualizes xDS rather
-#     than controller reconciliations, but the guide configures the control-plane scrape, so
-#     the test still verifies it.)
+#     which proves the control-plane scrape job works via ServiceMonitor.
 #   * "Overview" Memory and CPU panels: the cAdvisor metrics (container_memory_working_set_bytes,
 #     container_cpu_usage_seconds_total) for the agentgateway namespace, plus the
 #     agentgateway_build_info series those panels (and "Build Versions") join on.
-#     agentgateway_build_info only reaches Prometheus because of the transform/info-suffix
-#     processor in the metrics collector; without it the Prometheus receiver folds info metrics
-#     into target_info.
 #   * "Latency by Route" panel: agentgateway_request_duration_seconds_bucket.
 #   * "XDS" panels: agentgateway_xds_message_total.
 #   * "Runtime" panels: agentgateway_tokio_num_workers (Tokio Runtime),
 #     agentgateway_process_rss (Process Memory), agentgateway_cgroup_working_set (Cgroup Memory).
-#   * Backend readiness: Loki, Tempo, the three OTel collectors, Prometheus, and Grafana
+#   * Backend readiness: Loki, Tempo, the two OTel collectors, Prometheus, and Grafana
 #     are all confirmed to be running.
 #
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
@@ -584,10 +489,9 @@ EOF
 #     exist in Prometheus and that Grafana loaded the dashboard.
 # ============================================================================
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-# Generate data-plane traffic through the agentgateway proxy, then allow time for the
-# OTel metrics collector to scrape the proxy (default 60s interval) and remote-write the
-# metrics to Prometheus. The loop runs for more than two scrape intervals so that at least
-# one scrape lands after Prometheus is ready to receive remote-write data.
+# Generate data-plane traffic through the agentgateway proxy, then allow time for Prometheus
+# to scrape the proxy pods via PodMonitor (default 15s scrape interval). The loop runs for
+# more than ten scrape intervals to ensure at least one full scrape cycle completes.
 for i in $(seq 1 30); do
   curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" || true
   sleep 5
@@ -642,9 +546,6 @@ YAMLTest -f - <<'EOF'
       - path: "$.data.result[0].value[1]"
         comparator: exists
 # Overview panels: the Memory and CPU panels join cAdvisor metrics on agentgateway_build_info.
-# This series only survives the OTel pipeline because of the transform/info-suffix processor
-# (the Prometheus receiver otherwise folds info metrics into target_info). If this assertion
-# fails, that processor is missing or misconfigured and the Memory/CPU panels render nothing.
 - name: Overview panel join series (agentgateway_build_info) is stored in Prometheus
   retries: 5
   http:
@@ -800,10 +701,3 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x,2.3.x" >}}
-### Scrape the control plane and proxy metrics {#scrape-control-plane}
-
-The previous steps configure Prometheus to scrape the metrics that the OTel Collector receives. The {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} Helm chart does not create ServiceMonitor or PodMonitor resources for the control plane and proxy metrics endpoints, so Prometheus does not scrape those endpoints yet.
-
-To add them, set `monitoring.enabled` to `true` in your Helm values file. For the resources that the chart creates and the fields that tune them, see [Enable monitoring with Helm]({{< link-hextra path="/observability/control-plane-metrics/#enable-monitoring" >}}).
-{{< /version >}}
