@@ -5,7 +5,7 @@ If you no longer need your {{< reuse "/agw-docs/snippets/kgateway.md" >}} enviro
 Remove the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane and gateway proxies.
 
 > [!NOTE]
-> Did you use Argo CD to install {{< reuse "/agw-docs/snippets/kgateway.md" >}}? Skip to the [Argo CD steps](#argocd). For Flux installations, skip to the [Flux steps](#flux).
+> Did you use Argo CD to install {{< reuse "/agw-docs/snippets/kgateway.md" >}}? Skip to the [Argo CD steps](#argocd).{{< conditional-text exclude-if="agentgateway" >}} For Flux installations, skip to the [Flux steps](#flux).{{< /conditional-text >}}
 
 1. Get all HTTP routes in your environment. 
    
@@ -176,9 +176,10 @@ For ArgoCD installations, use the following steps to clean up your environment.
 {{% /tab %}}
 {{< /tabs >}}
 
+{{< conditional-text exclude-if="agentgateway" >}}
 ## Uninstall with FluxCD {#flux}
 
-If you followed the {{< conditional-text exclude-if="agentgateway" >}}[Flux installation steps]({{< link-hextra path="/install/flux" >}}){{< /conditional-text >}}{{< conditional-text include-if="agentgateway" >}}[Flux installation steps](https://agentgateway.dev/docs/kubernetes/latest/install/flux/){{< /conditional-text >}} and want to uninstall, use the following steps to undo them. If you instead manage the manifests from a Git or OCI source that Flux reconciles, remove them from that source and let the controllers prune the resources for you.
+If you followed the [Flux installation steps]({{< link-hextra path="/install/flux" >}}) and want to uninstall, use the following steps to undo them. If you instead manage the manifests from a Git or OCI source that Flux reconciles, remove them from that source and let the controllers prune the resources for you.
 
 1. Delete the {{< reuse "/agw-docs/snippets/kgateway.md" >}} `HelmRelease` and `OCIRepository` resources. Flux uninstalls the corresponding Helm releases from the cluster.
 
@@ -213,4 +214,5 @@ If you followed the {{< conditional-text exclude-if="agentgateway" >}}[Flux inst
    ```
 
 5. If you no longer need Flux, uninstall it by following the [Flux uninstallation guide](https://fluxcd.io/flux/installation/uninstall/) or, if you installed it with the Flux Operator, the [Flux Operator uninstall guide](https://fluxoperator.dev/docs/guides/install/#uninstall).
+{{< /conditional-text >}}
 
