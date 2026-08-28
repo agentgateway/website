@@ -53,7 +53,7 @@ The following routing-based configuration is from the [`llm-prompt-guard` exampl
 
 | Setting | Description |
 | -- | -- |
-| `action` | Whether to enforce the verdict of the guard. Use `reject` to block flagged content, or `audit` to record the verdict and forward the content unchanged. Defaults to `reject`. For more information, see [Audit mode](../overview/#audit). |
+| `action` | Whether to enforce the verdict of the guard. Use `reject` to block flagged content or `audit` to record the verdict and forward the content unchanged. Defaults to `reject`. For more information, see [Audit mode](../overview/#audit). |
 | `endpoint` | The Azure AI Content Safety endpoint hostname, such as `<resource-name>.cognitiveservices.azure.com`. |
 | `analyzeText` | Analyze text for the harmful content categories hate, self-harm, sexual, and violence, and for blocklist matches. |
 | `analyzeText.severityThreshold` | The severity level from `0` to `6` at or above which content is blocked. Defaults to `2`. |

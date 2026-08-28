@@ -76,9 +76,9 @@ The values that `action` takes depend on the guard, because a regex guard can ma
 
 By default, a guard enforces the verdict that it reaches. A regex guard masks the content that matches, and an external guard rejects the request that its provider flags. Set `action: audit` to make a guard observe instead. The guard still runs, and it still records what it detected in metrics and in the structured access log, but the content always passes through unchanged.
 
-Audit mode is how you measure a guard before you enforce it. Start a new guard in audit mode, review what it flags in real traffic, tune the patterns or the provider policy, then change the action to enforce the verdict.
+Audit mode is how you measure a guard before you enforce it. Start a new guard in audit mode, review what it flags in real traffic, tune the patterns or the provider policy, and then change the action to enforce the verdict.
 
-The following guardrail runs a credit card detector and OpenAI moderation, both in audit mode, so that the gateway logs what each guard finds and forwards every request.
+The following guardrail runs a credit card detector and OpenAI moderation, both in audit mode, so that the gateway logs what each guard finds and then forwards the request.
 
 > [!NOTE]
 > Audit mode changes only whether the gateway acts on the verdict. The guard still calls its provider, so an external guard in audit mode adds the same latency and the same provider cost as an enforcing guard.
