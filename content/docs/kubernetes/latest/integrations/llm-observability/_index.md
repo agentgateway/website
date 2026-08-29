@@ -1,7 +1,7 @@
 ---
 title: LLM observability
 weight: 10
-description: Prompt logging, cost tracking, and audit trail via Arize AX, Langfuse, LangSmith, and more
+description: Prompt logging, cost tracking, and audit trail via Langfuse, LangSmith, and more
 test: skip
 ---
 

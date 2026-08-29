@@ -9,10 +9,9 @@ test: skip
 
 ## Before you begin
 
-1. [Run agentgateway]({{< link-hextra path="/setup/install/" >}}) in standalone mode.
-2. **LLM provider and model**: Set up an [LLM provider and model]({{< link-hextra path="/llm/providers/" >}}) in agentgateway.
-3. **Arize account**: Sign up for an [Arize account](https://app.arize.com/auth/join).
-4. **Arize API key and Space ID**: Obtain an API key and Space ID from the Arize platform.
+1. [Complete the LLM quickstart]({{< link-hextra path="/quickstart/llm/" >}}).
+2. **Arize account**: Sign up for an [Arize account](https://app.arize.com/auth/join).
+3. **Arize API key and Space ID**: Obtain an API key and Space ID from the Arize platform.
 
 ## Get your Arize API key and Space ID
 

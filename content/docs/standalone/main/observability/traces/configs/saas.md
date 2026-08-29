@@ -1,13 +1,13 @@
 ---
-title: Langfuse
+title: SaaS platform
 weight: 30
-description: Export agentgateway traces to Langfuse over OTLP/HTTP.
+description: Export agentgateway traces to a cloud-hosted SaaS observability platform such as Langfuse over HTTPS.
 test: skip
-aliases:
-  - /docs/standalone/main/observability/traces/configs/saas/
 ---
 
-[Langfuse](https://langfuse.com/) is a cloud-hosted LLM observability platform that accepts traces over OTLP/HTTP. Use `policies.requestHeaderModifier` to pass authentication credentials and `policies.backendTLS` to enable TLS. The same agentgateway configuration works regardless of whether you run the binary, Docker, or Helm.
+SaaS observability backends, such as Langfuse, are cloud-hosted services that require no local infrastructure and expose a public OTLP endpoint over HTTPS. Use `policies.requestHeaderModifier` to pass authentication credentials and `policies.backendTLS` to enable TLS. The same agentgateway configuration works regardless of whether you run the binary, Docker, or Helm.
+
+**Langfuse:**
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -31,4 +31,4 @@ frontendPolicies:
       gen_ai.usage.output_tokens: "llm.outputTokens"
 ```
 
-For more information, see the [Langfuse OpenTelemetry documentation](https://langfuse.com/docs/observability/features/otel).
+For more LLM observability platform integrations, see [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
