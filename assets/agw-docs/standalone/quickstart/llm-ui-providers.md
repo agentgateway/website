@@ -369,8 +369,8 @@ From another terminal, send a request to the chat completions endpoint.
 {{< tabs >}}
 {{% tab name="OpenAI" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "gpt-3.5-turbo",
     "messages": [
@@ -384,8 +384,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Anthropic" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "claude-haiku-4-5",
     "messages": [
@@ -399,8 +399,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Gemini" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "gemini-2.5-flash",
     "messages": [
@@ -414,8 +414,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Vertex AI" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "gemini-2.5-flash",
     "messages": [
@@ -429,8 +429,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Amazon Bedrock" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "amazon.nova-lite-v1:0",
     "messages": [
@@ -444,8 +444,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Azure" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "gpt-4.1",
     "messages": [
@@ -459,8 +459,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="GitHub Copilot" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "gpt-4.1",
     "messages": [
@@ -474,8 +474,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Custom" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "my-model",
     "messages": [
@@ -489,8 +489,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Baseten" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "openai/gpt-oss-120b",
     "messages": [
@@ -504,8 +504,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Cerebras" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "gpt-oss-120b",
     "messages": [
@@ -519,8 +519,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Cohere" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "command-a-03-2025",
     "messages": [
@@ -534,8 +534,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="DeepInfra" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "Qwen/Qwen3-32B",
     "messages": [
@@ -549,8 +549,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="DeepSeek" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "deepseek-v4-flash",
     "messages": [
@@ -564,8 +564,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Fireworks AI" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "accounts/fireworks/models/gpt-oss-120b",
     "messages": [
@@ -579,8 +579,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Groq" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "llama-3.1-8b-instant",
     "messages": [
@@ -594,8 +594,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Hugging Face" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "Qwen/Qwen3-32B",
     "messages": [
@@ -609,8 +609,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Mistral AI" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "mistral-small-latest",
     "messages": [
@@ -624,8 +624,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Ollama" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "llama3.2",
     "messages": [
@@ -639,8 +639,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="OpenRouter" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "anthropic/claude-haiku-4.5",
     "messages": [
@@ -654,8 +654,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="Together AI" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
     "messages": [
@@ -669,8 +669,8 @@ curl http://localhost:4000/v1/chat/completions \\
 {{% /tab %}}
 {{% tab name="xAI" %}}
 ```sh
-curl http://localhost:4000/v1/chat/completions \\
-  -H 'content-type: application/json' \\
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
   -d '{
     "model": "grok-4.3",
     "messages": [
