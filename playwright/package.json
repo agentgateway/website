@@ -8,7 +8,7 @@
     "test:welcome": "CAPTURE_MODE=welcome playwright test tests/welcome.spec.ts",
     "test:mcp": "CAPTURE_MODE=mcp playwright test tests/playground.spec.ts",
     "test:a2a": "CAPTURE_MODE=a2a playwright test tests/a2a-traffic.spec.ts",
-    "test:llm": "CAPTURE_MODE=llm playwright test tests/llm-playground.spec.ts",
+    "test:llm": "CAPTURE_MODE=llm playwright test tests/llm-playground.spec.ts tests/llm-add-model.spec.ts",
     "test:virtual": "CAPTURE_MODE=virtual playwright test tests/virtual.spec.ts",
     "test:openapi": "CAPTURE_MODE=openapi playwright test tests/openapi.spec.ts",
     "test:jwt": "CAPTURE_MODE=jwt playwright test tests/jwt.spec.ts",

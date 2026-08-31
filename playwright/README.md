@@ -351,6 +351,7 @@ setup the `reference-docs` workflow uses.
 | `tests/jwt.spec.ts` | Playground with a JWT in the Authorization header |
 | `tests/a2a-traffic.spec.ts` | A2A config shown as a Traffic route/listener (no A2A playground in the new UI) |
 | `tests/llm-playground.spec.ts` | LLM playground against the mock provider |
+| `tests/llm-add-model.spec.ts` | The Add model drawer filled in for each of the 21 providers, one capture per provider tab in the standalone LLM quickstart. Runs under `CAPTURE_MODE=llm`; the form is client-side, so it never saves and needs no provider key |
 | `tests/logs.spec.ts` | LLM > Logs list and a call's Trajectory + Conversation detail. Runs under `CAPTURE_MODE=costs`; **main only** |
 | `scripts/serve-*.sh` | Per-mode launchers: start backend(s) + UI container, clean up on exit |
 | `scripts/mock-*.mjs` | Deterministic mock backends (openai, mcp-time, petstore) |
