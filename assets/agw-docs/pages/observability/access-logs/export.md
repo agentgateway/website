@@ -7,13 +7,13 @@ Log export happens in addition to the standard stdout output, so you can send lo
 
 ## Set up an OpenTelemetry collector
 
-{{< tabs tabTotal="2" items="OTel stack (recommended),Standalone debug" >}}
-{{% tab tabName="OTel stack (recommended)" %}}
+{{< tabs >}}
+{{% tab name="OTel stack (recommended)" %}}
 [Set up the OTel stack]({{< link path="/observability/otel-stack/" >}}). It includes an `opentelemetry-collector-logs` deployment in the `telemetry` namespace that accepts OTLP logs on port 4317 and forwards them to Loki for persistent storage.
 
 If the OTel stack is already installed, skip to [Configure OTLP log export](#configure-otlp-log-export).
 {{% /tab %}}
-{{% tab tabName="Standalone debug" %}}
+{{% tab name="Standalone debug" %}}
 Install a minimal OTel collector that receives OTLP and writes each log record to its own pod output. This is useful if you don't have the OTel stack installed and want to verify log export quickly without setting up Loki.
 
 1. Install the OTel collector.
@@ -121,13 +121,13 @@ EOF
 ## Verify log export
 
 1. Send a request to the httpbin app.
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:80/get -H "host: www.example.com"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/get -H "host: www.example.com"
    ```
@@ -136,8 +136,8 @@ EOF
 
 2. Check for the access log record.
 
-   {{< tabs tabTotal="2" items="OTel stack (recommended),Standalone debug" >}}
-   {{% tab tabName="OTel stack (recommended)" %}}
+   {{< tabs >}}
+   {{% tab name="OTel stack (recommended)" %}}
    1. Port-forward the Grafana service on port `3000`. 
       ```sh
       kubectl port-forward svc/kube-prometheus-stack-grafana -n telemetry 3000:80
@@ -148,7 +148,7 @@ EOF
       
       {{< reuse-image src="img/agw-grafana-loki.png" srcDark="img/agw-grafana-loki.png"  >}}
    {{% /tab %}}
-   {{% tab tabName="Standalone debug" %}}
+   {{% tab name="Standalone debug" %}}
    Check the collector logs for the access log record. Each proxied request appears as a `LogRecord` entry with attributes, such as `gateway`, `http.method`, `http.path`, and `http.status`.
    ```sh
    kubectl logs deploy/opentelemetry-collector-logs -n telemetry | grep -A 20 "LogRecord"
@@ -213,13 +213,13 @@ You can filter which access logs are exported to the OTLP backend independently 
 
 2. Send a successful request through agentgateway.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:80/get -H "host: www.example.com"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/get -H "host: www.example.com"
    ```
@@ -236,13 +236,13 @@ You can filter which access logs are exported to the OTLP backend independently 
 
 4. Send a request that returns an error response.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:80/status/500 -H "host: www.example.com"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/status/500 -H "host: www.example.com"
    ```
@@ -330,13 +330,13 @@ You can customize which fields are exported over OTLP independently of what is w
 
 2. Send a request through agentgateway with the `x-trace-id` header.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:80/get -H "host: www.example.com" -H "x-trace-id: abc123"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/get -H "host: www.example.com" -H "x-trace-id: abc123"
    ```
@@ -381,14 +381,14 @@ You can customize which fields are exported over OTLP independently of what is w
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-{{< tabs tabTotal="2" items="OTel stack (recommended),Standalone debug" >}}
-{{% tab tabName="OTel stack (recommended)" %}}
+{{< tabs >}}
+{{% tab name="OTel stack (recommended)" %}}
 Delete the {{< reuse "agw-docs/snippets/policy.md" >}} resource. The OTel stack collector stays in place.
 ```sh {paths="access-log-otlp"}
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 {{% /tab %}}
-{{% tab tabName="Standalone debug" %}}
+{{% tab name="Standalone debug" %}}
 1. Delete the {{< reuse "agw-docs/snippets/policy.md" >}} resource.
    ```sh {paths="access-log-otlp"}
    kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}

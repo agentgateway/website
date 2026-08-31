@@ -144,7 +144,7 @@ helm upgrade kube-prometheus-stack prometheus-community/kube-prometheus-stack \
 ## Learn more
 
 {{< cards >}}
-  {{< card path="/observability/metrics/control-plane-metrics/" title="Control plane metrics" subtitle="View and reference control plane metrics" >}}
+  {{< card path="/observability/metrics/control-plane/" title="Control plane metrics" subtitle="View and reference control plane metrics" >}}
   {{< card path="/observability/metrics/dataplane/" title="Data plane metrics" subtitle="View and customize data plane metrics" >}}
   {{< card path="/observability/otel-stack/" title="OTel stack" subtitle="Set up Prometheus and Grafana with the recommended observability stack" >}}
 {{< /cards >}}
