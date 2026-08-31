@@ -8,7 +8,7 @@
     "test:welcome": "CAPTURE_MODE=welcome playwright test tests/welcome.spec.ts",
     "test:mcp": "CAPTURE_MODE=mcp playwright test tests/playground.spec.ts",
     "test:a2a": "CAPTURE_MODE=a2a playwright test tests/a2a-traffic.spec.ts",
-    "test:llm": "CAPTURE_MODE=llm playwright test tests/llm-playground.spec.ts",
+    "test:llm": "CAPTURE_MODE=llm playwright test tests/llm-playground.spec.ts tests/llm-add-model.spec.ts",
     "test:virtual": "CAPTURE_MODE=virtual playwright test tests/virtual.spec.ts",
     "test:openapi": "CAPTURE_MODE=openapi playwright test tests/openapi.spec.ts",
     "test:jwt": "CAPTURE_MODE=jwt playwright test tests/jwt.spec.ts",
@@ -21,6 +21,7 @@
     "update:all": "npm run clean:ui && npm run test:standalone -- --update-snapshots && npm run clean:ui && npm run test:welcome -- --update-snapshots && npm run clean:ui && npm run test:mcp -- --update-snapshots && npm run clean:ui && npm run test:a2a -- --update-snapshots && npm run clean:ui && npm run test:llm -- --update-snapshots && npm run clean:ui && npm run test:virtual -- --update-snapshots && npm run clean:ui && npm run test:openapi -- --update-snapshots && npm run clean:ui && npm run test:jwt -- --update-snapshots && npm run clean:ui && npm run test:storage -- --update-snapshots && npm run clean:ui && npm run test:file -- --update-snapshots && npm run clean:ui && npm run test:costs -- --update-snapshots && npm run clean:ui && npm run test:logs -- --update-snapshots && npm run clean:ui",
     "update": "playwright test tests/smoke.spec.ts tests/landing.spec.ts tests/cel.spec.ts --update-snapshots",
     "sync-docs": "node scripts/sync-docs-images.mjs",
+    "sync-docs:kube": "CAPTURE_TARGET=kube node scripts/sync-docs-images.mjs",
     "report": "playwright show-report",
     "test:storage": "CAPTURE_MODE=storage playwright test tests/storage.spec.ts",
     "test:file": "CAPTURE_MODE=file playwright test tests/storage-file.spec.ts"

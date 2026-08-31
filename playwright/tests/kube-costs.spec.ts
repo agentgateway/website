@@ -4,7 +4,7 @@ import { test, expect, dismissWelcome } from '../fixtures/test';
  * Kubernetes (xds) cost-dashboard capture for kubernetes/llm/cost-controls/dashboard.md.
  *
  * Like kube-readonly.spec.ts, this does NOT launch its own server — point it at a live proxy's
- * Admin UI via kubectl port-forward, with webServer.reuseExistingServer attaching to it:
+ * UI via kubectl port-forward, with webServer.reuseExistingServer attaching to it:
  *
  *   kubectl port-forward deployment/agentgateway-proxy -n agentgateway-system 15000:15000 &
  *   UI_BASE_URL=http://localhost:15000 npm run test:kube-costs

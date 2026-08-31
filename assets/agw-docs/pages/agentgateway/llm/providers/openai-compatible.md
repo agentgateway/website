@@ -19,7 +19,7 @@ The following providers expose an OpenAI-compatible chat completions endpoint. T
 | Fireworks AI | `api.fireworks.ai` | `/inference/v1/chat/completions` |
 | Groq | `api.groq.com` | `/openai/v1/chat/completions` |
 | Hugging Face | `router.huggingface.co` | `/v1/chat/completions` |
-| Mistral | `api.mistral.ai` | `/v1/chat/completions` |
+| Mistral AI | `api.mistral.ai` | `/v1/chat/completions` |
 | OpenRouter | `openrouter.ai` | `/api/v1/chat/completions` |
 | Together AI | `api.together.xyz` | `/v1/chat/completions` |
 | xAI | `api.x.ai` | `/v1/chat/completions` |
@@ -260,7 +260,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    EOF
    ```
    {{% /tab %}}
-   {{% tab name="Mistral" %}}
+   {{% tab name="Mistral AI" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}

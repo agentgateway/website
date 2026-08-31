@@ -82,8 +82,10 @@ Do not list every alternative in brackets. Do not mention specific products (suc
 
 The Hextra Hugo theme provides a set of shortcodes to style, format, and add content to your pages. For more information, see the [Hextra Hugo theme documentation](https://imfing.github.io/hextra/docs/guide/shortcodes/).
 
-- `callout` for callouts (such as notes, warnings, tips, and other admonitions).
-- `cards` to format a collection of related links, especially on index pages to present the subpages visually.
+> [!IMPORTANT]
+> **Use GitHub-style alerts for notes, not the `callout` shortcode.** Write `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, or `> [!CAUTION]`. These render as styled alerts through the `extras` Goldmark extension, and they are already what most of these docs use. Convert a `callout` when you touch a page that has one. Every line of the body needs the `>` prefix, including blank lines between paragraphs, and an alert inside a numbered step must be indented to match the step.
+
+- `cards` to format a collection of related links. **Not for listing a section's own subpages** — see [Index pages](#index-pages).
 - `details` to format a collapsible section of content.
 - `filetree` to format a directory file tree in a visually appealing way.
 - `icon` used sparingly to add an icon inline.
@@ -115,6 +117,51 @@ The docs have the following content types, although they are not strict.
 ### Standard page template
 
 Content for guides typically follows a structure similar to the [STYLE_EXAMPLE_PAGE.md](STYLE_EXAMPLE_PAGE.md) file.
+
+### Anatomy of a task section
+
+Every task heading in a guide has the same shape. Writing it in this order is what keeps a reader from having to backtrack.
+
+1. **A short intro**, two or three sentences: what this section does, why the reader does it, and how it fits the rest of the guide. Not a restatement of the heading.
+2. **An ordered list of steps.** One action per step, starting with an imperative verb. Each step carries its own context — what it does and why — in the same list item.
+3. **An example in most steps**: the command to run, or the configuration to apply.
+4. **A field table under a configuration example**, describing the fields the reader has to decide about. Every row must be findable in the example above it, because nesting is what a reader cannot guess: `spec.policies.auth` and a table row called `auth` are not the same information.
+5. **Gotchas where they bite** — in the field's table row, or in the step itself.
+
+Expected output goes immediately under the command that produces it, truncated if it is long.
+
+**Do not put explanation in a note after the steps.** This is the most common structural problem in these guides: the step says what to run, and a paragraph or a `> [!NOTE]` *after* the list explains what it did, which field matters, or what breaks. The reader already ran it. Move each of those:
+
+| Found after the steps | Belongs |
+| --------------------- | ------- |
+| What the step accomplishes, or why it is needed | The first sentence of that step |
+| What a field or flag in the example does | The field table under the example |
+| A gotcha, limit, or version constraint on a setting | That field's table row, or the step |
+| Something to know before running anything in the section | The section intro, above step 1 |
+
+A trailing `> [!NOTE]` is right only where the information applies to the whole section and has no single step to live in.
+
+### Headings name phases, not steps
+
+A heading per action gives the reader a twenty-entry table of contents and hides how many actions the task really has. Group related actions into one numbered list under a heading that names the phase:
+
+```md
+## Deploy the gateway            <- a phase
+
+1. Create the namespace.
+2. Apply the Gateway resource.
+3. Verify that the pod is running.
+```
+
+Not:
+
+```md
+### Create the namespace         <- each of these is one step
+### Apply the Gateway
+### Verify the pod
+```
+
+Keep a heading only where a reader would reasonably link to or start from that point.
 
 ## Visuals
 
@@ -245,4 +292,24 @@ content/docs/
 
 ### Index pages
 
-Every directory MUST have an `_index.md` file. The `_index.md` file might have a brief description of the collection and then the `cards` shortcode to list the subpages in the collection.
+Every directory MUST have an `_index.md` file. Give it front matter and a brief description of the collection, **and stop there.**
+
+Do **not** add a `cards` shortcode listing the subpages. The theme already renders a card grid of a section's children at the end of every `_index.md`, from `docs-theme-extras`'s `layouts/docs/list.html` and its `auto-section-cards.html` partial. That grid reads each child's `title`, `icon`, and `description`, and sorts by `weight`.
+
+A hand-written grid does not replace the generated one, it **publishes a second copy of it**. The partial documents a `hasManualCards` suppression flag, but the `cards` shortcode never sets it, so both grids ship. You can see this today on [`/docs/standalone/latest/observability/`](https://agentgateway.dev/docs/standalone/latest/observability/), which serves two card grids.
+
+To change what the reader sees, edit the **children**, not the index:
+
+| To change | Edit |
+| --------- | ---- |
+| What a card says | The child page's `title` and `description` |
+| Card order | `weight` on the children |
+| Whether a child appears | `hidden: true` on that child |
+| The icon | `icon` on the child |
+
+Two manual grids on an `_index.md` are still correct, because neither duplicates the children:
+
+- **A related-resources grid under its own heading**, linking to a blog post, a video, or a page in another section.
+- **An `_index.md` with no children.** The partial renders nothing for an empty section, so hand-written links are the only navigation.
+
+The test is never "does this `_index.md` contain `cards`". It is **"does every card point at a child of this section?"** If yes, delete the grid. If no, leave it alone.
