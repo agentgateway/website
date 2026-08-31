@@ -96,7 +96,7 @@ spec:
 EOF
 ```
 
-Note: Other providers (Anthropic, Azure OpenAI, Gemini, Ollama) work the same way; see the [kagent provider docs](https://kagent.dev/docs/getting-started/configuring-providers).
+Note: Other providers (Anthropic, Azure OpenAI, Gemini, Ollama) work the same way; see the [kagent provider docs](https://kagent.dev/docs/kagent/supported-providers/).
 
 ## Create an agent
 
