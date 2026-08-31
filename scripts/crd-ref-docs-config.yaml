@@ -53,11 +53,12 @@ render:
     - name: LocalPolicyTargetSelectorWithSectionName
       package: sigs.k8s.io/gateway-api/apis/v1alpha2
       link: https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#localpolicytargetselectorwithsectionname
-    # Kubernetes core/meta types whose generated anchors don't exist on the
-    # k8s API reference page.
-    - name: PullPolicy
-      package: k8s.io/api/core/v1
-      link: https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
-    - name: Duration
-      package: k8s.io/apimachinery/pkg/apis/meta/v1
-      link: https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration
+    # NOTE: knownTypes cannot override types from k8s.io/api, k8s.io/apimachinery,
+    # or k8s.io/apiextensions-apiserver. In crd-ref-docs, LinkForType checks
+    # IsKubeType before IsKnownType (renderer/functions.go), so those packages
+    # always get the templated kubernetes.io/docs/reference/generated URL and any
+    # knownTypes entry for them is silently ignored. Entries for PullPolicy and
+    # metav1.Duration used to live here and never took effect. When a generated
+    # kubernetes.io anchor is broken (for example #pullpolicy-v1-core, which is a
+    # type alias with no section of its own), rewrite it in the post-processing
+    # step of .github/workflows/reference-docs.yaml instead.

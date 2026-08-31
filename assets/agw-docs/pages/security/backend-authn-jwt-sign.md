@@ -1,5 +1,3 @@
-Sign a short-lived JWT with your own private key on every request to a backend.
-
 ## About
 
 Some upstreams do not accept a durable credential at all. The Snowflake SQL API, for example, requires a JWT that is signed with the caller's private key on each call. The `key` and `secretRef` backend authentication methods cannot serve those upstreams, because they forward a static credential.
@@ -74,7 +72,7 @@ The gateway reads the private key from the `signingKey` entry of a Secret in the
    EOF
    ```
 
-   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the {{< conditional-text include-if="kubernetes" >}}[API docs]({{< link-hextra path="/reference/api-kubespec/policies/#spec.backend.auth.jwtSign" >}}){{< /conditional-text >}}{{< conditional-text include-if="agentgateway" >}}[API docs](https://agentgateway.dev/docs/kubernetes/latest/reference/api-kubespec/policies/#spec.backend.auth.jwtSign){{< /conditional-text >}}.
+   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#jwtsignauth" >}}).
 
    | Field | Description |
    | -- | -- |

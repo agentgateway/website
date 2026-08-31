@@ -1,5 +1,3 @@
-Sign requests to an AWS service with AWS Signature Version 4, optionally through an assumed IAM role.
-
 ## Configuration examples
 
 To sign requests to an AWS service, use `aws`. Unlike the other methods, `aws` does not attach a token. It computes an AWS Signature Version 4 signature over the request, so it runs last, after every other policy that changes the request.
@@ -30,7 +28,7 @@ backendAuth:
 | `accessKeyId` and `secretAccessKey` | An explicit access key. Set both together, or omit both to use the credential chain. |
 | `sessionToken` | Session token that goes with a temporary access key. |
 | `region` | Signing region, such as `us-east-1`. Set the field when the target service is in a different region from agentgateway. A typed AWS backend may supply the region on its own. |
-| `serviceName` | Signing service name, such as `bedrock`, `bedrock-agentcore`, or `execute-api`. A typed AWS backend may supply the name on its own. |
+| `serviceName` | Signing service name, such as `bedrock`, `bedrock-agentcore`, or `execute-api`. The field can be any AWS SigV4 signing name, and agentgateway does not validate it against a list. The signing name is the service element of the credential scope, which the AWS [Signature Version 4 signing elements](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-signing-elements.html) documentation describes. A typed AWS backend may supply the name on its own. |
 | `assumeRole` | IAM role to assume before signing. Available with the credential chain only, so do not set an access key alongside it. |
 
 ### AWS credential resolution order
@@ -46,6 +44,8 @@ When you omit `accessKeyId` and `secretAccessKey`, agentgateway uses the [defaul
 ### Assume a role
 
 To sign with a role rather than with the identity of agentgateway, set `assumeRole`. Agentgateway calls the AWS Security Token Service (STS) with the credentials from the chain, and signs with the credentials that STS returns. It caches the assumed credentials and refreshes them before they expire.
+
+Create the IAM role in AWS before you set the field. The role needs a permissions policy that allows the actions of the service that you call, such as `bedrock:InvokeModel` for Amazon Bedrock. It also needs a trust policy that allows the identity of agentgateway to assume it. Which permissions you attach therefore depends on the service that the backend fronts. For the steps, see [Create a role to delegate permissions to an AWS service](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-service.html) in the AWS documentation.
 
 The session name and the session tags exist for cost attribution. Each accepts a static value, or a CEL expression that agentgateway evaluates against every request, which lets one gateway attribute cost per user or per team.
 

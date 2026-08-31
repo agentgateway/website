@@ -257,7 +257,7 @@ For the list of supported providers, see the [LLM providers]({{< link-hextra pat
 
 A new `backendAuth.jwtSign` method signs a JSON Web Token per request with a private key that you supply, and attaches it to the backend request. Use it for upstreams that require a keypair-signed JWT rather than a static credential, such as the Snowflake SQL API. Claim values accept CEL expressions, and a signing key that you reference by file path is reloaded when the file changes, so a key rotation does not require a restart.
 
-For the signing key, key ID, token lifetime, claims, placement, and supported algorithms, see [Signed JWT]({{< link-hextra path="/configuration/security/backend-authn/#signed-jwt" >}}).
+For the signing key, key ID, token lifetime, claims, placement, and supported algorithms, see [Signed JWT]({{< link-hextra path="/configuration/security/backend-authn/jwt-sign/" >}}).
 
 #### Connection-level external authorization
 

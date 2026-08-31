@@ -1,5 +1,3 @@
-Authenticate to an Azure service from the gateway with a Microsoft Entra ID token.
-
 ## About
 
 The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that agentgateway forwards to the backend. Agentgateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.

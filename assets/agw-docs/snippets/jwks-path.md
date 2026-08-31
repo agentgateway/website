@@ -1,0 +1,1 @@
+Start the path with a slash, such as `/.well-known/jwks.json`. Agentgateway joins the path to the backend root with a single slash, so the URL does not contain a double slash.

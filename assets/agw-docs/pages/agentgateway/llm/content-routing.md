@@ -61,7 +61,7 @@ This example shows how to route requests to different backends based on the `mod
 
    ```yaml,paths="content-routing"
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: openai-backend
@@ -76,7 +76,7 @@ This example shows how to route requests to different backends based on the `mod
          secretRef:
            name: openai-secret
    ---
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: anthropic-backend
@@ -340,7 +340,7 @@ This example shows routing based on a custom `priority` field in the request bod
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: high-priority-backend
@@ -355,7 +355,7 @@ This example shows routing based on a custom `priority` field in the request bod
          secretRef:
            name: openai-secret
    ---
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: standard-priority-backend

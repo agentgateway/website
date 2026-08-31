@@ -1,5 +1,3 @@
-Authenticate to GitHub Copilot with a token that agentgateway reads from your environment.
-
 ## About
 
 The `copilot` backend authentication method sends a GitHub Copilot token and the request headers that the Copilot API expects. Agentgateway finds the token itself, from an environment variable or from the configuration that the GitHub Copilot tools and the GitHub CLI already wrote to disk, so no credential appears in the configuration file.

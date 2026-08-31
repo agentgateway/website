@@ -5,4 +5,4 @@ description: Reference for the `agctl catalog` command.
 test: skip
 ---
 
-{{< reuse "agw-docs/pages/reference/agctl/main/agctl-catalog.md" >}}
+{{< reuse "agw-docs/pages/reference/agctl/latest/agctl-catalog.md" >}}

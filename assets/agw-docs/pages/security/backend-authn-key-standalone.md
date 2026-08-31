@@ -1,14 +1,12 @@
-Send a static credential to a backend, forward the credential that the client sent, or add extra credentials to the request.
-
 ## About
 
-Three backend authentication methods send a credential that agentgateway does not have to fetch from anywhere.
+Use one of the following backend authentication methods to send a static credential to your backend. The client may already send the credential that the backend expects. If it does not, agentgateway must supply one of its own.
 
-* **`key`** sends a value that you configure, either inline or from a file on disk.
-* **`passthrough`** sends the credential that the client sent.
-* **`credentials`** adds one or more extra credentials, each to its own location, either on its own or alongside one of the other methods.
+* **Static key** (`key`) sends a value that you configure, either inline or from a file on disk.
+* **Passthrough** (`passthrough`) sends the JWT that the client sent.
+* **Extra credentials** (`credentials`) adds one or more credentials, each to its own location, either on its own or alongside one of the other two methods.
 
-All of them write the credential to the `Authorization` header with a `Bearer ` prefix by default. The `location` field changes where the credential goes.
+All of them write the credential to the `Authorization` header with a `Bearer ` prefix by default. The `location` field changes where agentgateway writes it.
 
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
@@ -112,9 +110,9 @@ backendAuth:
       file: /path/to/my/key
 ```
 
-## Change where the credential goes
+## Change the credential location
 
-By default, the proxy retrieves the key from the `Authorization` header value. 
+By default, agentgateway writes the credential to the `Authorization` header with a `Bearer ` prefix. Set the `location` field to write it somewhere else.
 
 {{< tabs >}}
 {{% tab name="Different header" %}}
@@ -155,26 +153,31 @@ backendAuth:
 {{% /tab %}}
 {{< /tabs >}}
 
-## Forward the credential that the client sent
+## Pass through client credentials
 
-When using any form of incoming authentication, such as [JWT]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), [API key]({{< link-hextra path="/configuration/security/apikey-authn/" >}}), or [basic auth]({{< link-hextra path="/configuration/security/basic-authn/" >}}), the original credential is removed from the request by default before forwarding to the backend.
-To pass the original credential through to the backend, use the `passthrough` method:
+Any form of incoming authentication removes the original credential from the request by default, before agentgateway forwards it to the backend. That applies to [JWT]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), [API key]({{< link-hextra path="/configuration/security/apikey-authn/" >}}), and [basic auth]({{< link-hextra path="/configuration/security/basic-authn/" >}}). To send the original credential on to the backend, use the `passthrough` method.
 
 ```yaml
 backendAuth:
   passthrough: {}
 ```
 
-The `passthrough` method also accepts a `location` field to specify where to read the credential from:
+The method forwards a JWT only. It re-sends the token that a [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}) policy validated on the route. An API key or basic auth credential is still stripped, and `passthrough` does not add it back.
+
+The `passthrough` method has no field for where to read the credential from, because agentgateway does not read it from the request at all. It re-sends the token that the `jwtAuth` policy already validated. The source is therefore wherever that policy's own `location` field reads from, which is the `Authorization` header by default.
+
+The `location` field on `passthrough` controls only where agentgateway writes the token on the backend request. That location does not have to be where the client sent it.
 
 ```yaml
 backendAuth:
   passthrough:
     location:
       header:
-        name: authorization
-        prefix: "Bearer "
+        name: x-forwarded-token
 ```
+
+> [!NOTE]
+> Prefer `passthrough` over the `preserveToken` field of the `jwtAuth` policy. Both get the token to the backend. However, `preserveToken` leaves the token in its original location, where every policy that runs later can read it. The `passthrough` method re-adds the token only on the request that agentgateway forwards to the backend.
 
 ## Send more than one credential
 
