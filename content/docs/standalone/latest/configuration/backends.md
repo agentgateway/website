@@ -302,7 +302,7 @@ agentgateway -f config4-simplified.yaml --validate-only
 
 ## AWS AgentCore
 
-The AWS backend routes requests to an [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) agent runtime. Configure it inline in a `routes` entry, as in the following example, or as a named top-level `backends` entry that several routes reference.
+The AWS backend routes requests to an [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) agent runtime. Configure the AWS backend inline in a `routes` entry, as in the following example, or as a named top-level `backends` entry that several routes reference.
 
 Agentgateway derives the connection details from the `agentRuntimeArn` value: requests are sent over TLS to the `bedrock-agentcore` endpoint in the runtime's AWS region, with the path set to the runtime's invocation endpoint. Agentgateway signs each request with AWS SigV4 under the `bedrock-agentcore` signing name, by using the standard [AWS credential lookup](https://docs.aws.amazon.com/sdkref/latest/guide/access.html) from the environment. To authenticate to a runtime that uses a JWT authorizer instead, set a `policies.backendAuth.key` policy, which replaces the SigV4 signing. For the steps to set up both modes, see [Connect to AWS Bedrock AgentCore]({{< link-hextra path="/agent/agentcore/" >}}).
 
