@@ -21,8 +21,6 @@ Use the `filter` field in the {{< reuse "agw-docs/snippets/policy.md" >}} to [fi
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-3. [Set up the OTel stack]({{< link path="/observability/otel-stack/" >}}) to export logs to an OTel collector and forwards them to Loki. 
-
 ## Enable access logs {#access-log-stdout-filesink}
 
 Access logs are written to `stdout` automatically for every request that passes through the gateway proxy. No policy configuration is required to enable them.
@@ -84,11 +82,12 @@ To filter which requests are logged or customize log fields, see [Filter access 
   EOF
   {{< /doc-test >}}
 
+
 ## Filter access logs
 
-Use a [CEL expression]({{< link path="/reference/cel/" >}}) to log only a subset of requests. Requests that do not match the expression are not logged. 
+Use a [CEL expression]({{< link path="/reference/cel/" >}}) to log only a subset of requests. Requests that do not match the expression are not logged. The following example produces access logs only for requests with a response code of 400 or greater.
 
-1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with a `filter` expression. The following example produces access logs only for requests with a response code of 400 or greater.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with a `filter` expression.
 
    ```yaml {linenos=table,paths="access-logging"}
    kubectl apply -f- <<EOF
@@ -312,63 +311,6 @@ You can add custom fields to every access log line by using CEL expressions that
         contains: "env=\"production\""
   EOF
   {{< /doc-test >}}
-
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}
-## View access logs in Loki {#view-in-loki}
-
-If you set up the [OTel stack]({{< link-hextra path="/observability/otel-stack/" >}}), the `opentelemetry-collector-logs` deployment is ready to receive access logs via OTLPs. Configure the agentgateway proxy to send access logs to it, then query them in Grafana through Loki.
-
-1. Create a {{< reuse "agw-docs/snippets/policy.md" >}} resource that points the agentgateway proxy at the OTel collector.
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-   metadata:
-     name: access-logs
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     targetRefs:
-     - group: gateway.networking.k8s.io
-       kind: Gateway
-       name: agentgateway-proxy
-     frontend:
-       accessLog:
-         otlp:
-           backendRef:
-             name: opentelemetry-collector-logs
-             namespace: telemetry
-             port: 4317
-           protocol: GRPC
-   EOF
-   ```
-
-   > [!TIP]
-   > To filter which logs are exported, add custom fields, or send logs to a different backend, see [Export logs over OTLP]({{< link-hextra path="/observability/access-logs/export/" >}}).
-
-2. Open Grafana.  
-
-   1. Port-forward the Grafana service.
-      ```sh
-      kubectl port-forward svc/kube-prometheus-stack-grafana -n telemetry 3000:80
-      ```
-   2. Open Grafana at [http://localhost:3000](http://localhost:3000).
-
-   3. Log in to Grafana with the `admin` username `prom-operator` password .
-
-3. Go to **Explore** and select **Loki** as the data source.
-
-4. Use the **Label browser** to find your log stream, then add filters to narrow results. Each proxied request is stored as a log entry with structured metadata attributes such as `http.method`, `http.path`, and `http.status`. Use the following filter patterns:
-
-   | Goal | LogQL filter |
-   |---|---|
-   | Requests to a specific path | `\|= "http.path=/get"` |
-   | Error responses (4xx/5xx) | `\|= "http.status=4"` or `\|= "http.status=5"` |
-   | Logs from a specific gateway | `\|= "gateway=agentgateway-system/agentgateway-proxy"` |
-
-   {{< reuse-image src="img/agw-grafana-loki.png" srcDark="img/agw-grafana-loki.png"  >}}
-
-{{< /version >}}
 
 ## Cleanup
 
