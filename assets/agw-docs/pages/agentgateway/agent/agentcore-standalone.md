@@ -124,7 +124,7 @@ Create a configuration file with a route to the AgentCore runtime. The `aws.agen
    ```
 
    > [!TIP]
-   > A file reference is watched. To rotate an expiring token, write a new token to `agentcore-token.jwt`, and {{< reuse "agw-docs/snippets/agentgateway.md" >}} picks it up without a restart. An inline string value has no such refresh path.
+   > A file reference is watched. To rotate an expiring token, write a new token to `agentcore-token.jwt`, and {{< reuse "agw-docs/snippets/agentgateway.md" >}} picks up the new token without a restart. An inline string value has no such refresh path.
 {{% /tab %}}
 {{< /tabs >}}
 
@@ -135,7 +135,7 @@ Create a configuration file with a route to the AgentCore runtime. The `aws.agen
 | `policies.backendAuth` | Optional. Replaces the default SigV4 signing for the backend. Omit this setting to sign requests with the AWS credential chain. To authenticate to a runtime that uses a JWT authorizer, set `backendAuth.key.value` to the token, either as a `file` reference or as an inline string. The token goes in the `Authorization` header with a `Bearer` prefix, unless you set `backendAuth.key.location`. |
 | `policies.requestHeaderModifier` | Optional. Headers to set before the request is sent upstream, such as the `X-Amzn-Bedrock-AgentCore-Runtime-User-Id` header that AgentCore uses to associate requests with a user session. |
 
-To reuse one AgentCore backend across several routes, move it to a top-level `backends` entry and reference it by name. The reference is namespace-qualified, so a backend in the default namespace needs a leading slash.
+To reuse one AgentCore backend across several routes, move the backend to a top-level `backends` entry and reference it by name. The reference is namespace-qualified, so a backend in the default namespace needs a leading slash.
 
 ```yaml
 backends:
