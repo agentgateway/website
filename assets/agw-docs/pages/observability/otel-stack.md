@@ -156,6 +156,9 @@ Deploy separate collectors for logs and traces so you can scale and tune each on
 > [!WARNING]
 > The example pipelines in both OTel collectors set up the `debug` exporter. This exporter is useful for testing and validation purposes. However, for production scenarios, remove this exporter to avoid performance impacts.
 
+> [!TIP]
+> The OTel stack sets up Tempo as your tracing backend. If you want to use a different tracing backend, check out the [Alternative backends]({{< link path="/observability/traces/configs/" >}}) section. 
+
 1. Deploy the logs collector to process and forward application and access logs.
 
    ```yaml {paths="otel-stack"}
@@ -239,6 +242,55 @@ Deploy separate collectors for logs and traces so you can scale and tune each on
    NAME                                               READY   STATUS    RESTARTS   AGE
    opentelemetry-collector-logs-676777487b-wbtkj      1/1     Running   0          56s
    opentelemetry-collector-traces-7696858cf9-tjllx    1/1     Running   0          51s
+   ```
+
+4. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that points the agentgateway proxy at the OTel logs collector that you created.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: access-logs
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     frontend:
+       accessLog:
+         otlp:
+           backendRef:
+             name: opentelemetry-collector-logs
+             namespace: telemetry
+             port: 4317
+           protocol: GRPC
+   EOF
+   ```
+
+5. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that points the agentgateway proxy at the OTel tracing collector that you created.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: tracing
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+       - kind: Gateway
+         name: agentgateway-proxy
+         group: gateway.networking.k8s.io
+     frontend:
+       tracing:
+         backendRef:
+           name: opentelemetry-collector-traces
+          namespace: telemetry
+           port: 4317
+         protocol: GRPC
+         randomSampling: "true"
+   EOF
    ```
 
 {{< doc-test paths="otel-stack" >}}

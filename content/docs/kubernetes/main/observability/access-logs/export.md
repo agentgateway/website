@@ -101,7 +101,7 @@ kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
-  name: access-log-export
+  name: access-logs
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   targetRefs:
@@ -123,7 +123,7 @@ EOF
 YAMLTest -f - <<'EOF'
 - name: verify access log OTLP policy is accepted
   command:
-    command: "kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} access-log-export -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.status.ancestors[*].conditions[?(@.type==\"Accepted\")].status}'"
+    command: "kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.status.ancestors[*].conditions[?(@.type==\"Accepted\")].status}'"
   source:
     type: local
   expect:
@@ -207,7 +207,7 @@ You can filter which access logs are exported to the OTLP backend independently 
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
-     name: access-log-export
+     name: access-logs
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
@@ -319,7 +319,7 @@ You can customize which fields are exported over OTLP independently of what is w
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
-     name: access-log-export
+     name: access-logs
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
@@ -400,13 +400,13 @@ You can customize which fields are exported over OTLP independently of what is w
 {{% tab tabName="OTel stack (recommended)" %}}
 Delete the {{< reuse "agw-docs/snippets/policy.md" >}} resource. The OTel stack collector stays in place.
 ```sh {paths="access-log-otlp"}
-kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-log-export -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 {{% /tab %}}
 {{% tab tabName="Standalone debug" %}}
 1. Delete the {{< reuse "agw-docs/snippets/policy.md" >}} resource.
    ```sh {paths="access-log-otlp"}
-   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-log-export -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
 2. Uninstall the OpenTelemetry collector.

@@ -20,7 +20,10 @@ test:
 
 ## Step 5: Explore Grafana dashboards
 
-When you enabled `monitoring.enabled` in the previous step, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm chart created a ConfigMap resource with a pre-built Grafana dashboard in the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace. Because the Grafana sidecar is configured with `searchNamespace: ALL` (from Step 3), it discovers and loads this dashboard automatically into the Grafana dashboard. No manual import of the dashboard is needed. 
+When you enabled `monitoring.enabled` in the previous step, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm chart created a ConfigMap resource with a pre-built Grafana dashboard in the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace. Because the Grafana sidecar is configured with `searchNamespace: ALL` (from Step 3), it discovers and loads this dashboard automatically into the Grafana dashboard. No manual import of the dashboard is needed.
+
+> [!TIP]
+> `searchNamespace: ALL` lets the Grafana sidecar discover and load dashboard ConfigMaps from any namespace in the cluster. To limit the namespaces to discover ConfigMaps from, see [Configure dashboard discovery across namespaces]({{< link path="/observability/metrics/overview/#grafana-dashboard-discovery-across-namespaces" >}}).
 
 {{< doc-test paths="otel-stack" >}}
 YAMLTest -f - <<'EOF'
@@ -84,21 +87,24 @@ The OTel stack provides the storage and visualization layer. Use the following g
 ### Metrics
 
 {{< cards >}}
-  {{< card path="/observability/metrics/overview/#other-proxies" title="Scrape additional proxies" >}}
-  {{< card path="/observability/metrics/overview/#grafana-dashboard-discovery" title="Configure dashboard discovery" >}}
+  {{< card path="/observability/metrics/overview/#other-proxies" title="Scrape additional proxies" subtitle="Scrape proxy pods in other namespaces or for additional GatewayClasses" >}}
+  {{< card path="/observability/metrics/control-plane/" title="Control plane metrics" subtitle="View and reference control plane metrics exposed on port 9092" >}}
+  {{< card path="/observability/metrics/dataplane/" title="Data plane metrics" subtitle="View, reference, and add custom labels to proxy metrics on port 15020" >}}
+  {{< card path="/observability/metrics/nacks/" title="Monitor proxy config rejections" subtitle="Track XDS rejections with the agentgateway_xds_rejects_total counter" >}}
 {{< /cards >}}
 
 ### Access logs
 
 {{< cards >}}
-  {{< card path="/observability/access-logs/export/" title="Export access logs" >}}
+  {{< card path="/observability/access-logs/view/" title="View and customize access logs" subtitle="View raw access logs and add custom fields to each log entry" >}}
+  {{< card path="/observability/access-logs/export/" title="Export access logs to OTLP" subtitle="Forward structured access logs to the OTel Collector for storage in Loki" >}}
 {{< /cards >}}
 
 ### Traces
 
 {{< cards >}}
-  {{< card path="/observability/traces/setup/" title="Set up traces" >}}
-  {{< card path="/observability/traces/setup/#sampling" title="Customize traces" >}}
+  {{< card path="/observability/traces/setup/" title="Set up and customize traces" subtitle="Enable distributed tracing, and filter and customize trace spans." >}}
+  {{< card path="/observability/traces/configs/" title="Connect other tracing platforms" subtitle="Learn how to connect alternative tracing platforms, such as Jaeger, Honeycomb, and Datadog." >}}
 {{< /cards >}}
 
 ## Cleanup

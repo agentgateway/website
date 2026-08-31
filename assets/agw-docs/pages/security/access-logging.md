@@ -21,7 +21,7 @@ Use the `filter` field in the {{< reuse "agw-docs/snippets/policy.md" >}} to [fi
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-3. [Set up the OTel stack]({{< link path="/observability/otel-stack/" >}}) to export logs to an OTel collector and forwards them to Loki. 
+3. [Set up the OTel stack]({{< link path="/observability/otel-stack/" >}}) to export logs to an OTel collector and forward them to Loki. 
 
 ## Enable access logs {#access-log-stdout-filesink}
 
@@ -362,9 +362,9 @@ If you set up the [OTel stack]({{< link-hextra path="/observability/otel-stack/"
 
    | Goal | LogQL filter |
    |---|---|
-   | Requests to a specific path | `\|= "http.path=/get"` |
-   | Error responses (4xx/5xx) | `\|= "http.status=4"` or `\|= "http.status=5"` |
-   | Logs from a specific gateway | `\|= "gateway=agentgateway-system/agentgateway-proxy"` |
+   | Requests to a specific path | `\| http_path="/get"` |
+   | Error responses (4xx/5xx) | `\| http_status="400"` or `\| http_status="500"` |
+   | Logs from a specific gateway | `\| gateway="agentgateway-system/agentgateway-proxy"` |
 
    {{< reuse-image src="img/agw-grafana-loki.png" srcDark="img/agw-grafana-loki.png"  >}}
 

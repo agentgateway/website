@@ -30,7 +30,7 @@ When tracing is enabled, {{< reuse "agw-docs/snippets/agentgateway.md" >}} emits
 
 ## Enable tracing
 
-Create an {{< reuse "agw-docs/snippets/policy.md" >}} that points the agentgateway proxy at the OTel Collector from the OTel stack.
+If you have not done so yet, create an {{< reuse "agw-docs/snippets/policy.md" >}} that points the agentgateway proxy at your OTel Collector. 
 
 ```yaml {paths="tracing"}
 kubectl apply -f- <<EOF
@@ -89,27 +89,28 @@ EOF
    EOF
    {{< /doc-test >}}
 
-2. Open Grafana.
+2. Open Grafana.  
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
-   open "http://$(kubectl -n telemetry get svc kube-prometheus-stack-grafana -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}"):3000"
-   ```
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
-   ```sh
-   kubectl port-forward svc/kube-prometheus-stack-grafana -n telemetry 3000:80
-   ```
-   Then open [http://localhost:3000](http://localhost:3000).
-   {{% /tab %}}
-   {{< /tabs >}}
+   1. Port-forward the Grafana service.
+      ```sh
+      kubectl port-forward svc/kube-prometheus-stack-grafana -n telemetry 3000:80
+      ```
+   2. Open Grafana at [http://localhost:3000](http://localhost:3000).
 
-   Log in with the username `admin` and password `prom-operator`.
+   3. Log in to Grafana with the `admin` username `prom-operator` password.
 
-3. Navigate to **Explore**, select **Tempo** as the data source, and search for traces by service name `agentgateway`. You should see a span for the request you sent.
+3. Navigate to **Explore**, select **Tempo** as the data source, and search for traces. For example, you can use TraceQL queries to explore traces without a specific trace ID. 
 
-   To search by a specific trace ID, get it from the proxy logs first:
+   | Goal | TraceQL query |
+   |---|---|
+   | All traces from the proxy | `{resource.service.name="agentgateway-proxy"}` |
+   | Traces for a specific HTTP path | `{resource.service.name="agentgateway-proxy" && span.http.path="/get"}` |
+   | Error traces (4xx/5xx) | `{resource.service.name="agentgateway-proxy" && span.http.status >= 400}` |
+   | Slow traces | `{resource.service.name="agentgateway-proxy"} \| duration > 100ms` |
+
+   {{< reuse-image src="img/agw-tempo.png" srcDark="img/agw-tempo.png" >}}
+
+4. To search by a specific trace ID, get it from the proxy logs first:
 
    ```sh
    kubectl logs deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
@@ -118,6 +119,7 @@ EOF
 
    Then paste the trace ID into the **TraceQL** or **Search** field in Grafana Tempo.
 
+   
 ## Control sampling rate {#sampling}
 
 Sampling controls how much trace data agentgateway generates. Tracing every request gives complete visibility but adds overhead and increases storage costs. Sampling only a fraction keeps costs low while still capturing enough data to detect issues and understand latency.

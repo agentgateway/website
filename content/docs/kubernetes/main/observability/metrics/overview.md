@@ -62,7 +62,7 @@ The {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm chart includes a `mon
 
 Follow the [OTel stack guide]({{< link path="/observability/otel-stack/" >}}) to install the observability tools, including Prometheus and Grafana, and set `monitoring.enabled=true` to create the ServiceMonitor, PodMonitor, and Grafana dashboard ConfigMap. 
 
-> [!TIP]
+> [!NOTE]
 > By default, the PodMonitor that the Helm chart creates only scrapes proxy pods in the release namespace and for the `agentgateway` GatewayClass. If you need to scrape proxies in other namespaces or for additional GatewayClasses, see [Scrape additional proxy pods](#other-proxies).
 
 ### Scrape additional proxy pods {#other-proxies}
@@ -71,7 +71,7 @@ The {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm chart creates a singl
 
 **Scrape proxies in all namespaces**: 
 
-To scrape proxy pods in every namespace, set `monitoring.proxy.namespaceSelector` to `{any: true}` as shown in the following example. 
+To scrape proxy pods in every namespace, set `monitoring.proxy.namespaceSelector` to `any: true` as shown in the following example. 
 
 ```yaml
 cat <<EOF > monitoring-values.yaml

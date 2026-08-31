@@ -39,8 +39,6 @@ EOF
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-Delete the {{< reuse "agw-docs/snippets/policy.md" >}} resource.
-
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} tracing -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
