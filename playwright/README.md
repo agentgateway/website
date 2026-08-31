@@ -187,31 +187,69 @@ For a guide whose UI talks to a server, add a self-contained capture mode:
 
 ## How images map to doc versions
 
-Docs are versioned but images are not — `assets/img/` is a single flat tree that every
-version references by filename. The version dropdown maps (see `hugo.yaml`):
+Pages always reference the bare filename, e.g. `img/ui-playground-tools.png`. Resolution is
+version-aware underneath: `reuse-image` calls the theme's
+`utils/resolve-versioned-image.html`, which prefers `assets/img/<version-slug>/<file>` when that
+file exists and otherwise falls back to the bare `assets/img/<file>`. The slug is the version's
+path segment, not its release number — see "Which version is which" below.
 
-| Doc tree | Version | UI |
+That is what `sync-docs` drives ("shared until it diverges"): the `latest` capture writes the
+bare path, and the `main` capture writes `assets/img/main/<file>` **only** while it differs
+from latest, deleting it again when the two reconverge. Neither direction needs a content
+edit, and **no page should ever hard-code an `img/main/` path** — the override is picked up
+and dropped automatically.
+
+### Which version is which
+
+This file deliberately does not list version numbers — they rotate every release. The live
+mapping is `params.versions` in `hugo.yaml`:
+
+```bash
+yq '.params.versions' hugo.yaml        # or: sed -n '/^  versions:/,/^  sections:/p' hugo.yaml
+```
+
+Each entry has three fields, and **they are not interchangeable**:
+
+| Field | Shape | What it addresses |
 |---|---|---|
-| `content/docs/standalone/main/` | 1.4.x | new UI → bare `img/<x>.png` |
-| `content/docs/standalone/latest/` | 1.3.x | new UI → bare `img/<x>.png` |
-| `content/docs/standalone/1.2.x/` | 1.2.x and earlier | old UI → `img/1.2-earlier/<x>.png` |
+| `linkVersion` | a stable slug: `main`, `latest` | the path segment — `content/docs/<section>/<linkVersion>/`, and the **image override directory** `assets/img/<linkVersion>/` |
+| `version` | a release line, `<major>.<minor>.x` | the token `{{< version include-if=... >}}` matches on |
+| `dropdown` | free-text label | what the version picker displays |
 
-So when the UI changes, the **older versions are pinned to a frozen image bucket**
-(`assets/img/1.2-earlier/`) while the new-UI versions use the bare paths this harness
-regenerates. Two ways a guide selects the right image:
+The two that get confused are the first two, because only `linkVersion` is stable — `version`
+rotates on every release, `linkVersion` does not. An override captured for the `main` docs lands
+in `assets/img/main/`, keyed by the *path segment*, because the theme derives its slug from the
+page URL. A version shortcode on that very same page is gated on that line's `version` value
+instead. So an override directory named after a release line resolves for nobody: this harness
+only ever writes `assets/img/<linkVersion>/`.
+
+Only the version lines listed in `params.versions` render. Older lines are retired rather than
+deleted, and the two sections retired them differently: `content/docs/kubernetes/` still carries
+several as real directories that build, while retired standalone versions are checked in as
+`<version>.zip` snapshots that nothing builds. So do not expect to find an old standalone
+version as a directory on disk, and do not expect an image referenced from inside one of those
+zips to resolve against anything this harness writes.
+
+### Older UIs are pinned by hand
+
+The override mechanism above is automatic but only spans the version lines this harness
+captures (the `latest` and `main` pair). A version line old enough to predate the current UI
+gets a **frozen image bucket** instead, checked in once and never regenerated —
+`assets/img/1.2-earlier/` is the existing example. Two ways a guide selects one:
 
 - **Per-version files** (most guides, e.g. `mcp/connect/virtual.md`): each version dir has
-  its own copy of the file. The `1.2.x` copy references `img/1.2-earlier/...` with the old
-  prose; the `main`/`latest` copies reference the bare new images with the new-UI prose.
+  its own copy of the file, so the old copy just references the frozen bucket with the old
+  prose while the current copies reference the bare new images.
 - **Shared snippets** (e.g. `assets/agw-docs/pages/observability/traces.md`, reused by all
   versions via `{{< reuse ... >}}`): one file serves every version, so version-specific
-  parts are wrapped in the version shortcode:
+  parts are wrapped in the version shortcode. Take the token list from the `version` column
+  of `params.versions` — never from an example like this one, which goes stale on release:
   ```md
-  {{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
-  ...new-UI steps + bare img/ (reuse-image-light/dark)...
+  {{< version exclude-if="<old version tokens>" >}}
+  ...current-UI steps + bare img/ (reuse-image-light/dark)...
   {{< /version >}}
-  {{< version include-if="1.2.x,1.1.x,1.0.x" >}}
-  ...old-UI steps + img/1.2-earlier/ (plain reuse-image)...
+  {{< version include-if="<old version tokens>" >}}
+  ...old-UI steps + frozen bucket, e.g. img/1.2-earlier/ (plain reuse-image)...
   {{< /version >}}
   ```
 
@@ -227,6 +265,13 @@ Screenshots are pixel-compared, so captures must be byte-stable across runs:
 - **Mask dynamic content.** The MCP session id, latency badges, and timestamps change every
   run — mask them (`maskSession(page)` covers the session id; pass others via
   `toHaveScreenshot({ mask: [...] })`).
+- **Pin table row order.** Views built from the gateway dump (the Kubernetes Traffic
+  Listeners/Routes/Policies tables) return rows in an unstable order. Call
+  `sortTableRows(page)` before the capture — sorting keeps the whole table visible, which
+  masking would not. Left unpinned, a three-row reshuffle moves ~0.8% of the pixels: under
+  `maxDiffPixelRatio` so the test still passes, but enough to flip `sync-docs`'
+  `SYNC_DIFF_RATIO` verdict, which had the nightlies adding and removing the same
+  `img/main/` override on alternating days.
 - **Mock non-deterministic backends.** Live servers give varying output. The repo ships
   deterministic mocks used by the launchers:
   - `scripts/mock-openai.mjs` — fixed LLM reply (no API key, no cost).
@@ -306,6 +351,7 @@ setup the `reference-docs` workflow uses.
 | `tests/jwt.spec.ts` | Playground with a JWT in the Authorization header |
 | `tests/a2a-traffic.spec.ts` | A2A config shown as a Traffic route/listener (no A2A playground in the new UI) |
 | `tests/llm-playground.spec.ts` | LLM playground against the mock provider |
+| `tests/llm-add-model.spec.ts` | The Add model drawer filled in for each of the 21 providers, one capture per provider tab in the standalone LLM quickstart. Runs under `CAPTURE_MODE=llm`; the form is client-side, so it never saves and needs no provider key |
 | `tests/logs.spec.ts` | LLM > Logs list and a call's Trajectory + Conversation detail. Runs under `CAPTURE_MODE=costs`; **main only** |
 | `scripts/serve-*.sh` | Per-mode launchers: start backend(s) + UI container, clean up on exit |
 | `scripts/mock-*.mjs` | Deterministic mock backends (openai, mcp-time, petstore) |
