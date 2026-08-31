@@ -189,7 +189,7 @@ Per-prompt detail belongs in request metadata and the invocation logs, not in se
    ```
 {{% /tab %}}
 {{% tab name="Google Vertex AI" %}}
-1. Confirm that [Cloud Billing data export to BigQuery](https://cloud.google.com/billing/docs/how-to/export-data-bigquery) is enabled for the billing account.
+1. Confirm that [Cloud Billing data export to BigQuery](https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery) is enabled for the billing account.
 2. Query the detailed usage cost table and confirm that the label keys that you set appear next to the Vertex AI cost. Billing export rows appear within a few hours of the request.
 
    ```sql
