@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/anthropic.svg
 description: Route agentgateway LLM traffic to Anthropic's Claude models.
 test:
   anthropic:
-  - file: ${versionRoot}/llm/providers/anthropic.md
+  - file: ${versionRoot}/documentation/llm/providers/anthropic.md
     path: anthropic
 ---
 

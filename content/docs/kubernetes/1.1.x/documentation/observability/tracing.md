@@ -3,13 +3,13 @@ title: Tracing
 weight: 90
 test:
   tracing:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/install/sample-app.md
+  - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/latest/observability/tracing.md
+  - file: content/docs/kubernetes/latest/documentation/observability/tracing.md
     path: tracing
 ---
 

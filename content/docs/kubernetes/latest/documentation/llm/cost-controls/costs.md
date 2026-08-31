@@ -4,13 +4,13 @@ weight: 20
 description: Price LLM requests with a model cost catalog and expose realized USD costs in logs, traces, and metrics.
 test:
   costs:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/llm/providers/httpbun.md
+  - file: content/docs/kubernetes/latest/documentation/llm/providers/httpbun.md
     path: setup-httpbun-llm
-  - file: content/docs/kubernetes/latest/llm/cost-controls/costs.md
+  - file: content/docs/kubernetes/latest/documentation/llm/cost-controls/costs.md
     path: costs
 ---
 

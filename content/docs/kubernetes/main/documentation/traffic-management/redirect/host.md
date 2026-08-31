@@ -4,13 +4,13 @@ weight: 442
 description: Redirect requests to a different host.
 test:
   host-redirect:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/traffic-management/redirect/host.md
+  - file: ${versionRoot}/documentation/traffic-management/redirect/host.md
     path: host-redirect
 ---
 

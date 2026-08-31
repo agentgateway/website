@@ -4,7 +4,7 @@ weight: 11
 description: Protect against cross-site request forgery attacks with origin validation.
 test:
   csrf:
-  - file: ${versionRoot}/configuration/security/csrf.md
+  - file: ${versionRoot}/documentation/configuration/security/csrf.md
     path: csrf
 ---
 

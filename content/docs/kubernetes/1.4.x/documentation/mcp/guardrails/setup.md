@@ -4,11 +4,11 @@ weight: 20
 description: Gate and mutate MCP method calls with an external ExtMCP policy server.
 test:
   mcp-guardrails:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/mcp/guardrails/setup.md
+  - file: ${versionRoot}/documentation/mcp/guardrails/setup.md
     path: mcp-guardrails
 ---
 

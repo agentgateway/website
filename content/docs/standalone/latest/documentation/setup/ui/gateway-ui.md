@@ -4,7 +4,7 @@ weight: 20
 description: Give the UI a gateway of its own so that UI traffic and proxy traffic do not share a port.
 test:
   ui-gateway:
-  - file: ${versionRoot}/setup/ui/gateway-ui.md
+  - file: ${versionRoot}/documentation/setup/ui/gateway-ui.md
     path: ui-standalone-gateway
 ---
 

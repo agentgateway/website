@@ -4,13 +4,13 @@ weight: 50
 description: Call a downstream API as the authenticated end user with the OAuth Identity Assertion Authorization Grant.
 test:
   cross-app-access:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/security/backend-authn/cross-app-access.md
+  - file: ${versionRoot}/documentation/security/backend-authn/cross-app-access.md
     path: cross-app-access
 aliases:
   - /docs/kubernetes/main/security/backend-authn-cross-app-access/

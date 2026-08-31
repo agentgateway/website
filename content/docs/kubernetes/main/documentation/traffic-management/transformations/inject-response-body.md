@@ -4,22 +4,22 @@ weight: 55
 description: Learn how to return a customized response body and how to replace specific values in the body.
 test:
   inject-header-into-body:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/traffic-management/transformations/inject-response-body.md
+  - file: ${versionRoot}/documentation/traffic-management/transformations/inject-response-body.md
     path: inject-header-into-body
   inject-body-field-into-body:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/traffic-management/transformations/inject-response-body.md
+  - file: ${versionRoot}/documentation/traffic-management/transformations/inject-response-body.md
     path: inject-body-field-into-body
 ---
 

@@ -4,7 +4,7 @@ weight: 16
 description: Capture a per-request trace as a standalone agentgateway instance handles the request.
 test:
   trace-validate:
-  - file: ${versionRoot}/operations/trace-requests.md
+  - file: ${versionRoot}/documentation/operations/trace-requests.md
     path: trace-validate
 ---
 

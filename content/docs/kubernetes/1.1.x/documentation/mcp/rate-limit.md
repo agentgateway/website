@@ -4,13 +4,13 @@ weight: 65
 description: Control MCP tool call rates to prevent overload and ensure fair access to expensive tools.
 test:
   mcp-local-rate-limit:
-  - file: content/docs/kubernetes/latest/install/helm.md
+  - file: content/docs/kubernetes/latest/documentation/install/helm.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/mcp/static-mcp.md
+  - file: content/docs/kubernetes/latest/documentation/mcp/static-mcp.md
     path: setup-mcp-server
-  - file: content/docs/kubernetes/latest/mcp/rate-limit.md
+  - file: content/docs/kubernetes/latest/documentation/mcp/rate-limit.md
     path: mcp-local-rate-limit
 ---
 

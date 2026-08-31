@@ -4,13 +4,13 @@ weight: 10
 description: Match requests by hostname.
 test:
   host-match:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/traffic-management/match/host.md
+  - file: ${versionRoot}/documentation/traffic-management/match/host.md
     path: host-match
 ---
 Expose a route on multiple hosts. 

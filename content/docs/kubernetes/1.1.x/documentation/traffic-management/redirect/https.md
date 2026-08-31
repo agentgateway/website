@@ -4,13 +4,13 @@ weight: 441
 description: Redirect HTTP traffic to HTTPS.
 test:
   https-redirect:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/install/sample-app.md
+  - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/latest/traffic-management/redirect/https.md
+  - file: content/docs/kubernetes/latest/documentation/traffic-management/redirect/https.md
     path: https-redirect
 ---
 

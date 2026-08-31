@@ -4,13 +4,13 @@ weight: 10
 description: Route traffic dynamically to upstream servers based on request characteristics.
 test:
   dfp:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/traffic-management/dfp.md
+  - file: ${versionRoot}/documentation/traffic-management/dfp.md
     path: dfp
 ---
 

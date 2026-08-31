@@ -4,7 +4,7 @@ weight: 16
 description: Use external gRPC servers to modify HTTP requests and responses.
 test:
   extproc:
-  - file: ${versionRoot}/configuration/traffic-management/extproc.md
+  - file: ${versionRoot}/documentation/configuration/traffic-management/extproc.md
     path: extproc
 ---
 

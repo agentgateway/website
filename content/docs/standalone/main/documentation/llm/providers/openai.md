@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/openai.svg
 description: Route agentgateway LLM traffic to OpenAI's GPT models.
 test:
   openai:
-  - file: ${versionRoot}/llm/providers/openai.md
+  - file: ${versionRoot}/documentation/llm/providers/openai.md
     path: openai
 ---
 

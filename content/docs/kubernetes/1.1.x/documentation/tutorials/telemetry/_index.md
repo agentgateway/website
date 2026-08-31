@@ -4,7 +4,7 @@ weight: 6
 description: Enable tracing, prompt logging, cost tracking, and metrics for agentgateway on Kubernetes
 test:
   telemetry:
-  - file: content/docs/kubernetes/latest/tutorials/telemetry/_index.md
+  - file: content/docs/kubernetes/latest/documentation/tutorials/telemetry/_index.md
     path: telemetry
 ---
 

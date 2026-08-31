@@ -4,7 +4,7 @@ weight: 25
 description: Define the ports, protocols, and TLS settings where agentgateway accepts incoming traffic.
 test:
   listeners:
-  - file: ${versionRoot}/configuration/listeners.md
+  - file: ${versionRoot}/documentation/configuration/listeners.md
     path: listeners
 ---
 

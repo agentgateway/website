@@ -4,13 +4,13 @@ weight: 30
 description: Publish one client-facing model name and route requests across several models with weighted, failover, or conditional routing.
 test:
   virtual-models:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/llm/providers/httpbun.md
+  - file: ${versionRoot}/documentation/llm/providers/httpbun.md
     path: setup-httpbun-llm
-  - file: ${versionRoot}/llm/models/serve.md
+  - file: ${versionRoot}/documentation/llm/models/serve.md
     path: serve-model
   - path: virtual-models
 ---

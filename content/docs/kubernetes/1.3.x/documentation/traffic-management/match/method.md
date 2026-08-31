@@ -4,13 +4,13 @@ weight: 10
 description: Match requests by HTTP method (GET, POST, PUT, PATCH, DELETE).
 test:
   method-match:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/traffic-management/match/method.md
+  - file: ${versionRoot}/documentation/traffic-management/match/method.md
     path: method-match
 ---
 

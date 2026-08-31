@@ -4,7 +4,7 @@ weight: 15
 description: Connect to MCP servers via streamable HTTP with automatic session management
 test:
   mcp-stateless:
-  - file: ${versionRoot}/mcp/connect/http.md
+  - file: ${versionRoot}/documentation/mcp/connect/http.md
     path: mcp-stateless
 ---
 

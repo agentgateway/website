@@ -4,9 +4,9 @@ weight: 10
 description: Set up an agentgateway proxy with Gateway API resources and custom configuration.
 test:
   setup-gateway:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
 ---
 

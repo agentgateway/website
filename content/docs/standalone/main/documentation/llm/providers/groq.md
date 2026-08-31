@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/groq.svg
 description: Route agentgateway LLM traffic to models served by Groq.
 test:
   groq:
-  - file: ${versionRoot}/llm/providers/groq.md
+  - file: ${versionRoot}/documentation/llm/providers/groq.md
     path: groq
 ---
 

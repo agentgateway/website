@@ -4,7 +4,7 @@ weight: 15
 description: Verify JWT tokens from incoming requests using JWKS and configured issuers.
 test:
   jwt-authn:
-  - file: ${versionRoot}/configuration/security/jwt-authn.md
+  - file: ${versionRoot}/documentation/configuration/security/jwt-authn.md
     path: jwt-authn
 ---
 

@@ -4,7 +4,7 @@ weight: 10
 description: Configure automatic retry attempts for failed backend requests.
 test:
   retries:
-  - file: ${versionRoot}/configuration/resiliency/retries.md
+  - file: ${versionRoot}/documentation/configuration/resiliency/retries.md
     path: retries
 ---
 

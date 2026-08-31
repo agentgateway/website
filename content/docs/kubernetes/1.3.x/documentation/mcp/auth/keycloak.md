@@ -4,9 +4,9 @@ weight: 20
 description: Deploy and configure Keycloak as an OAuth identity provider for MCP authentication with agentgateway.
 test:
   setup-keycloak:
-  - file: ${versionRoot}/install/helm.md
+  - file: ${versionRoot}/documentation/install/helm.md
     path: experimental
-  - file: ${versionRoot}/mcp/auth/keycloak.md
+  - file: ${versionRoot}/documentation/mcp/auth/keycloak.md
     path: setup-keycloak
 ---
 

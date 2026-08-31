@@ -4,13 +4,13 @@ weight: 10
 description: Set up basic route delegation between a parent HTTPRoute and two child HTTPRoutes.
 test:
   basic:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/traffic-management/route-delegation/basic.md
+  - file: ${versionRoot}/documentation/traffic-management/route-delegation/basic.md
     path: route-delegation-prereq
-  - file: ${versionRoot}/traffic-management/route-delegation/basic.md
+  - file: ${versionRoot}/documentation/traffic-management/route-delegation/basic.md
     path: basic
 ---
 

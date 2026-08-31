@@ -4,13 +4,13 @@ weight: 10
 description: Match requests by HTTP method (GET, POST, PUT, PATCH, DELETE).
 test:
   method-match:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/install/sample-app.md
+  - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/latest/traffic-management/match/method.md
+  - file: content/docs/kubernetes/latest/documentation/traffic-management/match/method.md
     path: method-match
 ---
 

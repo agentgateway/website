@@ -4,7 +4,7 @@ description: Find and fix configuration and runtime problems in a standalone age
 weight: 15
 test:
   admin-address:
-  - file: ${versionRoot}/operations/debug.md
+  - file: ${versionRoot}/documentation/operations/debug.md
     path: admin-address
 ---
 

@@ -4,11 +4,11 @@ description: Configure advanced TLS settings such as cipher suites and protocol 
 weight: 20
 test:
   tls-settings:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/setup/listeners/tls-settings.md
+  - file: ${versionRoot}/documentation/setup/listeners/tls-settings.md
     path: tls-settings
 ---
 

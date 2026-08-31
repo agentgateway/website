@@ -4,13 +4,13 @@ weight: 80
 description: Control LLM costs with token-based rate limiting and request-based limits.
 test:
   llm-token-rate-limit:
-  - file: ${versionRoot}/install/helm.md
+  - file: ${versionRoot}/documentation/install/helm.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/llm/providers/httpbun.md
+  - file: ${versionRoot}/documentation/llm/providers/httpbun.md
     path: setup-httpbun-llm
-  - file: ${versionRoot}/llm/rate-limit.md
+  - file: ${versionRoot}/documentation/llm/rate-limit.md
     path: llm-token-rate-limit
 ---
 

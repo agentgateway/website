@@ -4,11 +4,11 @@ weight: 10
 description: Buffer requests and responses for inspection or replay.
 test:
   buffering:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/traffic-management/buffering.md
+  - file: ${versionRoot}/documentation/traffic-management/buffering.md
     path: buffering
 ---
 

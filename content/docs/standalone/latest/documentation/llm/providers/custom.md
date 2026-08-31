@@ -8,7 +8,7 @@ aliases:
   - /docs/standalone/latest/documentation/llm/providers/openai-compatible
 test:
   openai-compatible-validate:
-  - file: ${versionRoot}/llm/providers/custom.md
+  - file: ${versionRoot}/documentation/llm/providers/custom.md
     path: openai-compat-validate
 ---
 

@@ -4,7 +4,7 @@ weight: 17
 description: Buffer request and response bodies before forwarding them.
 test:
   buffer:
-  - file: ${versionRoot}/configuration/traffic-management/buffer.md
+  - file: ${versionRoot}/documentation/configuration/traffic-management/buffer.md
     path: buffer
 ---
 

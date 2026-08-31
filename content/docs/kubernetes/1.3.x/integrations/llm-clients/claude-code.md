@@ -4,9 +4,9 @@ weight: 10
 description: Configure Claude Code CLI to use agentgateway running in Kubernetes
 test:
   claude-code-k8s:
-  - file: ${versionRoot}/install/helm.md
+  - file: ${versionRoot}/documentation/install/helm.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
   - file: ${versionRoot}/integrations/llm-clients/claude-code.md
     path: claude-code-k8s

@@ -4,7 +4,7 @@ weight: 11
 description: Return a redirect response that rewrites the scheme, host, path, or status code before a request reaches any backend.
 test:
   redirects:
-  - file: ${versionRoot}/configuration/traffic-management/redirects.md
+  - file: ${versionRoot}/documentation/configuration/traffic-management/redirects.md
     path: redirects
 ---
 

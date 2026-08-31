@@ -4,9 +4,9 @@ weight: 50
 description: Uninstall kgateway and related components.
 test:
   uninstall:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: standard
-  - file: ${versionRoot}/operations/uninstall.md
+  - file: ${versionRoot}/documentation/operations/uninstall.md
     path: uninstall
 ---
 

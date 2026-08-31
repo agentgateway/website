@@ -4,10 +4,10 @@ weight: 5
 description: Install agentgateway and related components.
 test:
   helm-install:
-  - file: ${versionRoot}/install/helm.md
+  - file: ${versionRoot}/documentation/install/helm.md
     path: standard
   helm-install-experimental:
-  - file: ${versionRoot}/install/helm.md
+  - file: ${versionRoot}/documentation/install/helm.md
     path: experimental
 ---
 

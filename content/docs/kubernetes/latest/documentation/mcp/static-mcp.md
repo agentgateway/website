@@ -4,11 +4,11 @@ weight: 10
 description: Route traffic to an MCP server at a static address by configuring a fixed Backend resource.
 test:
   setup-mcp-server:
-  - file: ${versionRoot}/install/helm.md
+  - file: ${versionRoot}/documentation/install/helm.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/mcp/static-mcp.md
+  - file: ${versionRoot}/documentation/mcp/static-mcp.md
     path: setup-mcp-server
 ---
 

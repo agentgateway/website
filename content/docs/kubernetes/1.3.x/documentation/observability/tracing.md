@@ -4,13 +4,13 @@ description: Integrate with OpenTelemetry to collect and analyze request traces.
 weight: 90
 test:
   tracing:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/observability/tracing.md
+  - file: ${versionRoot}/documentation/observability/tracing.md
     path: tracing
 ---
 

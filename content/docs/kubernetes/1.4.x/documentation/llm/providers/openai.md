@@ -4,11 +4,11 @@ weight: 20
 description: Configure OpenAI as an LLM provider for agentgateway.
 test:
   openai-setup:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/llm/providers/openai.md
+  - file: ${versionRoot}/documentation/llm/providers/openai.md
     path: openai-setup
 ---
 

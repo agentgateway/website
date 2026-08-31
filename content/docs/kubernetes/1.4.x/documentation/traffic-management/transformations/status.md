@@ -4,13 +4,13 @@ weight: 60
 description: Update the response status based on the headers in a response.
 test:
   change-response-status:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/traffic-management/transformations/status.md
+  - file: ${versionRoot}/documentation/traffic-management/transformations/status.md
     path: change-response-status
 ---
 

@@ -4,11 +4,11 @@ weight: 35
 description: Distribute requests across multiple LLM providers automatically (Power of Two Choices, P2C).
 test:
   load-balancing-multi-provider:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/llm/load-balancing.md
+  - file: content/docs/kubernetes/latest/documentation/llm/load-balancing.md
     path: load-balancing
 ---
 

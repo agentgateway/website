@@ -4,11 +4,11 @@ weight: 20
 description:
 test:
   openai-setup:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/llm/providers/openai.md
+  - file: content/docs/kubernetes/latest/documentation/llm/providers/openai.md
     path: openai-setup
 ---
 

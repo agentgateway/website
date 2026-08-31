@@ -5,7 +5,7 @@ description: Match HTTP and TCP traffic on a gateway and forward it to backends.
 next: /configuration/traffic-management
 test:
   routes:
-  - file: ${versionRoot}/configuration/routes.md
+  - file: ${versionRoot}/documentation/configuration/routes.md
     path: routes
 ---
 

@@ -6,7 +6,7 @@ prev: /configuration/overview
 next: /configuration/listeners
 test:
   listeners:
-  - file: ${versionRoot}/configuration/gateways.md
+  - file: ${versionRoot}/documentation/configuration/gateways.md
     path: gateways
 ---
 

@@ -4,7 +4,7 @@ weight: 50
 description: Scope policies to a single MCP server inside a multiplexed (virtual) MCP backend.
 test:
   mcp-target-policies:
-  - file: ${versionRoot}/mcp/mcp-target-policies.md
+  - file: ${versionRoot}/documentation/mcp/mcp-target-policies.md
     path: mcp-target-policies
 ---
 

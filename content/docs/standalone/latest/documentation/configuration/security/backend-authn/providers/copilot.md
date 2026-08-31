@@ -4,7 +4,7 @@ weight: 40
 description: Authenticate to GitHub Copilot with a token that agentgateway reads from your environment.
 test:
   backend-authn-copilot:
-  - file: ${versionRoot}/configuration/security/backend-authn/providers/copilot.md
+  - file: ${versionRoot}/documentation/configuration/security/backend-authn/providers/copilot.md
     path: backend-authn-copilot
 ---
 

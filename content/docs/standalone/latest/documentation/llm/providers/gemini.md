@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/gemini.svg
 description: Route agentgateway LLM traffic to Google Gemini models.
 test:
   gemini:
-  - file: ${versionRoot}/llm/providers/gemini.md
+  - file: ${versionRoot}/documentation/llm/providers/gemini.md
     path: gemini
 ---
 

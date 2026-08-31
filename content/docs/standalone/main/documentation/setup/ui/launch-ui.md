@@ -7,7 +7,7 @@ aliases:
   - /docs/standalone/main/documentation/operations/ui/
 test:
   ui-default-port:
-  - file: ${versionRoot}/setup/ui/launch-ui.md
+  - file: ${versionRoot}/documentation/setup/ui/launch-ui.md
     path: ui-standalone-default
 ---
 

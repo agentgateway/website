@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/cohere.svg
 description: Route agentgateway LLM traffic to Cohere's models.
 test:
   cohere:
-  - file: ${versionRoot}/llm/providers/cohere.md
+  - file: ${versionRoot}/documentation/llm/providers/cohere.md
     path: cohere
 ---
 

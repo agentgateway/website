@@ -4,11 +4,11 @@ weight: 30
 description: Configure agentgateway to route traffic to vLLM for self-hosted model inference
 test:
   vllm-provider-setup:
-  - file: ${versionRoot}/install/helm.md
+  - file: ${versionRoot}/documentation/install/helm.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/llm/providers/vllm.md
+  - file: ${versionRoot}/documentation/llm/providers/vllm.md
     path: vllm-provider-setup
 ---
 

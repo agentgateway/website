@@ -4,13 +4,13 @@ description: Install an OpenTelemetry stack with Grafana, Loki, and Tempo for ob
 weight: 10
 test:
   otel-stack:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/observability/otel-stack.md
+  - file: ${versionRoot}/documentation/observability/otel-stack.md
     path: otel-stack
 ---
 

@@ -4,9 +4,9 @@ weight: 10
 description: Route and configure gRPC traffic in agentgateway.
 test:
   grpc:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: standard
-  - file: ${versionRoot}/traffic-management/grpc.md
+  - file: ${versionRoot}/documentation/traffic-management/grpc.md
     path: grpc
 ---
 

@@ -4,7 +4,7 @@ weight: 10
 description: Sign requests to an AWS service with AWS Signature Version 4, optionally through an assumed IAM role.
 test:
   backend-authn-aws:
-  - file: ${versionRoot}/configuration/security/backend-authn/providers/aws.md
+  - file: ${versionRoot}/documentation/configuration/security/backend-authn/providers/aws.md
     path: backend-authn-aws
 ---
 

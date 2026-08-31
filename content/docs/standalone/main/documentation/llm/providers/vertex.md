@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/vertex.svg
 description: Route agentgateway LLM traffic to models on Google Cloud Vertex AI.
 test:
   vertex:
-  - file: ${versionRoot}/llm/providers/vertex.md
+  - file: ${versionRoot}/documentation/llm/providers/vertex.md
     path: vertex
 ---
 

@@ -4,22 +4,22 @@ weight: 10
 description: Use the built-in UI to inspect your Kubernetes agentgateway proxy configuration.
 test:
   admin-ui:
-  - file: ${versionRoot}/install/helm.md
+  - file: ${versionRoot}/documentation/install/helm.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/observability/ui.md
+  - file: ${versionRoot}/documentation/observability/ui.md
     path: ui-k8s
   capture:
-  - file: ${versionRoot}/install/helm.md
+  - file: ${versionRoot}/documentation/install/helm.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/quickstart/mcp.md
+  - file: ${versionRoot}/documentation/quickstart/mcp.md
     path: setup-mcp-server
-  - file: ${versionRoot}/quickstart/non-agentic-http.md
+  - file: ${versionRoot}/documentation/quickstart/non-agentic-http.md
     path: install-httpbin
-  - file: ${versionRoot}/observability/ui.md
+  - file: ${versionRoot}/documentation/observability/ui.md
     path: ui-k8s-capture
 ---
 

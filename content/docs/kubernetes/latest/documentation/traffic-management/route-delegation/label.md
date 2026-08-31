@@ -4,13 +4,13 @@ weight: 20
 description: Use labels to delegate traffic to child HTTPRoutes with the `<key>=<value>` syntax.
 test:
   label:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/traffic-management/route-delegation/label.md
+  - file: ${versionRoot}/documentation/traffic-management/route-delegation/label.md
     path: route-delegation-prereq
-  - file: ${versionRoot}/traffic-management/route-delegation/label.md
+  - file: ${versionRoot}/documentation/traffic-management/route-delegation/label.md
     path: label
 ---
 

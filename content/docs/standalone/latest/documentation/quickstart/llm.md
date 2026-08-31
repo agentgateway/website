@@ -6,7 +6,7 @@ tabs:
 description: Route requests to supported LLM providers with the agentgateway binary.
 test:
   llm-openai:
-  - file: ${versionRoot}/quickstart/llm.md
+  - file: ${versionRoot}/documentation/quickstart/llm.md
     path: llm
 ---
 

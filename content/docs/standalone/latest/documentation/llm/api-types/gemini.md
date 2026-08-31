@@ -4,7 +4,7 @@ weight: 33
 description: Send requests through agentgateway in the native Gemini wire format, including streaming and token counting.
 test:
   gemini-inbound-standalone:
-  - file: ${versionRoot}/llm/api-types/gemini.md
+  - file: ${versionRoot}/documentation/llm/api-types/gemini.md
     path: gemini-inbound-standalone
 ---
 

@@ -4,7 +4,7 @@ weight: 10
 description: Send a static credential to a backend, forward the credential that the client sent, or add extra credentials to the request.
 test:
   backend-authn-key:
-  - file: ${versionRoot}/configuration/security/backend-authn/key.md
+  - file: ${versionRoot}/documentation/configuration/security/backend-authn/key.md
     path: backend-authn-key
 ---
 

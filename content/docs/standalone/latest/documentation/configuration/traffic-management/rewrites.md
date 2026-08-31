@@ -4,7 +4,7 @@ weight: 13
 description: Rewrite the host or path of a request before agentgateway forwards it to a backend.
 test:
   rewrites:
-  - file: ${versionRoot}/configuration/traffic-management/rewrites.md
+  - file: ${versionRoot}/documentation/configuration/traffic-management/rewrites.md
     path: rewrites
 ---
 

@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/togetherai.svg
 description: Route agentgateway LLM traffic to models hosted on Together AI.
 test:
   togetherai:
-  - file: ${versionRoot}/llm/providers/togetherai.md
+  - file: ${versionRoot}/documentation/llm/providers/togetherai.md
     path: togetherai
 ---
 

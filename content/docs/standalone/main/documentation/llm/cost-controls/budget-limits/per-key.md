@@ -4,7 +4,7 @@ weight: 10
 description: Cap what one API key spends on LLM traffic in US dollars or in tokens, and limit which models it can reach.
 test:
   apikey-budgets:
-  - file: ${versionRoot}/llm/cost-controls/budget-limits/per-key.md
+  - file: ${versionRoot}/documentation/llm/cost-controls/budget-limits/per-key.md
     path: apikey-budgets
 ---
 

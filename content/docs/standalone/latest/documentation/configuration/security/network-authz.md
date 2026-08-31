@@ -4,7 +4,7 @@ weight: 13
 description: Enforce access control at the L4 level using CEL expressions.
 test:
   network-authz:
-  - file: ${versionRoot}/configuration/security/network-authz.md
+  - file: ${versionRoot}/documentation/configuration/security/network-authz.md
     path: network-authz
 ---
 

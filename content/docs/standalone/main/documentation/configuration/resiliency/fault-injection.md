@@ -7,7 +7,7 @@ description: Inject artificial latency into requests to test how your clients an
 # --validate-only doc-test fails with "unknown field `delay`".
 # test:
 #   fault-injection:
-#   - file: ${versionRoot}/configuration/resiliency/fault-injection.md
+#   - file: ${versionRoot}/documentation/configuration/resiliency/fault-injection.md
 #     path: fault-injection
 ---
 

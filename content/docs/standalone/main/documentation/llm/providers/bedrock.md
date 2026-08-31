@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/bedrock.svg
 description: Route agentgateway LLM traffic to foundation models on Amazon Bedrock.
 test:
   bedrock:
-  - file: ${versionRoot}/llm/providers/bedrock.md
+  - file: ${versionRoot}/documentation/llm/providers/bedrock.md
     path: bedrock
 ---
 

@@ -4,22 +4,22 @@ weight: 443
 description: Redirect requests to a different path prefix.
 test:
   path-redirect-prefix:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/traffic-management/redirect/path.md
+  - file: ${versionRoot}/documentation/traffic-management/redirect/path.md
     path: path-redirect-prefix
   path-redirect-full:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/traffic-management/redirect/path.md
+  - file: ${versionRoot}/documentation/traffic-management/redirect/path.md
     path: path-redirect-full
 ---
 

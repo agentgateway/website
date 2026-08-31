@@ -4,11 +4,11 @@ weight: 20
 description: Route traffic to MCP servers dynamically using label selectors so backends can be updated without changing the Backend resource.
 test:
   dynamic-mcp:
-  - file: ${versionRoot}/install/helm.md
+  - file: ${versionRoot}/documentation/install/helm.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/mcp/dynamic-mcp.md
+  - file: ${versionRoot}/documentation/mcp/dynamic-mcp.md
     path: dynamic-mcp
 ---
 

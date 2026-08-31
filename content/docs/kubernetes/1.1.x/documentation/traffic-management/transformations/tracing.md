@@ -4,13 +4,13 @@ weight: 10
 description: Use uuid() and random() CEL functions to inject a unique request ID and a random sampling value into request headers.
 test:
   tracing:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/install/sample-app.md
+  - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/latest/traffic-management/transformations/tracing.md
+  - file: content/docs/kubernetes/latest/documentation/traffic-management/transformations/tracing.md
     path: tracing
 ---
 

@@ -4,15 +4,15 @@ description: Set up JWT authentication with an identity provider like Keycloak.
 weight: 10
 test:
   jwt-claims:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/security/jwt/setup.md
+  - file: ${versionRoot}/documentation/security/jwt/setup.md
     path: setup-keycloak
-  - file: ${versionRoot}/security/jwt/setup.md
+  - file: ${versionRoot}/documentation/security/jwt/setup.md
     path: jwt-claims
 ---
 

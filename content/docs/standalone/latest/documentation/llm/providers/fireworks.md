@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/fireworks.svg
 description: Route agentgateway LLM traffic to models hosted on Fireworks AI.
 test:
   fireworks:
-  - file: ${versionRoot}/llm/providers/fireworks.md
+  - file: ${versionRoot}/documentation/llm/providers/fireworks.md
     path: fireworks
 ---
 

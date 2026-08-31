@@ -4,13 +4,13 @@ weight: 40
 description: Apply local and global rate limits to HTTP traffic to protect your backend services from overload.
 test:
   local-rate-limit:
-  - file: ${versionRoot}/install/helm.md
+  - file: ${versionRoot}/documentation/install/helm.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/security/rate-limit-http.md
+  - file: ${versionRoot}/documentation/security/rate-limit-http.md
     path: local-rate-limit
 ---
 

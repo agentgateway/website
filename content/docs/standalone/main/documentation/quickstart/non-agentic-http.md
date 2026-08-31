@@ -4,7 +4,7 @@ weight: 13
 description: Route HTTP traffic to a non-agentic backend such as httpbin with the agentgateway binary.
 test:
   non-agentic-http:
-  - file: ${versionRoot}/quickstart/non-agentic-http.md
+  - file: ${versionRoot}/documentation/quickstart/non-agentic-http.md
     path: httpbin
 ---
 

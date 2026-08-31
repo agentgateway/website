@@ -4,11 +4,11 @@ weight: 25
 description: Configure agentgateway to route LLM traffic to Ollama for local model inference
 test:
   ollama-provider-setup:
-  - file: ${versionRoot}/install/helm.md
+  - file: ${versionRoot}/documentation/install/helm.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/llm/providers/ollama.md
+  - file: ${versionRoot}/documentation/llm/providers/ollama.md
     path: ollama-provider-setup
 ---
 

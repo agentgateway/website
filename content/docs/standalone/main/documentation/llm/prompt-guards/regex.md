@@ -4,7 +4,7 @@ weight: 10
 description: Match and redact prompt content with custom regex patterns or agentgateway's built-in PII detectors.
 test:
   regex:
-  - file: ${versionRoot}/llm/prompt-guards/regex.md
+  - file: ${versionRoot}/documentation/llm/prompt-guards/regex.md
     path: regex
 ---
 

@@ -4,7 +4,7 @@ weight: 2
 description: Deploy and connect to an MCP server through agentgateway on Kubernetes
 test:
   basic-mcp:
-  - file: content/docs/kubernetes/latest/tutorials/basic/_index.md
+  - file: content/docs/kubernetes/latest/documentation/tutorials/basic/_index.md
     path: basic-mcp
 ---
 

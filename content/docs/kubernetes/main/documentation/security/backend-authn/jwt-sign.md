@@ -4,13 +4,13 @@ weight: 30
 description: Sign a short-lived JWT with your own private key on every request to a backend.
 test:
   jwt-sign:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/security/backend-authn/jwt-sign.md
+  - file: ${versionRoot}/documentation/security/backend-authn/jwt-sign.md
     path: jwt-sign
 aliases:
   - /docs/kubernetes/main/security/backend-authn-jwt-sign/

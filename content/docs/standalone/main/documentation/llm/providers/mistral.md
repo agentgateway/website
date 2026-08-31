@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/mistral.svg
 description: Route agentgateway LLM traffic to Mistral's models.
 test:
   mistral:
-  - file: ${versionRoot}/llm/providers/mistral.md
+  - file: ${versionRoot}/documentation/llm/providers/mistral.md
     path: mistral
 ---
 

@@ -4,7 +4,7 @@ weight: 10
 description: Run a local MCP server as a subprocess and expose it through agentgateway over stdio.
 test:
   mcp-stdio:
-  - file: ${versionRoot}/mcp/connect/stdio.md
+  - file: ${versionRoot}/documentation/mcp/connect/stdio.md
     path: mcp-stdio
 ---
 

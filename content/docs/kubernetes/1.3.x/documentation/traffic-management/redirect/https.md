@@ -4,13 +4,13 @@ weight: 441
 description: Redirect HTTP traffic to HTTPS.
 test:
   https-redirect:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/traffic-management/redirect/https.md
+  - file: ${versionRoot}/documentation/traffic-management/redirect/https.md
     path: https-redirect
 ---
 

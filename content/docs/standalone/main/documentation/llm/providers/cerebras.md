@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/cerebras.svg
 description: Route agentgateway LLM traffic to models hosted on Cerebras.
 test:
   cerebras:
-  - file: ${versionRoot}/llm/providers/cerebras.md
+  - file: ${versionRoot}/documentation/llm/providers/cerebras.md
     path: cerebras
 ---
 

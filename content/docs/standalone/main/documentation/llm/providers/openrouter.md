@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/openrouter.svg
 description: Route agentgateway LLM traffic to models available through OpenRouter.
 test:
   openrouter:
-  - file: ${versionRoot}/llm/providers/openrouter.md
+  - file: ${versionRoot}/documentation/llm/providers/openrouter.md
     path: openrouter
 ---
 

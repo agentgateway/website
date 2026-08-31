@@ -4,7 +4,7 @@ weight: 20
 description: Authenticate to a Google Cloud service from the gateway with a Google-issued token.
 test:
   backend-authn-gcp:
-  - file: ${versionRoot}/configuration/security/backend-authn/providers/gcp.md
+  - file: ${versionRoot}/documentation/configuration/security/backend-authn/providers/gcp.md
     path: backend-authn-gcp
 ---
 

@@ -4,13 +4,13 @@ weight: 10
 description: Set up basic route delegation between a parent HTTPRoute and two child HTTPRoutes.
 test:
   basic:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/traffic-management/route-delegation/basic.md
+  - file: content/docs/kubernetes/latest/documentation/traffic-management/route-delegation/basic.md
     path: route-delegation-prereq
-  - file: content/docs/kubernetes/latest/traffic-management/route-delegation/basic.md
+  - file: content/docs/kubernetes/latest/documentation/traffic-management/route-delegation/basic.md
     path: basic
 ---
 

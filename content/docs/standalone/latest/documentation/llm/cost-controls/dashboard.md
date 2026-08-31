@@ -4,7 +4,7 @@ weight: 30
 description: View LLM spend, tokens, and traffic in the built-in UI, grouped by model, provider, and user.
 test:
   cost-dashboard:
-  - file: ${versionRoot}/llm/cost-controls/dashboard.md
+  - file: ${versionRoot}/documentation/llm/cost-controls/dashboard.md
     path: cost-dashboard
 ---
 

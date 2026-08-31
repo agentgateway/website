@@ -4,7 +4,7 @@ weight: 40
 description: Visualize agentgateway metrics in Grafana by using the pre-built Kubernetes dashboard or custom PromQL panels for binary and Docker deployments.
 test:
   grafana:
-  - file: ${versionRoot}/observability/metrics/grafana.md
+  - file: ${versionRoot}/documentation/observability/metrics/grafana.md
     path: grafana
 aliases:
   - /docs/standalone/latest/integrations/observability/grafana/

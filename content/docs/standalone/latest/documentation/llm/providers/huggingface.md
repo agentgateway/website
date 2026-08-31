@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/huggingface.svg
 description: Route agentgateway LLM traffic to models hosted on Hugging Face.
 test:
   huggingface:
-  - file: ${versionRoot}/llm/providers/huggingface.md
+  - file: ${versionRoot}/documentation/llm/providers/huggingface.md
     path: huggingface
 ---
 

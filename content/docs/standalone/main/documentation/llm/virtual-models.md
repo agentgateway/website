@@ -4,7 +4,7 @@ weight: 47
 description: Configure virtual models with weighted, failover, and conditional routing in simplified LLM mode.
 test:
   virtual-models:
-  - file: ${versionRoot}/llm/virtual-models.md
+  - file: ${versionRoot}/documentation/llm/virtual-models.md
     path: virtual-models
 ---
 

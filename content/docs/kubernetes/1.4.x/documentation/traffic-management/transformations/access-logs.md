@@ -4,22 +4,22 @@ weight: 120
 description: Log CEL context variables to access logs to inspect and debug transformation expressions at runtime.
 test:
   access-logs:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/traffic-management/transformations/access-logs.md
+  - file: ${versionRoot}/documentation/traffic-management/transformations/access-logs.md
     path: access-logs
   access-logs-filter:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/traffic-management/transformations/access-logs.md
+  - file: ${versionRoot}/documentation/traffic-management/transformations/access-logs.md
     path: access-logs-filter
 ---
 

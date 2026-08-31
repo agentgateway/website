@@ -4,9 +4,9 @@ description: Monitor control plane health and performance with Prometheus metric
 weight: 20
 test:
   control-plane-metrics:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: standard
-  - file: ${versionRoot}/observability/control-plane-metrics.md
+  - file: ${versionRoot}/documentation/observability/control-plane-metrics.md
     path: control-plane-metrics
 ---
 

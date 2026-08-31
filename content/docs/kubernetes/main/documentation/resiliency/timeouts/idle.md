@@ -4,13 +4,13 @@ weight: 20
 description: Set idle timeouts to terminate inactive HTTP/1 connections.
 test:
   idle-timeout:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/resiliency/timeouts/idle.md
+  - file: ${versionRoot}/documentation/resiliency/timeouts/idle.md
     path: idle-timeout
 ---
 

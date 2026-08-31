@@ -4,7 +4,7 @@ weight: 30
 description: Define reusable LLM provider configurations once and reference them across multiple model definitions to avoid duplicating connection and authentication parameters.
 test:
   multiple-llms:
-  - file: ${versionRoot}/llm/providers/multiple-llms.md
+  - file: ${versionRoot}/documentation/llm/providers/multiple-llms.md
     path: multiple-llms
 ---
 

@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/deepseek.svg
 description: Route agentgateway LLM traffic to DeepSeek's models.
 test:
   deepseek:
-  - file: ${versionRoot}/llm/providers/deepseek.md
+  - file: ${versionRoot}/documentation/llm/providers/deepseek.md
     path: deepseek
 ---
 

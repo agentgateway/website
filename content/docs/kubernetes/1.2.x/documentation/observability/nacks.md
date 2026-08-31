@@ -4,11 +4,11 @@ description: Monitor and troubleshoot proxy configuration rejections with metric
 weight: 80
 test:
   nacks:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/observability/nacks.md
+  - file: content/docs/kubernetes/latest/documentation/observability/nacks.md
     path: nacks
 ---
 

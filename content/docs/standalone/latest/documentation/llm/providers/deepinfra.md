@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/deepinfra.svg
 description: Route agentgateway LLM traffic to models hosted on DeepInfra.
 test:
   deepinfra:
-  - file: ${versionRoot}/llm/providers/deepinfra.md
+  - file: ${versionRoot}/documentation/llm/providers/deepinfra.md
     path: deepinfra
 ---
 

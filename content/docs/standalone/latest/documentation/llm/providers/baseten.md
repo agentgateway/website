@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/baseten.svg
 description: Route agentgateway LLM traffic to models hosted on Baseten.
 test:
   baseten:
-  - file: ${versionRoot}/llm/providers/baseten.md
+  - file: ${versionRoot}/documentation/llm/providers/baseten.md
     path: baseten
 ---
 

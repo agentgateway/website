@@ -4,7 +4,7 @@ weight: 11
 description: Configure Cross-Origin Resource Sharing policies to control cross-domain requests.
 test:
   cors:
-  - file: ${versionRoot}/configuration/security/cors.md
+  - file: ${versionRoot}/documentation/configuration/security/cors.md
     path: cors
 ---
 

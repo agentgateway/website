@@ -4,7 +4,7 @@ weight: 20
 description: Federate multiple MCP servers into a unified virtual MCP backend
 test:
   mcp-virtual:
-  - file: ${versionRoot}/mcp/connect/virtual.md
+  - file: ${versionRoot}/documentation/mcp/connect/virtual.md
     path: mcp-virtual
 ---
 

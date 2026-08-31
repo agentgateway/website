@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/xai.svg
 description: Route agentgateway LLM traffic to xAI's Grok models.
 test:
   xai:
-  - file: ${versionRoot}/llm/providers/xai.md
+  - file: ${versionRoot}/documentation/llm/providers/xai.md
     path: xai
 ---
 

@@ -4,13 +4,13 @@ weight: 15
 description: Control which requests are allowed to reach your backends using authorization policies with Allow, Require, and Deny actions.
 test:
   authorization:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/security/authorization.md
+  - file: ${versionRoot}/documentation/security/authorization.md
     path: authorization
 ---
 

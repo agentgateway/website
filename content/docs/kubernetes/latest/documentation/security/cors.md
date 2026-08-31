@@ -4,23 +4,23 @@ description: Configure cross-origin resource sharing policies for cross-origin r
 weight: 10
 test:
   cors-in-httproute:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/security/cors.md
+  - file: ${versionRoot}/documentation/security/cors.md
     path: cors-in-httproute
 
   cors-in-agentgatewaypolicy:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: experimental
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/install/sample-app.md
+  - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
-  - file: ${versionRoot}/security/cors.md
+  - file: ${versionRoot}/documentation/security/cors.md
     path: cors-in-agentgatewaypolicy
 ---
 

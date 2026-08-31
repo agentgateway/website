@@ -4,11 +4,11 @@ description: Monitor and troubleshoot proxy configuration rejections with metric
 weight: 80
 test:
   nacks:
-  - file: ${versionRoot}/quickstart/install.md
+  - file: ${versionRoot}/documentation/quickstart/install.md
     path: standard
-  - file: ${versionRoot}/setup/gateway.md
+  - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/observability/nacks.md
+  - file: ${versionRoot}/documentation/observability/nacks.md
     path: nacks
 ---
 

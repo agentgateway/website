@@ -5,7 +5,7 @@ icon: /integrations/providers/bw/azure.svg
 description: Route agentgateway LLM traffic to models hosted on Microsoft Azure AI.
 test:
   azure:
-  - file: ${versionRoot}/llm/providers/azure.md
+  - file: ${versionRoot}/documentation/llm/providers/azure.md
     path: azure
 ---
 

@@ -4,7 +4,7 @@ weight: 20
 description: Delegate authorization decisions to external services like OPA.
 test:
   external-authz:
-  - file: ${versionRoot}/configuration/security/external-authz.md
+  - file: ${versionRoot}/documentation/configuration/security/external-authz.md
     path: external-authz
 ---
 
