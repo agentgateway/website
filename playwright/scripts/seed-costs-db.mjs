@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Deterministic seeder for the cost-dashboard capture (llm/cost-controls/dashboard.md).
 //
-// Writes a populated `request_logs` SQLite database so the Admin UI Costs/Analytics pages
+// Writes a populated `request_logs` SQLite database so the UI Costs/Analytics pages
 // render a rich, blog-style dashboard without sending live traffic. The row MAGNITUDES are
 // deterministic (a fixed-seed LCG, no Math.random), so per-group cost/token breakdowns are
 // identical every run; only the absolute timestamps track "now" so the rows always land in

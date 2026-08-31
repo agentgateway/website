@@ -187,8 +187,19 @@ For a guide whose UI talks to a server, add a self-contained capture mode:
 
 ## How images map to doc versions
 
-Docs are versioned but images are not — `assets/img/` is a single flat tree that every
-version references by filename. The version dropdown maps (see `hugo.yaml`):
+Pages always reference the bare filename, e.g. `img/ui-playground-tools.png`. Resolution is
+version-aware underneath: `reuse-image` calls the theme's
+`utils/resolve-versioned-image.html`, which prefers `assets/img/<version>/<file>` when that
+file exists and otherwise falls back to the bare `assets/img/<file>`.
+
+That is what `sync-docs` drives ("shared until it diverges"): the `latest` capture writes the
+bare path, and the `main` capture writes `assets/img/main/<file>` **only** while it differs
+from latest, deleting it again when the two reconverge. Neither direction needs a content
+edit, and **no page should ever hard-code an `img/main/` path** — the override is picked up
+and dropped automatically.
+
+Older versions are a separate, manual mechanism: they are pinned to a frozen bucket. The
+version dropdown maps (see `hugo.yaml`):
 
 | Doc tree | Version | UI |
 |---|---|---|
@@ -198,7 +209,7 @@ version references by filename. The version dropdown maps (see `hugo.yaml`):
 
 So when the UI changes, the **older versions are pinned to a frozen image bucket**
 (`assets/img/1.2-earlier/`) while the new-UI versions use the bare paths this harness
-regenerates. Two ways a guide selects the right image:
+regenerates. Two ways a guide selects a frozen bucket:
 
 - **Per-version files** (most guides, e.g. `mcp/connect/virtual.md`): each version dir has
   its own copy of the file. The `1.2.x` copy references `img/1.2-earlier/...` with the old
@@ -227,6 +238,13 @@ Screenshots are pixel-compared, so captures must be byte-stable across runs:
 - **Mask dynamic content.** The MCP session id, latency badges, and timestamps change every
   run — mask them (`maskSession(page)` covers the session id; pass others via
   `toHaveScreenshot({ mask: [...] })`).
+- **Pin table row order.** Views built from the gateway dump (the Kubernetes Traffic
+  Listeners/Routes/Policies tables) return rows in an unstable order. Call
+  `sortTableRows(page)` before the capture — sorting keeps the whole table visible, which
+  masking would not. Left unpinned, a three-row reshuffle moves ~0.8% of the pixels: under
+  `maxDiffPixelRatio` so the test still passes, but enough to flip `sync-docs`'
+  `SYNC_DIFF_RATIO` verdict, which had the nightlies adding and removing the same
+  `img/main/` override on alternating days.
 - **Mock non-deterministic backends.** Live servers give varying output. The repo ships
   deterministic mocks used by the launchers:
   - `scripts/mock-openai.mjs` — fixed LLM reply (no API key, no cost).

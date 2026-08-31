@@ -45,6 +45,37 @@ export async function dismissWelcome(page: Page): Promise<void> {
 }
 
 /**
+ * Sort a table's rows by their first cell, in place, before a capture.
+ *
+ * The read-only Traffic views render rows in whatever order the gateway dump yields, and that
+ * order is not stable between runs: the Routes table came back mcp/openai/httpbin one night and
+ * httpbin/openai/mcp the next. Reordering three rows moves ~0.8% of the pixels — under
+ * toHaveScreenshot's maxDiffPixelRatio (0.01), so the test still passed, but close enough to
+ * sync-docs' SYNC_DIFF_RATIO that main looked "diverged" from latest on some nights and
+ * "converged" on others. The img/main/ override was then added and removed on alternating
+ * nightlies (added 2026-08-25, removed 08-27, re-added 08-28, removed 08-29).
+ *
+ * Sorting the DOM rather than masking the table keeps the docs image complete — the reader still
+ * sees every route and its real values — while making the baseline deterministic. A table with
+ * fewer than two rows is left alone, so this is a no-op on the single-row views and safe to call
+ * on any page (it also no-ops when the view is not a table at all).
+ */
+export async function sortTableRows(page: Page, selector = 'table tbody'): Promise<void> {
+  const rows = page.locator(`${selector} > tr`);
+  await rows.first().waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {});
+  if ((await rows.count()) < 2) return;
+  await page.evaluate((sel) => {
+    document.querySelectorAll(sel).forEach((body) => {
+      const keyOf = (tr: Element) => (tr.querySelector('td')?.textContent || '').trim();
+      Array.from(body.children)
+        .filter((el) => el.tagName === 'TR')
+        .sort((a, b) => keyOf(a).localeCompare(keyOf(b)))
+        .forEach((tr) => body.appendChild(tr));
+    });
+  }, selector);
+}
+
+/**
  * Mask the dynamic MCP session id so it never breaks pixel baselines. The session bar
  * (`.mcp-session-bar .mono`) and the Result status (`.mcp-result-status .mono`) both render
  * the server-generated id, which changes every run. Spread into toHaveScreenshot():
