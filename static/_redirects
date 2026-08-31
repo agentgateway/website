@@ -65,8 +65,8 @@
 /docs/standalone/latest/tutorials/openapi/ /docs/standalone/latest/mcp/connect/openapi 301
 /docs/standalone/latest/tutorials/tailscale-auth /docs/standalone/latest/integrations/auth/tailscale 301
 /docs/standalone/latest/tutorials/tailscale-auth/ /docs/standalone/latest/integrations/auth/tailscale 301
-/docs/standalone/latest/tutorials/telemetry /docs/standalone/latest/integrations/observability/opentelemetry 301
-/docs/standalone/latest/tutorials/telemetry/ /docs/standalone/latest/integrations/observability/opentelemetry 301
+/docs/standalone/latest/tutorials/telemetry /docs/standalone/latest/observability/traces/configs/otel 301
+/docs/standalone/latest/tutorials/telemetry/ /docs/standalone/latest/observability/traces/configs/otel 301
 /docs/standalone/latest/tutorials/tls /docs/standalone/latest/configuration/listeners 301
 /docs/standalone/latest/tutorials/tls/ /docs/standalone/latest/configuration/listeners 301
 # Kubernetes latest
