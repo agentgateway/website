@@ -15,8 +15,8 @@ For a standalone agentgateway instance, you provide the config dump as a file. `
 
 ## Before you begin
 
-* [Install agctl]({{< link-hextra path="/operations/agctl" >}}).
-* Have an agentgateway instance running locally, such as the [non-agentic HTTP quickstart]({{< link-hextra path="/quickstart/non-agentic-http" >}}) setup.
+* [Install agctl]({{< link-hextra path="/documentation/operations/agctl" >}}).
+* Have an agentgateway instance running locally, such as the [non-agentic HTTP quickstart]({{< link-hextra path="/documentation/quickstart/non-agentic-http" >}}) setup.
 
 ## Capture the config dump
 

@@ -6,7 +6,7 @@ The `crossAppAccess` backend authentication method implements the [OAuth Identit
 
 The gateway acts as a confidential OAuth client and performs a two-leg exchange on each backend call:
 
-1. **Authenticate the user.** The inbound request carries the user's OIDC ID token, validated by a route-level [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) policy. The validated token is the subject of the exchange. The JWT policy must validate an OIDC ID token, not an arbitrary access token, because the identity provider expects an ID token as the subject.
+1. **Authenticate the user.** The inbound request carries the user's OIDC ID token, validated by a route-level [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) policy. The validated token is the subject of the exchange. The JWT policy must validate an OIDC ID token, not an arbitrary access token, because the identity provider expects an ID token as the subject.
 2. **Exchange the token.** The gateway performs two sequential exchanges:
    1. **RFC 8693 token exchange.** The gateway calls the user's identity provider (IdP) authorization server with an [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) token exchange and receives an ID-JAG assertion that is bound to the resource authorization server.
    2. **RFC 7523 JWT-bearer grant.** The gateway presents the ID-JAG to the resource's authorization server with an [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) JWT-bearer grant and receives a Bearer access token that is scoped to the downstream API.
@@ -22,7 +22,7 @@ flowchart LR
     AGW -- "Authorization: Bearer<br>access token" --> API[Downstream API]
 ```
 
-Cross App Access differs from [OAuth token exchange]({{< link-hextra path="/security/backend-authn/oauth-token-exchange/" >}}) in that it crosses a trust boundary: the IdP and the resource's authorization server are separate parties, so the gateway performs two exchanges and holds two client registrations, one at each token endpoint. For a single-leg exchange at one authorization server, use `oauthTokenExchange` instead.
+Cross App Access differs from [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn/oauth-token-exchange/" >}}) in that it crosses a trust boundary: the IdP and the resource's authorization server are separate parties, so the gateway performs two exchanges and holds two client registrations, one at each token endpoint. For a single-leg exchange at one authorization server, use `oauthTokenExchange` instead.
 
 > [!NOTE]
 > To keep the demo self-contained, a single Keycloak instance acts as both parties: the user's IdP and the resource authorization server. In production, these parties are typically separate trust domains. For examples against separate providers, review the [traffic-cross-app-access examples](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-cross-app-access) in the upstream `agentgateway` repository. That example uses `xaa-dev` (hosted IdenX IdP + hosted resource authorization server) and `okta-auth0` (Okta IdP + Auth0 resource authorization server). These IdPs illustrate the two-party topology, but note that the configs are written for standalone mode, not Kubernetes.
@@ -422,7 +422,7 @@ The `subjectToken.source` field selects where the gateway reads the subject cred
 | `header` | The name of the request header. |
 | `queryParameter` | The name of the query parameter in the request URL. |
 | `cookie` | The name of the cookie. |
-| `expression` | A CEL expression that the gateway evaluates against the validated request, such as a claim of a JWT that a [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) policy validated. |
+| `expression` | A CEL expression that the gateway evaluates against the validated request, such as a claim of a JWT that a [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) policy validated. |
 
 When you omit `subjectToken`, the gateway reads the credential from the `Authorization` header with the `Bearer` prefix. The gateway does not fall back to another location.
 
@@ -518,5 +518,5 @@ kubectl delete service keycloak -n httpbin
 
 ## Next steps
 
-- Exchange the incoming credential for a per-backend token at a single authorization server with [OAuth token exchange]({{< link-hextra path="/security/backend-authn/oauth-token-exchange/" >}}).
-- Validate incoming JWTs with the [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) policy.
+- Exchange the incoming credential for a per-backend token at a single authorization server with [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn/oauth-token-exchange/" >}}).
+- Validate incoming JWTs with the [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) policy.

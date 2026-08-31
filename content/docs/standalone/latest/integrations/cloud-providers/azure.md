@@ -10,7 +10,7 @@ aliases:
   - /docs/standalone/latest/integrations/platforms/azure/
 ---
 
-Run agentgateway on Azure Container Apps or AKS, and reach [Azure OpenAI]({{< link-hextra path="/llm/providers/azure/" >}}) with the managed identity that Azure already attaches to the workload. No API key goes into your configuration file.
+Run agentgateway on Azure Container Apps or AKS, and reach [Azure OpenAI]({{< link-hextra path="/documentation/llm/providers/azure/" >}}) with the managed identity that Azure already attaches to the workload. No API key goes into your configuration file.
 
 {{< doc-test paths="azure-cloud" >}}
 # ============================================================================
@@ -179,7 +179,7 @@ fi
 echo "✓ Port 4000 serves the model and the Azure params resolve to the documented values"
 {{< /doc-test >}}
 
-For client secret and workload identity configurations, and for the Azure AI Foundry endpoint type, see [Azure]({{< link-hextra path="/llm/providers/azure/" >}}).
+For client secret and workload identity configurations, and for the Azure AI Foundry endpoint type, see [Azure]({{< link-hextra path="/documentation/llm/providers/azure/" >}}).
 
 > [!IMPORTANT]
 > Azure CLI authentication is a developer convenience, not a deployment method. Agentgateway calls `az` or `azd` when it needs a token, and neither command is in the container image. In a container, use a managed identity, workload identity, or a client secret.
@@ -201,17 +201,17 @@ az containerapp create \
 
 Note the following details.
 
-* **Port 4000 carries LLM traffic.** When your configuration file defines no gateway, the implied `default` gateway serves LLM traffic on port `4000` and MCP traffic on port `3000`. Set `--target-port` to the port that carries the traffic you route. For more information, see [Configuration modes]({{< link-hextra path="/llm/configuration-modes/" >}}).
+* **Port 4000 carries LLM traffic.** When your configuration file defines no gateway, the implied `default` gateway serves LLM traffic on port `4000` and MCP traffic on port `3000`. Set `--target-port` to the port that carries the traffic you route. For more information, see [Configuration modes]({{< link-hextra path="/documentation/llm/configuration-modes/" >}}).
 * **The identity is the credential.** Because `auth.azure` uses the identity attached to the container, `--user-assigned` is what lets agentgateway call Azure OpenAI. No API key is needed in the create command or in the configuration file.
-* **The container still needs a configuration file.** The command above starts the image with no `-f` flag, so agentgateway generates a default configuration that does not route to Azure. Mount your file with an Azure Files volume, or bake it into your own image, and pass it with `-f`. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+* **The container still needs a configuration file.** The command above starts the image with no `-f` flag, so agentgateway generates a default configuration that does not route to Azure. Mount your file with an Azure Files volume, or bake it into your own image, and pass it with `-f`. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 * **`--ingress internal` keeps the gateway inside the environment.** A gateway that holds Azure OpenAI access is a credential of its own, so anyone who can reach it can spend against your resource. Before you switch to `--ingress external`, put an authentication policy in front of it. For more information, see [Authentication and identity]({{< link-hextra path="/integrations/auth/" >}}).
 
 ## Run on AKS
 
 AKS is an ordinary Kubernetes distribution as far as agentgateway is concerned. Two options are available.
 
-* Run standalone agentgateway as a Deployment with the [Helm chart]({{< link-hextra path="/setup/install/helm/" >}}). Enable the workload identity add-on and annotate the pod's service account, and `auth.azure.implicit` picks up workload identity automatically.
-* Run the [Kubernetes control plane]({{< link-hextra path="/setup/install/kubernetes/" >}}), which manages agentgateway proxies from Kubernetes custom resources and the Kubernetes Gateway API.
+* Run standalone agentgateway as a Deployment with the [Helm chart]({{< link-hextra path="/documentation/setup/install/helm/" >}}). Enable the workload identity add-on and annotate the pod's service account, and `auth.azure.implicit` picks up workload identity automatically.
+* Run the [Kubernetes control plane]({{< link-hextra path="/documentation/setup/install/kubernetes/" >}}), which manages agentgateway proxies from Kubernetes custom resources and the Kubernetes Gateway API.
 
 {{< cards >}}
   {{< card link="https://agentgateway.dev/docs/kubernetes/" title="Kubernetes mode docs" icon="external-link" >}}
@@ -243,15 +243,15 @@ az role assignment create \
 
 | Service | How it is used |
 |-------------|---------|
-| [Azure OpenAI]({{< link-hextra path="/llm/providers/azure/" >}}) | GPT and other models, reached with the managed identity |
-| [Azure Content Safety]({{< link-hextra path="/llm/prompt-guards/azure-content-safety/" >}}) | Prompt and response moderation |
+| [Azure OpenAI]({{< link-hextra path="/documentation/llm/providers/azure/" >}}) | GPT and other models, reached with the managed identity |
+| [Azure Content Safety]({{< link-hextra path="/documentation/llm/prompt-guards/azure-content-safety/" >}}) | Prompt and response moderation |
 | [Azure Key Vault](https://azure.microsoft.com/en-us/products/key-vault/) | Storage for the API keys of non-Azure providers |
 | Azure Application Gateway | Load balancing, TLS termination, and WAF in front of the gateway port |
 | Azure Monitor | Metrics and log collection |
-| Application Insights | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/observability/traces/configs/otel/" >}}) collector |
+| Application Insights | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/documentation/observability/traces/configs/otel/" >}}) collector |
 
 ## Next steps
 
-* [Azure]({{< link-hextra path="/llm/providers/azure/" >}}) for the full provider reference, including Azure AI Foundry.
-* [Set up the UI]({{< link-hextra path="/setup/ui/" >}}) to serve the web interface on a gateway.
-* [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) before you mount a read-only file.
+* [Azure]({{< link-hextra path="/documentation/llm/providers/azure/" >}}) for the full provider reference, including Azure AI Foundry.
+* [Set up the UI]({{< link-hextra path="/documentation/setup/ui/" >}}) to serve the web interface on a gateway.
+* [Choose where configuration is stored]({{< link-hextra path="/documentation/setup/storage/" >}}) before you mount a read-only file.

@@ -3,13 +3,13 @@ Invoice-grade attribution means that the value that names a request reaches the 
 You configure the attribution values, and agentgateway resolves each one from an identity that it validated or from a static value that you assign.
 
 > [!NOTE]
-> Invoice-grade attribution depends on the provider. The provider must accept a per-request attribution value and expose that value in its billing data. Providers with no equivalent billing dimension cannot support it. For those providers, attribute usage inside agentgateway instead, such as with [virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
+> Invoice-grade attribution depends on the provider. The provider must accept a per-request attribution value and expose that value in its billing data. Providers with no equivalent billing dimension cannot support it. For those providers, attribute usage inside agentgateway instead, such as with [virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
 
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Configure the LLM provider that you want to attribute, such as [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}}).
-3. Set up [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}) so that `jwt.*` values are available to attribution expressions.
+2. Configure the LLM provider that you want to attribute, such as [Amazon Bedrock]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}).
+3. Set up [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) so that `jwt.*` values are available to attribution expressions.
 
 {{< doc-test paths="attribution" >}}
 # ============================================================================
@@ -213,7 +213,7 @@ agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
 
 > [!IMPORTANT]
-> A final transformation fails open, unlike a session tag. In a final transformation, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that fails to evaluate removes the target field instead of setting it, and the request still reaches the provider. A mistyped field name therefore drops attribution silently, and it also drops any metadata that the caller sent. For more information, see [Transform requests]({{< link-hextra path="/llm/transformations/" >}}).
+> A final transformation fails open, unlike a session tag. In a final transformation, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that fails to evaluate removes the target field instead of setting it, and the request still reaches the provider. A mistyped field name therefore drops attribution silently, and it also drops any metadata that the caller sent. For more information, see [Transform requests]({{< link-hextra path="/documentation/llm/transformations/" >}}).
 
 Bedrock records request metadata only when model invocation logging is enabled in the region. Bedrock allows at most 16 entries, with keys and values up to 256 characters in a restricted character set. Bedrock rejects values outside those limits at request time.
 
@@ -223,7 +223,7 @@ A final transformation sets fields on the converted request body, which covers t
 
 On Vertex AI, agentgateway sets billing labels on the native `generateContent` request, and those labels reach the Google Cloud billing export. Without a transformation, the labels on the request are whatever the caller sent. The transformation is what makes them yours.
 
-Configure [Google Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}}) as a provider first. Then configure the labels with a `finalTransformation` on the model. The same merge and replace postures apply, because callers can send their own `labels`.
+Configure [Google Vertex AI]({{< link-hextra path="/documentation/llm/providers/vertex/" >}}) as a provider first. Then configure the labels with a `finalTransformation` on the model. The same merge and replace postures apply, because callers can send their own `labels`.
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
@@ -363,6 +363,6 @@ Per-prompt detail belongs in request metadata and the invocation logs, not in se
 
 ## Learn more
 
-- [Transform requests]({{< link-hextra path="/llm/transformations/" >}}) for request transformations and the CEL context.
-- [Virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) to attribute usage inside agentgateway.
-- [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}}) provider configuration.
+- [Transform requests]({{< link-hextra path="/documentation/llm/transformations/" >}}) for request transformations and the CEL context.
+- [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) to attribute usage inside agentgateway.
+- [Amazon Bedrock]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}) provider configuration.

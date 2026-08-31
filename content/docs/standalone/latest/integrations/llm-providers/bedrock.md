@@ -5,4 +5,4 @@ description: Connect agentgateway to AWS foundation models via Amazon Bedrock
 test: skip
 ---
 
-{{< redirect path="/llm/providers/bedrock/" >}}
+{{< redirect path="/documentation/llm/providers/bedrock/" >}}

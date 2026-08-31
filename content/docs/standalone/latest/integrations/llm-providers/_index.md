@@ -5,4 +5,4 @@ description: Connect agentgateway to LLM providers for AI-powered applications
 test: skip
 ---
 
-{{< redirect path="/llm/providers/" >}}
+{{< redirect path="/documentation/llm/providers/" >}}

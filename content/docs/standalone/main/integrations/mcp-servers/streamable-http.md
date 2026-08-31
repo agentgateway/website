@@ -108,6 +108,6 @@ mcp:
 
 ## Learn more
 
-- [MCP Connectivity Guide]({{< link-hextra path="/mcp/" >}})
-- [Streamable HTTP Reference]({{< link-hextra path="/mcp/connect/http/" >}})
-- [MCP Authentication]({{< link-hextra path="/mcp/mcp-authn/" >}})
+- [MCP Connectivity Guide]({{< link-hextra path="/documentation/mcp/" >}})
+- [Streamable HTTP Reference]({{< link-hextra path="/documentation/mcp/connect/http/" >}})
+- [MCP Authentication]({{< link-hextra path="/documentation/mcp/mcp-authn/" >}})

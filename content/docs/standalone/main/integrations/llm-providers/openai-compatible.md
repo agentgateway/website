@@ -5,4 +5,4 @@ description: Connect agentgateway to any OpenAI-compatible API (xAI, Cohere, Oll
 test: skip
 ---
 
-{{< redirect path="/llm/providers/custom/" >}}
+{{< redirect path="/documentation/llm/providers/custom/" >}}

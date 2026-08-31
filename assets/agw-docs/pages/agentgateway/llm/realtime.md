@@ -12,13 +12,13 @@ To enable token usage tracking, you must prevent the client and server from nego
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Set up access to the [OpenAI]({{< link-hextra path="/llm/providers/openai/" >}}) or an [OpenAI API-compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) LLM provider.
+2. Set up access to the [OpenAI]({{< link-hextra path="/documentation/llm/providers/openai/" >}}) or an [OpenAI API-compatible]({{< link-hextra path="/documentation/llm/providers/openai-compatible/" >}}) LLM provider.
 
 ## Step 1: Add the Realtime route type
 
 Verify that your OpenAI {{< reuse "agw-docs/snippets/backend.md" >}} includes the `Realtime` route type in the `policies.ai.routes` map. The default behavior routes all traffic as `Completions`. You must explicitly add the `Realtime` route type for the `/v1/realtime` path.
 
-If you already set up [multiple endpoints]({{< link-hextra path="/llm/providers/multiple-endpoints/" >}}), add the `/v1/realtime` path to your existing {{< reuse "agw-docs/snippets/backend.md" >}}.
+If you already set up [multiple endpoints]({{< link-hextra path="/documentation/llm/providers/multiple-endpoints/" >}}), add the `/v1/realtime` path to your existing {{< reuse "agw-docs/snippets/backend.md" >}}.
 
 ```yaml {paths="realtime"}
 kubectl apply -f- <<EOF
@@ -146,7 +146,7 @@ After the Realtime request completes, verify that {{< reuse "agw-docs/snippets/a
 1. Open the {{< reuse "agw-docs/snippets/agentgateway.md" >}} [metrics endpoint](http://localhost:15020/metrics).
 2. Look for the `agentgateway_gen_ai_client_token_usage` metric. The metric includes labels for the token type (`input` or `output`) and the model used.
 
-For more information about LLM metrics and observability, see {{< conditional-text include-if="standalone" >}}[Observe traffic]({{< link-hextra path="/llm/observability/" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[LLM cost tracking]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}){{< /conditional-text >}}.
+For more information about LLM metrics and observability, see {{< conditional-text include-if="standalone" >}}[Observe traffic]({{< link-hextra path="/documentation/llm/observability/" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[LLM cost tracking]({{< link-hextra path="/documentation/llm/cost-controls/cost-tracking/" >}}){{< /conditional-text >}}.
 
 ## Cleanup
 

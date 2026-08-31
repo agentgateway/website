@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 #
 # Gateway config for the populated MCP playground capture. Mirrors the streamable-HTTP
-# MCP connect guide (content/docs/standalone/latest/mcp/connect/http.md) with two
+# MCP connect guide (content/docs/standalone/latest/documentation/mcp/connect/http.md) with two
 # adjustments for capturing inside the sl8 container:
 #
 #   - mcp.port is 3030 (not 3000): the playground connects browser-side to

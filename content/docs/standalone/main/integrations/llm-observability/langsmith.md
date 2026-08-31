@@ -79,4 +79,4 @@ services:
 ## Learn more
 
 - [LangSmith Documentation](https://docs.langchain.com/langsmith/observability)
-- [OpenTelemetry Integration]({{< link-hextra path="/observability/traces/setup/" >}})
+- [OpenTelemetry Integration]({{< link-hextra path="/documentation/observability/traces/setup/" >}})

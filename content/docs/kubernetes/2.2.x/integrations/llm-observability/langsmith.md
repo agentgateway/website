@@ -92,5 +92,5 @@ EOF
 ## Learn more
 
 - [LangSmith Documentation](https://docs.langchain.com/langsmith/observability)
-- [OpenTelemetry stack setup]({{< link-hextra path="/observability/otel-stack/" >}})
-- [LLM observability metrics]({{< link-hextra path="/llm/observability/" >}})
+- [OpenTelemetry stack setup]({{< link-hextra path="/documentation/observability/otel-stack/" >}})
+- [LLM observability metrics]({{< link-hextra path="/documentation/llm/observability/" >}})

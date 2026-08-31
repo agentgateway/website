@@ -805,5 +805,5 @@ EOF
 
 The previous steps configure Prometheus to scrape the metrics that the OTel Collector receives. The {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} Helm chart does not create ServiceMonitor or PodMonitor resources for the control plane and proxy metrics endpoints, so Prometheus does not scrape those endpoints yet.
 
-To add them, set `monitoring.enabled` to `true` in your Helm values file. For the resources that the chart creates and the fields that tune them, see [Enable monitoring with Helm]({{< link-hextra path="/observability/control-plane-metrics/#enable-monitoring" >}}).
+To add them, set `monitoring.enabled` to `true` in your Helm values file. For the resources that the chart creates and the fields that tune them, see [Enable monitoring with Helm]({{< link-hextra path="/documentation/observability/control-plane-metrics/#enable-monitoring" >}}).
 {{< /version >}}

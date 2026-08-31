@@ -314,4 +314,4 @@ kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} -n {{< reuse "agw-doc
 
 ## Next
 
-Explore how to [call functions]({{< link-hextra path="/llm/functions/">}}) to extend the capabilities of the LLM with your own external APIs, apps, and data.
+Explore how to [call functions]({{< link-hextra path="/documentation/llm/functions/">}}) to extend the capabilities of the LLM with your own external APIs, apps, and data.

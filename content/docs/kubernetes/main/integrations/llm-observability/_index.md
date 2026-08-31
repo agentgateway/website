@@ -19,7 +19,7 @@ Agentgateway exports LLM telemetry via OpenTelemetry, which can be forwarded to 
 
 ## Configuration
 
-Set up OpenTelemetry tracing to export LLM-specific telemetry. See the [OpenTelemetry stack setup guide]({{< link-hextra path="/observability/otel-stack/" >}}) for details.
+Set up OpenTelemetry tracing to export LLM-specific telemetry. See the [OpenTelemetry stack setup guide]({{< link-hextra path="/documentation/observability/otel-stack/" >}}) for details.
 
 Agentgateway automatically includes these LLM-specific trace attributes.
 
@@ -28,8 +28,8 @@ Agentgateway automatically includes these LLM-specific trace attributes.
 | `gen_ai.operation.name` | Operation type (chat, completion, embedding). |
 | `gen_ai.request.model` | Requested model name. |
 | `gen_ai.response.model` | Actual model used. |
-| `gen_ai.usage.input_tokens` | Input token count, including the tokens read from or written to the prompt cache. See [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}). |
+| `gen_ai.usage.input_tokens` | Input token count, including the tokens read from or written to the prompt cache. See [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}). |
 | `gen_ai.usage.output_tokens` | Output token count. |
 | `gen_ai.provider.name` | LLM provider (openai, anthropic, etc.). |
 
-Tool calls are not in this list, because the gateway does not collect them automatically. To record them, reference the `llm.toolCalls` CEL field in a tracing or access log attribute, as described in [Tool calls]({{< link-hextra path="/llm/observability/#tool-calls" >}}).
+Tool calls are not in this list, because the gateway does not collect them automatically. To record them, reference the `llm.toolCalls` CEL field in a tracing or access log attribute, as described in [Tool calls]({{< link-hextra path="/documentation/llm/observability/#tool-calls" >}}).

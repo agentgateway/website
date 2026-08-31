@@ -4,7 +4,7 @@ MCP authentication ensures that only authorized MCP clients can access MCP serve
 
 To secure your MCP server, you configure it with an authorization server. Typically, the authorization server is an identity provider (IdP) that you already use in your environment.
 
-For example guides, review the [MCP auth section]({{< link-hextra path="/mcp/auth/">}}).
+For example guides, review the [MCP auth section]({{< link-hextra path="/documentation/mcp/auth/">}}).
 
 ### Add other IdPs
 
@@ -92,7 +92,7 @@ sequenceDiagram
 
 {{< reuse "agw-docs/pages/agentgateway/mcp/mcp-auth-vs-jwt.md" >}}
 
-For more information, see the [JWT auth docs]({{< link-hextra path="/mcp/mcp-access/">}}).
+For more information, see the [JWT auth docs]({{< link-hextra path="/documentation/mcp/mcp-access/">}}).
 
 ### Benefits
 
@@ -105,4 +105,4 @@ Agentgateway's approach provides the following benefits.
 
 ## Setup
 
-Try out MCP auth with Keycloak and a sample MCP server. Start with [setting up Keycloak]({{< link-hextra path="/mcp/auth/keycloak/" >}}).
+Try out MCP auth with Keycloak and a sample MCP server. Start with [setting up Keycloak]({{< link-hextra path="/documentation/mcp/auth/keycloak/" >}}).

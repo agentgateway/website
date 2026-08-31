@@ -20,11 +20,11 @@ When you set `provider.auth0`, agentgateway bridges this gap as follows:
 - Appends your first configured audience to Auth0's authorization endpoint as an `audience` query parameter, so that Auth0 issues a JWT for your API rather than an opaque token. You verify this in [Step 3](#verify).
 - Fetches keys from `{issuer}/.well-known/jwks.json`, which is where Auth0 publishes them.
 
-For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}}).
+For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}).
 
 ## Before you begin {#before-you-begin}
 
-1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/documentation/setup/install/binary/" >}}).
 2. Install [Node.js](https://nodejs.org/) so that `npx` can run the sample MCP server.
 3. Make sure that you have access to an [Auth0 tenant](https://auth0.com/docs/get-started/auth0-overview/create-tenants) and permission to create an API and applications in it. A free tenant is sufficient.
 
@@ -368,7 +368,7 @@ EOF
 
 ## Step 5: Restrict access by permission {#authorization}
 
-Because MCP authentication runs at the route level, you can use claims from the validated Auth0 token in an [authorization]({{< link-hextra path="/configuration/security/mcp-authz" >}}) policy. Auth0 puts the permissions that you grant to an application in the `permissions` claim when the API has **Add Permissions in the Access Token** enabled, which you did in [Step 1](#register).
+Because MCP authentication runs at the route level, you can use claims from the validated Auth0 token in an [authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}) policy. Auth0 puts the permissions that you grant to an application in the `permissions` claim when the API has **Add Permissions in the Access Token** enabled, which you did in [Step 1](#register).
 
 1. Add an `authorization` policy alongside `mcpAuthentication` in your `config.yaml` that requires the `read:tools` permission.
 
@@ -524,5 +524,5 @@ Point your MCP client at the gateway's MCP endpoint, `http://localhost:3000/mcp`
 ## Learn more
 
 - [Auth0 documentation](https://auth0.com/docs)
-- [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}})
-- [MCP authorization]({{< link-hextra path="/configuration/security/mcp-authz" >}})
+- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}})
+- [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}})

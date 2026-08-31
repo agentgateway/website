@@ -24,7 +24,7 @@ Throughout this guide, you use self-signed TLS certificates for the Certificate 
 
 ## Before you begin
 
-1. Deploy the [httpbin sample app]({{< link-hextra path="/install/sample-app/" >}}).
+1. Deploy the [httpbin sample app]({{< link-hextra path="/documentation/install/sample-app/" >}}).
 
 2. Make sure that you have the OpenSSL version of `openssl`, not LibreSSL. The `openssl` version must be at least 1.1.
    1. Check the `openssl` version that is installed. If you see LibreSSL in the output, continue to the next step.
@@ -45,7 +45,7 @@ Throughout this guide, you use self-signed TLS certificates for the Certificate 
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
 
-4. Experimental Kubernetes Gateway API features are enabled by default in {{< reuse "agw-docs/snippets/kgateway.md" >}}. To set the feature gate explicitly, install or upgrade with the `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true` Helm flag. For an example, see the [Get started guide]({{< link-hextra path="/quickstart" >}}).
+4. Experimental Kubernetes Gateway API features are enabled by default in {{< reuse "agw-docs/snippets/kgateway.md" >}}. To set the feature gate explicitly, install or upgrade with the `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true` Helm flag. For an example, see the [Get started guide]({{< link-hextra path="/documentation/quickstart" >}}).
    
 
 
@@ -491,7 +491,7 @@ In this example, you override the default certificate validation configuration f
 
 ## Additional TLS settings
 
-You can configure your listeners to enforce other TLS settings, such as a minimum or maximum TLS version, or specific cipher suites. For more information, see [Additional TLS settings]({{< link-hextra path="/setup/listeners/tls-settings/" >}}). 
+You can configure your listeners to enforce other TLS settings, such as a minimum or maximum TLS version, or specific cipher suites. For more information, see [Additional TLS settings]({{< link-hextra path="/documentation/setup/listeners/tls-settings/" >}}). 
 
 <!--
 1. Get the certificate hash of the client certificate. 

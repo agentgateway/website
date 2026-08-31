@@ -5,4 +5,4 @@ description: Connect agentgateway to Anthropic's Claude models
 test: skip
 ---
 
-{{< redirect path="/llm/providers/anthropic/" >}}
+{{< redirect path="/documentation/llm/providers/anthropic/" >}}

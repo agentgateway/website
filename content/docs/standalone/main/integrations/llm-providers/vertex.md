@@ -5,4 +5,4 @@ description: Connect agentgateway to Google Cloud's Vertex AI platform
 test: skip
 ---
 
-{{< redirect path="/llm/providers/vertex/" >}}
+{{< redirect path="/documentation/llm/providers/vertex/" >}}

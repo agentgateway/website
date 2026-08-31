@@ -130,7 +130,7 @@ EOF
 
 ## Conditional execution
 
-To return a direct response only when a CEL expression matches, use the `conditional` field on your `directResponse` policy. For example, you can return `410 Gone` on deprecated paths and let every other request reach the backend. For details, see [Conditional policies]({{< link-hextra path="/about/policies/conditional-policies" >}}).
+To return a direct response only when a CEL expression matches, use the `conditional` field on your `directResponse` policy. For example, you can return `410 Gone` on deprecated paths and let every other request reach the backend. For details, see [Conditional policies]({{< link-hextra path="/documentation/about/policies/conditional-policies" >}}).
 
 {{< /version >}}
 

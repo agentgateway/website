@@ -7,8 +7,8 @@ You can configure retries by using a Kubernetes Gateway API-native configuration
 
 | Type of timeout| Description | Configured via | Attach to | 
 | -- | -- | -- | --- | 
-| [Request retries]({{< link-hextra path="/resiliency/retry/retry/" >}}) | Specify the number of times and duration for the gateway to try a connection to an unresponsive backend service. | <ul><li>HTTPRoute</li><li>{{< reuse "agw-docs/snippets/policy.md" >}} </li></ul>| <ul><li>HTTPRoute</li><li>HTTPRoute rule</li><li>Gateway listener ({{< reuse "agw-docs/snippets/policy.md" >}} only)</li></ul> | 
-| [Per-try timeout]({{< link-hextra path="/resiliency/retry/per-try-timeout/" >}}) | Set a shorter timeout for retries than the overall request timeout.  | <ul><li>HTTPRoute</li><li>{{< reuse "agw-docs/snippets/policy.md" >}} </li></ul>| <ul><li>HTTPRoute </li><li>HTTPRoute rule</li><li>Gateway listener ({{< reuse "agw-docs/snippets/policy.md" >}} only)</li></ul> | 
+| [Request retries]({{< link-hextra path="/documentation/resiliency/retry/retry/" >}}) | Specify the number of times and duration for the gateway to try a connection to an unresponsive backend service. | <ul><li>HTTPRoute</li><li>{{< reuse "agw-docs/snippets/policy.md" >}} </li></ul>| <ul><li>HTTPRoute</li><li>HTTPRoute rule</li><li>Gateway listener ({{< reuse "agw-docs/snippets/policy.md" >}} only)</li></ul> | 
+| [Per-try timeout]({{< link-hextra path="/documentation/resiliency/retry/per-try-timeout/" >}}) | Set a shorter timeout for retries than the overall request timeout.  | <ul><li>HTTPRoute</li><li>{{< reuse "agw-docs/snippets/policy.md" >}} </li></ul>| <ul><li>HTTPRoute </li><li>HTTPRoute rule</li><li>Gateway listener ({{< reuse "agw-docs/snippets/policy.md" >}} only)</li></ul> | 
 
 
 

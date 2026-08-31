@@ -93,4 +93,4 @@ config:
 ## Learn more
 
 - [Phoenix Documentation](https://arize.com/docs/phoenix)
-- [OpenTelemetry Integration]({{< link-hextra path="/observability/traces/setup/" >}})
+- [OpenTelemetry Integration]({{< link-hextra path="/documentation/observability/traces/setup/" >}})

@@ -20,6 +20,6 @@ Agentgateway supports connecting to MCP servers via multiple transport protocols
 
 ## Learn more
 
-- [MCP Connectivity Guide]({{< link-hextra path="/mcp/" >}})
-- [MCP Authentication]({{< link-hextra path="/mcp/mcp-authn/" >}})
-- [MCP Authorization]({{< link-hextra path="/mcp/mcp-authz/" >}})
+- [MCP Connectivity Guide]({{< link-hextra path="/documentation/mcp/" >}})
+- [MCP Authentication]({{< link-hextra path="/documentation/mcp/mcp-authn/" >}})
+- [MCP Authorization]({{< link-hextra path="/documentation/mcp/mcp-authz/" >}})

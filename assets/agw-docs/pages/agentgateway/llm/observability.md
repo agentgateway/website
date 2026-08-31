@@ -1,7 +1,7 @@
 Review LLM-specific metrics and logs.
 
 > [!NOTE]
-> To calculate costs from token usage metrics, see the [cost tracking guide]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}).
+> To calculate costs from token usage metrics, see the [cost tracking guide]({{< link-hextra path="/documentation/llm/cost-controls/cost-tracking/" >}}).
 
 {{< conditional-text include-if="kubernetes" >}}
 > [!NOTE]
@@ -15,7 +15,7 @@ Review LLM-specific metrics and logs.
 
 ## Before you begin
 
-Complete an LLM guide, such as an [LLM provider-specific guide]({{< link-hextra path="/llm/providers/" >}}). This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics and logs.  
+Complete an LLM guide, such as an [LLM provider-specific guide]({{< link-hextra path="/documentation/llm/providers/" >}}). This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics and logs.  
 
 ## View LLM metrics
 
@@ -67,20 +67,20 @@ Anthropic and Amazon Bedrock exclude cached tokens from the input count that the
 {{< version exclude-if="1.1.x" >}}
 ## View realized costs
 
-When you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the realized USD cost of each LLM request and exposes it across the observability surface:
+When you configure a [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}), {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the realized USD cost of each LLM request and exposes it across the observability surface:
 
 * **Logs**: each LLM request log line includes `agw.ai.usage.cost.total`. Add the cost breakdown or applied rates with CEL `llm.cost` and `llm.costRates` fields.
 * **Metrics**: the `agentgateway_cost_catalog_lookups_total` counter tracks lookups by `status` (`Exact`, `Unpriced`, `Missing`, or `NoCatalog`) and by provider and model, so you can confirm that your catalog prices your traffic.
 * **Traces**: cost attributes are attached to the request span.
 
-For catalog configuration and the full list of cost fields, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
+For catalog configuration and the full list of cost fields, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
 {{< /version >}}
 
 ## Track per-user metrics
 
 When you set up API key authentication with per-user rate limiting, you can filter token usage metrics by user ID to track spending and usage patterns for each virtual key.
 
-For a complete virtual key setup guide, see [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
+For a complete virtual key setup guide, see [Virtual key management]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
 
 Example PromQL query for per-user token usage:
 ```promql

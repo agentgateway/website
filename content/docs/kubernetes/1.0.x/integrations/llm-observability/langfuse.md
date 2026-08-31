@@ -191,5 +191,5 @@ echo -n "public-key:secret-key" | base64
 ## Learn more
 
 - [Langfuse Documentation](https://langfuse.com/docs)
-- [OpenTelemetry stack setup]({{< link-hextra path="/observability/otel-stack/" >}})
-- [LLM observability metrics]({{< link-hextra path="/llm/observability/" >}})
+- [OpenTelemetry stack setup]({{< link-hextra path="/documentation/observability/otel-stack/" >}})
+- [LLM observability metrics]({{< link-hextra path="/documentation/llm/observability/" >}})

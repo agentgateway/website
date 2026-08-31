@@ -179,6 +179,25 @@ params:
       websites: https://searchbot.tryhelix.ai/
       bots: https://searchbot.tryhelix.ai/bots
 
+  # Section tab navigation (docs-theme-extras `docTabs`). Each `id` is a real
+  # directory under EVERY version root — content/docs/<section>/<version>/<id>/ —
+  # and a tab owns every page inside it, so the left nav shows one group at a
+  # time instead of the whole version tree. The band renders only where two or
+  # more of these directories exist in a version, so the content partition and
+  # this config have to land together: `integrations` and `reference` already
+  # existed in every version, so adding this alone would switch tabs on for a
+  # version with no `documentation` directory to root the nav in.
+  docTabs:
+    - name: Documentation
+      id: documentation
+      default: true
+    - name: Integrations
+      id: integrations
+    - name: Reference
+      id: reference
+    - name: Release notes
+      id: release-notes
+
   # THE version list — the only one. Newest first. Every entry names the
   # sections it applies to. The contract, in full, with a TOML and a YAML
   # template: docs-theme-extras USAGE.md, "Versions and sections".

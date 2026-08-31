@@ -7,12 +7,12 @@ In this guide, you configure the agentgateway proxy to protect a static MCP serv
 > [!WARNING]
 > This guide configures Entra app registrations that are **public clients** using PKCE, such as local MCP clients. Confidential clients (app registrations under the Entra **Web** platform) require a client secret at the token endpoint. On Kubernetes, injecting that secret through the recommended `jwtAuthentication.mcp` traffic policy is not yet supported. If you need confidential-client support today, use agentgateway in standalone mode, which accepts a `clientSecret` field on the MCP authentication policy.
 
-For more information about MCP auth, see the [About MCP auth]({{< link-hextra path="/mcp/auth/about/" >}}) page.
+For more information about MCP auth, see the [About MCP auth]({{< link-hextra path="/documentation/mcp/auth/about/" >}}) page.
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/mcp/static-mcp/" >}}).
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
+2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/documentation/mcp/static-mcp/" >}}).
 3. Install the experimental channel Gateway API.
    ```sh {paths="setup-entra"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
@@ -331,9 +331,9 @@ Verify the auth flow with the [MCP inspector](https://github.com/modelcontextpro
 
 The policy that you created gates the MCP endpoint on the `mcp.admin` app role, which Entra puts in the `roles` claim of tokens that it issues to the users and groups that you assigned the role to. Authentication alone is not enough: any caller that Entra issues a token to for your app registration passes JWT validation, including daemon apps that use the client credentials flow to authorize themselves rather than a user. The authorization rule denies those tokens with a 403 HTTP response code.
 
-Because MCP authentication runs at the route level, every claim in the verified token is also available to other route-level policies, such as rate limiting and transformations. For more information about the rules that you can write, see [Authorization]({{< link-hextra path="/security/authorization/" >}}).
+Because MCP authentication runs at the route level, every claim in the verified token is also available to other route-level policies, such as rate limiting and transformations. For more information about the rules that you can write, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}).
 
-To authorize individual tools instead of the whole MCP endpoint, use an MCP authorization policy. For more information, see [Tool access]({{< link-hextra path="/mcp/tool-access/" >}}).
+To authorize individual tools instead of the whole MCP endpoint, use an MCP authorization policy. For more information, see [Tool access]({{< link-hextra path="/documentation/mcp/tool-access/" >}}).
 
 ## Clean up
 

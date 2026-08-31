@@ -41,7 +41,7 @@ agentgateway -f config.yaml
 
 After the catalog is loaded, priced requests include cost data. The access log includes `agw.ai.usage.cost.total`, and CEL exposes cost data as `llm.cost` and `llm.costRates`.
 
-For general LLM telemetry setup, see [Observe traffic]({{< link-hextra path="/llm/observability/" >}}).
+For general LLM telemetry setup, see [Observe traffic]({{< link-hextra path="/documentation/llm/observability/" >}}).
 
 ## Import costs (agctl)
 
@@ -65,7 +65,7 @@ For all flags, see the {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}
 
 ## Import costs (UI)
 
-You can also manage the model cost catalog from the built-in [UI]({{< link-hextra path="/operations/ui/" >}}).
+You can also manage the model cost catalog from the built-in [UI]({{< link-hextra path="/documentation/operations/ui/" >}}).
 
 1. Open the [UI cost page](http://localhost:15000/ui/llm/costs) (**LLM > Costs**). The page lists your configured **Catalog sources** (files and ConfigMaps, merged in order) and any inline **Custom costs** overrides.
 
@@ -78,7 +78,7 @@ You can also manage the model cost catalog from the built-in [UI]({{< link-hextr
 
 When you set up a fresh configuration for the first time, the UI automatically performs the refresh step.
 
-After you load a catalog, the same UI visualizes your priced traffic. For more information, see [Cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}).
+After you load a catalog, the same UI visualizes your priced traffic. For more information, see [Cost dashboard]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/" >}}).
 
 ## Override catalog entries
 
@@ -167,8 +167,8 @@ A rising `Missing` or `Unpriced` count means requests are flowing through models
 
 The model catalog provides pricing data for spend visibility. To block or throttle traffic, combine cost visibility with rate limiting or virtual key management.
 
-- Use [Rate limiting]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}) to cap request or token usage per route, user, or API key.
-- Use [Virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) to issue keys with per-key controls and attribution.
+- Use [Rate limiting]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/" >}}) to cap request or token usage per route, user, or API key.
+- Use [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) to issue keys with per-key controls and attribution.
 
 ## Advanced: Catalog format
 

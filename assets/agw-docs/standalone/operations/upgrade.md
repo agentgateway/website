@@ -1,6 +1,6 @@
 ## About
 
-An upgrade replaces the agentgateway binary or image. It does not change your configuration, which lives in a file, a mounted volume, or a ConfigMap that the upgrade leaves alone. To change the configuration itself, see [Update your configuration]({{< link-hextra path="/setup/update/" >}}).
+An upgrade replaces the agentgateway binary or image. It does not change your configuration, which lives in a file, a mounted volume, or a ConfigMap that the upgrade leaves alone. To change the configuration itself, see [Update your configuration]({{< link-hextra path="/documentation/setup/update/" >}}).
 
 Every method requires a restart of the agentgateway process, because a new binary cannot replace a running one in place. Plan for a brief interruption in proxy traffic, or run more than one instance behind a load balancer.
 
@@ -172,7 +172,7 @@ Upgrade the chart version. The chart re-renders the ConfigMap from your Helm val
    ```
 
 > [!IMPORTANT]
-> `--reuse-values` keeps the values from the previous revision, which is what you want for a version-only upgrade. If you pass `-f values.yaml` instead, pass your complete values file, because a value that you leave out returns to its chart default. That includes `mode`, so an incomplete file can send a release in `database` mode back to read-only storage. For more information, see [Update your configuration]({{< link-hextra path="/setup/update/#helm" >}}).
+> `--reuse-values` keeps the values from the previous revision, which is what you want for a version-only upgrade. If you pass `-f values.yaml` instead, pass your complete values file, because a value that you leave out returns to its chart default. That includes `mode`, so an incomplete file can send a release in `database` mode back to read-only storage. For more information, see [Update your configuration]({{< link-hextra path="/documentation/setup/update/#helm" >}}).
 
 Because the default `replicaCount` is `1`, expect a brief interruption in traffic during the rollout. To keep a pod serving traffic while the new pod starts, set `replicaCount` to a value greater than `1`.
 
@@ -181,7 +181,7 @@ Because the default `replicaCount` is `1`, expect a brief interruption in traffi
 Roll back to an earlier version.
 
 > [!WARNING]
-> Rolling back to an older version after agentgateway has written to a database can fail if the newer version changed the database schema. If you use `hybrid` storage mode, back up the database before you upgrade. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+> Rolling back to an older version after agentgateway has written to a database can fail if the newer version changed the database schema. If you use `hybrid` storage mode, back up the database before you upgrade. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
 {{< tabs >}}
 {{% tab name="Binary" %}}
@@ -220,6 +220,6 @@ Helm keeps the history of the release, so you can return to the previous revisio
 
 ## Next steps
 
-* [Update your configuration]({{< link-hextra path="/setup/update/" >}}) to change agentgateway settings rather than the agentgateway version.
-* [Inspect agentgateway configuration]({{< link-hextra path="/operations/inspect-config/" >}}) to confirm what the upgraded instance loaded.
-* [Debug agentgateway]({{< link-hextra path="/operations/debug/" >}}) if the instance does not start after an upgrade.
+* [Update your configuration]({{< link-hextra path="/documentation/setup/update/" >}}) to change agentgateway settings rather than the agentgateway version.
+* [Inspect agentgateway configuration]({{< link-hextra path="/documentation/operations/inspect-config/" >}}) to confirm what the upgraded instance loaded.
+* [Debug agentgateway]({{< link-hextra path="/documentation/operations/debug/" >}}) if the instance does not start after an upgrade.

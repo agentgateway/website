@@ -83,7 +83,7 @@ To optimize performance:
 - Configure appropriate timeouts for external moderation endpoints
 - Consider request size limits to avoid processing very large prompts
 
-For webhook-specific performance tuning, see the [Guardrail Webhook optimization guide]({{< link-hextra path="/llm/guardrail-api/guardrail-guide/" >}}#optimize-performance).
+For webhook-specific performance tuning, see the [Guardrail Webhook optimization guide]({{< link-hextra path="/documentation/llm/guardrail-api/guardrail-guide/" >}}#optimize-performance).
 
 > [!NOTE]
 > **Evaluation order**: Prompt guards are evaluated *after* rate limiting. This means that requests rejected by content safety checks (403 Forbidden) still consume rate limit quota. If you want to avoid consuming quota on blocked requests, authentication policies (JWT/OPA) are evaluated before rate limiting and can prevent quota consumption.
@@ -458,7 +458,7 @@ spec:
 EOF
 ```
 
-For a complete guide on implementing and deploying custom webhook servers, see the [Guardrail Webhook API documentation]({{< link-hextra path="/llm/guardrail-api/guardrail-guide/" >}}).
+For a complete guide on implementing and deploying custom webhook servers, see the [Guardrail Webhook API documentation]({{< link-hextra path="/documentation/llm/guardrail-api/guardrail-guide/" >}}).
 
 ## Combining multiple layers
 
@@ -523,7 +523,7 @@ EOF
 
 ## What's next
 
-- [Configure prompt guards]({{< link-hextra path="/llm/prompt-guards/" >}}) for step-by-step examples of regex-based guards
-- [Guardrail Webhook API]({{< link-hextra path="/llm/guardrail-api/guardrail-guide/" >}}) for implementing custom content safety logic
-- [Track costs]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}) to monitor the impact of blocked requests on your budget
-- [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to track content safety metrics
+- [Configure prompt guards]({{< link-hextra path="/documentation/llm/prompt-guards/" >}}) for step-by-step examples of regex-based guards
+- [Guardrail Webhook API]({{< link-hextra path="/documentation/llm/guardrail-api/guardrail-guide/" >}}) for implementing custom content safety logic
+- [Track costs]({{< link-hextra path="/documentation/llm/cost-controls/cost-tracking/" >}}) to monitor the impact of blocked requests on your budget
+- [Set up observability]({{< link-hextra path="/documentation/llm/observability/" >}}) to track content safety metrics

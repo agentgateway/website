@@ -10,7 +10,7 @@ for authentication, authorization, rate limits, guardrails, and observability.
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Configure the [LLM provider]({{< link-hextra path="/llm/providers/" >}})
+2. Configure the [LLM provider]({{< link-hextra path="/documentation/llm/providers/" >}})
    that your managed clients use.
 3. Expose the Gateway through a stable HTTPS hostname that Intune-managed
    devices can resolve, such as `https://llm.example.com`.
@@ -24,13 +24,13 @@ for authentication, authorization, rate limits, guardrails, and observability.
 
 {{< conditional-text include-if="kubernetes" >}}
 For Kubernetes, terminate TLS on the agentgateway proxy by following the
-[HTTPS listener guide]({{< link-hextra path="/setup/listeners/https/" >}}).
+[HTTPS listener guide]({{< link-hextra path="/documentation/setup/listeners/https/" >}}).
 Use a certificate whose subject alternative name matches the managed hostname
 and whose issuer is trusted by the client devices.
 {{< /conditional-text >}}
 {{< conditional-text include-if="standalone" >}}
 For standalone, terminate TLS on agentgateway by following the [HTTPS listener
-configuration]({{< link-hextra path="/configuration/listeners/#https-listeners"
+configuration]({{< link-hextra path="/documentation/configuration/listeners/#https-listeners"
 >}}). Use a certificate whose subject alternative name matches the managed
 hostname and whose issuer is trusted by the client devices.
 {{< /conditional-text >}}
@@ -129,7 +129,7 @@ editor, model, or accessibility settings.
 Use one revocable agentgateway client key for the Codex and Claude Desktop
 pilot examples in this guide. Protect the OpenAI and Anthropic routes with the
 same [virtual key]({{< link-hextra
-path="/llm/cost-controls/virtual-keys/" >}}), and keep the provider credentials
+path="/documentation/llm/cost-controls/virtual-keys/" >}}), and keep the provider credentials
 separate.
 
 | Credential | Purpose | Send to managed clients? |
@@ -802,11 +802,11 @@ apply the Gateway security controls appropriate for your deployment.
   {{< card path="/integrations/llm-clients/codex" title="Codex" subtitle="Configure and verify Codex with agentgateway" >}}
   {{< card path="/integrations/llm-clients/claude-desktop" title="Claude Desktop" subtitle="Configure and verify Claude Desktop with agentgateway" >}}
 {{< conditional-text include-if="kubernetes" >}}
-  {{< card path="/security/jwt/" title="JWT authentication" subtitle="Authenticate managed clients at the Gateway" >}}
-  {{< card path="/llm/rbac/" title="Authorization" subtitle="Control which identities can use the Gateway" >}}
+  {{< card path="/documentation/security/jwt/" title="JWT authentication" subtitle="Authenticate managed clients at the Gateway" >}}
+  {{< card path="/documentation/llm/rbac/" title="Authorization" subtitle="Control which identities can use the Gateway" >}}
 {{< /conditional-text >}}
 {{< conditional-text include-if="standalone" >}}
-  {{< card path="/configuration/security/jwt-authn/" title="JWT authentication" subtitle="Authenticate managed clients at the Gateway" >}}
-  {{< card path="/configuration/security/http-authz/" title="Authorization" subtitle="Control which identities can use the Gateway" >}}
+  {{< card path="/documentation/configuration/security/jwt-authn/" title="JWT authentication" subtitle="Authenticate managed clients at the Gateway" >}}
+  {{< card path="/documentation/configuration/security/http-authz/" title="Authorization" subtitle="Control which identities can use the Gateway" >}}
 {{< /conditional-text >}}
 {{< /cards >}}

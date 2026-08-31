@@ -6,7 +6,7 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 2. Install [Claude Desktop](https://claude.com/download).
 3. Choose how the proxy authenticates callers.
 
@@ -18,7 +18,7 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 
    For a gateway API key, you need an Anthropic API key for the proxy and a
    [virtual API key]({{< link-hextra
-   path="/llm/cost-controls/virtual-keys/" >}}) for Claude Desktop. For
+   path="/documentation/llm/cost-controls/virtual-keys/" >}}) for Claude Desktop. For
    subscription passthrough, you need a Claude Pro, Max, Team, or Enterprise
    subscription and the [Claude Code CLI](https://code.claude.com/docs), which
    provides the `claude setup-token` command. For identity-provider
@@ -35,10 +35,10 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 > You therefore have two options:
 >
 > * **Port-forward the proxy** and use `http://127.0.0.1:<port>`. Use the literal address `127.0.0.1`, because `localhost` does not always resolve as a loopback address for this check. Choose this option to try out the setup on a single machine.
-> * **Terminate HTTPS on the proxy** and use `https://<hostname>`. Choose this option when you [roll out the configuration to your organization](#mdm), because each user's machine must reach the proxy over the network. To set up a certificate, see [HTTPS listeners]({{< link-hextra path="/setup/listeners/https/" >}}).
+> * **Terminate HTTPS on the proxy** and use `https://<hostname>`. Choose this option when you [roll out the configuration to your organization](#mdm), because each user's machine must reach the proxy over the network. To set up a certificate, see [HTTPS listeners]({{< link-hextra path="/documentation/setup/listeners/https/" >}}).
 
 > [!NOTE]
-> The Kubernetes UI is read-only and does not currently show the standalone **LLM > Client Setup** generator. Configure the client with the same gateway URL and credential values manually. The client settings are not specific to a deployment mode; only the resources that configure agentgateway differ. Follow [agentgateway/agentgateway#2989](https://github.com/agentgateway/agentgateway/issues/2989) for the enhancement, and see [UI]({{< link-hextra path="/observability/ui/" >}}) for more information about the current UI.
+> The Kubernetes UI is read-only and does not currently show the standalone **LLM > Client Setup** generator. Configure the client with the same gateway URL and credential values manually. The client settings are not specific to a deployment mode; only the resources that configure agentgateway differ. Follow [agentgateway/agentgateway#2989](https://github.com/agentgateway/agentgateway/issues/2989) for the enhancement, and see [UI]({{< link-hextra path="/documentation/observability/ui/" >}}) for more information about the current UI.
 
 ## Set up the Anthropic backend
 
@@ -161,7 +161,7 @@ You can use the same client-side values that the standalone **Client Setup** pag
 1. Verify that the `anthropic-desktop` backend references `anthropic-secret` in
    `policies.auth`, as configured in [Set up the Anthropic
    backend](#set-up-the-anthropic-backend). For more information, see
-   [Anthropic provider]({{< link-hextra path="/llm/providers/anthropic/" >}}).
+   [Anthropic provider]({{< link-hextra path="/documentation/llm/providers/anthropic/" >}}).
 2. Generate a client API key and store it in a Kubernetes Secret. Use a
    separate entry for each user or device when you need independent attribution
    or revocation.
@@ -182,7 +182,7 @@ You can use the same client-side values that the standalone **Client Setup** pag
    ```
 
    For key metadata, hashing, and cost controls, see [Virtual
-   keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
+   keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
 
 3. Apply strict API key authentication to only the Claude Desktop
    `HTTPRoute`.
@@ -345,8 +345,8 @@ path="/integrations/llm-clients/microsoft-intune/#claude-subscription" >}}).
 
 You can use the same client-side values that the standalone **Client Setup** page produces. The Kubernetes UI does not generate these values, so configure the gateway and Claude Desktop manually.
 
-1. Give the `anthropic-desktop` backend an Anthropic API key. Follow [Anthropic provider]({{< link-hextra path="/llm/providers/anthropic/" >}}) to create a provider credential Secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}}. This credential is sent upstream and is separate from the key that Claude Desktop sends to agentgateway.
-2. Follow [Virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) to create a client API key and a strict API key authentication policy. Target the `claude-desktop` `HTTPRoute` if the key must protect only this integration, or target the `agentgateway-proxy` `Gateway` to protect all of its routes.
+1. Give the `anthropic-desktop` backend an Anthropic API key. Follow [Anthropic provider]({{< link-hextra path="/documentation/llm/providers/anthropic/" >}}) to create a provider credential Secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}}. This credential is sent upstream and is separate from the key that Claude Desktop sends to agentgateway.
+2. Follow [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) to create a client API key and a strict API key authentication policy. Target the `claude-desktop` `HTTPRoute` if the key must protect only this integration, or target the `agentgateway-proxy` `Gateway` to protect all of its routes.
 3. In Claude Desktop, go to **Developer → Configure Third Party Inference → Gateway**.
 4. For **Gateway base URL**, enter the URL from [Get the gateway URL](#gateway-url), including the `/claude` path.
 5. For **Credential kind**, select **Static API key**. Enter the client API key from step 2 in **Gateway API key**.
@@ -457,9 +457,9 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    discovery-document URL, which ends in `/.well-known/openid-configuration`,
    as the issuer.
 
-   For more detail on JWT validation, see [JWT auth]({{< link-hextra path="/security/jwt/setup/" >}}).
+   For more detail on JWT validation, see [JWT auth]({{< link-hextra path="/documentation/security/jwt/setup/" >}}).
 
-5. Give the backend its own credential. Interactive sign-in puts the identity provider token in the `Authorization` header, so the proxy must supply the LLM provider credential itself rather than pass a user token upstream. Follow [Anthropic provider]({{< link-hextra path="/llm/providers/anthropic/" >}}) to create a secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
+5. Give the backend its own credential. Interactive sign-in puts the identity provider token in the `Authorization` header, so the proxy must supply the LLM provider credential itself rather than pass a user token upstream. Follow [Anthropic provider]({{< link-hextra path="/documentation/llm/providers/anthropic/" >}}) to create a secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 
 6. In Claude Desktop, go to **Developer → Configure Third Party Inference → Gateway** and set the following fields.
 
@@ -592,6 +592,6 @@ For every available key and for the per-region profiles that a multi-region depl
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/llm/providers/anthropic" title="Anthropic Provider" subtitle="Complete Anthropic provider configuration" >}}
-  {{< card path="/llm/guardrails/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
+  {{< card path="/documentation/llm/providers/anthropic" title="Anthropic Provider" subtitle="Complete Anthropic provider configuration" >}}
+  {{< card path="/documentation/llm/guardrails/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
 {{< /cards >}}

@@ -11,12 +11,12 @@ In this guide, you configure the agentgateway proxy to protect a static MCP serv
 > [!IMPORTANT]
 > Set the JWKS path to `/oauth2/<auth-server-id>/v1/keys`. Okta publishes its signing keys there, not at the `/.well-known/jwks.json` path that many other identity providers use. Pointing `jwksPath` at the wrong path means the control plane cannot fetch Okta's keys, and token validation fails.
 
-For more information about MCP auth, see the [About MCP auth]({{< link-hextra path="/mcp/auth/about/" >}}) page.
+For more information about MCP auth, see the [About MCP auth]({{< link-hextra path="/documentation/mcp/auth/about/" >}}) page.
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/mcp/static-mcp/" >}}).
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
+2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/documentation/mcp/static-mcp/" >}}).
 3. Install the experimental channel Gateway API.
    ```sh {paths="setup-okta"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
@@ -301,9 +301,9 @@ Point your MCP client at the gateway's MCP endpoint, such as `http://localhost:8
 
 The policy that you created gates the MCP endpoint on the `AI-Users` group, which Okta puts in the `groups` claim of the access token when you add the groups claim to your authorization server. Authentication alone is not enough: any caller that Okta issues a token to for your audience passes JWT validation, including tokens that a client obtains for itself rather than for a user. The authorization rule denies those tokens with a 403 HTTP response code.
 
-Because MCP authentication runs at the route level, every claim in the verified token is also available to other route-level policies, such as rate limiting and transformations. For more information about the rules that you can write, see [Authorization]({{< link-hextra path="/security/authorization/" >}}).
+Because MCP authentication runs at the route level, every claim in the verified token is also available to other route-level policies, such as rate limiting and transformations. For more information about the rules that you can write, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}).
 
-To authorize individual tools instead of the whole MCP endpoint, use an MCP authorization policy. For more information, see [Tool access]({{< link-hextra path="/mcp/tool-access/" >}}).
+To authorize individual tools instead of the whole MCP endpoint, use an MCP authorization policy. For more information, see [Tool access]({{< link-hextra path="/documentation/mcp/tool-access/" >}}).
 
 ## Clean up
 

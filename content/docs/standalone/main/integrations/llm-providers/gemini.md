@@ -5,4 +5,4 @@ description: Connect agentgateway to Google's Gemini models
 test: skip
 ---
 
-{{< redirect path="/llm/providers/gemini/" >}}
+{{< redirect path="/documentation/llm/providers/gemini/" >}}

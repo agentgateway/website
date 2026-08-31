@@ -72,7 +72,7 @@ kill $AGW_DEFAULT_PID 2>/dev/null || true
 
 The **LLM > Client Setup** page generates connection settings and snippets for curl, Claude Code, Claude Desktop, Codex CLI, OpenCode, Cursor, GitHub Copilot, Windsurf, and the OpenAI JavaScript and Python SDKs.
 
-1. Configure at least one LLM model and, if the gateway requires client authentication, a [virtual API key]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
+1. Configure at least one LLM model and, if the gateway requires client authentication, a [virtual API key]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
 2. Open [http://localhost:15000/ui/llm/client-setup](http://localhost:15000/ui/llm/client-setup).
 3. Review the **Gateway base URL**, and select a model and virtual API key.
 4. Select the client from the **Integration** dropdown, and copy the generated settings or snippet.
@@ -141,7 +141,7 @@ kill $AGW_CUSTOM_PID 2>/dev/null || true
 {{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
 ## Secure the UI {#secure-admin-ui}
 
-By default, the UI is served on the local admin interface (`localhost:15000`) with no authentication. Anyone who can reach the admin address can inspect and manage your configuration. To require users to authenticate, attach the UI to a gateway listener and apply a browser [OIDC]({{< link-hextra path="/configuration/security/oidc" >}}) policy. When you attach the UI to a gateway, it is served on that gateway's port instead of the admin address, and all UI traffic must pass the policies that you attach.
+By default, the UI is served on the local admin interface (`localhost:15000`) with no authentication. Anyone who can reach the admin address can inspect and manage your configuration. To require users to authenticate, attach the UI to a gateway listener and apply a browser [OIDC]({{< link-hextra path="/documentation/configuration/security/oidc" >}}) policy. When you attach the UI to a gateway, it is served on that gateway's port instead of the admin address, and all UI traffic must pass the policies that you attach.
 
 1. Set the `OIDC_COOKIE_SECRET` environment variable. Agentgateway requires this value to encrypt session cookies whenever an `oidc` policy is configured. Set it to a random value before you start the gateway.
 
@@ -179,5 +179,5 @@ By default, the UI is served on the local admin interface (`localhost:15000`) wi
 
 4. Open the UI at the gateway's address, such as [http://localhost:3000/ui/](http://localhost:3000/ui/). Instead of loading the UI directly, agentgateway redirects you to the OIDC provider to log in. After you authenticate, you are returned to the UI.
 
-For the full list of `oidc` policy fields and a complete runnable Keycloak setup, see [OIDC browser authentication]({{< link-hextra path="/configuration/security/oidc" >}}) and the [`traffic-unified-gateway` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-unified-gateway) in the agentgateway repository. You can attach other policies to UI traffic in the same way, such as `cors`, `jwtAuth`, `basicAuth`, or `apiKey`.
+For the full list of `oidc` policy fields and a complete runnable Keycloak setup, see [OIDC browser authentication]({{< link-hextra path="/documentation/configuration/security/oidc" >}}) and the [`traffic-unified-gateway` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-unified-gateway) in the agentgateway repository. You can attach other policies to UI traffic in the same way, such as `cors`, `jwtAuth`, `basicAuth`, or `apiKey`.
 {{< /version >}}

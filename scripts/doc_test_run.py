@@ -64,8 +64,8 @@ def infer_version_from_sources(sources: List[Dict[str, str]], fallback: str) -> 
     """Extract the link-version token (e.g. 'latest', 'main') from source file paths.
 
     Source files live under paths like:
-      content/docs/kubernetes/latest/install/helm.md
-      content/docs/kubernetes/main/security/cors.md
+      content/docs/kubernetes/latest/documentation/install/helm.md
+      content/docs/kubernetes/main/documentation/security/cors.md
 
     The segment after the product directory (kubernetes/standalone) is the
     link version used inside {{< version include-if="..." >}} blocks.
@@ -83,7 +83,7 @@ def version_path_tokens(doc_rel_path: str) -> Dict[str, str]:
     """Build the path-substitution tokens for a page's `test:` metadata.
 
     Derived from the declaring page's repo-relative path
-    (e.g. "content/docs/standalone/main/configuration/backends.md"):
+    (e.g. "content/docs/standalone/main/documentation/configuration/backends.md"):
 
       ${version}     -> the version dir segment, e.g. "main" / "latest"
       ${versionRoot} -> the prefix up to and including the version dir,
@@ -508,7 +508,7 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, con
     cluster_name = f"{cluster_prefix}-{test_slug}"[:50]
 
     # Build a unique context dir slug from the full report key (doc_rel::test_name),
-    # e.g. content/docs/kubernetes/main/security/csrf.md::default  ->
+    # e.g. content/docs/kubernetes/main/documentation/security/csrf.md::default  ->
     #      content-docs-kubernetes-main-security-csrf--default
     # This avoids collisions when the same test name appears in multiple doc versions.
     doc_rel = test_case.document.relative_to(repo_root).as_posix()

@@ -92,6 +92,6 @@ mcp:
 
 ## Learn more
 
-- [MCP Connectivity Guide]({{< link-hextra path="/mcp/" >}})
-- [stdio Configuration Reference]({{< link-hextra path="/mcp/connect/stdio/" >}})
-- [MCP Authentication]({{< link-hextra path="/mcp/mcp-authn/" >}})
+- [MCP Connectivity Guide]({{< link-hextra path="/documentation/mcp/" >}})
+- [stdio Configuration Reference]({{< link-hextra path="/documentation/mcp/connect/stdio/" >}})
+- [MCP Authentication]({{< link-hextra path="/documentation/mcp/mcp-authn/" >}})

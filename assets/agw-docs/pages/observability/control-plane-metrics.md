@@ -1,4 +1,4 @@
-By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exposes metrics in Prometheus format. You can use these metrics to monitor the health and performance of your gateway environment, or to verify that the control plane is emitting expected metrics when debugging your [observability stack]({{< link-hextra path="/observability/otel-stack/">}}). For more information about how metrics are implemented, refer to the [kgateway project developer docs](https://github.com/kgateway-dev/kgateway/blob/main/devel/architecture/metrics.md).
+By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exposes metrics in Prometheus format. You can use these metrics to monitor the health and performance of your gateway environment, or to verify that the control plane is emitting expected metrics when debugging your [observability stack]({{< link-hextra path="/documentation/observability/otel-stack/">}}). For more information about how metrics are implemented, refer to the [kgateway project developer docs](https://github.com/kgateway-dev/kgateway/blob/main/devel/architecture/metrics.md).
 
 ## Before you begin
 
@@ -9,7 +9,7 @@ By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exp
 
 The {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} Helm chart can create the Prometheus and Grafana resources that collect and visualize these metrics. The chart does not create these resources by default.
 
-**Before you begin**: Install the Prometheus Operator custom resource definitions (CRDs) in your cluster before you enable monitoring. Without the CRDs, Prometheus cannot recognize the ServiceMonitor and PodMonitor resources that the chart creates. The {{< reuse "/agw-docs/snippets/agentgateway.md" >}} installation does not include these CRDs. For one way to install them, along with Prometheus and Grafan as part of an OTel stack, see [Set up Prometheus]({{< link-hextra path="/observability/otel-stack/#prometheus" >}}).
+**Before you begin**: Install the Prometheus Operator custom resource definitions (CRDs) in your cluster before you enable monitoring. Without the CRDs, Prometheus cannot recognize the ServiceMonitor and PodMonitor resources that the chart creates. The {{< reuse "/agw-docs/snippets/agentgateway.md" >}} installation does not include these CRDs. For one way to install them, along with Prometheus and Grafan as part of an OTel stack, see [Set up Prometheus]({{< link-hextra path="/documentation/observability/otel-stack/#prometheus" >}}).
 
 **Steps to enable monitoring in Helm**:
 

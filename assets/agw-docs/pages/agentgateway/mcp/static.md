@@ -1,4 +1,4 @@
-Route to a Model Context Protocol (MCP) server through a static address. For more information, see the [About MCP]({{< link-hextra path="/mcp/about" >}}) topic.
+Route to a Model Context Protocol (MCP) server through a static address. For more information, see the [About MCP]({{< link-hextra path="/documentation/mcp/about" >}}) topic.
 
 ## Before you begin
 

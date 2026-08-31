@@ -60,7 +60,12 @@ jobs:
               rel_path="${asset_file#assets/agw-docs/pages/}"
               rel_path="${rel_path#agentgateway/}"
               found=0
-              for content_dir in "content/docs/kubernetes/main" "content/docs/kubernetes/latest" "content/docs/standalone/main" "content/docs/standalone/latest"; do
+              # docTabs moved most subject directories under documentation/, so each
+              # version root has two candidate prefixes: the version root itself (which
+              # still holds integrations/, reference/, and release-notes/) and
+              # documentation/ (everything else). Try both.
+              for content_dir in "content/docs/kubernetes/main" "content/docs/kubernetes/latest" "content/docs/standalone/main" "content/docs/standalone/latest" \
+                                 "content/docs/kubernetes/main/documentation" "content/docs/kubernetes/latest/documentation" "content/docs/standalone/main/documentation" "content/docs/standalone/latest/documentation"; do
                 candidate="${content_dir}/${rel_path}"
                 if [ -f "$candidate" ] && ! echo "$FILES" | grep -qF "$candidate"; then
                   FILES="$FILES $candidate"

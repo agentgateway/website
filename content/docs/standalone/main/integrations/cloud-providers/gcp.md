@@ -10,7 +10,7 @@ aliases:
   - /docs/standalone/main/integrations/platforms/gcp/
 ---
 
-Run agentgateway on Cloud Run or GKE, and reach [Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}}) with the service account that Google Cloud already attaches to the workload. No API key goes into your configuration file.
+Run agentgateway on Cloud Run or GKE, and reach [Vertex AI]({{< link-hextra path="/documentation/llm/providers/vertex/" >}}) with the service account that Google Cloud already attaches to the workload. No API key goes into your configuration file.
 
 {{< doc-test paths="gcp" >}}
 # ============================================================================
@@ -122,7 +122,7 @@ fi
 echo "✓ Port 4000 serves the model and the Vertex params resolve to the documented values"
 {{< /doc-test >}}
 
-For the full list of Vertex AI settings, see [Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}}). For direct Gemini API access with an API key instead, see [Google Gemini]({{< link-hextra path="/llm/providers/gemini/" >}}).
+For the full list of Vertex AI settings, see [Vertex AI]({{< link-hextra path="/documentation/llm/providers/vertex/" >}}). For direct Gemini API access with an API key instead, see [Google Gemini]({{< link-hextra path="/documentation/llm/providers/gemini/" >}}).
 
 ## Run on Cloud Run
 
@@ -152,9 +152,9 @@ gcloud run deploy agentgateway \
 
 Note the following details.
 
-* **Port 4000 carries LLM traffic.** When your configuration file defines no gateway, the implied `default` gateway serves LLM traffic on port `4000` and MCP traffic on port `3000`. Set `--port` to the port that carries the traffic you route. For more information, see [Configuration modes]({{< link-hextra path="/llm/configuration-modes/" >}}).
+* **Port 4000 carries LLM traffic.** When your configuration file defines no gateway, the implied `default` gateway serves LLM traffic on port `4000` and MCP traffic on port `3000`. Set `--port` to the port that carries the traffic you route. For more information, see [Configuration modes]({{< link-hextra path="/documentation/llm/configuration-modes/" >}}).
 * **The service account is the credential.** Because `auth.gcp` uses ADC, `--service-account` is what lets agentgateway call Vertex AI. No API key is needed in the deploy command or in the configuration file.
-* **A secret mount is read-only.** Set `config.storage.mode` to `readOnly` so that writes from the UI fail with a clear message instead of a filesystem error. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+* **A secret mount is read-only.** Set `config.storage.mode` to `readOnly` so that writes from the UI fail with a clear message instead of a filesystem error. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
 > [!IMPORTANT]
 > The example uses `--no-allow-unauthenticated`. A gateway that holds Vertex AI access is a credential of its own, so anyone who can reach it can spend against your project. If you do need public access, put an authentication policy in front of it. For more information, see [Authentication and identity]({{< link-hextra path="/integrations/auth/" >}}).
@@ -163,8 +163,8 @@ Note the following details.
 
 GKE is an ordinary Kubernetes distribution as far as agentgateway is concerned. Two options are available.
 
-* Run standalone agentgateway as a Deployment with the [Helm chart]({{< link-hextra path="/setup/install/helm/" >}}). Bind the Kubernetes service account to a Google service account with Workload Identity Federation, and the same `auth.gcp` configuration applies.
-* Run the [Kubernetes control plane]({{< link-hextra path="/setup/install/kubernetes/" >}}), which manages agentgateway proxies from Kubernetes custom resources and the Kubernetes Gateway API.
+* Run standalone agentgateway as a Deployment with the [Helm chart]({{< link-hextra path="/documentation/setup/install/helm/" >}}). Bind the Kubernetes service account to a Google service account with Workload Identity Federation, and the same `auth.gcp` configuration applies.
+* Run the [Kubernetes control plane]({{< link-hextra path="/documentation/setup/install/kubernetes/" >}}), which manages agentgateway proxies from Kubernetes custom resources and the Kubernetes Gateway API.
 
 {{< cards >}}
   {{< card link="https://agentgateway.dev/docs/kubernetes/" title="Kubernetes mode docs" icon="external-link" >}}
@@ -194,15 +194,15 @@ gcloud secrets add-iam-policy-binding agentgateway-config \
 
 | Service | How it is used |
 |-------------|---------|
-| [Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}}) | Gemini and other models, reached with the service account |
-| [Google Gemini]({{< link-hextra path="/llm/providers/gemini/" >}}) | Direct Gemini API access with an API key |
+| [Vertex AI]({{< link-hextra path="/documentation/llm/providers/vertex/" >}}) | Gemini and other models, reached with the service account |
+| [Google Gemini]({{< link-hextra path="/documentation/llm/providers/gemini/" >}}) | Direct Gemini API access with an API key |
 | [Secret Manager](https://cloud.google.com/security/products/secret-manager) | Storage for the configuration file and for the API keys of non-Google providers |
 | Cloud Load Balancing | Load balancing and TLS termination in front of the gateway port |
-| Cloud Monitoring | Metrics collection, through a [Prometheus]({{< link-hextra path="/observability/metrics/prometheus/" >}}) scrape |
-| Cloud Trace | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/observability/traces/configs/otel/" >}}) collector |
+| Cloud Monitoring | Metrics collection, through a [Prometheus]({{< link-hextra path="/documentation/observability/metrics/prometheus/" >}}) scrape |
+| Cloud Trace | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/documentation/observability/traces/configs/otel/" >}}) collector |
 
 ## Next steps
 
-* [Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}}) for the full provider reference.
-* [Set up the UI]({{< link-hextra path="/setup/ui/" >}}) to serve the web interface on a gateway.
-* [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) before you mount a read-only secret.
+* [Vertex AI]({{< link-hextra path="/documentation/llm/providers/vertex/" >}}) for the full provider reference.
+* [Set up the UI]({{< link-hextra path="/documentation/setup/ui/" >}}) to serve the web interface on a gateway.
+* [Choose where configuration is stored]({{< link-hextra path="/documentation/setup/storage/" >}}) before you mount a read-only secret.

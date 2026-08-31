@@ -20,7 +20,7 @@ Agentgateway exports LLM telemetry via OpenTelemetry, which can be forwarded to 
 
 ## Configuration
 
-Set up OpenTelemetry tracing to export LLM-specific telemetry. See the [OpenTelemetry stack setup guide]({{< link-hextra path="/observability/otel-stack/" >}}) for details.
+Set up OpenTelemetry tracing to export LLM-specific telemetry. See the [OpenTelemetry stack setup guide]({{< link-hextra path="/documentation/observability/otel-stack/" >}}) for details.
 
 Agentgateway automatically includes these LLM-specific trace attributes.
 

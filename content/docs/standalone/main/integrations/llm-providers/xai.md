@@ -5,4 +5,4 @@ description: Connect agentgateway to xAI's Grok models
 test: skip
 ---
 
-{{< redirect path="/llm/providers/xai/" >}}
+{{< redirect path="/documentation/llm/providers/xai/" >}}

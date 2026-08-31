@@ -45,5 +45,5 @@ mcp:
 
 ## Learn more
 
-- [MCP Connectivity Guide]({{< link-hextra path="/mcp/" >}})
-- [Streamable HTTP Transport]({{< link-hextra path="/mcp/connect/http/" >}})
+- [MCP Connectivity Guide]({{< link-hextra path="/documentation/mcp/" >}})
+- [Streamable HTTP Transport]({{< link-hextra path="/documentation/mcp/connect/http/" >}})

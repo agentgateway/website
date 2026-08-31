@@ -21,7 +21,7 @@ Agentgateway reads the `usage` field from every LLM response to accumulate token
 **Counting happens after the fact:** This means token budgets are approximate. With a 1000-token-per-minute limit and a single request that returns 1200 tokens, that request succeeds, you're 200 tokens over budget, and subsequent requests are blocked until the window resets.
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-**Cached tokens count against the budget:** A request debits the input count *including* the tokens that the provider read from or wrote to its prompt cache, plus the output count. Providers disagree about whether their own input count includes cached tokens, so agentgateway normalizes the number first. For providers that exclude cached tokens, such as Anthropic and Amazon Bedrock, a cache-heavy request therefore debits more than the provider's reported input count. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).
+**Cached tokens count against the budget:** A request debits the input count *including* the tokens that the provider read from or wrote to its prompt cache, plus the output count. Providers disagree about whether their own input count includes cached tokens, so agentgateway normalizes the number first. For providers that exclude cached tokens, such as Anthropic and Amazon Bedrock, a cache-heavy request therefore debits more than the provider's reported input count. For more information, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
 {{< /version >}}
 
 Token budgets degrade gracefully: requests that exceed the budget fail fast with a 429 and are not forwarded to the backend. After the window resets, the token budget is restored and requests succeed again. No manual intervention is required.
@@ -46,8 +46,8 @@ Review the following table for example use cases and configuration guidance.
 
 Also, check out the rate limiting guides for other use cases:
 
-- [Request-based rate limiting on HTTP routes]({{< link-hextra path="/security/rate-limit-http" >}}).
-- [MCP tool call limiting]({{< link-hextra path="/mcp/rate-limit" >}}).
+- [Request-based rate limiting on HTTP routes]({{< link-hextra path="/documentation/security/rate-limit-http" >}}).
+- [MCP tool call limiting]({{< link-hextra path="/documentation/mcp/rate-limit" >}}).
 
 ## Before you begin
 
@@ -312,7 +312,7 @@ This policy acts as a hard ceiling on total token consumption across the entire 
 
 Local rate limiting runs independently on each proxy replica. For shared token budgets across multiple agentgateway replicas, use global rate limiting with an external rate limit service.
 
-For detailed instructions on setting up global rate limiting with descriptors and an external rate limit service, see the [Global rate limiting guide]({{< link-hextra path="/security/rate-limit-global" >}}).
+For detailed instructions on setting up global rate limiting with descriptors and an external rate limit service, see the [Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}).
 
 ## Cleanup
 

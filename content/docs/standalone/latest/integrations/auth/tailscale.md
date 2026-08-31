@@ -4,7 +4,7 @@ weight: 30
 description: Authenticate users with their Tailscale identity for zero-trust access to your MCP servers.
 ---
 
-Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authenticate users based on their Tailscale identity, which enables zero-trust access to your MCP servers. Agentgateway uses an [external authorization (`extAuthz`)]({{< link-hextra path="/configuration/security/external-authz" >}}) policy to call the local Tailscale daemon's `whois` API and identify the user behind each connection.
+Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authenticate users based on their Tailscale identity, which enables zero-trust access to your MCP servers. Agentgateway uses an [external authorization (`extAuthz`)]({{< link-hextra path="/documentation/configuration/security/external-authz" >}}) policy to call the local Tailscale daemon's `whois` API and identify the user behind each connection.
 
 ## How it works
 
@@ -15,7 +15,7 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
 
 ## Before you begin
 
-- [Install agentgateway]({{< link-hextra path="/quickstart/" >}}).
+- [Install agentgateway]({{< link-hextra path="/documentation/quickstart/" >}}).
 - [Install Tailscale](https://tailscale.com/download) and connect it to your tailnet.
 - Have another device on your tailnet to test from, or use the same machine through its Tailscale IP.
 
@@ -220,7 +220,7 @@ ls -la /var/run/tailscale/tailscaled.sock
 ## Learn more
 
 {{< cards >}}
-  {{< card path="/configuration/security/external-authz" title="External authorization" subtitle="ExtAuthz configuration reference" >}}
-  {{< card path="/configuration/security/" title="Security configuration" subtitle="Complete security options" >}}
+  {{< card path="/documentation/configuration/security/external-authz" title="External authorization" subtitle="ExtAuthz configuration reference" >}}
+  {{< card path="/documentation/configuration/security/" title="Security configuration" subtitle="Complete security options" >}}
   {{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-tailscale-auth" title="traffic-tailscale-auth example" subtitle="Agentgateway config example that protects a plain HTTP backend" >}}
 {{< /cards >}}

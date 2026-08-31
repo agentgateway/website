@@ -2,7 +2,7 @@ You can use this guide to upgrade the {{< reuse "/agw-docs/snippets/kgateway.md"
 
 ## Before you begin
 
-Review the [release notes]({{< link-hextra path="/reference/release-notes/" >}}) for any breaking changes or new configuration that you want to use.
+Review the [release notes]({{< link-hextra path="/release-notes/release-notes/" >}}) for any breaking changes or new configuration that you want to use.
 
 ## Upgrade {#upgrade-steps}
 

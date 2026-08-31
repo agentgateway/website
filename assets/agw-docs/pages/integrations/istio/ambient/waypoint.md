@@ -1,5 +1,5 @@
 > [!WARNING]
-> The waypoint integration for Envoy-based gateway proxies is deprecated and is planned to be removed in version 2.2. If you want to use AI capabilities, use an [agentgateway proxy]({{< link-hextra path="/setup/">}}) instead.
+> The waypoint integration for Envoy-based gateway proxies is deprecated and is planned to be removed in version 2.2. If you want to use AI capabilities, use an [agentgateway proxy]({{< link-hextra path="/documentation/setup/">}}) instead.
 
 ## Create a waypoint proxy
 
@@ -80,7 +80,7 @@ Use the `{{< reuse "/agw-docs/snippets/waypoint-class.md" >}}` GatewayClass to d
 
 ## Enforce L7 policies with the waypoint {#waypoint-policies}
 
-In this step, you explore how to apply different types of Layer 7 policies to your sample apps. These policies are enforced by the {{< reuse "/agw-docs/snippets/kgateway.md" >}} waypoint proxy that you created earlier. You can add other Layer 7 policies to the waypoint proxy. For more information, see the [traffic management]({{< link-hextra path="/traffic-management">}}), [security]({{< link-hextra path="/security">}}), and [resiliency]({{< link-hextra path="/resiliency">}}) guides. 
+In this step, you explore how to apply different types of Layer 7 policies to your sample apps. These policies are enforced by the {{< reuse "/agw-docs/snippets/kgateway.md" >}} waypoint proxy that you created earlier. You can add other Layer 7 policies to the waypoint proxy. For more information, see the [traffic management]({{< link-hextra path="/documentation/traffic-management">}}), [security]({{< link-hextra path="/documentation/security">}}), and [resiliency]({{< link-hextra path="/documentation/resiliency">}}) guides. 
 
 ### Header control
 

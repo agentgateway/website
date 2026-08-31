@@ -2,11 +2,11 @@
 
 Agentgateway serves the UI on the port of any gateway that you list in the `ui` section of your configuration file. A generated configuration lists the `default` gateway, so the UI is served on the gateway port from the first start. Agentgateway logs the address that it serves the UI on when it starts, so the log is the quickest way to find the UI.
 
-A copy of the UI is also served on the admin interface, which is `localhost:15000` by default. That copy is a local convenience, and the admin address is loopback-only, so a gateway is what you use to reach the UI from anywhere else. For more information, see [UI]({{< link-hextra path="/setup/ui/" >}}).
+A copy of the UI is also served on the admin interface, which is `localhost:15000` by default. That copy is a local convenience, and the admin address is loopback-only, so a gateway is what you use to reach the UI from anywhere else. For more information, see [UI]({{< link-hextra path="/documentation/setup/ui/" >}}).
 
 ## Before you begin
 
-[Install standalone agentgateway]({{< link-hextra path="/setup/install/" >}}) as a binary, a Docker container, or a Kubernetes Deployment with Helm.
+[Install standalone agentgateway]({{< link-hextra path="/documentation/setup/install/" >}}) as a binary, a Docker container, or a Kubernetes Deployment with Helm.
 
 {{< doc-test paths="ui-standalone-default" >}}
 # Install agentgateway binary for tests
@@ -55,7 +55,7 @@ The generated configuration that agentgateway writes into a mounted `/config` di
 
 2. Open [http://localhost:4000/ui/](http://localhost:4000/ui/) in your browser.
 
-If you mounted your own configuration file that has no `ui` section, the UI is served only on the admin interface, which is not reachable from your host. Add a `ui` section that lists a gateway. For more information, see [Reach the UI in a container]({{< link-hextra path="/operations/debug/#docker-admin-addr" >}}).
+If you mounted your own configuration file that has no `ui` section, the UI is served only on the admin interface, which is not reachable from your host. Add a `ui` section that lists a gateway. For more information, see [Reach the UI in a container]({{< link-hextra path="/documentation/operations/debug/#docker-admin-addr" >}}).
 {{% /tab %}}
 {{% tab name="Helm" %}}
 The chart creates no Service for the admin port, so you reach the UI by port-forwarding the {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} Deployment. A port-forward is fine for a quick look. To reach the UI without one, give it a gateway.
@@ -73,7 +73,7 @@ The chart creates no Service for the admin port, so you reach the UI by port-for
    open http://localhost:15000/ui
    ```
 
-To serve the UI on its own gateway and hostname instead of a port-forward, see [Serve the UI on its own gateway]({{< link-hextra path="/setup/ui/gateway-ui/" >}}).
+To serve the UI on its own gateway and hostname instead of a port-forward, see [Serve the UI on its own gateway]({{< link-hextra path="/documentation/setup/ui/gateway-ui/" >}}).
 {{% /tab %}}
 {{< /tabs >}}
 
@@ -105,16 +105,16 @@ kill $AGW_DEFAULT_PID 2>/dev/null || true
 
 Use the UI to review what agentgateway loaded and to manage the resources that you can edit from the UI. The following guides configure agentgateway from a file first, and then you can open the same configuration in the UI to see how the UI presents it.
 
-* [MCP quickstart]({{< link-hextra path="/quickstart/mcp/" >}}) to connect an MCP server and try tools in the built-in playground.
-* [LLM quickstart]({{< link-hextra path="/quickstart/llm/" >}}) to route requests to an LLM provider and see the model in the UI.
+* [MCP quickstart]({{< link-hextra path="/documentation/quickstart/mcp/" >}}) to connect an MCP server and try tools in the built-in playground.
+* [LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}}) to route requests to an LLM provider and see the model in the UI.
 
-Whether the UI can save the changes that you make depends on your storage mode. In the binary and Docker installations, the UI writes to your configuration file by default. In the Helm installation, the ConfigMap is read-only and a save fails unless you switch the chart to database mode. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+Whether the UI can save the changes that you make depends on your storage mode. In the binary and Docker installations, the UI writes to your configuration file by default. In the Helm installation, the ConfigMap is read-only and a save fails unless you switch the chart to database mode. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
 ## Generate LLM client settings {#client-setup}
 
 For an example of using the UI to set something up, use the **LLM > Client Setup** page. It generates connection settings and snippets for curl, Claude Code, Claude Desktop, Codex CLI, OpenCode, Cursor, GitHub Copilot, Windsurf, and the OpenAI JavaScript and Python SDKs.
 
-1. Configure at least one LLM model and, if the gateway requires client authentication, a [virtual API key]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
+1. Configure at least one LLM model and, if the gateway requires client authentication, a [virtual API key]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
 2. Open the **LLM** > **Client Setup** page in the UI, such as [http://localhost:15000/ui/llm/client-setup](http://localhost:15000/ui/llm/client-setup).
 3. Review the **Gateway base URL**, and select a model and virtual API key.
 4. Select the client from the **Integration** dropdown, and copy the generated settings or snippet.
@@ -125,7 +125,7 @@ The selected model appears only in recipes that accept a model setting. For exam
 
 ## Next steps
 
-* [Serve the UI on its own gateway]({{< link-hextra path="/setup/ui/gateway-ui/" >}}) so that UI traffic and proxy traffic do not share a port.
-* [Secure the UI]({{< link-hextra path="/setup/ui/secure-ui/" >}}) with an OIDC login.
-* [Expose the UI]({{< link-hextra path="/setup/ui/expose-ui/" >}}) on your own HTTPS hostname.
-* [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) so that the UI can save your changes.
+* [Serve the UI on its own gateway]({{< link-hextra path="/documentation/setup/ui/gateway-ui/" >}}) so that UI traffic and proxy traffic do not share a port.
+* [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}) with an OIDC login.
+* [Expose the UI]({{< link-hextra path="/documentation/setup/ui/expose-ui/" >}}) on your own HTTPS hostname.
+* [Choose where configuration is stored]({{< link-hextra path="/documentation/setup/storage/" >}}) so that the UI can save your changes.

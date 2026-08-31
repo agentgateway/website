@@ -5,4 +5,4 @@ description: Connect agentgateway to OpenAI's GPT models
 test: skip
 ---
 
-{{< redirect path="/llm/providers/openai/" >}}
+{{< redirect path="/documentation/llm/providers/openai/" >}}

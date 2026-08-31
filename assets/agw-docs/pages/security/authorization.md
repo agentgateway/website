@@ -1,6 +1,6 @@
 Authorization policies in agentgateway let you control which requests are allowed to reach your backends. Policies apply across all traffic types — HTTP routes, LLM providers, MCP servers, and agents — giving you a unified way to enforce access rules.
 
-For a general overview of how policies are structured, see [Policy sections]({{< link-hextra path="/about/policies/overview/" >}}).
+For a general overview of how policies are structured, see [Policy sections]({{< link-hextra path="/documentation/about/policies/overview/" >}}).
 
 ## How authorization works
 
@@ -104,7 +104,7 @@ EOF
 
 | Field | Description |
 |---|---|
-| `jwtAuthentication` | Validates the JWT on the incoming request. Authorization expressions that reference `jwt` require this section, because the `jwt` context exists only after a token is verified. In this example, a local JWKS is provided inline. For more options, see [JWT auth]({{< link-hextra path="/security/jwt/" >}}). |
+| `jwtAuthentication` | Validates the JWT on the incoming request. Authorization expressions that reference `jwt` require this section, because the `jwt` context exists only after a token is verified. In this example, a local JWKS is provided inline. For more options, see [JWT auth]({{< link-hextra path="/documentation/security/jwt/" >}}). |
 | `authorization.action` | The authorization action to take. Use `Allow` for allowlisting. |
 | `authorization.policy.matchExpressions` | A list of CEL expressions. For an `Allow` action, at least one expression must match (OR logic). For a `Require` action, all expressions must evaluate to `true` (AND logic). |
 
@@ -322,7 +322,7 @@ For Layer 4 network-level filtering on downstream connections, use `spec.fronten
 
 You can apply authorization policies specifically to MCP servers using the `spec.backend.mcp.authorization` field in an {{< reuse "agw-docs/snippets/policy.md" >}}. This lets you control which clients or JWT token holders can access specific MCP tools.
 
-For a complete guide with examples, see [JWT auth for MCP services]({{< link-hextra path="/mcp/mcp-access/" >}}).
+For a complete guide with examples, see [JWT auth for MCP services]({{< link-hextra path="/documentation/mcp/mcp-access/" >}}).
 
 ### JWT authorization
 
@@ -330,7 +330,7 @@ To use JWT claims in authorization policies, you first need to configure JWT aut
 
 After the gateway validates a JWT, the decoded claims are available in CEL expressions as top-level fields on `jwt`, such as `jwt.sub` or `jwt.group`.
 
-For setup instructions and examples, see [JWT auth]({{< link-hextra path="/security/jwt/" >}}).
+For setup instructions and examples, see [JWT auth]({{< link-hextra path="/documentation/security/jwt/" >}}).
 
 For a list of available JWT variables, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables/" >}}).
 

@@ -10,7 +10,7 @@ aliases:
   - /docs/standalone/latest/integrations/platforms/aws/
 ---
 
-Run agentgateway on Amazon ECS or Amazon EKS, and reach [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}}) with the IAM role that AWS already gives the container. No API key goes into your configuration file.
+Run agentgateway on Amazon ECS or Amazon EKS, and reach [Amazon Bedrock]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}) with the IAM role that AWS already gives the container. No API key goes into your configuration file.
 
 {{< doc-test paths="aws" >}}
 # ============================================================================
@@ -109,7 +109,7 @@ fi
 echo "✓ Port 4000 serves the model and the Bedrock region resolves to the documented value"
 {{< /doc-test >}}
 
-For the full list of Bedrock settings, including passthrough and token counting, see [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}}).
+For the full list of Bedrock settings, including passthrough and token counting, see [Amazon Bedrock]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}).
 
 ## Run on Amazon ECS
 
@@ -161,21 +161,21 @@ The following task definition mounts an EFS file system at `/config` and points 
 
 Note the following details.
 
-* **Port 4000 carries LLM traffic.** When your configuration file defines no gateway, the implied `default` gateway serves LLM traffic on port `4000` and MCP traffic on port `3000`. Publish the port that carries the traffic you route. For more information, see [Configuration modes]({{< link-hextra path="/llm/configuration-modes/" >}}).
+* **Port 4000 carries LLM traffic.** When your configuration file defines no gateway, the implied `default` gateway serves LLM traffic on port `4000` and MCP traffic on port `3000`. Publish the port that carries the traffic you route. For more information, see [Configuration modes]({{< link-hextra path="/documentation/llm/configuration-modes/" >}}).
 * **The task role is the credential.** Because `auth.aws` uses ambient credentials, `taskRoleArn` is what lets agentgateway call Bedrock. No API key is needed in the task definition or in the configuration file.
 * **Pin the image tag.** The example pins the tag for this documentation version rather than using `latest`, so that a new release does not change the running proxy without your involvement.
 
 > [!IMPORTANT]
-> Do not publish the admin address from an ECS task. The admin address has no authentication, and an ECS service is usually reachable from a load balancer. To reach the UI, serve it on a gateway instead, where you can attach an authentication policy. For more information, see [Serve the UI on a gateway]({{< link-hextra path="/setup/ui/gateway-ui/" >}}).
+> Do not publish the admin address from an ECS task. The admin address has no authentication, and an ECS service is usually reachable from a load balancer. To reach the UI, serve it on a gateway instead, where you can attach an authentication policy. For more information, see [Serve the UI on a gateway]({{< link-hextra path="/documentation/setup/ui/gateway-ui/" >}}).
 
-If the EFS volume is mounted read-only, or you bake the configuration file into your own image, set `config.storage.mode` to `readOnly` so that writes from the UI fail with a clear message instead of a filesystem error. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+If the EFS volume is mounted read-only, or you bake the configuration file into your own image, set `config.storage.mode` to `readOnly` so that writes from the UI fail with a clear message instead of a filesystem error. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
 ## Run on Amazon EKS
 
 EKS is an ordinary Kubernetes distribution as far as agentgateway is concerned. Two options are available.
 
-* Run standalone agentgateway as a Deployment with the [Helm chart]({{< link-hextra path="/setup/install/helm/" >}}). Attach the IAM role to the pod's service account with IAM Roles for Service Accounts (IRSA) or EKS Pod Identity, and the same `auth.aws: {}` configuration applies.
-* Run the [Kubernetes control plane]({{< link-hextra path="/setup/install/kubernetes/" >}}), which manages agentgateway proxies from Kubernetes custom resources and the Kubernetes Gateway API.
+* Run standalone agentgateway as a Deployment with the [Helm chart]({{< link-hextra path="/documentation/setup/install/helm/" >}}). Attach the IAM role to the pod's service account with IAM Roles for Service Accounts (IRSA) or EKS Pod Identity, and the same `auth.aws: {}` configuration applies.
+* Run the [Kubernetes control plane]({{< link-hextra path="/documentation/setup/install/kubernetes/" >}}), which manages agentgateway proxies from Kubernetes custom resources and the Kubernetes Gateway API.
 
 {{< cards >}}
   {{< card link="https://agentgateway.dev/docs/kubernetes/" title="Kubernetes mode docs" icon="external-link" >}}
@@ -214,14 +214,14 @@ The `secretsmanager` statement is needed only if you also route to a non-AWS pro
 
 | Service | How it is used |
 |-------------|---------|
-| [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}}) | Claude, Llama, and other foundation models, reached with the task role |
+| [Amazon Bedrock]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}) | Claude, Llama, and other foundation models, reached with the task role |
 | [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) | Storage for the API keys of non-AWS providers |
 | AWS Application Load Balancer | Load balancing and TLS termination in front of the gateway port |
 | Amazon CloudWatch | Destination for the container logs configured by `awslogs` |
-| AWS X-Ray | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/observability/traces/configs/otel/" >}}) collector |
+| AWS X-Ray | Trace collection, through an [OpenTelemetry]({{< link-hextra path="/documentation/observability/traces/configs/otel/" >}}) collector |
 
 ## Next steps
 
-* [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}}) for the full provider reference.
-* [Set up the UI]({{< link-hextra path="/setup/ui/" >}}) to serve the web interface on a gateway.
-* [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) before you mount a read-only file.
+* [Amazon Bedrock]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}) for the full provider reference.
+* [Set up the UI]({{< link-hextra path="/documentation/setup/ui/" >}}) to serve the web interface on a gateway.
+* [Choose where configuration is stored]({{< link-hextra path="/documentation/setup/storage/" >}}) before you mount a read-only file.

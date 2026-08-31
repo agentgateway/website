@@ -5,4 +5,4 @@ description: Connect agentgateway to Azure-hosted OpenAI models
 test: skip
 ---
 
-{{< redirect path="/llm/providers/azure/" >}}
+{{< redirect path="/documentation/llm/providers/azure/" >}}

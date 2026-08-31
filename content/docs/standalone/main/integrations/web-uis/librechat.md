@@ -22,7 +22,7 @@ description: Front LibreChat with agentgateway to centralize LLM credentials, au
 
 ## Before you begin
 
-1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/documentation/setup/install/binary/" >}}).
 2. Have an LLM provider API key, such as an [OpenAI API key](https://platform.openai.com/api-keys).
 3. Set up [LibreChat](https://www.librechat.ai/docs/local) via Docker Compose with MongoDB.
 
@@ -104,7 +104,7 @@ info  request gateway=default/default listener=llm route=internal/model:* endpoi
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/llm/cost-controls/virtual-keys/" title="Virtual key management" subtitle="Apply rate limits and token budgets across providers." >}}
-  {{< card path="/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs for every LLM call." >}}
-  {{< card path="/llm/providers/" title="LLM providers" subtitle="Add additional upstream providers behind the same endpoint." >}}
+  {{< card path="/documentation/llm/cost-controls/virtual-keys/" title="Virtual key management" subtitle="Apply rate limits and token budgets across providers." >}}
+  {{< card path="/documentation/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs for every LLM call." >}}
+  {{< card path="/documentation/llm/providers/" title="LLM providers" subtitle="Add additional upstream providers behind the same endpoint." >}}
 {{< /cards >}}

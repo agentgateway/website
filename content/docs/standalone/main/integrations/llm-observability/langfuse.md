@@ -140,4 +140,4 @@ volumes:
 ## Learn more
 
 - [Langfuse Documentation](https://langfuse.com/docs)
-- [OpenTelemetry Integration]({{< link-hextra path="/observability/traces/setup/" >}})
+- [OpenTelemetry Integration]({{< link-hextra path="/documentation/observability/traces/setup/" >}})
