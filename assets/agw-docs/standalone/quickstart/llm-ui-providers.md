@@ -4,6 +4,9 @@
 
 Set up credentials for the provider that you want to use. For production credential options, see the [provider reference]({{< link-hextra path="/llm/providers/" >}}).
 
+> [!NOTE]
+> Each step in this guide has a tab for every provider that the UI supports. Not all of the tabs fit on the screen at once, so scroll the tab bar to the right to reach the rest. The tabs are in the same order as the **Provider** dropdown list in the UI.
+
 {{< tabs >}}
 {{% tab name="OpenAI" %}}
 ```sh
@@ -135,6 +138,9 @@ info  app  serving UI at http://localhost:4000/ui
 {{< doc-test paths="llm" >}}
 # Hidden test: the UI steps below (Enable LLM -> Add model) are not scriptable, so this
 # block reproduces the equivalent config they produce, to keep the resulting setup tested.
+# The model points at the local mock LLM so that the request in Step 5 is a real,
+# asserted round trip through the gateway without needing a provider API key.
+{{< reuse "agw-docs/snippets/start-mock-llm.md" >}}
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
@@ -145,9 +151,10 @@ llm:
       model: gpt-3.5-turbo
       apiKey: "$OPENAI_API_KEY"
 EOF
-agentgateway -f config.yaml &
+{{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
+agentgateway -f config-mock.yaml &
 AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
+trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
 sleep 3
 {{< /doc-test >}}
 
@@ -156,8 +163,7 @@ sleep 3
 1. Open the [agentgateway UI](http://localhost:4000/ui/).
 2. On the first run, the **Welcome to Agentgateway** wizard opens. Click **Enable LLM**, and then click **Continue**.
 
-   {{< reuse-image-light src="img/ui-welcome-wizard.png" >}}
-   {{< reuse-image-dark srcDark="img/ui-welcome-wizard-dark.png" >}}
+   {{< reuse-image src="img/ui-welcome-wizard.png" srcDark="img/ui-welcome-wizard-dark.png" >}}
 
 The **Gateway Overview** home page opens, with rows for **LLM**, **MCP**, and **Traffic**.
 
@@ -172,8 +178,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `OPENAI_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-dark.png" >}}
+{{< reuse-image src="img/ui-llm-add-model.png" srcDark="img/ui-llm-add-model-dark.png" >}}
 {{% /tab %}}
 {{% tab name="Anthropic" %}}
 1. For **Incoming model match**, enter `claude-haiku-4-5`.
@@ -181,8 +186,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `ANTHROPIC_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-anthropic.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-anthropic.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-anthropic.png" >}}
 {{% /tab %}}
 {{% tab name="Gemini" %}}
 1. For **Incoming model match**, enter `gemini-2.5-flash`.
@@ -190,8 +194,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `GEMINI_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-gemini.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-gemini.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-gemini.png" >}}
 {{% /tab %}}
 {{% tab name="Vertex AI" %}}
 1. For **Incoming model match**, enter `gemini-2.5-flash`.
@@ -200,8 +203,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 4. For **Vertex project**, enter your Google Cloud project ID. For **Vertex region**, enter `us-central1` or your region.
 5. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-vertex.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-vertex.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-vertex.png" >}}
 {{% /tab %}}
 {{% tab name="Amazon Bedrock" %}}
 1. For **Incoming model match**, enter `amazon.nova-lite-v1:0`.
@@ -210,8 +212,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 4. For **AWS region**, enter `us-west-2` or your region.
 5. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-bedrock.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-bedrock.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-bedrock.png" >}}
 {{% /tab %}}
 {{% tab name="Azure" %}}
 1. For **Incoming model match**, enter `gpt-4.1`.
@@ -220,8 +221,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 4. For **Azure resource name**, enter your Azure OpenAI resource name.
 5. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-azure.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-azure.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-azure.png" >}}
 {{% /tab %}}
 {{% tab name="GitHub Copilot" %}}
 1. For **Incoming model match**, enter `gpt-4.1`.
@@ -229,8 +229,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `GH_COPILOT_TOKEN`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-copilot.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-copilot.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-copilot.png" >}}
 {{% /tab %}}
 {{% tab name="Custom" %}}
 1. For **Incoming model match**, enter `my-model`.
@@ -239,8 +238,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 4. For **Base URL**, enter your provider's base URL, such as `https://llm.example.com/v1`. Keep **Chat completions** selected.
 5. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-custom.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-custom.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-custom.png" >}}
 {{% /tab %}}
 {{% tab name="Baseten" %}}
 1. For **Incoming model match**, enter `openai/gpt-oss-120b`.
@@ -248,8 +246,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `BASETEN_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-baseten.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-baseten.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-baseten.png" >}}
 {{% /tab %}}
 {{% tab name="Cerebras" %}}
 1. For **Incoming model match**, enter `gpt-oss-120b`.
@@ -257,8 +254,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `CEREBRAS_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-cerebras.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-cerebras.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-cerebras.png" >}}
 {{% /tab %}}
 {{% tab name="Cohere" %}}
 1. For **Incoming model match**, enter `command-a-03-2025`.
@@ -266,8 +262,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `COHERE_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-cohere.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-cohere.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-cohere.png" >}}
 {{% /tab %}}
 {{% tab name="DeepInfra" %}}
 1. For **Incoming model match**, enter `Qwen/Qwen3-32B`.
@@ -275,8 +270,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `DEEPINFRA_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-deepinfra.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-deepinfra.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-deepinfra.png" >}}
 {{% /tab %}}
 {{% tab name="DeepSeek" %}}
 1. For **Incoming model match**, enter `deepseek-v4-flash`.
@@ -284,8 +278,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `DEEPSEEK_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-deepseek.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-deepseek.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-deepseek.png" >}}
 {{% /tab %}}
 {{% tab name="Fireworks AI" %}}
 1. For **Incoming model match**, enter `accounts/fireworks/models/gpt-oss-120b`.
@@ -293,8 +286,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `FIREWORKS_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-fireworks.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-fireworks.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-fireworks.png" >}}
 {{% /tab %}}
 {{% tab name="Groq" %}}
 1. For **Incoming model match**, enter `llama-3.1-8b-instant`.
@@ -302,8 +294,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `GROQ_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-groq.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-groq.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-groq.png" >}}
 {{% /tab %}}
 {{% tab name="Hugging Face" %}}
 1. For **Incoming model match**, enter `Qwen/Qwen3-32B`.
@@ -311,8 +302,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `HUGGINGFACE_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-huggingface.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-huggingface.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-huggingface.png" >}}
 {{% /tab %}}
 {{% tab name="Mistral AI" %}}
 1. For **Incoming model match**, enter `mistral-small-latest`.
@@ -320,8 +310,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `MISTRAL_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-mistral.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-mistral.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-mistral.png" >}}
 {{% /tab %}}
 {{% tab name="Ollama" %}}
 1. For **Incoming model match**, enter `llama3.2`.
@@ -330,8 +319,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 4. For **Base URL**, use `http://localhost:11434/v1` or the URL of your Ollama server.
 5. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-ollama.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-ollama.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-ollama.png" >}}
 {{% /tab %}}
 {{% tab name="OpenRouter" %}}
 1. For **Incoming model match**, enter `anthropic/claude-haiku-4.5`.
@@ -339,8 +327,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `OPENROUTER_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-openrouter.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-openrouter.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-openrouter.png" >}}
 {{% /tab %}}
 {{% tab name="Together AI" %}}
 1. For **Incoming model match**, enter `meta-llama/Llama-3.3-70B-Instruct-Turbo`.
@@ -348,8 +335,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `TOGETHER_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-togetherai.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-togetherai.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-togetherai.png" >}}
 {{% /tab %}}
 {{% tab name="xAI" %}}
 1. For **Incoming model match**, enter `grok-4.3`.
@@ -357,8 +343,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 3. For **Provider API key**, select **Env var** and enter `XAI_API_KEY`.
 4. Click **Save model**.
 
-{{< reuse-image-light src="img/ui-llm-add-model-xai.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-xai.png" >}}
+{{< reuse-image src="img/ui-llm-add-model-xai.png" >}}
 {{% /tab %}}
 {{< /tabs >}}
 
@@ -368,7 +353,7 @@ From another terminal, send a request to the chat completions endpoint.
 
 {{< tabs >}}
 {{% tab name="OpenAI" %}}
-```sh
+```sh {paths="llm"}
 curl http://localhost:4000/v1/chat/completions \
   -H 'content-type: application/json' \
   -d '{
@@ -684,6 +669,37 @@ curl http://localhost:4000/v1/chat/completions \
 {{% /tab %}}
 {{< /tabs >}}
 
+{{< doc-test paths="llm" >}}
+YAMLTest -f - <<'EOF'
+- name: chat completion request returns an OpenAI-shaped response with token usage
+  http:
+    url: "http://localhost:4000"
+    path: /v1/chat/completions
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Reply with exactly: OpenAI through agentgateway works"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.model"
+        comparator: equals
+        value: "gpt-3.5-turbo"
+      - path: "$.choices[0].message.role"
+        comparator: equals
+        value: "assistant"
+      - path: "$.usage.total_tokens"
+        comparator: greaterThan
+        value: 0
+EOF
+{{< /doc-test >}}
+
 You can send the same request from the built-in playground.
 
 {{< tabs >}}
@@ -819,12 +835,10 @@ Example successful playground requests:
 
 {{< tabs >}}
 {{% tab name="OpenAI" %}}
-{{< reuse-image-light src="img/ui-llm-playground.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-playground-dark.png" >}}
+{{< reuse-image src="img/ui-llm-playground.png" srcDark="img/ui-llm-playground-dark.png" >}}
 {{% /tab %}}
 {{% tab name="Anthropic" %}}
-{{< reuse-image-light src="img/ui-llm-playground-anthropic.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-playground-anthropic.png" >}}
+{{< reuse-image src="img/ui-llm-playground-anthropic.png" >}}
 {{% /tab %}}
 {{< /tabs >}}
 {{% /steps %}}
