@@ -191,6 +191,36 @@ discoveryNamespaceSelectors:
 
 {{< /version >}}
 
+<!-- Gated by excluding the older versions, not by including "main", so the
+     section stays put when the next release freezes this line under a number.
+     Only OSS versions need listing: solo-io/docs reaches this file through
+     the rebase shortcode, which passes the OSS version its ossDir points at, so
+     every
+     enterprise line resolves to one of the tokens above. -->
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+
+## Istio resource discovery {#istio-discovery}
+
+By default, the ClusterRole for the {{< reuse "agw-docs/snippets/agentgateway.md" >}} control plane includes permission to read Istio ServiceEntry and WorkloadEntry resources, so that the controller can discover mesh services and workloads. In a cluster that does not have the Istio custom resource definitions (CRDs) installed, that rule refers to resources that do not exist. Set `istio.enabled` to `false` to leave the rule out.
+
+```yaml
+istio:
+  enabled: false
+```
+
+Keep the following behavior in mind:
+
+* The value controls RBAC generation only. It does not turn off Istio integration in the controller. To change whether gateways join the mesh, use `istio.autoEnabled`, or the `spec.istio` section of an `AgentgatewayParameters` resource.
+* Helm accepts a value that the installed chart does not define, so this setting has no effect on a chart version that predates it. After you upgrade, confirm that the rule is gone. The chart names the ClusterRole after the release namespace, so adjust the name if you installed into a different namespace.
+
+  ```sh
+  kubectl get clusterrole agentgateway-{{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml | grep networking.istio.io
+  ```
+
+  A command that returns no output means that the rule is no longer granted.
+
+{{< /version >}}
+
 <!-- TODO conditional-text oss-only -->
 {{< conditional-text include-if="kubernetes" >}}
 ## TLS encryption {#tls-encryption}
