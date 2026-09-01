@@ -153,6 +153,7 @@ These metrics track process-level memory for the agentgateway process, sourced f
 
 | Metric | Type | Unit | Description |
 | --- | --- | --- | --- |
+| `agentgateway_process_size` | Gauge | bytes | Total virtual memory size of the process. |
 | `agentgateway_process_rss` | Gauge | bytes | RSS (resident set size) memory usage. |
 | `agentgateway_process_pss` | Gauge | bytes | PSS (proportional set size) memory usage. |
 | `agentgateway_process_pss_dirty` | Gauge | bytes | Dirty PSS memory usage. |
