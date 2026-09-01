@@ -115,6 +115,30 @@ frontendPolicies:
         user_id: 'request.headers["x-user-id"]'
 ```
 
+Custom fields are stored as a JSON blob in the `attributes_json` column of the `request_logs` table, not as separate columns. Use your database's JSON functions to extract them.
+
+{{< tabs >}}
+{{% tab name="SQLite" %}}
+
+```sh
+sqlite3 /path/to/logs.db \
+  "SELECT id, json_extract(attributes_json, '$.user_id') AS user_id, started_at, http_status
+FROM request_logs
+ORDER BY started_at DESC
+LIMIT 10;"
+```
+
+{{% /tab %}}
+{{% tab name="PostgreSQL" %}}
+
+```sh
+psql "postgres://user:password@host:5432/dbname" \
+  -c "SELECT id, attributes_json->>'user_id' AS user_id, started_at, http_status FROM request_logs ORDER BY started_at DESC LIMIT 10;"
+```
+
+{{% /tab %}}
+{{< /tabs >}}
+
 ## Disable database logging
 
 To stop writing access logs to a database, remove both `config.logging.database` and `config.database` from your configuration. Access logs continue to go to stdout. The cost dashboard and analytics pages in the UI become unavailable, but all other functionality is unaffected.

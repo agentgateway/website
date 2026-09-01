@@ -9,13 +9,6 @@ Agentgateway natively exports distributed traces over OTLP (OpenTelemetry Protoc
 
 ## Enable tracing
 
-Agentgateway has two places that you can configure tracing.
-
-| Section | Reloads | Use it for |
-|---------|---------|-----------|
-| `frontendPolicies.tracing` | Yes, on every configuration reload | The tracing setup for all traffic that the proxy handles, including span attributes, resource attributes, and span filters. Most of this guide covers this section. |
-| `config.tracing` | No, startup only | Process-level defaults, such as the OTLP endpoint and the sampling rates that apply before any frontend policy is evaluated. For more information, see [Set process-level tracing defaults](#config-tracing). |
-
 To enable tracing in agentgateway, add a `tracing` block under the `frontendPolicies` section and point agentgateway to your OTLP-compatible backend. For sample tracing backend setups, see [Sample tracing configurations]({{< link-hextra path="/documentation/observability/traces/configs/" >}}).
 
 ```yaml
@@ -146,29 +139,3 @@ frontendPolicies:
       - src.addr
       - http.version
 ```
-
-## Set process-level tracing defaults {#config-tracing}
-
-The `config.tracing` section sets tracing defaults for the agentgateway process itself. Agentgateway reads the `config` section only at startup, so a change to this section requires a restart. Note that the field names differ from `frontendPolicies.tracing`: the endpoint is `otlpEndpoint` rather than `host`, and the protocol is `otlpProtocol` rather than `protocol`.
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-config:
-  tracing:
-    otlpEndpoint: http://localhost:4317
-    otlpProtocol: grpc
-    randomSampling: true
-    clientSampling: true
-```
-
-| Field | Description |
-|-------|-------------|
-| `otlpEndpoint` | OTLP collector endpoint URL that agentgateway exports traces to. |
-| `otlpProtocol` | OTLP transport protocol, either `grpc` or `http`. Defaults to `grpc`. |
-| `path` | OTLP HTTP path that agentgateway exports traces to. Defaults to `/v1/traces`. |
-| `headers` | HTTP headers to include on every OTLP trace export, such as authentication headers. |
-| `randomSampling` | The fraction of requests that start a new trace when the incoming request does not already carry one. Defaults to `false`. |
-| `clientSampling` | The fraction of requests that agentgateway traces when the incoming request already carries a trace. Defaults to `true`. |
-| `fields` | Custom fields to add to or remove from trace spans. |
-
-A `randomSampling` or `clientSampling` value that you set in `frontendPolicies.tracing` overrides the value in `config.tracing` for the requests that the frontend policy handles.

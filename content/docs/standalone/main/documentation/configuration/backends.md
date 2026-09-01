@@ -302,9 +302,9 @@ agentgateway -f config4-simplified.yaml --validate-only
 
 ## AWS AgentCore
 
-The AWS backend routes requests to an [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) agent runtime. AgentCore is a routing-based backend, so it is configured in a `routes` entry.
+The AWS backend routes requests to an [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) agent runtime. Configure the AWS backend inline in a `routes` entry, as in the following example, or as a named top-level `backends` entry that several routes reference.
 
-Agentgateway derives the connection details from the `agentRuntimeArn` value: requests are sent over TLS to the `bedrock-agentcore` endpoint in the runtime's AWS region, with the path set to the runtime's invocation endpoint. Agentgateway signs each request with AWS SigV4 by using the standard [AWS credential lookup](https://docs.aws.amazon.com/sdkref/latest/guide/access.html) from the environment.
+Agentgateway derives the connection details from the `agentRuntimeArn` value: requests are sent over TLS to the `bedrock-agentcore` endpoint in the runtime's AWS region, with the path set to the runtime's invocation endpoint. Agentgateway signs each request with AWS SigV4 under the `bedrock-agentcore` signing name, by using the standard [AWS credential lookup](https://docs.aws.amazon.com/sdkref/latest/guide/access.html) from the environment. To authenticate to a runtime that uses a JWT authorizer instead, set a `policies.backendAuth.key` policy, which replaces the SigV4 signing. For the steps to set up both modes, see [Connect to AWS Bedrock AgentCore]({{< link-hextra path="/documentation/agent/agentcore/" >}}).
 
 The following configuration is from the [`traffic-aws-agentcore` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-aws-agentcore) in the agentgateway repository.
 
@@ -313,7 +313,7 @@ The following configuration is from the [`traffic-aws-agentcore` example](https:
 | Setting | Description |
 | -- | -- |
 | `agentRuntimeArn` | The ARN of the AgentCore agent runtime to invoke, in the format `arn:aws:bedrock-agentcore:<region>:<account-id>:runtime/<runtime-id>`. |
-| `qualifier` | Optional runtime version or endpoint qualifier to invoke. If unset, the default endpoint is used. |
+| `qualifier` | Optional runtime version or endpoint qualifier to invoke, which is sent as a `qualifier` query parameter. Omit this setting to use the runtime's `DEFAULT` endpoint. |
 | `policies.requestHeaderModifier` | Optional headers to set before the request is sent upstream, such as the `X-Amzn-Bedrock-AgentCore-Runtime-User-Id` header that identifies the user to the AgentCore runtime. |
 
 {{< doc-test paths="backends" >}}

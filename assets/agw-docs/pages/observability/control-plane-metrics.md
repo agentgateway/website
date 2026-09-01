@@ -1,8 +1,9 @@
-By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exposes metrics in Prometheus format. You can use these metrics to monitor the health and performance of your gateway environment, or to verify that the control plane is emitting expected metrics when debugging your [observability stack]({{< link-hextra path="/documentation/observability/otel-stack/">}}). For more information about how metrics are implemented, refer to the [kgateway project developer docs](https://github.com/kgateway-dev/kgateway/blob/main/devel/architecture/metrics.md).
+By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exposes metrics in Prometheus format. You can use these metrics to monitor the health and performance of your gateway environment, or to verify that the control plane is emitting expected metrics when debugging your [observability stack]({{< link-hextra path="/documentation/observability/otel-stack/">}}). 
 
 ## Before you begin
 
-{{< reuse "agw-docs/snippets/agentgateway-prereq.md" >}}
+1. {{< reuse "agw-docs/snippets/agentgateway-prereq.md" >}}
+2. Set up Prometheus so that you can export and run queries against these metrics in the Prometheus explorer. Install the recommended [OTel stack]({{< link path="/documentation/observability/otel-stack/" >}}) that includes several tools to visualize metrics, traces, and access logs. 
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x,2.3.x" >}}
 ## Enable monitoring with Helm {#enable-monitoring}
