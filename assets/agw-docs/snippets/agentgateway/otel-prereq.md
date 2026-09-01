@@ -8,7 +8,7 @@ Deploy an open source observability stack based on OpenTelemetry (OTel) that inc
 
 ## About
 
-Observability tools are essential to gain insight into the health and performance of your gateway proxies. [OpenTelemetry]() (OTel) is a flexible, open source framework that provides a set of APIs, libraries, and instrumentation to help capture and export observability data. However, you can follow a similar process as this guide to use the tools that you prefer.
+Observability tools are essential to gain insight into the health and performance of your gateway proxies. [OpenTelemetry](https://opentelemetry.io) (OTel) is a flexible, open source framework that provides a set of APIs, libraries, and instrumentation to help capture and export observability data. However, you can follow a similar process as this guide to use the tools that you prefer.
 
 ### Observability data types {#data-types}
 
@@ -24,37 +24,34 @@ Observability is built on three core pillars as described in the following table
 
 Review the following diagram to understand the architecture of the observability stack.
 
-The gateway proxy acts as the primary telemetry generator, while the OTel Collectors serve as the central routing hub for all observability data.
+The gateway proxy acts as the primary telemetry generator. OTel Collectors route logs and traces to their storage backends, while Prometheus scrapes metrics directly from the gateway pods via PodMonitor and ServiceMonitor resources.
 
 ```mermaid
 flowchart TD
     A["1- Application Traffic"] --> B["2- Gateway proxy"]
-    B --> C["3- OTel Collectors"]
-    C --> D["4- Storage Backends"]
-    D --> D1["Logs (Loki)"]
-    D --> D2["Traces (Tempo)"]
-    D --> D3["Metrics (Prometheus)"]
-    D1 --> E["5- Visualization (Grafana)"]
+    B -->|"Logs & Traces (OTLP)"| C["3- OTel Collectors"]
+    B -->|"Metrics (PodMonitor/\nServiceMonitor)"| D3["4- Prometheus"]
+    C --> D1["4- Loki"]
+    C --> D2["4- Tempo"]
+    D1 --> E["5- Grafana"]
     D2 --> E
     D3 --> E
 ```
 Architecture data flow:
 1. **Application Traffic**: Applications send requests to the gateway proxy.
-2. **Gateway Processing**: The gateway proxy processes requests and generates telemetry data in the form of logs, traces, and metrics.
-3. **Telemetry Collection**: The OTel Collectors receive telemetry data from the gateway proxy.
-4. **Data Storage**: The OTel Collectors route data to the appropriate storage backends:
+2. **Gateway Processing**: The gateway proxy processes requests and emits telemetry on two paths: it pushes logs and traces to the OTel Collectors via OTLP, and exposes metrics on dedicated ports for Prometheus to scrape.
+3. **Telemetry Collection**: OTel Collectors receive logs and traces and route them to Loki and Tempo. Prometheus scrapes the control plane and proxy metrics endpoints directly via PodMonitor and ServiceMonitor resources.
+4. **Data Storage**:
    - **Logs** go to Loki for log aggregation and storage.
    - **Traces** go to Tempo for distributed tracing storage.
    - **Metrics** go to Prometheus for time-series metrics storage.
-5. **Visualization**: Grafana queries the storage backends as data sources to create unified dashboards.
+5. **Visualization**: Grafana queries all three storage backends as data sources to create unified dashboards.
 
 ### More considerations {#more-considerations}
 
-**Push model**: This guide sets up the OTel collectors to push metrics to the storage backends (`push` model), vs. setting up the backends such as Prometheus to scrape metrics from the collector pod (`pull` model). The `push` model is used because it shows the ease and consistency of using OTel for demonstration purposes. It also supports Native Histograms out of the box, which the `pull` model does not due to [a known OTel issue with the Prometheus exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/33703).
+**Metrics collection**: Prometheus scrapes the gateway control plane and proxy metrics endpoints directly via PodMonitor and ServiceMonitor resources (`pull` model). Logs and traces use the `push` model: the gateway proxy pushes OTLP data to the OTel Collectors, which forward them to Loki and Tempo respectively.
 
-**Debug exporter**: The example pipelines in all three OTel collectors set up the `debug` exporter. This exporter is useful for testing and validation purposes. However, for production scenarios, remove this exporter to avoid performance impacts.
-
-**Prometheus exporter**: If you prefer the `pull` model to the `push` model, you can use `prometheusexporter`'s `promexporter` port with Prometheus to scrape metrics from the collector pod, such as configured in the example later. Also, if you use the `pull` model, make sure to configure Prometheus to handle Native Histograms and scrape the metrics directly as for this model OTel's `prometheusexporter` is not yet supported, per the [known issue](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/33703) previously mentioned.
+**Debug exporter**: The example pipelines in both OTel collectors set up the `debug` exporter. This exporter is useful for testing and validation purposes. However, for production scenarios, remove this exporter to avoid performance impacts.
 
 ## Before you begin
 
