@@ -8,6 +8,9 @@
 # JSON schema
 /schema/config https://raw.githubusercontent.com/agentgateway/agentgateway/main/schema/config.json
 
+# Model catalog
+/model-catalog https://raw.githubusercontent.com/agentgateway/agentgateway/main/catalog/model-catalog.json
+
 # Redirect all paths under /examples to GitHub raw content
 /examples/* https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/:splat
 
