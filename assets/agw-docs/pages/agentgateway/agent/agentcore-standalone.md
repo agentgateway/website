@@ -131,7 +131,7 @@ Create a configuration file with a route to the AgentCore runtime. The `aws.agen
 | Setting | Description |
 | -- | -- |
 | `aws.agentCore.agentRuntimeArn` | The ARN of the AgentCore agent runtime to invoke, in the format `arn:aws:bedrock-agentcore:<region>:<account-id>:runtime/<runtime-id>`. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} derives the endpoint, the signing region, and the invocation path from this value. |
-| `aws.agentCore.qualifier` | Optional. The runtime version or endpoint qualifier to invoke, which is sent as a `qualifier` query parameter. Omit this setting to use the runtime's `DEFAULT` endpoint. |
+| `aws.agentCore.qualifier` | Optional. The runtime version or endpoint qualifier to invoke, which is sent as a `qualifier` query parameter. Omit this setting to use the runtime's `DEFAULT` endpoint, as this example does. |
 | `policies.backendAuth` | Optional. Replaces the default SigV4 signing for the backend. Omit this setting to sign requests with the AWS credential chain. To authenticate to a runtime that uses a JWT authorizer, set `backendAuth.key.value` to the token, either as a `file` reference or as an inline string. The token goes in the `Authorization` header with a `Bearer` prefix, unless you set `backendAuth.key.location`. |
 | `policies.requestHeaderModifier` | Optional. Headers to set before the request is sent upstream, such as the `X-Amzn-Bedrock-AgentCore-Runtime-User-Id` header that AgentCore uses to associate requests with a user session. |
 
