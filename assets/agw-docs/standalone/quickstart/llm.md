@@ -22,27 +22,16 @@ Route to an LLM provider through agentgateway.
 
 ### Step 1: Set your API key
 
-Store your provider API key in an environment variable so agentgateway can authenticate to the API.
+Store your OpenAI API key in an environment variable so agentgateway can authenticate to the API.
 
-{{< tabs >}}
-{{% tab name="OpenAI" %}}
 ```sh
 export OPENAI_API_KEY='<your-api-key>'
 ```
-{{% /tab %}}
-{{% tab name="Anthropic" %}}
-```sh
-export ANTHROPIC_API_KEY='<your-api-key>'
-```
-{{% /tab %}}
-{{< /tabs >}}
 
 ### Step 2: Create the configuration
 
-Create a `config.yaml` that defines an LLM model. This configuration uses the simplified LLM format to route traffic to the selected provider.
+Create a `config.yaml` that defines an LLM model for OpenAI. This configuration uses the simplified LLM format to route traffic to the OpenAI backend.
 
-{{< tabs >}}
-{{% tab name="OpenAI" %}}
 ```yaml {paths="llm"}
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -56,23 +45,6 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 EOF
 ```
-{{% /tab %}}
-{{% tab name="Anthropic" %}}
-```yaml
-cat > config.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: claude-haiku-4-5
-    provider: anthropic
-    params:
-      model: claude-haiku-4-5
-      apiKey: "$ANTHROPIC_API_KEY"
-EOF
-```
-{{% /tab %}}
-{{< /tabs >}}
 
 ### Step 3: Start agentgateway
 
@@ -101,8 +73,6 @@ info  proxy::gateway started bind  bind="bind/4000"
 
 From another terminal, send a request to the chat completions endpoint.
 
-{{< tabs >}}
-{{% tab name="OpenAI" %}}
 ```sh {paths="llm"}
 curl -s http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -111,23 +81,6 @@ curl -s http://localhost:4000/v1/chat/completions \
     "messages": [{"role": "user", "content": "Say hello in one sentence."}]
   }' | jq .
 ```
-{{% /tab %}}
-{{% tab name="Anthropic" %}}
-```sh
-curl http://localhost:4000/v1/chat/completions \
-  -H 'content-type: application/json' \
-  -d '{
-    "model": "claude-haiku-4-5",
-    "messages": [
-      {
-        "role": "user",
-        "content": "Reply with exactly: Anthropic through agentgateway works"
-      }
-    ]
-  }'
-```
-{{% /tab %}}
-{{< /tabs >}}
 
 Example output (abbreviated):
 

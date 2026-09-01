@@ -117,12 +117,12 @@
       "dark": "assets/img/ui-cost-dashboard-tokens-dark.png"
     },
     "agentgateway-ui-kube-cost-dashboard.png": {
-      "$note": "kubernetes/llm/cost-controls/dashboard — Analytics cost dashboard rendered in the Kubernetes (xds) Admin UI (Traffic nav).",
+      "$note": "kubernetes/llm/cost-controls/dashboard — Analytics cost dashboard rendered in the Kubernetes (xds) UI (Traffic nav).",
       "light": "assets/img/agentgateway-ui-kube-cost-dashboard.png",
       "dark": "assets/img/agentgateway-ui-kube-cost-dashboard-dark.png"
     },
     "ui-virtual-keys-list.png": {
-      "$note": "llm/cost-controls/virtual-keys — Admin UI Virtual API Keys list.",
+      "$note": "llm/cost-controls/virtual-keys — UI Virtual API Keys list.",
       "light": "assets/img/ui-virtual-keys-list.png",
       "dark": "assets/img/ui-virtual-keys-list-dark.png"
     },
@@ -165,6 +165,111 @@
       "$note": "observability/access-logs/view — a single LLM call opened out, showing the Trajectory strip and the expanded Conversation. Needs a seeded request_log_payloads row; see the CONVERSATIONS block in scripts/seed-costs-db.mjs.",
       "light": "assets/img/agentgateway-ui-log-detail.png",
       "dark": "assets/img/agentgateway-ui-log-detail-dark.png"
+    },
+    "ui-llm-add-model.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for OpenAI, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model.png",
+      "dark": "assets/img/ui-llm-add-model-dark.png"
+    },
+    "ui-llm-add-model-anthropic.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Anthropic, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-anthropic.png",
+      "dark": "assets/img/ui-llm-add-model-anthropic-dark.png"
+    },
+    "ui-llm-add-model-gemini.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Gemini, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-gemini.png",
+      "dark": "assets/img/ui-llm-add-model-gemini-dark.png"
+    },
+    "ui-llm-add-model-vertex.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Vertex AI, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-vertex.png",
+      "dark": "assets/img/ui-llm-add-model-vertex-dark.png"
+    },
+    "ui-llm-add-model-bedrock.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Amazon Bedrock, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-bedrock.png",
+      "dark": "assets/img/ui-llm-add-model-bedrock-dark.png"
+    },
+    "ui-llm-add-model-azure.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Azure, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-azure.png",
+      "dark": "assets/img/ui-llm-add-model-azure-dark.png"
+    },
+    "ui-llm-add-model-copilot.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for GitHub Copilot, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-copilot.png",
+      "dark": "assets/img/ui-llm-add-model-copilot-dark.png"
+    },
+    "ui-llm-add-model-custom.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Custom, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-custom.png",
+      "dark": "assets/img/ui-llm-add-model-custom-dark.png"
+    },
+    "ui-llm-add-model-baseten.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Baseten, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-baseten.png",
+      "dark": "assets/img/ui-llm-add-model-baseten-dark.png"
+    },
+    "ui-llm-add-model-cerebras.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Cerebras, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-cerebras.png",
+      "dark": "assets/img/ui-llm-add-model-cerebras-dark.png"
+    },
+    "ui-llm-add-model-cohere.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Cohere, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-cohere.png",
+      "dark": "assets/img/ui-llm-add-model-cohere-dark.png"
+    },
+    "ui-llm-add-model-deepinfra.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for DeepInfra, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-deepinfra.png",
+      "dark": "assets/img/ui-llm-add-model-deepinfra-dark.png"
+    },
+    "ui-llm-add-model-deepseek.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for DeepSeek, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-deepseek.png",
+      "dark": "assets/img/ui-llm-add-model-deepseek-dark.png"
+    },
+    "ui-llm-add-model-fireworks.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Fireworks AI, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-fireworks.png",
+      "dark": "assets/img/ui-llm-add-model-fireworks-dark.png"
+    },
+    "ui-llm-add-model-groq.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Groq, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-groq.png",
+      "dark": "assets/img/ui-llm-add-model-groq-dark.png"
+    },
+    "ui-llm-add-model-huggingface.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Hugging Face, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-huggingface.png",
+      "dark": "assets/img/ui-llm-add-model-huggingface-dark.png"
+    },
+    "ui-llm-add-model-mistral.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Mistral AI, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-mistral.png",
+      "dark": "assets/img/ui-llm-add-model-mistral-dark.png"
+    },
+    "ui-llm-add-model-ollama.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Ollama, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-ollama.png",
+      "dark": "assets/img/ui-llm-add-model-ollama-dark.png"
+    },
+    "ui-llm-add-model-openrouter.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for OpenRouter, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-openrouter.png",
+      "dark": "assets/img/ui-llm-add-model-openrouter-dark.png"
+    },
+    "ui-llm-add-model-togetherai.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Together AI, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-togetherai.png",
+      "dark": "assets/img/ui-llm-add-model-togetherai-dark.png"
+    },
+    "ui-llm-add-model-xai.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for xAI, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
+      "light": "assets/img/ui-llm-add-model-xai.png",
+      "dark": "assets/img/ui-llm-add-model-xai-dark.png"
     }
   }
 }
