@@ -3,7 +3,6 @@ title: Release notes
 weight: 20
 description: What's new, changed, and fixed in each agentgateway on Kubernetes release.
 test: skip
-icon: new_releases
 ---
 
 Review the release notes for agentgateway on Kubernetes.
@@ -157,7 +156,7 @@ For the route types, see the [API reference]({{< link-hextra path="/reference/ap
 
 Agentgateway can now translate an Anthropic Messages request into an OpenAI Responses request, and translate the buffered or streamed reply back into the Messages format. Use it when a client sends `/v1/messages` but the provider that you route to advertises only the Responses format. The existing Messages-to-Completions path still takes precedence for providers that advertise both formats, so dual-format OpenAI and Azure OpenAI providers are unchanged.
 
-For the supported providers, see the [LLM providers]({{< link-hextra path="/documentation/llm/providers/" >}}) docs.
+For the supported providers, see the [LLM providers]({{< link-hextra path="/integrations/llm/providers/" >}}) docs.
 
 #### OpenAI inline moderation
 
@@ -224,7 +223,7 @@ For more information, see [Transformations]({{< link-hextra path="/documentation
 - **Guardrail refactor**: Guardrails are restructured internally, and prompt guard logs record which pattern matched.
 - **Error handling**: Proxy errors are classified by the phase they occurred in, and the original upstream HTTP status code is preserved on an error response.
 
-For the list of supported providers, see the [LLM providers]({{< link-hextra path="/documentation/llm/providers/" >}}) docs, and for cost tracking, see [Cost tracking]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
+For the list of supported providers, see the [LLM providers]({{< link-hextra path="/integrations/llm/providers/" >}}) docs, and for cost tracking, see [Cost tracking]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
 
 ### Security {#v15-features-security}
 
@@ -328,7 +327,7 @@ This release fills in the pieces that agentgateway needs to serve as an egress p
 - **Forward proxy authentication**: A client can authenticate with the `Proxy-Authorization` header instead of `Authorization`. Set the authentication policy's `location` to that header. Agentgateway strips the header before the request goes upstream and marks it sensitive so that its value is not logged. A failed `CONNECT` authentication returns a `407` response with a `Proxy-Authenticate` header, as [RFC 9110](https://datatracker.ietf.org/doc/html/rfc9110) requires.
 - **Backend connection timeouts**: The controller now translates the `backend.tcp` section of a policy, so `connectTimeout` and the `keepalive` settings take effect on connections to a destination. A policy that set them in an earlier version was accepted but had no effect. The `backend.http.requestTimeout` field sets the deadline for a response.
 
-For the tunnel proxy, see [Backend tunnel proxy]({{< link-hextra path="/documentation/llm/providers/backend-tunnel-proxy/" >}}), and for the timeout fields, see [Connection settings]({{< link-hextra path="/documentation/resiliency/connection/" >}}).
+For the tunnel proxy, see [Backend tunnel proxy]({{< link-hextra path="/integrations/llm/providers/backend-tunnel-proxy/" >}}), and for the timeout fields, see [Connection settings]({{< link-hextra path="/documentation/resiliency/connection/" >}}).
 
 #### Rate limiting enhancements
 

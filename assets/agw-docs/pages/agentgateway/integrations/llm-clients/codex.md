@@ -41,7 +41,7 @@ Start agentgateway with an OpenAI backend configuration. The wildcard `*` model 
    ```
 
 > [!NOTE]
-> For wildcard model matching, rate limiting, and other options, see the [OpenAI provider page]({{< link-hextra path="/documentation/llm/providers/openai" >}}).
+> For wildcard model matching, rate limiting, and other options, see the [OpenAI provider page]({{< link-hextra path="/integrations/llm/providers/openai" >}}).
 
 ## Connect Codex to agentgateway
 
@@ -190,6 +190,6 @@ found. That warning does not prevent `/v1/responses` traffic from routing.
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/documentation/llm/providers/openai" title="OpenAI provider" subtitle="Complete OpenAI provider configuration" >}}
+  {{< card path="/integrations/llm/providers/openai" title="OpenAI provider" subtitle="Complete OpenAI provider configuration" >}}
   {{< card path="/documentation/llm/prompt-guards/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
 {{< /cards >}}

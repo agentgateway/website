@@ -118,7 +118,7 @@ Alternatively, route Claude Code directly to Anthropic's API through agentgatewa
    ```
 
 {{< callout type="info" >}}
-For pinned model configuration, extended thinking, and other options, see the [Anthropic provider page]({{< link-hextra path="/documentation/llm/providers/anthropic" >}}).
+For pinned model configuration, extended thinking, and other options, see the [Anthropic provider page]({{< link-hextra path="/integrations/llm/providers/anthropic" >}}).
 {{< /callout >}}
 
 ## Claude Teams or Pro account
@@ -178,6 +178,6 @@ If you have a Claude Teams or Pro account, you can use agentgateway for request 
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/documentation/llm/providers/anthropic" title="Anthropic provider" subtitle="Complete Anthropic provider configuration" >}}
+  {{< card path="/integrations/llm/providers/anthropic" title="Anthropic provider" subtitle="Complete Anthropic provider configuration" >}}
   {{< card path="/documentation/llm/prompt-guards/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
 {{< /cards >}}

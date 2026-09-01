@@ -332,5 +332,5 @@ If you have a Claude Teams or Pro account, use this configuration instead of the
 
 {{< cards >}}
   {{< card path="/documentation/llm/guardrails/" title="Prompt guards" subtitle="Block sensitive content in CLI prompts with regex and built-in PII detectors" >}}
-  {{< card path="/documentation/llm/providers/anthropic" title="Anthropic Provider" subtitle="Complete Anthropic provider configuration" >}}
+  {{< card path="/integrations/llm/providers/anthropic" title="Anthropic Provider" subtitle="Complete Anthropic provider configuration" >}}
 {{< /cards >}}

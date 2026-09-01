@@ -1,7 +1,6 @@
 ---
 title: Inference routing
 weight: 30
-icon: alt_route
 description:
 test: skip
 ---

@@ -218,7 +218,7 @@ llm:
 | `cacheTools` | Add cache markers to tool definitions. Default `false`. |
 | `minTokens` | Minimum prompt size, in tokens, before caching is applied. Default `1024`. |
 
-Because caching applies to Bedrock, the end-to-end walkthrough with verification lives in the provider guide. To send cached traffic and confirm the cache hits, see [Prompt caching]({{< link-hextra path="/documentation/llm/providers/bedrock/#prompt-caching" >}}).
+Because caching applies to Bedrock, the end-to-end walkthrough with verification lives in the provider guide. To send cached traffic and confirm the cache hits, see [Prompt caching]({{< link-hextra path="/integrations/llm/providers/bedrock/#prompt-caching" >}}).
 
 ### See caching in your costs
 

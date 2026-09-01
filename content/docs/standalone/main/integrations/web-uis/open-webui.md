@@ -1,7 +1,6 @@
 ---
 title: Open WebUI
 description: Front Open WebUI with agentgateway to centralize auth, audit, and rate limits for LLM traffic.
-icon: chat
 ---
 
 [Open WebUI](https://github.com/open-webui/open-webui) is a self-hosted, ChatGPT-style interface that supports any OpenAI-compatible backend. By pointing Open WebUI at agentgateway instead of directly at an LLM provider, you keep API keys server-side and gain a single place to enforce policies and capture audit logs for every chat.
@@ -47,7 +46,7 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
-For other providers, see the [LLM providers guide]({{< link-hextra path="/documentation/llm/providers/" >}}).
+For other providers, see the [LLM providers guide]({{< link-hextra path="/integrations/llm/providers/" >}}).
 
 ### Step 2: Start agentgateway
 
@@ -141,5 +140,5 @@ Layer policies and observability on top of the basic setup.
 {{< cards >}}
   {{< card path="/documentation/llm/cost-controls/virtual-keys/" title="Virtual key management" subtitle="Apply rate limits and token budgets to LLM traffic." >}}
   {{< card path="/documentation/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs for every LLM call." >}}
-  {{< card path="/documentation/llm/providers/" title="LLM providers" subtitle="Configure additional upstream providers." >}}
+  {{< card path="/integrations/llm/providers/" title="LLM providers" subtitle="Configure additional upstream providers." >}}
 {{< /cards >}}

@@ -13,7 +13,7 @@ Use the built-in LLM playground in the agentgateway UI to send a chat completion
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Configure at least one LLM provider. For an example, see [OpenAI]({{< link-hextra path="/documentation/llm/providers/openai/" >}}) or any [OpenAI-compatible provider]({{< link-hextra path="/documentation/llm/providers/custom/" >}}).
+2. Configure at least one LLM provider. For an example, see [OpenAI]({{< link-hextra path="/integrations/llm/providers/openai/" >}}) or any [OpenAI-compatible provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
 ## Send a test request
 

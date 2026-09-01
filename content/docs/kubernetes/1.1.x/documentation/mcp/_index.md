@@ -1,7 +1,6 @@
 ---
 title: MCP connectivity
 weight: 40
-icon: extension
 test: skip
 ---
 

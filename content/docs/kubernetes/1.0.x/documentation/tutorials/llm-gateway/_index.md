@@ -543,6 +543,6 @@ kind delete cluster --name agentgateway
 
 {{< cards >}}
   {{< card path="/documentation/llm/" title="LLM Overview" subtitle="Learn more about LLM gateway features on Kubernetes" >}}
-  {{< card path="/documentation/llm/providers/" title="More Providers" subtitle="Configure additional LLM providers" >}}
+  {{< card path="/integrations/llm/providers/" title="More Providers" subtitle="Configure additional LLM providers" >}}
   {{< card path="/documentation/security/" title="Security" subtitle="Secure your agentgateway deployment" >}}
 {{< /cards >}}

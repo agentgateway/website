@@ -443,7 +443,7 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/integrations/llm-clients/claude-code" title="Claude Code integration" subtitle="Quick setup without prompt guards" >}}
-  {{< card path="/documentation/llm/providers/anthropic" title="Anthropic provider" subtitle="Complete Anthropic provider configuration" >}}
+  {{< card path="/integrations/llm/clients/claude-code" title="Claude Code integration" subtitle="Quick setup without prompt guards" >}}
+  {{< card path="/integrations/llm/providers/anthropic" title="Anthropic provider" subtitle="Complete Anthropic provider configuration" >}}
   {{< card path="/documentation/tutorials/prompt-enrichment" title="Prompt enrichment" subtitle="Inject context at the gateway layer" >}}
 {{< /cards >}}

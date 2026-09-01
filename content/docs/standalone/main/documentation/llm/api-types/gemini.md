@@ -166,7 +166,7 @@ curl -X POST 'http://localhost:4000/v1beta/models/gemini-2.5-flash:generateConte
 {{% /tab %}}
 {{% tab name="Other" %}}
 
-[View other LLM client integrations]({{< link-hextra path="/integrations/llm-clients/" >}}).
+[View other LLM client integrations]({{< link-hextra path="/integrations/llm/clients/" >}}).
 
 {{% /tab %}}
 {{< /tabs >}}
@@ -258,4 +258,4 @@ fi
 echo "✓ The wildcard model resolves to the gemini provider and alt=sse is enforced"
 {{< /doc-test >}}
 
-For Gemini-specific provider settings, see the [Gemini]({{< link-hextra path="/documentation/llm/providers/gemini/" >}}) and [Vertex AI]({{< link-hextra path="/documentation/llm/providers/vertex/" >}}) provider guides.
+For Gemini-specific provider settings, see the [Gemini]({{< link-hextra path="/integrations/llm/providers/gemini/" >}}) and [Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/" >}}) provider guides.

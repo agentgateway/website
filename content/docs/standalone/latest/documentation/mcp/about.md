@@ -14,7 +14,7 @@ Learn more about MCP and common challenges when adopting MCP in enterprise envir
 
 An MCP server exposes external data sources and tools so that LLM applications can access them. Typically, you want to deploy these servers remotely and have authorization mechanisms in place so that LLM applications can safely access the data.
 
-With agentgateway, you can connect to one or multiple MCP servers in any environment. The agentgateway proxies requests to the MCP tool that is exposed on the server. You can also use the agentgateway to federate tools from multiple MCP servers. For more information, see the [virtual MCP]({{< link-hextra path="/documentation/mcp/connect/virtual" >}}) guide. 
+With agentgateway, you can connect to one or multiple MCP servers in any environment. The agentgateway proxies requests to the MCP tool that is exposed on the server. You can also use the agentgateway to federate tools from multiple MCP servers. For more information, see the [virtual MCP]({{< link-hextra path="/integrations/mcp/servers/virtual" >}}) guide. 
 
 You can configure MCP servers with the simplified `mcp` section or with the `routes` section, and you can expose several servers on one endpoint or on separate paths. For help choosing, see [MCP configuration modes]({{< link-hextra path="/documentation/mcp/configuration-modes" >}}).
 

@@ -31,4 +31,4 @@ frontendPolicies:
       gen_ai.usage.output_tokens: "llm.outputTokens"
 ```
 
-For more LLM observability platform integrations, see [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
+For more LLM observability platform integrations, see [LLM Observability integrations]({{< link-hextra path="/integrations/llm/observability/" >}}).

@@ -2,7 +2,6 @@
 title: Variables and functions
 weight: 3
 description: How CEL variables are populated per policy phase, and where to find the full context reference and function list.
-icon: code
 ---
 
 When using CEL expressions, a variety of variables and functions are made available.

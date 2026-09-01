@@ -27,4 +27,4 @@ When adopting an LLM on an enterprise-level, you typically run into the followin
 {{< reuse "agw-docs/snippets/llm-comparison.md" >}}
 
 > [!NOTE]
-> Don't see your provider? You might still be able to use it with agentgateway! Many LLM providers offer OpenAI-compatible APIs. To get started, follow the [OpenAI compatible]({{< link-hextra path="/documentation/llm/providers/openai-compatible/" >}}) docs.
+> Don't see your provider? You might still be able to use it with agentgateway! Many LLM providers offer OpenAI-compatible APIs. To get started, follow the [OpenAI compatible]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}) docs.

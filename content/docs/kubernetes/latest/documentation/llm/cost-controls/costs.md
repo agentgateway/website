@@ -8,7 +8,7 @@ test:
     path: standard
   - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/documentation/llm/providers/httpbun.md
+  - file: content/docs/kubernetes/latest/integrations/llm/providers/httpbun.md
     path: setup-httpbun-llm
   - file: content/docs/kubernetes/latest/documentation/llm/cost-controls/costs.md
     path: costs

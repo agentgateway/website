@@ -12,13 +12,13 @@ To enable token usage tracking, you must prevent the client and server from nego
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Set up access to the [OpenAI]({{< link-hextra path="/documentation/llm/providers/openai/" >}}) or an [OpenAI API-compatible]({{< link-hextra path="/documentation/llm/providers/openai-compatible/" >}}) LLM provider.
+2. Set up access to the [OpenAI]({{< link-hextra path="/integrations/llm/providers/openai/" >}}) or an [OpenAI API-compatible]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}) LLM provider.
 
 ## Step 1: Add the Realtime route type
 
 Verify that your OpenAI {{< reuse "agw-docs/snippets/backend.md" >}} includes the `Realtime` route type in the `policies.ai.routes` map. The default behavior routes all traffic as `Completions`. You must explicitly add the `Realtime` route type for the `/v1/realtime` path.
 
-If you already set up [multiple endpoints]({{< link-hextra path="/documentation/llm/providers/multiple-endpoints/" >}}), add the `/v1/realtime` path to your existing {{< reuse "agw-docs/snippets/backend.md" >}}.
+If you already set up [multiple endpoints]({{< link-hextra path="/integrations/llm/providers/multiple-endpoints/" >}}), add the `/v1/realtime` path to your existing {{< reuse "agw-docs/snippets/backend.md" >}}.
 
 ```yaml {paths="realtime"}
 kubectl apply -f- <<EOF

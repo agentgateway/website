@@ -17,7 +17,7 @@ to extract the requested model name before route matching.
 
 The example requests use OpenAI-style completions because the simulator exposes
 that API shape by default. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}}
-also supports [custom providers]({{< link-hextra path="/documentation/llm/providers/custom/" >}})
+also supports [custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}})
 when you need to declare different provider API formats, such as Anthropic
 Messages or other non-default paths and request shapes. The
 [EPP](https://llm-d.ai/docs/architecture/core/router) supports request parsers

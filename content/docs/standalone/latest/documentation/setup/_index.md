@@ -1,7 +1,6 @@
 ---
 title: Setup
 weight: 21
-icon: cloud_upload
 description: Install agentgateway, set up the UI, the database, and configuration storage, and update your configuration.
 test: skip
 aliases:

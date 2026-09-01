@@ -45,7 +45,7 @@ Now that you have {{< reuse "/agw-docs/snippets/kgateway.md" >}} set up and runn
 
 - [Set up your agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}). 
 - Review the [LLM consumption]({{< link-hextra path="/documentation/llm/" >}}), [inference routing]({{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}{{< link-hextra path="/documentation/inference/" >}}{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}{{< link-hextra path="/documentation/llm/inference/" >}}{{< /version >}}), [MCP]({{< link-hextra path="/documentation/mcp/" >}}), or [agent connectivity]({{< link-hextra path="/documentation/agent/" >}}) guides to learn more about common agentgateway use cases.
-{{< version exclude-if="1.1.x" >}}- Deploy your apps in agentgateway by using [Argo Rollouts]({{< link-hextra path="/integrations/argo" >}}) {{< /version >}}
+{{< version exclude-if="1.1.x" >}}- Deploy your apps in agentgateway by using [Argo Rollouts]({{< link-hextra path="/integrations/ci-cd/argo" >}}) {{< /version >}}
 
 
 ## Cleanup

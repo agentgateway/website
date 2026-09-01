@@ -2,7 +2,6 @@
 title: Schema validation
 weight: 1
 description: Configure your IDE or editor to validate agentgateway YAML against the JSON schema.
-icon: tune
 ---
 
 Many integrated development environments (IDEs) and editors support schema validation for your standalone agentgateway configuration file.

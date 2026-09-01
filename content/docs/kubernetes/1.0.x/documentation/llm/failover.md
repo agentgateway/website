@@ -8,7 +8,7 @@ test:
     path: standard
   - file: content/docs/kubernetes/main/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/documentation/llm/providers/httpbun.md
+  - file: content/docs/kubernetes/main/integrations/llm/providers/httpbun.md
     path: setup-httpbun-llm
   - file: content/docs/kubernetes/main/documentation/llm/failover.md
     path: failover

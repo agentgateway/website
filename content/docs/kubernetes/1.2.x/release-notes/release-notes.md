@@ -125,9 +125,9 @@ The data plane now supports locality-aware load balancing and failover, improvin
 
 ### LLM gateway enhancements
 
-- **Azure provider**: A new Azure provider supports both Azure OpenAI and Azure AI Foundry style resources. For more information, see [Azure]({{< link-hextra path="/documentation/llm/providers/azure/" >}}).
+- **Azure provider**: A new Azure provider supports both Azure OpenAI and Azure AI Foundry style resources. For more information, see [Azure]({{< link-hextra path="/integrations/llm/providers/azure/" >}}).
 - **Copilot support**: Added Copilot authentication and LLM provider support.
-- **Gemini Responses API**: Responses API requests can now be routed to Gemini. For more information, see [Gemini]({{< link-hextra path="/documentation/llm/providers/gemini/" >}}).
+- **Gemini Responses API**: Responses API requests can now be routed to Gemini. For more information, see [Gemini]({{< link-hextra path="/integrations/llm/providers/gemini/" >}}).
 - **Path prefixes**: Custom path prefixes now work across all LLM providers, including Gemini, Vertex, Bedrock, and Azure.
 - **OpenAI compatibility**: OpenAI chat completion requests now normalize `max_tokens` to `max_completion_tokens`.
 - **Azure Content Safety guardrails**: Prompt and response guardrails can now use Azure AI Content Safety. For more information, see [Guardrails]({{< link-hextra path="/documentation/llm/guardrails/overview/" >}}).

@@ -68,7 +68,7 @@ Agentgateway uses the first of these formats that the provider supports.
 | 3 | `responses` | The request is converted to the OpenAI Responses format. |
 | 4 | Bedrock Converse | The request is converted to the Amazon Bedrock Converse format. |
 
-The first three rows are values that a `custom` provider declares in its `formats` list. Bedrock Converse is not one of those values. A [`bedrock` provider]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}) supports the Converse format and nothing else, so a Messages request that is routed to a Bedrock provider always takes the Converse conversion.
+The first three rows are values that a `custom` provider declares in its `formats` list. Bedrock Converse is not one of those values. A [`bedrock` provider]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) supports the Converse format and nothing else, so a Messages request that is routed to a Bedrock provider always takes the Converse conversion.
 
 Because `completions` comes before `responses`, a provider that advertises both is unaffected by the Responses conversion. That conversion applies to a provider that advertises `responses` and not `completions`.
 
@@ -113,9 +113,9 @@ curl -X POST http://localhost:4000/v1/messages \
 {{% /tab %}}
 {{% tab name="Other" %}}
 
-[View other LLM client integrations]({{< link-hextra path="/integrations/llm-clients/" >}}).
+[View other LLM client integrations]({{< link-hextra path="/integrations/llm/clients/" >}}).
 
 {{% /tab %}}
 {{< /tabs >}}
 
-For Anthropic-specific features such as token counting, extended thinking, and structured outputs, see the [Anthropic provider]({{< link-hextra path="/documentation/llm/providers/anthropic/" >}}) guide.
+For Anthropic-specific features such as token counting, extended thinking, and structured outputs, see the [Anthropic provider]({{< link-hextra path="/integrations/llm/providers/anthropic/" >}}) guide.

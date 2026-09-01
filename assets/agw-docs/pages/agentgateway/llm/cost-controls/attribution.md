@@ -8,7 +8,7 @@ You configure the attribution values, and agentgateway resolves each one from an
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
-2. Create the {{< reuse "agw-docs/snippets/backend.md" >}} and HTTPRoute for the LLM provider that you want to attribute, such as [Amazon Bedrock]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}).
+2. Create the {{< reuse "agw-docs/snippets/backend.md" >}} and HTTPRoute for the LLM provider that you want to attribute, such as [Amazon Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}).
 3. Apply a [JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/setup/" >}}) to the route, so that `jwt.*` values are available to attribution expressions.
 
 ## Amazon Bedrock
@@ -112,7 +112,7 @@ A final transformation sets fields on the converted request body, which covers t
 
 On Vertex AI, agentgateway sets billing labels on the native `generateContent` request, and those labels reach the Google Cloud billing export. Without a transformation, the labels on the request are whatever the caller sent. The transformation is what makes them yours.
 
-Create the {{< reuse "agw-docs/snippets/backend.md" >}} and HTTPRoute for [Google Vertex AI]({{< link-hextra path="/documentation/llm/providers/vertex/" >}}) first. Then configure the labels with a `finalTransformations` entry in an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the Vertex AI route. The same merge and replace postures apply, because callers can send their own `labels`.
+Create the {{< reuse "agw-docs/snippets/backend.md" >}} and HTTPRoute for [Google Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/" >}}) first. Then configure the labels with a `finalTransformations` entry in an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the Vertex AI route. The same merge and replace postures apply, because callers can send their own `labels`.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -209,4 +209,4 @@ Per-prompt detail belongs in request metadata and the invocation logs, not in se
 
 - [Transform requests]({{< link-hextra path="/documentation/llm/transformations/" >}}) for request transformations and the CEL context.
 - [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) to attribute usage inside agentgateway.
-- [Amazon Bedrock]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}) provider configuration.
+- [Amazon Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) provider configuration.

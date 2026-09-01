@@ -11,4 +11,4 @@ Gain insight into the health and performance of your gateway environment. Get pr
 
 ## External observability platforms
 
-For specialized LLM observability platforms with prompt logging, cost tracking, and evaluation capabilities, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
+For specialized LLM observability platforms with prompt logging, cost tracking, and evaluation capabilities, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm/observability/" >}}).

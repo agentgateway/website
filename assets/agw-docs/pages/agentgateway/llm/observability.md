@@ -5,17 +5,17 @@ Review LLM-specific metrics and logs.
 
 {{< conditional-text include-if="kubernetes" >}}
 > [!NOTE]
-> For external logging platforms (also known as prompt logging, request/response logging, or audit trail) like Langfuse and LangSmith, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
+> For external logging platforms (also known as prompt logging, request/response logging, or audit trail) like Langfuse and LangSmith, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm/observability/" >}}).
 {{< /conditional-text >}}
 
 {{< conditional-text include-if="standalone" >}}
 > [!NOTE]
-> For external logging platforms (also known as prompt logging, request/response logging, or audit trail) like Langfuse and LangSmith, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
+> For external logging platforms (also known as prompt logging, request/response logging, or audit trail) like Langfuse and LangSmith, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm/observability/" >}}).
 {{< /conditional-text >}}
 
 ## Before you begin
 
-Complete an LLM guide, such as an [LLM provider-specific guide]({{< link-hextra path="/documentation/llm/providers/" >}}). This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics and logs.  
+Complete an LLM guide, such as an [LLM provider-specific guide]({{< link-hextra path="/integrations/llm/providers/" >}}). This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics and logs.  
 
 ## View LLM metrics
 

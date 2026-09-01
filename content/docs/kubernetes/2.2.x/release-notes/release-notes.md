@@ -92,8 +92,8 @@ The [AI prompt guard API]({{< link-hextra path="/documentation/llm/prompt-guards
 **Model aliases**: Added `modelAliases` support to `AgentgatewayPolicy` to allow friendly model name aliases for your AI backends (for example, "fast" can map to "gpt-3.5-turbo").
 
 **Provider support**:
-* Added support for [Azure OpenAI]({{< link-hextra path="/documentation/llm/providers/azureopenai/" >}}) backends
-* Added support for [multiple AI backend route types]({{< link-hextra path="/documentation/llm/providers/multiple-endpoints/" >}}) including OpenAI Responses API, Anthropic token counting, and prompt caching configuration for Bedrock (enabling up to 90% cost reduction)
+* Added support for [Azure OpenAI]({{< link-hextra path="/integrations/llm/providers/azureopenai/" >}}) backends
+* Added support for [multiple AI backend route types]({{< link-hextra path="/integrations/llm/providers/multiple-endpoints/" >}}) including OpenAI Responses API, Anthropic token counting, and prompt caching configuration for Bedrock (enabling up to 90% cost reduction)
 * Path-based API format routing (completions, messages, models, passthrough) to enable a single backend to support multiple LLM API formats based on request URL
 
 **Canadian Social Insurance Number prompt guards**: Added support for detecting and guarding Canadian Social Insurance Numbers in prompts.

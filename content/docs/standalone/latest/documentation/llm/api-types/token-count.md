@@ -74,9 +74,9 @@ curl 'http://localhost:4000/v1/messages/count_tokens' \
 {{% /tab %}}
 {{% tab name="Other" %}}
 
-[View other LLM client integrations]({{< link-hextra path="/integrations/llm-clients/" >}}).
+[View other LLM client integrations]({{< link-hextra path="/integrations/llm/clients/" >}}).
 
 {{% /tab %}}
 {{< /tabs >}}
 
-For Anthropic-specific features such as Messages, token counting, extended thinking, and structured outputs, see the [Anthropic provider]({{< link-hextra path="/documentation/llm/providers/anthropic/" >}}) guide.
+For Anthropic-specific features such as Messages, token counting, extended thinking, and structured outputs, see the [Anthropic provider]({{< link-hextra path="/integrations/llm/providers/anthropic/" >}}) guide.

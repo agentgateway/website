@@ -3,7 +3,6 @@ title: Release notes
 weight: 20
 description: What's new, changed, and fixed in each agentgateway standalone release.
 test: skip
-icon: new_releases
 ---
 
 Review the release notes for agentgateway standalone.
@@ -246,7 +245,7 @@ For more information, see [Transformations]({{< link-hextra path="/documentation
 - **Guardrail refactor**: Guardrails are restructured internally, and prompt guard logs record which pattern matched.
 - **Error handling**: Proxy errors are classified by the phase they occurred in, and the original upstream HTTP status code is preserved on an error response.
 
-For the list of supported providers, see the [LLM providers]({{< link-hextra path="/documentation/llm/providers/" >}}) docs, and for the command, see [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}).
+For the list of supported providers, see the [LLM providers]({{< link-hextra path="/integrations/llm/providers/" >}}) docs, and for the command, see [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}).
 
 ### Security {#v15-features-security}
 
@@ -297,7 +296,7 @@ For more information, see [Debug requests]({{< link-hextra path="/documentation/
 
 - **SPIFFE Workload API identity**: Set `config.spiffe.endpoint` to a local SPIFFE Workload API socket, such as a SPIRE agent. Agentgateway then sources the mTLS identity and trust bundle from it instead of from a static certificate and key on disk. The X.509 SPIFFE Verifiable Identity Document (SVID) rotates without a restart. Listeners and backends then opt in individually with `tls.spiffe` and `backendTLS.spiffe`, and `backendTLS.subjectAltNames` verifies the upstream SPIFFE ID. The peer identity is available to policies as the `source.spiffeId` CEL attribute. For the fields, see the [Configuration reference]({{< link-hextra path="/reference/configuration/" >}}) and the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
 - **Preserve a validated JWT**: A JWT policy takes a `preserveToken` field. Set it to `true` to keep a successfully validated JWT in the location that it arrived in, so that a backend can read the original token. The default is `false`, which removes the token after validation, as earlier releases did.
-- **DNS rebinding protection for MCP backends**: Set `dnsRebindingProtection` on an MCP backend to reject requests whose `Host` or `Origin` header does not name a loopback address, which blocks DNS rebinding attacks against a locally bound MCP server. Protection is off by default. For the accepted hosts and an example, see [Connect to an MCP server over HTTP]({{< link-hextra path="/documentation/mcp/connect/http/" >}}).
+- **DNS rebinding protection for MCP backends**: Set `dnsRebindingProtection` on an MCP backend to reject requests whose `Host` or `Origin` header does not name a loopback address, which blocks DNS rebinding attacks against a locally bound MCP server. Protection is off by default. For the accepted hosts and an example, see [Connect to an MCP server over HTTP]({{< link-hextra path="/integrations/mcp/servers/http/" >}}).
 - **Client endpoint headers are stripped for inference routing**: The `x-gateway-destination-endpoint` header is an output of the endpoint picker, not an input that a client sets. Agentgateway now removes it from an incoming request before [inference routing]({{< link-hextra path="/documentation/inference/" >}}) runs. No action is needed, because the header was already overwritten in most paths.
 
 ### MCP and A2A {#v15-features-mcp}

@@ -8,7 +8,7 @@ test:
     path: standard
   - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/documentation/llm/providers/httpbun.md
+  - file: ${versionRoot}/integrations/llm/providers/httpbun.md
     path: setup-httpbun-llm
   - file: ${versionRoot}/documentation/llm/rate-limit.md
     path: llm-token-rate-limit

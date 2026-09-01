@@ -1,7 +1,6 @@
 ---
 title: Operations
 weight: 800
-icon: settings
 test: skip
 ---
 

@@ -8,7 +8,7 @@ test:
     path: standard
   - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/documentation/llm/providers/openai.md
+  - file: content/docs/kubernetes/latest/integrations/llm/providers/openai.md
     path: openai-setup
   - file: content/docs/kubernetes/latest/documentation/traffic-management/transformations/llm-model-headers.md
     path: llm-transformations
@@ -18,7 +18,7 @@ test:
     path: standard
   - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/documentation/llm/providers/openai.md
+  - file: content/docs/kubernetes/latest/integrations/llm/providers/openai.md
     path: openai-setup
   - file: content/docs/kubernetes/latest/documentation/traffic-management/transformations/llm-model-headers.md
     path: llm-model-headers

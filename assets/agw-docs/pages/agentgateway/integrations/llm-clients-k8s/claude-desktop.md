@@ -161,7 +161,7 @@ You can use the same client-side values that the standalone **Client Setup** pag
 1. Verify that the `anthropic-desktop` backend references `anthropic-secret` in
    `policies.auth`, as configured in [Set up the Anthropic
    backend](#set-up-the-anthropic-backend). For more information, see
-   [Anthropic provider]({{< link-hextra path="/documentation/llm/providers/anthropic/" >}}).
+   [Anthropic provider]({{< link-hextra path="/integrations/llm/providers/anthropic/" >}}).
 2. Generate a client API key and store it in a Kubernetes Secret. Use a
    separate entry for each user or device when you need independent attribution
    or revocation.
@@ -227,7 +227,7 @@ Claude Desktop sends Anthropic Messages API requests to `/v1/messages`. Agentgat
 
 For a managed rollout, see [Manage gateway API keys with Microsoft
 Intune]({{< link-hextra
-path="/integrations/llm-clients/microsoft-intune/#claude-gateway-api-key" >}}).
+path="/integrations/llm/clients/microsoft-intune/#claude-gateway-api-key" >}}).
 
 ## Optional: Use Claude subscription passthrough {#configure-claude-desktop}
 
@@ -251,7 +251,7 @@ that no other attached route depends on it.
 > [!TIP]
 > For a managed rollout of this subscription configuration, see [Manage Claude
 subscriptions with Microsoft Intune]({{< link-hextra
-path="/integrations/llm-clients/microsoft-intune/#claude-subscription" >}}).
+path="/integrations/llm/clients/microsoft-intune/#claude-subscription" >}}).
 
 1. Get a bearer token for your Claude account. Store the value in a safe place.
 
@@ -345,7 +345,7 @@ path="/integrations/llm-clients/microsoft-intune/#claude-subscription" >}}).
 
 You can use the same client-side values that the standalone **Client Setup** page produces. The Kubernetes UI does not generate these values, so configure the gateway and Claude Desktop manually.
 
-1. Give the `anthropic-desktop` backend an Anthropic API key. Follow [Anthropic provider]({{< link-hextra path="/documentation/llm/providers/anthropic/" >}}) to create a provider credential Secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}}. This credential is sent upstream and is separate from the key that Claude Desktop sends to agentgateway.
+1. Give the `anthropic-desktop` backend an Anthropic API key. Follow [Anthropic provider]({{< link-hextra path="/integrations/llm/providers/anthropic/" >}}) to create a provider credential Secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}}. This credential is sent upstream and is separate from the key that Claude Desktop sends to agentgateway.
 2. Follow [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) to create a client API key and a strict API key authentication policy. Target the `claude-desktop` `HTTPRoute` if the key must protect only this integration, or target the `agentgateway-proxy` `Gateway` to protect all of its routes.
 3. In Claude Desktop, go to **Developer → Configure Third Party Inference → Gateway**.
 4. For **Gateway base URL**, enter the URL from [Get the gateway URL](#gateway-url), including the `/claude` path.
@@ -459,7 +459,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
 
    For more detail on JWT validation, see [JWT auth]({{< link-hextra path="/documentation/security/jwt/setup/" >}}).
 
-5. Give the backend its own credential. Interactive sign-in puts the identity provider token in the `Authorization` header, so the proxy must supply the LLM provider credential itself rather than pass a user token upstream. Follow [Anthropic provider]({{< link-hextra path="/documentation/llm/providers/anthropic/" >}}) to create a secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
+5. Give the backend its own credential. Interactive sign-in puts the identity provider token in the `Authorization` header, so the proxy must supply the LLM provider credential itself rather than pass a user token upstream. Follow [Anthropic provider]({{< link-hextra path="/integrations/llm/providers/anthropic/" >}}) to create a secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 
 6. In Claude Desktop, go to **Developer → Configure Third Party Inference → Gateway** and set the following fields.
 
@@ -471,7 +471,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    | Issuer URL | `https://login.microsoftonline.com/$TENANT_ID/v2.0` |
    | Bearer token | **ID token** |
    | Scopes | `openid profile email offline_access` |
-   | Sign-in flow | **Browser** for this initial test; use the [Intune guide]({{< link-hextra path="/integrations/llm-clients/microsoft-intune/#claude-entra" >}}) to move managed devices to **Broker** |
+   | Sign-in flow | **Browser** for this initial test; use the [Intune guide]({{< link-hextra path="/integrations/llm/clients/microsoft-intune/#claude-entra" >}}) to move managed devices to **Broker** |
    | Model discovery | **Off** when you use a fixed model list |
    | Models | One or more full model IDs that the backend exposes |
 
@@ -505,7 +505,7 @@ Configure and test one machine in developer mode first. When the connection work
 
 For an end-to-end Microsoft Intune rollout with Entra ID and managed-device
 enforcement, see [Manage Claude Desktop with Microsoft Intune]({{< link-hextra
-path="/integrations/llm-clients/microsoft-intune/#claude-entra" >}}).
+path="/integrations/llm/clients/microsoft-intune/#claude-entra" >}}).
 
 Managed configuration takes precedence over local settings, so a user cannot point the app at a different endpoint. The delivery mechanism differs per operating system.
 
@@ -592,6 +592,6 @@ For every available key and for the per-region profiles that a multi-region depl
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/documentation/llm/providers/anthropic" title="Anthropic Provider" subtitle="Complete Anthropic provider configuration" >}}
+  {{< card path="/integrations/llm/providers/anthropic" title="Anthropic Provider" subtitle="Complete Anthropic provider configuration" >}}
   {{< card path="/documentation/llm/guardrails/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
 {{< /cards >}}

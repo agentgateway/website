@@ -1,7 +1,6 @@
 ---
 title: Traffic management
 weight: 70
-icon: import_contacts
 test: skip
 ---
 

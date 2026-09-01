@@ -3,7 +3,6 @@ title: Web UIs & agent frameworks
 weight: 10
 description: Integrate agentgateway with popular web interfaces and agent frameworks for enterprise governance
 test: skip
-icon: chat
 ---
 
 Agentgateway provides a unified control plane to secure, observe, and audit all AI communications from web UIs and agent frameworks. By routing LLM, A2A, and MCP traffic through agentgateway, enterprises gain complete visibility and governance over their AI infrastructure.

@@ -1,7 +1,6 @@
 ---
 title: LLM consumption
 weight: 30
-icon: psychology
 description: Overview of LLM provider integration and consumption patterns
 prev: /configuration/security
 next: /docs/observability

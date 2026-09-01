@@ -8,7 +8,7 @@ You configure the attribution values, and agentgateway resolves each one from an
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Configure the LLM provider that you want to attribute, such as [Amazon Bedrock]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}).
+2. Configure the LLM provider that you want to attribute, such as [Amazon Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}).
 3. Set up [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) so that `jwt.*` values are available to attribution expressions.
 
 {{< doc-test paths="attribution" >}}
@@ -223,7 +223,7 @@ A final transformation sets fields on the converted request body, which covers t
 
 On Vertex AI, agentgateway sets billing labels on the native `generateContent` request, and those labels reach the Google Cloud billing export. Without a transformation, the labels on the request are whatever the caller sent. The transformation is what makes them yours.
 
-Configure [Google Vertex AI]({{< link-hextra path="/documentation/llm/providers/vertex/" >}}) as a provider first. Then configure the labels with a `finalTransformation` on the model. The same merge and replace postures apply, because callers can send their own `labels`.
+Configure [Google Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/" >}}) as a provider first. Then configure the labels with a `finalTransformation` on the model. The same merge and replace postures apply, because callers can send their own `labels`.
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
@@ -365,4 +365,4 @@ Per-prompt detail belongs in request metadata and the invocation logs, not in se
 
 - [Transform requests]({{< link-hextra path="/documentation/llm/transformations/" >}}) for request transformations and the CEL context.
 - [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) to attribute usage inside agentgateway.
-- [Amazon Bedrock]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}) provider configuration.
+- [Amazon Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) provider configuration.

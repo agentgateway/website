@@ -71,11 +71,11 @@ Use the MCP endpoint URL from the previous step to configure your IDE. Replace `
 > **Multiplexed tool names**: If your agentgateway backend routes to more than one [Virtual MCP]({{< link-hextra path="/documentation/mcp/virtual" >}}) target, agentgateway namespaces each tool and prompt name with its target name by default, for example `mcp-server-everything_echo`. When you add a second target, tools in your client's tool list might get new names because of this prefixing. Control it with the `prefixMode` field on the MCP backend; see [Virtual MCP]({{< link-hextra path="/documentation/mcp/virtual" >}}) for the available modes.
 
 {{< cards >}}
-  {{< card link="claude-desktop" title="Claude Desktop" subtitle="Connect Claude Desktop" icon="/integrations/providers/bw/claude.svg" >}}
-  {{< card link="claude-code" title="Claude Code" subtitle="Connect the Claude Code CLI" icon="/integrations/providers/bw/claude.svg" >}}
-  {{< card link="cursor" title="Cursor" subtitle="Connect Cursor" icon="/integrations/cursor.svg" >}}
-  {{< card link="vscode" title="VS Code (GitHub Copilot)" subtitle="Connect VS Code and GitHub Copilot" icon="/integrations/vscode.svg" >}}
-  {{< card link="devin" title="Devin Desktop" subtitle="Connect Devin Desktop (formerly Windsurf)" icon="/integrations/code.svg" >}}
+  {{< card link="claude-desktop" title="Claude Desktop" subtitle="Connect Claude Desktop" >}}
+  {{< card link="claude-code" title="Claude Code" subtitle="Connect the Claude Code CLI" >}}
+  {{< card link="cursor" title="Cursor" subtitle="Connect Cursor" >}}
+  {{< card link="vscode" title="VS Code (GitHub Copilot)" subtitle="Connect VS Code and GitHub Copilot" >}}
+  {{< card link="devin" title="Devin Desktop" subtitle="Connect Devin Desktop (formerly Windsurf)" >}}
 {{< /cards >}}
 
 ## Authentication

@@ -336,8 +336,8 @@ Extended thinking and structured outputs are now supported for Anthropic and Ama
 **Structured outputs** constrain the model to respond with a specific JSON schema. You define the JSON schema as part of your request. 
 
 For more information, see the following resources:
-* [Anthropic extended thinking and structured outputs]({{< link-hextra path="/documentation/llm/providers/anthropic/" >}})
-* [Bedrock extended thinking and structured outputs]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}})
+* [Anthropic extended thinking and structured outputs]({{< link-hextra path="/integrations/llm/providers/anthropic/" >}})
+* [Bedrock extended thinking and structured outputs]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}})
 
 ### Additional features
 

@@ -1,7 +1,6 @@
 ---
 title: Documentation
 weight: 100
-icon: article
 description: Set up, secure, and operate agentgateway on Kubernetes.
 test: skip
 ---

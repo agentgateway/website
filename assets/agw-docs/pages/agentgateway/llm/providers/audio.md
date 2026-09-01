@@ -141,7 +141,7 @@ EOF
 | `policies.ai.routes["*"]` | Catches any unmatched paths and forwards them as `Passthrough`. |
 
 > [!NOTE]
-> The `Passthrough` route type applies no LLM policies at all. To keep token-based rate limiting and telemetry for audio traffic, set the audio paths to `Detect` instead. `Detect` also forwards the payload unchanged, but makes a best effort to extract the model and token counts. For more information about the available route types, see [Multiple endpoints]({{< link-hextra path="/documentation/llm/providers/multiple-endpoints/" >}}).
+> The `Passthrough` route type applies no LLM policies at all. To keep token-based rate limiting and telemetry for audio traffic, set the audio paths to `Detect` instead. `Detect` also forwards the payload unchanged, but makes a best effort to extract the model and token counts. For more information about the available route types, see [Multiple endpoints]({{< link-hextra path="/integrations/llm/providers/multiple-endpoints/" >}}).
 
 ### Step 4: Create an HTTPRoute
 

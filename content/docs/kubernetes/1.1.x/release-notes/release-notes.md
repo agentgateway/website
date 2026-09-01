@@ -76,8 +76,8 @@ Authorization policies now support `Require` as an action in addition to `Allow`
 ### LLM gateway enhancements
 
 - **Path prefixes**: LLM providers now support path prefixes for custom API base paths.
-- **Azure default authentication**: Azure OpenAI providers can use platform-default authentication. For more information, see [Azure OpenAI]({{< link-hextra path="/documentation/llm/providers/azure/" >}}).
-- **Vertex region optional**: Vertex AI region configuration is now optional with a global default. For more information, see [Vertex AI]({{< link-hextra path="/documentation/llm/providers/vertex/" >}}).
+- **Azure default authentication**: Azure OpenAI providers can use platform-default authentication. For more information, see [Azure OpenAI]({{< link-hextra path="/integrations/llm/providers/azure/" >}}).
+- **Vertex region optional**: Vertex AI region configuration is now optional with a global default. For more information, see [Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/" >}}).
 
 ### Gateway and routing improvements
 

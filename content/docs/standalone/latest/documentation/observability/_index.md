@@ -1,7 +1,6 @@
 ---
 title: Observability
 weight: 67
-icon: monitoring
 description: Monitor agentgateway with metrics, distributed traces, and access logs.
 prev: /docs/integrations
 next: /docs/operations
@@ -29,4 +28,4 @@ Different traffic types expose additional signal-specific fields.
 
 ## External LLM observability platforms
 
-For specialized LLM observability platforms with prompt logging, cost tracking, and evaluation capabilities, such as Langfuse, Langsmith, or Phoenix, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
+For specialized LLM observability platforms with prompt logging, cost tracking, and evaluation capabilities, such as Langfuse, Langsmith, or Phoenix, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm/observability/" >}}).

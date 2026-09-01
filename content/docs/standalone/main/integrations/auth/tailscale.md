@@ -2,7 +2,6 @@
 title: Tailscale
 weight: 30
 description: Authenticate users with their Tailscale identity for zero-trust access to your MCP servers.
-icon: key
 ---
 
 Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authenticate users based on their Tailscale identity, which enables zero-trust access to your MCP servers. Agentgateway uses an [external authorization (`extAuthz`)]({{< link-hextra path="/documentation/configuration/security/external-authz" >}}) policy to call the local Tailscale daemon's `whois` API and identify the user behind each connection.

@@ -8,7 +8,7 @@ test:
     path: standard
   - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/documentation/llm/providers/openai.md
+  - file: ${versionRoot}/integrations/llm/providers/openai.md
     path: openai-setup
   - file: ${versionRoot}/documentation/llm/streaming.md
     path: streaming-openai
@@ -111,7 +111,7 @@ The following steps show how to stream a response from OpenAI.
 ### Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. [Set up access to the OpenAI LLM provider]({{< link-hextra path="/documentation/llm/providers/openai/" >}}).
+2. [Set up access to the OpenAI LLM provider]({{< link-hextra path="/integrations/llm/providers/openai/" >}}).
 
 ### Stream a response from OpenAI {#openai}
 

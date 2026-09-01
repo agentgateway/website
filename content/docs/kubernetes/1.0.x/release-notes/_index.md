@@ -1,7 +1,6 @@
 ---
 title: Release notes
 weight: 950
-icon: new_releases
 description: Review what changed in each release, and which versions are supported.
 test: skip
 ---

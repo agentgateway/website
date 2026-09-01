@@ -1,7 +1,6 @@
 ---
 title: Inference routing
 weight: 30
-icon: alt_route
 description: Route AI inference requests to LLM workloads using the Kubernetes Gateway API Inference Extension.
 test: skip
 ---
@@ -97,7 +96,7 @@ For more token rate limiting details, see
 [Rate limiting for LLMs]({{< link-hextra path="/documentation/llm/rate-limit/" >}}).
 
 For more custom provider examples, see
-[Custom providers]({{< link-hextra path="/documentation/llm/providers/custom/" >}}).
+[Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
 To route requests to multiple InferencePools based on the request body `model`
 field, see [Multiple inference pools]({{< link-hextra path="/documentation/llm/multiple-inference-pools/" >}}).

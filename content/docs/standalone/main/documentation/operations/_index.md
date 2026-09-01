@@ -2,7 +2,6 @@
 title: Operations
 description: Upgrade, debug, inspect, and trace a running standalone agentgateway instance.
 weight: 70
-icon: settings
 test: skip
 ---
 

@@ -8,10 +8,9 @@ test:
     path: gcp
 aliases:
   - /docs/standalone/latest/integrations/platforms/gcp/
-icon: /integrations/providers/bw/google-cloud.svg
 ---
 
-Run agentgateway on Cloud Run or GKE, and reach [Vertex AI]({{< link-hextra path="/documentation/llm/providers/vertex/" >}}) with the service account that Google Cloud already attaches to the workload. No API key goes into your configuration file.
+Run agentgateway on Cloud Run or GKE, and reach [Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/" >}}) with the service account that Google Cloud already attaches to the workload. No API key goes into your configuration file.
 
 {{< doc-test paths="gcp" >}}
 # ============================================================================
@@ -123,7 +122,7 @@ fi
 echo "✓ Port 4000 serves the model and the Vertex params resolve to the documented values"
 {{< /doc-test >}}
 
-For the full list of Vertex AI settings, see [Vertex AI]({{< link-hextra path="/documentation/llm/providers/vertex/" >}}). For direct Gemini API access with an API key instead, see [Google Gemini]({{< link-hextra path="/documentation/llm/providers/gemini/" >}}).
+For the full list of Vertex AI settings, see [Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/" >}}). For direct Gemini API access with an API key instead, see [Google Gemini]({{< link-hextra path="/integrations/llm/providers/gemini/" >}}).
 
 ## Run on Cloud Run
 
@@ -195,8 +194,8 @@ gcloud secrets add-iam-policy-binding agentgateway-config \
 
 | Service | How it is used |
 |-------------|---------|
-| [Vertex AI]({{< link-hextra path="/documentation/llm/providers/vertex/" >}}) | Gemini and other models, reached with the service account |
-| [Google Gemini]({{< link-hextra path="/documentation/llm/providers/gemini/" >}}) | Direct Gemini API access with an API key |
+| [Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/" >}}) | Gemini and other models, reached with the service account |
+| [Google Gemini]({{< link-hextra path="/integrations/llm/providers/gemini/" >}}) | Direct Gemini API access with an API key |
 | [Secret Manager](https://cloud.google.com/security/products/secret-manager) | Storage for the configuration file and for the API keys of non-Google providers |
 | Cloud Load Balancing | Load balancing and TLS termination in front of the gateway port |
 | Cloud Monitoring | Metrics collection, through a [Prometheus]({{< link-hextra path="/documentation/observability/metrics/prometheus/" >}}) scrape |
@@ -204,6 +203,6 @@ gcloud secrets add-iam-policy-binding agentgateway-config \
 
 ## Next steps
 
-* [Vertex AI]({{< link-hextra path="/documentation/llm/providers/vertex/" >}}) for the full provider reference.
+* [Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/" >}}) for the full provider reference.
 * [Set up the UI]({{< link-hextra path="/documentation/setup/ui/" >}}) to serve the web interface on a gateway.
 * [Choose where configuration is stored]({{< link-hextra path="/documentation/setup/storage/" >}}) before you mount a read-only secret.

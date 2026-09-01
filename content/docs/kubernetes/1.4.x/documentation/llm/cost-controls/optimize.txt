@@ -74,7 +74,7 @@ When requests share a large, stable prefix (a long system prompt, tool definitio
            minTokens: 1024       # only cache prompts at least this large
    ```
 
-2. Send a request with a large, repeated prefix, then send it again. The second request reads the prefix from cache. For the end-to-end walkthrough with verification, see [Prompt caching]({{< link-hextra path="/documentation/llm/providers/bedrock/#prompt-caching" >}}) in the Bedrock provider guide.
+2. Send a request with a large, repeated prefix, then send it again. The second request reads the prefix from cache. For the end-to-end walkthrough with verification, see [Prompt caching]({{< link-hextra path="/integrations/llm/providers/bedrock/#prompt-caching" >}}) in the Bedrock provider guide.
 
 ### See caching in your costs
 
@@ -99,6 +99,6 @@ See [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/"
 ## What's next
 
 - [Model aliasing]({{< link-hextra path="/documentation/llm/alias/" >}}) for the full aliasing walkthrough
-- [Prompt caching]({{< link-hextra path="/documentation/llm/providers/bedrock/#prompt-caching" >}}) for Bedrock caching setup
+- [Prompt caching]({{< link-hextra path="/integrations/llm/providers/bedrock/#prompt-caching" >}}) for Bedrock caching setup
 - [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) to price and compare model spend
 - [Virtual key management]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) to attribute spend per consumer

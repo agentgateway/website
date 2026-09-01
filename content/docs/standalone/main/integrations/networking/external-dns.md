@@ -2,7 +2,6 @@
 title: External DNS
 weight: 20
 description: Automatic DNS management for agentgateway
-icon: lan
 ---
 
 [External DNS](https://github.com/kubernetes-sigs/external-dns) automatically manages DNS records for Kubernetes resources. Use it to automatically create DNS records for agentgateway endpoints.

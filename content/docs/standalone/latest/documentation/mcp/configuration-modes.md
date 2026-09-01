@@ -76,7 +76,7 @@ Independently of the configuration mode, you choose how many endpoints your clie
 | One endpoint (multiplexing) | Several `targets` in **one** backend | One MCP server whose `tools/list` response federates the tools of every target |
 | Separate paths | **One** backend per route, each with its own targets | One MCP server per path, each listed and called separately |
 
-Multiplexing is also called federation. For a walkthrough, see [Virtual MCP]({{< link-hextra path="/documentation/mcp/connect/virtual" >}}).
+Multiplexing is also called federation. For a walkthrough, see [Virtual MCP]({{< link-hextra path="/integrations/mcp/servers/virtual" >}}).
 
 ### When to use one endpoint {#multiplex}
 
@@ -141,11 +141,11 @@ A federated endpoint returns the tools of every target in one `tools/list` respo
 
 To keep the list small, restrict which tools the endpoint exposes with an `mcpAuthorization` policy. Tools that a client is not allowed to call are filtered out of `list` responses, so the client never sees them. You can scope rules to a single target by matching on the `mcp.tool.target` variable. For more information, see [MCP authorization]({{< link-hextra path="/documentation/mcp/mcp-authz" >}}).
 
-You can also use `prefixMode` to control how tool names are namespaced. For more information, see [Tool name prefixing]({{< link-hextra path="/documentation/mcp/connect/virtual#tool-name-prefixing" >}}).
+You can also use `prefixMode` to control how tool names are namespaced. For more information, see [Tool name prefixing]({{< link-hextra path="/integrations/mcp/servers/virtual#tool-name-prefixing" >}}).
 
 ## Next steps
 
-- Federate several MCP servers into one endpoint with [Virtual MCP]({{< link-hextra path="/documentation/mcp/connect/virtual" >}}).
+- Federate several MCP servers into one endpoint with [Virtual MCP]({{< link-hextra path="/integrations/mcp/servers/virtual" >}}).
 - Apply per-target policies with [MCP target policies]({{< link-hextra path="/documentation/mcp/mcp-target-policies" >}}).
 - Filter the tools that clients can see with [MCP authorization]({{< link-hextra path="/documentation/mcp/mcp-authz" >}}).
 - Configure LLM providers with [Routing-based configuration for LLMs]({{< link-hextra path="/documentation/llm/configuration-modes/" >}}).

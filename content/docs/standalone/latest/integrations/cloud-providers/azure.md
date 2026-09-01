@@ -8,10 +8,9 @@ test:
     path: azure-cloud
 aliases:
   - /docs/standalone/latest/integrations/platforms/azure/
-icon: /integrations/providers/bw/azure.svg
 ---
 
-Run agentgateway on Azure Container Apps or AKS, and reach [Azure OpenAI]({{< link-hextra path="/documentation/llm/providers/azure/" >}}) with the managed identity that Azure already attaches to the workload. No API key goes into your configuration file.
+Run agentgateway on Azure Container Apps or AKS, and reach [Azure OpenAI]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the managed identity that Azure already attaches to the workload. No API key goes into your configuration file.
 
 {{< doc-test paths="azure-cloud" >}}
 # ============================================================================
@@ -180,7 +179,7 @@ fi
 echo "✓ Port 4000 serves the model and the Azure params resolve to the documented values"
 {{< /doc-test >}}
 
-For client secret and workload identity configurations, and for the Azure AI Foundry endpoint type, see [Azure]({{< link-hextra path="/documentation/llm/providers/azure/" >}}).
+For client secret and workload identity configurations, and for the Azure AI Foundry endpoint type, see [Azure]({{< link-hextra path="/integrations/llm/providers/azure/" >}}).
 
 > [!IMPORTANT]
 > Azure CLI authentication is a developer convenience, not a deployment method. Agentgateway calls `az` or `azd` when it needs a token, and neither command is in the container image. In a container, use a managed identity, workload identity, or a client secret.
@@ -244,7 +243,7 @@ az role assignment create \
 
 | Service | How it is used |
 |-------------|---------|
-| [Azure OpenAI]({{< link-hextra path="/documentation/llm/providers/azure/" >}}) | GPT and other models, reached with the managed identity |
+| [Azure OpenAI]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) | GPT and other models, reached with the managed identity |
 | [Azure Content Safety]({{< link-hextra path="/documentation/llm/prompt-guards/azure-content-safety/" >}}) | Prompt and response moderation |
 | [Azure Key Vault](https://azure.microsoft.com/en-us/products/key-vault/) | Storage for the API keys of non-Azure providers |
 | Azure Application Gateway | Load balancing, TLS termination, and WAF in front of the gateway port |
@@ -253,6 +252,6 @@ az role assignment create \
 
 ## Next steps
 
-* [Azure]({{< link-hextra path="/documentation/llm/providers/azure/" >}}) for the full provider reference, including Azure AI Foundry.
+* [Azure]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) for the full provider reference, including Azure AI Foundry.
 * [Set up the UI]({{< link-hextra path="/documentation/setup/ui/" >}}) to serve the web interface on a gateway.
 * [Choose where configuration is stored]({{< link-hextra path="/documentation/setup/storage/" >}}) before you mount a read-only file.

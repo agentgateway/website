@@ -201,7 +201,7 @@ The controller supports `metadataContext`, `requestAttributes`, and `responseAtt
 - **Azure AI Foundry**: Support for Anthropic endpoints on Foundry.
 - **Detect mode and audio**: Fixed the detect-mode and audio endpoint paths.
 
-For the list of supported providers, see the [LLM providers]({{< link-hextra path="/documentation/llm/providers/" >}}) docs.
+For the list of supported providers, see the [LLM providers]({{< link-hextra path="/integrations/llm/providers/" >}}) docs.
 
 ### A2A v1.0 agent cards
 

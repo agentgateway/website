@@ -2,7 +2,6 @@
 title: "Migrate from Ingress"
 description: Migrate from Ingress NGINX to Gateway API and agentgateway using the ingress2gateway tool
 weight: 900
-icon: swap_horiz
 test: skip
 ---
 

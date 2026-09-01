@@ -214,7 +214,7 @@ The **Gateway Overview** home page opens, with the **MCP** row enabled.
 Check out more guides for using MCP servers with agentgateway.
 
 {{< cards >}}
-  {{< card path="/documentation/mcp/connect/stdio" title="stdio" subtitle="Connect to an MCP server via stdio" >}}
-  {{< card path="/documentation/mcp/connect/virtual" title="Virtual MCP" subtitle="Federate multiple MCP servers." >}}
+  {{< card path="/integrations/mcp/servers/stdio" title="stdio" subtitle="Connect to an MCP server via stdio" >}}
+  {{< card path="/integrations/mcp/servers/virtual" title="Virtual MCP" subtitle="Federate multiple MCP servers." >}}
   {{< card path="/documentation/mcp/mcp-authn" title="OpenAPI" subtitle="Enable OAuth 2.0 protection for MCP servers." >}}
 {{< /cards >}}

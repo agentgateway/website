@@ -111,7 +111,7 @@ console.log(response);
 {{% /tab %}}
 {{% tab name="Other" %}}
 
-[View other LLM client integrations]({{< link-hextra path="/integrations/llm-clients/" >}}).
+[View other LLM client integrations]({{< link-hextra path="/integrations/llm/clients/" >}}).
 
 {{% /tab %}}
 {{< /tabs >}}

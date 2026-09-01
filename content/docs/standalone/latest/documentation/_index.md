@@ -1,7 +1,6 @@
 ---
 title: Documentation
 weight: 10
-icon: article
 description: Set up, secure, and operate the standalone agentgateway binary.
 test: skip
 ---

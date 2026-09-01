@@ -34,7 +34,7 @@ For Claude Desktop, Client Setup outputs the gateway URL and API key; it does no
 
 For a managed rollout, see [Manage gateway API keys with Microsoft
 Intune]({{< link-hextra
-path="/integrations/llm-clients/microsoft-intune/#claude-gateway-api-key" >}}).
+path="/integrations/llm/clients/microsoft-intune/#claude-gateway-api-key" >}}).
 
 To preserve per-user subscription billing instead of using a gateway API key,
 continue with the following advanced configuration.
@@ -156,7 +156,7 @@ virtual API key policy to this route.
 
 For a managed rollout of this subscription configuration, see [Manage Claude
 subscriptions with Microsoft Intune]({{< link-hextra
-path="/integrations/llm-clients/microsoft-intune/#claude-subscription" >}}).
+path="/integrations/llm/clients/microsoft-intune/#claude-subscription" >}}).
 
 ## Authenticate users with your identity provider {#sso}
 
@@ -264,7 +264,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    | Issuer URL | `https://login.microsoftonline.com/$TENANT_ID/v2.0` |
    | Bearer token | **ID token** |
    | Scopes | `openid profile email offline_access` |
-   | Sign-in flow | **Browser** for this initial test; use the [Intune guide]({{< link-hextra path="/integrations/llm-clients/microsoft-intune/#claude-entra" >}}) to move managed devices to **Broker** |
+   | Sign-in flow | **Browser** for this initial test; use the [Intune guide]({{< link-hextra path="/integrations/llm/clients/microsoft-intune/#claude-entra" >}}) to move managed devices to **Broker** |
    | Model discovery | **Off** when you use a fixed model list |
    | Models | One or more full model IDs that the backend exposes |
 
@@ -290,7 +290,7 @@ Configure and test one machine in developer mode first. When the connection work
 
 For an end-to-end Microsoft Intune rollout with Entra ID and managed-device
 enforcement, see [Manage Claude Desktop with Microsoft Intune]({{< link-hextra
-path="/integrations/llm-clients/microsoft-intune/#claude-entra" >}}).
+path="/integrations/llm/clients/microsoft-intune/#claude-entra" >}}).
 
 Managed configuration takes precedence over local settings, so a user cannot point the app at a different endpoint. The delivery mechanism differs per operating system.
 
@@ -356,6 +356,6 @@ If you configured gateway API key or OIDC authentication in strict mode, send a 
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/documentation/llm/providers/anthropic" title="Anthropic provider" subtitle="Complete Anthropic provider configuration" >}}
+  {{< card path="/integrations/llm/providers/anthropic" title="Anthropic provider" subtitle="Complete Anthropic provider configuration" >}}
   {{< card path="/documentation/llm/prompt-guards/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
 {{< /cards >}}

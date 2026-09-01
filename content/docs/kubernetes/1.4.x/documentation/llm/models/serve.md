@@ -8,7 +8,7 @@ test:
     path: experimental
   - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/documentation/llm/providers/httpbun.md
+  - file: ${versionRoot}/integrations/llm/providers/httpbun.md
     path: setup-httpbun-llm
   - path: serve-model
 ---
@@ -26,7 +26,7 @@ For more information, see [About models]({{< link-hextra path="/documentation/ll
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
-2. Deploy the [httpbun mock LLM]({{< link-hextra path="/documentation/llm/providers/httpbun/" >}}). This guide routes to httpbun so that you do not need a provider API key. To use a real provider instead, remove the `baseURL` field from each model and follow [API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
+2. Deploy the [httpbun mock LLM]({{< link-hextra path="/integrations/llm/providers/httpbun/" >}}). This guide routes to httpbun so that you do not need a provider API key. To use a real provider instead, remove the `baseURL` field from each model and follow [API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
 3. Enable the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API on the control plane. The API is experimental and disabled by default, so it is not available in a standard installation.
 
    ```sh {paths="serve-model"}

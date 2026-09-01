@@ -2,7 +2,7 @@ import { test, expect, dismissWelcome } from '../fixtures/test';
 
 /**
  * Real capture of the MCP Tool Playground, matching the flow documented in
- * content/docs/standalone/latest/documentation/mcp/connect/{http,stdio}.md (open playground, connect to
+ * content/docs/standalone/latest/integrations/mcp/servers/{http,stdio}.md (open playground, connect to
  * the MCP target, list tools, run `echo`). Selectors verified against the new UI in
  * howardjohn/agentgateway:sl8.
  *

@@ -1,6 +1,6 @@
 [vLLM Semantic Router (vSR)](https://vllm-sr.ai/) classifies LLM requests and selects a model based on prompt content. With agentgateway, you can make this semantic decision before routing while continuing to apply gateway policies and record model, token, latency, and cost telemetry. See the [vSR Router API reference](https://vllm-sr.ai/docs/api/router/) for supported frontend and backend API types.
 
-This integration is distinct from using [vLLM as an inference provider]({{< link-hextra path="/documentation/llm/providers/vllm/" >}}). vSR provides the model-selection policy. Your configured provider, Kubernetes Service, or InferencePool serves the selected model.
+This integration is distinct from using [vLLM as an inference provider]({{< link-hextra path="/integrations/llm/providers/vllm/" >}}). vSR provides the model-selection policy. Your configured provider, Kubernetes Service, or InferencePool serves the selected model.
 
 ## How the integration works
 
@@ -26,10 +26,10 @@ When semantic caching is enabled, vSR can instead return a cached completion as 
 The vSR and agentgateway projects provide complementary guides. Choose the one that matches the models and outcome that you want to evaluate.
 
 {{< cards >}}
-{{< card link="https://vllm-sr.ai/docs/installation/k8s/agentgateway/" title="Deploy vSR with agentgateway" icon="external-link" description="Follow the vSR project guide to deploy the components on Kubernetes and route to vLLM-compatible inference workloads.">}}
-{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/cost-based" title="Evaluate cost-based routing" icon="external-link" description="Select between hosted model tiers and measure the result with a model cost catalog and OpenTelemetry.">}}
-{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/tier-aware" title="Configure tier-aware routing" icon="external-link" description="Select separate vSR configurations and model pools for authenticated Basic, Standard, and Pro callers.">}}
-{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/semantic-cache" title="Configure semantic caching" icon="external-link" description="Reuse responses to semantically equivalent requests with the Redis-backed example.">}}
+{{< card link="https://vllm-sr.ai/docs/installation/k8s/agentgateway/" title="Deploy vSR with agentgateway" description="Follow the vSR project guide to deploy the components on Kubernetes and route to vLLM-compatible inference workloads.">}}
+{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/cost-based" title="Evaluate cost-based routing" description="Select between hosted model tiers and measure the result with a model cost catalog and OpenTelemetry.">}}
+{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/tier-aware" title="Configure tier-aware routing" description="Select separate vSR configurations and model pools for authenticated Basic, Standard, and Pro callers.">}}
+{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/semantic-cache" title="Configure semantic caching" description="Reuse responses to semantically equivalent requests with the Redis-backed example.">}}
 {{< /cards >}}
 
 The vSR deployment guide owns the installation, Helm values, and semantic-router configuration. Each agentgateway example owns the policies and runnable gateway resources for its scenario. Keeping those details with their projects avoids version drift in this integration overview.
@@ -40,7 +40,7 @@ The vSR deployment guide owns the installation, Helm values, and semantic-router
 ## Integration considerations
 
 - **Client model selection:** The cost-based example uses `model: "auto"` to opt in to semantic selection. This value is an example policy convention, not a reserved agentgateway model. You can let clients request model tiers directly or [validate the request body]({{< link-hextra path="/documentation/traffic-management/transformations/validate/" >}}) to require the automatic path.
-- **Backend choice:** vSR can select models served by hosted providers or Kubernetes inference workloads. Configure the corresponding [LLM provider]({{< link-hextra path="/documentation/llm/providers/" >}}) or routing backend in agentgateway.
+- **Backend choice:** vSR can select models served by hosted providers or Kubernetes inference workloads. Configure the corresponding [LLM provider]({{< link-hextra path="/integrations/llm/providers/" >}}) or routing backend in agentgateway.
 - **Model names:** Keep the names returned by vSR aligned with the models in your agentgateway routes, provider configuration, and cost catalog. You can expose stable client-facing names with [model aliases]({{< link-hextra path="/documentation/llm/alias/" >}}).
 - **Cost and observability:** vSR makes the semantic decision. Agentgateway remains the source for completed-request telemetry and can calculate realized cost when you configure a [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). Use [LLM metrics and logs]({{< link-hextra path="/documentation/llm/observability/" >}}) or the [OpenTelemetry stack]({{< link-hextra path="/documentation/observability/otel-stack/" >}}) to evaluate the result.
 

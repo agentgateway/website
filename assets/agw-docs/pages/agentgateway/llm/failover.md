@@ -173,7 +173,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    In this example, you configure failover from a self-hosted vLLM instance to a cloud provider. The self-hosted instance is a model that you run yourself, such as vLLM on your own GPU hardware. The cloud provider is a fully managed, externally hosted LLM API, such as OpenAI. Requests route to your in-cluster vLLM deployment first. If vLLM becomes unavailable, requests fail over to OpenAI.
 
-   Before you begin, [set up vLLM]({{< link-hextra path="/documentation/llm/providers/vllm/" >}}) in your cluster.
+   Before you begin, [set up vLLM]({{< link-hextra path="/integrations/llm/providers/vllm/" >}}) in your cluster.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -341,7 +341,7 @@ This request confirms your priority order. It does not exercise failover, becaus
 
 A real provider outage is hard to arrange on purpose, so the preceding steps cannot show failover as it happens. To see the sequence on demand, point the highest-priority group at an endpoint that always fails, and the fallback group at an endpoint that always succeeds. Eviction and failover then happen on the first request, with no live provider and no token spend.
 
-This example uses [httpbun]({{< link-hextra path="/documentation/llm/providers/httpbun/" >}}), a mock LLM that accepts requests without an API key. Two httpbun endpoints matter here.
+This example uses [httpbun]({{< link-hextra path="/integrations/llm/providers/httpbun/" >}}), a mock LLM that accepts requests without an API key. Two httpbun endpoints matter here.
 
 | httpbun endpoint | Response |
 | --- | --- |

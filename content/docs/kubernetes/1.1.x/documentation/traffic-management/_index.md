@@ -1,7 +1,6 @@
 ---
 title: Traffic management
 weight: 70
-icon: traffic
 test: skip
 ---
 

@@ -8,10 +8,9 @@ test:
     path: aws
 aliases:
   - /docs/standalone/main/integrations/platforms/aws/
-icon: /integrations/providers/bw/aws.svg
 ---
 
-Run agentgateway on Amazon ECS or Amazon EKS, and reach [Amazon Bedrock]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}) with the IAM role that AWS already gives the container. No API key goes into your configuration file.
+Run agentgateway on Amazon ECS or Amazon EKS, and reach [Amazon Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) with the IAM role that AWS already gives the container. No API key goes into your configuration file.
 
 {{< doc-test paths="aws" >}}
 # ============================================================================
@@ -110,7 +109,7 @@ fi
 echo "✓ Port 4000 serves the model and the Bedrock region resolves to the documented value"
 {{< /doc-test >}}
 
-For the full list of Bedrock settings, including passthrough and token counting, see [Amazon Bedrock]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}).
+For the full list of Bedrock settings, including passthrough and token counting, see [Amazon Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}).
 
 ## Run on Amazon ECS
 
@@ -215,7 +214,7 @@ The `secretsmanager` statement is needed only if you also route to a non-AWS pro
 
 | Service | How it is used |
 |-------------|---------|
-| [Amazon Bedrock]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}) | Claude, Llama, and other foundation models, reached with the task role |
+| [Amazon Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) | Claude, Llama, and other foundation models, reached with the task role |
 | [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) | Storage for the API keys of non-AWS providers |
 | AWS Application Load Balancer | Load balancing and TLS termination in front of the gateway port |
 | Amazon CloudWatch | Destination for the container logs configured by `awslogs` |
@@ -223,6 +222,6 @@ The `secretsmanager` statement is needed only if you also route to a non-AWS pro
 
 ## Next steps
 
-* [Amazon Bedrock]({{< link-hextra path="/documentation/llm/providers/bedrock/" >}}) for the full provider reference.
+* [Amazon Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) for the full provider reference.
 * [Set up the UI]({{< link-hextra path="/documentation/setup/ui/" >}}) to serve the web interface on a gateway.
 * [Choose where configuration is stored]({{< link-hextra path="/documentation/setup/storage/" >}}) before you mount a read-only file.

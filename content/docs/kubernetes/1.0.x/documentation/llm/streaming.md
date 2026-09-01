@@ -8,7 +8,7 @@ test:
     path: standard
   - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/documentation/llm/providers/openai.md
+  - file: content/docs/kubernetes/latest/integrations/llm/providers/openai.md
     path: openai-setup
   - file: content/docs/kubernetes/latest/documentation/llm/streaming.md
     path: streaming-openai
@@ -125,7 +125,7 @@ The following steps show how to stream a response from OpenAI.
 ### Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. [Set up access to the OpenAI LLM provider]({{< link-hextra path="/documentation/llm/providers/openai/" >}}).
+2. [Set up access to the OpenAI LLM provider]({{< link-hextra path="/integrations/llm/providers/openai/" >}}).
 
 ### Stream a response from OpenAI {#openai}
 

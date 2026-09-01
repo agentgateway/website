@@ -2,7 +2,6 @@
 title: OAuth2 Proxy
 weight: 25
 description: Add user authentication with GitHub, Google, Azure AD, and other OAuth providers by integrating agentgateway with OAuth2 Proxy.
-icon: key
 ---
 
 Agentgateway can integrate with [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/) to add user authentication through GitHub, Google, Azure AD, and other OAuth providers. Agentgateway uses an [external authorization (`extAuthz`)]({{< link-hextra path="/documentation/configuration/security/external-authz" >}}) policy to delegate authentication checks to OAuth2 Proxy, which redirects unauthenticated users to the provider's login page.

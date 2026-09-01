@@ -119,7 +119,7 @@ For an example of using the UI to set something up, use the **LLM > Client Setup
 3. Review the **Gateway base URL**, and select a model and virtual API key.
 4. Select the client from the **Integration** dropdown, and copy the generated settings or snippet.
 
-Client Setup does not create a route, model, authentication policy, or provider credential. It generates client-side values from the configuration that already exists. For client-specific prerequisites, see [LLM clients]({{< link-hextra path="/integrations/llm-clients/" >}}).
+Client Setup does not create a route, model, authentication policy, or provider credential. It generates client-side values from the configuration that already exists. For client-specific prerequisites, see [LLM clients]({{< link-hextra path="/integrations/llm/clients/" >}}).
 
 The selected model appears only in recipes that accept a model setting. For example, the Claude Desktop recipe outputs a gateway URL and API key, but does not configure a model name in Claude Desktop.
 

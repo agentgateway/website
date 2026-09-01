@@ -1,7 +1,6 @@
 ---
 title: Goose
 description: Route Goose's LLM traffic through agentgateway to govern an autonomous agent's model and tool calls.
-icon: chat
 ---
 
 [Goose](https://github.com/aaif-goose/goose) is an open-source, on-machine AI agent from Block that combines LLM reasoning with tool execution via the Model Context Protocol (MCP). Routing Goose's LLM calls through agentgateway gives you a single place to apply rate limits, capture audit logs, and switch providers without reconfiguring the agent.

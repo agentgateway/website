@@ -5,7 +5,6 @@ description: Protect MCP servers with Okta as the authorization server.
 test:
   okta-mcp-authn:
   - path: okta-mcp-authn
-icon: key
 ---
 
 [Okta](https://www.okta.com/) is an enterprise identity platform. Agentgateway includes a native `okta` MCP authentication provider so that you can use Okta as the authorization server for your MCP servers.

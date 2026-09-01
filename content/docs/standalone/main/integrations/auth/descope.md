@@ -5,7 +5,6 @@ description: Protect MCP servers with Descope as the authorization server.
 test:
   descope-mcp-authn:
   - path: descope-mcp-authn
-icon: key
 ---
 
 [Descope](https://www.descope.com/) is an authentication and user management platform. Agentgateway includes a native `descope` MCP authentication provider so that you can use a Descope [MCP Server](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers) as the authorization server for your MCP servers.

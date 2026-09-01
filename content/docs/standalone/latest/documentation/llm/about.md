@@ -22,29 +22,29 @@ Agentgateway supports native, OpenAI-compatible, and self-hosted LLM providers.
 ### First-class providers
 
 Many providers now have dedicated integrations with preconfigured base URLs and request formats:
-- [Baseten]({{< link-hextra path="/documentation/llm/providers/baseten/" >}})
-- [Cerebras]({{< link-hextra path="/documentation/llm/providers/cerebras/" >}})
-- [DeepInfra]({{< link-hextra path="/documentation/llm/providers/deepinfra/" >}})
-- [xAI (Grok)]({{< link-hextra path="/documentation/llm/providers/xai/" >}})
-- [Cohere]({{< link-hextra path="/documentation/llm/providers/cohere/" >}})
-- [Together AI]({{< link-hextra path="/documentation/llm/providers/togetherai/" >}})
-- [Groq]({{< link-hextra path="/documentation/llm/providers/groq/" >}})
-- [DeepSeek]({{< link-hextra path="/documentation/llm/providers/deepseek/" >}})
-- [Mistral]({{< link-hextra path="/documentation/llm/providers/mistral/" >}})
-- [Hugging Face]({{< link-hextra path="/documentation/llm/providers/huggingface/" >}})
-- [OpenRouter]({{< link-hextra path="/documentation/llm/providers/openrouter/" >}})
-- [Fireworks AI]({{< link-hextra path="/documentation/llm/providers/fireworks/" >}})
+- [Baseten]({{< link-hextra path="/integrations/llm/providers/baseten/" >}})
+- [Cerebras]({{< link-hextra path="/integrations/llm/providers/cerebras/" >}})
+- [DeepInfra]({{< link-hextra path="/integrations/llm/providers/deepinfra/" >}})
+- [xAI (Grok)]({{< link-hextra path="/integrations/llm/providers/xai/" >}})
+- [Cohere]({{< link-hextra path="/integrations/llm/providers/cohere/" >}})
+- [Together AI]({{< link-hextra path="/integrations/llm/providers/togetherai/" >}})
+- [Groq]({{< link-hextra path="/integrations/llm/providers/groq/" >}})
+- [DeepSeek]({{< link-hextra path="/integrations/llm/providers/deepseek/" >}})
+- [Mistral]({{< link-hextra path="/integrations/llm/providers/mistral/" >}})
+- [Hugging Face]({{< link-hextra path="/integrations/llm/providers/huggingface/" >}})
+- [OpenRouter]({{< link-hextra path="/integrations/llm/providers/openrouter/" >}})
+- [Fireworks AI]({{< link-hextra path="/integrations/llm/providers/fireworks/" >}})
 
 ### Self-hosted solutions
 
 Run models locally or in your own infrastructure:
-- [Ollama]({{< link-hextra path="/documentation/llm/providers/ollama/" >}})
-- [vLLM]({{< link-hextra path="/documentation/llm/providers/custom/" >}})
-- [LM Studio]({{< link-hextra path="/documentation/llm/providers/custom/" >}})
+- [Ollama]({{< link-hextra path="/integrations/llm/providers/ollama/" >}})
+- [vLLM]({{< link-hextra path="/integrations/llm/providers/custom/" >}})
+- [LM Studio]({{< link-hextra path="/integrations/llm/providers/custom/" >}})
 
 ### Custom providers
 
-Use [Custom provider]({{< link-hextra path="/documentation/llm/providers/custom/" >}}) for other providers without direct support such as Perplexity, vLLM, or LM Studio.
+Use [Custom provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) for other providers without direct support such as Perplexity, vLLM, or LM Studio.
 Agentgateway supports all of the common LLM formats and can generally integrate with any provider ([file an issue](https://github.com/agentgateway/agentgateway/issues/new) if one is missing!).
 
 ## Using the API

@@ -1,7 +1,6 @@
 ---
 title: Chatbot UI
 description: Front Chatbot UI with agentgateway to keep API keys server-side and audit every chat.
-icon: chat
 ---
 
 [Chatbot UI](https://github.com/mckaywrigley/chatbot-ui) is an open-source ChatGPT-style interface by Mckay Wrigley. Because it speaks the OpenAI Chat Completions API, you can point it at agentgateway instead of directly at OpenAI to centralize credentials, apply policies, and capture audit logs.

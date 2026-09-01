@@ -1,7 +1,6 @@
 ---
 title: Install
 weight: 14
-icon: settings
 test: skip
 ---
 

@@ -11,7 +11,7 @@ In our [previous post](https://agentgateway.dev/blog/2026-07-17-semantic-routing
 
 This post opens the box. Before we extend the idea of semantic routing to concepts like cross-provider model selection and routing, we need to have a better understanding of the underlying machinery: how agentgateway integrates with vLLM Semantic Router (vSR), how vSR selects the model to route, how that information is communicated back to agentgateway, and finally how agentgateway uses this information to route the request to the correct LLM provider (such as OpenAI, Anthropic, and Gemini) and model (such as gpt-5.5, claude-haiku-4-5, and gemini-3.5-flash).
 
-This blog uses agentgateway and the [`llm-semantic-routing` example](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing), a solid starting point for building your own solution. The agentgateway docs give a concise [vLLM Semantic Router integration overview](https://agentgateway.dev/docs/kubernetes/latest/integrations/vllm-semantic-router/). This post is the hands-on companion to it.
+This blog uses agentgateway and the [`llm-semantic-routing` example](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing), a solid starting point for building your own solution. The agentgateway docs give a concise [vLLM Semantic Router integration overview](https://agentgateway.dev/docs/kubernetes/latest/integrations/llm/routing/vllm-semantic-router/). This post is the hands-on companion to it.
 
 ## vSR classifies, it does not proxy
 
@@ -219,4 +219,4 @@ That is exactly what we will cover in our next post, the ability to make routing
 
 ## What you have now
 
-A working semantic-routing setup: a classifier that reads prompts and emits decisions, attached to agentgateway as an ExtProc, steering one provider's model tiers with nothing in application code. That's the foundation. For the reference version of this integration, see the [vLLM Semantic Router integration page](https://agentgateway.dev/docs/kubernetes/latest/integrations/vllm-semantic-router/) in the agentgateway docs. In our next post, we make the same decision choose a *provider*, not just a tier.
+A working semantic-routing setup: a classifier that reads prompts and emits decisions, attached to agentgateway as an ExtProc, steering one provider's model tiers with nothing in application code. That's the foundation. For the reference version of this integration, see the [vLLM Semantic Router integration page](https://agentgateway.dev/docs/kubernetes/latest/integrations/llm/routing/vllm-semantic-router/) in the agentgateway docs. In our next post, we make the same decision choose a *provider*, not just a tier.

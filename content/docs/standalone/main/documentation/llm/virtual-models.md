@@ -368,4 +368,4 @@ assert_models config-conditional.yaml '["adaptive","openai-public"]'
 {{< /doc-test >}}
 
 > [!NOTE]
-> For reusable provider defaults in simplified mode, see [Multiple LLM providers]({{< link-hextra path="/documentation/llm/providers/multiple-llms/" >}}).
+> For reusable provider defaults in simplified mode, see [Multiple LLM providers]({{< link-hextra path="/integrations/llm/providers/multiple-llms/" >}}).

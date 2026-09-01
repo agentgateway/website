@@ -2,7 +2,7 @@
 
 ### Step 1: Set up provider credentials
 
-Set up credentials for the provider that you want to use. For production credential options, see the [provider reference]({{< link-hextra path="/documentation/llm/providers/" >}}).
+Set up credentials for the provider that you want to use. For production credential options, see the [provider reference]({{< link-hextra path="/integrations/llm/providers/" >}}).
 
 > [!NOTE]
 > Each step in this guide has a tab for every provider that the UI supports. Not all of the tabs fit on the screen at once, so scroll the tab bar to the right to reach the rest. The tabs are in the same order as the **Provider** dropdown list in the UI.

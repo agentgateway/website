@@ -3,5 +3,5 @@ Agentgateway runs in one of two modes. **Standalone** mode, which the rest of th
 For a comparison of the two modes, see [Standalone vs. Kubernetes modes]({{< link-hextra path="/documentation/about/introduction/#standalone-vs-kubernetes-modes" >}}).
 
 {{< cards >}}
-  {{< card link="https://agentgateway.dev/docs/kubernetes/" title="Kubernetes mode docs" icon="external-link" description="Install the agentgateway control plane and configure it with Gateway API-compatible custom resources." >}}
+  {{< card link="https://agentgateway.dev/docs/kubernetes/" title="Kubernetes mode docs" description="Install the agentgateway control plane and configure it with Gateway API-compatible custom resources." >}}
 {{< /cards >}}

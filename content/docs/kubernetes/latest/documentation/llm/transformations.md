@@ -8,7 +8,7 @@ test:
     path: standard
   - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/documentation/llm/providers/openai.md
+  - file: ${versionRoot}/integrations/llm/providers/openai.md
     path: openai-setup
   - file: ${versionRoot}/documentation/llm/transformations.md
     path: llm-transformations
@@ -17,7 +17,7 @@ test:
     path: standard
   - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/documentation/llm/providers/openai.md
+  - file: ${versionRoot}/integrations/llm/providers/openai.md
     path: openai-setup
   - file: ${versionRoot}/documentation/llm/transformations.md
     path: llm-model-headers
@@ -26,7 +26,7 @@ test:
     path: standard
   - file: ${versionRoot}/documentation/setup/gateway.md
     path: all
-  - file: ${versionRoot}/documentation/llm/providers/openai.md
+  - file: ${versionRoot}/integrations/llm/providers/openai.md
     path: openai-setup
   - file: ${versionRoot}/documentation/llm/transformations.md
     path: llm-final-transformations

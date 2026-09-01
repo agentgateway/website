@@ -1,7 +1,7 @@
 import { test, expect, dismissWelcome, maskSession, selectTool } from '../fixtures/test';
 
 /**
- * Capture for the MULTIPLEX (virtual MCP) guide — content/docs/standalone/main/documentation/mcp/connect/virtual.md.
+ * Capture for the MULTIPLEX (virtual MCP) guide — content/docs/standalone/main/integrations/mcp/servers/virtual.md.
  * Two targets (`time` + `everything`) are federated into one backend, so tools appear
  * prefixed: `time_get_current_time`, `everything_echo`, etc.
  *

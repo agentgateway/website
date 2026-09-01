@@ -111,5 +111,5 @@ Check out more guides related to LLM consumption with agentgateway.
 {{< cards >}}
   {{< card path="/documentation/llm/cost-controls/virtual-keys/" title="Virtual key management" subtitle="Manage API keys and control spending with rate limits for your LLM requests." >}}
   {{< card path="/documentation/llm/observability/" title="LLM observability" subtitle="View metrics, traces, and logs for LLM traffic." >}}
-  {{< card path="/documentation/llm/providers/" title="Provider reference" subtitle="Configure authentication and provider-specific options for supported LLM providers." >}}
+  {{< card path="/integrations/llm/providers/" title="Provider reference" subtitle="Configure authentication and provider-specific options for supported LLM providers." >}}
 {{< /cards >}}

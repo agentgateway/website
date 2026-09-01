@@ -11,7 +11,7 @@ Google Cloud Model Armor guardrails are model-agnostic and can be applied to any
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Set up access to the [Gemini LLM provider]({{< link-hextra path="/documentation/llm/providers/gemini/" >}}). 
+2. Set up access to the [Gemini LLM provider]({{< link-hextra path="/integrations/llm/providers/gemini/" >}}). 
 
 ## Set up the Google Model Armor
 

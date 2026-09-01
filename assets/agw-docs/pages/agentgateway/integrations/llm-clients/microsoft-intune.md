@@ -10,7 +10,7 @@ for authentication, authorization, rate limits, guardrails, and observability.
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Configure the [LLM provider]({{< link-hextra path="/documentation/llm/providers/" >}})
+2. Configure the [LLM provider]({{< link-hextra path="/integrations/llm/providers/" >}})
    that your managed clients use.
 3. Expose the Gateway through a stable HTTPS hostname that Intune-managed
    devices can resolve, such as `https://llm.example.com`.
@@ -19,7 +19,7 @@ for authentication, authorization, rate limits, guardrails, and observability.
    or the [macOS enrollment
    guide](https://learn.microsoft.com/en-us/intune/device-enrollment/apple/guide-macos).
 5. Review the configuration guide for each [supported LLM
-   client]({{< link-hextra path="/integrations/llm-clients/" >}}) that you plan
+   client]({{< link-hextra path="/integrations/llm/clients/" >}}) that you plan
    to manage.
 
 {{< conditional-text include-if="kubernetes" >}}
@@ -226,7 +226,7 @@ env_key = "AGENTGATEWAY_API_KEY"
 > managed Codex configuration.
 
 For more information about the client behavior, see [Codex]({{< link-hextra
-path="/integrations/llm-clients/codex/" >}}).
+path="/integrations/llm/clients/codex/" >}}).
 
 ### macOS
 
@@ -450,7 +450,7 @@ only the keys that route traffic through agentgateway.
 ### Cursor
 
 Follow the [Cursor]({{< link-hextra
-path="/integrations/llm-clients/cursor/" >}}) guide to enable **Override OpenAI
+path="/integrations/llm/clients/cursor/" >}}) guide to enable **Override OpenAI
 Base URL**. Seed and audit that setting only after you confirm its on-disk
 schema for the Cursor version that Intune deploys. Preserve all unrelated user
 settings when a remediation changes the value.
@@ -458,14 +458,14 @@ settings when a remediation changes the value.
 ### Devin Desktop
 
 Follow the [Devin Desktop]({{< link-hextra
-path="/integrations/llm-clients/devin/" >}}) guide and manage the `http.proxy`
+path="/integrations/llm/clients/devin/" >}}) guide and manage the `http.proxy`
 value in the editor settings. Use a user-context script that merges only this
 key, because replacing the file can remove unrelated editor settings.
 
 ### VS Code Continue
 
 Follow the [VS Code Continue]({{< link-hextra
-path="/integrations/llm-clients/continue/" >}}) guide and deploy or merge the
+path="/integrations/llm/clients/continue/" >}}) guide and deploy or merge the
 agentgateway model entry in `~/.continue/config.json`. If users can define
 other models, identify the managed entry by a stable name and leave the other
 array entries unchanged.
@@ -473,7 +473,7 @@ array entries unchanged.
 ### GitHub Copilot
 
 Follow the [GitHub Copilot]({{< link-hextra
-path="/integrations/llm-clients/github-copilot/" >}}) guide and manage
+path="/integrations/llm/clients/github-copilot/" >}}) guide and manage
 `github.copilot.advanced.debug.overrideProxyUrl` in the VS Code user settings.
 This workflow requires Copilot Business or Enterprise. Merge the property into
 the JSON file instead of replacing the user's complete VS Code configuration.
@@ -481,7 +481,7 @@ the JSON file instead of replacing the user's complete VS Code configuration.
 ### OpenAI SDK
 
 Follow the [OpenAI SDK]({{< link-hextra
-path="/integrations/llm-clients/openai-sdk/" >}}) guide and set `base_url` for
+path="/integrations/llm/clients/openai-sdk/" >}}) guide and set `base_url` for
 Python or `baseURL` for JavaScript in organization-owned application
 configuration. Intune can deploy a wrapper, environment file, or managed
 application, but managing the SDK package alone cannot force application code
@@ -489,7 +489,7 @@ to use agentgateway.
 
 ### curl
 
-Follow the [curl]({{< link-hextra path="/integrations/llm-clients/curl/" >}})
+Follow the [curl]({{< link-hextra path="/integrations/llm/clients/curl/" >}})
 guide and deploy an organization-owned wrapper command when users need a
 convenient request template. The curl executable accepts any URL, so this is
 not an enforcement boundary. Use gateway authentication and endpoint network
@@ -799,8 +799,8 @@ Review the client guides that underpin the two complete Intune examples, then
 apply the Gateway security controls appropriate for your deployment.
 
 {{< cards >}}
-  {{< card path="/integrations/llm-clients/codex" title="Codex" subtitle="Configure and verify Codex with agentgateway" >}}
-  {{< card path="/integrations/llm-clients/claude-desktop" title="Claude Desktop" subtitle="Configure and verify Claude Desktop with agentgateway" >}}
+  {{< card path="/integrations/llm/clients/codex" title="Codex" subtitle="Configure and verify Codex with agentgateway" >}}
+  {{< card path="/integrations/llm/clients/claude-desktop" title="Claude Desktop" subtitle="Configure and verify Claude Desktop with agentgateway" >}}
 {{< conditional-text include-if="kubernetes" >}}
   {{< card path="/documentation/security/jwt/" title="JWT authentication" subtitle="Authenticate managed clients at the Gateway" >}}
   {{< card path="/documentation/llm/rbac/" title="Authorization" subtitle="Control which identities can use the Gateway" >}}

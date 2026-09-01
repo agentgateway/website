@@ -284,6 +284,6 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/documentation/llm/providers/azure" title="Azure OpenAI Reference" subtitle="Complete Azure OpenAI configuration" >}}
+  {{< card path="/integrations/llm/providers/azure" title="Azure OpenAI Reference" subtitle="Complete Azure OpenAI configuration" >}}
   {{< card path="/documentation/tutorials/llm-gateway" title="LLM Gateway" subtitle="Route to multiple LLM providers" >}}
 {{< /cards >}}

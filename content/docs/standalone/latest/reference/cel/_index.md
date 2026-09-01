@@ -1,7 +1,6 @@
 ---
 title: CEL expressions
 weight: 10
-icon: code
 description: Use CEL (Common Expression Language) to write request-aware policies, transformations, and observability rules.
 test: skip
 ---

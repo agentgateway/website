@@ -106,7 +106,7 @@
     "content" (dict "mediaType" "text/markdown" "value" $fullMd)
     "kind" "page"
     "layout" "api-ref"
-    "params" (dict "generated" true "widgetHtml" $configWidgetHtml "icon" "tune")
+    "params" (dict "generated" true "widgetHtml" $configWidgetHtml)
     "path" (printf "%s/configuration/schema" $prefix)
     "title" "Configuration schema explorer"
     "description" "Explore the agentgateway standalone configuration schema interactively, including nested fields and validation details."
@@ -146,7 +146,7 @@
     {{ $.AddPage (dict
       "content" (dict "mediaType" "text/markdown" "value" $md)
       "kind" "page"
-      "params" (dict "schemaType" "CEL" "generated" true "icon" "code")
+      "params" (dict "schemaType" "CEL" "generated" true)
       "path" (printf "%s/cel/cel-context" $prefix)
       "title" "CEL reference"
       "description" "The CEL expression context provides the following objects, which you can use in CEL expressions throughout agentgateway configuration."
@@ -170,7 +170,7 @@
     "content"     (dict "mediaType" "text/markdown" "value" "<p></p><div id=\"ks-widget-slot\"></div>")
     "kind"        "page"
     "layout"      "api-ref"
-    "params"      (dict "generated" true "widgetHtml" $celWidgetHtml "icon" "code")
+    "params"      (dict "generated" true "widgetHtml" $celWidgetHtml)
     "path"        (printf "%s/cel/cel-context-interactive" $prefix)
     "title"       "CEL reference explorer"
     "description" "Explore the CEL expression context interactively, including all available variables and their nested fields."

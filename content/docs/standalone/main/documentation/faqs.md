@@ -1,7 +1,6 @@
 ---
 title: FAQs
 weight: 200
-icon: help_outline
 description: Answers to common questions about agentgateway's features, configuration, and deployment.
 prev: /docs/reference
 --- 
