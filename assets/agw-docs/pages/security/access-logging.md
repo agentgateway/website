@@ -189,7 +189,7 @@ The variable holds one entry per intervention, in either the request or the resp
 | `guardrails[].guardrailId` | The configured guardrail identifier. |
 | `guardrails[].guardrailVersion` | The configured guardrail version. |
 | `guardrails[].actionReason` | The reason that the guardrail reported for its action. |
-| `guardrails[].assessments` | Assessment detail that the guardrail provider reported, redacted to metadata only. Content-bearing fields, such as the matched text, are never included. |
+| `guardrails[].assessments` | The assessment detail that the guardrail provider reported, redacted to metadata only. Content-bearing fields, such as the matched text, are never included. |
 
 > [!NOTE]
 > Only CEL that runs after the request completes, such as an access log field or a metric field, receives the `guardrails` variable. An authorization or transformation expression that runs mid-request never sees it.
