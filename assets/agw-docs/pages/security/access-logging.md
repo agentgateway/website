@@ -25,7 +25,7 @@ For logging, CEL exposes these variable groups when enabled or applicable:
 * **Guardrails**: `guardrails`, with one entry per prompt-guard intervention naming the phase, the guard, and the action
 {{< /version >}}
 
-Use the `filter` field in the {{< reuse "agw-docs/snippets/policy.md" >}} to [filter which requests are logged](#filter-access-logs) by path, response code, or any other request attribute. Use the `attributes` list to [add or remove log fields](#add-and-remove-log-attributes) by using CEL expressions. For the full variable table, available functions, and examples, see the [CEL expressions reference]({{< link-hextra path="/reference/cel/" >}}).
+Use the `filter` field in the {{< reuse "agw-docs/snippets/policy.md" >}} to [filter which requests are logged](#filter-access-logs) by path, response code, or any other request attribute. Use the `attributes` list to [add or remove log fields](#add-and-remove-log-fields) by using CEL expressions. For the full variable table, available functions, and examples, see the [CEL expressions reference]({{< link-hextra path="/reference/cel/" >}}).
 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
@@ -66,7 +66,7 @@ Access logs are written to `stdout` automatically for every request that passes 
    protocol=http duration=0ms
    ```
 
-To filter which requests are logged or customize log fields, see [Filter access logs](#filter-access-logs) and [Add and remove log attributes](#add-and-remove-log-attributes). To export access logs to an external backend over OTLP, see [Export logs over OTLP]({{< link-hextra path="/observability/access-logs/export/" >}}).
+To filter which requests are logged or customize log fields, see [Filter access logs](#filter-access-logs) and [Add and remove log fields](#add-and-remove-log-fields). To export access logs to an external backend over OTLP, see [Export logs over OTLP]({{< link-hextra path="/observability/access-logs/export/" >}}).
 
   {{< doc-test paths="access-logging" >}}
   YAMLTest -f - <<'EOF'
