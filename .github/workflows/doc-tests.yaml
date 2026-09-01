@@ -89,13 +89,29 @@ jobs:
             echo "$FILES"
             echo "__CHANGED_FILES__"
           } >> "$GITHUB_OUTPUT"
+          # Hand the list to the next step through a FILE, one path per line. It cannot
+          # travel through `env:`: Linux caps a single environment string at
+          # MAX_ARG_STRLEN (128 KiB), and a PR touching a few thousand pages produces a
+          # longer list than that, so execve fails with "Argument list too long" before
+          # the next step's bash even starts. A file has no such cap.
+          printf '%s\n' $FILES > "${RUNNER_TEMP}/changed-files.txt"
           echo "$FILES" | tr ' ' '\n'
 
       - name: List test cases
         id: list
         run: |
-          if [ -n "$CHANGED_FILES" ]; then
-            TESTS=$(python3 scripts/doc_test_run.py --repo-root . --list-tests --file $CHANGED_FILES)
+          # Read the changed-file list from disk rather than an env var; see the note in
+          # "Get changed markdown files". Each path becomes its own short argv entry, so
+          # only the total (well under ARG_MAX) matters, not any single string's length.
+          CHANGED_FILES_LIST="${RUNNER_TEMP}/changed-files.txt"
+          if [ -s "$CHANGED_FILES_LIST" ]; then
+            # A read loop rather than `mapfile`, which needs bash 4+ and so does not run
+            # on a stock macOS shell if anyone reproduces this step locally.
+            FILE_ARGS=()
+            while IFS= read -r line; do
+              [ -n "$line" ] && FILE_ARGS+=("$line")
+            done < "$CHANGED_FILES_LIST"
+            TESTS=$(python3 scripts/doc_test_run.py --repo-root . --list-tests --file "${FILE_ARGS[@]}")
           else
             TESTS=$(python3 scripts/doc_test_run.py --repo-root . --list-tests)
           fi
@@ -109,8 +125,6 @@ jobs:
           MATRIX=$(echo "$TESTS" | jq -c '(length | [., 40] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | [.[].test] | join(", ") | if length > 80 then .[:77] + "..." else . end)})]}')
           echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
           echo "Discovered $COUNT test case(s)"
-        env:
-          CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
 
       # Resolve an installable version for the development ("main"/experimental) install
       # snippets. Those pages install the nightly chart pinned in
