@@ -8,7 +8,7 @@ Review MCP-specific metrics, logs, and traces.
 
 ## Before you begin
 
-Complete an MCP guide, such as the [stdio](../connect/stdio) guide. This guide uses the agentgateway playground to interact with an MCP tool server, which generates metrics, logs, and traces.  
+Complete an MCP guide, such as the [stdio]({{< link-hextra path="/integrations/mcp/servers/stdio/" >}}) guide. This guide uses the agentgateway playground to interact with an MCP tool server, which generates metrics, logs, and traces.  
 
 ## View MCP metrics
 

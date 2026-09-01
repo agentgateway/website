@@ -65,7 +65,7 @@ The v1.0.0 alpha releases publish a consistent set of artifacts:
 
 ## 🌟 New features
 
-Agentgateway added a number of exciting features in v1.0. You can find the full list of new features in the [release notes](https://agentgateway.dev/docs/kubernetes/main/reference/release-notes/).
+Agentgateway added a number of exciting features in v1.0. You can find the full list of new features in the [release notes](https://agentgateway.dev/docs/kubernetes/main/release-notes/release-notes/).
 
 ### Kubernetes Gateway API version 1.5.0
 
@@ -184,7 +184,7 @@ This native approach simplifies operations and dramatically improves performance
 
 Agentgateway v1.0 is available for download on [GitHub](https://github.com/agentgateway/agentgateway/releases).
 
-To get started with agentgateway, check out our getting started guide for [standalone](https://agentgateway.dev/docs/standalone/latest/quickstart/) or [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/quickstart/).
+To get started with agentgateway, check out our getting started guide for [standalone](https://agentgateway.dev/docs/standalone/latest/documentation/quickstart/) or [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/documentation/quickstart/).
 
 ## Get Involved
 

@@ -13,7 +13,7 @@ Use the dedicated provider pages when agentgateway already knows the upstream ba
 
 ## Custom providers
 
-Use [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) only for providers that do not have a first-class shortcut, such as Perplexity, vLLM, LM Studio, or another service that exposes a compatible [API format](../api-types).
+Use [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) only for providers that do not have a first-class shortcut, such as Perplexity, vLLM, LM Studio, or another service that exposes a compatible [API format]({{< link-hextra path="/documentation/llm/api-types/" >}}).
 
 ## Authentication
 

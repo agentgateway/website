@@ -167,7 +167,7 @@ For the complete list of features and 50+ fixes, see the [GitHub release notes](
 
 ## Availability
 
-Agentgateway v1.3.0 is available now. Grab the Docker images, Helm charts, and binaries from the [GitHub release page](https://github.com/agentgateway/agentgateway/releases/tag/v1.3.0), then follow the quick start guide for [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/quickstart/) or [standalone](https://agentgateway.dev/docs/standalone/latest/quickstart/).
+Agentgateway v1.3.0 is available now. Grab the Docker images, Helm charts, and binaries from the [GitHub release page](https://github.com/agentgateway/agentgateway/releases/tag/v1.3.0), then follow the quick start guide for [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/documentation/quickstart/) or [standalone](https://agentgateway.dev/docs/standalone/latest/documentation/quickstart/).
 
 ## Contributors
 
