@@ -225,7 +225,19 @@ jobs:
           # underlying types (e.g. `map[string]CELExpression` -> #map[string]celexpression,
           # which never gets a heading), keeping the readable type text.
           sed -i.bak -E 's/_Underlying type:_ _\[(map\[[^]]*\][^]]*)\]\(#[^)]*\)_/_Underlying type:_ _\1_/g' "$TARGET_FILE"
+          # Repoint the PullPolicy link. crd-ref-docs templates a kubernetes.io URL for
+          # every k8s.io type, but PullPolicy is a type alias with no section of its own,
+          # so #pullpolicy-v1-core does not exist and the link lands a reader nowhere.
+          # knownTypes cannot override it (see scripts/crd-ref-docs-config.yaml).
+          sed -i.bak -E 's|https://kubernetes\.io/docs/reference/generated/kubernetes-api/v?[0-9.]+/#pullpolicy-v1-core|https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy|g' "$TARGET_FILE"
           rm -f "$TARGET_FILE.bak"
+
+          # A sed that silently stops matching would quietly reintroduce the broken
+          # anchor, so fail the run instead of opening a PR that carries it.
+          if grep -q '#pullpolicy-v1-core' "$TARGET_FILE"; then
+            echo "Error: PullPolicy anchor rewrite did not match in $TARGET_FILE"
+            exit 1
+          fi
 
           rm "./out.md"
           echo "API docs generated successfully at $TARGET_FILE"
