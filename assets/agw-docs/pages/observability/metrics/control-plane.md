@@ -8,7 +8,7 @@ Control plane metrics cannot be customized. To set up automatic scraping of thes
 1. Port-forward the control plane deployment.
 
    ```sh
-   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} deployment/agentgateway 9092:9092
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} deployment/{{< reuse "agw-docs/snippets/pod-name.md" >}} 9092:9092
    ```
 
 2. Query the metrics endpoint.
