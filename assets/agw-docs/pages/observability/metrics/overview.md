@@ -6,7 +6,7 @@ Agentgateway emits metrics automatically on two separate ports, one for the cont
 | Plane | Component | Default port | Path |
 | --- | --- | --- | --- |
 | Control plane | `deployment/agentgateway` | `9092` | `/metrics` |
-| Data plane | `deploy/agentgateway-proxy` | `15020` | `/metrics` |
+| Data plane | Per Gateway, such as the example `deploy/agentgateway-proxy` | `15020` | `/metrics` |
 
 ## Access metrics
 

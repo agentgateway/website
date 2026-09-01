@@ -3,7 +3,7 @@ By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exp
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/agentgateway-prereq.md" >}}
-2. Set up the Prometheus so that you can export and run queries against these metrics in the Prometheus explorer. Install the recommended [OTel stack]({{< link path="/observability/otel-stack/" >}}) that includes several tools to visualize metrics, traces, and access logs. 
+2. Set up Prometheus so that you can export and run queries against these metrics in the Prometheus explorer. Install the recommended [OTel stack]({{< link path="/observability/otel-stack/" >}}) that includes several tools to visualize metrics, traces, and access logs. 
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x,2.3.x" >}}
 ## Enable monitoring with Helm {#enable-monitoring}

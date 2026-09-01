@@ -8,6 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/observability/metrics/control-plane.md
     path: control-plane-metrics
+aliases:
+  - /observability/control-plane-metrics
 ---
 
 {{< reuse "agw-docs/pages/observability/metrics/control-plane.md" >}}

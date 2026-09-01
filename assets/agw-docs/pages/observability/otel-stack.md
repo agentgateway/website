@@ -286,7 +286,7 @@ Deploy separate collectors for logs and traces so you can scale and tune each on
        tracing:
          backendRef:
            name: opentelemetry-collector-traces
-          namespace: telemetry
+           namespace: telemetry
            port: 4317
          protocol: GRPC
          randomSampling: "true"

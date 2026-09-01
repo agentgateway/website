@@ -10,6 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/observability/metrics/nacks.md
     path: nacks
+aliases:
+  - /observability/nacks
 ---
 
 {{< reuse "agw-docs/pages/observability/metrics/nacks.md" >}}
