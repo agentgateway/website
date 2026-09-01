@@ -17,6 +17,15 @@ For logging, CEL exposes these variable groups when enabled or applicable:
 * **Auth and metadata**: `jwt`, `apiKey`, or `basicAuth`, plus `extauthz` and `extproc` metadata
 * **LLM**: model, provider, token counts, and optional prompt/completion{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x" >}}/tool calls{{< /version >}}
 * **MCP**: tool, prompt, and resource name and target
+<!-- Gated by excluding the older versions, not by including "main", so the
+     section stays put when the next release freezes this line under a number.
+     Only OSS versions need listing: solo-io/docs reaches this file through
+     the rebase shortcode, which passes the OSS version its ossDir points at, so
+     every
+     enterprise line resolves to one of the tokens above. -->
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+* **Guardrails**: `guardrails`, with one entry per prompt-guard intervention naming the phase, the guard, and the action
+{{< /version >}}
 
 Use the `filter` field in the {{< reuse "agw-docs/snippets/policy.md" >}} to define the requests that you want to apply your access log policy to. For example, you might want to apply the policy only to specific paths or response codes. Then, use the `attributes` list to add or remove fields from the access logs by using CEL expressions. For the full variable table, available functions, and examples, see the [CEL expressions reference]({{< link-hextra path="/reference/cel/" >}}).
 
@@ -157,6 +166,61 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
         contains: "http.statusString=\"404\""
   EOF
   {{< /doc-test >}}
+
+<!-- Gated by excluding the older versions, not by including "main", so the
+     section stays put when the next release freezes this line under a number.
+     Only OSS versions need listing: solo-io/docs reaches this file through
+     the rebase shortcode, which passes the OSS version its ossDir points at, so
+     every
+     enterprise line resolves to one of the tokens above. -->
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+
+## Log guardrail interventions {#guardrails}
+
+A prompt guard that masks or rejects content records what it did in the request's dynamic metadata, under the `guardrails` variable. Add that variable to an access log field to keep an audit trail of every intervention, including which guard acted and why.
+
+The variable holds one entry per intervention, in either the request or the response phase, so a request that both a request guard and a response guard act on produces two entries.
+
+| Field | Description |
+| ------- | ----------- |
+| `guardrails[].phase` | The phase that the guardrail intervened in, either `request` or `response`. |
+| `guardrails[].guard` | The guard kind that intervened, such as `regex`, `webhook`, `openAIModeration`, `bedrockGuardrails`, `googleModelArmor`, or `azureContentSafety`. |
+| `guardrails[].action` | The action that the guardrail took, one of `mask`, `reject`, `audit`, or `failOpen`. |
+| `guardrails[].guardrailId` | The configured guardrail identifier. |
+| `guardrails[].guardrailVersion` | The configured guardrail version. |
+| `guardrails[].actionReason` | The reason that the guardrail reported for its action. |
+| `guardrails[].assessments` | Assessment detail that the guardrail provider reported, redacted to metadata only. Content-bearing fields, such as the matched text, are never included. |
+
+> [!NOTE]
+> Only CEL that runs after the request completes, such as an access log field or a metric field, receives the `guardrails` variable. An authorization or transformation expression that runs mid-request never sees it.
+
+The following {{< reuse "agw-docs/snippets/policy.md" >}} adds the whole list as one log field, and filters the log down to the requests that a guardrail acted on. To record a single value instead, use an expression such as `guardrails[0].action`.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: guardrail-access-logs
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway-proxy
+  frontend:
+    accessLog:
+      filter: guardrails.size() > 0
+      attributes:
+        add:
+        - name: guardrails
+          expression: guardrails
+EOF
+```
+
+Access logging is a frontend policy, so it attaches to a Gateway rather than to the LLM backend that the prompt guard attaches to. To set up a guard that produces these entries, see the [guardrails]({{< link-hextra path="/llm/guardrails/" >}}) docs.
+
+{{< /version >}}
 
 ## Cleanup
 
