@@ -1,7 +1,7 @@
 ---
 title: Claude Code
 weight: 20
-icon: /integrations/claude.svg
+icon: /integrations/providers/bw/claude.svg
 description: Connect the Claude Code CLI to an MCP server exposed through agentgateway on Kubernetes
 test: skip
 ---

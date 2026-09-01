@@ -2,7 +2,7 @@
 title: Langfuse
 weight: 10
 description: Integrate agentgateway with Langfuse for LLM analytics and prompt management
-icon: /integrations/langfuse.svg
+icon: /integrations/providers/bw/langfuse.svg
 ---
 
 [Langfuse](https://langfuse.com/) is an open-source LLM observability platform that provides prompt management, analytics, and evaluation.

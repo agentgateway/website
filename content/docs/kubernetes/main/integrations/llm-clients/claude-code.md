@@ -10,7 +10,7 @@ test:
     path: all
   - file: ${versionRoot}/integrations/llm-clients/claude-code.md
     path: claude-code-k8s
-icon: /integrations/claude.svg
+icon: /integrations/providers/bw/claude.svg
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients-k8s/claude-code.md" >}}

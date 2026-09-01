@@ -1,7 +1,7 @@
 ---
 title: Claude Desktop
 weight: 10
-icon: /integrations/claude.svg
+icon: /integrations/providers/bw/claude.svg
 description: Connect Claude Desktop to an MCP server exposed through agentgateway on Kubernetes
 test: skip
 ---

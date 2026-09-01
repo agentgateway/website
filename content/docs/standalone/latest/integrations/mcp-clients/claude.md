@@ -2,7 +2,7 @@
 title: Claude
 weight: 1
 description: Connect Claude Desktop and Claude Code to agentgateway
-icon: /integrations/claude.svg
+icon: /integrations/providers/bw/claude.svg
 ---
 
 Configure Anthropic's Claude Desktop app or Claude Code CLI to use agentgateway as an MCP server.

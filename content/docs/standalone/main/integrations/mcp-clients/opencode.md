@@ -2,7 +2,7 @@
 title: OpenCode
 weight: 3
 description: Connect OpenCode to agentgateway
-icon: /integrations/opencode.svg
+icon: /integrations/code.svg
 ---
 
 Configure OpenCode, the open source AI coding assistant, to use agentgateway as an MCP server.
