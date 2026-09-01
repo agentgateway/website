@@ -3,6 +3,7 @@ title: Release notes
 weight: 20
 description: What's new, changed, and fixed in each agentgateway on Kubernetes release.
 test: skip
+icon: new_releases
 ---
 
 Review the release notes for agentgateway on Kubernetes.

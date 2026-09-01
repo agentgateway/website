@@ -5,6 +5,7 @@ description: Protect MCP servers with Auth0 as the authorization server.
 test:
   auth0-mcp-authn:
   - path: auth0-mcp-authn
+icon: key
 ---
 
 [Auth0](https://auth0.com/) is an identity platform that provides authentication and authorization services. Agentgateway includes a native `auth0` MCP authentication provider so that you can use Auth0 as the authorization server for your MCP servers.

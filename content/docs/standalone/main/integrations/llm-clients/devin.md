@@ -8,6 +8,7 @@ test:
   devin-validate:
   - file: ${versionRoot}/integrations/llm-clients/devin.md
     path: devin-validate
+icon: code
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/devin.md" >}}

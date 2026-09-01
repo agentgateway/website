@@ -2,6 +2,7 @@
 title: Antigravity IDE
 weight: 6
 description: Connect Antigravity IDE to agentgateway
+icon: extension
 ---
 
 Configure Antigravity IDE to use agentgateway as an MCP server.

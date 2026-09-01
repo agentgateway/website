@@ -5,6 +5,7 @@ description: Integrate agentgateway with authentik for identity management
 test:
   authentik-mcp-authn:
   - path: authentik-mcp-authn
+icon: key
 ---
 
 [authentik](https://goauthentik.io/) is an open-source identity provider. Agentgateway includes a native `authentik` MCP authentication provider so that you can use authentik as the authorization server for your MCP servers.

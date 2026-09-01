@@ -70,122 +70,13 @@ Use the MCP endpoint URL from the previous step to configure your IDE. Replace `
 > [!NOTE]
 > **Multiplexed tool names**: If your agentgateway backend routes to more than one [Virtual MCP]({{< link-hextra path="/documentation/mcp/virtual" >}}) target, agentgateway namespaces each tool and prompt name with its target name by default, for example `mcp-server-everything_echo`. When you add a second target, tools in your client's tool list might get new names because of this prefixing. Control it with the `prefixMode` field on the MCP backend; see [Virtual MCP]({{< link-hextra path="/documentation/mcp/virtual" >}}) for the available modes.
 
-### Claude Desktop
-
-1. Add agentgateway to your Claude Desktop configuration file.
-
-   {{< tabs >}}
-   {{% tab name="macOS" %}}
-   Edit `~/Library/Application Support/Claude/claude_desktop_config.json`.
-
-   ```json
-   {
-     "mcpServers": {
-       "agentgateway": {
-         "url": "<MCP_URL>"
-       }
-     }
-   }
-   ```
-   {{% /tab %}}
-   {{% tab name="Windows" %}}
-   Edit `%APPDATA%\Claude\claude_desktop_config.json`.
-
-   ```json
-   {
-     "mcpServers": {
-       "agentgateway": {
-         "url": "<MCP_URL>"
-       }
-     }
-   }
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-
-2. Restart Claude Desktop and verify that the agentgateway tools appear in the MCP tools list.
-
-### Claude Code
-
-1. Add the MCP server to your Claude configuration.
-   
-   {{< tabs >}}
-   {{% tab name="CLI" %}}
-   ```bash
-   claude mcp add agentgateway --transport http <MCP_URL>
-   ```
-   {{% /tab %}}
-   {{% tab name="mcp.json file" %}}
-   ```json
-   {
-     "mcpServers": {
-       "agentgateway": {
-         "url": "<MCP_URL>"
-       }
-     }
-   }
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-
-2. Verify the connection.
-
-   ```bash
-   claude mcp list
-   ```
-
-The `agentgateway` server shows up as **Connected**.
-
-### Cursor
-
-1. Create or edit `.cursor/mcp.json` in your project root.
-
-   ```json
-   {
-     "mcpServers": {
-       "agentgateway": {
-         "url": "<MCP_URL>"
-       }
-     }
-   }
-   ```
-
-2. Restart Cursor and verify that the agentgateway tool appears in the MCP tools list.
-
-### VS Code (GitHub Copilot)
-
-1. Add to your VS Code `settings.json`.
-
-   ```json
-   {
-     "mcp": {
-       "servers": {
-         "agentgateway": {
-           "url": "<MCP_URL>"
-         }
-       }
-     }
-   }
-   ```
-
-2. Restart VS Code and verify that agentgateway tools appear in the MCP tools list.
-
-
-### Devin Desktop (formerly Windsurf)
-
-1. Create or edit `~/.codeium/windsurf/mcp_config.json`. For remote MCP servers, Devin Desktop uses the `serverUrl` field.
-
-   ```json
-   {
-     "mcpServers": {
-       "agentgateway": {
-         "serverUrl": "<MCP_URL>"
-       }
-     }
-   }
-   ```
-
-2. Restart Devin Desktop and verify that agentgateway tools appear in the MCP tools list.
+{{< cards >}}
+  {{< card link="claude-desktop" title="Claude Desktop" subtitle="Connect Claude Desktop" icon="/integrations/claude.svg" >}}
+  {{< card link="claude-code" title="Claude Code" subtitle="Connect the Claude Code CLI" icon="/integrations/claude.svg" >}}
+  {{< card link="cursor" title="Cursor" subtitle="Connect Cursor" icon="/integrations/cursor.svg" >}}
+  {{< card link="vscode" title="VS Code (GitHub Copilot)" subtitle="Connect VS Code and GitHub Copilot" icon="/integrations/vscode.svg" >}}
+  {{< card link="devin" title="Devin Desktop" subtitle="Connect Devin Desktop (formerly Windsurf)" icon="/integrations/code.svg" >}}
+{{< /cards >}}
 
 ## Authentication
 

@@ -1,6 +1,7 @@
 ---
 title: LibreChat
 description: Front LibreChat with agentgateway to centralize LLM credentials, audit, and rate limits.
+icon: chat
 ---
 
 [LibreChat](https://github.com/danny-avila/LibreChat) is an open-source, multi-user chat interface that supports many LLM providers. Configuring LibreChat with a single OpenAI-compatible custom endpoint pointed at agentgateway lets you keep provider keys server-side and apply policies once for all chats.

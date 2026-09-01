@@ -5,6 +5,7 @@ description: Protect MCP servers with Keycloak as the authorization server.
 test:
   keycloak-mcp-authn:
   - path: keycloak-mcp-authn
+icon: key
 ---
 
 [Keycloak](https://www.keycloak.org/) is an open source identity and access management solution. Agentgateway includes a native `keycloak` MCP authentication provider so that you can use Keycloak as the authorization server for your MCP servers.

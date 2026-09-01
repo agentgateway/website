@@ -3,6 +3,7 @@ title: CEL in YAML and example expressions
 weight: 2
 description: How to embed CEL expressions in YAML configuration, plus worked examples for common use cases.
 test: skip
+icon: code
 ---
 
 ## CEL in YAML

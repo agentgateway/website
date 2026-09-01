@@ -2,6 +2,7 @@
 title: VS Code Continue
 weight: 10
 description: Configure VS Code Continue to use agentgateway running in Kubernetes
+icon: code
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients-k8s/continue.md" >}}

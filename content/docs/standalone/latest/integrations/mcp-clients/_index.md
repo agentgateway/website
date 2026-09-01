@@ -3,6 +3,7 @@ title: MCP clients
 weight: 10
 description: Connect AI coding assistants and tools to agentgateway
 test: skip
+icon: extension
 ---
 
 Configure popular AI coding assistants and tools to use agentgateway as their MCP server.

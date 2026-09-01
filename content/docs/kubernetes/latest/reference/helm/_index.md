@@ -2,6 +2,7 @@
 title: Helm value reference
 weight: 20
 description: Review Helm values for agentgateway Helm charts.
+icon: /integrations/helm.svg
 ---
 
 ## Download the Helm chart {#download}

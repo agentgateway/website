@@ -5,6 +5,7 @@ description: Protect MCP servers with Microsoft Entra ID (Azure AD) as the autho
 test:
   entra-mcp-authn:
   - path: entra-mcp-authn
+icon: key
 ---
 
 [Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity-platform/) is Microsoft's cloud identity platform. Agentgateway includes a native `entra` MCP authentication provider so that you can use Entra as the authorization server for your MCP servers, even though Entra does not fully implement the OAuth behaviors that the [MCP authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization) assumes.

@@ -8,6 +8,7 @@ test:
     path: azure-cloud
 aliases:
   - /docs/standalone/latest/integrations/platforms/azure/
+icon: /integrations/providers/bw/azure.svg
 ---
 
 Run agentgateway on Azure Container Apps or AKS, and reach [Azure OpenAI]({{< link-hextra path="/documentation/llm/providers/azure/" >}}) with the managed identity that Azure already attaches to the workload. No API key goes into your configuration file.

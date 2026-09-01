@@ -8,6 +8,7 @@ test:
     path: gcp
 aliases:
   - /docs/standalone/main/integrations/platforms/gcp/
+icon: /integrations/google-cloud.svg
 ---
 
 Run agentgateway on Cloud Run or GKE, and reach [Vertex AI]({{< link-hextra path="/documentation/llm/providers/vertex/" >}}) with the service account that Google Cloud already attaches to the workload. No API key goes into your configuration file.

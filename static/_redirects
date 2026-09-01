@@ -724,3 +724,63 @@
 /docs/standalone/main/faqs/ /docs/standalone/main/documentation/faqs 301
 /docs/standalone/main/faqs/* /docs/standalone/main/documentation/faqs/:splat 301
 
+# Integrations tab: the llm-providers and mcp-servers subtrees were stub pages
+# that only pointed at the Documentation tab, so they collapsed to one page each.
+# The MCP transport pages had no content the connect guides do not already cover.
+
+# standalone latest
+/docs/standalone/latest/integrations/llm-providers /docs/standalone/latest/documentation/llm/providers 301
+/docs/standalone/latest/integrations/llm-providers/ /docs/standalone/latest/documentation/llm/providers 301
+/docs/standalone/latest/integrations/llm-providers/anthropic /docs/standalone/latest/documentation/llm/providers/anthropic 301
+/docs/standalone/latest/integrations/llm-providers/anthropic/ /docs/standalone/latest/documentation/llm/providers/anthropic 301
+/docs/standalone/latest/integrations/llm-providers/azure-openai /docs/standalone/latest/documentation/llm/providers/azure 301
+/docs/standalone/latest/integrations/llm-providers/azure-openai/ /docs/standalone/latest/documentation/llm/providers/azure 301
+/docs/standalone/latest/integrations/llm-providers/bedrock /docs/standalone/latest/documentation/llm/providers/bedrock 301
+/docs/standalone/latest/integrations/llm-providers/bedrock/ /docs/standalone/latest/documentation/llm/providers/bedrock 301
+/docs/standalone/latest/integrations/llm-providers/gemini /docs/standalone/latest/documentation/llm/providers/gemini 301
+/docs/standalone/latest/integrations/llm-providers/gemini/ /docs/standalone/latest/documentation/llm/providers/gemini 301
+/docs/standalone/latest/integrations/llm-providers/openai-compatible /docs/standalone/latest/documentation/llm/providers/custom 301
+/docs/standalone/latest/integrations/llm-providers/openai-compatible/ /docs/standalone/latest/documentation/llm/providers/custom 301
+/docs/standalone/latest/integrations/llm-providers/openai /docs/standalone/latest/documentation/llm/providers/openai 301
+/docs/standalone/latest/integrations/llm-providers/openai/ /docs/standalone/latest/documentation/llm/providers/openai 301
+/docs/standalone/latest/integrations/llm-providers/vertex /docs/standalone/latest/documentation/llm/providers/vertex 301
+/docs/standalone/latest/integrations/llm-providers/vertex/ /docs/standalone/latest/documentation/llm/providers/vertex 301
+/docs/standalone/latest/integrations/llm-providers/xai /docs/standalone/latest/documentation/llm/providers/xai 301
+/docs/standalone/latest/integrations/llm-providers/xai/ /docs/standalone/latest/documentation/llm/providers/xai 301
+/docs/standalone/latest/integrations/mcp-servers /docs/standalone/latest/documentation/mcp/connect 301
+/docs/standalone/latest/integrations/mcp-servers/ /docs/standalone/latest/documentation/mcp/connect 301
+/docs/standalone/latest/integrations/mcp-servers/stdio /docs/standalone/latest/documentation/mcp/connect/stdio 301
+/docs/standalone/latest/integrations/mcp-servers/stdio/ /docs/standalone/latest/documentation/mcp/connect/stdio 301
+/docs/standalone/latest/integrations/mcp-servers/streamable-http /docs/standalone/latest/documentation/mcp/connect/http 301
+/docs/standalone/latest/integrations/mcp-servers/streamable-http/ /docs/standalone/latest/documentation/mcp/connect/http 301
+/docs/standalone/latest/integrations/mcp-servers/sse /docs/standalone/latest/documentation/mcp/connect 301
+/docs/standalone/latest/integrations/mcp-servers/sse/ /docs/standalone/latest/documentation/mcp/connect 301
+
+# standalone main
+/docs/standalone/main/integrations/llm-providers /docs/standalone/main/documentation/llm/providers 301
+/docs/standalone/main/integrations/llm-providers/ /docs/standalone/main/documentation/llm/providers 301
+/docs/standalone/main/integrations/llm-providers/anthropic /docs/standalone/main/documentation/llm/providers/anthropic 301
+/docs/standalone/main/integrations/llm-providers/anthropic/ /docs/standalone/main/documentation/llm/providers/anthropic 301
+/docs/standalone/main/integrations/llm-providers/azure-openai /docs/standalone/main/documentation/llm/providers/azure 301
+/docs/standalone/main/integrations/llm-providers/azure-openai/ /docs/standalone/main/documentation/llm/providers/azure 301
+/docs/standalone/main/integrations/llm-providers/bedrock /docs/standalone/main/documentation/llm/providers/bedrock 301
+/docs/standalone/main/integrations/llm-providers/bedrock/ /docs/standalone/main/documentation/llm/providers/bedrock 301
+/docs/standalone/main/integrations/llm-providers/gemini /docs/standalone/main/documentation/llm/providers/gemini 301
+/docs/standalone/main/integrations/llm-providers/gemini/ /docs/standalone/main/documentation/llm/providers/gemini 301
+/docs/standalone/main/integrations/llm-providers/openai-compatible /docs/standalone/main/documentation/llm/providers/custom 301
+/docs/standalone/main/integrations/llm-providers/openai-compatible/ /docs/standalone/main/documentation/llm/providers/custom 301
+/docs/standalone/main/integrations/llm-providers/openai /docs/standalone/main/documentation/llm/providers/openai 301
+/docs/standalone/main/integrations/llm-providers/openai/ /docs/standalone/main/documentation/llm/providers/openai 301
+/docs/standalone/main/integrations/llm-providers/vertex /docs/standalone/main/documentation/llm/providers/vertex 301
+/docs/standalone/main/integrations/llm-providers/vertex/ /docs/standalone/main/documentation/llm/providers/vertex 301
+/docs/standalone/main/integrations/llm-providers/xai /docs/standalone/main/documentation/llm/providers/xai 301
+/docs/standalone/main/integrations/llm-providers/xai/ /docs/standalone/main/documentation/llm/providers/xai 301
+/docs/standalone/main/integrations/mcp-servers /docs/standalone/main/documentation/mcp/connect 301
+/docs/standalone/main/integrations/mcp-servers/ /docs/standalone/main/documentation/mcp/connect 301
+/docs/standalone/main/integrations/mcp-servers/stdio /docs/standalone/main/documentation/mcp/connect/stdio 301
+/docs/standalone/main/integrations/mcp-servers/stdio/ /docs/standalone/main/documentation/mcp/connect/stdio 301
+/docs/standalone/main/integrations/mcp-servers/streamable-http /docs/standalone/main/documentation/mcp/connect/http 301
+/docs/standalone/main/integrations/mcp-servers/streamable-http/ /docs/standalone/main/documentation/mcp/connect/http 301
+/docs/standalone/main/integrations/mcp-servers/sse /docs/standalone/main/documentation/mcp/connect 301
+/docs/standalone/main/integrations/mcp-servers/sse/ /docs/standalone/main/documentation/mcp/connect 301
+

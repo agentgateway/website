@@ -12,6 +12,7 @@ test:
     path: setup-mcp-server
   - file: ${versionRoot}/integrations/mcp-clients/_index.md
     path: mcp-clients-k8s
+icon: extension
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/integrations/mcp-clients-k8s.md" >}}

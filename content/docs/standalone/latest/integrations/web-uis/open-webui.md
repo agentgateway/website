@@ -1,6 +1,7 @@
 ---
 title: Open WebUI
 description: Front Open WebUI with agentgateway to centralize auth, audit, and rate limits for LLM traffic.
+icon: chat
 ---
 
 [Open WebUI](https://github.com/open-webui/open-webui) is a self-hosted, ChatGPT-style interface that supports any OpenAI-compatible backend. By pointing Open WebUI at agentgateway instead of directly at an LLM provider, you keep API keys server-side and gain a single place to enforce policies and capture audit logs for every chat.

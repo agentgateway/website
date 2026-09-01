@@ -2,6 +2,7 @@
 title: VS Code
 weight: 5
 description: Connect VS Code with GitHub Copilot to agentgateway
+icon: /integrations/vscode.svg
 ---
 
 Configure Visual Studio Code to use **agentgateway** via GitHub Copilot's native MCP support.

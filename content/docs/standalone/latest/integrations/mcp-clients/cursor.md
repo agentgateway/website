@@ -2,6 +2,7 @@
 title: Cursor
 weight: 2
 description: Connect Cursor IDE to agentgateway
+icon: /integrations/cursor.svg
 ---
 
 Configure Cursor, the AI-powered code editor, to use agentgateway as an MCP server.
