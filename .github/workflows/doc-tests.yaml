@@ -78,8 +78,17 @@ jobs:
             done <<< "$ASSET_FILES"
           fi
 
-          FILES=$(echo "$FILES" | tr ' ' '\n' | sort -u | tr '\n' ' ' | xargs)
-          echo "files=${FILES}" >> $GITHUB_OUTPUT
+          # NOT `xargs` for the trim: it re-wraps its output at ~4096 characters, so a
+          # large PR turned this into a MULTI-LINE value and `files=...` below then
+          # failed with "Unable to process file command 'output'". Trim with sed, and
+          # write through the heredoc form so the length cannot break the format.
+          FILES=$(echo "$FILES" | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' ' \
+            | sed -e 's/^ *//' -e 's/ *$//')
+          {
+            echo "files<<__CHANGED_FILES__"
+            echo "$FILES"
+            echo "__CHANGED_FILES__"
+          } >> "$GITHUB_OUTPUT"
           echo "$FILES" | tr ' ' '\n'
 
       - name: List test cases
