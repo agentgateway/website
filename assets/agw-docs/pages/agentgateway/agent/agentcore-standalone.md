@@ -173,7 +173,7 @@ routes:
    info	request gateway=default/default listener=default route=default/route0 endpoint=bedrock-agentcore.us-west-2.amazonaws.com:443 src.addr=[::1]:49215 http.method=POST http.host=localhost http.path=/agentcore http.version=HTTP/1.1 http.status=200 protocol=http duration=437ms
    ```
 
-3. If the request fails, use the response and the request log to tell an authentication problem from a routing problem. The `endpoint` field in the log confirms that the request reached AgentCore, so an error with an `endpoint` field came from AWS.
+3. If the request fails, use the response and the request log to tell an authentication problem from a routing problem. A log line that carries an `error=` field and `reason=UpstreamFailure` means that {{< reuse "agw-docs/snippets/agentgateway.md" >}} failed before it sent the request. A response that carries an `x-amzn-requestid` header came from AWS.
 
    | Response | Cause |
    | -- | -- |
