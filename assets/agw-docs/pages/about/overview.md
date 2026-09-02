@@ -83,7 +83,7 @@ The Gateway API is an API which can be used to program an ingress or an API gate
 {{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} provides the following extensions on top of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} to configure advanced routing, security, and resiliency capabilities.
 
 {{< cards >}}
-  {{< card path="/security/access-logging/" title="Access logging" tag="Security" >}}
+  {{< card path="/observability/access-logs/view/" title="Access logging" tag="Security" >}}
   {{< card path="/integrations/aws-elb/" title="AWS ALB and NLB" tag="Traffic" >}}
   {{< card path="/traffic-management/destination-types/backends/lambda" title="AWS Lambda" tag="Traffic" >}}
   {{< card path="/traffic-management/route-delegation/" title="Delegation" tag="Traffic" >}}
