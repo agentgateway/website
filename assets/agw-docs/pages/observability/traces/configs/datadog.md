@@ -60,7 +60,7 @@ Datadog Agent. It does not call a paid model.
 
 5. Verify that the Agent discovered the OpenMetrics endpoints for the
    agentgateway controller and proxy. Counter metrics need successive scrapes
-   before rate samples appear.
+   before rate samples appear in the Datadog UI.
 
    ```sh
    export DD_AGENT_POD="$(kubectl get pods \
