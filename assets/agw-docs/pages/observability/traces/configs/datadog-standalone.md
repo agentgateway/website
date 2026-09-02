@@ -65,8 +65,12 @@ model.
    DD_SITE=us3.datadoghq.com
    ```
 
-   Protect the file with `chmod 600 .env`. API keys and application keys are
-   different; this example needs an API key for ingestion.
+   Protect the file with `chmod 600 .env`.
+
+   {{< callout type="info" >}}
+   Datadog API keys and application keys are different. This example requires
+   an API key to ingest telemetry.
+   {{< /callout >}}
 
 5. Start the same services with the Datadog export override, generate traffic,
    and perform successive OpenMetrics checks.
