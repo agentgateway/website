@@ -1,7 +1,9 @@
 ---
-title: LLM (OpenAI)
+title: LLM
 weight: 11
-description: Route requests to OpenAI's chat completions API with the agentgateway binary.
+tabs:
+  sync: true
+description: Route requests to supported LLM providers with the agentgateway binary.
 test:
   llm-openai:
   - file: ${versionRoot}/quickstart/llm.md

@@ -55,8 +55,57 @@ The diagram shows content flowing through multiple guard layers. Each layer can:
 - **Pass**: Allow content to proceed to the next layer
 - **Reject**: Block the request and return an error message
 - **Mask**: Replace sensitive patterns with placeholders and continue
+- **Audit**: Record what the guard detected, and let the content continue unchanged
 
-Both actions are available on the request path and the response path. A response guard can reject a response as well as mask it.
+Every action is available on the request path and the response path. A response guard can reject a response as well as mask it.
+
+## Possible actions {#actions}
+
+The values that `action` takes depend on the guard, because a regex guard can mask content and an external guard cannot.
+
+| Guard | `action` values | Default |
+| -- | -- | -- |
+| `regex` | `Mask`, `Reject`, `Audit` | `Mask` |
+| `openAIModeration` | `Reject`, `Audit` | `Reject` |
+| `webhook` | `Reject`, `Audit` | `Reject` |
+| `bedrockGuardrails` | `Reject`, `Audit` | `Reject` |
+| `googleModelArmor` | `Reject`, `Audit` | `Reject` |
+
+## Audit mode {#audit}
+
+By default, a guard enforces the verdict that it reaches. A regex guard masks the content that matches, and an external guard rejects the request that its provider flags. Set `action: Audit` to make a guard observe instead. The guard still runs, and it still records what it detected in metrics and in the structured access log, but the content always passes through unchanged.
+
+Audit mode is how you measure a guard before you enforce it. Start a new guard in audit mode, review what it flags in real traffic, tune the patterns or the provider policy, then change the action to enforce the verdict.
+
+The following policy runs a credit card detector and OpenAI moderation, both in audit mode, so that the gateway logs what each guard finds and then forwards the request.
+
+> [!NOTE]
+> Audit mode changes only whether the gateway acts on the verdict. The guard still calls its provider, so an external guard in audit mode adds the same latency and the same provider cost as an enforcing guard.
+
+```yaml
+kubectl apply -f - <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: openai-guardrails-audit
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: openai
+  backend:
+    ai:
+      promptGuard:
+        request:
+        - regex:
+            action: Audit
+            builtins:
+            - CreditCard
+        - openAIModeration:
+            action: Audit
+EOF
+```
 
 ## Guard scope {#scope}
 
