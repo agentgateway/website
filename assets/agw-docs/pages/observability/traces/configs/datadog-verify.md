@@ -42,14 +42,3 @@ Agentgateway's fixture-based calculation remains available in the span's
 [standalone example README](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/standalone/README.md)
 explains how to send a request to a real OpenAI model and compare Datadog's
 estimate with agentgateway's calculation.
-
-## Version compatibility
-
-Agentgateway v1.5.0 records provider HTTP 429 and 500 responses in the span's
-`http.status` attribute but leaves the OpenTelemetry span status unset. The
-complete example's `collector.yaml` includes a compatibility processor that
-marks these operations as errors. Remove `transform/gateway_errors` after
-upgrading to an agentgateway release that contains
-[PR #3261](https://github.com/agentgateway/agentgateway/pull/3261); the gateway
-then classifies the response and records the numeric HTTP status as
-`error.type`.
