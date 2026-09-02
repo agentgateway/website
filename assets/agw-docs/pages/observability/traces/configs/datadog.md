@@ -200,6 +200,9 @@ kubectl delete namespace datadog
 
 ## Learn more
 
+- [Observability overview]({{< link-hextra path="/observability/" >}})
+- [Observe LLM traffic]({{< link-hextra path="/llm/observability/" >}})
+- [LLM observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}})
 - [Datadog OpenMetrics](https://docs.datadoghq.com/integrations/openmetrics/)
 - [Kubernetes Autodiscovery](https://docs.datadoghq.com/containers/kubernetes/integrations/)
 - [OTLP ingestion by the Datadog Agent](https://docs.datadoghq.com/opentelemetry/setup/otlp_ingest_in_the_agent/)

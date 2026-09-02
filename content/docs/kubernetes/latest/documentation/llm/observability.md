@@ -15,3 +15,8 @@ test:
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/observability.md" >}}
+
+## Learn more
+
+- [Observability overview]({{< link-hextra path="/observability/" >}}) for metrics, traces, and access logs.
+- [LLM observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}) for external observability platforms.
