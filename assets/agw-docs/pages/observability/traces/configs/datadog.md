@@ -47,8 +47,10 @@ Datadog Agent. It does not call a paid model.
    export DD_SITE="us3.datadoghq.com"
    ```
 
-3. Follow the example README to create or select a cluster, install the pinned
-   Datadog Agent and agentgateway versions, and deploy the test resources.
+3. Follow the
+   [Kubernetes example README](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/kubernetes/README.md)
+   to create or select a cluster, install the pinned Datadog Agent and
+   agentgateway versions, and deploy the test resources.
 
 4. Generate synthetic traffic and verify the local telemetry assertions.
 
@@ -188,8 +190,9 @@ Observability.
 
 ## Cleanup
 
-For the complete example, follow its README to remove the Kind cluster or the
-resources installed in an existing cluster.
+For the complete example, follow the
+[Kubernetes example README](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/kubernetes/README.md)
+to remove the Kind cluster or the resources installed in an existing cluster.
 
 For the direct trace setup, remove the policy and Agent.
 
