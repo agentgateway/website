@@ -242,7 +242,7 @@ spec:
 
 Resource values are static CEL expressions that are initialized with the tracer and apply to every request. Do not set a static `service.instance.id`, which must identify a unique agentgateway replica. If agentgateway routes requests to multiple models, use the default `gen_ai.request.model` and `gen_ai.response.model` span attributes instead of setting a single `model_id` resource value.
 
-For more information, see [Add span and resource attributes]({{< link-hextra path="/observability/tracing/#set-up-tracing" >}}).
+For more information, see [Add span and resource attributes]({{< link-hextra path="/observability/traces/setup/#add-attributes" >}}).
 
 ## Verify the integration
 
