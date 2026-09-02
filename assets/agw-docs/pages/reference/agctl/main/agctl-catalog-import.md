@@ -23,7 +23,7 @@ agctl catalog import [flags]
       --overlay string              YAML catalog to merge over imported data
       --pretty                      pretty-print the output JSON
       --providers strings           source provider ids to import (default: every provider the proxy supports)
-      --source string               import source (models.dev) (default "models.dev")
+      --source string               import source (github, models.dev) (default "github")
 ```
 
 ### Options inherited from parent commands
