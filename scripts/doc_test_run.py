@@ -199,6 +199,29 @@ def _version_key(doc_path: str) -> str:
         return "unknown"
 
 
+# The only version directories that are tested. The frozen release trees
+# (1.0.x, 1.3.x, …) pin chart versions that no longer install: Kubernetes
+# tightened its CEL validation cost estimator, so the v1.3.1 CRDs are now
+# rejected with "estimated rule cost exceeds budget", and no edit to the
+# guides can change that. Both discovery paths have to agree on this, or a
+# PR touching every version root pulls in hundreds of tests that a scheduled
+# run never executes and that cannot be made to pass.
+TESTED_VERSIONS = ("latest", "main")
+
+
+def _version_segment(doc_path: str) -> str:
+    """Extract the version directory ('main', '1.3.x') from a doc path.
+
+    Returns "" for paths outside the content/docs/<product>/<version>/ layout.
+    """
+    parts = doc_path.replace("\\", "/").split("/")
+    try:
+        idx = parts.index("docs")
+    except ValueError:
+        return ""
+    return parts[idx + 2] if len(parts) > idx + 2 else ""
+
+
 def build_test_cases(
     repo_root: Path,
     docs_glob: str,
@@ -211,13 +234,7 @@ def build_test_cases(
 
     for md_file in sorted(repo_root.glob(docs_glob)):
         rel = md_file.relative_to(repo_root).as_posix()
-        parts = rel.replace("\\", "/").split("/")
-        try:
-            idx = parts.index("docs")
-            version_segment = parts[idx + 2] if len(parts) > idx + 2 else ""
-        except ValueError:
-            version_segment = ""
-        if version_segment not in ("latest", "main"):
+        if _version_segment(rel) not in TESTED_VERSIONS:
             continue
         vk = _version_key(rel)
         total_by_version[vk] = total_by_version.get(vk, 0) + 1
@@ -716,12 +733,25 @@ def main() -> int:
 
     if args.file:
         filter_test_name = args.test if len(args.file) == 1 else None
+        # Naming ONE file is a deliberate act (someone debugging a specific
+        # guide), so it is always honoured. A bulk list is CI passing its
+        # changed files, and there the frozen trees have to be filtered out to
+        # match build_test_cases(); see TESTED_VERSIONS.
+        skip_frozen = len(args.file) > 1
         test_cases = []
         tested_docs: List[str] = []
+        skipped_frozen: List[str] = []
         for f in args.file:
             md_file = Path(f)
             if not md_file.is_absolute():
                 md_file = repo_root / md_file
+            # An empty segment means the path is not a versioned doc at all, so
+            # leave it to the "no test metadata" warning below rather than
+            # silently dropping it as if it were a frozen release tree.
+            version_segment = _version_segment(f)
+            if skip_frozen and version_segment and version_segment not in TESTED_VERSIONS:
+                skipped_frozen.append(f)
+                continue
             cases, docs = build_test_cases_from_file(repo_root, md_file, generated_dir, filter_test_name=filter_test_name)
             tested_docs.extend(docs)
             if not cases:
@@ -732,6 +762,18 @@ def main() -> int:
                     logger.warning("No test metadata found in '%s'.", f)
                     continue
             test_cases.extend(cases)
+        if skipped_frozen:
+            # Say so out loud. A quietly reduced test count reads as "everything
+            # was covered" when it was not.
+            by_version: Dict[str, int] = {}
+            for f in skipped_frozen:
+                by_version[_version_key(f)] = by_version.get(_version_key(f), 0) + 1
+            logger.info(
+                "Skipped %d file(s) in frozen version trees (%s). Only %s are tested.",
+                len(skipped_frozen),
+                ", ".join(f"{k}: {n}" for k, n in sorted(by_version.items())),
+                "/".join(TESTED_VERSIONS),
+            )
         _, all_tested_documents, total_by_version, total_documents = build_test_cases(repo_root, args.docs_glob, generated_dir)
         tested_documents = sorted(set(tested_docs) | set(all_tested_documents))
     else:
