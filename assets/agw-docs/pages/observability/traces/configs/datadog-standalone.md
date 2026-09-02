@@ -45,7 +45,7 @@ model.
    cd agentgateway/examples/datadog/standalone
    ```
 
-2. Validate the gateway, fixture, metrics, and trace export locally.
+2. Validate the gateway, synthetic provider, metrics, and trace export locally.
 
    ```sh
    docker compose up -d
@@ -179,8 +179,8 @@ allow several minutes for indexing, and search by the exact metric name.
 Confirm that Agent Observability is enabled, the Agent is healthy, and
 `DD_SITE` selects the correct organization. Search for `ml_app:agentgateway`
 and allow several minutes for processing. The default Docker Compose
-configuration exports traces to the local fixture; include
-`compose.datadog.yaml` to export them to Datadog.
+configuration exports traces to the synthetic provider's local trace-capture
+endpoint; include `compose.datadog.yaml` to export them to Datadog.
 
 ### Dashboard percentile widgets are empty
 
