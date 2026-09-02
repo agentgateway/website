@@ -79,10 +79,9 @@ request counter, whose `resource` label can contain unbounded or sensitive
 values. Review custom-metric usage and tag cardinality before adapting the
 wildcard configuration for production.
 
-The example provides two alternative ways to annotate a proxy. Use
-`proxy-parameters.yaml` for a controller-provisioned proxy. Use
-`proxy-values.yaml` only with the standalone proxy Helm chart. Do not apply both
-to the same workload.
+The Kubernetes example uses
+[`proxy-parameters.yaml`](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/kubernetes/proxy-parameters.yaml)
+to add Datadog Autodiscovery annotations to the controller-provisioned proxy.
 
 ## Configure direct trace export
 
