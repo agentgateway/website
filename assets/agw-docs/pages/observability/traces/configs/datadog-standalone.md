@@ -67,10 +67,9 @@ model.
 
    Protect the file with `chmod 600 .env`.
 
-   {{< callout type="info" >}}
-   Datadog API keys and application keys are different. This example requires
-   an API key to ingest telemetry.
-   {{< /callout >}}
+   > [!NOTE]
+   > Datadog API keys and application keys are different. This example requires
+   > an API key to ingest telemetry.
 
 5. Start the same services with the Datadog export override, generate traffic,
    and perform successive OpenMetrics checks.
@@ -145,8 +144,10 @@ Apply the change.
 {{< /tabs >}}
 
 For the EU region, use `otlp.datadoghq.eu:443`. This direct path does not
-configure OpenMetrics collection, a dashboard, or the v1.5.0 trace compatibility
-processor included in the complete example. Keep API keys out of source control.
+configure OpenMetrics collection or a dashboard.
+
+> [!NOTE]
+> Keep API keys out of source control.
 
 {{< reuse "agw-docs/pages/observability/traces/configs/datadog-verify.md" >}}
 
