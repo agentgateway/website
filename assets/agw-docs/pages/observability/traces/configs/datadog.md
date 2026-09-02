@@ -58,8 +58,9 @@ Datadog Agent. It does not call a paid model.
    ./smoke.sh
    ```
 
-5. Verify that the Agent discovered both OpenMetrics endpoints. Counter metrics
-   need successive scrapes before rate samples appear.
+5. Verify that the Agent discovered the OpenMetrics endpoints for the
+   agentgateway controller and proxy. Counter metrics need successive scrapes
+   before rate samples appear.
 
    ```sh
    export DD_AGENT_POD="$(kubectl get pods \
