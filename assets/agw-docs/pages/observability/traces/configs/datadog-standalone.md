@@ -201,6 +201,9 @@ without the Datadog override.
 
 ## Learn more
 
+- [Observability overview]({{< link-hextra path="/observability/" >}})
+- [Observe LLM traffic]({{< link-hextra path="/llm/observability/" >}})
+- [LLM observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}})
 - [Complete Datadog example](https://github.com/agentgateway/agentgateway/tree/main/examples/datadog)
 - [Datadog OpenMetrics](https://docs.datadoghq.com/integrations/openmetrics/)
 - [Agent Observability with OpenTelemetry](https://docs.datadoghq.com/llm_observability/instrument/otel_instrumentation/)
