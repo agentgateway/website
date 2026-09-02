@@ -38,9 +38,10 @@ The complete example uses the synthetic `datadog-test` model. Because this
 model is not in Datadog's pricing catalog, Datadog displays **Cost unavailable**.
 Agentgateway's fixture-based calculation remains available in the span's
 `agw.ai.usage.cost.*` attributes and the
-`agentgateway.gen_ai.cost.usd.count` metric. The example README explains how to
-send a request to a real OpenAI model and compare Datadog's estimate with
-agentgateway's calculation.
+`agentgateway.gen_ai.cost.usd.count` metric. The
+[standalone example README](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/standalone/README.md)
+explains how to send a request to a real OpenAI model and compare Datadog's
+estimate with agentgateway's calculation.
 
 ## Version compatibility
 
