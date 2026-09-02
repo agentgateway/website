@@ -6,8 +6,6 @@ description: Review access logs, metrics, and traces for your agentgateway deplo
 next: /operations
 prev: /integrations
 test: skip
-aliases: 
-  - /observability/tracing
 ---
 
 > [!NOTE]
