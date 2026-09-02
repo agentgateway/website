@@ -3,9 +3,7 @@
   Per-page doc-test status badge. Renders on detail pages only, which is where
   the forked layout used to call it.
 
-  One deliberate difference from the old fork: the badge now sits BELOW the page
-  description instead of between the <h1> and the description. The slot is
-  positioned after the description so that a page with both reads
-  title -> subtitle -> status, which is the more conventional order.
+  POSITION. The badge sits between the <h1> and the page description, which is
+  where the pre-slot fork had it (`<h1>` -> badge -> description).
 */ -}}
 {{ partial "test-status-badge.html" . }}
