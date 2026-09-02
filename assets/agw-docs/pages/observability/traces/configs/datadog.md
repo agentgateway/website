@@ -134,8 +134,10 @@ Agent with OTLP/gRPC ingestion enabled.
    EOF_POLICY
    ```
 
-This direct path does not configure OpenMetrics collection, a dashboard, or the
-v1.5.0 trace compatibility processor included in the complete example.
+This direct path does not configure OpenMetrics collection or a dashboard.
+
+> [!NOTE]
+> Keep API keys out of Kubernetes manifests and source control.
 
 {{< reuse "agw-docs/pages/observability/traces/configs/datadog-verify.md" >}}
 
