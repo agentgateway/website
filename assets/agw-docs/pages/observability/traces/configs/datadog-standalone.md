@@ -23,7 +23,9 @@ For the complete example, you need:
 - Agent Observability enabled in your Datadog organization to view LLM traces.
 
 The direct setup requires a running agentgateway installation and a Datadog API
-key.
+key. If you have not installed agentgateway or configured an LLM provider,
+complete the [LLM quickstart]({{< link-hextra path="/quickstart/llm/" >}})
+first.
 
 ## Run the complete example
 
