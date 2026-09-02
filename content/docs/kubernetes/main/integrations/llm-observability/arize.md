@@ -5,7 +5,7 @@ description: Export agentgateway LLM traces to Arize AX over OTLP/HTTP or OTLP/g
 test: skip
 ---
 
-[Arize AX](https://arize.com/docs/ax) is an AI observability platform that accepts OpenTelemetry traces and displays LLM inputs, outputs, models, and token usage. Agentgateway can export directly to Arize AX over OTLP/HTTP or OTLP/gRPC without a separate OpenTelemetry Collector.
+[Arize AX](https://arize.com/docs/ax) is an AI observability platform that accepts OpenTelemetry traces and displays LLM operations, models, and token usage. Agentgateway can export directly to Arize AX over OTLP/HTTP or OTLP/gRPC without a separate OpenTelemetry Collector. You can optionally export LLM inputs and outputs.
 
 ## Before you begin
 
@@ -62,7 +62,7 @@ The following examples use the US collector. Replace `spec.static.host` with the
 Choose either OTLP/HTTP or OTLP/gRPC. Each option creates the following resources.
 
 - An `AgentgatewayBackend` that connects to Arize AX over TLS and reads the authentication headers from the `arize-credentials` Secret.
-- An `AgentgatewayPolicy` that exports traces from the `agentgateway-proxy` Gateway and maps agentgateway LLM fields to OpenInference attributes.
+- An `AgentgatewayPolicy` that exports sampled LLM traces from the `agentgateway-proxy` Gateway.
 
 The authentication header names differ by protocol.
 
@@ -117,33 +117,14 @@ spec:
         name: arize-otlp
         port: 443
       protocol: HTTP
-      randomSampling: "true"
+      randomSampling: "0.1"
       clientSampling: "true"
+      filter: 'has(llm)'
       resources:
-      - name: service.name
-        expression: '"agentgateway"'
       - name: openinference.project.name
         expression: '"agentgateway"'
-      attributes:
-        add:
-        - name: span.name
-          expression: '"openai.chat"'
-        - name: openinference.span.kind
-          expression: '"LLM"'
-        - name: llm.system
-          expression: llm.provider
-        - name: llm.model_name
-          expression: coalesce(llm.responseModel, llm.requestModel)
-        - name: llm.input_messages
-          expression: 'flattenRecursive(llm.prompt.map(c, {"message": c}))'
-        - name: llm.output_messages
-          expression: 'flattenRecursive(llm.completion.map(c, {"role": "assistant", "content": c}))'
-        - name: llm.token_count.prompt
-          expression: llm.inputTokens
-        - name: llm.token_count.completion
-          expression: llm.outputTokens
-        - name: llm.token_count.total
-          expression: llm.totalTokens
+      - name: deployment.environment.name
+        expression: '"production"'
 EOF
 ```
 
@@ -198,67 +179,68 @@ spec:
         name: arize-otlp
         port: 443
       protocol: GRPC
-      randomSampling: "true"
+      randomSampling: "0.1"
       clientSampling: "true"
+      filter: 'has(llm)'
       resources:
-      - name: service.name
-        expression: '"agentgateway"'
       - name: openinference.project.name
         expression: '"agentgateway"'
-      attributes:
-        add:
-        - name: span.name
-          expression: '"openai.chat"'
-        - name: openinference.span.kind
-          expression: '"LLM"'
-        - name: llm.system
-          expression: llm.provider
-        - name: llm.model_name
-          expression: coalesce(llm.responseModel, llm.requestModel)
-        - name: llm.input_messages
-          expression: 'flattenRecursive(llm.prompt.map(c, {"message": c}))'
-        - name: llm.output_messages
-          expression: 'flattenRecursive(llm.completion.map(c, {"role": "assistant", "content": c}))'
-        - name: llm.token_count.prompt
-          expression: llm.inputTokens
-        - name: llm.token_count.completion
-          expression: llm.outputTokens
-        - name: llm.token_count.total
-          expression: llm.totalTokens
+      - name: deployment.environment.name
+        expression: '"production"'
 EOF
 ```
 
 {{% /tab %}}
 {{< /tabs >}}
 
-The values under `resources` and `attributes` are CEL expressions. The extra quotes around static values, such as `'"agentgateway"'`, make the CEL expression evaluate to a string.
+The values under `resources` are CEL expressions. The extra quotes around static values, such as `'"agentgateway"'`, make the CEL expression evaluate to a string.
 
 Change `openinference.project.name` if you want traces to appear in a different Arize project. Arize creates the project when it receives the first trace.
+
+Agentgateway emits model, provider, operation, and token usage attributes that follow the OpenTelemetry GenAI semantic conventions. Arize AX [natively maps these attributes](https://arize.com/blog/arize-ax-opentelemetry-genai-semantic-conventions/) to OpenInference fields.
+
+## Optional: Export LLM inputs and outputs
+
+The default configuration does not export prompt or response content. To display structured input and output messages in Arize AX, add the following attributes to the `AgentgatewayPolicy` for your selected transport.
+
+{{< callout type="warning" >}}
+LLM prompts and responses can contain personally identifiable information (PII), credentials, or other sensitive data. Enabling these attributes sends that content to a third-party SaaS platform. Review your organization's data-handling requirements and configure appropriate guardrails or redaction before enabling them.
+{{< /callout >}}
+
+```yaml
+spec:
+  frontend:
+    tracing:
+      attributes:
+        add:
+        - name: llm.input_messages
+          expression: 'flattenRecursive(llm.prompt.map(c, {"message": c}))'
+        - name: llm.output_messages
+          expression: 'flattenRecursive(llm.completion.map(c, {"role": "assistant", "content": c}))'
+```
 
 ## Optional: Add resource attributes
 
 Agentgateway supports custom OpenTelemetry resource attributes through `spec.frontend.tracing.resources`. Resource attributes are added to every exported span and can help you filter and group traces in Arize AX.
 
-Add attributes such as `model_id`, `model_version`, or `deployment.environment.name` to the `resources` list in the `AgentgatewayPolicy` for your selected transport.
+In Kubernetes mode, agentgateway automatically sets `service.name`, `service.version`, `service.instance.id`, and `service.namespace`. The main configuration explicitly sets `deployment.environment.name`. You can add application-specific attributes such as `model_id` or `model_version` to the `resources` list in the `AgentgatewayPolicy` for your selected transport.
 
 ```yaml
 spec:
   frontend:
     tracing:
       resources:
-      - name: service.name
-        expression: '"agentgateway"'
       - name: openinference.project.name
         expression: '"agentgateway"'
+      - name: deployment.environment.name
+        expression: '"production"'
       - name: model_id
         expression: '"gpt-4o-production"'
       - name: model_version
         expression: '"2026-08-27"'
-      - name: deployment.environment.name
-        expression: '"production"'
 ```
 
-Resource values are static CEL expressions that are initialized with the tracer and apply to every request. If agentgateway routes requests to multiple models, use the `llm.model_name` span attribute from the main configuration to record the model for each request instead of setting a single `model_id` resource value.
+Resource values are static CEL expressions that are initialized with the tracer and apply to every request. Do not set a static `service.instance.id`, which must identify a unique agentgateway replica. If agentgateway routes requests to multiple models, use the default `gen_ai.request.model` and `gen_ai.response.model` span attributes instead of setting a single `model_id` resource value.
 
 For more information, see [Add span and resource attributes]({{< link-hextra path="/observability/tracing/#set-up-tracing" >}}).
 
