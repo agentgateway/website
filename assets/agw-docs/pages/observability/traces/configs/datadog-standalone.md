@@ -86,8 +86,10 @@ The first counter scrape establishes a baseline. Repeat the smoke test across
 scrape intervals when populating rate charts.
 
 By default, the example exports metadata-only traces and uses the synthetic
-`datadog-test` model. Its README also documents explicit options to capture
-synthetic prompts and completions or send a paid request to a real OpenAI model.
+`datadog-test` model. Its
+[README](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/standalone/README.md)
+also documents explicit options to capture synthetic prompts and completions or
+send a paid request to a real OpenAI model.
 Review redaction, sampling, access controls, and custom-metric cardinality
 before adapting the example for production.
 
