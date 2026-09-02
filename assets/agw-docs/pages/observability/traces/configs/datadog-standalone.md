@@ -31,10 +31,12 @@ first.
 
 The
 [Datadog standalone example](https://github.com/agentgateway/agentgateway/tree/main/examples/datadog/standalone)
-runs agentgateway, a synthetic OpenAI-compatible provider, an OpenTelemetry
-Collector, and the Datadog Agent. The default Docker Compose configuration stays
-local. Adding the Datadog override exports synthetic telemetry to your Datadog
-organization. It does not call a paid model.
+supports two modes. The base `compose.yaml` file runs agentgateway, a synthetic
+OpenAI-compatible provider, and an OpenTelemetry Collector for local validation.
+It does not send telemetry to Datadog. Adding `compose.datadog.yaml` starts the
+Datadog Agent and exports the synthetic metrics and traces to your Datadog
+organization. Both modes use the synthetic provider and do not call a paid
+model.
 
 1. Clone the agentgateway repository and change to the example directory.
 
