@@ -1,13 +1,13 @@
 ---
 title: SaaS platform
-weight: 50
+weight: 60
 description: Export agentgateway traces to a cloud-hosted SaaS observability platform such as Langfuse over HTTPS.
 ---
 
 Cloud-hosted observability platforms accept OTLP traces over HTTPS and authenticate requests with an `Authorization` header. The steps below use [Langfuse](https://langfuse.com/) as an example, but the same pattern applies to any OTLP-over-HTTP SaaS backend. Swap in your platform's endpoint and credentials.
 
 > [!NOTE]
-> For platforms that collect full prompt and response data (request/response logging, cost tracking, evals), see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}) instead.
+> For platforms that collect full prompt and response data (request/response logging, cost tracking, evals), see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm/observability/" >}}) instead.
 
 ## Before you begin
 
