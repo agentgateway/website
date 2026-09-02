@@ -169,7 +169,7 @@ groups:
 
 OpenTelemetry traces include token usage as span attributes. You can view per-request token counts in your tracing backend (such as Grafana Tempo, Jaeger, or Langfuse).
 
-1. Set up OpenTelemetry tracing. See the [tracing guide]({{< link-hextra path="/observability/tracing/" >}}) for setup instructions.
+1. Set up OpenTelemetry tracing. See the [tracing guide]({{< link-hextra path="/observability/traces/setup/" >}}) for setup instructions.
 
 2. Search for traces with LLM requests. Each trace includes these attributes:
    - `gen_ai.usage.input_tokens`: Number of input tokens{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}, including the tokens read from or written to the prompt cache. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).{{< /version >}}

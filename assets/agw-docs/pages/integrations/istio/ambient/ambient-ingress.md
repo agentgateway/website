@@ -272,7 +272,7 @@ Once the base flow works, layer additional agentgateway policies on the ingress 
   Protects backends from spikes and abusive clients.
 4. Traffic shaping and resilience, such as [traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}), [retries]({{< link-hextra path="/resiliency/retry/retry/" >}}), and [request timeouts]({{< link-hextra path="/resiliency/timeouts/request/" >}}).
   Improves reliability of ingress traffic to ambient backends.
-5. Observability, such as [access logs]({{< link-hextra path="/security/access-logging/" >}}) and [tracing]({{< link-hextra path="/observability/tracing/" >}}).
+5. Observability, such as [access logs]({{< link-hextra path="/observability/access-logs/view/" >}}) and [tracing]({{< link-hextra path="/observability/traces/setup/" >}}).
   Gives per-request visibility into ingress traffic for compliance and incident response.
 
 ## Cleanup
