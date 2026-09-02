@@ -17,6 +17,9 @@ Each {{< reuse "agw-docs/snippets/policy.md" >}} has three top-level sections in
 | `traffic` | Controls how agentgateway processes traffic. Applies at the listener, route, or route rule level. Fields are listed in execution order. | `cors`, `jwtAuthentication`, `basicAuthentication`, `apiKeyAuthentication`, `extAuth`, `authorization`, `rateLimit`, `extProc`, `transformation`, `csrf`, `headerModifiers`, `hostRewrite`, `directResponse`, `buffer`, `timeouts`, `retry` |
 | `backend` | Controls how agentgateway connects to destination backends. Applies at the backend, service, route, or gateway level. | `tcp`, `tls`, `http`, `tunnel`, `transformation`, `auth`, `extAuth`, `health`, `ai`, `mcp` |
 
+For attachment examples and links to each backend capability, see
+[Backend policies]({{< link-hextra path="/about/policies/backend-policies/" >}}).
+
 ## Example guides
 
 Check out the following sections for policy examples.
