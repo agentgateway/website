@@ -29,7 +29,13 @@ h6 {
 /* Test Status Badge - Modern gradient style */
 .test-status-badge {
     position: relative;
-    display: inline-flex;
+    /* Block-level, not inline-flex. As an inline box the badge sat in an
+       anonymous line box whose height was floored by the parent's line-height
+       strut, so a negative margin-top could only ever move it a few pixels —
+       -20px moved it 7. All three call sites already put the badge on its own
+       line between the <h1> and the description, so nothing needs it inline. */
+    display: flex;
+    width: fit-content;
     align-items: center;
     gap: 0.4rem;
     padding: 0.3rem 0.75rem;
@@ -38,12 +44,42 @@ h6 {
     font-size: 0.7rem;
     font-weight: 600;
     line-height: 1;
+    /* No margin-bottom. The badge is the last thing in the heading column, and
+       the whitespace before the page description belongs to the title row as a
+       whole — see the `:has()` rule below. Putting it here instead would open a
+       gap between the badge and the "Copy as Markdown" button on a narrow
+       viewport, where the two stack. */
     margin-top: 0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
     letter-spacing: 0.03em;
     text-transform: none;
     transition: all 0.2s ease;
     cursor: default;
+}
+
+/* Spacing is plain margins, with no breakpoint rule and no negative value,
+   because the badge renders from the `docs/under-heading.html` slot — inside
+   the heading's own flex column, directly below the <h1>.
+
+   An earlier version of this rendered from `docs/after-title.html`, below the
+   title flex row, and needed `margin-top: -1.25rem` scoped to >=640px to drag
+   the badge back up under the heading. That number was calibrated against the
+   height of the "Copy as Markdown" control, so it would have drifted the moment
+   that control changed size, and it had to be breakpoint-scoped because below
+   640px the row stacks and the pull-up would have landed the badge on top of
+   the buttons. Moving slots deleted the whole problem.
+
+   The gap before the page description is put on the TITLE ROW, not on the
+   badge, so it always falls after the LAST thing in the title area. On a wide
+   viewport that is the badge; on a narrow one the row is `flex-col` and the
+   last thing is the "Copy as Markdown" button, so the whitespace lands after
+   the button rather than stranding it below the gap.
+
+   `:has()` scopes this to pages that actually show a badge — an untested page
+   keeps Hextra's stock `hx:mb-4` and is untouched. Specificity is (0,2,1)
+   against Tailwind's (0,1,0) `.hx\:mb-4`, so it wins without `!important`. */
+.content > div:has(.test-status-badge) {
+    margin-bottom: 1.75rem;
 }
 
 .test-status-passed {
