@@ -56,13 +56,13 @@ EOF
 
 1. Open and log in to Grafana with the username `admin` and password `prom-operator`.
 
-   {{< tabs >}}
-   {{% tab name="Cloud Provider LoadBalancer" %}}
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    open "http://$(kubectl -n telemetry get svc kube-prometheus-stack-grafana -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}"):3000"
    ```
    {{% /tab %}}
-   {{% tab name="Port-forward for local testing" %}}
+   {{% tab tabName="Port-forward for local testing" %}}
    1. Port-forward the Grafana service to your local machine.
       ```sh
       kubectl port-forward deployment/kube-prometheus-stack-grafana -n telemetry 3000
