@@ -48,7 +48,7 @@ By default, agentgateway calls `POST /request` and `POST /response` on the webho
 
 ## Configure a webhook timeout
 
-Webhook calls use a 10-second timeout by default. To allow a custom webhook more time to respond, define a named backend with an HTTP `requestTimeout`, then reference that backend from the request and response guards.
+Webhook calls use a 10-second timeout by default. The webhook target does not accept inline policies, so to change the timeout, define a named backend that sets `requestTimeout`, then reference that backend from the request and response guards.
 
 ```yaml
 cat <<EOF > config.yaml
@@ -58,7 +58,7 @@ backends:
   host: content-safety-webhook.example.com:8000
   policies:
     http:
-      requestTimeout: 35s
+      requestTimeout: "35s"
 llm:
   models:
   - name: "*"
@@ -78,10 +78,12 @@ llm:
 EOF
 ```
 
-The leading `/` in `backend: /content-safety-webhook` identifies a backend defined in the local standalone configuration. Set `requestTimeout` higher than the maximum expected webhook response time. The backend host must include a port when the webhook does not use the default HTTP port.
+Backends are referenced as `<namespace>/<name>`. Backends defined in local configuration have no namespace, so the reference starts with `/`. The backend host must include a port.
+
+The timeout applies separately to each webhook call, so request and response guards each receive their own timeout. A timeout is treated as a webhook failure. By default, `failureMode` is `failClosed`, which rejects the request. Set `failureMode: failOpen` on the webhook to allow the request when the webhook times out or otherwise fails.
 
 > [!NOTE]
-> The named backend must point to a resolvable network endpoint. In Kubernetes, create a Service that exposes the webhook port and use its Service DNS name as the backend host, such as `content-safety-webhook:8000`. A sidecar is reachable through `localhost`, but it is not automatically a Kubernetes Service and cannot be addressed by a Service name until you create one.
+> The backend host must be an address that agentgateway can reach, such as `localhost:8000` for a webhook running alongside the proxy.
 
 ## DeepKeep example
 
