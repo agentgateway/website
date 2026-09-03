@@ -30,6 +30,46 @@ config:
     format: json
 ```
 
+### Use OpenTelemetry field names {#preset}
+
+The field names in the previous example are short and human-oriented. To rename the built-in HTTP fields to their [OpenTelemetry semantic convention](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) equivalents, such as `url.path` instead of `http.path`, set `preset: otel` on the access log policy.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    preset: otel
+```
+
+Use this preset when you ship stdout logs to a pipeline that already expects semantic convention attribute names, so that you do not have to rename the fields downstream.
+
+The preset renames the following built-in fields.
+
+| Default field | Field with `preset: otel` |
+| -- | -- |
+| `src.addr` | `client.address`. The value is the client IP address without the port. |
+| `http.method` | `http.request.method` |
+| `http.host` | `server.address` |
+| `http.path` | `url.path` |
+| `http.version` | `network.protocol.version`. The value is the bare version, such as `1.1` instead of `HTTP/1.1`. |
+| `http.status` | `http.response.status_code` |
+
+The preset also adds `url.scheme`, and it adds `server.port` and `url.query` when the request supplies them. With the preset set, the earlier example is logged as follows.
+
+```console
+2025-12-12T21:56:02.809082Z	info	request gateway=agentgateway listener=http route=openai endpoint=api.openai.com:443
+client.address=127.0.0.1 http.request.method=POST server.address=localhost url.path=/openai
+network.protocol.version=1.1 http.response.status_code=200 url.scheme=http protocol=llm
+gen_ai.operation.name=chat gen_ai.provider.name=openai gen_ai.request.model=gpt-4o
+gen_ai.response.model=gpt-4o-2024-08-06 gen_ai.usage.input_tokens=68
+gen_ai.usage.output_tokens=298 duration=2488ms
+```
+
+Only the built-in HTTP field set is renamed. The `gen_ai.*` and `mcp.*` fields already use semantic convention names, and fields that are not part of the HTTP set, such as `gateway`, `route`, and `duration`, keep their names. Fields that you [add yourself](#add-custom-fields-to-logs) are not renamed, so choose semantic convention names for them if you want the whole line to be consistent.
+
+> [!NOTE]
+> The preset changes only the stdout access log. An OTLP export already uses semantic convention attribute names, so it is unaffected. For more information, see [Export logs over OTLP]({{< link-hextra path="/observability/access-logs/export/" >}}).
+
 ## View access logs in the UI
 
 The agentgateway UI includes a **Logs** page that you can use to review the access logs that were captured by your proxy. 

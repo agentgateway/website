@@ -45,6 +45,85 @@ where latency_penalty = request_latency * (1 + pending_requests * 0.1)
 
 Endpoints that consistently fail are moved to a rejected set and are considered only when no active endpoint is viable. As a result, traffic shifts away from a slow or failing pod without any configuration on your part.
 
+<!-- Gated by excluding the older versions, not by including "main", so the
+     section stays put when the next release freezes this line under a number.
+     The `sessionAffinity` backend policy is new to the Kubernetes API in the
+     version that `main` currently points at. -->
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+## Session affinity {#session-affinity}
+
+P2C selects an endpoint independently for each request, so two requests from the same client can land on different endpoints. To send every request that carries the same value to the same endpoint, set the `sessionAffinity` backend policy.
+
+A `source` CEL expression selects the value. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} hashes the value and maps the hash to an endpoint with weighted rendezvous hashing, so each proxy replica picks the same endpoint for the same value without sharing any state with the other replicas.
+
+Set the policy on the {{< reuse "agw-docs/snippets/backend.md" >}} that you route to.
+
+```yaml
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: my-backend
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  policies:
+    sessionAffinity:
+      source: request.headers["x-session-id"]
+```
+
+You can also set the policy in an {{< reuse "agw-docs/snippets/policy.md" >}} resource, in the `spec.backend` section, to apply it to a group of backends.
+
+```yaml
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: my-affinity-policy
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: agentgateway.dev
+    kind: AgentgatewayBackend
+    name: my-backend
+  backend:
+    sessionAffinity:
+      source: request.headers["x-session-id"]
+```
+
+| Field | Required | Description |
+| -- | -- | -- |
+| `source` | Yes | CEL expression evaluated against the request. It must return a string or bytes value. Requests that produce the same value are sent to the same healthy endpoint. The expression can be up to 16384 characters. |
+
+Common expressions for `source` include the following.
+
+| Expression | Affinity per |
+| -- | -- |
+| `request.headers["x-session-id"]` | Session identifier that the client sends. |
+| `string(source.address)` | Client IP address. |
+| `jwt.sub` | Authenticated user, when a JWT policy runs on the same route. |
+
+For the full list of values that an expression can read, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables/" >}}).
+
+### AI backends {#session-affinity-ai}
+
+On an AI backend, affinity applies across the provider groups of the backend. Set it on the whole {{< reuse "agw-docs/snippets/backend.md" >}}, not on an individual provider. An {{< reuse "agw-docs/snippets/policy.md" >}} that targets a single AI provider with a `sectionName` and also sets `backend.sessionAffinity` is rejected.
+
+### What session affinity does not do {#session-affinity-limits}
+
+Session affinity is best-effort, and it is **not** session persistence. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} does not record which endpoint a value was sent to. It recomputes the mapping for each request from the value and the set of healthy endpoints, which has two consequences.
+
+- **The mapping moves when the endpoint set changes.** Adding, removing, or losing an endpoint remaps some values, so a client can be moved to a different endpoint mid-session. Rendezvous hashing keeps that disruption small, because only the values that mapped to the changed endpoint move, but it is not zero.
+- **A request that produces no usable value is not pinned.** {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} falls back to normal P2C selection when the expression fails to evaluate, returns a value that is not a string or bytes, or returns an empty value, such as a header that the client did not send. The request still succeeds.
+
+Do not use session affinity to hold server-side state that only one endpoint has. Use it to improve cache hit rates, to keep a conversation on one replica when that is a preference rather than a requirement, or to make debugging easier.
+
+> [!TIP]
+> A fallback is silent by design, so a misconfigured expression looks the same as working affinity from the outside. Each miss is logged at `trace` level with the expression and the reason, so run the proxy with trace logging when affinity does not appear to take effect.
+
+Two other features choose an endpoint before affinity does, and they win when they apply: [inference routing]({{< link-hextra path="/inference/" >}}), and a stateful MCP session that is already pinned to an upstream server. In practice they do not conflict, because they target different backends.
+
+> [!NOTE]
+> This policy is unrelated to MCP session routing, which controls whether {{< reuse "agw-docs/snippets/agentgateway.md" >}} keeps an MCP session with the upstream server. Session affinity chooses an endpoint. MCP session routing chooses how the MCP protocol session is managed.
+{{< /version >}}
+
 ## How load balancing interacts with other routing features {#interactions}
 
 Endpoint selection is one stage of routing. The following features run before or instead of the P2C selection.
@@ -79,6 +158,7 @@ For more information about these commands, including how to show services that h
 
 ## Next steps
 
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}- Pin the requests that share a value to one endpoint with [session affinity](#session-affinity). {{< /version >}}
 - Reduce cross-zone traffic with [locality-aware routing]({{< link-hextra path="/traffic-management/locality-aware-routing/" >}}).
 - Remove failing endpoints from the pool with [backend health checking]({{< link-hextra path="/resiliency/backend-health/" >}}).
 - Distribute requests across LLM providers with [LLM load balancing]({{< link-hextra path="/llm/load-balancing/" >}}).

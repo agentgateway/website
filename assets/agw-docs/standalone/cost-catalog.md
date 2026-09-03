@@ -45,7 +45,10 @@ For general LLM telemetry setup, see [Observe traffic]({{< link-hextra path="/ll
 
 ## Import costs (agctl)
 
-Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` to generate a catalog file from a supported pricing source. The default source is `models.dev`.
+<!-- The default import source changed from `models.dev` to `github`. Gated by
+     excluding the older versions, not by including "main", so the sentence stays
+     correct when the next release freezes this line under a number. -->
+Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` to generate a catalog file from a supported pricing source. {{< version include-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The default source is `models.dev`.{{< /version >}}{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The default source is `github`, which is the curated catalog that the agentgateway project publishes at [agentgateway.dev/model-catalog](https://agentgateway.dev/model-catalog). To import from [models.dev](https://models.dev) instead, pass `--source models.dev`.{{< /version >}}
 
 ```sh
 mkdir -p costs
@@ -56,7 +59,6 @@ To keep the catalog smaller, import only the providers that you use.
 
 ```sh
 agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import \
-  --source models.dev \
   --providers anthropic,google,openai \
   --out ./costs/catalog.json
 ```
