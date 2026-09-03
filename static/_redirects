@@ -8,6 +8,9 @@
 # JSON schema
 /schema/config https://raw.githubusercontent.com/agentgateway/agentgateway/main/schema/config.json
 
+# Model catalog
+/model-catalog https://raw.githubusercontent.com/agentgateway/agentgateway/main/catalog/model-catalog.json
+
 # Redirect all paths under /examples to GitHub raw content
 /examples/* https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/:splat
 
@@ -65,8 +68,8 @@
 /docs/standalone/latest/tutorials/openapi/ /docs/standalone/latest/mcp/connect/openapi 301
 /docs/standalone/latest/tutorials/tailscale-auth /docs/standalone/latest/integrations/auth/tailscale 301
 /docs/standalone/latest/tutorials/tailscale-auth/ /docs/standalone/latest/integrations/auth/tailscale 301
-/docs/standalone/latest/tutorials/telemetry /docs/standalone/latest/integrations/observability/opentelemetry 301
-/docs/standalone/latest/tutorials/telemetry/ /docs/standalone/latest/integrations/observability/opentelemetry 301
+/docs/standalone/latest/tutorials/telemetry /docs/standalone/latest/observability/traces/configs/otel 301
+/docs/standalone/latest/tutorials/telemetry/ /docs/standalone/latest/observability/traces/configs/otel 301
 /docs/standalone/latest/tutorials/tls /docs/standalone/latest/configuration/listeners 301
 /docs/standalone/latest/tutorials/tls/ /docs/standalone/latest/configuration/listeners 301
 # Kubernetes latest

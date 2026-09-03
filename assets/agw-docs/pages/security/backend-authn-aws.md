@@ -48,7 +48,7 @@ The policy names no credential source at all, and that absence is what makes the
 | Field | Description |
 | -- | -- |
 | `aws.region` | Signing region, such as `us-east-1`. Set the field when the target service is in a different region from the gateway. If you omit it, a typed AWS backend may supply the region. Otherwise the gateway uses the ambient AWS region. |
-| `aws.serviceName` | Signing service name, such as `bedrock`, `bedrock-agentcore`, or `execute-api`. Those three are examples and not the full set. The field takes any AWS SigV4 signing name, and the gateway does not validate it against a list. The signing name is the service element of the credential scope, which the AWS [Signature Version 4 signing elements](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv4-signing-elements.html) documentation describes. A typed AWS backend may supply the name on its own. |
+| `aws.serviceName` | Signing service name, such as `bedrock`, `bedrock-agentcore`, or `execute-api`. Those three are examples and not the full set. The field takes any AWS SigV4 signing name, and the gateway does not validate it against a list. The signing name is the service element of the credential scope, which the AWS [Signature Version 4 signing elements](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-signing-elements.html) documentation describes. A typed AWS backend may supply the name on its own. |
 
 ### How the gateway resolves an implicit credential
 

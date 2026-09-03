@@ -2,16 +2,15 @@
 title: Observability
 weight: 700
 icon: monitoring
-description: Tracing, prompt logging, cost tracking, and metrics for your gateways.
+description: Review access logs, metrics, and traces for your agentgateway deployment and monitor resources in the agentgateway UI. 
 next: /operations
 prev: /integrations
 test: skip
+# Scoped to this version tree. Unscoped, it built at the site root and collided
+# with the identical alias in `latest` — see that tree's traces/_index.md.
+aliases:
+  - /docs/kubernetes/main/observability/tracing/
 ---
 
-Gain insight into the health and performance of your gateway environment. Get prompt logging, cost tracking, and an audit trail for LLM traffic via OpenTelemetry.
-
-
-
-## External observability platforms
-
-For specialized LLM observability platforms with prompt logging, cost tracking, and evaluation capabilities, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
+> [!NOTE]
+> For specialized LLM observability platforms with prompt logging, cost tracking, and evaluation capabilities, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).

@@ -1,4 +1,4 @@
-Configure the agentgateway binary to route requests to the [OpenAI](https://openai.com/) chat completions API.
+Configure the agentgateway binary to route chat completion requests to an LLM provider.
 
 ## Before you begin
 
@@ -11,11 +11,11 @@ Configure the agentgateway binary to route requests to the [OpenAI](https://open
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
-3. Get an [OpenAI API key](https://platform.openai.com/api-keys).
+3. Get credentials for the provider that you want to use. The steps below cover API keys, cloud credentials, GitHub Copilot, custom providers, and local Ollama models.
 
 ## Steps
 
-Route to an OpenAI backend through agentgateway.
+Route to an LLM provider through agentgateway.
 
 {{< version include-if="1.2.x,1.1.x,1.0.x" >}}
 {{% steps %}}
@@ -101,90 +101,7 @@ Example output (abbreviated):
 {{< /version >}}
 
 {{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
-{{% steps %}}
-
-### Step 1: Set your API key
-
-Store your OpenAI API key in an environment variable so agentgateway can authenticate to the API.
-
-```sh
-export OPENAI_API_KEY='<your-api-key>'
-```
-
-### Step 2: Start agentgateway
-
-You add the model from the UI in the next steps, so you can start agentgateway without a config file. When you run `agentgateway` without specifying a config, it bootstraps a basic config at `~/.config/agentgateway/config.yaml` and uses it automatically.
-
-```sh
-agentgateway
-```
-
-Example output:
-
-```
-info  app  serving UI at http://localhost:4000/ui
-```
-
-{{< doc-test paths="llm" >}}
-# Hidden test: the UI steps below (Enable LLM -> Add model) are not scriptable, so this
-# block reproduces the equivalent config they produce, to keep the resulting setup tested.
-cat > config.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  models:
-  - name: gpt-3.5-turbo
-    provider: openAI
-    params:
-      model: gpt-3.5-turbo
-      apiKey: "$OPENAI_API_KEY"
-EOF
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
-
-### Step 3: Enable LLM
-
-1. Open the [agentgateway UI](http://localhost:4000/ui/). 
-2. On the first run, the **Welcome to Agentgateway** wizard opens. Click **Enable LLM**, and then click **Continue**.
-
-   {{< reuse-image-light src="img/ui-welcome-wizard.png" >}}
-   {{< reuse-image-dark srcDark="img/ui-welcome-wizard-dark.png" >}}
-
-The **Gateway Overview** home page opens, with rows for **LLM**, **MCP**, and **Traffic**.
-
-### Step 4: Add a model
-
-1. In the **LLM** section of the navigation menu, click **Models**, and then click **Add model**.
-2. For the **Incoming model match**, enter the model name that clients send, such as `gpt-3.5-turbo`.
-3. From the **Provider** dropdown list, select **OpenAI**.
-4. For the **Provider API key**, click **Env var** and enter `OPENAI_API_KEY` (the variable you set in Step 1).
-5. Click **Save model**.
-
-{{< reuse-image-light src="img/ui-llm-add-model.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-add-model-dark.png" >}}
-
-### Step 5: Send a chat completion request
-
-Send a request from the command line, or try it in the built-in playground.
-
-From another terminal, send a request to the chat completions endpoint:
-
-```sh {paths="llm"}
-curl -s http://localhost:4000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "gpt-3.5-turbo",
-    "messages": [{"role": "user", "content": "Say hello in one sentence."}]
-  }' | jq .
-```
-
-Or open the [LLM playground](http://localhost:4000/ui/llm/playground/), enter a prompt in the **User message** box, and click **Send**.
-
-{{< reuse-image-light src="img/ui-llm-playground.png" >}}
-{{< reuse-image-dark srcDark="img/ui-llm-playground-dark.png" >}}
-{{% /steps %}}
+{{< reuse "agw-docs/standalone/quickstart/llm-ui-providers.md" >}}
 {{< /version >}}
 
 ## Next steps
@@ -194,5 +111,5 @@ Check out more guides related to LLM consumption with agentgateway.
 {{< cards >}}
   {{< card path="/llm/cost-controls/virtual-keys/" title="Virtual key management" subtitle="Manage API keys and control spending with rate limits for your LLM requests." >}}
   {{< card path="/llm/observability/" title="LLM observability" subtitle="View metrics, traces, and logs for LLM traffic." >}}
-  {{< card path="/llm/providers/openai/" title="OpenAI provider reference" subtitle="Optional model override, multiple routes, passthrough, and Codex connection." >}}
+  {{< card path="/llm/providers/" title="Provider reference" subtitle="Configure authentication and provider-specific options for supported LLM providers." >}}
 {{< /cards >}}
