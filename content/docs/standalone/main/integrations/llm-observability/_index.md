@@ -54,5 +54,5 @@ Agentgateway automatically includes these LLM-specific trace attributes:
 | `gen_ai.usage.output_tokens` | Output token count |
 | `gen_ai.provider.name` | LLM provider (openai, anthropic, etc.) |
 
-For a complete metrics, traces, and dashboard integration, see the
+For complete metrics, traces, and a dashboard, see the
 [Datadog observability guide]({{< link-hextra path="/observability/traces/configs/datadog/" >}}).

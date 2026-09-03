@@ -1,30 +1,12 @@
-## Verify telemetry in Datadog
+## Verify LLM traces in Datadog
 
-### Metrics and dashboard
-
-Open **Metrics > Explorer**, filter by `env:datadog-dev`, and search for an
-exact metric name such as:
-
-- `agentgateway.requests.count`
-- `agentgateway.gen_ai.token.usage.sum`
-- `agentgateway.gen_ai.cost.usd.count`
-- `agentgateway.controller.reconciliations.count` for the Kubernetes example
-
-In **Dashboards**, import the example's
-[`dashboard.json`](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/dashboard.json)
-and set the `env` template variable to `datadog-dev`. Enable percentile
-aggregations in Metrics Summary for the latency distributions before using the
-p95 widgets. Controller, MCP, and guardrail widgets remain empty until their
-corresponding components or traffic are present.
-
-### LLM traces
+Both setups export LLM traces, so verify them the same way.
 
 Open **AI Observability > Applications** and select `agentgateway`. The summary
 shows LLM calls, token usage, duration, errors, and traces for the selected time
 range.
 
 {{< reuse-image src="img/datadog/agent-observability-overview.jpg" alt="Datadog Agent Observability overview for the agentgateway application, showing error rate, duration, token usage, LLM calls, and total traces." >}}
-{{< reuse-image-dark srcDark="img/datadog/agent-observability-overview.jpg" alt="Datadog Agent Observability overview for the agentgateway application, showing error rate, duration, token usage, LLM calls, and total traces." >}}
 
 Open **AI Observability > Traces** and search for `ml_app:agentgateway`. Inspect
 a span to verify its model, token counts, errors, timing, and parent-child trace
@@ -32,13 +14,3 @@ relationships. Allow several minutes for processing. A successful OTLP response
 or a trace in APM alone does not prove ingestion into Agent Observability.
 
 {{< reuse-image src="img/datadog/agent-observability-span.jpg" alt="Datadog Agent Observability span for agentgateway, showing the synthetic model and agentgateway cost and timing tags." >}}
-{{< reuse-image-dark srcDark="img/datadog/agent-observability-span.jpg" alt="Datadog Agent Observability span for agentgateway, showing the synthetic model and agentgateway cost and timing tags." >}}
-
-The complete example uses the synthetic `datadog-test` model. Because this
-model is not in Datadog's pricing catalog, Datadog displays **Cost unavailable**.
-Agentgateway's cost calculation based on the synthetic provider's rates remains
-available in the span's `agw.ai.usage.cost.*` attributes and the
-`agentgateway.gen_ai.cost.usd.count` metric. The
-[standalone example README](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/standalone/README.md)
-explains how to send a request to a real OpenAI model and compare Datadog's
-estimate with agentgateway's calculation.
