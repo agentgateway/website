@@ -262,11 +262,12 @@ EOF
 
 By default, agentgateway calls `POST /request` and `POST /response` on the webhook target.
 
-#### Configure the webhook timeout
+#### Optional: Configure the webhook timeout {#webhook-timeout}
 
-The webhook call has no response deadline unless you configure one. Create a
-separate {{< reuse "agw-docs/snippets/policy.md" >}} that targets the webhook
-Service, and set `backend.http.requestTimeout`.
+The `webhook` field takes no timeout of its own, so the webhook call has no
+response deadline unless you set one. Because the webhook server is a backend
+like any other, you set the deadline on a separate
+{{< reuse "agw-docs/snippets/policy.md" >}} that targets the webhook Service.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -286,9 +287,16 @@ spec:
 EOF
 ```
 
-When this deadline expires, agentgateway treats the webhook as unavailable.
-The webhook's failure mode determines whether the LLM request fails open or
-closed. For details about connection and response deadlines, see
+| Setting | Description |
+|---------|-------------|
+| `targetRefs` | The webhook Service that you want the deadline to apply to. Create this policy in the same namespace as that Service. |
+| `backend.http.requestTimeout` | Maximum time to receive the complete response from the webhook server. The value must be at least `1ms`. |
+
+When this deadline expires, the webhook counts as unavailable, and the
+`failureMode` field on the `webhook` block decides what happens to the LLM
+request. The default is `FailClosed`, which rejects the request. Set
+`FailOpen` to let the request continue instead. For more information about
+connection and response deadlines, see
 [Backend timeouts]({{< link-hextra path="/resiliency/timeouts/backend/" >}}).
 
 ### Step 3: Test the webhook server {#test-webhook-server}
@@ -496,6 +504,6 @@ To send the guardrail calls to a different path, set the `:path` pseudo-header. 
 
    ```sh
    kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} \
-     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found \
      openai-prompt-guard guardrail-webhook-timeout
    ```
