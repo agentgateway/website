@@ -5,7 +5,7 @@ description: Export agentgateway traces, access logs, and metrics to Axiom.
 test: skip
 ---
 
-[Axiom](https://axiom.co/) is an observability platform that accepts OpenTelemetry traces, logs, and metrics. Agentgateway can export traces and access logs directly to Axiom over OTLP/HTTP. An OpenTelemetry Collector scrapes the agentgateway Prometheus endpoint and forwards metrics to Axiom.
+[Axiom](https://axiom.co/) is an observability platform that accepts OpenTelemetry traces, logs, and metrics. Agentgateway can export traces and access logs directly to Axiom over OpenTelemetry Protocol (OTLP) HTTP. An OpenTelemetry Collector scrapes the agentgateway Prometheus endpoint and forwards metrics to Axiom.
 
 ## Before you begin
 
@@ -17,7 +17,7 @@ test: skip
 
 ## Create the Axiom datasets and API token
 
-Axiom requires a dedicated dataset for each OpenTelemetry signal. Create two Events datasets for traces and logs, and one Metrics dataset for metrics.
+Axiom requires a dedicated dataset for each OpenTelemetry signal. Create two Events datasets for traces and access logs, and one Metrics dataset for metrics. Then, create an API token that can send data to all three datasets, and store the token in a Kubernetes Secret.
 
 1. Log in to the [Axiom dashboard](https://app.axiom.co/).
 2. Go to **Settings** > **Datasets and views**, and click **New dataset**.
@@ -30,10 +30,10 @@ Axiom requires a dedicated dataset for each OpenTelemetry signal. Create two Eve
    | `agentgateway-metrics` | Metrics | Metrics |
 
 4. Go to **Settings** > **API tokens**, and click **New API token**.
-5. Give the token a name, select **Basic**, and grant it access to all three datasets.
+5. Give the token a name, select **Basic**, and grant it ingest access to all three datasets.
 6. Create the token and copy it immediately. Axiom does not display the token again.
 
-{{< reuse-image src="img/axiom-agentgateway-api-token.jpg" srcDark="img/axiom-agentgateway-api-token.jpg" alt="Axiom API token settings showing ingest access limited to the agentgateway logs, metrics, and traces datasets" caption="A Basic Axiom API token scoped to the three agentgateway telemetry datasets." >}}
+   {{< reuse-image src="img/axiom-agentgateway-api-token.jpg" srcDark="img/axiom-agentgateway-api-token.jpg" alt="Axiom API token settings showing ingest access limited to the agentgateway logs, metrics, and traces datasets" caption="A Basic Axiom API token scoped to the three agentgateway telemetry datasets." >}}
 
 7. Save the token and dataset names in environment variables. Do not commit these values to source control.
 
@@ -44,13 +44,13 @@ Axiom requires a dedicated dataset for each OpenTelemetry signal. Create two Eve
    export AXIOM_METRICS_DATASET="agentgateway-metrics"
    ```
 
-8. Set the Axiom ingest domain. The following example uses the Axiom Cloud API endpoint. If your datasets use an [edge deployment](https://axiom.co/docs/restapi/introduction#base-domain), set this variable to its base domain instead.
+8. Set the Axiom ingest domain. The following example uses the Axiom Cloud API endpoint. If your datasets use an [edge deployment](https://axiom.co/docs/restapi/introduction#base-domain), set this variable to its base domain instead. Include only the hostname, without a scheme such as `https://` and without a trailing path.
 
    ```sh
    export AXIOM_DOMAIN="api.axiom.co"
    ```
 
-9. Create a Kubernetes Secret in the same namespace as the agentgateway proxy.
+9. Create a Kubernetes Secret in the same namespace as the agentgateway proxy. The Secret stores the complete bearer-token value that agentgateway and the OpenTelemetry Collector send in the `Authorization` header, along with the name of each dataset.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -58,7 +58,7 @@ Axiom requires a dedicated dataset for each OpenTelemetry signal. Create two Eve
    kind: Secret
    metadata:
      name: axiom-credentials
-     namespace: agentgateway-system
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    type: Opaque
    stringData:
      authorization: "Bearer ${AXIOM_API_TOKEN}"
@@ -68,22 +68,20 @@ Axiom requires a dedicated dataset for each OpenTelemetry signal. Create two Eve
    EOF
    ```
 
-The Secret stores the complete bearer-token value that agentgateway and the OpenTelemetry Collector send in the `Authorization` header.
-
 ## Export traces and access logs
 
-Create two Axiom backends because the `x-axiom-dataset` header must select a different dataset for each signal. Then, attach an `AgentgatewayPolicy` that exports traces and access logs from the `agentgateway-proxy` Gateway.
+Axiom selects the destination dataset from the `x-axiom-dataset` header, and traces and access logs go to different datasets. Because the header value is fixed per backend, create one `{{< reuse "agw-docs/snippets/backend.md" >}}` for each signal. Then, attach an `{{< reuse "agw-docs/snippets/policy.md" >}}` that exports traces and access logs from the `agentgateway-proxy` Gateway.
 
 > [!IMPORTANT]
-> Before you continue, remove or update any existing `AgentgatewayPolicy` that configures tracing or OTLP access-log export for the same Gateway. Multiple policies might report `ATTACHED=True`, but only one exporter configuration for each telemetry signal is effective.
+> Before you continue, remove or update any existing `{{< reuse "agw-docs/snippets/policy.md" >}}` that configures tracing or OTLP access-log export for the same Gateway. Multiple policies might report `ATTACHED=True`, but only one exporter configuration per telemetry signal takes effect.
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayBackend
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: axiom-traces
-  namespace: agentgateway-system
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   static:
     host: ${AXIOM_DOMAIN}
@@ -105,11 +103,11 @@ spec:
           name: axiom-credentials
           key: traces-dataset
 ---
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayBackend
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: axiom-logs
-  namespace: agentgateway-system
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   static:
     host: ${AXIOM_DOMAIN}
@@ -131,11 +129,11 @@ spec:
           name: axiom-credentials
           key: logs-dataset
 ---
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayPolicy
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: axiom-observability
-  namespace: agentgateway-system
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   targetRefs:
   - group: gateway.networking.k8s.io
@@ -145,7 +143,7 @@ spec:
     tracing:
       backendRef:
         group: agentgateway.dev
-        kind: AgentgatewayBackend
+        kind: {{< reuse "agw-docs/snippets/backend.md" >}}
         name: axiom-traces
         port: 443
       protocol: HTTP
@@ -164,7 +162,7 @@ spec:
       otlp:
         backendRef:
           group: agentgateway.dev
-          kind: AgentgatewayBackend
+          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
           name: axiom-logs
           port: 443
         protocol: HTTP
@@ -177,13 +175,25 @@ spec:
 EOF
 ```
 
-Agentgateway uses `/v1/traces` and `/v1/logs` by default for the respective OTLP/HTTP exporters. The policy also adds the LLM input and output messages. Accessing `llm.prompt` and `llm.completion` causes agentgateway to inspect the request and response bodies, so omit these attributes if you do not want to export message content.
+Review the following fields before you apply the policy.
+
+| Field | Description |
+|-------|-------------|
+| `protocol` | OTLP protocol variant. Set this field to `HTTP`, because Axiom accepts OTLP over HTTP. The default is `GRPC`. |
+| `randomSampling` | Common Expression Language (CEL) expression that determines how often agentgateway starts a new trace. The value `"true"` traces every request, which is useful while you verify the integration. Lower this value for production traffic. |
+| `clientSampling` | CEL expression that determines whether agentgateway honors a sampling decision that the client sends. |
+| `resources` | Resource attributes that apply to every exported span, such as `service.name`. Each value is a CEL expression, so a literal string is quoted twice. |
+| `attributes.add` | Extra key-value pairs to include in each span or access log entry. Each value is a CEL expression. |
+
+Neither exporter sets a `path` field, so agentgateway uses the default OTLP/HTTP paths, `/v1/traces` for traces and `/v1/logs` for access logs. Axiom expects both of these paths.
+
+The `llm.input_messages` and `llm.output_messages` attributes export the prompt and the completion. Reading `llm.prompt` and `llm.completion` causes agentgateway to inspect the request and response bodies, so omit these attributes if you do not want to export message content.
 
 ## Export metrics
 
-Agentgateway exposes Prometheus metrics on port `15020`. Install an OpenTelemetry Collector that discovers the annotated agentgateway proxy pods, scrapes their metrics, and exports them to Axiom over OTLP/HTTP.
+Agentgateway exposes Prometheus metrics on port `15020`. Install an OpenTelemetry Collector that discovers the annotated agentgateway proxy pods, scrapes their metrics, and exports the metrics to Axiom over OTLP/HTTP.
 
-Unlike traces and logs, Axiom requires the `x-axiom-metrics-dataset` header for metrics.
+Unlike traces and access logs, Axiom requires the `x-axiom-metrics-dataset` header for metrics.
 
 ```yaml
 helm upgrade --install axiom-metrics-collector opentelemetry-collector \
@@ -192,8 +202,8 @@ helm upgrade --install axiom-metrics-collector opentelemetry-collector \
   --set mode=deployment \
   --set image.repository="otel/opentelemetry-collector-contrib" \
   --set command.name="otelcol-contrib" \
-  --namespace=agentgateway-system \
-  -f -<<EOF
+  --namespace={{< reuse "agw-docs/snippets/namespace.md" >}} \
+  -f - <<EOF
 clusterRole:
   create: true
   rules:
@@ -222,6 +232,7 @@ config:
           kubernetes_sd_configs:
           - role: pod
           relabel_configs:
+          # Keep only the pods of Gateways that use the agentgateway GatewayClass.
           - action: keep
             regex: agentgateway
             source_labels:
@@ -253,8 +264,8 @@ config:
     otlphttp/axiom:
       endpoint: https://${AXIOM_DOMAIN}
       headers:
-        Authorization: "\${AXIOM_AUTHORIZATION}"
-        x-axiom-metrics-dataset: "\${AXIOM_METRICS_DATASET}"
+        Authorization: "\${env:AXIOM_AUTHORIZATION}"
+        x-axiom-metrics-dataset: "\${env:AXIOM_METRICS_DATASET}"
   service:
     pipelines:
       metrics:
@@ -264,7 +275,16 @@ config:
 EOF
 ```
 
-For production deployments, review the collector's resource requests, memory limiter, batching, and replica count for your expected telemetry volume.
+Two kinds of variable appear in this command, and the difference matters.
+
+* `${AXIOM_DOMAIN}` has no backslash, so your shell substitutes the value before Helm reads the file.
+* `\${env:AXIOM_AUTHORIZATION}` is escaped, so the value reaches the collector's configuration file unchanged. The collector then resolves it from the environment variable that `extraEnvs` sets from the Secret. This way, the token stays out of the Helm release.
+
+The `memory_limiter` and `batch` processors come from the chart's default configuration. For production deployments, review the collector's resource requests, memory limiter, batching, and replica count for your expected telemetry volume.
+
+## Get the gateway address
+
+{{< reuse "agw-docs/snippets/agw-get-gateway-url-k8s.md" >}}
 
 ## Verify the integration
 
@@ -272,31 +292,24 @@ For production deployments, review the collector's resource requests, memory lim
 
    ```sh
    kubectl get agentgatewaybackend axiom-traces axiom-logs \
-     -n agentgateway-system
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    kubectl get agentgatewaypolicy axiom-observability \
-     -n agentgateway-system
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
-   Both backends should report `ACCEPTED=True`. The policy should report `ACCEPTED=True` and `ATTACHED=True`.
+   Both backends report `ACCEPTED=True`. The policy reports `ACCEPTED=True` and `ATTACHED=True`.
 
 2. Verify that the metrics collector is running.
 
    ```sh
    kubectl rollout status deployment/axiom-metrics-collector-opentelemetry-collector \
-     -n agentgateway-system
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
-3. If you run a local cluster such as Kind, port-forward the agentgateway proxy.
+3. Send an LLM request through agentgateway. The following example assumes that you configured an OpenAI-compatible provider and the `gpt-3.5-turbo` model.
 
    ```sh
-   kubectl port-forward deployment/agentgateway-proxy \
-     -n agentgateway-system 8080:80
-   ```
-
-4. In a separate terminal, send an LLM request through agentgateway. The following example assumes that the proxy is available on local port `8080` and has an OpenAI-compatible provider and the `gpt-3.5-turbo` model configured.
-
-   ```sh
-   curl http://localhost:8080/v1/chat/completions \
+   curl http://$INGRESS_GW_ADDRESS/v1/chat/completions \
      -H 'content-type: application/json' \
      -d '{
        "model": "gpt-3.5-turbo",
@@ -309,44 +322,44 @@ For production deployments, review the collector's resource requests, memory lim
      }'
    ```
 
-5. Find the request in the proxy logs and copy its `trace.id` value.
+4. Find the request in the proxy logs and copy the `trace.id` value that the log line reports.
 
    ```sh
-   kubectl logs deployment/agentgateway-proxy -n agentgateway-system \
+   kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
      | grep 'protocol=llm' \
      | tail -1
    ```
 
-6. In Axiom, verify each signal.
+5. In Axiom, verify each signal.
 
-   - Click **Stream**, and select the traces Events dataset. Open the event with the trace ID. Click **Find trace** to open the trace waterfall after Axiom recognizes the dataset as an OpenTelemetry trace dataset. Axiom also automatically creates an **OpenTelemetry Traces** dashboard for the dataset.
-   - Click **Stream**, select the logs Events dataset, and find an access log with the same trace ID.
+   - Click **Stream**, and select the traces Events dataset. Open the event that has the trace ID. Click **Find trace** to open the trace waterfall after Axiom recognizes the dataset as an OpenTelemetry trace dataset. Axiom also automatically creates an **OpenTelemetry Traces** dashboard for the dataset.
+   - Click **Stream**, select the access logs Events dataset, and find an access log that has the same trace ID.
    - Click **Query**, select the metrics dataset, and query an agentgateway metric such as `agentgateway_gen_ai_client_token_usage`. The **Stream** view does not support Metrics datasets.
 
 {{< reuse-image src="img/axiom-agentgateway-trace-details.jpg" srcDark="img/axiom-agentgateway-trace-details.jpg" alt="Axiom trace event details showing an agentgateway trace ID, OpenAI model, token usage, and LLM input and output" caption="An agentgateway LLM trace in Axiom with request and response attributes." >}}
 
 {{< reuse-image src="img/axiom-agentgateway-metrics-query.jpg" srcDark="img/axiom-agentgateway-metrics-query.jpg" alt="Axiom Query Builder displaying agentgateway generative AI client token usage metric results" caption="Agentgateway LLM token usage metrics queried in Axiom." >}}
 
-Export is batched, so allow several seconds for new data to appear. Automatic dashboards and trace-dataset detection can take longer than event ingestion.
+Agentgateway and the collector batch their exports, so allow several seconds for new data to appear. Automatic dashboards and trace-dataset detection can take longer than event ingestion.
 
 ## Troubleshoot the integration
 
-- Confirm that `AXIOM_DOMAIN` is the ingest domain for the edge deployment that contains your datasets.
+- Confirm that `AXIOM_DOMAIN` contains only the ingest hostname for the edge deployment that holds your datasets, without a scheme such as `https://` and without a trailing path.
 - Confirm that the Basic API token has ingest access to all three datasets.
-- Confirm that the traces and logs datasets use the Events kind and the metrics dataset uses the Metrics kind.
-- Use `x-axiom-dataset` for traces and logs, and `x-axiom-metrics-dataset` for metrics.
-- Confirm that another policy does not configure the same telemetry signal on the Gateway.
+- Confirm that the traces and access logs datasets use the Events kind and that the metrics dataset uses the Metrics kind.
+- Use `x-axiom-dataset` for traces and access logs, and `x-axiom-metrics-dataset` for metrics.
+- Confirm that no other policy configures the same telemetry signal on the Gateway.
 
   ```sh
-  kubectl get agentgatewaypolicy -n agentgateway-system
+  kubectl get agentgatewaypolicy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
   ```
 
-  An Axiom policy and a previous observability policy can both report `ATTACHED=True`, even though only one trace exporter is effective. Remove the previous policy or combine the required settings into one policy.
-- Check the `ACCEPTED` and `ATTACHED` status columns for the backends and policy.
+  An Axiom policy and a previous observability policy can both report `ATTACHED=True`, even though only one trace exporter takes effect. Remove the previous policy, or combine the required settings into one policy.
+- Check the `ACCEPTED` and `ATTACHED` status columns for the backends and the policy.
 - Check the proxy logs for OTLP trace or access-log exporter errors.
 
   ```sh
-  kubectl logs deployment/agentgateway-proxy -n agentgateway-system \
+  kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
     | grep -Ei 'opentelemetry|otlp|export'
   ```
 
@@ -354,7 +367,7 @@ Export is batched, so allow several seconds for new data to appear. Automatic da
 
   ```sh
   kubectl logs deployment/axiom-metrics-collector-opentelemetry-collector \
-    -n agentgateway-system
+    -n {{< reuse "agw-docs/snippets/namespace.md" >}}
   ```
 
 For more information, see the [Axiom OpenTelemetry documentation](https://axiom.co/docs/send-data/opentelemetry).
@@ -362,8 +375,8 @@ For more information, see the [Axiom OpenTelemetry documentation](https://axiom.
 ## Cleanup
 
 ```sh
-kubectl delete agentgatewaypolicy axiom-observability -n agentgateway-system
-kubectl delete agentgatewaybackend axiom-traces axiom-logs -n agentgateway-system
-helm uninstall axiom-metrics-collector -n agentgateway-system
-kubectl delete secret axiom-credentials -n agentgateway-system
+kubectl delete agentgatewaypolicy axiom-observability -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete agentgatewaybackend axiom-traces axiom-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+helm uninstall axiom-metrics-collector -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete secret axiom-credentials -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
