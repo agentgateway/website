@@ -16,7 +16,7 @@ Version 1.6 brings the session affinity and access log field sets of the proxy t
 
 - **[Session affinity](#v16-session-affinity)**: Send the requests that share a value, such as a session header, to the same endpoint.
 - **[OpenTelemetry access log field names](#v16-access-log-preset)**: Rename the built-in HTTP fields in the stdout access log to their semantic convention equivalents.
-- **[Experimental XBackend support](#v16-xbackend)**: Route to a destination that is declared in the upstream Gateway API `XBackend` resource.
+- **[Experimental `XBackend` support](#v16-xbackend)**: Route to a destination that is declared in the upstream Gateway API `XBackend` resource.
 
 ## 🔥 Breaking changes {#v16-breaking-changes}
 
@@ -52,7 +52,7 @@ Affinity is best-effort rather than session persistence. Agentgateway recomputes
 
 For the fields, the fallback behavior, common expressions, and examples, see [Session affinity]({{< link-hextra path="/traffic-management/load-balancing/#session-affinity" >}}).
 
-#### Experimental XBackend support {#v16-xbackend}
+#### Experimental `XBackend` support {#v16-xbackend}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2634 -->
 
