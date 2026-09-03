@@ -1,7 +1,7 @@
 ---
 title: Observability
 weight: 40
-description: Send LLM telemetry for prompt logging, cost tracking, and audit trail.
+description: Send LLM telemetry to Axiom, Langfuse, LangSmith, and other observability platforms.
 test: skip
 ---
 

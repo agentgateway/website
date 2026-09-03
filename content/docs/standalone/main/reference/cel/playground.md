@@ -4,7 +4,7 @@ weight: 1
 description: Try out CEL expressions interactively in the agentgateway UI.
 ---
 
-You can try out CEL expressions directly in the built-in CEL playground in the agentgateway UI. The playground uses agentgateway's actual CEL runtime, so custom functions and variables specific to agentgateway are available for testing.
+You can try out CEL expressions directly in the built-in CEL playground in the agentgateway UI. The playground uses agentgateway's actual CEL runtime, so built-in agentgateway functions and any [custom functions]({{< link-hextra path="/reference/cel/custom-functions/" >}}) loaded from your configuration are available for testing.
 
 To open the playground:
 

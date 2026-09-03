@@ -1,7 +1,7 @@
 ---
 title: Observability
 weight: 40
-description: Prompt logging, cost tracking, and audit trail via Langfuse, LangSmith, and more
+description: Prompt logging, cost tracking, and audit trail via Axiom, Langfuse, LangSmith, and more
 test: skip
 ---
 

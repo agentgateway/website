@@ -262,6 +262,43 @@ EOF
 
 By default, agentgateway calls `POST /request` and `POST /response` on the webhook target.
 
+#### Optional: Configure the webhook timeout {#webhook-timeout}
+
+The `webhook` field takes no timeout of its own, so the webhook call has no
+response deadline unless you set one. Because the webhook server is a backend
+like any other, you set the deadline on a separate
+{{< reuse "agw-docs/snippets/policy.md" >}} that targets the webhook Service.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: guardrail-webhook-timeout
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: ""
+    kind: Service
+    name: ai-guardrail-webhook
+  backend:
+    http:
+      requestTimeout: 5s
+EOF
+```
+
+| Setting | Description |
+|---------|-------------|
+| `targetRefs` | The webhook Service that you want the deadline to apply to. Create this policy in the same namespace as that Service. |
+| `backend.http.requestTimeout` | Maximum time to receive the complete response from the webhook server. The value must be at least `1ms`. |
+
+When this deadline expires, the webhook counts as unavailable, and the
+`failureMode` field on the `webhook` block decides what happens to the LLM
+request. The default is `FailClosed`, which rejects the request. Set
+`FailOpen` to let the request continue instead. For more information about
+connection and response deadlines, see
+[Backend timeouts]({{< link-hextra path="/documentation/resiliency/timeouts/backend/" >}}).
+
 ### Step 3: Test the webhook server {#test-webhook-server}
 
 1. Send a request through {{< reuse "agw-docs/snippets/agentgateway.md" >}} to the OpenAI provider. In the body, include the word `block` to trigger the 403 Forbidden response.
@@ -463,8 +500,10 @@ To send the guardrail calls to a different path, set the `:path` pseudo-header. 
    kubectl delete deploy,svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=ai-guardrail
    ```
 
-2. Delete the {{< reuse "agw-docs/snippets/policy.md" >}}.
+2. Delete the {{< reuse "agw-docs/snippets/policy.md" >}} resources.
 
    ```sh
-   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} openai-prompt-guard
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found \
+     openai-prompt-guard guardrail-webhook-timeout
    ```

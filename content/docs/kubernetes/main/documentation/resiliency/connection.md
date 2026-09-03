@@ -91,5 +91,7 @@ The `frontend` settings on this page tune the connections that clients open to t
    kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-connection -n httpbin
    ```
 
+This example targets the httpbin HTTPRoute. To set the same deadlines on a Kubernetes Service instead, so that they apply independently of the routes that reach it, see [Backend timeouts]({{< link-hextra path="/documentation/resiliency/timeouts/backend/" >}}).
+
 > [!NOTE]
-> A `backend` policy sets `tcp` and `http` fields only. The `handshakeTimeout`, `http1IdleTimeout`, `http2KeepaliveInterval`, `http2KeepaliveTimeout`, and `maxConnectionDuration` settings belong to the `frontend` section, and apply to incoming connections. For more information about where each policy section attaches, see [Targeting and merging]({{< link-hextra path="/documentation/about/policies/target-merge/" >}}).
+> Of the connection settings on this page, a `backend` policy sets the `tcp` and `http` fields only. The `handshakeTimeout`, `http1IdleTimeout`, `http2KeepaliveInterval`, `http2KeepaliveTimeout`, and `maxConnectionDuration` settings belong to the `frontend` section, and apply to incoming connections. A `backend` policy sets other fields as well, such as `tls` and `health`; for the full list, see [Policy sections]({{< link-hextra path="/documentation/about/policies/overview/#backend-policy-fields" >}}). For more information about where each policy section attaches, see [Targeting and merging]({{< link-hextra path="/documentation/about/policies/target-merge/" >}}).
