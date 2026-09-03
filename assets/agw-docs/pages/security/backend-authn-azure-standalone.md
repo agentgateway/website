@@ -1,6 +1,6 @@
 ## About
 
-The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that agentgateway forwards to the backend. Agentgateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.
+The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that agentgateway forwards to the backend. By default, agentgateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint. To authenticate to Microsoft Graph or another Microsoft Entra-protected backend, configure the token scopes. Agentgateway caches the credential after the first successful use.
 
 The method has three forms.
 
@@ -84,6 +84,7 @@ backendAuth:
 
 | Field | Description |
 | -- | -- |
+| `azure.scopes` | Scopes to request for the access token. When omitted, agentgateway infers the scope from the backend hostname. |
 | `azure.implicit` | Set to `{}` to detect the credential from the environment with the full chain. |
 | `azure.developerImplicit` | Set to `{}` to use the Azure CLI login only. |
 | `azure.explicitConfig.clientSecret` | Service principal credentials. Requires `tenant_id`, `client_id`, and `client_secret`, all in `snake_case`. |
@@ -98,11 +99,27 @@ backendAuth:
 > Error: routes[0]: data did not match any variant of untagged enum BackendAuthCompat
 > ```
 
+## Configure token scopes
+
+Set `scopes` when the backend requires a token for a resource other than Azure Cognitive Services or Azure AI Foundry. For example, the following configuration uses workload identity to request a token for Microsoft Graph. The `scopes` field is a sibling of `explicitConfig`, not a child of it.
+
+```yaml
+backendAuth:
+  azure:
+    scopes:
+    - https://graph.microsoft.com/.default
+    explicitConfig:
+      workloadIdentity: {}
+```
+
+The configured scopes override hostname-based inference. Use the scope required by the backend, commonly the resource application ID URI followed by `/.default`. The identity must have permission to access the requested resource. Azure managed identity credentials support exactly one scope.
+
 {{< doc-test paths="backend-authn-azure" >}}
 # WHAT THIS TEST VALIDATES:
 #   * Every credential mode in the tabs above is accepted as a complete standalone config:
 #     implicit, developerImplicit, and all three explicitConfig sources, including each of the
 #     three userAssignedIdentity identifiers.
+#   * A Microsoft Graph scope is accepted as a sibling of explicitConfig.
 #   * The snake_case gotcha is real: the camelCase spelling of the clientSecret fields is rejected
 #     with the error that the warning quotes.
 #   * userAssignedIdentity is a one-of: naming two identifiers is rejected.
@@ -198,6 +215,14 @@ EOF
 
 azure_case workload-identity ok <<'EOF'
 azure:
+  explicitConfig:
+    workloadIdentity: {}
+EOF
+
+azure_case workload-identity-graph ok <<'EOF'
+azure:
+  scopes:
+  - https://graph.microsoft.com/.default
   explicitConfig:
     workloadIdentity: {}
 EOF

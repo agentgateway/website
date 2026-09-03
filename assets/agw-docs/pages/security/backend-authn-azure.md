@@ -1,6 +1,6 @@
 ## About
 
-The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that the gateway forwards to the backend. The gateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.
+The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that the gateway forwards to the backend. By default, the gateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint. To authenticate to Microsoft Graph or another Microsoft Entra-protected backend, configure the token scopes. The gateway caches the credential after the first successful use.
 
 The method has two forms.
 
@@ -64,12 +64,27 @@ auth:
 | Field | Description |
 | -- | -- |
 | `azure` | Set to `{}` to detect the credential from the environment. Set exactly one child field to name a credential source instead. |
+| `azure.scopes` | Scopes to request for the access token. When omitted, the gateway infers the scope from the backend hostname. Set 1–64 scopes. With `managedIdentity`, set exactly one scope. |
 | `azure.secretRef` | Secret in the policy namespace that holds service principal credentials under the `clientID`, `tenantID`, and `clientSecret` keys. |
 | `azure.workloadIdentity` | Set to `{}` to use the federated token and the Azure environment variables that are projected into the gateway pod. |
 | `azure.managedIdentity` | Names a user-assigned managed identity. |
 
 > [!WARNING]
 > The `managedIdentity` field requires all three of `clientId`, `objectId`, and `resourceId`, but the gateway uses only the first one that is not empty, in that order. A policy that names one identifier is rejected with `objectId: Required value`. To use a user-assigned managed identity, set `clientId` to the identifier that you want the gateway to use, and set the other two fields to a placeholder. Prefer `workloadIdentity` or the implicit form where you can, because neither has this restriction.
+
+## Configure token scopes
+
+Set `scopes` when the backend requires a token for a resource other than Azure Cognitive Services or Azure AI Foundry. For example, the following configuration uses workload identity to request a token for Microsoft Graph.
+
+```yaml
+auth:
+  azure:
+    scopes:
+    - https://graph.microsoft.com/.default
+    workloadIdentity: {}
+```
+
+The configured scopes override hostname-based inference. Use the scope required by the backend, commonly the resource application ID URI followed by `/.default`. The identity must have permission to access the requested resource. When you use `managedIdentity`, configure exactly one scope; the API server rejects a managed identity configuration with multiple scopes.
 
 ## Configure Azure backend authentication
 
