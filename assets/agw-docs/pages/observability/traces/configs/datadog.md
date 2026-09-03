@@ -74,10 +74,10 @@ Datadog Agent. It does not call a paid model.
 
 The output should report healthy instances tagged `component:proxy` and
 `component:controller`, with metric samples for each endpoint. The example
-collects all proxy and controller metric families except the per-resource MCP
-request counter, whose `resource` label can contain unbounded or sensitive
-values. Review custom-metric usage and tag cardinality before adapting the
-wildcard configuration for production.
+collects all proxy and controller metric families. The
+`agentgateway.mcp.requests.count` metric's `resource` tag can contain tool names
+or resource URIs. Review custom-metric usage, tag cardinality, and resource
+values before adapting the wildcard configuration for production.
 
 The example provides two alternative ways to annotate a proxy. Use
 `proxy-parameters.yaml` for a controller-provisioned proxy. Use
