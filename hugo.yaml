@@ -106,6 +106,31 @@ params:
     # preview URL. Set explicitly here because agw-oss's prod baseURL doesn't
     # include the host.
     prodHost: "https://agentgateway.dev"
+
+  # "Download all docs (PDF)" in the Copy-as-Markdown menu on docs pages, added by
+  # the module's copy-markdown.html. Setting `distribution` turns the item on and
+  # selects the solo-io/docs-pdfs release-asset URL shape, which the module
+  # supplies so it is not repeated per consumer:
+  #
+  #   .../releases/download/{product}-{distribution}-{version}/{product}-{distribution}-{version}.pdf
+  #
+  # `{version}` resolves to `kubernetes-latest` or `standalone-latest`, NOT to
+  # `latest`. This site registers `params.sections`, so the theme prefixes the
+  # version segment with the section — without that, both deployment modes ship a
+  # `latest` line and would resolve to one URL, and the workflow uploads with
+  # --clobber, so whichever rendered last would silently sit behind the link on
+  # both. Only /latest/ opts into `book`, so the frozen version trees and /main/
+  # show no item at all.
+  #
+  # `product` is set explicitly because it is otherwise read from
+  # `params.currentProduct` or `params.folder`, and this site sets neither.
+  #
+  # The item is derived from the build, not hand-written: it renders only where
+  # the tree it belongs to carries the `book` output format.
+  pdfDownload:
+    distribution: oss
+    product: agentgateway
+
   navbar:
     displayTitle: false
     displayLogo: true
