@@ -1,6 +1,6 @@
 ---
 title: Policy processing order
-weight: 10
+weight: 5
 description: Review the order in which policies and traffic filters are processed.
 test: skip
 ---
