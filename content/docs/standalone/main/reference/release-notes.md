@@ -30,6 +30,13 @@ The `agctl catalog import` command used to accept only one pricing source, `mode
 
 The catalog file format does not change, so a catalog that you generated earlier still loads. The two sources can price a model differently, and the `github` source covers the models that the agentgateway project tracks rather than everything that models.dev lists.
 
+The two sources also name some providers differently, and they disagree about what to do with an ID that they do not recognize. A `--providers` list that was written for models.dev can therefore go quiet rather than fail.
+
+| Behavior | `models.dev` | `github` |
+| --- | --- | --- |
+| Provider ID namespace | models.dev IDs, such as `google` and `amazon-bedrock` | agentgateway IDs, such as `gcp.gemini` and `aws.bedrock` |
+| Unrecognized `--providers` ID | Fails with `no providers matched` | Reports `imported 0 providers` and writes the catalog without it |
+
 **Actions to take**: If you regenerate your catalog on a schedule and you want to keep importing from models.dev, add `--source models.dev` to the command. Otherwise, regenerate the catalog and compare the rates for the models that you care about before you load the new file, because a rate change alters the costs that appear in logs, traces, metrics, and any CEL policy that reads `llm.cost`. For the flags, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
 
 ## 🌟 New features {#v16-new-features}
@@ -40,7 +47,7 @@ The catalog file format does not change, so a catalog that you generated earlier
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3182 -->
 
-The stdout access log uses short, human-oriented field names, such as `http.path`. A new `preset` field on the access log policy selects a built-in field set instead. Set `preset: otel` to rename the built-in HTTP fields to their [OpenTelemetry semantic convention](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) equivalents, such as `url.path`, and to emit `network.protocol.version` as `1.1` rather than `HTTP/1.1`. The preset also adds `url.scheme`, and it adds `server.port` and `url.query` when the request supplies them.
+The stdout access log uses short, human-oriented field names, such as `http.path`. A new `preset` field on the access log policy selects a built-in field set instead. Set `preset: otel` to rename the built-in HTTP fields to their [OpenTelemetry semantic convention](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) equivalents, such as `url.path`, and to emit `network.protocol.version` as `1.1` rather than `HTTP/1.1`. The preset also adds `url.scheme`, and it adds `server.port` and `url.query` when the request supplies them. Note that `url.path` carries the path only: a query string that used to appear on `http.path` now appears on `url.query` instead.
 
 Only the built-in HTTP field set is renamed. The `gen_ai.*` and `mcp.*` fields already use semantic convention names, fields that you add yourself keep the names that you give them, and an OTLP export is unaffected.
 

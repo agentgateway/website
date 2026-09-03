@@ -93,11 +93,11 @@ To filter which requests are logged or customize log fields, see [Filter access 
   EOF
   {{< /doc-test >}}
 
-<!-- Gated by excluding the older versions, not by including "main", so the
+<!-- Gated by excluding the older version, not by including "main", so the
      section stays put when the next release freezes this line under a number.
      The `preset` field is new to the frontend access log policy in the version
      that `main` currently points at. -->
-{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+{{< version exclude-if="1.5.x" >}}
 ## Use OpenTelemetry field names {#preset}
 
 By default, the stdout access log uses short, human-oriented field names, such as `http.path`. To rename the built-in HTTP fields to their [OpenTelemetry semantic convention](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) equivalents, such as `url.path`, set `preset: Otel` in the access log policy.
@@ -124,14 +124,14 @@ Use this preset when you ship stdout logs to a pipeline that already expects sem
    EOF
    ```
 
-2. Send a request and check the gateway logs. The built-in HTTP fields now use semantic convention names.
+2. Send a request that includes a query string, such as `/get?foo=bar`, and check the gateway logs. The built-in HTTP fields now use semantic convention names.
 
    ```console
    info	request gateway=agentgateway-system/agentgateway-proxy
-   listener=http route=httpbin/httpbin endpoint=10.244.0.4:8080
+   listener=http route=httpbin/httpbin endpoint=10.244.0.7:8080
    client.address=127.0.0.1 http.request.method=GET server.address=www.example.com
    url.path=/get network.protocol.version=1.1 http.response.status_code=200
-   url.scheme=http protocol=http duration=0ms
+   protocol=http duration=0ms url.scheme=http url.query=foo=bar
    ```
 
 The preset renames the following built-in fields.
@@ -141,16 +141,16 @@ The preset renames the following built-in fields.
 | `src.addr` | `client.address`. The value is the client IP address without the port. |
 | `http.method` | `http.request.method` |
 | `http.host` | `server.address` |
-| `http.path` | `url.path` |
+| `http.path` | `url.path`. The value is the path only. Any query string moves to a separate `url.query` field instead of staying on the path. |
 | `http.version` | `network.protocol.version`. The value is the bare version, such as `1.1` instead of `HTTP/1.1`. |
 | `http.status` | `http.response.status_code` |
 
-The preset also adds `url.scheme`, and it adds `server.port` and `url.query` when the request supplies them.
+The preset also adds `url.scheme`, and it adds `server.port` and `url.query` when the request supplies them. These added fields are appended to the end of the log line, after `duration`, rather than placed next to the other HTTP fields.
 
 Fields that you add yourself with the `attributes` field are not renamed, so choose semantic convention names for them if you want the whole line to be consistent. Fields that are not part of the HTTP field set, such as `gateway`, `route`, and `duration`, keep their names.
 
 > [!NOTE]
-> The preset changes only the stdout access log. An OTLP export already uses semantic convention attribute names, so it is unaffected. For more information, see [Export logs over OTLP]({{< link-hextra path="/observability/access-logs/export/" >}}).
+> The preset changes only the stdout access log, and only for HTTP traffic. A TCP listener has no HTTP field set to rename, so the preset has no effect there. An OTLP export already uses semantic convention attribute names, so it is unaffected. For more information, see [Export logs over OTLP]({{< link-hextra path="/observability/access-logs/export/" >}}).
 {{< /version >}}
 
 ## Filter access logs

@@ -12,11 +12,10 @@ Review the release notes for agentgateway on Kubernetes.
 
 ## ✨ Highlights {#v16-highlights}
 
-Version 1.6 brings the session affinity and access log field sets of the proxy to the Kubernetes API, and adds support for an upstream Gateway API backend resource.
+Version 1.6 brings the session affinity and access log field sets of the proxy to the Kubernetes API.
 
 - **[Session affinity](#v16-session-affinity)**: Send the requests that share a value, such as a session header, to the same endpoint.
 - **[OpenTelemetry access log field names](#v16-access-log-preset)**: Rename the built-in HTTP fields in the stdout access log to their semantic convention equivalents.
-- **[Experimental `XBackend` support](#v16-xbackend)**: Route to a destination that is declared in the upstream Gateway API `XBackend` resource.
 
 ## 🔥 Breaking changes {#v16-breaking-changes}
 
@@ -33,6 +32,13 @@ The `agctl catalog import` command used to accept only one pricing source, `mode
 | `--source github` | Rejected as an unsupported source | Imports from `agentgateway.dev/model-catalog` |
 
 The catalog file format does not change, so a catalog that you generated earlier still loads. The two sources can price a model differently, and the `github` source covers the models that the agentgateway project tracks rather than everything that models.dev lists.
+
+The two sources also name some providers differently, and they disagree about what to do with an ID that they do not recognize. A `--providers` list that was written for models.dev can therefore go quiet rather than fail.
+
+| Behavior | `models.dev` | `github` |
+| --- | --- | --- |
+| Provider ID namespace | models.dev IDs, such as `google` and `amazon-bedrock` | agentgateway IDs, such as `gcp.gemini` and `aws.bedrock` |
+| Unrecognized `--providers` ID | Fails with `no providers matched` | Reports `imported 0 providers` and writes the catalog without it |
 
 **Actions to take**: If you regenerate your catalog on a schedule and you want to keep importing from models.dev, add `--source models.dev` to the command. Otherwise, regenerate the catalog and compare the rates for the models that you care about before you load the new file, because a rate change alters the costs that appear in logs, traces, metrics, and any CEL policy that reads `llm.cost`. For the flags, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
 
@@ -52,21 +58,13 @@ Affinity is best-effort rather than session persistence. Agentgateway recomputes
 
 For the fields, the fallback behavior, common expressions, and examples, see [Session affinity]({{< link-hextra path="/traffic-management/load-balancing/#session-affinity" >}}).
 
-#### Experimental `XBackend` support {#v16-xbackend}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2634 -->
-
-The controller can now watch the `XBackend` resource from the experimental channel of the Gateway API, in the `gateway.networking.x-k8s.io` API group, and translate it into an agentgateway backend. Use it to declare an external destination, such as a hostname, port, protocol, and backend TLS settings, in an upstream resource instead of an {{< reuse "agw-docs/snippets/backend.md" >}}. The controller also reports status on the resource.
-
-Support is off by default and requires the experimental Gateway API custom resources. To turn it on, set `xBackend.enabled` to `true` in the Helm values of the `agentgateway` chart. For the fields that agentgateway reads, the protocol and TLS options, and examples, see [XBackend]({{< link-hextra path="/traffic-management/xbackend/" >}}).
-
 ### Operations {#v16-features-operations}
 
 #### OpenTelemetry field names for stdout access logs {#v16-access-log-preset}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3182 -->
 
-The stdout access log uses short, human-oriented field names, such as `http.path`. A new `preset` field on the frontend access log policy selects a built-in field set instead. Set `preset: Otel` to rename the built-in HTTP fields to their [OpenTelemetry semantic convention](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) equivalents, such as `url.path`, and to emit `network.protocol.version` as `1.1` rather than `HTTP/1.1`. The preset also adds `url.scheme`, and it adds `server.port` and `url.query` when the request supplies them.
+The stdout access log uses short, human-oriented field names, such as `http.path`. A new `preset` field on the frontend access log policy selects a built-in field set instead. Set `preset: Otel` to rename the built-in HTTP fields to their [OpenTelemetry semantic convention](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) equivalents, such as `url.path`, and to emit `network.protocol.version` as `1.1` rather than `HTTP/1.1`. The preset also adds `url.scheme`, and it adds `server.port` and `url.query` when the request supplies them. Note that `url.path` carries the path only: a query string that used to appear on `http.path` now appears on `url.query` instead.
 
 Only the built-in HTTP field set is renamed. Fields that you add with the `attributes` field keep the names that you give them, and an OTLP export is unaffected, because it already uses semantic convention attribute names.
 

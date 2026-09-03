@@ -45,16 +45,16 @@ where latency_penalty = request_latency * (1 + pending_requests * 0.1)
 
 Endpoints that consistently fail are moved to a rejected set and are considered only when no active endpoint is viable. As a result, traffic shifts away from a slow or failing pod without any configuration on your part.
 
-<!-- Gated by excluding the older versions, not by including "main", so the
+<!-- Gated by excluding the older version, not by including "main", so the
      section stays put when the next release freezes this line under a number.
      The `sessionAffinity` backend policy is new to the Kubernetes API in the
      version that `main` currently points at. -->
-{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+{{< version exclude-if="1.5.x" >}}
 ## Session affinity {#session-affinity}
 
 P2C selects an endpoint independently for each request, so two requests from the same client can land on different endpoints. To send every request that carries the same value to the same endpoint, set the `sessionAffinity` backend policy.
 
-A `source` CEL expression selects the value. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} hashes the value and maps the hash to an endpoint with weighted rendezvous hashing, so each proxy replica picks the same endpoint for the same value without sharing any state with the other replicas.
+A `source` CEL expression selects the value. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} hashes the value and maps the hash to an endpoint with weighted rendezvous hashing, so proxy replicas that see the same value and the same set of eligible endpoints pick the same endpoint without sharing any state with each other.
 
 Set the policy on the {{< reuse "agw-docs/snippets/backend.md" >}} that you route to.
 
@@ -104,7 +104,7 @@ For the full list of values that an expression can read, see the [CEL variables 
 
 ### AI backends {#session-affinity-ai}
 
-On an AI backend, affinity applies across the provider groups of the backend. Set it on the whole {{< reuse "agw-docs/snippets/backend.md" >}}, not on an individual provider. An {{< reuse "agw-docs/snippets/policy.md" >}} that targets a single AI provider with a `sectionName` and also sets `backend.sessionAffinity` is rejected.
+On an AI backend, affinity applies across the provider groups of the backend. Set it on the whole {{< reuse "agw-docs/snippets/backend.md" >}}, not on an individual provider. An {{< reuse "agw-docs/snippets/policy.md" >}} that sets `backend.sessionAffinity` and also names a `sectionName` on an {{< reuse "agw-docs/snippets/backend.md" >}} target is rejected with the message `backend.sessionAffinity must target the whole AgentgatewayBackend, not an individual AI provider`. The rule applies to any sectioned {{< reuse "agw-docs/snippets/backend.md" >}} target, not only to AI providers.
 
 ### What session affinity does not do {#session-affinity-limits}
 
@@ -112,6 +112,7 @@ Session affinity is best-effort, and it is **not** session persistence. {{< reus
 
 - **The mapping moves when the endpoint set changes.** Adding, removing, or losing an endpoint remaps some values, so a client can be moved to a different endpoint mid-session. Rendezvous hashing keeps that disruption small, because only the values that mapped to the changed endpoint move, but it is not zero.
 - **A request that produces no usable value is not pinned.** {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} falls back to normal P2C selection when the expression fails to evaluate, returns a value that is not a string or bytes, or returns an empty value, such as a header that the client did not send. The request still succeeds.
+- **Affinity does not override priority or health.** The hash chooses among the endpoints that are already eligible, rather than reaching past them. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} works through the locality priority buckets in order and stops at the first bucket that holds a viable endpoint, and it considers the rejected set only when no active endpoint is viable anywhere. So two replicas in different localities can map the same value to different endpoints, and a value is remapped when the preferred bucket for a replica changes. For more information, see [locality-aware routing]({{< link-hextra path="/traffic-management/locality-aware-routing/" >}}).
 
 Do not use session affinity to hold server-side state that only one endpoint has. Use it to improve cache hit rates, to keep a conversation on one replica when that is a preference rather than a requirement, or to make debugging easier.
 
@@ -158,7 +159,7 @@ For more information about these commands, including how to show services that h
 
 ## Next steps
 
-{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}- Pin the requests that share a value to one endpoint with [session affinity](#session-affinity). {{< /version >}}
+{{< version exclude-if="1.5.x" >}}- Pin the requests that share a value to one endpoint with [session affinity](#session-affinity). {{< /version >}}
 - Reduce cross-zone traffic with [locality-aware routing]({{< link-hextra path="/traffic-management/locality-aware-routing/" >}}).
 - Remove failing endpoints from the pool with [backend health checking]({{< link-hextra path="/resiliency/backend-health/" >}}).
 - Distribute requests across LLM providers with [LLM load balancing]({{< link-hextra path="/llm/load-balancing/" >}}).
