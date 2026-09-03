@@ -18,15 +18,14 @@ With agentgateway configured as an Agent Network provider, NetBird authenticates
 4. A private agentgateway listener validates the virtual key and routes OpenAI or Anthropic traffic to the configured backend.
 5. Agentgateway applies its policies and can record the NetBird identity with request, token, latency, and cost telemetry.
 
-{{< callout type="warning" >}}
-Trust the NetBird identity headers only when clients cannot reach the agentgateway listener without passing through the NetBird proxy. Enforce this boundary with a Kubernetes NetworkPolicy, service mesh, firewall, or an equivalent private-network control. Treat `x-netbird-groups` as attribution data, not as a delimiter-safe authorization claim.
-{{< /callout >}}
+> [!WARNING]
+> Trust the NetBird identity headers only when clients cannot reach the agentgateway listener without passing through the NetBird proxy. Enforce this boundary with a Kubernetes NetworkPolicy, service mesh, firewall, or an equivalent private-network control. Treat `x-netbird-groups` as attribution data, not as a delimiter-safe authorization claim.
 
 ## Try the end-to-end example
 
 The agentgateway repository includes a Kubernetes example that deploys a self-hosted NetBird Agent Network and places agentgateway behind its proxy. The example demonstrates:
 
-- A private agentgateway listener protected by strict virtual-key authentication.
+- A private agentgateway listener that is protected by strict virtual-key authentication.
 - OpenAI and Anthropic request routing through one Agent Network endpoint.
 - Trusted NetBird identity attribution in agentgateway request logs.
 - NetworkPolicy enforcement between the NetBird proxy and agentgateway.
