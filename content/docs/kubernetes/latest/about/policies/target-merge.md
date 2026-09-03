@@ -9,6 +9,8 @@ test: skip
 
 Each policy section can only target specific Kubernetes resource types. If you set a `targetRef` or `targetSelector` to an invalid resource type for the policy section, the Kubernetes API server rejects the request with a validation error. Invalid targeting is **not** silently ignored.
 
+A policy must be in the same namespace as the resources that it targets. A policy that targets a Service takes effect after a route or another agentgateway resource references that Service and adds it to the proxy configuration.
+
 > [!NOTE]
 > A single {{< reuse "agw-docs/snippets/policy.md" >}} can only target one kind of resource. For example, you cannot target both a Gateway and an HTTPRoute in the same policy. All entries in `targetRefs` or `targetSelectors` must reference the same `kind`.
 

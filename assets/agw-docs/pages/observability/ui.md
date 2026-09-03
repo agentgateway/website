@@ -1,5 +1,3 @@
-Use the agentgateway UI to inspect your Kubernetes proxy configuration.
-
 ## About
 
 The agentgateway UI is a built-in web interface that runs on port 15000 of the `agentgateway-proxy` pod. In Kubernetes mode, the UI is **read-only**. It reflects the configuration that the agentgateway controller pushes to the proxy over xDS, the protocol that the control plane uses to deliver configuration to the proxy.
