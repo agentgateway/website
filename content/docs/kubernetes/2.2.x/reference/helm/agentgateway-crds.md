@@ -1,6 +1,8 @@
 ---
 title: agentgateway-crds
 weight: 30
+aliases:
+  - /docs/kubernetes/2.2.x/reference/helm/agentgateway-crds./
 ---
 
 Review Helm values for the agentgateway-crds Helm chart.

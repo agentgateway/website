@@ -205,9 +205,26 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
+| `preset` _[AccessLogPreset](#accesslogpreset)_ | Preset selects the built-in field set for standard output access logs.<br />When unset, legacy human-oriented fields are used.<br />`Otel` selects the OTel-aligned built-in HTTP field set. |  | Optional: \{\} <br /> |
 | `filter` _[CELExpression](#celexpression)_ | CEL expression used to filter logs. A log<br />will only be emitted if the expression evaluates to `true`. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `attributes` _[LogTracingAttributes](#logtracingattributes)_ | Customizations to the key-value pairs that are<br />logged. |  | Optional: \{\} <br /> |
 | `otlp` _[OtlpAccessLog](#otlpaccesslog)_ | OTLP access log export to an<br />OpenTelemetry-compatible backend. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
+
+
+#### AccessLogPreset
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [AccessLog](#accesslog)
+
+| Field | Description |
+| --- | --- |
+| `Otel` | AccessLogPresetOtel uses the OTel-aligned built-in HTTP field set for<br />stdout access logs.<br /> |
 
 
 #### Action
@@ -1234,6 +1251,7 @@ _Appears in:_
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
 | `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | AtMostOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange crossAppAccess jwtSign] <br />Optional: \{\} <br /> |
+| `sessionAffinity` _[SessionAffinity](#sessionaffinity)_ | Configures best-effort session affinity using an existing request attribute.<br />For AI backends, this applies across the backend's provider groups and must not<br />be configured on an individual provider. |  | Optional: \{\} <br /> |
 | `ai` _[BackendAI](#backendai)_ | Settings for AI workloads. This is only applicable when<br />connecting to a `Backend` of type `ai`. |  | Optional: \{\} <br /> |
 | `mcp` _[BackendMCP](#backendmcp)_ | Settings for MCP workloads. This is only applicable when<br />connecting to a `Backend` of type `mcp`. |  | Optional: \{\} <br /> |
 | `transformation` _[Transformation](#transformation)_ | Mutates and transforms requests and responses sent to and from the backend. |  | Optional: \{\} <br /> |
@@ -1714,6 +1732,7 @@ _Appears in:_
 - [RateLimitsConditional](#ratelimitsconditional)
 - [ResourceAdd](#resourceadd)
 - [Retry](#retry)
+- [SessionAffinity](#sessionaffinity)
 - [Tracing](#tracing)
 - [Transform](#transform)
 - [TransformationConditional](#transformationconditional)
@@ -4882,6 +4901,22 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `matchLabels` _object (keys:string, values:string)_ | Labels that must be present on each selected Secret. |  | Required: \{\} <br /> |
+
+
+#### SessionAffinity
+
+
+
+Configures best-effort session affinity using an existing request attribute.
+
+
+
+_Appears in:_
+- [BackendFull](#backendfull)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `source` _[CELExpression](#celexpression)_ | CEL expression evaluated against request state. It must return a string or bytes value.<br />For example, `request.headers["x-session-id"]` or `string(source.address)`. |  | MaxLength: 16384 <br />MinLength: 1 <br />Required: \{\} <br /> |
 
 
 #### SessionRouting

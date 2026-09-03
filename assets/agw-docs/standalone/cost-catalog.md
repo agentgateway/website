@@ -45,21 +45,28 @@ For general LLM telemetry setup, see [Observe traffic]({{< link-hextra path="/ll
 
 ## Import costs (agctl)
 
-Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` to generate a catalog file from a supported pricing source. The default source is `models.dev`.
+<!-- The default import source changed from `models.dev` to `github`. Gated by
+     excluding the older version, not by including "main", so the sentence stays
+     correct when the next release freezes this line under a number. -->
+Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` to generate a catalog file from a supported pricing source. {{< version include-if="1.5.x" >}}The default source is `models.dev`.{{< /version >}}{{< version exclude-if="1.5.x" >}}The default source is `github`, which is the curated catalog that the agentgateway project publishes at [agentgateway.dev/model-catalog](https://agentgateway.dev/model-catalog). To import from [models.dev](https://models.dev) instead, pass `--source models.dev`.{{< /version >}}
 
 ```sh
 mkdir -p costs
 agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import --out ./costs/catalog.json
 ```
 
-To keep the catalog smaller, import only the providers that you use.
+To keep the catalog smaller, import only the providers that you use. The following provider IDs are the same in both sources.
 
 ```sh
 agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import \
-  --source models.dev \
-  --providers anthropic,google,openai \
+  --providers anthropic,mistral,openai \
   --out ./costs/catalog.json
 ```
+
+{{< version exclude-if="1.5.x" >}}
+> [!IMPORTANT]
+> The `--providers` flag takes the provider IDs of the source that you import from, and the two sources name some providers differently. The `github` source uses the agentgateway provider IDs, such as `gcp.gemini` and `aws.bedrock`, while `models.dev` uses its own IDs, such as `google` and `amazon-bedrock`. An ID that the source does not recognize is handled differently too: `models.dev` fails with `no providers matched`, but `github` reports `imported 0 providers` and writes a catalog without that provider. Check the provider list in the generated file before you load it.
+{{< /version >}}
 
 For all flags, see the {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}){{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}){{< /version >}} reference.
 

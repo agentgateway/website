@@ -3,6 +3,8 @@ title: agentgateway-crds
 weight: 30
 description: Review Helm values for the agentgateway-crds Helm chart.
 test: skip
+aliases:
+  - /docs/kubernetes/1.4.x/reference/helm/agentgateway-crds./
 ---
 
 Review Helm values for the agentgateway-crds Helm chart.
