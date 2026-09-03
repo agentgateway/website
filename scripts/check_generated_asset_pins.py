@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Fail when a versioned docs page reuses a MOVING generated reference asset.
+Fail when a versioned docs page reuses the wrong generated reference asset.
 
 WHAT IS A MOVING ASSET
 
@@ -19,22 +19,33 @@ that no longer moves, so it needs the frozen numbered snapshot instead.
 
 THE RULE
 
-A page may reuse a moving asset only when the moving token matches its own version
-directory. Everything else is a violation:
+A page may reuse a generated asset only when the asset's version token equals the
+page's own version directory, and only when that asset exists on disk. Three ways
+to break it:
 
-  content/docs/kubernetes/main/...   reusing helm/main/     OK
-  content/docs/kubernetes/latest/... reusing helm/latest/   OK
-  content/docs/kubernetes/1.4.x/...  reusing helm/main/     VIOLATION (shows dev values)
-  content/docs/kubernetes/1.0.x/...  reusing helm/latest/   VIOLATION (shows 1.5 values)
-  content/docs/kubernetes/main/...   reusing helm/latest/   VIOLATION (mismatched pin)
+  moving    content/docs/kubernetes/1.4.x/... reusing helm/main/     (shows dev values)
+            content/docs/kubernetes/1.0.x/... reusing helm/latest/   (shows 1.5 values)
+            content/docs/kubernetes/main/...  reusing helm/latest/   (mismatched pin)
+  mismatch  content/docs/kubernetes/1.6.x/... reusing helm/1.4.x/    (shows 1.4 values)
+  missing   content/docs/kubernetes/1.5.x/... reusing helm/1.5.x/    when that
+            directory has not been generated yet
+
+The "missing" case is the one that bites during a version rotation. Repointing a
+stub is a one-line edit that looks correct in review, and the snapshot it points at
+only exists once reference-docs.yaml has run for that doc version.
 
 WHY THIS EXISTS
 
 Archiving a version means pointing its stub at the frozen snapshot. That step is
 easy to skip, and skipping it is invisible: the page still builds and still renders
-a plausible table, just of the wrong release. It has already been skipped once --
-metrics-control-plane-22x.md was frozen by hand while the matching helm/2.2.x
-snapshot never was. This check turns that silent wrong page into a failed run.
+a plausible table, just of the wrong release. Ten pages are in that state today.
+content/docs/kubernetes/1.0.x through 1.4.x reuse .../helm/main/ or .../helm/latest/,
+and hugo.yaml sets no ignoreFiles, so those directories build and publish. Every one
+of them serves a values table for a release the reader did not ask for.
+
+2.2.x shows the step is doable: assets/agw-docs/pages/reference/helm/2.2.x/ exists
+and both 2.2.x stubs reuse it. It also shows why a checklist is not enough, since
+the same care was not applied to the five versions archived around it.
 
 BASELINE
 
@@ -43,8 +54,11 @@ they are listed below and reported as known. Generating their assets means runni
 generate-ref-docs.py against each old tag. As that happens, delete entries here; the
 check fails if a baselined path stops violating, so the list cannot rot.
 
+The baseline exempts the "moving" case only. A baselined page still fails if it
+gains a mismatch or points at an asset that is not there.
+
 Usage:
-  python3 scripts/check_generated_asset_pins.py [--content-dir content/docs]
+  python3 scripts/check_generated_asset_pins.py [--content-dir content/docs] [--assets-dir assets]
 """
 
 import argparse
@@ -55,7 +69,11 @@ import sys
 # Link versions whose generated assets are rewritten on every workflow run.
 MOVING_TOKENS = ("main", "latest")
 
-# Repo-relative pages that violate the rule today, each because the version was
+# Version directory names this check understands: the two moving pointers, plus the
+# numbered form used by hugo.yaml params.versions and by the frozen snapshots.
+NUMBERED_VERSION = re.compile(r"^\d+\.\d+\.x$")
+
+# Repo-relative pages that reuse a moving asset today, each because the version was
 # archived before generate-ref-docs.py wrote numbered snapshots. Remove an entry
 # once its version has a frozen snapshot and its stub points at it.
 BASELINE = frozenset(
@@ -73,28 +91,55 @@ BASELINE = frozenset(
     }
 )
 
-REFERENCE_PATTERNS = (
-    # assets/agw-docs/pages/reference/helm/<token>/
-    re.compile(r"reference/helm/(?P<token>[A-Za-z0-9.]+)/"),
-    # assets/agw-docs/snippets/metrics-control-plane-<token>.md
-    re.compile(r"metrics-control-plane-(?P<token>[A-Za-z0-9.]+)\.md"),
+# Any reuse shortcode, in either the angle or the percent form.
+REUSE_SHORTCODE = re.compile(r"\{\{[<%]-?\s*reuse\s+\"(?P<path>[^\"]+)\"")
+
+# The subset of reuse targets that generate-ref-docs.py produces. A reuse path that
+# matches none of these is some other snippet and is left alone.
+GENERATED_ASSETS = (
+    # agw-docs/pages/reference/helm/<token>/<chart>.md
+    re.compile(r"^agw-docs/pages/reference/helm/(?P<token>[^/]+)/[^/]+\.md$"),
+    # agw-docs/snippets/metrics-control-plane-<token>.md
+    re.compile(r"^agw-docs/snippets/metrics-control-plane-(?P<token>.+)\.md$"),
 )
 
 
-def page_version(rel_path: str, content_dir: str) -> str:
+def page_version(path: str, content_dir: str) -> str:
     """Return the version directory segment of a page, or "" if it has none.
 
     content/docs/<section>/<version>/... -> <version>
+
+    Only a recognized version name counts, so a file that sits directly in a section
+    root (content/docs/kubernetes/_index.md) is reported as unversioned rather than
+    treated as if "_index.md" were a version.
     """
-    rel = os.path.relpath(rel_path, content_dir)
+    rel = os.path.relpath(path, content_dir)
     parts = rel.split(os.sep)
-    if len(parts) < 2:
+    if len(parts) < 3:
         return ""
-    return parts[1]
+    candidate = parts[1]
+    if candidate in MOVING_TOKENS or NUMBERED_VERSION.match(candidate):
+        return candidate
+    return ""
 
 
-def find_violations(content_dir: str, repo_root: str):
-    """Yield (repo_relative_path, token, page_version) for each bad reuse."""
+def classify(token: str, version: str, asset_path: str, assets_dir: str) -> str:
+    """Return the violation kind for one reuse, or "" when the reuse is correct.
+
+    A missing asset is reported ahead of a version mismatch: if the file is not
+    there, which version it claims to hold is the smaller problem.
+    """
+    if not os.path.isfile(os.path.join(assets_dir, asset_path)):
+        return "missing"
+    if token == version:
+        return ""
+    if token in MOVING_TOKENS:
+        return "moving"
+    return "mismatch"
+
+
+def find_violations(content_dir: str, assets_dir: str, repo_root: str):
+    """Yield (repo_relative_path, kind, token, page_version, asset_path) per bad reuse."""
     for dirpath, _dirnames, filenames in os.walk(content_dir):
         for name in sorted(filenames):
             if not name.endswith(".md"):
@@ -110,60 +155,90 @@ def find_violations(content_dir: str, repo_root: str):
                 print(f"Warning: cannot read {path}: {exc}", file=sys.stderr)
                 continue
 
-            for pattern in REFERENCE_PATTERNS:
-                for match in pattern.finditer(text):
+            for reuse in REUSE_SHORTCODE.finditer(text):
+                asset_path = reuse.group("path")
+                for pattern in GENERATED_ASSETS:
+                    match = pattern.match(asset_path)
+                    if not match:
+                        continue
                     token = match.group("token")
-                    if token not in MOVING_TOKENS:
-                        continue  # already pinned to a frozen snapshot
-                    if token == version:
-                        continue  # the page tracks the same moving version
-                    yield os.path.relpath(path, repo_root), token, version
+                    kind = classify(token, version, asset_path, assets_dir)
+                    if kind:
+                        yield os.path.relpath(path, repo_root), kind, token, version, asset_path
+                    break
+
+
+EXPLANATION = {
+    "moving": (
+        "reuses a moving 'main' or 'latest' asset, so it renders the values of whatever\n"
+        "release that pointer currently tracks rather than its own."
+    ),
+    "mismatch": (
+        "reuses a frozen snapshot of a different version, so it renders that release's\n"
+        "values rather than its own."
+    ),
+    "missing": (
+        "reuses an asset that does not exist. Generate it by running reference-docs.yaml\n"
+        "for that doc version, or point the stub at a snapshot that is already there."
+    ),
+}
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--content-dir", default="content/docs", help="Root of the versioned content tree.")
+    parser.add_argument("--assets-dir", default="assets", help="Root that reuse paths resolve against.")
     parser.add_argument("--repo-root", default=".", help="Repo root that reported paths are relative to.")
     args = parser.parse_args()
 
-    if not os.path.isdir(args.content_dir):
-        print(f"Error: content directory not found: {args.content_dir}", file=sys.stderr)
-        return 2
+    for label, path in (("content", args.content_dir), ("assets", args.assets_dir)):
+        if not os.path.isdir(path):
+            print(f"Error: {label} directory not found: {path}", file=sys.stderr)
+            return 2
 
-    violations = sorted(set(find_violations(args.content_dir, args.repo_root)))
-    seen_paths = {path for path, _token, _version in violations}
+    violations = sorted(set(find_violations(args.content_dir, args.assets_dir, args.repo_root)))
 
-    new = [v for v in violations if v[0] not in BASELINE]
-    fixed = sorted(BASELINE - seen_paths)
+    # The baseline forgives the moving-asset case only, so the anti-rot comparison is
+    # against moving violations alone. A baselined page that starts pointing at a
+    # missing or mismatched asset still fails.
+    moving_paths = {path for path, kind, _t, _v, _a in violations if kind == "moving"}
 
-    for path, token, version in violations:
-        label = "known" if path in BASELINE else "NEW"
-        print(f"  [{label}] {path}: version {version!r} reuses the moving {token!r} asset")
+    new = [v for v in violations if not (v[1] == "moving" and v[0] in BASELINE)]
+    fixed = sorted(BASELINE - moving_paths)
+
+    for path, kind, token, version, asset_path in violations:
+        known = kind == "moving" and path in BASELINE
+        label = "known" if known else "NEW"
+        print(f"  [{label}] {kind}: {path} (version {version!r}) -> {asset_path} (token {token!r})")
+
+    # The failure summaries below go to stderr, which is unbuffered while a piped
+    # stdout is not. Without this the CI log prints the summaries before the list
+    # of violations they summarize.
+    sys.stdout.flush()
 
     status = 0
 
     if new:
+        kinds = sorted({v[1] for v in new})
         print(
-            f"\nFAIL: {len(new)} page(s) pin a moving generated asset.\n"
-            "An archived version must reuse its frozen numbered snapshot, not 'main' or 'latest',\n"
-            "or it will render the values of whatever release that pointer currently tracks.\n"
-            "Point the stub at assets/agw-docs/pages/reference/helm/<version>/ instead.",
+            f"\nFAIL: {len(new)} bad reuse(s) of a generated reference asset.\n"
+            + "\n".join(f"\n{kind}: a page {EXPLANATION[kind]}" for kind in kinds),
             file=sys.stderr,
         )
         status = 1
 
     if fixed:
         print(
-            "\nFAIL: these paths are in BASELINE but no longer violate the rule.\n"
+            "\nFAIL: these paths are in BASELINE but no longer reuse a moving asset.\n"
             "Delete them from BASELINE in scripts/check_generated_asset_pins.py so the\n"
-            "baseline cannot silently grow stale:\n  " + "\n  ".join(fixed),
+            "baseline cannot silently grow stale. A page that was deleted or renamed\n"
+            "needs its old path removed here too:\n  " + "\n  ".join(fixed),
             file=sys.stderr,
         )
         status = 1
 
     if status == 0:
-        known = len(violations)
-        print(f"\nOK: no new moving-asset pins ({known} known, awaiting backfill).")
+        print(f"\nOK: no bad generated-asset reuses ({len(violations)} known, awaiting backfill).")
 
     return status
 
