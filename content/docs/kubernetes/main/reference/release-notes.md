@@ -58,7 +58,7 @@ For the fields, the fallback behavior, common expressions, and examples, see [Se
 
 The controller can now watch the `XBackend` resource from the experimental channel of the Gateway API, in the `gateway.networking.x-k8s.io` API group, and translate it into an agentgateway backend. Use it to declare an external destination, such as a hostname, port, protocol, and backend TLS settings, in an upstream resource instead of an {{< reuse "agw-docs/snippets/backend.md" >}}. The controller also reports status on the resource.
 
-Support is off by default and requires the experimental Gateway API CRDs. To turn it on, set `xBackend.enabled` to `true` in the Helm values of the `agentgateway` chart. For the value, see the [Helm reference]({{< link-hextra path="/reference/helm/agentgateway/" >}}).
+Support is off by default and requires the experimental Gateway API custom resources. To turn it on, set `xBackend.enabled` to `true` in the Helm values of the `agentgateway` chart. For the fields that agentgateway reads, the protocol and TLS options, and examples, see [XBackend]({{< link-hextra path="/traffic-management/xbackend/" >}}).
 
 ### Operations {#v16-features-operations}
 
