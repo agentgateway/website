@@ -1,5 +1,6 @@
 [Datadog](https://www.datadoghq.com/) collects metrics and OpenTelemetry traces
-from agentgateway. Choose the setup that matches what you want to observe.
+from {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Choose the setup that
+matches what you want to observe.
 
 | Setup | Telemetry | When to use it |
 | --- | --- | --- |
@@ -8,7 +9,8 @@ from agentgateway. Choose the setup that matches what you want to observe.
 
 The complete example is the recommended starting point. It runs the Datadog
 Agent and OpenTelemetry Collector locally with Docker Compose. The direct setup
-sends traces from agentgateway to Datadog's hosted OTLP endpoint.
+sends traces from {{< reuse "agw-docs/snippets/agentgateway.md" >}} to Datadog's hosted OTLP
+endpoint.
 
 ## Before you begin
 
@@ -17,13 +19,18 @@ For the complete example, you need:
 - [Docker](https://docs.docker.com/get-docker/) with
   [Docker Compose](https://docs.docker.com/compose/install/).
 - [uv](https://docs.astral.sh/uv/) and `curl`.
+- Free loopback ports `13000`, `18080`, and `18520`.
 - A Datadog organization, API key, and the correct
   [Datadog site](https://docs.datadoghq.com/getting_started/site/) to export
-  telemetry. Local validation does not require a Datadog account.
+  telemetry.
 - Agent Observability enabled in your Datadog organization to view LLM traces.
 
-The direct setup requires a running agentgateway installation and a Datadog API
-key. If you have not installed agentgateway or configured an LLM provider,
+The first three steps of the example validate the gateway locally and need no
+Datadog account. The remaining steps export telemetry, so they do.
+
+The direct setup requires a running {{< reuse "agw-docs/snippets/agentgateway.md" >}}
+installation and a Datadog API key. If you have not installed
+{{< reuse "agw-docs/snippets/agentgateway.md" >}} or configured an LLM provider,
 complete the [LLM quickstart]({{< link-hextra path="/quickstart/llm/" >}})
 first.
 
@@ -31,14 +38,22 @@ first.
 
 The
 [Datadog standalone example](https://github.com/agentgateway/agentgateway/tree/main/examples/datadog/standalone)
-supports two modes. The base `compose.yaml` file runs agentgateway, a synthetic
-OpenAI-compatible provider, and an OpenTelemetry Collector for local validation.
+supports two modes. The base `compose.yaml` file runs {{< reuse "agw-docs/snippets/agentgateway.md" >}},
+a synthetic OpenAI-compatible provider, and an OpenTelemetry Collector for
+local validation.
 It does not send telemetry to Datadog. Adding `compose.datadog.yaml` starts the
 Datadog Agent and exports the synthetic metrics and traces to your Datadog
 organization. Both modes use the synthetic provider and do not call a paid
 model.
 
-1. Clone the agentgateway repository and change to the example directory.
+> [!NOTE]
+> The example pins the {{< reuse "agw-docs/snippets/agentgateway.md" >}} and
+> Datadog Agent versions it was tested against, and its OpenTelemetry Collector
+> configuration includes workarounds for that release. Check the example README
+> for the pinned versions before you run it against a newer release.
+
+1. Clone the {{< reuse "agw-docs/snippets/agentgateway.md" >}} repository and
+   change to the example directory.
 
    ```sh
    git clone https://github.com/agentgateway/agentgateway.git
@@ -81,16 +96,35 @@ model.
      exec datadog agent check openmetrics --check-rate
    ```
 
-The first counter scrape establishes a baseline. Repeat the smoke test across
-scrape intervals when populating rate charts.
+   The first counter scrape establishes a baseline. Repeat the smoke test
+   across scrape intervals when populating rate charts.
 
-By default, the example exports metadata-only traces and uses the synthetic
-`datadog-test` model. Its
+6. In Datadog, open **Metrics > Explorer**, filter by `env:datadog-dev`, and
+   search for an exact metric name.
+
+   - `agentgateway.requests.count`
+   - `agentgateway.gen_ai.token.usage.sum`
+   - `agentgateway.gen_ai.cost.usd.count`
+
+7. In **Dashboards**, import the example's
+   [`dashboard.json`](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/dashboard.json)
+   and set the `env` template variable to `datadog-dev`. Enable percentile
+   aggregations in Metrics Summary for the latency distributions before you use
+   the p95 widgets. Controller, MCP, and guardrail widgets remain empty until
+   their corresponding components or traffic are present.
+
+The example uses the synthetic `datadog-test` model, which is not in Datadog's
+pricing catalog, so Datadog displays **Cost unavailable**. The cost calculated
+from the synthetic provider's rates is still in the span's
+`agw.ai.usage.cost.*` attributes and the
+`agentgateway.gen_ai.cost.usd.count` metric. The
 [README](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/standalone/README.md)
-also documents explicit options to capture synthetic prompts and completions or
-send a paid request to a real OpenAI model.
-Review redaction, sampling, access controls, and custom-metric cardinality
-before adapting the example for production.
+explains how to send a request to a real OpenAI model and compare the two
+estimates, and how to capture synthetic prompts and completions.
+
+By default, the example exports metadata-only traces. Review redaction,
+sampling, access controls, and custom-metric cardinality before adapting the
+example for production.
 
 ## Configure direct trace export
 
@@ -120,7 +154,8 @@ frontendPolicies:
 {{% /tab %}}
 {{% tab name="Kubernetes (Helm)" %}}
 
-Add this tracing policy to your agentgateway `values.yaml`.
+Add this tracing policy to your {{< reuse "agw-docs/snippets/agentgateway.md" >}}
+`values.yaml`.
 
 ```yaml
 config:
@@ -156,8 +191,8 @@ configure OpenMetrics collection or a dashboard.
 ### The Datadog Agent container is unhealthy
 
 An invalid API key or incorrect `DD_SITE` can make the Agent unhealthy even
-when its OpenMetrics check reaches agentgateway. Verify the site and API key,
-then inspect the Agent.
+when its OpenMetrics check reaches {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
+Verify the site and API key, then inspect the Agent.
 
 ```sh
 docker compose -f compose.yaml -f compose.datadog.yaml ps

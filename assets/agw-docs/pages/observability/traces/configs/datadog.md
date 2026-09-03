@@ -21,8 +21,16 @@ For either setup, you need:
 - Agent Observability enabled in your Datadog organization to view LLM traces.
 
 The complete example also uses Docker, Kind, `curl`, and
-[uv](https://docs.astral.sh/uv/). You can use an existing cluster instead of
-Kind.
+[uv](https://docs.astral.sh/uv/), and needs free loopback ports `13000`,
+`18080`, `18520`, and `19092` for the smoke test's port forwards. You can use an
+existing cluster instead of Kind.
+
+The direct trace setup applies a policy to an existing
+{{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy, so complete the
+following steps first. The complete example deploys its own proxy and does not
+need them.
+
+{{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
 ## Run the complete example
 
@@ -32,7 +40,15 @@ deploys the agentgateway controller and a controller-provisioned proxy, a
 synthetic OpenAI-compatible provider, an OpenTelemetry Collector, and the
 Datadog Agent. It does not call a paid model.
 
-1. Clone the agentgateway repository and change to the example directory.
+> [!NOTE]
+> The example pins the {{< reuse "agw-docs/snippets/agentgateway.md" >}}, Gateway
+> API, and Datadog Agent versions it was tested against, and its OpenTelemetry
+> Collector configuration includes workarounds for that release. Check the
+> example README for the pinned versions before you run it against a newer
+> release.
+
+1. Clone the {{< reuse "agw-docs/snippets/agentgateway.md" >}} repository and
+   change to the example directory.
 
    ```sh
    git clone https://github.com/agentgateway/agentgateway.git
@@ -72,9 +88,31 @@ Datadog Agent. It does not call a paid model.
      agent check openmetrics --check-rate
    ```
 
-The output should report healthy instances tagged `component:proxy` and
-`component:controller`, with metric samples for each endpoint. The example
-collects all proxy and controller metric families. The
+   The output should report healthy instances tagged `component:proxy` and
+   `component:controller`, with metric samples for each endpoint.
+
+6. In Datadog, open **Metrics > Explorer**, filter by `env:datadog-dev` and
+   `service:agentgateway`, and search for an exact metric name. Narrow the
+   results with `component:proxy` or `component:controller`.
+
+   - `agentgateway.requests.count`
+   - `agentgateway.gen_ai.token.usage.sum`
+   - `agentgateway.gen_ai.cost.usd.count`
+   - `agentgateway.controller.reconciliations.count`
+
+7. In **Dashboards**, import the example's
+   [`dashboard.json`](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/dashboard.json)
+   and set the `env` template variable to `datadog-dev`. Enable percentile
+   aggregations in Metrics Summary for the latency distributions before you use
+   the p95 widgets. MCP and guardrail widgets remain empty until their
+   corresponding components or traffic are present.
+
+The example uses a synthetic model that is not in Datadog's pricing catalog, so
+Datadog displays **Cost unavailable**. The cost calculated from the synthetic
+provider's rates is still in the span's `agw.ai.usage.cost.*` attributes and the
+`agentgateway.gen_ai.cost.usd.count` metric.
+
+The example collects all proxy and controller metric families. The
 `agentgateway.mcp.requests.count` metric's `resource` tag can contain tool names
 or resource URIs. Review custom-metric usage, tag cardinality, and resource
 values before adapting the wildcard configuration for production.
@@ -155,10 +193,10 @@ indexing, and confirm that `DD_SITE` selects the organization that owns the API
 key.
 
 Inspect raw proxy metrics directly when you need to distinguish a scrape issue
-from an agentgateway issue.
+from an {{< reuse "agw-docs/snippets/agentgateway.md" >}} issue.
 
 ```sh
-kubectl port-forward --namespace agentgateway-system \
+kubectl port-forward --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
   deployment/agentgateway-proxy 18520:15020
 curl --fail http://127.0.0.1:18520/metrics
 ```
@@ -180,10 +218,10 @@ Datadog site is correct. For the complete example, inspect the Collector logs
 and tracing policy.
 
 ```sh
-kubectl logs --namespace agentgateway-system \
+kubectl logs --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
   deployment/datadog-collector --tail 200
-kubectl get agentgatewaypolicy datadog-tracing \
-  --namespace agentgateway-system
+kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} datadog-tracing \
+  --namespace {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 A successful OTLP response alone does not prove ingestion into Agent
