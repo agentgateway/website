@@ -63,7 +63,7 @@ as that Service.
      httpbin-backend-timeouts -n httpbin
    ```
 
-3. Port-forward the proxy admin port and verify the effective settings.
+3. Optional: Port-forward the proxy admin port to verify the effective settings.
 
    ```sh
    kubectl port-forward deployment/agentgateway-proxy \
