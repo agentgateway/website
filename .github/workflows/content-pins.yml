@@ -1,0 +1,49 @@
+# Guards the pin between a versioned docs page and the generated reference assets
+# it reuses.
+#
+# scripts/generate-ref-docs.py writes each generated artifact twice: to a MOVING
+# path keyed by link version ("main", "latest"), rewritten on every run, and to a
+# FROZEN path keyed by the numbered doc version ("1.6.x"), which stops changing
+# once that version leaves hugo.yaml params.versions.
+#
+# Archiving a version means repointing its stub from the moving path to the frozen
+# one. Skipping that step is invisible -- the page still builds and still renders a
+# plausible values table, just for the wrong release -- so it needs a check rather
+# than a checklist. It has already been skipped once: metrics-control-plane-22x.md
+# was frozen by hand while the matching helm/2.2.x snapshot never was.
+#
+# Deliberately a separate workflow rather than a step in framework-tests.yml: that
+# job is `continue-on-error: true`, so a check added there can never turn a run red,
+# which is the entire point of this one. The scan is pure source reading -- no Hugo
+# build, no module fetch, no browser -- so it costs seconds.
+
+name: Content pins
+
+on:
+  pull_request:
+    paths:
+      - 'content/**'
+      - 'assets/agw-docs/pages/reference/helm/**'
+      - 'assets/agw-docs/snippets/metrics-control-plane-*.md'
+      - 'scripts/generate-ref-docs.py'
+      - 'scripts/check_generated_asset_pins.py'
+      - '.github/workflows/content-pins.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: content-pins-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-generated-asset-pins:
+    name: Generated asset pins
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Check generated asset pins
+        run: python3 scripts/check_generated_asset_pins.py
