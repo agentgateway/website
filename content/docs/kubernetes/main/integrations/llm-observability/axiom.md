@@ -5,4 +5,4 @@ description: Export agentgateway traces, access logs, and metrics to Axiom.
 test: skip
 ---
 
-{{< reuse "agw-docs/pages/agentgateway/integrations/llm-observability-k8s/axiom.md" >}}
+{{< reuse "agw-docs/pages/agentgateway/llm/axiom.md" >}}
