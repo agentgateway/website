@@ -46,6 +46,43 @@ EOF
 
 By default, agentgateway calls `POST /request` and `POST /response` on the webhook target.
 
+## Configure a webhook timeout
+
+Webhook calls use a 10-second timeout by default. To allow a custom webhook more time to respond, define a named backend with an HTTP `requestTimeout`, then reference that backend from the request and response guards.
+
+```yaml
+cat <<EOF > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+backends:
+- name: content-safety-webhook
+  host: content-safety-webhook.example.com:8000
+  policies:
+    http:
+      requestTimeout: 35s
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      model: gpt-3.5-turbo
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
+      request:
+      - webhook:
+          target:
+            backend: /content-safety-webhook
+      response:
+      - webhook:
+          target:
+            backend: /content-safety-webhook
+EOF
+```
+
+The leading `/` in `backend: /content-safety-webhook` identifies a backend defined in the local standalone configuration. Set `requestTimeout` higher than the maximum expected webhook response time. The backend host must include a port when the webhook does not use the default HTTP port.
+
+> [!NOTE]
+> The named backend must point to a resolvable network endpoint. In Kubernetes, create a Service that exposes the webhook port and use its Service DNS name as the backend host, such as `content-safety-webhook:8000`. A sidecar is reachable through `localhost`, but it is not automatically a Kubernetes Service and cannot be addressed by a Service name until you create one.
+
 ## DeepKeep example
 
 You can use [DeepKeep](https://www.deepkeep.ai/) as an external guardrail provider by running the [DeepKeep agentgateway webhook adapter](https://github.com/Deepkeepai/agentgateway-deepkeep-webhook). The adapter exposes the default Guardrail Webhook API paths that agentgateway calls and forwards checks to DeepKeep's pre-model and post-model moderation endpoints.
