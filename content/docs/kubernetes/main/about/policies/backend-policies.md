@@ -1,6 +1,6 @@
 ---
 title: Backend policies
-weight: 5
+weight: 15
 description: Attach connection, security, resiliency, and workload-specific policies to destination backends.
 test: skip
 ---
