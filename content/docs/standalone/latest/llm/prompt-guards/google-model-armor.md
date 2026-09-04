@@ -58,6 +58,7 @@ EOF
 
 | Setting | Description |
 | -- | -- |
+| `action` | Whether to enforce the verdict of the guard. Use `reject` to block flagged content, or `audit` to record the verdict and forward the content unchanged. Defaults to `reject`. For more information, see [Audit mode](../overview/#audit). |
 | `templateId` | The identifier of the Model Armor template to apply. Find this in the Google Cloud console under **Security** > **Model Armor**. |
 | `projectId` | The Google Cloud project ID where the Model Armor template is configured. |
 | `location` | The region where the Model Armor template is deployed. Defaults to `us-central1`. |

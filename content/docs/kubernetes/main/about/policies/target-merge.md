@@ -9,6 +9,8 @@ test: skip
 
 Each policy section can only target specific Kubernetes resource types. If you set a `targetRef` or `targetSelector` to an invalid resource type for the policy section, the Kubernetes API server rejects the request with a validation error. Invalid targeting is **not** silently ignored.
 
+A policy must be in the same namespace as the resources that it targets. A policy that targets a Service takes effect after a route or another agentgateway resource references that Service and adds it to the proxy configuration.
+
 > [!NOTE]
 > A single {{< reuse "agw-docs/snippets/policy.md" >}} can only target one kind of resource. For example, you cannot target both a Gateway and an HTTPRoute in the same policy. All entries in `targetRefs` or `targetSelectors` must reference the same `kind`.
 
@@ -53,6 +55,15 @@ For more information, see [Policy processing order](../filter-order/#processing-
 When multiple policies target the same resource, agentgateway merges the policy sections on a **field level** (shallow merge). Each field is treated as an atomic unit. If two policies set the same field, the more specific policy takes precedence.
 
 This field-level merge applies to all fields, including nested sub-fields. Each nested sub-field is treated as an atomic unit. For example, `backend.ai.promptGuard` and `backend.ai.routes` are separate atomic fields. If Policy A sets `backend.ai.promptGuard` and Policy B sets `backend.ai.routes`, both are included in the merged result. However, if both policies set the same nested sub-field such as `backend.ai.promptGuard`, only the higher-precedence policy's entire value for that sub-field is used—no recursive merge occurs within nested fields.
+
+### Inline AI policies on a backend {#backend-ai}
+
+An {{< reuse "agw-docs/snippets/backend.md" >}} can set an AI policy inline, in `spec.ai.groups[].providers[].policies.ai`. An {{< reuse "agw-docs/snippets/policy.md" >}} can set one in `spec.backend.ai` and attach it to the same backend. The two policies merge field by field, the same as any other pair of policies. For a field that both of them set, the inline value wins, because a policy inline on the backend object is more specific than an attached policy. For the full order, see [Merge precedence](#merging-precedence).
+
+The following fields of `ai` each merge separately: `defaults`, `finalTransformations`, `modelAliases`, `overrides`, `prompt`, `promptCaching`, `promptGuard`, `routes`, and `transformations`.
+
+> [!IMPORTANT]
+> In version 1.4 and earlier, an inline `ai` block replaced an attached `ai` block in full. If the backend set even one field of `ai`, every field of the attached policy was dropped. After you upgrade to version 1.5, a field that only the {{< reuse "agw-docs/snippets/policy.md" >}} sets takes effect where it was previously ignored, which can turn on a prompt guard, a default, or a transformation that had no effect before. Review each {{< reuse "agw-docs/snippets/backend.md" >}} that sets an inline `ai` block alongside an attached policy, and remove any field from the {{< reuse "agw-docs/snippets/policy.md" >}} that you do not want the backend to inherit.
 
 ### Merge precedence {#merging-precedence}
 

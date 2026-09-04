@@ -19,6 +19,9 @@ For advanced content safety requirements beyond regex and cloud provider service
 
 Configure a prompt guard to call your webhook service. You can use the [guardrail API](https://agentgateway.dev/docs/kubernetes/latest/llm/guardrails/) guide to create your own guardrail webhook in Kubernetes.  
 
+> [!NOTE]
+> To run this guard without blocking traffic, set `webhook.action: audit`. The guard records what it detects and forwards the content unchanged. For more information, see [Audit mode](../overview/#audit).
+
 ```yaml
 cat <<EOF > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -42,6 +45,43 @@ EOF
 ```
 
 By default, agentgateway calls `POST /request` and `POST /response` on the webhook target.
+
+## DeepKeep example
+
+You can use [DeepKeep](https://www.deepkeep.ai/) as an external guardrail provider by running the [DeepKeep agentgateway webhook adapter](https://github.com/Deepkeepai/agentgateway-deepkeep-webhook). The adapter exposes the default Guardrail Webhook API paths that agentgateway calls and forwards checks to DeepKeep's pre-model and post-model moderation endpoints.
+
+Run the adapter with the DeepKeep connection settings for your environment.
+
+```sh
+docker run --rm -p 8000:8000 \
+  -e DEEPKEEP_BASE_URL=https://deepkeep.example \
+  -e DEEPKEEP_API_KEY=dk_... \
+  -e DEEPKEEP_MODEL=your-firewall-id \
+  ghcr.io/deepkeepai/agentgateway-deepkeep-webhook:latest
+```
+
+Then configure agentgateway to send request and response guardrail checks to the adapter.
+
+```yaml
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      model: gpt-3.5-turbo
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
+      request:
+      - webhook:
+          target:
+            host: localhost:8000
+      response:
+      - webhook:
+          target:
+            host: localhost:8000
+```
+
+The adapter maps DeepKeep `block`, `redact`, `modify`, and `alert` actions to the Guardrail Webhook API actions that agentgateway understands.
 
 ## Customize the request path and headers
 

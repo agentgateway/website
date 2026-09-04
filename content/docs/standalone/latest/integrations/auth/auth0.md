@@ -13,7 +13,7 @@ In this guide, you create an API and applications in Auth0, protect a sample MCP
 
 ## Why the Auth0 provider is needed {#why}
 
-MCP clients follow the [MCP authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization), which relies on OAuth behaviors that Auth0 implements differently. Auth0 does not support [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707) resource indicators ([auth0#66169](https://community.auth0.com/t/support-rfc-8707/66169)), which MCP clients use to request a token for a specific resource. Instead, Auth0 expects its own `audience` parameter. Without a workaround, Auth0 issues an opaque access token that agentgateway cannot validate as a JWT.
+MCP clients follow the [MCP authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization), which relies on OAuth behaviors that Auth0 implements differently. Auth0 does not support [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html) resource indicators, which MCP clients use to request a token for a specific resource. Instead, Auth0 expects its own [`audience` parameter](https://auth0.com/docs/secure/tokens/access-tokens/get-access-tokens). Without a workaround, Auth0 issues an opaque access token that agentgateway cannot validate as a JWT.
 
 When you set `provider.auth0`, agentgateway bridges this gap as follows:
 
@@ -24,7 +24,7 @@ For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link
 
 ## Before you begin {#before-you-begin}
 
-1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
 2. Install [Node.js](https://nodejs.org/) so that `npx` can run the sample MCP server.
 3. Make sure that you have access to an [Auth0 tenant](https://auth0.com/docs/get-started/auth0-overview/create-tenants) and permission to create an API and applications in it. A free tenant is sufficient.
 

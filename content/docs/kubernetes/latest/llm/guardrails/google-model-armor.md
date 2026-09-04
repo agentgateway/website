@@ -160,7 +160,11 @@ In your GKE cluster, set up workload identity.
 
 ## Apply guardrails
 
-1. Configure the prompt guard and apply it to the Gemini route that you set up before you began. Add the location, project ID and template ID of your guardrail. 
+1. Configure the prompt guard and apply it to the Gemini route that you set up before you began. Add the location, project ID and template ID of your guardrail.
+
+   > [!NOTE]
+   > To run this guard without blocking traffic, set `googleModelArmor.action: Audit`. The guard records what it detects and forwards the content unchanged. For more information, see [Audit mode](../overview/#audit).
+
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}

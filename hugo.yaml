@@ -106,6 +106,31 @@ params:
     # preview URL. Set explicitly here because agw-oss's prod baseURL doesn't
     # include the host.
     prodHost: "https://agentgateway.dev"
+
+  # "Download all docs (PDF)" in the Copy-as-Markdown menu on docs pages, added by
+  # the module's copy-markdown.html. Setting `distribution` turns the item on and
+  # selects the solo-io/docs-pdfs release-asset URL shape, which the module
+  # supplies so it is not repeated per consumer:
+  #
+  #   .../releases/download/{product}-{distribution}-{version}/{product}-{distribution}-{version}.pdf
+  #
+  # `{version}` resolves to `kubernetes-latest` or `standalone-latest`, NOT to
+  # `latest`. This site registers `params.sections`, so the theme prefixes the
+  # version segment with the section — without that, both deployment modes ship a
+  # `latest` line and would resolve to one URL, and the workflow uploads with
+  # --clobber, so whichever rendered last would silently sit behind the link on
+  # both. Only /latest/ opts into `book`, so the frozen version trees and /main/
+  # show no item at all.
+  #
+  # `product` is set explicitly because it is otherwise read from
+  # `params.currentProduct` or `params.folder`, and this site sets neither.
+  #
+  # The item is derived from the build, not hand-written: it renders only where
+  # the tree it belongs to carries the `book` output format.
+  pdfDownload:
+    distribution: oss
+    product: agentgateway
+
   navbar:
     displayTitle: false
     displayLogo: true
@@ -179,27 +204,27 @@ params:
       websites: https://searchbot.tryhelix.ai/
       bots: https://searchbot.tryhelix.ai/bots
 
-  # Section-specific configurations
+  # THE version list — the only one. Newest first. Every entry names the
+  # sections it applies to. The contract, in full, with a TOML and a YAML
+  # template: docs-theme-extras USAGE.md, "Versions and sections".
+  #
+  # Both sections happen to ship both versions, so the tags are identical — they
+  # are still written out, because omitting `sections` means "every section" and
+  # would silently claim any section added later ships these too.
+  versions:
+    - version: "1.6.x"
+      dropdown: "main"
+      linkVersion: "main"
+      sections: ["kubernetes", "standalone"]
+    - version: "1.5.x"
+      dropdown: "1.5 (latest)"
+      linkVersion: "latest"
+      sections: ["kubernetes", "standalone"]
+
+  # Section registry, alphabetical. A section exists because it is a key here.
+  # See docs-theme-extras USAGE.md, "Versions and sections".
   sections:
-    standalone:
-      versions:
-        - version: "1.5.x"
-          dropdown: "main"
-          linkVersion: "main"
-          url: "/main"
-        - version: "1.4.x"
-          dropdown: "1.4 (latest)"
-          linkVersion: "latest"
-          url: "/latest"
-    kubernetes:
-      versions:
-        - version: "1.5.x"
-          dropdown: "main"
-          linkVersion: "main"
-          url: "/main"
-        - version: "1.4.x"
-          dropdown: "1.4 (latest)"
-          linkVersion: "latest"
-          url: "/latest"
+    kubernetes: {}
+    standalone: {}
 
   gtmContainerID: "GTM-MDMTFJQC"

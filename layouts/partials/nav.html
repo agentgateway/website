@@ -550,11 +550,13 @@
           {{- $currentVersion = index $segments 3 -}}
         {{- end -}}
         
-        {{- /* Get versions for current section */ -}}
-        {{- $versions := slice -}}
-        {{- if and $subSection (isset site.Params.sections $subSection) -}}
-          {{- $versions = (index site.Params.sections $subSection).versions -}}
-        {{- end -}}
+        {{- /* Get versions for current section — utils/resolve-section-versions.html,
+               shared with docs-theme-extras' navbar.html/sidebar.html and
+               kgateway-oss's nav.html, instead of reimplementing the same
+               isset check independently (and falls back to a flat
+               site.Params.versions list, unlike this file's previous
+               sections-only lookup, if this site ever adds one). */ -}}
+        {{- $versions := partial "utils/resolve-section-versions.html" $subSection -}}
         
         {{- /* Show version dropdown if in a versioned docs section */ -}}
         {{- if and $versions $currentVersion -}}

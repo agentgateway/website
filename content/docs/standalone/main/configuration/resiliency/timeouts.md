@@ -118,8 +118,6 @@ routes:
         requestTimeout: 1s
       tcp:
         connectTimeout: 10s
-        # Required when setting tcp connection options; {} keeps keepalive defaults
-        keepalives: {}
 ```
 
 {{< doc-test paths="timeouts" >}}
@@ -141,8 +139,6 @@ routes:
         requestTimeout: 1s
       tcp:
         connectTimeout: 10s
-        # Required when setting tcp connection options; {} keeps keepalive defaults
-        keepalives: {}
 EOF
 agentgateway -f config2.yaml --validate-only
 {{< /doc-test >}}

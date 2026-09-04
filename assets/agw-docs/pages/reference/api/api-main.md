@@ -205,9 +205,26 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
+| `preset` _[AccessLogPreset](#accesslogpreset)_ | Preset selects the built-in field set for standard output access logs.<br />When unset, legacy human-oriented fields are used.<br />`Otel` selects the OTel-aligned built-in HTTP field set. |  | Optional: \{\} <br /> |
 | `filter` _[CELExpression](#celexpression)_ | CEL expression used to filter logs. A log<br />will only be emitted if the expression evaluates to `true`. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `attributes` _[LogTracingAttributes](#logtracingattributes)_ | Customizations to the key-value pairs that are<br />logged. |  | Optional: \{\} <br /> |
 | `otlp` _[OtlpAccessLog](#otlpaccesslog)_ | OTLP access log export to an<br />OpenTelemetry-compatible backend. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
+
+
+#### AccessLogPreset
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [AccessLog](#accesslog)
+
+| Field | Description |
+| --- | --- |
+| `Otel` | AccessLogPresetOtel uses the OTel-aligned built-in HTTP field set for<br />stdout access logs.<br /> |
 
 
 #### Action
@@ -228,6 +245,7 @@ _Appears in:_
 | --- | --- |
 | `Mask` | Mask the matched data in the request or response.<br /> |
 | `Reject` | Reject the request or response that contains the matched content.<br /> |
+| `Audit` | Audit runs the guard but never blocks or masks: the would-be action is<br />recorded (metrics + structured log) and the content passes through.<br /> |
 
 
 #### AgentExtAuthGRPC
@@ -461,6 +479,7 @@ _Appears in:_
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#resourcerequirements-v1-core)_ | Compute resources required by this container. See<br />https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br />for details. |  | Optional: \{\} <br /> |
 | `shutdown` _[ShutdownSpec](#shutdownspec)_ | Shutdown delay configuration. How graceful planned or unplanned data<br />plane changes happen is in tension with how quickly rollouts of the data<br />plane complete. How long a data plane pod must wait for shutdown to be<br />perfectly graceful depends on how you have configured your `Gateway`<br />resources. |  | Optional: \{\} <br /> |
 | `istio` _[IstioSpec](#istiospec)_ | Istio integration settings. If enabled, agentgateway can natively connect to Istio-enabled pods with mTLS. |  | Optional: \{\} <br /> |
+| `spiffe` _[SpiffeSpec](#spiffespec)_ | SPIFFE integration settings. When set, the gateway sources its TLS identity (X.509-SVID)<br />and trust bundle from the local SPIFFE Workload API, and the controller<br />mounts the Workload API socket into the pod. Listeners and backends opt in to SPIFFE individually<br />(via the `agentgateway.dev/tls-certificate-source: SPIFFE` listener option and the<br />AgentgatewayPolicy `backend.tls.certificateSource: SPIFFE` field respectively). |  | Optional: \{\} <br /> |
 | `modelCatalog` _[ModelCatalogSpec](#modelcatalogspec)_ | Model cost catalog sources. Only effective when set on a Gateway-level<br />AgentgatewayParameters (via Gateway.spec.infrastructure.parametersRef);<br />ignored on GatewayClass-level parameters because ConfigMap references<br />are resolved from the Gateway's deployment namespace. |  | Optional: \{\} <br /> |
 
 
@@ -541,6 +560,7 @@ _Appears in:_
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#resourcerequirements-v1-core)_ | Compute resources required by this container. See<br />https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br />for details. |  | Optional: \{\} <br /> |
 | `shutdown` _[ShutdownSpec](#shutdownspec)_ | Shutdown delay configuration. How graceful planned or unplanned data<br />plane changes happen is in tension with how quickly rollouts of the data<br />plane complete. How long a data plane pod must wait for shutdown to be<br />perfectly graceful depends on how you have configured your `Gateway`<br />resources. |  | Optional: \{\} <br /> |
 | `istio` _[IstioSpec](#istiospec)_ | Istio integration settings. If enabled, agentgateway can natively connect to Istio-enabled pods with mTLS. |  | Optional: \{\} <br /> |
+| `spiffe` _[SpiffeSpec](#spiffespec)_ | SPIFFE integration settings. When set, the gateway sources its TLS identity (X.509-SVID)<br />and trust bundle from the local SPIFFE Workload API, and the controller<br />mounts the Workload API socket into the pod. Listeners and backends opt in to SPIFFE individually<br />(via the `agentgateway.dev/tls-certificate-source: SPIFFE` listener option and the<br />AgentgatewayPolicy `backend.tls.certificateSource: SPIFFE` field respectively). |  | Optional: \{\} <br /> |
 | `modelCatalog` _[ModelCatalogSpec](#modelcatalogspec)_ | Model cost catalog sources. Only effective when set on a Gateway-level<br />AgentgatewayParameters (via Gateway.spec.infrastructure.parametersRef);<br />ignored on GatewayClass-level parameters because ConfigMap references<br />are resolved from the Gateway's deployment namespace. |  | Optional: \{\} <br /> |
 | `deployment` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated<br />`Deployment` resource. |  | Optional: \{\} <br /> |
 | `daemonSet` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated<br />`DaemonSet` resource. |  | Optional: \{\} <br /> |
@@ -969,7 +989,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source for Azure credentials, defaulting to a Kubernetes<br />`Secret`. The default Secret resolver expects `clientID`, `tenantID`, and<br />`clientSecret` keys. |  | Optional: \{\} <br /> |
-| `managedIdentity` _[AzureManagedIdentity](#azuremanagedidentity)_ | Managed identity authentication settings. |  | Optional: \{\} <br /> |
+| `managedIdentity` _[AzureManagedIdentity](#azuremanagedidentity)_ | Managed identity authentication settings. Leave this object empty to use<br />the system-assigned identity. To use a user-assigned identity, set one of<br />`clientId`, `objectId`, or `resourceId`. |  | AtMostOneOf: [clientId objectId resourceId] <br />Optional: \{\} <br /> |
 | `workloadIdentity` _[AzureWorkloadIdentity](#azureworkloadidentity)_ | Workload identity authentication settings. Uses the federated token and<br />Azure env vars projected into the data plane pod. Recommended on AKS with<br />Workload Identity enabled. |  | Optional: \{\} <br /> |
 
 
@@ -998,18 +1018,21 @@ _Appears in:_
 
 
 
+AzureManagedIdentity configures authentication with an Azure managed
+identity. Leave all identifiers unset to use the system-assigned identity.
+To use a user-assigned identity, set one identifier.
 
-
-
+_Validation:_
+- AtMostOneOf: [clientId objectId resourceId]
 
 _Appears in:_
 - [AzureAuth](#azureauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `clientId` _string_ |  |  | Required: \{\} <br /> |
-| `objectId` _string_ |  |  | Required: \{\} <br /> |
-| `resourceId` _string_ |  |  | Required: \{\} <br /> |
+| `clientId` _string_ | Client ID of the user-assigned managed identity. |  | Optional: \{\} <br /> |
+| `objectId` _string_ | Object ID of the user-assigned managed identity. |  | Optional: \{\} <br /> |
+| `resourceId` _string_ | Resource ID of the user-assigned managed identity. |  | Optional: \{\} <br /> |
 
 
 #### AzureOpenAIConfig
@@ -1228,6 +1251,7 @@ _Appears in:_
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
 | `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | AtMostOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange crossAppAccess jwtSign] <br />Optional: \{\} <br /> |
+| `sessionAffinity` _[SessionAffinity](#sessionaffinity)_ | Configures best-effort session affinity using an existing request attribute.<br />For AI backends, this applies across the backend's provider groups and must not<br />be configured on an individual provider. |  | Optional: \{\} <br /> |
 | `ai` _[BackendAI](#backendai)_ | Settings for AI workloads. This is only applicable when<br />connecting to a `Backend` of type `ai`. |  | Optional: \{\} <br /> |
 | `mcp` _[BackendMCP](#backendmcp)_ | Settings for MCP workloads. This is only applicable when<br />connecting to a `Backend` of type `mcp`. |  | Optional: \{\} <br /> |
 | `transformation` _[Transformation](#transformation)_ | Mutates and transforms requests and responses sent to and from the backend. |  | Optional: \{\} <br /> |
@@ -1342,6 +1366,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
+| `certificateSource` _[BackendTLSCertificateSource](#backendtlscertificatesource)_ | Source for the gateway's client identity and trust roots (`Inline` default, or `SPIFFE`). | Inline | Optional: \{\} <br /> |
 | `mtlsCertificateRef` _[LocalSecretObjectRef](#localsecretobjectref) array_ | Enables mutual TLS to the backend using `tls.key` and `tls.crt` from the<br />referenced credential source (defaulting to a Kubernetes `Secret`). An<br />optional `ca.cert`, if present, verifies the server certificate, but<br />`caCertificateRefs` takes priority. If unspecified, no client certificate<br />is used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `caCertificateRefs` _[LocalCACertificateRef](#localcacertificateref) array_ | CA certificate source to use to verify the server certificate. Omitted kind<br />and `ConfigMap` select a ConfigMap; `Secret` selects a Secret. The `ca.crt`<br />key is required. If unset, the system's trusted certificates are used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `insecureSkipVerify` _[InsecureTLSMode](#insecuretlsmode)_ | Originates TLS but skips verification of the backend's certificate<br />WARNING: insecure; only use if the risks are understood<br />Modes:<br />* `All` disables all TLS verification<br />* `Hostname` trusts the CA certificate but ignores hostname/SAN mismatches.<br />  Still insecure; prefer `verifySubjectAltNames` where possible. |  | Optional: \{\} <br /> |
@@ -1349,6 +1374,24 @@ _Appears in:_
 | `verifySubjectAltNames` _[ShortString](#shortstring) array_ | Subject Alternative Names (`SAN`)<br />to verify in the server certificate.<br />If not present, the destination hostname is automatically used. |  | MaxItems: 16 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `alpnProtocols` _[TinyString](#tinystring)_ | Application-Layer Protocol Negotiation (`ALPN`)<br />value to use in the TLS handshake.<br />If not present, defaults to `["h2", "http/1.1"]`. |  | MaxItems: 16 <br />MaxLength: 64 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `keyExchangeGroups` _[KeyExchangeGroup](#keyexchangegroup) array_ | Ordered list of key exchange groups for a TLS connection.<br />For example: `X25519_MLKEM768,X25519`. |  | Optional: \{\} <br /> |
+
+
+#### BackendTLSCertificateSource
+
+_Underlying type:_ _string_
+
+BackendTLSCertificateSource selects where the gateway's client identity and trust roots come
+from when originating TLS to a backend.
+
+
+
+_Appears in:_
+- [BackendTLS](#backendtls)
+
+| Field | Description |
+| --- | --- |
+| `Inline` | BackendTLSCertificateSourceInline uses the inline `mtlsCertificateRef`/`caCertificateRefs`<br />(or the system trust roots when unset). This is the default.<br /> |
+| `SPIFFE` | BackendTLSCertificateSourceSPIFFE sources the gateway's X.509-SVID and trust bundle from<br />the SPIFFE Workload API (mutual TLS).<br /> |
 
 
 #### BackendTunnel
@@ -1374,6 +1417,24 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
 | `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
+| `mode` _[BackendTunnelMode](#backendtunnelmode)_ | How requests are sent through the proxy.<br />Defaults to `Auto`. | Auto | Optional: \{\} <br /> |
+
+
+#### BackendTunnelMode
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [BackendTunnel](#backendtunnel)
+
+| Field | Description |
+| --- | --- |
+| `Auto` | Auto uses CONNECT for TLS and non-HTTP transports, and absolute-form requests for plaintext HTTP.<br /> |
+| `Connect` | Connect uses CONNECT for all transports, including plaintext HTTP.<br /> |
 
 
 #### BackendWithAI
@@ -1473,6 +1534,7 @@ _Appears in:_
 | `identifier` _[ShortString](#shortstring)_ | Identifier of the Guardrail policy to use for the backend. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `version` _[ShortString](#shortstring)_ | Version of the Guardrail policy to use for the backend. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `region` _[ShortString](#shortstring)_ | AWS region where the guardrail is deployed, for example<br />`us-west-2`). |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether the guardrail's verdict is enforced or only<br />observed. `Reject` (the default) enforces the guardrail: a blocked<br />assessment rejects the request/response and an anonymized assessment masks<br />the matched content. `Audit` runs the guardrail in observe mode: it is<br />invoked and its assessment recorded (metrics + structured log), but the<br />request/response is never blocked or masked. | Reject | Optional: \{\} <br /> |
 | `policies` _[BedrockGuardrailsPolicy](#bedrockguardrailspolicy)_ | Policies for communicating with AWS Bedrock Guardrails. |  | Optional: \{\} <br /> |
 
 
@@ -1670,6 +1732,7 @@ _Appears in:_
 - [RateLimitsConditional](#ratelimitsconditional)
 - [ResourceAdd](#resourceadd)
 - [Retry](#retry)
+- [SessionAffinity](#sessionaffinity)
 - [Tracing](#tracing)
 - [Transform](#transform)
 - [TransformationConditional](#transformationconditional)
@@ -1784,6 +1847,25 @@ _Appears in:_
 | `matchLabels` _object (keys:string, values:string)_ | Labels that must be present on each selected ConfigMap. |  | Required: \{\} <br /> |
 
 
+#### ContentScope
+
+_Underlying type:_ _string_
+
+Which category of request content a prompt guard inspects.
+
+
+
+_Appears in:_
+- [PromptguardRequest](#promptguardrequest)
+
+| Field | Description |
+| --- | --- |
+| `SystemPrompt` | The system/developer prompt.<br /> |
+| `Messages` | Regular user/assistant message text.<br /> |
+| `ToolOutput` | Tool call results fed back to the model.<br /> |
+| `ToolInput` | Tool call arguments, usually produced by the model.<br /> |
+
+
 #### CrossAppAccessAuth
 
 
@@ -1801,7 +1883,8 @@ _Appears in:_
 | `resourceAuthorizationServer` _[CrossAppAccessEndpoint](#crossappaccessendpoint)_ | Resource authorization server, used for the RFC 7523 jwt-bearer exchange. |  | ExactlyOneOf: [backendRef url] <br />Required: \{\} <br /> |
 | `audience` _[ShortString](#shortstring)_ | Identifier of the resource authorization server. The issued ID-JAG is bound to this audience. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `resources` _string array_ | Resources sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
-| `scopes` _string array_ | Scopes sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `scopes` _string array_ | Scopes requested when obtaining the ID-JAG from the identity provider. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `accessTokenScopes` _string_ | Scopes requested when exchanging the ID-JAG for an access token.<br />When omitted, defaults to Scopes. Set to an empty list to omit scope. |  | MaxItems: 64 <br />Optional: \{\} <br /> |
 | `subjectToken` _[CrossAppAccessSubjectToken](#crossappaccesssubjecttoken)_ | Subject token sent to the identity provider. Defaults to an OpenID Connect<br />ID token read from the Authorization Bearer header. |  | Optional: \{\} <br /> |
 | `cache` _[OAuthTokenCache](#oauthtokencache)_ | Response cache configuration. |  | Optional: \{\} <br /> |
 
@@ -1858,6 +1941,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `backendRef` _[LocalBackendObjectReference](#localbackendobjectreference)_ | Kubernetes backend that serves this provider.<br />`backendRef` may target only a namespace-local Service or InferencePool.<br />If unset, host and port must be set on the parent provider. |  | Optional: \{\} <br /> |
+| `providerOverride` _[ShortString](#shortstring)_ | Provider identity used for cost-catalog lookup and telemetry.<br />Defaults to "custom" when unset. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `formats` _[ProviderFormatConfig](#providerformatconfig) array_ | Provider-native API formats this provider supports. |  | MaxItems: 6 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `model` _[ShortString](#shortstring)_ | Model name override, such as `gpt-oss`.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
@@ -1880,6 +1964,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `backendRef` _[LocalBackendObjectReference](#localbackendobjectreference)_ | Kubernetes backend that serves this provider.<br />`backendRef` may target only a namespace-local Service or InferencePool.<br />If unset, host and port must be set on the parent provider. |  | Optional: \{\} <br /> |
+| `providerOverride` _[ShortString](#shortstring)_ | Provider identity used for cost-catalog lookup and telemetry.<br />Defaults to "custom" when unset. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `formats` _[ProviderFormatConfig](#providerformatconfig) array_ | Provider-native API formats this provider supports. |  | MaxItems: 6 <br />MinItems: 1 <br />Required: \{\} <br /> |
 
 
@@ -2404,6 +2489,7 @@ _Appears in:_
 | `http2KeepaliveInterval` _[Duration](#duration)_ | Interval between `HTTP/2` keepalive pings.<br />If unset, keepalive pings are not sent. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `http2KeepaliveTimeout` _[Duration](#duration)_ | Time to wait for a response to an `HTTP/2` keepalive ping before the connection is closed.<br />Only applies when `http2KeepaliveInterval` is set. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `maxConnectionDuration` _[Duration](#duration)_ | Maximum time a connection is allowed to remain open.<br />After this duration, the connection is gracefully closed after the current in-flight request completes.<br />Useful for ensuring even traffic distribution behind load balancers during scaling events. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
+| `maxConcurrentRequests` _integer_ | Maximum number of in-flight HTTP requests across this gateway/port.<br />This includes HTTP/1 requests and HTTP/2 streams. Requests over the limit<br />are rejected immediately with a 503 response. Unset means unlimited. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 
 
 #### FrontendProxyProtocol
@@ -2437,6 +2523,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `keepalive` _[Keepalive](#keepalive)_ | Settings for enabling TCP keepalives on the connection. |  | Optional: \{\} <br /> |
+| `maxConnections` _integer_ | Maximum number of active downstream connections on this gateway/port.<br />Connections over the limit are closed immediately. Unset means unlimited. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 
 
 #### FrontendTLS
@@ -2553,6 +2640,7 @@ _Appears in:_
 | `templateId` _[ShortString](#shortstring)_ | Template ID for Google Model Armor. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `projectId` _[ShortString](#shortstring)_ | Google Cloud project ID. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `location` _[ShortString](#shortstring)_ | Google Cloud location, for example `us-central1`.<br />Defaults to `us-central1` if not specified. | us-central1 | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether flagged content is rejected or only observed.<br />`Reject` (the default) rejects flagged content; `Audit` records the<br />would-be rejection without blocking. | Reject | Optional: \{\} <br /> |
 | `policies` _[GoogleModelArmorPolicy](#googlemodelarmorpolicy)_ | Policies for communicating with Google Model Armor. |  | Optional: \{\} <br /> |
 
 
@@ -2860,6 +2948,7 @@ _Appears in:_
 | `mode` _[JWTAuthenticationMode](#jwtauthenticationmode)_ | Validation mode for JWT authentication. | Strict | Optional: \{\} <br /> |
 | `providers` _[JWTProvider](#jwtprovider) array_ |  |  | MaxItems: 64 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `location` _[AuthorizationExtractionLocation](#authorizationextractionlocation)_ | Where JWT credentials are read from.<br />If omitted, credentials are read from the `Authorization` header with the `Bearer ` prefix. |  | ExactlyOneOf: [header queryParameter cookie expression] <br />Optional: \{\} <br /> |
+| `preserveToken` _boolean_ | Keeps a successfully validated JWT in its original location. By default, the gateway removes<br />the JWT after validation. When the token only needs to be forwarded to the selected backend,<br />prefer `backendAuth.passthrough` so it is not exposed to other policies in the request path. |  | Optional: \{\} <br /> |
 | `mcp` _[JWTMCPConfig](#jwtmcpconfig)_ | Enables MCP OAuth metadata endpoint handling<br />and MCP-specific authentication behavior on top of standard JWT validation.<br />When set, the gateway will serve the MCP OAuth metadata discovery endpoints. |  | Optional: \{\} <br /> |
 
 
@@ -4171,6 +4260,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `model` _string_ | Moderation model to use. For example,<br />`omni-moderation`. |  | Optional: \{\} <br /> |
+| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether flagged content is rejected or only observed.<br />`Reject` (the default) rejects flagged content; `Audit` records the<br />would-be rejection without blocking. | Reject | Optional: \{\} <br /> |
 | `policies` _[OpenAIModerationPolicy](#openaimoderationpolicy)_ | Policies for communicating with OpenAI. |  | Optional: \{\} <br /> |
 
 
@@ -4462,6 +4552,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `response` _[CustomResponse](#customresponse)_ | Custom response message to return to the client. If not specified, defaults to<br />`The request was rejected due to inappropriate content`. |  | Optional: \{\} <br /> |
+| `scope` _[ContentScope](#contentscope) array_ | Which parts of the request this guard inspects. When unset, defaults to<br />`SystemPrompt` and `Messages`. Tool call inputs and outputs are not<br />inspected unless `ToolInput`/`ToolOutput` are listed explicitly.<br />In APIs that send tool arguments as opaque JSON, such as Completions, the<br />arguments are masked as a single string, meaning a prompt guard has the<br />potential to rewrite the arguments into invalid JSON. |  | MaxItems: 4 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `regex` _[Regex](#regex)_ | Regular expression (regex) matching for prompt guards and data masking. |  | Optional: \{\} <br /> |
 | `webhook` _[Webhook](#webhook)_ | Webhook that receives requests for prompt guarding. |  | Optional: \{\} <br /> |
 | `openAIModeration` _[OpenAIModeration](#openaimoderation)_ | Passes prompt data through the OpenAI Moderations<br />endpoint.<br />See https://developers.openai.com/api/reference/resources/moderations for more information. |  | Optional: \{\} <br /> |
@@ -4689,6 +4780,28 @@ _Appears in:_
 | `action` _[Action](#action)_ | The action to take if a regex pattern is matched in a request or response.<br />The action applies to request and response matches alike. Note that<br />`Mask` is not applied to streamed responses: matched content in a<br />streamed response is passed through unmodified.<br />Defaults to `Mask`. | Mask | Optional: \{\} <br /> |
 
 
+#### RejectAuditAction
+
+_Underlying type:_ _string_
+
+Action for guards that cannot mask (only reject or observe). `Reject` (the
+default) enforces the guard's native verdict; `Audit` invokes the guard and
+records what it would have done without enforcing.
+
+
+
+_Appears in:_
+- [BedrockGuardrails](#bedrockguardrails)
+- [GoogleModelArmor](#googlemodelarmor)
+- [OpenAIModeration](#openaimoderation)
+- [Webhook](#webhook)
+
+| Field | Description |
+| --- | --- |
+| `Reject` | RejectAuditReject enforces the guard's verdict (the default).<br /> |
+| `Audit` | RejectAuditAudit records the would-be action without blocking or masking.<br /> |
+
+
 #### RemoteJWKS
 
 
@@ -4790,6 +4903,22 @@ _Appears in:_
 | `matchLabels` _object (keys:string, values:string)_ | Labels that must be present on each selected Secret. |  | Required: \{\} <br /> |
 
 
+#### SessionAffinity
+
+
+
+Configures best-effort session affinity using an existing request attribute.
+
+
+
+_Appears in:_
+- [BackendFull](#backendfull)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `source` _[CELExpression](#celexpression)_ | CEL expression evaluated against request state. It must return a string or bytes value.<br />For example, `request.headers["x-session-id"]` or `string(source.address)`. |  | MaxLength: 16384 <br />MinLength: 1 <br />Required: \{\} <br /> |
+
+
 #### SessionRouting
 
 _Underlying type:_ _string_
@@ -4825,6 +4954,85 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `min` _integer_ | Minimum time (in seconds) to wait before allowing Agentgateway to<br />terminate. Refer to the `CONNECTION_MIN_TERMINATION_DEADLINE`<br />environment variable for details. |  | Maximum: 3.1536e+07 <br />Minimum: 0 <br />Required: \{\} <br /> |
 | `max` _integer_ | Maximum time (in seconds) to wait before allowing Agentgateway to<br />terminate. Refer to the `TERMINATION_GRACE_PERIOD_SECONDS`<br />environment variable for details. |  | Maximum: 3.1536e+07 <br />Minimum: 0 <br />Required: \{\} <br /> |
+
+
+#### SpiffeCSISource
+
+
+
+SpiffeCSISource sources the SPIFFE Workload API socket from a CSI driver (the SPIFFE CSI driver).
+
+
+
+_Appears in:_
+- [SpiffeWorkloadAPISource](#spiffeworkloadapisource)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `driver` _string_ | CSI driver name. Defaults to `csi.spiffe.io`. |  | Optional: \{\} <br /> |
+
+
+#### SpiffeHostPathSource
+
+
+
+SpiffeHostPathSource sources the SPIFFE Workload API socket from a directory on the host node.
+
+Note: this mounts an arbitrary host directory (read-only) into the gateway pod, so anyone
+who can set it can read that directory's contents. Prefer the CSI source, and consider
+restricting hostPath to GatewayClass-level AgentgatewayParameters managed by cluster admins.
+
+
+
+_Appears in:_
+- [SpiffeWorkloadAPISource](#spiffeworkloadapisource)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `path` _string_ | Host directory containing the SPIFFE Workload API socket, e.g. `/run/spire/agent-sockets`. |  | MinLength: 1 <br />Required: \{\} <br /> |
+
+
+#### SpiffeSpec
+
+
+
+SpiffeSpec configures gateway-wide SPIFFE Workload API integration: where the Workload API
+socket comes from (mounted into the pod by the controller) and how long to wait for
+the initial connection.
+
+
+
+_Appears in:_
+- [AgentgatewayParametersConfigs](#agentgatewayparametersconfigs)
+- [AgentgatewayParametersSpec](#agentgatewayparametersspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `enabled` _boolean_ | Explicitly turns SPIFFE integration on or off for this gateway. When unset, the presence<br />of the spiffe block opts in. Set to false on a Gateway-level AgentgatewayParameters to opt<br />a gateway out of SPIFFE enabled at the GatewayClass level. |  | Optional: \{\} <br /> |
+| `source` _[SpiffeWorkloadAPISource](#spiffeworkloadapisource)_ | Volume source for the SPIFFE Workload API socket. When omitted (i.e. `spiffe: \{\}`),<br />the socket is sourced from the SPIFFE CSI driver with default settings. |  | AtMostOneOf: [csi hostPath] <br />Optional: \{\} <br /> |
+
+
+#### SpiffeWorkloadAPISource
+
+
+
+SpiffeWorkloadAPISource describes how the SPIFFE Workload API socket is mounted into the
+gateway pod. At most one of `csi` or `hostPath` may be set; when neither is set, the SPIFFE
+CSI driver is used. `mountPath` and `socketName` describe the container-side location of the
+socket and apply regardless of the source kind.
+
+_Validation:_
+- AtMostOneOf: [csi hostPath]
+
+_Appears in:_
+- [SpiffeSpec](#spiffespec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `csi` _[SpiffeCSISource](#spiffecsisource)_ | Source the Workload API socket from the SPIFFE CSI driver (the default). |  | Optional: \{\} <br /> |
+| `hostPath` _[SpiffeHostPathSource](#spiffehostpathsource)_ | Source the Workload API socket from a host directory. |  | Optional: \{\} <br /> |
+| `mountPath` _string_ | Mount path inside the container for the Workload API socket directory.<br />Must be an absolute path. Defaults to `/spiffe-workload-api`. |  | Pattern: `^/` <br />Optional: \{\} <br /> |
+| `socketName` _string_ | Socket filename within the mount directory. Defaults to `spire-agent.sock`. |  | Optional: \{\} <br /> |
 
 
 #### StaticBackend
@@ -5104,6 +5312,7 @@ _Appears in:_
 | `headers` _object (keys:string, values:[CELExpression](#celexpression))_ | CEL-computed headers to include in webhook requests. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `forwardHeaderMatches` _HTTPHeaderMatch array_ | HTTP header matches used to select the headers to forward to the webhook.<br />Request headers are used when forwarding requests and response headers<br />are used when forwarding responses.<br />By default, no headers are forwarded. |  | Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when the webhook guardrail is unavailable<br />or returns an error. `FailOpen` allows the request to continue.<br />`FailClosed` (default) rejects the request. |  | Optional: \{\} <br /> |
+| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether the webhook's verdict is enforced or only observed.<br />`Reject` (the default) enforces it; `Audit` records the would-be action<br />without blocking or masking. | Reject | Optional: \{\} <br /> |
 
 
 #### WeightedModelRouting

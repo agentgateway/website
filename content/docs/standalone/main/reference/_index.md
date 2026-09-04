@@ -3,7 +3,7 @@ title: Reference
 weight: 111
 icon: menu_book
 description: Reference documentation for operating and configuring agentgateway
-prev: /docs/reference/observability
+prev: /docs/observability
 test: skip
 ---
 

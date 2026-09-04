@@ -65,7 +65,7 @@ Agentgateway exports traces directly to LangSmith without needing an OTel Collec
 version: '3'
 services:
   agentgateway:
-    image: cr.agentgateway.dev/agentgateway:latest
+    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:latest
     ports:
       - "3000:3000"
     volumes:
@@ -79,4 +79,4 @@ services:
 ## Learn more
 
 - [LangSmith Documentation](https://docs.langchain.com/langsmith/observability)
-- [OpenTelemetry Integration]({{< link-hextra path="/integrations/observability/opentelemetry" >}})
+- [OpenTelemetry Integration]({{< link-hextra path="/observability/traces/setup/" >}})

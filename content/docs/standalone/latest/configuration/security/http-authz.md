@@ -19,7 +19,7 @@ Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 HTTP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} allows defining rules to allow or deny requests based on their properties, using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}).
 
 > [!NOTE]
-> Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway admin UI before using them in your configuration.
+> Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway UI before using them in your configuration.
 
 Policies can define `allow`, `deny`, and `require` rules. Rules are evaluated in this order of precedence:
 1. If there are no rules, the request is allowed.

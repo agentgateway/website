@@ -1,18 +1,17 @@
-Sign a short-lived JWT with your own private key on every request to a backend.
-
 ## About
 
 Some upstreams do not accept a durable credential at all. The Snowflake SQL API, for example, requires a JWT that is signed with the caller's private key on each call. The `key` and `secretRef` backend authentication methods cannot serve those upstreams, because they forward a static credential.
 
 With the `jwtSign` backend authentication method, the gateway mints the token itself. It reads a PEM-encoded private key from a Kubernetes Secret, signs a JWT that carries the claims that you configure, and writes that token to each request that it forwards to the backend. Nothing is cached, so every request is signed afresh.
 
+> [!NOTE]
+> The `jwtSign` method is not the same as the `clientAuth.privateKeyJwt` setting on [Cross App Access]({{< link-hextra path="/security/backend-authn/cross-app-access/" >}}). The two share the signing implementation, but `privateKeyJwt` authenticates the gateway to an OAuth token endpoint, and `jwtSign` sends a signed JWT to the backend itself.
+
 Two behaviors are worth knowing before you configure the method:
 
 * **The signer (gateway) owns the time claims.** The gateway always sets `iat` and `exp`, and rejects a policy that tries to configure `iat`, `exp`, or `nbf`. It backdates `iat` by 10 seconds, so that a validator whose clock trails the gateway still accepts a freshly minted token. A decoded token therefore spans the `ttl` plus 10 seconds, and never carries an `nbf` claim.
 * **The token overwrites only what sits at its location.** By default, the gateway writes the `Authorization` header, replacing any credential that the client sent there. If you point `location` at a different header, query parameter, or cookie, the client's `Authorization` header is forwarded to the backend untouched. Remove it with a request filter if the upstream must not see it.
 
-> [!NOTE]
-> The `jwtSign` method is not the same as the `clientAuth.privateKeyJwt` setting on [Cross App Access]({{< link-hextra path="/security/backend-authn-cross-app-access/" >}}). The two share the signing implementation, but `privateKeyJwt` authenticates the gateway to an OAuth token endpoint, and `jwtSign` sends a signed JWT to the backend itself.
 
 ## Before you begin
 
@@ -73,7 +72,7 @@ The gateway reads the private key from the `signingKey` entry of a Secret in the
    EOF
    ```
 
-   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the {{< conditional-text include-if="kubernetes" >}}[API docs]({{< link-hextra path="/reference/api-kubespec/policies/#spec.backend.auth.jwtSign" >}}){{< /conditional-text >}}{{< conditional-text include-if="agentgateway" >}}[API docs](https://agentgateway.dev/docs/kubernetes/latest/reference/api-kubespec/policies/#spec.backend.auth.jwtSign){{< /conditional-text >}}.
+   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#jwtsignauth" >}}).
 
    | Field | Description |
    | -- | -- |

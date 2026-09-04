@@ -8,7 +8,7 @@ In this guide, you configure the agentgateway proxy to protect a static MCP serv
 - Rewrites your agentic issuer to the project-level JWKS URL, because Descope publishes signing keys per project rather than per MCP server.
 - Proxies Dynamic Client Registration through the gateway, so that browser-based MCP clients are not blocked by cross-origin restrictions.
 
-Unlike Auth0 and Okta, Descope supports [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707) resource indicators, so agentgateway does not need to work around the missing `resource` parameter.
+Unlike Auth0 and Okta, Descope supports [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html) resource indicators, so agentgateway does not need to work around the missing `resource` parameter.
 
 For more information about MCP auth, see the [About MCP auth]({{< link-hextra path="/mcp/auth/about/" >}}) page.
 

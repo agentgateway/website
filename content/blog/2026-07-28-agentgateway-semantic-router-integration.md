@@ -120,13 +120,13 @@ spec:
         allowModeOverride: true
 ```
 
-This example shows the whole integration configuration in agentgateway. (Note that vSR also needs to be correctly configured for ExtProc communication, as shown [in the code repo's example](https://github.com/agentgateway/agentgateway/blob/main/examples/llm-semantic-routing/k8s/semantic-router-values.yaml#L347-L362). For this demo, we assume vSR has already been setup with this configuration). 
+This example shows the whole integration configuration in agentgateway. (Note that vSR also needs to be correctly configured for ExtProc communication, as shown [in the code repo's example](https://github.com/agentgateway/agentgateway/blob/v1.4.1/examples/llm-semantic-routing/k8s/semantic-router-values.yaml#L347-L362). For this demo, we assume vSR has already been setup with this configuration). 
 
 The [AgentgatewayPolicy](https://agentgateway.dev/docs/kubernetes/main/about/policies/), targets the HTTPRoute and points at vSR's ExtProc server. Note what is *absent*: there is no `traffic.phase` configuration defined in the policy so the policy is applied in the default **PostRouting** phase. This means that vSR runs *after* agentgateway has already selected the backend. For a single provider that is completely fine because there is only one backend, so the LLM provider routing decision is never in question. The only thing vSR changes is the `model` field inside the request body. Hold that thought, as it is the exact hinge that the next blog post, which discusses cross LLM provider model routing, turns on.
 
 ### Configuring vSR: signals → score → decision
 
-vSR's behavior lives in its Helm values ([`semantic-router-values.yaml`](https://github.com/agentgateway/agentgateway/blob/main/examples/llm-semantic-routing/k8s/semantic-router-values.yaml)). It reads like a small rules engine, and it's worth understanding as a pipeline, because vSR traces its own work with a span per stage (`semantic_router.signal.*` for signal evaluation, `semantic_router.decision.evaluation` for the decision, and `semantic_router.plugin.execution` for the plugin chain). A trace reads back as that same pipeline.
+vSR's behavior lives in its Helm values ([`semantic-router-values.yaml`](https://github.com/agentgateway/agentgateway/blob/v1.4.1/examples/llm-semantic-routing/k8s/semantic-router-values.yaml)). It reads like a small rules engine, and it's worth understanding as a pipeline, because vSR traces its own work with a span per stage (`semantic_router.signal.*` for signal evaluation, `semantic_router.decision.evaluation` for the decision, and `semantic_router.plugin.execution` for the plugin chain). A trace reads back as that same pipeline.
 
 **1. The models it may choose.** vSR keeps its own view of the candidate models, their IDs, pricing, and the backend to reach them:
 

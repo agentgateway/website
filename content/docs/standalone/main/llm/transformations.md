@@ -16,7 +16,7 @@ To learn more about CEL, see the following resources:
 - [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
 
 > [!NOTE]
-> Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway admin UI before using them in your configuration.
+> Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway UI before using them in your configuration.
 
 ## Before you begin
 
@@ -27,12 +27,18 @@ To learn more about CEL, see the following resources:
 # Doc test coverage for this guide (these comments are not rendered on the page)
 # ============================================================================
 # WHAT THIS TEST VALIDATES:
-#   * Both example configs are accepted by agentgateway (--validate-only), so the
-#     `transformation` field and its CEL expressions are correct.
+#   * All three example configs are accepted by agentgateway (--validate-only), so
+#     the `transformation` and `finalTransformation` fields and their CEL
+#     expressions are correct.
 #   * "Configure LLM request transformations": a client request that asks for 5000
 #     max_tokens reaches the provider capped at 10.
 #   * "Conditionally set fields based on headers": the same request reaches the
 #     provider with 100 max_tokens as an admin user and 10 as a regular user.
+#   * "Transform requests after provider conversion": a request that asks for 5000
+#     max_tokens reaches the provider with max_completion_tokens capped at 10,
+#     which only holds if the transformation ran AFTER the conversion renamed the
+#     field. A pre-conversion transformation on max_completion_tokens would not
+#     produce this result.
 #
 # HOW THE ASSERTIONS WORK:
 #   The tests run against a local mock LLM instead of OpenAI, so no provider API
@@ -67,7 +73,7 @@ To learn more about CEL, see the following resources:
    | `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use the `llmRequest` variable to access the original LLM request body. |
 
    > [!NOTE]
-   > You can specify up to 64 transformations per policy. Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.
+   > Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.
 
 2. Run the agentgateway.
    ```sh
@@ -257,6 +263,129 @@ EOF
 
 In the responses, the admin user receives up to 100 completion tokens while the regular user is capped at 10.
 
+## Transform requests after provider conversion
+
+The `transformation` field runs before agentgateway converts the request into the format that the provider expects. To write one, you must know how the conversion works, and you cannot change a field that the conversion itself adds.
+
+The `finalTransformation` field runs after the conversion instead. You only need to know the shape of the target API.
+
+The difference shows in the field names. When a client sends `max_tokens` to an OpenAI provider, the conversion renames the field to `max_completion_tokens`, so the provider receives the following request body.
+
+```json
+{
+  "model": "gpt-3.5-turbo",
+  "max_completion_tokens": 5000,
+  "messages": [{"role": "user", "content": "Tell me a short story"}]
+}
+```
+
+A `transformation` entry must target `max_tokens`, the name that the client sent. A `finalTransformation` entry must target `max_completion_tokens`, the name that the provider receives.
+
+1. Create a configuration file that caps the converted field and removes a field from the provider request. The `min()` expression caps `max_completion_tokens` at 10. The `fail("remove")` expression always fails to evaluate, which deletes `reasoning_effort` from the request.
+
+   ```yaml {paths="transformations"}
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+       finalTransformation:
+         max_completion_tokens: "min(llmRequest.max_completion_tokens, 10)"
+         reasoning_effort: 'fail("remove")'
+   EOF
+   ```
+
+   | Setting | Description |
+   | -- | -- |
+   | `finalTransformation` | A map of provider request field names to CEL expressions. Each key is the field to set in the converted request; each value is a CEL expression. Entries take priority over `overrides` for the same field. |
+
+   > [!WARNING]
+   > In a `finalTransformation` expression, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that reads a field which the converted body does not have, such as `llmRequest.max_tokens` for an OpenAI provider, fails to evaluate. A failed expression removes the target field, so a mistyped field name silently deletes the field that you meant to set. For more information about the expression language, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
+
+2. Run the agentgateway.
+
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+   {{< doc-test paths="transformations" >}}
+   # Post-conversion transformations: restart the gateway on the third config of this
+   # guide, again pointed at the mock LLM. The comment differs from the two restart
+   # blocks in the preceding sections on purpose: the extractor drops a block whose
+   # content is byte-identical to one it already selected, which would leave the
+   # assertion below running against the header-conditional config.
+   kill $AGW_PID 2>/dev/null
+   sleep 1
+   {{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
+   agentgateway -f config-mock.yaml &
+   AGW_PID=$!
+   trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
+   sleep 3
+   {{< /doc-test >}}
+
+3. Send a request that sets `max_tokens` and `reasoning_effort`. The conversion renames `max_tokens` to `max_completion_tokens`, and the transformation then caps that field at 10 and drops `reasoning_effort`.
+
+   ```sh {paths="transformations"}
+   curl -s 'http://localhost:4000/v1/chat/completions' \
+   --header 'Content-Type: application/json' \
+   --data '{
+     "model": "gpt-3.5-turbo",
+     "max_tokens": 5000,
+     "reasoning_effort": "high",
+     "messages": [
+       {
+         "role": "user",
+         "content": "Tell me a short story"
+       }
+     ]
+   }' | jq .
+   ```
+
+   {{< doc-test paths="transformations" >}}
+   YAMLTest -f - <<'EOF'
+   - name: post-conversion transformation caps the converted field
+     http:
+       url: "http://localhost:4000"
+       path: /v1/chat/completions
+       method: POST
+       headers:
+         content-type: application/json
+       body: |
+         {
+           "model": "gpt-3.5-turbo",
+           "max_tokens": 5000,
+           "reasoning_effort": "high",
+           "messages": [{"role": "user", "content": "Tell me a short story"}]
+         }
+     source:
+       type: local
+     expect:
+       statusCode: 200
+       bodyJsonPath:
+         - path: "$.usage.completion_tokens"
+           comparator: equals
+           value: 10
+   EOF
+   {{< /doc-test >}}
+
+   Example output:
+
+   ```console {hl_lines=[2]}
+   {"model":"gpt-3.5-turbo-0125","usage":
+   {"prompt_tokens":12,"completion_tokens":10,
+   "total_tokens":22},"choices":
+   [{"message":{"content":"Once upon a time, in a quaint
+   village nestled","role":"assistant"},"index":0,
+   "finish_reason":"length"}],
+   "id":"chatcmpl-DHyGUsdgf2P5FidTbZIZFxdVGRfpq",
+   "object":"chat.completion","created":1773175606}%
+   ```
+
+   The `completion_tokens` value reflects a completion capped at 10 tokens, which confirms that the transformation reached the converted request.
+
 ## Available CEL variables
 
 You can use these variables in your CEL transformation expressions.
@@ -268,6 +397,9 @@ You can use these variables in your CEL transformation expressions.
 | `request.method` | HTTP method | `request.method` returns `POST` |
 | `llmRequest.max_tokens` | Original max_tokens from the request | `min(llmRequest.max_tokens, 100)` |
 | `llmRequest.model` | Requested model name | `llmRequest.model` |
+
+> [!NOTE]
+> What `llmRequest` refers to depends on which field holds the expression. In a `transformation` entry, `llmRequest` is the request that the client sent. In a `finalTransformation` entry, `llmRequest` is the request after agentgateway converts it into the provider's format.
 
 For a complete list of available variables and functions, see the [CEL reference documentation]({{< link-hextra path="/reference/cel/" >}}).
 

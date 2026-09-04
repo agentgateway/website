@@ -132,7 +132,7 @@ Once we have fine-grained control over what clients, applications, users, teams,
 
 Organizations are beginning to think about Agentic Infrastructure like they have been thinking about cloud environments for years utilizing failover, High Availability, Usage (in this case, Tokens), and network connectivity. Because of that, understanding what is going on underneath the hood is crucial for all teams utilizing LLMs.
 
-Agentgateway has a [wealth of metrics]({{< relref "docs/standalone/latest/reference/observability/metrics/" >}}) about LLM usage. The important point here is that the metric dimensions are fully configurable. Let's take a look. Here are the main metrics that get tracked:
+Agentgateway has a [wealth of metrics]({{< relref "docs/standalone/latest/observability/metrics/reference/" >}}) about LLM usage. The important point here is that the metric dimensions are fully configurable. Let's take a look. Here are the main metrics that get tracked:
 
 * **agentgateway_gen_ai_client_token_usage** - Tracks the number of tokens used per request to the LLM. Understanding cost and request size distribution.
 

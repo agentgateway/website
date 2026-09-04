@@ -50,7 +50,7 @@ export AZURE_API_KEY="${AZURE_API_KEY:-test}"
 Before you can use Azure as an LLM provider, you must authenticate by using one of the standard [Azure authentication methods](https://learn.microsoft.com/en-us/azure/ai-services/authentication). In standalone mode, this authentication is configured with `llm.models[]` fields (for example, `params.apiKey` or `auth.azure`). In routing-based configurations, use `policies.backendAuth.azure`.
 
 > [!IMPORTANT]
-> Azure CLI authentication requires `az` or `azd` to be installed and signed in. Agentgateway calls the CLI when it needs a token. It does not open an interactive flow or run `az login` or `azd auth login` for you. Agentgateway does not bundle either command. Mounting a credential directory such as `~/.azure` makes cached login state available inside the container, but it does not install the CLI. Use Azure CLI authentication only when running Agentgateway directly on your local machine. If Agentgateway runs in a container, use an API key, client secret, managed identity, or workload identity.
+> Azure CLI authentication requires `az` or `azd` to be installed and signed in. Agentgateway calls the CLI when it needs a token. It does not open an interactive flow or run `az login` or `azd auth login` for you. Agentgateway does not bundle either command. Mounting a credential directory such as `~/.azure` makes cached login state available inside the container, but it does not install the CLI. Use Azure CLI authentication only when running agentgateway directly on your local machine. If agentgateway runs in a container, use an API key, client secret, managed identity, or workload identity.
 
 ## Configuration
 
@@ -371,7 +371,7 @@ To use system-assigned managed identity:
 * The Azure resource must have managed identity enabled.
 * The Azure resource identity must have permissions to and the network ability to access the Azure AI services.
 
-Leave the `managedIdentity` field empty so that the system assigns a managed identity to use.
+Leave `managedIdentity` empty to use the identity of the Azure resource that runs agentgateway.
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -419,7 +419,7 @@ agentgateway -f config-adv-system-managed-identity.yaml --validate-only
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
-| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
+| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave the object empty to use the system-assigned identity. |
 {{< /reuse-append >}}
 
 {{% /tab %}}
@@ -428,9 +428,8 @@ agentgateway -f config-adv-system-managed-identity.yaml --validate-only
 
 To use user-assigned managed identity:
 * Agentgateway must run in an Azure resource, such as a VM or container instance.
-* The Azure resource must have managed identity enabled.
-* The Azure resource identity must have permissions to and the network ability to access the Azure AI services.
-* Create and assign a managed identity for the Azure resource to use.
+* Create a user-assigned identity and attach it to the Azure resource.
+* The selected identity must have permissions to and the network ability to access the Azure AI services.
 
 Specify the client ID of the user-assigned managed identity to use. You can also specify the object ID or resource ID instead.
 ```yaml
@@ -490,17 +489,43 @@ agentgateway -f config-adv-user-managed-identity.yaml --validate-only
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
-| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
+| `backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity` | Use a user-assigned managed identity. Specify exactly one of `clientId`, `objectId`, or `resourceId`. |
 {{< /reuse-append >}}
 
 {{% /tab %}}
 {{% tab name="Workload identity" %}}
-**Workload identity**: Authenticate with Azure identity in Kubernetes clusters without the need to store credentials in the cluster.
+**Workload identity**: Authenticate from Kubernetes without storing Azure credentials in the cluster.
 
 To use workload identity:
 * Agentgateway must run in a Kubernetes cluster.
-* The Kubernetes cluster must use federated OIDC for authentication.
-* The federated identity must link the Azure identity with access to Azure AI services to the Kubernetes service account.
+* The cluster must use federated OIDC for authentication.
+* The federated identity must link the Kubernetes service account to an Azure identity that can access the Azure AI services.
+
+On AKS, complete the following steps to prepare the cluster.
+
+1. [Enable Microsoft Entra Workload ID on the cluster](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster).
+
+2. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires. For example, the `Azure AI User` role grants access to Azure AI Foundry.
+
+3. Create a federated credential that trusts the service account that agentgateway uses. By default, the standalone Helm chart names the service account after the Helm release. For a release named `agentgateway` in the `agentgateway` namespace, use the following subject. The subject must match the namespace and the service account name exactly.
+
+   ```txt
+   system:serviceaccount:agentgateway:agentgateway
+   ```
+
+4. Configure the Helm chart to annotate that service account, and to label the pod for the Azure workload identity webhook.
+
+   ```yaml
+   serviceAccount:
+     create: true
+     annotations:
+       azure.workload.identity/client-id: <managed-identity-client-id>
+
+   podLabels:
+     azure.workload.identity/use: "true"
+   ```
+
+Then, select workload identity in the agentgateway configuration.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config

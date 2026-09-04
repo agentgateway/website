@@ -22,7 +22,7 @@ description: Route Goose's LLM traffic through agentgateway to govern an autonom
 
 ## Before you begin
 
-1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
 2. Install Goose by following the [Goose installation guide](https://goose-docs.ai/docs/getting-started/installation/).
 3. Have an LLM provider API key, such as an [OpenAI API key](https://platform.openai.com/api-keys).
 

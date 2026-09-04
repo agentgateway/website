@@ -68,7 +68,9 @@ fields:
     user.agent: 'request.headers["user-agent"]'
     # A static string. Note the expression is a string, and it returns a string, hence the double quotes.
     span.name: '"openai.chat"'
-    gen_ai.usage.prompt_tokens: 'llm.input_tokens'
+    # Cache-inclusive and consistent across providers. For the provider's own
+    # count, use 'llm.providerInputTokens' instead.
+    gen_ai.usage.prompt_tokens: 'llm.inputTokens'
     # Parse the JSON request body, and conditionally log...
     # * If `type` is sum, val1+val2
     # * Else, val3

@@ -1,4 +1,4 @@
-Deploy an open source observability stack based on OpenTelemetry (OTel) that includes the following components:
+Deploy an open source observability stack that is based on OpenTelemetry (OTel) and includes the following components:
 
 - **Logs**: Centralized log collection and storage with Grafana [Loki](https://github.com/grafana/loki).
 - **Traces**: Distributed tracing with Grafana [Tempo](https://github.com/grafana/tempo).

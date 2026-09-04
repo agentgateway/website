@@ -4,7 +4,7 @@ weight: 99
 description: Configure agentgateway for providers without built-in support that implement the OpenAI API format.
 aliases:
   - /llm/providers/openai-compatible
-  - /docs/standalone/main/llm/providers/openai-compatible
+  - /docs/standalone/latest/llm/providers/openai-compatible
 test:
   openai-compatible-validate:
   - file: ${versionRoot}/llm/providers/custom.md
@@ -61,6 +61,8 @@ llm:
           # - type: responses
           # - type: realtime
           # - type: anthropicTokenCount
+          # - type: generateContent
+          # - type: geminiCountTokens
           # - type: rerank
     params:
       apiKey: "$PERPLEXITY_API_KEY"

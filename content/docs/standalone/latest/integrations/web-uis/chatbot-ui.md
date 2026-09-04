@@ -22,7 +22,7 @@ description: Front Chatbot UI with agentgateway to keep API keys server-side and
 
 ## Before you begin
 
-1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
 2. Get an API key for your LLM provider (e.g. [OpenAI](https://platform.openai.com/api-keys)).
 3. Clone or run [Chatbot UI](https://github.com/mckaywrigley/chatbot-ui). Note that recent versions of Chatbot UI require a Supabase backend; see the upstream README for the full setup.
 

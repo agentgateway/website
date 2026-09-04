@@ -1,0 +1,25 @@
+{{- /*
+  Extension slot from docs-theme-extras (partials/docs/under-heading.html).
+  Per-page doc-test status badge. Renders on detail pages only.
+
+  WHY THIS SLOT AND NOT `after-title.html`. Both put the badge under the <h1> on
+  a wide screen, but this one renders INSIDE the heading's own flex column,
+  which is what makes the narrow-viewport order right. Below Hextra's `sm`
+  breakpoint the title area stacks, so an `after-title` badge lands BELOW the
+  "Copy as Markdown" button — heading, button, badge. From here it stays with
+  the heading: heading, badge, button.
+
+  It also removes a magic number. From this slot the badge is a normal block in
+  the heading column, so its spacing is its own margins. Rendered from
+  `after-title` it sat below a flex row sized by the buttons, and pulling it
+  back under the heading needed a negative margin calibrated against the button
+  height — which silently drifts the day that control changes size.
+
+  The badge is gated on `.Params.test_status`, which no committed page carries —
+  CI injects it (`make test-status` -> scripts/doc_test_inject_status.py) before
+  the production build, and only for the `latest` and `main` version trees (see
+  TESTED_VERSIONS in scripts/doc_test_run.py). A plain local build renders this
+  zero times and that is expected. To see it locally, set `test_status: passed`
+  in a page's front matter.
+*/ -}}
+{{ partial "test-status-badge.html" . }}

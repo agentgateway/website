@@ -1,5 +1,5 @@
 ---
-title: Mistral
+title: Mistral AI
 weight: 20
 icon: /integrations/providers/bw/mistral.svg
 description: Route agentgateway LLM traffic to Mistral's models.

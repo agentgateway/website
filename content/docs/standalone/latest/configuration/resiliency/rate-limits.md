@@ -182,6 +182,8 @@ localRateLimit:
 
 {{< reuse "agw-docs/snippets/ratelimit-responsetime.md" >}}
 
+The input count that agentgateway charges against the limit includes the tokens that the provider read from or wrote to its prompt cache. Providers disagree about whether their own input count includes cached tokens, so agentgateway normalizes the number first. For providers that exclude cached tokens, such as Anthropic and Amazon Bedrock, a cache-heavy request therefore consumes more capacity than the provider's reported input count. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).
+
 ## Configuration
 
 ### Local
@@ -656,8 +658,6 @@ remoteRateLimit:
       insecure: false
     tcp:
       connectTimeout: 3s
-      # Required when setting tcp connection options; {} keeps keepalive defaults
-      keepalives: {}
   descriptors:
     - entries:
         - key: service
@@ -669,7 +669,7 @@ remoteRateLimit:
 |-------|-------------|
 | `policies.backendAuth` | Credentials to authenticate to the rate limit service. Supports `key` (API key from file or inline), `gcp`, `aws`, and `azure` auth. |
 | `policies.backendTLS` | TLS settings for the connection to the rate limit service. Use `root` to specify a CA cert, `insecure: true` to skip certificate verification (not recommended for production). |
-| `policies.tcp.connectTimeout` | Connection timeout as a duration string, such as `3s`. When you set any `tcp` option, you must also set `keepalives`. Use `keepalives: {}` to keep the keepalive defaults. |
+| `policies.tcp.connectTimeout` | Connection timeout as a duration string, such as `3s`. |
 | `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). Use for HTTP-based rate limit service connections. |
 
 ## Conditional execution

@@ -4,7 +4,7 @@ weight: 30
 icon: psychology
 description: Overview of LLM provider integration and consumption patterns
 prev: /configuration/security
-next: /reference/observability
+next: /docs/observability
 test: skip
 ---
 

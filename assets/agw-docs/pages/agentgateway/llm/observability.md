@@ -42,7 +42,7 @@ PROXY_POD_IP=$(kubectl get ${PROXY_POD} -n agentgateway-system -o jsonpath='{.st
 kubectl run metrics-check -n agentgateway-system --rm -i --restart=Never --image=curlimages/curl -- -s "http://${PROXY_POD_IP}:15020/metrics" 2>/dev/null | grep "agentgateway_gen_ai_client_token_usage"
 {{< /doc-test >}}
 
-{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ## Token usage fields {#token-usage-fields}
 
 LLM providers disagree about whether the input token count in a response includes the tokens that the provider read from or wrote to its prompt cache. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} normalizes the counts, so that a field means the same thing no matter which provider served the request.

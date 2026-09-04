@@ -25,6 +25,26 @@ You can access the agentgateway metrics endpoint to view LLM-specific metrics, s
 
 For more information, see the [Semantic conventions for generative AI metrics](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/) in the OpenTelemetry docs.
 
+## Token usage fields {#token-usage-fields}
+
+LLM providers disagree about whether the input token count in a response includes the tokens that the provider read from or wrote to its prompt cache. Agentgateway normalizes the counts, so that a field means the same thing no matter which provider served the request.
+
+| Field | What it reports |
+|-------|-----------------|
+| `llm.inputTokens` | The total input count, including cache-read and cache-creation tokens. |
+| `llm.totalTokens` | The normalized input count plus the output count. |
+| `llm.providerInputTokens` | The input count exactly as the provider sent it. |
+| `llm.providerTotalTokens` | The total count exactly as the provider sent it. |
+| `llm.cachedInputTokens` | The input tokens that the provider read from cache. |
+| `llm.cacheCreationInputTokens` | The input tokens that the provider wrote to cache. |
+
+The `gen_ai.usage.input_tokens` log and span field and the `input` series of the `agentgateway_gen_ai_client_token_usage` metric both report the normalized count.
+
+Anthropic and Amazon Bedrock exclude cached tokens from the input count that they report. OpenAI, Azure OpenAI, and Google Gemini include them. For the providers that exclude them, `llm.inputTokens` is therefore larger than `llm.providerInputTokens` whenever prompt caching is active. To report exactly what the provider billed, read `llm.providerInputTokens` or `llm.providerTotalTokens` instead.
+
+> [!WARNING]
+> Do not add `llm.cachedInputTokens` or `llm.cacheCreationInputTokens` to `llm.inputTokens`. The cache counts are a subset of the normalized input count, so adding them double counts the cached tokens.
+
 ## View realized costs
 
 When you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), agentgateway computes the realized USD cost of each LLM request and exposes it across the observability surface:

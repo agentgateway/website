@@ -44,6 +44,10 @@ Together, kagent and agentgateway give you all the tools to successfully build a
 
 The agentgateway project uses [Apache License 2.0](https://www.apache.org/licenses/).
 
+## What are the installation options?
+
+{{< reuse "agw-docs/snippets/standalone-k8s-modes.md" >}}
+
 ## What is the project roadmap?
 
 The agentgateway project organizes issues into milestones for each release. For more details, see the following agentgateway links: 
@@ -64,7 +68,7 @@ For more details, see the [agentgateway security policy](https://github.com/agen
 ## Is there enterprise software that is based on agentgateway?
 
 {{< cards >}}
-  {{< card link="https://www.solo.io/products/agentgateway" title="Solo.io" icon="external-link">}}
+  {{< card link="https://www.solo.io/products/agentgateway" title="Solo Enterprise for agentgateway" icon="external-link">}}
 {{< /cards >}}
 
 ## What if I have more questions about agentgateway? 

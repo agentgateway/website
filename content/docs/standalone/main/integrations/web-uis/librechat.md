@@ -22,7 +22,7 @@ description: Front LibreChat with agentgateway to centralize LLM credentials, au
 
 ## Before you begin
 
-1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
 2. Have an LLM provider API key, such as an [OpenAI API key](https://platform.openai.com/api-keys).
 3. Set up [LibreChat](https://www.librechat.ai/docs/local) via Docker Compose with MongoDB.
 

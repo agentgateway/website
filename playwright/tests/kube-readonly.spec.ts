@@ -1,11 +1,11 @@
-import { test, expect, dismissWelcome } from '../fixtures/test';
+import { test, expect, dismissWelcome, sortTableRows } from '../fixtures/test';
 
 /**
  * Kubernetes (xds) read-only UI captures.
  *
  * Unlike the standalone specs, this one does NOT launch its own server — there is no
  * fixture/launcher that reproduces a control-plane + proxy. Point it at a live proxy's
- * Admin UI via kubectl port-forward, with webServer.reuseExistingServer attaching to it:
+ * UI via kubectl port-forward, with webServer.reuseExistingServer attaching to it:
  *
  *   kubectl port-forward deployment/agentgateway-proxy -n agentgateway-system 15000:15000 &
  *   UI_BASE_URL=http://localhost:15000 npm run test:kube
@@ -15,8 +15,12 @@ import { test, expect, dismissWelcome } from '../fixtures/test';
  * Home / Listeners / Routes / Policies / CEL Playground; there is no MCP/LLM playground.
  */
 
-// Each capture is its own test (fresh page); reuse the standalone-light/dark projects so
-// `npm run sync-docs` (PROJECT_FOR is hardcoded to standalone-*) publishes them unchanged.
+// Each capture is its own test (fresh page). These run under the kube-<version>-{light,dark}
+// projects (CAPTURE_TARGET=kube), so the baselines are named `<stem>-kube-<version>-<variant>.png`
+// and `npm run sync-docs:kube` publishes exactly these images and no standalone ones.
+//
+// The Traffic views are tables built from the gateway dump, whose row order is not stable between
+// runs. sortTableRows() pins it before each capture; see the helper for what the flapping cost.
 
 test('kube gateway overview (landing)', async ({ page }) => {
   await page.goto('/ui/');
@@ -32,6 +36,7 @@ test('kube traffic listeners', async ({ page }) => {
   await page.waitForLoadState('networkidle');
   await dismissWelcome(page);
   await expect(page.getByRole('heading', { name: 'Traffic Listeners' })).toBeVisible();
+  await sortTableRows(page);
   await expect(page).toHaveScreenshot('agentgateway-ui-kube-listeners.png', { fullPage: true });
 });
 
@@ -42,6 +47,7 @@ test('kube traffic routes', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Traffic Routes' })).toBeVisible();
   await expect(page.getByText('mcp', { exact: true })).toBeVisible();
   await expect(page.getByText('openai', { exact: true })).toBeVisible();
+  await sortTableRows(page);
   await expect(page).toHaveScreenshot('agentgateway-ui-kube-routes.png', { fullPage: true });
 });
 
@@ -50,6 +56,7 @@ test('kube traffic policies', async ({ page }) => {
   await page.waitForLoadState('networkidle');
   await dismissWelcome(page);
   await expect(page.getByRole('heading', { name: 'Policies' })).toBeVisible();
+  await sortTableRows(page);
   await expect(page).toHaveScreenshot('agentgateway-ui-kube-policies.png', { fullPage: true });
 });
 

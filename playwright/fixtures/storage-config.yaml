@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Hybrid (database) storage: the file below is the baseline, and resources that the UI
+# manages are stored in PostgreSQL and merged over it at read time. This is what the Helm
+# chart renders when `mode: database`, minus the chart's ConfigMap wrapper.
+#
+# The UI stays on the admin interface (:15000) so this mode behaves like every other
+# capture mode. `postgres` resolves on the docker network created by the launcher.
+config:
+  storage:
+    mode: hybrid
+  database:
+    url: postgres://agw:agwpass@postgres:5432/agw
+gateways:
+  default:
+    port: 4000

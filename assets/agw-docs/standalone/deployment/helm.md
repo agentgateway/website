@@ -1,166 +1,223 @@
 Deploy agentgateway as a standalone Kubernetes workload by using the standalone Helm chart.
 
-Use this chart when you want the standalone agentgateway binary model, but you want Kubernetes to run and expose the process for you. The chart does not install the agentgateway Kubernetes control plane or Gateway API resources. For the managed Kubernetes deployment model, see the [Kubernetes documentation](https://agentgateway.dev/docs/kubernetes/).
+Use this chart when you want the standalone agentgateway binary model, but you want Kubernetes to run and expose the process for you. The chart runs the same binary and reads the same configuration file that the binary and Docker deployments use. You supply that file through Helm values, and the chart renders it into a ConfigMap that the proxy reads at startup.
+
+> [!TIP]
+> This chart installs agentgateway as a single, unmanaged Kubernetes deployment. You manage agentgateway config by upgrading the Helm values, and optionally adding a PostgreSQL database for editting the agentgateway config through the UI. If you want a managed Kubernetes solution that includes a control plane and Gateway API resources, see the [Kubernetes mode documentation](https://agentgateway.dev/docs/kubernetes/).
 
 ## Before you begin
 
-1. Create or use an existing Kubernetes cluster.
-2. Install the following command-line tools.
-   * [`kubectl`](https://kubernetes.io/docs/tasks/tools/#kubectl), the Kubernetes command line tool.
-   * [`helm`](https://helm.sh/docs/intro/install/), the Kubernetes package manager.
+{{< reuse "agw-docs/standalone/helm-standalone-prereqs.md" >}}
 
 ## Install
 
 Install the standalone Helm chart.
 
+{{< tabs >}}
+{{% tab name="Latest" %}}
 ```sh
-helm upgrade -i agentgateway-standalone \
-  oci://cr.agentgateway.dev/charts/agentgateway-standalone \
-  --namespace agentgateway-system \
+helm upgrade -i {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+  {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
+  --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
   --create-namespace \
   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
 ```
+{{% /tab %}}
+{{% tab name="Nightly build" %}}
+```sh
+helm upgrade -i {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+  {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
+  --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+  --create-namespace \
+  --version {{< reuse "agw-docs/versions/patch-dev.md" >}}
+```
+{{% /tab %}}
+{{% tab name="Unique name and namespace" %}}
+To install with a different name and in a different namespace, set both the Helm release namespace and `namespaceOverride` setting.
 
-By default, the chart creates the following resources.
-
-| Resource | Default |
-| --- | --- |
-| Deployment | `agentgateway-standalone` |
-| Namespace | `agentgateway-system` |
-| Config storage | A `1Gi` PersistentVolumeClaim named `agentgateway-standalone-config` mounted at `/config` |
-| Database | SQLite at `/config/data.db` |
-| Admin Service | `agentgateway-standalone-admin`, `ClusterIP`, port `15000` |
-| Gateway Service | `agentgateway-standalone-gateway`, `LoadBalancer` |
-
-The gateway Service maps these ports by default. Note that by default, the http and https ports have listeners. The mcp and llm ports are exposed on the Service, but do not have backing listeners until you add one in the UI or the config in the Helm values file.
-
-| Service port | Target (container) port | Listener |
-| --- | --- | --- |
-| `80` | `8080` | http |
-| `443` | `8443` | https |
-| `3000` | `3000` | mcp |
-| `4000` | `4000` | llm |
-
-To install into a different namespace, set both the Helm release namespace and `namespaceOverride`.
+The following example installs an `agw` Helm release in the `agw` namespace.
 
 ```sh
-helm upgrade -i agentgateway-standalone \
-  oci://cr.agentgateway.dev/charts/agentgateway-standalone \
+helm upgrade -i agw \
+  {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
   --namespace agw \
   --create-namespace \
   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
   --set namespaceOverride=agw
 ```
+{{% /tab %}}
+{{< /tabs >}}
+
+The chart creates the following resources. Each resource is named after the Helm release, which is `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` in these examples.
+
+| Resource | Name | Purpose |
+| --- | --- | --- |
+| Deployment | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Runs the agentgateway proxy. |
+| ConfigMap | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-config` | Holds the rendered `config.yaml`, mounted read-only at `/config`. |
+| Service | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Exposes the gateway listener. Type `LoadBalancer` and port `80` to container port `4000` by default. |
+| ServiceAccount | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Identity for the proxy pod. |
+
+> [!NOTE]
+> The chart creates no PersistentVolumeClaim and no Service for the admin port. Configuration lives in the ConfigMap, and you reach the admin interface by port-forwarding the Deployment. To persist configuration changes that you make in the UI, see {{< version exclude-if="1.4.x" >}}[Store configuration in a database]({{< link-hextra path="/deployment/helm/storage/" >}}){{< /version >}}{{< version include-if="1.4.x" >}}[Store configuration in a database](#store-configuration-in-a-database){{< /version >}}.
 
 ## Verify the installation
 
-Verify that the agentgateway pod is running.
+1. Verify that the agentgateway pod is running.
 
-```sh
-kubectl get pods -n agentgateway-system \
-  -l app.kubernetes.io/name=agentgateway-standalone
-```
+   ```sh
+   kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -l app.kubernetes.io/name={{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}
+   ```
 
-Example output:
+   Example output:
+
+   ```txt
+   NAME                                       READY   STATUS    RESTARTS   AGE
+   {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-6d5dc56bdb-792pt   1/1     Running   0          30s
+   ```
+
+2. Review the configuration that the chart rendered into the ConfigMap.
+
+   ```sh
+   kubectl get configmap {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-config \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.data.config\.yaml}'
+   ```
+
+   Example output:
+
+   ```yaml
+   config:
+   storage:
+     mode: file
+   gateways:
+     default:
+       port: 4000
+   llm:
+     models: []
+   mcp:
+     targets: []
+   ui: {}
+   ```
+
+## Open the UI
+
+For quick access to the UI, port-forward the agentgateway Deployment and open the `/ui` path.
+
+<!--TODO secure UI
+To securely expose the UI on your own domain, see the guide.-->
+
+1. Port-forward the admin interface.
+
+   ```sh
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} 15000:15000
+   ```
+
+2. In your browser, open the `/ui` path.
+
+   ```sh
+   open http://localhost:15000/ui
+   ```
+
+## Configure agentgateway
+
+The `config` Helm value holds the entire agentgateway configuration file. Anything that you can write in a `config.yaml` for the binary, you can write in the Helm values file.
+
+{{< reuse "agw-docs/standalone/helm-upgrade.md" >}}
+
+<!--TODO not sure we need this info, sort of reference-y
+### Fields that the chart manages
+
+The chart sets two fields in the `config` section, and overwrites any value that you supply for them.
+
+| Field | Set to |
+| --- | --- |
+| `config.storage.mode` | `file` when `mode` is `readonly`, or `hybrid` when `mode` is `database`. |
+| `config.database.url` | The value of `database.postgres.url`, only when `mode` is `database`. |
+
+Set the `mode` value instead of setting these fields directly.
+
+| `mode` | Configuration source | Configuration changes in the UI |
+| --- | --- | --- |
+| `readonly` (default) | The ConfigMap that the chart renders from your Helm values. | Not saved. |
+| `database` | The ConfigMap as a baseline, with an overlay stored in PostgreSQL. | Saved to the database. |
+
+-->
+
+### Reuse configuration from the standalone guides
+
+The configuration examples throughout the standalone documentation are complete configuration files, so you can copy one into the `config` value without changing its structure. Keep the following points in mind.
+
+* **Align the ports.** A Service port sends traffic to a `targetPort` on the pod, and that target port must be a port that your agentgateway configuration listens on. The chart's Service sends port `80` to container port `4000`, but the guides commonly configure a listener on port `3000` or `8080`, so the Service has no listener to send traffic to. Either change the listener in the configuration to port `4000`, or set `gateway.service.ports` so that the Service targets the port that your configuration uses. For more information, see [Expose listeners](#expose-listeners).
+* **Omit the schema comment.** The `# yaml-language-server: $schema=` line that the guides include is a comment for your editor. Helm does not preserve it when it renders the ConfigMap.
+* **Replace `stdio` MCP targets.** The proxy image contains no shell and no Node.js, so a target that starts a local process, such as `cmd: npx`, fails at startup with `mcp: failed to start stdio server: No such file or directory`. Use a remote target instead, or build an image that includes the command.
+
+   ```yaml
+   config:
+     mcp:
+       port: 3000
+       targets:
+       - name: server-everything
+         mcp:
+           host: http://server-everything.default.svc.cluster.local:3000/mcp/
+   ```
+
+### Edit the configuration in the UI
+
+The UI reads the running configuration in every mode. Whether you can save an edit depends on the `mode` value.
+
+In the default `readonly` mode, the ConfigMap is mounted read-only, so a save fails.
 
 ```txt
-NAME                                       READY   STATUS    RESTARTS   AGE
-agentgateway-standalone-7f7b9d8c8-xmpl    1/1     Running   0          30s
+failed to write to file `/config/config.yaml`: Read-only file system (os error 30)
 ```
 
-Verify that the configuration volume is bound.
+In `database` mode, you can add and edit the resources that the UI manages, such as MCP targets, LLM providers, models, and routes. Agentgateway stores the configuration in PostgreSQL and merges them over the ConfigMap baseline at read time. Saving the configuration file as a whole still fails, because the file itself remains read-only. To set up this mode, see {{< version exclude-if="1.4.x" >}}[Store configuration in a database]({{< link-hextra path="/deployment/helm/storage/" >}}){{< /version >}}{{< version include-if="1.4.x" >}}[Store configuration in a database](#store-configuration-in-a-database){{< /version >}}.
 
-```sh
-kubectl get pvc agentgateway-standalone-config -n agentgateway-system
-```
+> [!IMPORTANT]
+> Treat the Helm values as the source of truth for the configuration file, and the UI as the way to manage the resources that are layered on top of it. To change a field that the UI does not manage, such as a listener or a bind, update your Helm values and upgrade the release.
 
-Example output:
+{{% version include-if="1.4.x" %}}
+## Store configuration in a database
 
-```txt
-NAME                         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-agentgateway-standalone-config   Bound    pvc-00000000-0000-0000-0000-000000000000   1Gi        RWO            standard       30s
-```
-
-Check the gateway and admin Services.
-
-```sh
-kubectl get svc -n agentgateway-system \
-  -l app.kubernetes.io/name=agentgateway-standalone
-```
-
-## Open the admin UI
-
-The admin Service is internal by default. To open the UI locally, port-forward the admin Service.
-
-```sh
-kubectl port-forward -n agentgateway-system \
-  svc/agentgateway-standalone-admin 15000:15000
-```
-
-Open <http://localhost:15000/ui> to get started.
-
-## Customize the configuration
-
-The chart bootstraps `/config/config.yaml` on first install. By default, the bootstrap configuration enables the admin UI on `0.0.0.0:15000`, uses SQLite at `/config/data.db`, and creates empty gateways for ports `8080` and `8443`.
-
-Use the admin UI to add and save configuration updates after you install the chart. Throughout the rest of the standalone docs, whenever you see instructions to edit the configuration file, you can make the same change in the UI.
-
-You can also manage the configuration file with Helm values. Use this approach when you want to provide raw config directly or keep the config in a Helm values file. You can provide structured Helm values in `config`, or provide the complete file as `configYaml`. If both are set, `configYaml` takes precedence.
+To keep configuration changes that you make in the UI, run PostgreSQL and set the agentgateway configuration `mode` to `database` in your Helm values file. Agentgateway creates the schema that it needs on first startup, so no migration step is required.
 
 ```yaml
+mode: database
+database:
+  postgres:
+    url: postgres://agw:secret@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
 config:
-  config:
-    adminAddr: 0.0.0.0:15000
-    database:
-      url: sqlite:///config/data.db
-  gateways:
-    default:
-      port: 8080
-    secondary:
-      port: 8443
-  routes: []
+  binds:
+  - port: 4000
+    listeners:
+    - routes:
+      - backends:
+        - host: httpbin.httpbin.svc.cluster.local:8000
 ```
 
-```yaml
-configYaml: |
-  config:
-    adminAddr: 0.0.0.0:15000
-    database:
-      url: sqlite:///config/data.db
-  gateways:
-    default:
-      port: 8080
-    secondary:
-      port: 8443
-  routes: []
-```
+The chart rejects a `database.postgres.url` value that does not begin with `postgres://` or `postgresql://`, and rejects the value entirely when `mode` is `readonly`.
 
-The chart does not overwrite an existing `/config/config.yaml` by default. To force Helm upgrades to rewrite the file from chart values, set `configBootstrap.overwrite=true`.
+Both modes support more than one replica. To scale the deployment, set `replicaCount`.
+{{% /version %}}
 
-```sh
-helm upgrade -i agentgateway-standalone \
-  oci://cr.agentgateway.dev/charts/agentgateway-standalone \
-  --namespace agentgateway-system \
-  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
-  -f values.yaml \
-  --set configBootstrap.overwrite=true
-```
+## Expose listeners
 
-### Customize gateway listener ports
-
-The default gateway Service exposes port `80` to container port `8080`, port `443` to container port `8443`, port `3000` to container port `3000`, and port `4000` to container port `4000`. To replace these defaults with a custom set of Service ports for listeners that you create in the UI or in the Helm values file, set `gateway.service.ports`.
+The chart's default values configure a gateway named `default` that listens on container port `4000`, and a `LoadBalancer` Service that sends its port `80` to that container port. If your configuration listens on other ports, set `gateway.service.ports` so that the Service targets them. The following example exposes a listener on port `3000`.
 
 ```yaml
 gateway:
   service:
     ports:
-    - name: custom-listener
-      port: 9000
-      targetPort: 9000
+    - name: mcp
+      port: 3000
+      targetPort: 3000
       protocol: TCP
 ```
 
-You can also create additional Services for separate listener exposure.
+Agentgateway does not read the `name` field, so you can choose any name that is a valid lowercase Kubernetes port name and is unique within the Service. Kubernetes requires a name when a Service exposes more than one port. The field that must match your configuration is `targetPort`, which must be a port that a gateway or bind in your configuration listens on.
+
+To expose listeners on separate Services, such as an internal Service and an external Service, add `gateway.extraServices`. Each entry creates a Service named `<release name>-<name>` that selects the same pods.
 
 ```yaml
 gateway:
@@ -179,68 +236,48 @@ gateway:
     ports:
     - name: public
       port: 80
-      targetPort: 8080
+      targetPort: 4000
       protocol: TCP
 ```
 
-### Scale the deployment
+## Other common values
 
-The chart defaults to one replica with SQLite on a `ReadWriteOnce` volume. This is the simplest mode for a standalone deployment.
-
-To run more than one replica, deploy your own PostgreSQL instance and switch `config.database.url` to a `postgres://` URL. Agentgateway creates the required schema on first startup — no migration step is needed. You also need shared `ReadWriteMany` config storage (or provide an existing claim that supports `ReadWriteMany`) so all replicas share the same `config.yaml`.
-
-```yaml
-replicaCount: 2
-strategy:
-  type: RollingUpdate
-persistence:
-  storageClassName: efs-sc
-  accessModes:
-  - ReadWriteMany
-database:
-  type: postgres
-  postgres:
-    url: postgres://agw:secret@postgres.default.svc:5432/agw
-```
-
-### Use a private image registry
-
-For air-gapped or private registry environments, set `global.imageRegistry` to rewrite both the agentgateway image and the config bootstrap image registry.
-
-```yaml
-global:
-  imageRegistry: registry.internal.example.com
-image:
-  repository: platform/agentgateway
-  tag: "{{< reuse "agw-docs/versions/n-patch.md" >}}"
-configBootstrap:
-  image:
-    repository: library/busybox
-    tag: "1.36"
-```
+{{< reuse "agw-docs/standalone/helm-standalone-values-table.md" >}}
 
 ## Upgrade
 
-Upgrade the release by running `helm upgrade` with the new chart version.
+Upgrade the release by running `helm upgrade` with a new chart version, new Helm values, or both.
 
+Because the ConfigMap is rendered from your Helm values, an upgrade replaces the entire configuration file, including any listener, bind, or route that you set in the `config` value. In `database` mode, the upgrade replaces only the ConfigMap baseline. The resources that the UI stores in PostgreSQL are unaffected, and agentgateway merges them over the new baseline.
+
+> [!NOTE]
+> The Deployment stores a checksum of the ConfigMap in its pod annotations, so a change to your `config` values rolls out new pods. Because the default `replicaCount` is `1`, expect a brief interruption in traffic during the rollout. To keep a pod serving traffic while the new pod starts, set `replicaCount` to a value greater than `1`.
+
+{{< tabs >}}
+{{% tab name="Upgrade version, reuse values" %}}
 ```sh
-helm upgrade -i agentgateway-standalone \
-  oci://cr.agentgateway.dev/charts/agentgateway-standalone \
-  --namespace agentgateway-system \
+helm upgrade -i {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+  {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
+  --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
   --reuse-values \
   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
 ```
+{{% /tab %}}
+{{% tab name="Upgrade Helm values file" %}}
+{{< reuse "agw-docs/standalone/helm-upgrade.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Uninstall
 
-Uninstall the Helm release.
+1. Uninstall the Helm release.
 
-```sh
-helm uninstall agentgateway-standalone -n agentgateway-system
-```
+   ```sh
+   helm uninstall {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
 
-The uninstall command does not remove persistent volumes. To remove the default configuration PVC, delete it separately.
+2. Remove the namespace or any PostgreSQL database that you created.
 
-```sh
-kubectl delete pvc agentgateway-standalone-config -n agentgateway-system
-```
+   ```sh
+   kubectl delete namespace {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```

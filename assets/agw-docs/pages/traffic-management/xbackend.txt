@@ -1,0 +1,274 @@
+<!-- PARKED as .txt, not built. Reason: the controller panics on startup when
+     xBackend.enabled=true and the XBackend CRD is present, so the guide's own
+     enable step puts the control plane into CrashLoopBackOff.
+     panic: Unknown type gateway.networking.x-k8s.io/v1alpha1, Resource=xbackends
+     Cause: controller/pkg/agentgateway/plugins/collection.go builds the informer
+     with kubetypes.StandardInformer, and Istio's generated kubeclient registry
+     has a case for XBackendTrafficPolicy but not for XBackend, so it hits the
+     default panic branch. Reproduced on nightly b0778552 with Gateway API 1.6.0.
+     Every XBackend test uses krttest.GetMockCollection, which bypasses the real
+     informer, which is why this shipped.
+     To restore: rename this file back to xbackend.md, recreate the content stub
+     at content/docs/kubernetes/main/traffic-management/xbackend.md with exactly
+     the front matter below, restore the release-note section and highlights
+     bullet in content/docs/kubernetes/main/reference/release-notes.md, and
+     re-verify every step against a live cluster before publishing.
+     The stub is NOT parked here as .txt because Hugo publishes an unrecognized
+     extension under content/ as a static file, which would leak this guide to
+     the live site at /traffic-management/xbackend.md.txt.
+     ---
+     title: XBackend
+     weight: 12
+     description: Route to an external destination that is declared in the experimental Gateway API XBackend resource.
+     test: skip
+     ---
+     {{ reuse "agw-docs/pages/traffic-management/xbackend.md" }}  <- angle-bracket shortcode syntax
+-->
+Route to an external destination that is declared in an upstream Gateway API resource.
+
+## About `XBackend` {#about}
+
+`XBackend` is a resource in the experimental channel of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}, in the `gateway.networking.x-k8s.io` API group. This resource describes a backend destination in an implementation-neutral way, so a route can point at an external hostname without an {{< reuse "agw-docs/snippets/backend.md" >}} resource and without a synthetic `ExternalName` Service.
+
+When support is turned on, the controller watches `XBackend` resources, translates each one into an agentgateway backend, and reports status on the resource. A route references the `XBackend` in its `backendRefs` list by group and kind.
+
+Support is experimental and off by default. It requires the experimental Gateway API custom resources and the `xBackend.enabled` Helm value.
+
+> [!NOTE]
+> Use an {{< reuse "agw-docs/snippets/backend.md" >}} resource when you need a capability that `XBackend` does not describe, such as an AI provider, a full MCP backend with several targets, or a dynamic forward proxy. The two kinds can coexist in the same cluster.
+
+### Fields that agentgateway reads {#fields}
+
+| Field | Description |
+| -- | -- |
+| `spec.type` | Must be `ExternalHostname`, which is the only type that the Gateway API defines. |
+| `spec.externalHostname.hostname` | The hostname to dial. |
+| `spec.port.port` | The port to dial, from 1 to 65535. |
+| `spec.protocol` | How to speak to the destination. See [Protocols](#protocols). |
+| `spec.tls` | Whether and how to originate TLS. See [TLS](#tls). |
+
+### Protocols {#protocols}
+
+The `spec.protocol` field sets the protocol that the proxy uses for the connection.
+
+| Value | Behavior |
+| -- | -- |
+| `HTTP`, `TCP` | The connection uses the protocol defaults of the proxy. |
+| `HTTP11` | The connection uses HTTP/1.1. |
+| `HTTP2` | The connection uses HTTP/2. |
+| `H2C` | The connection uses HTTP/2 without TLS. Combining this value with a `spec.tls.mode` other than `None` is rejected. |
+| `MCP` | The destination is treated as a single streamable HTTP MCP target, in stateful mode. |
+
+The field has no default. When you omit it, the proxy uses the protocol that the route or listener determined, which for an HTTP route is the same as setting `HTTP`.
+
+> [!NOTE]
+> The Gateway API documents `GRPC` as an extended-support value, but the `XBackend` custom resource in Gateway API 1.6 does not accept it. The `spec.protocol` enumeration is `TCP`, `HTTP`, `HTTP2`, `HTTP11`, `H2C`, and `MCP`, so `protocol: GRPC` is rejected when you apply the resource. To send gRPC traffic, use `HTTP2`.
+
+### TLS {#tls}
+
+The `spec.tls.mode` field selects whether the proxy originates TLS to the destination.
+
+| Mode | Behavior |
+| -- | -- |
+| `None` | The proxy does not originate TLS. |
+| `ServerOnly` | The proxy verifies the certificate of the destination. |
+| `ClientAndServer` | The proxy verifies the destination and presents a client certificate, which is mutual TLS (mTLS). A `clientCertificateRef` is required. |
+
+For a mode other than `None`, agentgateway reads the following `spec.tls.validation` fields.
+
+| Field | Description |
+| -- | -- |
+| `hostname` | The hostname to verify, which also sets the Server Name Indication (SNI) value. |
+| `subjectAltNames` | Subject alternative names to verify, of either the `Hostname` or `URI` type. |
+| `wellKnownCACertificates` | Only `System` is accepted, which verifies against the system trust store of the proxy. |
+| `caCertificateRefs` | References to core ConfigMap resources in the same namespace as the `XBackend`. Each ConfigMap must hold the certificate in a `ca.crt` key. Several references are concatenated into one trust bundle. |
+
+Set exactly one trust source. The custom resource rejects a validation block that sets both `wellKnownCACertificates` and `caCertificateRefs`, and it rejects a block that sets neither.
+
+For the `ClientAndServer` mode, the `clientCertificateRef` field must refer to a core Secret. A Secret in another namespace requires a `ReferenceGrant` that permits the `XBackend` to read it. The custom resource requires this field for the `ClientAndServer` mode and forbids it for every other mode, so a mismatch is rejected when you apply the resource rather than reported in the status later.
+
+## Before you begin {#before-you-begin}
+
+1. Follow the [Get started guide]({{< link-hextra path="/quickstart/install/" >}}) to install agentgateway. Use the **experimental** path, because `XBackend` is served by the custom resources in the experimental channel of the Gateway API.
+2. Follow the [Sample app guide]({{< link-hextra path="/install/sample-app/" >}}) to create a gateway proxy with an HTTP listener.
+3. Confirm that the `XBackend` custom resource is present in the cluster.
+
+   ```sh
+   kubectl get crd xbackends.gateway.networking.x-k8s.io
+   ```
+
+   If the command reports that the resource is not found, install the experimental Gateway API custom resources as described in the Get started guide.
+
+## Turn on XBackend support {#enable}
+
+Set the `xBackend.enabled` value in the `agentgateway` Helm chart. This value adds the `XBackend` read and status permissions to the role of the controller, and sets the `AGW_ENABLE_X_BACKEND` environment variable in the controller deployment.
+
+```sh
+helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+--version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
+--reuse-values \
+--set xBackend.enabled=true
+```
+
+The command reuses the values from the existing release, so the settings from the Get started guide are kept. The `--version` flag uses the development build, which is the same build that the experimental path of the Get started guide installs.
+
+Verify that the controller restarted with the setting in place.
+
+```sh
+kubectl get deployment agentgateway -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+  -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="AGW_ENABLE_X_BACKEND")].value}'
+```
+
+Example output:
+
+```console
+true
+```
+
+For the value, see the [Helm reference]({{< link-hextra path="/reference/helm/agentgateway/" >}}).
+
+## Route to an external hostname {#external-hostname}
+
+1. Create an `XBackend` for an external service. The following example verifies the certificate of `httpbin.org` against the system trust store.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.x-k8s.io/v1alpha1
+   kind: XBackend
+   metadata:
+     name: httpbin-org
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     type: ExternalHostname
+     externalHostname:
+       hostname: httpbin.org
+     port:
+       port: 443
+     protocol: HTTP11
+     tls:
+       mode: ServerOnly
+       validation:
+         hostname: httpbin.org
+         wellKnownCACertificates: System
+   EOF
+   ```
+
+2. Create an HTTPRoute that sends traffic to the `XBackend`. Set the `group` and `kind` fields in the `backendRefs` entry, because the default is a Service. Omit the `port` field, because the port comes from `spec.port.port` on the `XBackend` and a port on the route is ignored.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: httpbin-org
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - name: agentgateway-proxy
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     hostnames:
+     - httpbin.example
+     rules:
+     - backendRefs:
+       - group: gateway.networking.x-k8s.io
+         kind: XBackend
+         name: httpbin-org
+   EOF
+   ```
+
+3. Send a request to the external service through the gateway.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -i http://$INGRESS_GW_ADDRESS:80/get -H "host: httpbin.example"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -i localhost:8080/get -H "host: httpbin.example"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   The response comes from `httpbin.org`, which shows that the proxy resolved the `XBackend` and originated TLS to it.
+
+## Route to an MCP server {#mcp}
+
+Set `protocol: MCP` to treat the destination as an MCP server. The proxy connects to it as a single streamable HTTP target in stateful mode.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.x-k8s.io/v1alpha1
+kind: XBackend
+metadata:
+  name: external-mcp
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  type: ExternalHostname
+  externalHostname:
+    hostname: mcp.example.com
+  port:
+    port: 443
+  protocol: MCP
+  tls:
+    mode: ServerOnly
+    validation:
+      hostname: mcp.example.com
+      wellKnownCACertificates: System
+EOF
+```
+
+Reference this resource from a route in the same way as the previous section. To configure several MCP targets behind one backend, or to change the stateful, prefix, or failure behavior, use an {{< reuse "agw-docs/snippets/backend.md" >}} resource instead. For more information, see the [MCP]({{< link-hextra path="/mcp/" >}}) docs.
+
+## Attach a policy to an XBackend {#policies}
+
+An {{< reuse "agw-docs/snippets/policy.md" >}} resource can target an `XBackend`, in either the `targetRefs` list or a `targetSelectors` label selector. Use this approach to add a capability that the `XBackend` resource does not describe, such as retries, timeouts, authentication to the backend, or transformations.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: agentgateway.dev/v1alpha1
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: httpbin-org-timeout
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.x-k8s.io
+    kind: XBackend
+    name: httpbin-org
+  backend:
+    http:
+      requestTimeout: 10s
+EOF
+```
+
+The policy is rejected if `XBackend` support is off, because the controller does not resolve the target kind. For how policies merge when several apply, see [Policy target and merge rules]({{< link-hextra path="/about/policies/target-merge/" >}}).
+
+## Review the status {#status}
+
+The controller reports status on each `XBackend`, including the gateways that reference it. Use the status to confirm that a resource was translated, or to find the reason that it was rejected.
+
+```sh
+kubectl describe xbackend httpbin-org -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+```
+
+The controller writes one status entry per gateway that references the resource, so the status is empty until a route sends traffic to the `XBackend`. An empty status means that nothing references the resource yet, not that the resource is valid. Create the route first, then check the status.
+
+A resource is rejected when it describes something that agentgateway cannot translate. Common reasons include a `spec.type` other than `ExternalHostname`, a `wellKnownCACertificates` value other than `System`, a `caCertificateRefs` entry that does not refer to a core ConfigMap or that names a ConfigMap with no `ca.crt` key, the `H2C` protocol together with a TLS mode other than `None`, and a `clientCertificateRef` that is not permitted by a `ReferenceGrant`. Some invalid combinations, such as a `clientCertificateRef` that is missing for the `ClientAndServer` mode, are rejected by the custom resource when you apply it and never reach the status.
+
+## Cleanup {#cleanup}
+
+```sh
+kubectl delete httproute httpbin-org -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete xbackend httpbin-org -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete xbackend external-mcp -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+```
+
+To turn support off again, set `xBackend.enabled` to `false` and upgrade the chart.
+
+## Next steps {#next-steps}
+
+- Compare the fields with the {{< reuse "agw-docs/snippets/backend.md" >}} resource in the [API reference]({{< link-hextra path="/reference/api/" >}}).
+- Originate TLS to a backend that is defined in an agentgateway resource with [Backend TLS]({{< link-hextra path="/security/backendtls/" >}}).
+- Resolve upstream hosts at request time with a [Dynamic Forward Proxy]({{< link-hextra path="/traffic-management/dfp/" >}}).

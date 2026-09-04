@@ -1,10 +1,11 @@
-By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exposes metrics in Prometheus format. You can use these metrics to monitor the health and performance of your gateway environment, or to verify that the control plane is emitting expected metrics when debugging your [observability stack]({{< link-hextra path="/observability/otel-stack/">}}). For more information about how metrics are implemented, refer to the [kgateway project developer docs](https://github.com/kgateway-dev/kgateway/blob/main/devel/architecture/metrics.md).
+By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exposes metrics in Prometheus format. You can use these metrics to monitor the health and performance of your gateway environment, or to verify that the control plane is emitting expected metrics when debugging your [observability stack]({{< link-hextra path="/observability/otel-stack/">}}). 
 
 ## Before you begin
 
-{{< reuse "agw-docs/snippets/agentgateway-prereq.md" >}}
+1. {{< reuse "agw-docs/snippets/agentgateway-prereq.md" >}}
+2. Set up Prometheus so that you can export and run queries against these metrics in the Prometheus explorer. Install the recommended [OTel stack]({{< link path="/observability/otel-stack/" >}}) that includes several tools to visualize metrics, traces, and access logs. 
 
-{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x,2.3.x" >}}
+{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x,2.3.x" >}}
 ## Enable monitoring with Helm {#enable-monitoring}
 
 The {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} Helm chart can create the Prometheus and Grafana resources that collect and visualize these metrics. The chart does not create these resources by default.
@@ -122,9 +123,6 @@ Helpful terms:
 
 * Transform: The process of the control plane converting high-level resources or intermediate representations (IR) into lower-level representations into the structure that the XDS API expects for a snapshot.
 
-{{< version include-if="1.4.x" >}}
-{{< reuse "agw-docs/snippets/metrics-control-plane-latest.md" >}}
-{{< /version >}}
-{{< version include-if="1.5.x" >}}
+{{< version include-if="1.6.x,1.5.x" >}}
 {{< reuse "agw-docs/snippets/metrics-control-plane-main.md" >}}
 {{< /version >}}

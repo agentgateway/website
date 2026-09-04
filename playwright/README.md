@@ -187,31 +187,69 @@ For a guide whose UI talks to a server, add a self-contained capture mode:
 
 ## How images map to doc versions
 
-Docs are versioned but images are not — `assets/img/` is a single flat tree that every
-version references by filename. The version dropdown maps (see `hugo.yaml`):
+Pages always reference the bare filename, e.g. `img/ui-playground-tools.png`. Resolution is
+version-aware underneath: `reuse-image` calls the theme's
+`utils/resolve-versioned-image.html`, which prefers `assets/img/<version-slug>/<file>` when that
+file exists and otherwise falls back to the bare `assets/img/<file>`. The slug is the version's
+path segment, not its release number — see "Which version is which" below.
 
-| Doc tree | Version | UI |
+That is what `sync-docs` drives ("shared until it diverges"): the `latest` capture writes the
+bare path, and the `main` capture writes `assets/img/main/<file>` **only** while it differs
+from latest, deleting it again when the two reconverge. Neither direction needs a content
+edit, and **no page should ever hard-code an `img/main/` path** — the override is picked up
+and dropped automatically.
+
+### Which version is which
+
+This file deliberately does not list version numbers — they rotate every release. The live
+mapping is `params.versions` in `hugo.yaml`:
+
+```bash
+yq '.params.versions' hugo.yaml        # or: sed -n '/^  versions:/,/^  sections:/p' hugo.yaml
+```
+
+Each entry has three fields, and **they are not interchangeable**:
+
+| Field | Shape | What it addresses |
 |---|---|---|
-| `content/docs/standalone/main/` | 1.4.x | new UI → bare `img/<x>.png` |
-| `content/docs/standalone/latest/` | 1.3.x | new UI → bare `img/<x>.png` |
-| `content/docs/standalone/1.2.x/` | 1.2.x and earlier | old UI → `img/1.2-earlier/<x>.png` |
+| `linkVersion` | a stable slug: `main`, `latest` | the path segment — `content/docs/<section>/<linkVersion>/`, and the **image override directory** `assets/img/<linkVersion>/` |
+| `version` | a release line, `<major>.<minor>.x` | the token `{{< version include-if=... >}}` matches on |
+| `dropdown` | free-text label | what the version picker displays |
 
-So when the UI changes, the **older versions are pinned to a frozen image bucket**
-(`assets/img/1.2-earlier/`) while the new-UI versions use the bare paths this harness
-regenerates. Two ways a guide selects the right image:
+The two that get confused are the first two, because only `linkVersion` is stable — `version`
+rotates on every release, `linkVersion` does not. An override captured for the `main` docs lands
+in `assets/img/main/`, keyed by the *path segment*, because the theme derives its slug from the
+page URL. A version shortcode on that very same page is gated on that line's `version` value
+instead. So an override directory named after a release line resolves for nobody: this harness
+only ever writes `assets/img/<linkVersion>/`.
+
+Only the version lines listed in `params.versions` render. Older lines are retired rather than
+deleted, and the two sections retired them differently: `content/docs/kubernetes/` still carries
+several as real directories that build, while retired standalone versions are checked in as
+`<version>.zip` snapshots that nothing builds. So do not expect to find an old standalone
+version as a directory on disk, and do not expect an image referenced from inside one of those
+zips to resolve against anything this harness writes.
+
+### Older UIs are pinned by hand
+
+The override mechanism above is automatic but only spans the version lines this harness
+captures (the `latest` and `main` pair). A version line old enough to predate the current UI
+gets a **frozen image bucket** instead, checked in once and never regenerated —
+`assets/img/1.2-earlier/` is the existing example. Two ways a guide selects one:
 
 - **Per-version files** (most guides, e.g. `mcp/connect/virtual.md`): each version dir has
-  its own copy of the file. The `1.2.x` copy references `img/1.2-earlier/...` with the old
-  prose; the `main`/`latest` copies reference the bare new images with the new-UI prose.
+  its own copy of the file, so the old copy just references the frozen bucket with the old
+  prose while the current copies reference the bare new images.
 - **Shared snippets** (e.g. `assets/agw-docs/pages/observability/traces.md`, reused by all
   versions via `{{< reuse ... >}}`): one file serves every version, so version-specific
-  parts are wrapped in the version shortcode:
+  parts are wrapped in the version shortcode. Take the token list from the `version` column
+  of `params.versions` — never from an example like this one, which goes stale on release:
   ```md
-  {{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
-  ...new-UI steps + bare img/ (reuse-image-light/dark)...
+  {{< version exclude-if="<old version tokens>" >}}
+  ...current-UI steps + bare img/ (reuse-image-light/dark)...
   {{< /version >}}
-  {{< version include-if="1.2.x,1.1.x,1.0.x" >}}
-  ...old-UI steps + img/1.2-earlier/ (plain reuse-image)...
+  {{< version include-if="<old version tokens>" >}}
+  ...old-UI steps + frozen bucket, e.g. img/1.2-earlier/ (plain reuse-image)...
   {{< /version >}}
   ```
 
@@ -227,6 +265,13 @@ Screenshots are pixel-compared, so captures must be byte-stable across runs:
 - **Mask dynamic content.** The MCP session id, latency badges, and timestamps change every
   run — mask them (`maskSession(page)` covers the session id; pass others via
   `toHaveScreenshot({ mask: [...] })`).
+- **Pin table row order.** Views built from the gateway dump (the Kubernetes Traffic
+  Listeners/Routes/Policies tables) return rows in an unstable order. Call
+  `sortTableRows(page)` before the capture — sorting keeps the whole table visible, which
+  masking would not. Left unpinned, a three-row reshuffle moves ~0.8% of the pixels: under
+  `maxDiffPixelRatio` so the test still passes, but enough to flip `sync-docs`'
+  `SYNC_DIFF_RATIO` verdict, which had the nightlies adding and removing the same
+  `img/main/` override on alternating days.
 - **Mock non-deterministic backends.** Live servers give varying output. The repo ships
   deterministic mocks used by the launchers:
   - `scripts/mock-openai.mjs` — fixed LLM reply (no API key, no cost).
@@ -239,7 +284,21 @@ Screenshots are pixel-compared, so captures must be byte-stable across runs:
 - **First-run overlay.** A "Welcome to Agentgateway" overlay (`.startup-shell`) intercepts
   clicks when the gateway has no config — always `dismissWelcome(page)` after `goto`.
 - **Pin viewport/scale.** Set in `playwright.config.ts` (1440×900, deviceScaleFactor 1).
-  Don't change these casually; every baseline would shift.
+  Don't change these casually; every baseline would shift. Note that the two projects spread
+  `devices['Desktop Chrome']`, whose own 1280×720 viewport wins over the top-level value — the
+  committed baselines are 1280×720.
+- **Never wait for `networkidle` on the Logs page.** It holds an open `/api/logs/tail` stream,
+  so the network never goes idle and the wait times out at 30s. Wait on rendered content.
+- **Not everything dynamic should be masked.** A mask paints a magenta rectangle into the
+  *published* image, which is fine for an MCP session id nobody reads but wrong for a timestamp
+  column a reader expects to see. `tests/logs.spec.ts` keeps its real timestamps and relies on
+  the config's default `maxDiffPixelRatio: 0.01`; measured drift across a deliberate three-hour
+  clock shift is 0.0033, so the default already has 3x headroom.
+- **Do not reach for a looser ratio to make a capture stable.** It hides content changes as
+  well as clock drift, and `--update-snapshots` will then *decline to rewrite* a stale baseline
+  because the old one still "passes" — which is how a masked baseline survived several
+  regeneration runs while this spec was being written. If a capture needs real slack, delete
+  the baseline rather than trusting `--update-snapshots` to replace it.
 
 ## Baselines and platforms
 
@@ -285,14 +344,18 @@ setup the `reference-docs` workflow uses.
 | `fixtures/*-config.yaml` | Per-mode gateway configs (mcp, a2a, llm, virtual, openapi, jwt) + `standalone-config.yaml` (for `AGENTGATEWAY_BIN`) |
 | `fixtures/petstore-openapi.json` | Bundled Swagger Petstore spec served by the openapi mock |
 | `tests/smoke.spec.ts` `tests/landing.spec.ts` `tests/cel.spec.ts` | No-backend captures (run under `test:standalone`) |
+| `tests/welcome.spec.ts` | First-run welcome wizard — the one spec that must *not* `dismissWelcome` |
 | `tests/playground.spec.ts` | MCP playground (tools discovered + echo) |
 | `tests/virtual.spec.ts` | Multiplex playground (prefixed tools + echo + time) |
 | `tests/openapi.spec.ts` | OpenAPI → MCP (tool list + a `getInventory` call) |
 | `tests/jwt.spec.ts` | Playground with a JWT in the Authorization header |
 | `tests/a2a-traffic.spec.ts` | A2A config shown as a Traffic route/listener (no A2A playground in the new UI) |
 | `tests/llm-playground.spec.ts` | LLM playground against the mock provider |
+| `tests/llm-add-model.spec.ts` | The Add model drawer filled in for each of the 21 providers, one capture per provider tab in the standalone LLM quickstart. Runs under `CAPTURE_MODE=llm`; the form is client-side, so it never saves and needs no provider key |
+| `tests/logs.spec.ts` | LLM > Logs list and a call's Trajectory + Conversation detail. Runs under `CAPTURE_MODE=costs`; **main only** |
 | `scripts/serve-*.sh` | Per-mode launchers: start backend(s) + UI container, clean up on exit |
 | `scripts/mock-*.mjs` | Deterministic mock backends (openai, mcp-time, petstore) |
+| `scripts/seed-costs-db.mjs` | Seeds the request-log SQLite DB for the `costs` mode: 800 rows for Analytics, plus three conversation rows with payloads for the Logs detail |
 | `scripts/sync-docs-images.mjs` | Copies baselines → `assets/img/` via `docs-image-map.json` |
 | `provisioners/kubernetes.ts` | Notes on the (not-yet-automated) Kubernetes capture path |
 | `__screenshots__/` | Committed baselines (light + dark per spec) |
@@ -302,6 +365,7 @@ setup the `reference-docs` workflow uses.
 | Script | Does |
 |---|---|
 | `test:standalone` | Capture/verify the no-backend specs (landing, cel, smoke) |
+| `test:welcome` | Capture/verify the first-run welcome wizard (no backend; pristine bootstrap config) |
 | `test:mcp` / `:a2a` / `:llm` / `:virtual` / `:openapi` / `:jwt` | Capture/verify one backend mode (brings up its backend + UI) |
 | `capture:all` | Run every mode in sequence (what CI runs); `clean:ui` between modes |
 | `update:all` | Same as `capture:all` but **regenerates** baselines (`--update-snapshots`) |

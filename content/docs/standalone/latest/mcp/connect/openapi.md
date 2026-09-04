@@ -202,7 +202,28 @@ mcp:
   - name: openapi
     openapi:
       schema: |
-        {"openapi":"3.0.0",...}
+        {
+          "openapi": "3.0.0",
+          "info": { "title": "Petstore", "version": "1.0.0" },
+          "servers": [{ "url": "/" }],
+          "paths": {
+            "/pet/{petId}": {
+              "get": {
+                "operationId": "getPetById",
+                "summary": "Find pet by ID",
+                "parameters": [
+                  {
+                    "name": "petId",
+                    "in": "path",
+                    "required": true,
+                    "schema": { "type": "integer", "format": "int64" }
+                  }
+                ],
+                "responses": { "200": { "description": "successful operation" } }
+              }
+            }
+          }
+        }
       host: localhost:8080
 ```
 

@@ -2,10 +2,12 @@
 title: Overview
 weight: 10
 description: Understand agentgateway's top-level configuration sections and how to write, update, and run a configuration file.
-next: /configuration/gateways
+next: /configuration/import
 ---
 
 Manage agentgateway through a configuration file. Supported file formats are JSON and YAML.
+
+If you are migrating from LiteLLM, use the [configuration importer]({{< link-hextra path="/configuration/import/" >}}) to convert supported models, providers, credentials, and routing settings and identify fields that require manual review.
 
 ## Configuration sections {#sections}
 

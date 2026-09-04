@@ -369,10 +369,10 @@ mcp:
 ui: {}
 ```
 
-By default, the UI is served only on the admin interface on `localhost:15000`. Setting the `ui` section serves it on a gateway instead.
+With no `ui` section, the UI is served only on the admin interface on `localhost:15000`, which is loopback-only. Setting the `ui` section serves it on a gateway, which is how you reach it from anywhere else. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/setup/ui/#admin-interface" >}}).
 
 > [!WARNING]
-> Serving the UI on a gateway exposes it to anyone who can reach that port. Protect it with authentication, typically [OIDC]({{< link-hextra path="/configuration/security/oidc/" >}}), before you expose it outside of localhost.
+> Serving the UI on a gateway exposes it to anyone who can reach that port. Protect it with authentication, typically [OIDC]({{< link-hextra path="/configuration/security/oidc/" >}}), before you expose it outside of localhost. The gateway serves the UI and its API only. The admin interface's debugging endpoints, such as `/config_dump`, are not served on it.
 
 {{< doc-test paths="gateways" >}}
 # WHAT THIS TEST VALIDATES:
@@ -412,7 +412,7 @@ Because each section attaches separately, you can also split them across ports. 
 gateways:
   default:
     port: 3000
-  admin:
+  ui-gateway:
     port: 9000
 llm:
   models:
@@ -421,7 +421,7 @@ llm:
     params:
       apiKey: "$OPENAI_API_KEY"
 ui:
-  gateways: [admin]
+  gateways: [ui-gateway]
 ```
 
 {{< doc-test paths="gateways" >}}
@@ -436,7 +436,7 @@ cat <<'EOF' > config7.yaml
 gateways:
   default:
     port: 3000
-  admin:
+  ui-gateway:
     port: 9000
 llm:
   models:
@@ -445,7 +445,7 @@ llm:
     params:
       apiKey: "$OPENAI_API_KEY"
 ui:
-  gateways: [admin]
+  gateways: [ui-gateway]
 EOF
 agentgateway -f config7.yaml --validate-only
 {{< /doc-test >}}

@@ -149,6 +149,8 @@ For **health-aware P2C load balancing** across individual Pod replicas, use the 
            backendRef:
              name: my-llm-service
              port: 8000
+           formats:
+           - type: Completions
    EOF
    ```
 

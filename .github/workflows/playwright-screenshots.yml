@@ -57,6 +57,10 @@ jobs:
         env:
           CI: true
         run: |
+          # `sync-docs` defaults to CAPTURE_TARGET=standalone, so it publishes and prunes only
+          # the standalone images. The Kubernetes images are the kube workflow's to manage via
+          # `sync-docs:kube` — before that split, each run acted on the other's images from stale
+          # baselines and both nightlies opened byte-identical PRs.
           for v in latest main; do
             export DOC_VERSION="$v"
             export AGW_IMAGE="$(node scripts/resolve-image.mjs "$v")"

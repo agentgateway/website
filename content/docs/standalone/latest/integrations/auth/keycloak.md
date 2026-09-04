@@ -23,7 +23,7 @@ For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link
 
 ## Before you begin {#before-you-begin}
 
-1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
 2. Install [Docker](https://docs.docker.com/get-started/get-docker/) to run Keycloak locally.
 3. Install [Node.js](https://nodejs.org/) so that `npx` can run the sample MCP server.
 
@@ -222,7 +222,7 @@ MCP clients register themselves with the authorization server instead of using a
    | Setting | Description |
    | ------- | ----------- |
    | `issuer` | The realm URL, in the form `http://<keycloak-host>/realms/<realm>`. This value must match the `iss` claim in the token. |
-   | `audiences` | The audience that your Keycloak realm issues, which is the value that the audience mapper in [Step 2](#realm) adds. Keycloak does not support [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707) resource indicators ([keycloak#10169](https://github.com/keycloak/keycloak/issues/10169)), and agentgateway has no workaround for this, so you must set the audience that the realm already mints. |
+   | `audiences` | The audience that your Keycloak realm issues, which is the value that the audience mapper in [Step 2](#realm) adds. Keycloak does not support [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html) resource indicators ([keycloak#10169](https://github.com/keycloak/keycloak/issues/10169)), and agentgateway has no workaround for this, so you must set the audience that the realm already mints. |
    | `provider.keycloak` | Enables the Keycloak-specific behavior described in [Why the Keycloak provider is needed](#why). Takes no fields. |
    | `jwks` | Optional. Because `provider.keycloak` is set, agentgateway derives the JWKS URL from the issuer. To fetch keys from somewhere else, such as a local file or an internal mirror, set `jwks` explicitly to override the derived URL. |
 
@@ -628,7 +628,7 @@ To run both as containers instead of running the agentgateway binary on your hos
 ```yaml
 services:
   agentgateway:
-    image: cr.agentgateway.dev/agentgateway:latest
+    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:latest
     ports:
       - "3000:3000"
     volumes:

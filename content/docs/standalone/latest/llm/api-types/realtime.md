@@ -21,7 +21,7 @@ To enable token usage tracking, you must prevent the client and server from nego
 
 ## Before you begin
 
-[Install the `agentgateway` binary]({{< link-hextra path="/deployment/binary">}}).
+[Install the `agentgateway` binary]({{< link-hextra path="/setup/install/binary/">}}).
 
 {{< doc-test paths="realtime-standalone" >}}
 # Install agentgateway binary

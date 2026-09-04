@@ -270,7 +270,7 @@ EOF
 {{% /tab %}}
    {{< /tabs >}}
 
-   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the {{< conditional-text include-if="kubernetes" >}}[API docs]({{< link-hextra path="/reference/api-kubespec/policies/#spec.backend.auth.oauthTokenExchange" >}}){{< /conditional-text >}}{{< conditional-text include-if="agentgateway" >}}[API docs](https://agentgateway.dev/docs/kubernetes/latest/reference/api-kubespec/policies/#spec.backend.auth.oauthTokenExchange){{< /conditional-text >}}.
+   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#oauthtokenexchange" >}}).
 
    | Field | Description |
    | -- | -- |
@@ -392,7 +392,7 @@ Unlike the subject and actor token types, `requestedTokenType` is a closed set. 
 | Value | Result |
 | -- | -- |
 | A custom URI | `Unsupported value: "urn:company:domain:human": supported values: "AccessToken", "Jwt", "IdToken", "IdJag"` |
-| `IdJag` | `requestedTokenType IdJag is only supported by crossAppAccess`. The value appears in the list because the type list is shared with [Cross App Access]({{< link-hextra path="/security/backend-authn-cross-app-access/" >}}). |
+| `IdJag` | `requestedTokenType IdJag is only supported by crossAppAccess`. The value appears in the list because the type list is shared with [Cross App Access]({{< link-hextra path="/security/backend-authn/cross-app-access/" >}}). |
 | Any value, with the `JwtBearer` grant type | `requestedTokenType is only valid with TokenExchange grantType` |
 
 When you set `requestedTokenType`, the gateway sends `requested_token_type` on the token request, then compares the `issued_token_type` of the response against it. A mismatch fails the exchange with a `500`, and the request never reaches the backend.

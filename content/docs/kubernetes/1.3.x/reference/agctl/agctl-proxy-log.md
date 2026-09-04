@@ -5,4 +5,4 @@ description: Reference for the `agctl proxy log` command.
 test: skip
 ---
 
-{{< reuse "agw-docs/pages/reference/agctl/latest/agctl-proxy-log.md" >}}
+{{< reuse "agw-docs/pages/reference/agctl/archived/agctl-proxy-log.md" >}}

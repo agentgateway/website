@@ -245,38 +245,55 @@ The agentgateway controller tracks a log level per component, such as the transl
 
 ## Capture profiles
 
-Agentgateway includes pprof endpoints to help you investigate CPU and memory issues. 
+Agentgateway includes pprof endpoints to help you investigate CPU and memory issues. Use the `agctl proxy profile` commands to capture a profile. `agctl` resolves the proxy pod, opens the port-forward, reads the admin endpoint, and writes the profile to a file, so you do not need to manage `kubectl port-forward` yourself.
 
 1. Optional: If you have not already, download [Graphviz](https://graphviz.org/download/) to visualize the profiles.
 
-2. Open a port-forward to the proxy.
+2. Capture a CPU profile. The default duration is 30 seconds. Send traffic through the gateway while the profile runs. Otherwise, the profile contains no samples.
 
    {{< tabs >}}
    {{% tab name="Replace with your own" %}}
    ```sh
-   kubectl port-forward deploy/<gateway-name> -n <namespace> 15000 &
+   agctl proxy profile cpu gateway/<gateway-name> -n <namespace> --seconds 30 -o ./cpu.pprof
    ```
    {{% /tab %}}
    {{% tab name="Quickstart example" %}}
    ```sh
-   kubectl port-forward deploy/agentgateway-proxy -n agentgateway-system 15000 &
+   agctl proxy profile cpu gateway/agentgateway-proxy -n agentgateway-system --seconds 30 -o ./cpu.pprof
    ```
    {{% /tab %}}
    {{< /tabs >}}
 
-3. Capture a CPU profile. The default duration is 10 seconds; the example uses 30 seconds.
+   Example output:
 
-   ```sh
-   curl -o cpu.pprof "http://localhost:15000/debug/pprof/profile?seconds=30"
+   ```
+   Wrote cpu profile to ./cpu.pprof
    ```
 
-4. Capture a heap profile.
+3. Capture a heap profile.
 
+   {{< tabs >}}
+   {{% tab name="Replace with your own" %}}
    ```sh
-   curl -o heap.pprof http://localhost:15000/debug/pprof/heap
+   agctl proxy profile heap gateway/<gateway-name> -n <namespace> -o ./heap.pprof
+   ```
+   {{% /tab %}}
+   {{% tab name="Quickstart example" %}}
+   ```sh
+   agctl proxy profile heap gateway/agentgateway-proxy -n agentgateway-system -o ./heap.pprof
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+
+   ```
+   Wrote heap profile to ./heap.pprof
    ```
 
-5. Inspect the profiles with `go tool pprof`.
+   If you omit `-o`, `agctl` writes the profile to `agentgateway-cpu-<timestamp>.pb.gz` or `agentgateway-heap-<timestamp>.pb.gz` in the current directory.
+
+4. Inspect the profiles with `go tool pprof`.
 
    **CPU profile**
    ```sh
@@ -292,3 +309,6 @@ Agentgateway includes pprof endpoints to help you investigate CPU and memory iss
 
    {{< reuse-image-light src="img/debug-heap-pprof.png" caption="Heap profile graph" >}}
    {{< reuse-image-dark srcDark="img/debug-heap-pprof.png" caption="Heap profile graph" >}}
+
+> [!NOTE]
+> To profile an agentgateway binary that runs on your workstation instead of a proxy pod, use `--local`, such as `agctl proxy profile heap --local`. Note that profiling data is available only when agentgateway runs on Linux. Proxy pods always meet this requirement, but a local macOS or Windows build does not: the CPU profile endpoint is not registered, so `agctl proxy profile cpu` fails with a `404 Not Found` error, and `agctl proxy profile heap` writes a profile that contains no allocation samples.

@@ -58,7 +58,7 @@ Verify that the agentgateway pod is running.
 
 ```sh
 kubectl get pods -n agentgateway-system \
-  -l app.kubernetes.io/name=agentgateway-standalone
+  -l app.kubernetes.io/name={{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}
 ```
 
 Example output:
@@ -85,10 +85,10 @@ Check the gateway and admin Services.
 
 ```sh
 kubectl get svc -n agentgateway-system \
-  -l app.kubernetes.io/name=agentgateway-standalone
+  -l app.kubernetes.io/name={{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}
 ```
 
-## Open the admin UI
+## Open the UI
 
 The admin Service is internal by default. To open the UI locally, port-forward the admin Service.
 
@@ -101,9 +101,9 @@ Open <http://localhost:15000/ui> to get started.
 
 ## Customize the configuration
 
-The chart bootstraps `/config/config.yaml` on first install. By default, the bootstrap configuration enables the admin UI on `0.0.0.0:15000`, uses SQLite at `/config/data.db`, and creates empty HTTP and HTTPS binds for ports `8080` and `8443`.
+The chart bootstraps `/config/config.yaml` on first install. By default, the bootstrap configuration enables the UI on `0.0.0.0:15000`, uses SQLite at `/config/data.db`, and creates empty HTTP and HTTPS binds for ports `8080` and `8443`.
 
-Use the admin UI to add and save configuration updates after you install the chart. Throughout the rest of the standalone docs, whenever you see instructions to edit the configuration file, you can make the same change in the UI.
+Use the UI to add and save configuration updates after you install the chart. Throughout the rest of the standalone docs, whenever you see instructions to edit the configuration file, you can make the same change in the UI.
 
 You can also manage the configuration file with Helm values. Use this approach when you want to provide raw config directly or keep the config in a Helm values file. You can provide structured Helm values in `config`, or provide the complete file as `configYaml`. If both are set, `configYaml` takes precedence.
 

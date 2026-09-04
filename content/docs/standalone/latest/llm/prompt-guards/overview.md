@@ -55,8 +55,95 @@ The diagram shows content flowing through multiple guard layers. Each layer can:
 - **Pass**: Allow content to proceed to the next layer
 - **Reject**: Block the request and return an error message
 - **Mask**: Replace sensitive patterns with placeholders and continue
+- **Audit**: Record what the guard detected, and let the content continue unchanged
 
-Both actions are available on the request path and the response path. A response guard can reject a response as well as mask it.
+Every action is available on the request path and the response path. A response guard can reject a response as well as mask it.
+
+## Possible actions {#actions}
+
+The values that `action` takes depend on the guard, because a regex guard can mask content and an external guard cannot.
+
+| Guard | `action` values | Default |
+| -- | -- | -- |
+| `regex` | `mask`, `reject`, `audit` | `mask` |
+| `openAIModeration` | `reject`, `audit` | `reject` |
+| `webhook` | `reject`, `audit` | `reject` |
+| `bedrockGuardrails` | `reject`, `audit` | `reject` |
+| `googleModelArmor` | `reject`, `audit` | `reject` |
+| `azureContentSafety` | `reject`, `audit` | `reject` |
+
+## Audit mode {#audit}
+
+By default, a guard enforces the verdict that it reaches. A regex guard masks the content that matches, and an external guard rejects the request that its provider flags. Set `action: audit` to make a guard observe instead. The guard still runs, and it still records what it detected in metrics and in the structured access log, but the content always passes through unchanged.
+
+Audit mode is how you measure a guard before you enforce it. Start a new guard in audit mode, review what it flags in real traffic, tune the patterns or the provider policy, and then change the action to enforce the verdict.
+
+The following guardrail runs a credit card detector and OpenAI moderation, both in audit mode, so that the gateway logs what each guard finds and then forwards the request.
+
+> [!NOTE]
+> Audit mode changes only whether the gateway acts on the verdict. The guard still calls its provider, so an external guard in audit mode adds the same latency and the same provider cost as an enforcing guard.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  gateways: [default]
+  models:
+  - name: gpt-4o
+    provider: openai
+  providers:
+  - name: openai
+    provider: openai
+  policies:
+    guardrails:
+      request:
+      - regex:
+          action: audit
+          rules:
+          - builtin: creditCard
+      - openAIModeration:
+          action: audit
+```
+
+## Guard scope {#scope}
+
+A request guard does not inspect the whole request. By default, a guard reads the system prompt and the text of regular user and assistant messages. Tool call content is left alone, so a Social Security number that a tool returns to the model reaches the provider unmasked.
+
+Set the `scope` field on a request guard to choose what the guard reads.
+
+```yaml
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
+      request:
+      - scope: [systemPrompt, messages, toolOutput]
+        regex:
+          action: mask
+          rules:
+          - builtin: ssn
+```
+
+| Value | What the guard reads |
+| -- | -- |
+| `systemPrompt` | The system or developer prompt. |
+| `messages` | Regular user and assistant message text. |
+| `toolInput` | Tool call arguments, which the model usually produces. |
+| `toolOutput` | Tool call results that are fed back to the model. |
+
+> [!WARNING]
+> A `scope` **replaces** the default, it does not add to it. A guard with `scope: [toolOutput]` reads tool results and stops reading messages, so content that the guard used to catch passes through. To cover messages and tool results with one guard, list both values.
+
+Four rules govern the field:
+
+- **Omit `scope` to keep the default.** The default is `systemPrompt` and `messages`. An empty list is rejected with `scope must not be empty; omit it to use the default`.
+- **Only the `regex` and `bedrockGuardrails` guards accept a scope other than the default.** Any other guard type fails to load with `only regex and bedrockGuardrails guards support a non-default scope`. Other guard types always read the default.
+- **The field applies to request guards only.** A response guard has no `scope`.
+- **Masking `toolInput` can produce invalid JSON.** In APIs that carry tool arguments as opaque JSON, such as chat completions, the whole argument string is treated as one piece of text. A rule that matches across the JSON punctuation rewrites the arguments into something the provider cannot parse. Prefer `toolOutput`, or write a `toolInput` pattern that matches only a value.
+
+For a worked example, see [Regex filters]({{< link-hextra path="/llm/prompt-guards/regex/#scope" >}}).
 
 ## Shared and model-specific guardrails
 
@@ -141,6 +228,7 @@ Check out the following guides to build your guardrail system.
   {{< card link="../moderation" title="OpenAI moderation" description="Use the OpenAI Moderation API to detect harmful content across categories including hate, harassment, and violence." >}}
   {{< card link="../bedrock-guardrails" title="AWS Bedrock Guardrails" description="Apply AWS Bedrock Guardrails to filter LLM requests and responses for policy-violating content." >}}
   {{< card link="../google-model-armor" title="Google Model Armor" description="Apply Google Cloud Model Armor templates to sanitize LLM requests and responses." >}}
+  {{< card path="/llm/prompt-guards/webhooks/#deepkeep-example" title="DeepKeep" description="Use DeepKeep AI Firewall as an external guardrail through the Guardrail Webhook API." >}}
   {{< card path="/llm/prompt-guards/webhooks/" title="Custom webhooks" description="Integrate your own content safety logic by forwarding requests and responses to a custom webhook." >}}
   {{< card link="../multi-layer" title="Multi-layered guardrails" description="Run prompt guards in sequence, creating defense-in-depth protection." >}}
 {{< /cards >}}

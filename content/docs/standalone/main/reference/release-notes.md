@@ -10,29 +10,45 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
-## 🔥 Breaking changes {#v15-breaking-changes}
+## ✨ Highlights {#v16-highlights}
 
-### LLM input and total token counts include cache tokens
+- **[OpenTelemetry access log field names](#v16-access-log-preset)**: Rename the built-in HTTP fields in the stdout access log to their semantic convention equivalents.
 
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2880 -->
+## 🔥 Breaking changes {#v16-breaking-changes}
 
-LLM providers disagree about whether the input token count in a response includes the tokens that the provider read from or wrote to its prompt cache. Anthropic and Amazon Bedrock exclude cached tokens from the input count. OpenAI, Azure OpenAI, and Google Gemini include them. Agentgateway used to pass each provider's number through unchanged, so the same prompt produced different token counts depending on which provider served it.
+### `agctl catalog import` reads from the `github` source by default
 
-Agentgateway now normalizes the counts so that they mean the same thing for every provider.
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3275 -->
 
-- `llm.inputTokens` is the total input count, including cache-read and cache-creation tokens.
-- `llm.totalTokens` is the normalized input count plus the output count.
-- `llm.providerInputTokens` is a new field that reports the input count exactly as the provider sent it.
-- `llm.providerTotalTokens` is a new field that reports the total count exactly as the provider sent it.
+The `agctl catalog import` command used to accept only one pricing source, `models.dev`, which was also its default. The command now accepts a second source, `github`, and defaults to it. The `github` source is the curated model catalog that the agentgateway project publishes at [agentgateway.dev/model-catalog](https://agentgateway.dev/model-catalog).
 
-The `llm.cachedInputTokens` and `llm.cacheCreationInputTokens` fields do not change. Both are now always a subset of `llm.inputTokens`, for every provider.
+| Flag | 1.5.x | 1.6.x |
+| --- | --- | --- |
+| `--source` omitted | Imports from `models.dev` | Imports from `github` |
+| `--source models.dev` | Imports from `models.dev` | Unchanged |
+| `--source github` | Rejected as an unsupported source | Imports from `agentgateway.dev/model-catalog` |
 
-Only the providers that previously excluded cached tokens report different values. Those providers are Anthropic, Amazon Bedrock, Anthropic models served through Vertex AI or GitHub Copilot, and custom providers that use the `messages` or `anthropicTokenCount` format. Requests that do not use prompt caching are not affected, because the cache-read and cache-creation counts are zero.
+The catalog file format does not change, so a catalog that you generated earlier still loads. The two sources can price a model differently, and the `github` source covers the models that the agentgateway project tracks rather than everything that models.dev lists.
 
-The normalized counts reach every feature that reads a token count. This includes the `gen_ai.usage.input_tokens` log and span field, the `agentgateway_gen_ai_client_token_usage` metric, token-based rate limits, and any CEL expression that reads `llm.inputTokens` or `llm.totalTokens`. Cost tracking and the `llm.cost` field do not change, because the model cost catalog already priced cache-read and cache-creation tokens separately.
+The two sources also name some providers differently, and they disagree about what to do with an ID that they do not recognize. A `--providers` list that was written for models.dev can therefore go quiet rather than fail.
 
-**Actions to take**: To keep the provider's unmodified value in a CEL expression, custom log field, custom metric, or rate limit descriptor, read `llm.providerInputTokens` or `llm.providerTotalTokens` instead. Review each token-based rate limit that you sized against a provider that excluded cached tokens, because requests now consume the limit sooner. Annotate the upgrade in any dashboard that trends input tokens, so that the step change is not read as a traffic change.
+| Behavior | `models.dev` | `github` |
+| --- | --- | --- |
+| Provider ID namespace | models.dev IDs, such as `google` and `amazon-bedrock` | agentgateway IDs, such as `gcp.gemini` and `aws.bedrock` |
+| Unrecognized `--providers` ID | Fails with `no providers matched` | Reports `imported 0 providers` and writes the catalog without it |
 
-To restore the previous behavior while you migrate, set the `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable to `true` in the environment that the agentgateway process runs in. Agentgateway plans to remove this variable after version 1.5, so treat it as a short-term migration aid and not as a supported configuration.
+**Actions to take**: If you regenerate your catalog on a schedule and you want to keep importing from models.dev, add `--source models.dev` to the command. Otherwise, regenerate the catalog and compare the rates for the models that you care about before you load the new file, because a rate change alters the costs that appear in logs, traces, metrics, and any CEL policy that reads `llm.cost`. For the flags, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
 
-For guidance on which field to read, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}). For the full list of fields in the CEL context, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
+## 🌟 New features {#v16-new-features}
+
+### Operations {#v16-features-operations}
+
+#### OpenTelemetry field names for stdout access logs {#v16-access-log-preset}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3182 -->
+
+The stdout access log uses short, human-oriented field names, such as `http.path`. A new `preset` field on the access log policy selects a built-in field set instead. Set `preset: otel` to rename the built-in HTTP fields to their [OpenTelemetry semantic convention](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) equivalents, such as `url.path`, and to emit `network.protocol.version` as `1.1` rather than `HTTP/1.1`. The preset also adds `url.scheme`, and it adds `server.port` and `url.query` when the request supplies them. Note that `url.path` carries the path only: a query string that used to appear on `http.path` now appears on `url.query` instead.
+
+Only the built-in HTTP field set is renamed. The `gen_ai.*` and `mcp.*` fields already use semantic convention names, fields that you add yourself keep the names that you give them, and an OTLP export is unaffected.
+
+For the field rename table and an example, see [Use OpenTelemetry field names]({{< link-hextra path="/observability/access-logs/view/#preset" >}}).

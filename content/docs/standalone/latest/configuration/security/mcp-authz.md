@@ -159,7 +159,7 @@ EOF
 {{< /doc-test >}}
 
 > [!NOTE]
-> Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway admin UI before using them in your configuration.
+> Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway UI before using them in your configuration.
 
 ## Role-based access with JWT claims
 

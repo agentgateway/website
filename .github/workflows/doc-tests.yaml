@@ -26,6 +26,7 @@ jobs:
     outputs:
       matrix: ${{ steps.list.outputs.matrix }}
       has_tests: ${{ steps.list.outputs.has_tests }}
+      test_count: ${{ steps.list.outputs.test_count }}
       matrix_credentialed: ${{ steps.list.outputs.matrix_credentialed }}
       has_credentialed_tests: ${{ steps.list.outputs.has_credentialed_tests }}
       dev_version: ${{ steps.dev-version.outputs.dev_version }}
@@ -100,6 +101,7 @@ jobs:
             TESTS=$(python3 docs-tests/scripts/doc_test_run.py --repo-root . --list-tests --types functional,live)
           fi
           COUNT=$(echo "$TESTS" | jq 'length')
+          echo "test_count=${COUNT}" >> $GITHUB_OUTPUT
           if [ "$COUNT" -gt 0 ]; then
             echo "has_tests=true" >> $GITHUB_OUTPUT
           else
@@ -322,12 +324,27 @@ jobs:
         run: |
           FAILED=0
           TEST_INDEX=0
-          while IFS=$'\t' read -r file test; do
+          # Read the test list on fd 3 and give each test run its own stdin
+          # (</dev/null). Guides that run a command which reads stdin, such as
+          # `kubectl exec -i` or `kubectl run -i`, would otherwise drain the
+          # remaining lines of this loop's input, so the shard would stop early
+          # and silently skip its remaining tests while still exiting 0.
+          while IFS=$'\t' read -r -u 3 file test; do
             python3 docs-tests/scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
-              --report-file "out/tests/generated/shard/${TEST_INDEX}/test-results.yaml" || FAILED=1
+              --report-file "out/tests/generated/shard/${TEST_INDEX}/test-results.yaml" \
+              < /dev/null || FAILED=1
             TEST_INDEX=$((TEST_INDEX + 1))
-          done < <(echo "$SHARD_TESTS" | jq -r '.[] | "\(.file)\t\(.test)"')
+          done 3< <(echo "$SHARD_TESTS" | jq -r '.[] | "\(.file)\t\(.test)"')
           python3 docs-tests/scripts/merge_test_results.py out/tests/generated/shard/ out/tests/generated/test-results.yaml
+
+          # Every assigned test must have produced a report. A missing report
+          # means the loop above did not run it, which must fail the shard
+          # rather than pass with a short result set.
+          EXPECTED=$(echo "$SHARD_TESTS" | jq 'length')
+          if [ "$TEST_INDEX" -ne "$EXPECTED" ]; then
+            echo "::error::Shard ran $TEST_INDEX of $EXPECTED assigned test(s)."
+            FAILED=1
+          fi
           exit $FAILED
 
       - name: Upload test results
@@ -418,12 +435,22 @@ jobs:
         run: |
           FAILED=0
           TEST_INDEX=0
-          while IFS=$'\t' read -r file test; do
+          # Same fd-3 / </dev/null handling as run-test above: a guide that reads
+          # stdin would otherwise drain this loop's input and silently skip the
+          # shard's remaining tests while still exiting 0.
+          while IFS=$'\t' read -r -u 3 file test; do
             python3 docs-tests/scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
-              --report-file "out/tests/generated/shard/${TEST_INDEX}/test-results.yaml" || FAILED=1
+              --report-file "out/tests/generated/shard/${TEST_INDEX}/test-results.yaml" \
+              < /dev/null || FAILED=1
             TEST_INDEX=$((TEST_INDEX + 1))
-          done < <(echo "$SHARD_TESTS" | jq -r '.[] | "\(.file)\t\(.test)"')
+          done 3< <(echo "$SHARD_TESTS" | jq -r '.[] | "\(.file)\t\(.test)"')
           python3 docs-tests/scripts/merge_test_results.py out/tests/generated/shard/ out/tests/generated/test-results.yaml
+
+          EXPECTED=$(echo "$SHARD_TESTS" | jq 'length')
+          if [ "$TEST_INDEX" -ne "$EXPECTED" ]; then
+            echo "::error::Shard ran $TEST_INDEX of $EXPECTED assigned test(s)."
+            FAILED=1
+          fi
           exit $FAILED
 
       - name: Upload test results
@@ -521,17 +548,38 @@ jobs:
           retention-days: 14
 
       - name: Fail if any test failed
+        env:
+          # Number of functional/live test cases the discover job found. The merged
+          # report must account for all of them, otherwise a test that never ran
+          # would be indistinguishable from one that passed.
+          #
+          # Counted per type, not against the whole report: the merged results also
+          # contain the schema-check job's cases, which are discovered repo-wide and
+          # are not narrowed by changed files the way functional/live are. Comparing
+          # test_count against len(tests) would make `missing` negative on every PR
+          # and silently defeat the check the moment schema results outnumber the
+          # shortfall. schema-check needs no equivalent guard: it is a single job that
+          # reports every case it discovers, and it fails the workflow on its own if
+          # it does not run.
+          EXPECTED_TESTS: ${{ needs.discover.outputs.test_count }}
         run: |
           python3 -c "
-          import yaml, sys
+          import os, yaml, sys
           with open('out/tests/generated/test-results.yaml') as f:
               report = yaml.safe_load(f) or {}
           tests = report.get('tests', {})
           failed = [k for k, v in tests.items() if v.get('status') != 'passed']
+          sharded = {k: v for k, v in tests.items() if v.get('type') != 'schema'}
+          expected = int(os.environ.get('EXPECTED_TESTS') or 0)
+          missing = expected - len(sharded)
           if failed:
               print(f'{len(failed)} test(s) failed:', file=sys.stderr)
               for name in failed:
                   print(f'  - {name}', file=sys.stderr)
+          if missing > 0:
+              print(f'{missing} discovered functional/live test(s) produced no result:', file=sys.stderr)
+              print(f'  discovered {expected}, reported {len(sharded)}', file=sys.stderr)
+          if failed or missing > 0:
               sys.exit(1)
           print(f'All {len(tests)} test(s) passed')
           "

@@ -84,7 +84,7 @@ With a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}
 - `llm.cacheCreationInputTokens`: tokens written to cache (a one-time cost).
 - `llm.cost.cacheRead` and `llm.cost.cacheWrite`: the USD cost of each, separate from `llm.cost.input`.
 
-A high `cachedInputTokens`-to-`inputTokens` ratio means caching is working.
+A high `cachedInputTokens`-to-`inputTokens` ratio means caching is working. Because `inputTokens` includes the cached tokens for every provider, the ratio is a true fraction and is comparable across providers.
 
 ## Measure the savings in dollars
 
