@@ -32,11 +32,14 @@ Prepare a catalog by creating your own JSON file or using the `agctl catalog imp
 
 Use `agctl catalog import` to generate a catalog JSON file, then load it into a ConfigMap.
 
-1. Generate a catalog from a supported source. By default, `agctl catalog import` imports every provider that the proxy supports from [models.dev](https://models.dev). To import only a subset of providers, pass a comma-separated list to `--providers`.
+1. Generate a catalog from a supported source. By default, `agctl catalog import` imports every provider in the `github` source, which is the curated catalog that the agentgateway project publishes at [agentgateway.dev/model-catalog](https://agentgateway.dev/model-catalog). To import from [models.dev](https://models.dev) instead, pass `--source models.dev`, which imports every provider that the proxy supports. To import only a subset of providers, pass a comma-separated list to `--providers`.
 
    ```sh
    agctl catalog import --pretty --providers openai,anthropic --out ./catalog.json
    ```
+
+   > [!IMPORTANT]
+   > The `--providers` flag takes the provider IDs of the source that you import from, and the two sources name some providers differently. The `github` source uses the agentgateway provider IDs, such as `gcp.gemini` and `aws.bedrock`, while `models.dev` uses its own IDs, such as `google` and `amazon-bedrock`. An ID that the `github` source does not recognize is skipped without an error, so check the provider list in the generated file before you load it.
 
 2. Create or update the ConfigMap from the generated file. The `--from-file` syntax sets the data key to `catalog.json`.
 

@@ -101,3 +101,5 @@
 | serviceAccount.name | string | Set the name of the service account to use. If not set and create is true, a name is generated using the fullname template.<br/><br/>The default value is `""`. |
 | tolerations | list | Set tolerations for pod scheduling, such as 'key: "nvidia.com/gpu"'.<br/><br/>The default value is `[]`. |
 | topologySpreadConstraints | list | Configure how controller pods are spread across topology domains, such as nodes or zones.<br/><br/>The default value is `[]`. |
+| xBackend | object | Configure the experimental Gateway API XBackend resource.<br/><br/>The default value is `{"enabled":false}`. |
+| xBackend.enabled | bool | Enable XBackend support in the agentgateway controller.<br/><br/>The default value is `false`. |
