@@ -10,7 +10,7 @@ In this guide you explore how to expose the kgateway proxy with an AWS network l
 ## Before you begin
 
 1. Create or use an existing AWS account. 
-2. Follow the [Get started guide]({{< link-hextra path="/quickstart/">}}) to install kgateway, set up a gateway resource, and deploy the httpbin sample app.
+2. Follow the [Get started guide]({{< link-hextra path="/documentation/quickstart/">}}) to install kgateway, set up a gateway resource, and deploy the httpbin sample app.
 
 ## Step 1: Deploy the AWS Load Balancer controller
 

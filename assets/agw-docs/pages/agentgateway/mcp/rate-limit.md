@@ -78,13 +78,13 @@ Review the following table for example use cases and configuration guidance.
 
 Also, check out the rate limiting guides for other use cases:
 
-- [LLM rate limiting by token expenses]({{< link-hextra path="/llm/rate-limit" >}}).
-- [HTTP rate limiting]({{< link-hextra path="/security/rate-limit-http" >}}).
+- [LLM rate limiting by token expenses]({{< link-hextra path="/documentation/llm/rate-limit" >}}).
+- [HTTP rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http" >}}).
 
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Deploy and route to an MCP server through agentgateway. For setup instructions, see [Route to a static MCP server]({{< link-hextra path="/mcp/static-mcp/" >}}).
+2. Deploy and route to an MCP server through agentgateway. For setup instructions, see [Route to a static MCP server]({{< link-hextra path="/documentation/mcp/static-mcp/" >}}).
 
 ## Local rate limiting {#local}
 
@@ -211,7 +211,7 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
 Local rate limiting treats every POST to `/mcp` identically. But some tools are more expensive than others, and so they deserve tighter limits. Global rate limiting with CEL descriptors lets you look inside the MCP request body and apply different ceilings per tool name.
 
 > [!NOTE]
-> Global rate limiting requires an external [Envoy Rate Limit service](https://github.com/envoyproxy/ratelimit) backed by Redis. For a complete guide on global rate limiting architecture and setup, see the [Global rate limiting guide]({{< link-hextra path="/security/rate-limit-global" >}}).
+> Global rate limiting requires an external [Envoy Rate Limit service](https://github.com/envoyproxy/ratelimit) backed by Redis. For a complete guide on global rate limiting architecture and setup, see the [Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}).
 
 The following steps show how to set up global rate limiting infrastructure and configure per-tool rate limits using CEL expressions.
 

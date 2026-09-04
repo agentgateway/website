@@ -1,6 +1,6 @@
-Inject artificial latency into requests with an {{< reuse "agw-docs/snippets/policy.md" >}} to test how your clients and upstream services handle slow responses. Fault injection is useful for verifying that timeouts, retries, and client-side deadlines behave as expected. To learn more, you can use fault injection alongside [Timeouts]({{< link-hextra path="/resiliency/timeouts/" >}}) and [Retries]({{< link-hextra path="/resiliency/retry/" >}}).
+Inject artificial latency into requests with an {{< reuse "agw-docs/snippets/policy.md" >}} to test how your clients and upstream services handle slow responses. Fault injection is useful for verifying that timeouts, retries, and client-side deadlines behave as expected. To learn more, you can use fault injection alongside [Timeouts]({{< link-hextra path="/documentation/resiliency/timeouts/" >}}) and [Retries]({{< link-hextra path="/documentation/resiliency/retry/" >}}).
 
-The injected delay counts against the request timeout. If the delay is longer than the configured [request timeout]({{< link-hextra path="/resiliency/timeouts/" >}}), the request times out.
+The injected delay counts against the request timeout. If the delay is longer than the configured [request timeout]({{< link-hextra path="/documentation/resiliency/timeouts/" >}}), the request times out.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 

@@ -25,7 +25,7 @@ Kagent agents running in Kubernetes need enterprise governance:
 ## Before you begin
 {{< reuse "agw-docs/snippets/prereq.md" >}}
 
-4. Follow the [Ollama]({{< link-hextra path="/llm/providers/ollama/">}}) guide to install and setup Ollama.
+4. Follow the [Ollama]({{< link-hextra path="/integrations/llm/providers/ollama/">}}) guide to install and setup Ollama.
 
 ## Architecture
 
@@ -136,7 +136,7 @@ Install kagent in your cluster. For more information, see the [kagent docs](http
 
 Agentgateway provides policies that you can use to govern your kagent environment.
 ### Block requests with PII
-1. Create an `AgentgatewayPolicy` resource to deny requests to the LLM provider that include PII, such as a `email` string in the request body on. For more examples, see the [Guardrails docs]({{< link-hextra path="/llm/guardrails/regex/#block-requests-with-pii">}}).
+1. Create an `AgentgatewayPolicy` resource to deny requests to the LLM provider that include PII, such as a `email` string in the request body on. For more examples, see the [Guardrails docs]({{< link-hextra path="/documentation/llm/guardrails/regex/#block-requests-with-pii">}}).
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: agentgateway.dev/v1alpha1

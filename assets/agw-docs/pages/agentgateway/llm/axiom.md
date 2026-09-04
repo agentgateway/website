@@ -2,9 +2,9 @@
 
 ## Before you begin
 
-1. [Install agentgateway]({{< link-hextra path="/quickstart/install/" >}}) in your Kubernetes cluster.
-2. [Set up an agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-3. Set up an [LLM provider]({{< link-hextra path="/llm/providers/" >}}) and route in agentgateway.
+1. [Install agentgateway]({{< link-hextra path="/documentation/quickstart/install/" >}}) in your Kubernetes cluster.
+2. [Set up an agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
+3. Set up an [LLM provider]({{< link-hextra path="/documentation/llm/providers/" >}}) and route in agentgateway.
 4. Install the `kubectl` and `helm` command-line tools.
 5. Sign up for an [Axiom account](https://app.axiom.co/).
 

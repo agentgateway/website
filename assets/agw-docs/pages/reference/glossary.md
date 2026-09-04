@@ -58,7 +58,7 @@ In kgateway, two types of proxies can act as API Gateways:
 ### Backends
 Destination services or endpoints that kgateway routes traffic to, such as Kubernetes Services, Lambdas, external hosts, or custom backends. These backends are connected to routes for forwarding traffic.
 
-**Learn more**: [Backend guides]({{< link-hextra path="/traffic-management/destination-types/backends/" >}})
+**Learn more**: [Backend guides]({{< link-hextra path="/documentation/traffic-management/destination-types/backends/" >}})
 
 ### Cluster (Kubernetes)
 A collection of Kubernetes nodes (control plane + workers) that run your workloads and host kgateway.
@@ -122,7 +122,7 @@ A kgateway resource that integrates extended services such as external authoriza
 ### GatewayParameters
 Configures template, deployment, and runtime settings for a Gateway instance (including Envoy proxy configuration).
 
-**Learn more**: [Gateway setup guides]({{< link-hextra path="/setup/default/" >}})
+**Learn more**: [Gateway setup guides]({{< link-hextra path="/documentation/setup/default/" >}})
 
 ### GRPCRoute
 A Gateway API resource for configuring gRPC routing rules.
@@ -161,7 +161,7 @@ Systems that help you understand the behavior of your network traffic. You can i
 ### Proxy
 A data plane process (Envoy or agentgateway) that receives, processes, and forwards traffic based on kgateway configuration.
 
-**Learn more**: [Architecture docs]({{< link-hextra path="/about/architecture/" >}})
+**Learn more**: [Architecture docs]({{< link-hextra path="/documentation/about/architecture/" >}})
 
 ### Rate Limiting
 Controls how many requests can reach your services over time. Often implemented via Gateway Extensions using Envoy rate-limit services.
@@ -193,7 +193,7 @@ Features that shape, route, or modify traffic, such as load balancing, matching,
 ### TrafficPolicy
 A kgateway resource that defines advanced traffic management settings, retries, timeouts, mirroring, security policies, and more.
 
-**Learn more**: [TrafficPolicy concept docs]({{< link-hextra path="/about/policies/trafficpolicy/" >}})
+**Learn more**: [TrafficPolicy concept docs]({{< link-hextra path="/documentation/about/policies/trafficpolicy/" >}})
 
 ### Translation
 The kgateway control plane process that converts Gateway API resources and CRDs into xDS configuration for enforcement in the Envoy-based kgateway or agentgateway data planes.

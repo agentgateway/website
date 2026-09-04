@@ -1,7 +1,7 @@
 Learn how policy inheritance and overrides work for Kubernetes Gateway API-native policies in a route delegation setup.
 
 > [!NOTE]
-> Want to learn more about policy inheritance and overrides for `AgentgatewayPolicy` resources? See [AgentgatewayPolicy resources]({{< link-hextra path="/traffic-management/route-delegation/inheritance/trafficpolicies/" >}}).
+> Want to learn more about policy inheritance and overrides for `AgentgatewayPolicy` resources? See [AgentgatewayPolicy resources]({{< link-hextra path="/documentation/traffic-management/route-delegation/inheritance/trafficpolicies/" >}}).
 
 ## About policy inheritance
 

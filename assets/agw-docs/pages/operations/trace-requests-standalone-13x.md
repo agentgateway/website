@@ -27,8 +27,8 @@ You can run `agctl proxy trace` in two modes:
 
 ## Before you begin
 
-* [Install agctl]({{< link-hextra path="/operations/agctl" >}}).
-* Install the [agentgateway binary]({{< link-hextra path="/quickstart/" >}}) and have a `config.yaml` ready. The examples in this guide use the [non-agentic HTTP quickstart]({{< link-hextra path="/quickstart/non-agentic-http" >}}) setup, with agentgateway listening on `:3000` and forwarding to httpbin on `:8000`.
+* [Install agctl]({{< link-hextra path="/documentation/operations/agctl" >}}).
+* Install the [agentgateway binary]({{< link-hextra path="/documentation/quickstart/" >}}) and have a `config.yaml` ready. The examples in this guide use the [non-agentic HTTP quickstart]({{< link-hextra path="/documentation/quickstart/non-agentic-http" >}}) setup, with agentgateway listening on `:3000` and forwarding to httpbin on `:8000`.
 
 If you do not already have a setup, the following minimal `config.yaml` works for the examples in this guide.
 

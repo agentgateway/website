@@ -320,7 +320,7 @@ In the next step, you instruct agentgateway to mask credit card numbers that are
 
 By default, a request guard reads the system prompt and regular message text only. Tool call results that come back to the model are not read, so PII that a tool returns reaches the provider untouched. Set the `scope` field to include `ToolOutput`.
 
-For what each scope value covers and the limits on the field, see [Guard scope]({{< link-hextra path="/llm/guardrails/overview/#scope" >}}).
+For what each scope value covers and the limits on the field, see [Guard scope]({{< link-hextra path="/documentation/llm/guardrails/overview/#scope" >}}).
 
 1. Create a {{< reuse "agw-docs/snippets/policy.md" >}} resource that rejects a request when a tool result contains a Social Security number.
 

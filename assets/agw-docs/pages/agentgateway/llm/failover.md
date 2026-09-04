@@ -2,7 +2,7 @@ Prioritize the failover of requests across different models from an LLM provider
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
 > [!NOTE]
-> **Model-centric alternative**: You can also configure failover with the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API, by using a virtual model with `virtualModel.failover` instead of an {{< reuse "agw-docs/snippets/backend.md" >}} with priority groups. For more information, see [Virtual models]({{< link-hextra path="/llm/models/virtual/" >}}).
+> **Model-centric alternative**: You can also configure failover with the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API, by using a virtual model with `virtualModel.failover` instead of an {{< reuse "agw-docs/snippets/backend.md" >}} with priority groups. For more information, see [Virtual models]({{< link-hextra path="/documentation/llm/models/virtual/" >}}).
 {{< /version >}}
 
 ## About failover {#about}
@@ -49,22 +49,22 @@ flowchart LR
 
 Failover uses priority groups to automatically switch between backends when failures occur. 
 
-For weight-based traffic distribution (A/B testing, traffic splitting, or canary deployments), see [Traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}).
+For weight-based traffic distribution (A/B testing, traffic splitting, or canary deployments), see [Traffic splitting]({{< link-hextra path="/documentation/traffic-management/traffic-split/" >}}).
 
-{{< version exclude-if="1.0.x,1.1.x" >}}For locality-aware routing (zones and regions), see [Locality-aware routing]({{< link-hextra path="/traffic-management/locality-aware-routing/" >}}).{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x" >}}For locality-aware routing (zones and regions), see [Locality-aware routing]({{< link-hextra path="/documentation/traffic-management/locality-aware-routing/" >}}).{{< /version >}}
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-2. Set up [API access to each LLM provider]({{< link-hextra path="/llm/api-keys/" >}}) that you want to use. The examples in this guide use OpenAI and Anthropic.
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
+2. Set up [API access to each LLM provider]({{< link-hextra path="/documentation/llm/api-keys/" >}}) that you want to use. The examples in this guide use OpenAI and Anthropic.
 
 ## Fail over to other models {#model-failover}
 
 You can configure failover across multiple models and providers by using priority groups. Each priority group represents a set of providers that share the same priority level. Failover priority is determined by the order in which the priority groups are listed in the {{< reuse "agw-docs/snippets/backend.md" >}}. The priority group that is listed first is assigned the highest priority.
 
-Models within the same priority group are [load balanced]({{< link-hextra path="/llm/load-balancing/" >}}) using the Power of Two Choices (P2C) algorithm, which intelligently routes requests based on health, latency, and current load, not just simple round-robin. This pattern of P2C load balancing within a tier with failover across tiers provides superior performance compared to named strategies.
+Models within the same priority group are [load balanced]({{< link-hextra path="/documentation/llm/load-balancing/" >}}) using the Power of Two Choices (P2C) algorithm, which intelligently routes requests based on health, latency, and current load, not just simple round-robin. This pattern of P2C load balancing within a tier with failover across tiers provides superior performance compared to named strategies.
 
-For weight-based traffic distribution within a priority group (such as 80/20 splits for A/B testing or canary rollouts), see [Traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}).
+For weight-based traffic distribution within a priority group (such as 80/20 splits for A/B testing or canary rollouts), see [Traffic splitting]({{< link-hextra path="/documentation/traffic-management/traffic-split/" >}}).
 
 1. Create or update the {{< reuse "agw-docs/snippets/backend.md" >}} for your LLM providers.
 
@@ -173,7 +173,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    In this example, you configure failover from a self-hosted vLLM instance to a cloud provider. The self-hosted instance is a model that you run yourself, such as vLLM on your own GPU hardware. The cloud provider is a fully managed, externally hosted LLM API, such as OpenAI. Requests route to your in-cluster vLLM deployment first. If vLLM becomes unavailable, requests fail over to OpenAI.
 
-   Before you begin, [set up vLLM]({{< link-hextra path="/llm/providers/vllm/" >}}) in your cluster.
+   Before you begin, [set up vLLM]({{< link-hextra path="/integrations/llm/providers/vllm/" >}}) in your cluster.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -341,7 +341,7 @@ This request confirms your priority order. It does not exercise failover, becaus
 
 A real provider outage is hard to arrange on purpose, so the preceding steps cannot show failover as it happens. To see the sequence on demand, point the highest-priority group at an endpoint that always fails, and the fallback group at an endpoint that always succeeds. Eviction and failover then happen on the first request, with no live provider and no token spend.
 
-This example uses [httpbun]({{< link-hextra path="/llm/providers/httpbun/" >}}), a mock LLM that accepts requests without an API key. Two httpbun endpoints matter here.
+This example uses [httpbun]({{< link-hextra path="/integrations/llm/providers/httpbun/" >}}), a mock LLM that accepts requests without an API key. Two httpbun endpoints matter here.
 
 | httpbun endpoint | Response |
 | --- | --- |
@@ -657,7 +657,7 @@ One httpbun deployment serves both endpoints, so a single mock LLM acts as both 
 
 ### Fail over without returning an error {#hide-failure}
 
-In the preceding sequence the client receives the 500 from request 1. To fail over without passing that error back to the client, add a [retry policy]({{< link-hextra path="/resiliency/retry/" >}}) alongside the health policy.
+In the preceding sequence the client receives the 500 from request 1. To fail over without passing that error back to the client, add a [retry policy]({{< link-hextra path="/documentation/resiliency/retry/" >}}) alongside the health policy.
 
 ```yaml {paths="failover"}
 kubectl apply -f- <<EOF
@@ -765,7 +765,7 @@ kubectl delete AgentgatewayBackend failover-demo -n agentgateway-system --ignore
 
 Explore other agentgateway features.
 
-* Learn more about [load balancing strategies]({{< link-hextra path="/llm/load-balancing/" >}}) and the P2C algorithm.
-* Pass in [functions]({{< link-hextra path="/llm/functions/">}}) to an LLM to request as a step towards agentic AI.
-* Set up [prompt guards]({{< link-hextra path="/llm/guardrails/overview/">}}) to block unwanted requests and mask sensitive data.
-* [Enrich your prompts]({{< link-hextra path="/llm/prompt-enrichment/">}}) with system prompts to improve LLM outputs.
+* Learn more about [load balancing strategies]({{< link-hextra path="/documentation/llm/load-balancing/" >}}) and the P2C algorithm.
+* Pass in [functions]({{< link-hextra path="/documentation/llm/functions/">}}) to an LLM to request as a step towards agentic AI.
+* Set up [prompt guards]({{< link-hextra path="/documentation/llm/guardrails/overview/">}}) to block unwanted requests and mask sensitive data.
+* [Enrich your prompts]({{< link-hextra path="/documentation/llm/prompt-enrichment/">}}) with system prompts to improve LLM outputs.

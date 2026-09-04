@@ -60,5 +60,12 @@ render:
     # knownTypes entry for them is silently ignored. Entries for PullPolicy and
     # metav1.Duration used to live here and never took effect. When a generated
     # kubernetes.io anchor is broken (for example #pullpolicy-v1-core, which is a
-    # type alias with no section of its own), rewrite it in the post-processing
-    # step of .github/workflows/reference-docs.yaml instead.
+    # type alias with no section of its own), add a sed to the post-processing
+    # block in the "Generate API docs" step of .github/workflows/reference-docs.yaml
+    # instead. Do not patch the generated api-*.md files by hand: the next regen
+    # reverts the edit, and the regen runs nightly.
+    #
+    # Reserve those rewrites for links that are genuinely wrong for a reader.
+    # Links that merely redirect (git.k8s.io, for one) belong in the exclude list
+    # in docs-link-checking/lychee.toml, not here: rewriting them pins a URL that
+    # can rot, which is worse than the redirect.

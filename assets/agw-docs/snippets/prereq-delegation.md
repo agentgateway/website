@@ -1,6 +1,6 @@
-1. Follow the [Get started guide]({{< link-hextra path="/quickstart/" >}}) to install agentgateway.
+1. Follow the [Get started guide]({{< link-hextra path="/documentation/quickstart/" >}}) to install agentgateway.
 
-2. Follow the [Sample app guide]({{< link-hextra path="/install/sample-app/" >}}) to create the `agentgateway-proxy` Gateway with an HTTP listener.
+2. Follow the [Sample app guide]({{< link-hextra path="/documentation/install/sample-app/" >}}) to create the `agentgateway-proxy` Gateway with an HTTP listener.
 
 3. Get the external address of the agentgateway proxy and save it in an environment variable.
    {{< tabs >}}

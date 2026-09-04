@@ -4,7 +4,7 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 
 {{< reuse "agw-docs/snippets/claude-desktop-3p.md" >}}
 
-The steps in this guide run agentgateway on the same machine as Claude Desktop and use the loopback address `127.0.0.1`, so no certificate is needed. To point Claude Desktop at an agentgateway proxy on another host, serve the proxy over HTTPS. For more information, see [HTTPS listeners]({{< link-hextra path="/configuration/listeners/#https-listeners" >}}).
+The steps in this guide run agentgateway on the same machine as Claude Desktop and use the loopback address `127.0.0.1`, so no certificate is needed. To point Claude Desktop at an agentgateway proxy on another host, serve the proxy over HTTPS. For more information, see [HTTPS listeners]({{< link-hextra path="/documentation/configuration/listeners/#https-listeners" >}}).
 
 ## Before you begin
 
@@ -19,7 +19,7 @@ The steps in this guide run agentgateway on the same machine as Claude Desktop a
    | **[Claude subscription passthrough](#configure-agentgateway)** | Advanced option for preserving per-user Claude subscription usage. Agentgateway passes each user's token upstream and does not independently authenticate the caller. | User's Claude subscription |
 
    For a gateway API key, configure an LLM model and a [virtual API
-   key]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) in
+   key]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) in
    agentgateway. For subscription passthrough, you need a Claude Pro, Max,
    Team, or Enterprise subscription and the [Claude Code
    CLI](https://code.claude.com/docs), which provides the `claude setup-token`
@@ -30,11 +30,11 @@ The steps in this guide run agentgateway on the same machine as Claude Desktop a
 
 {{< reuse "agw-docs/snippets/llm-client-setup-callout.md" >}}
 
-For Claude Desktop, Client Setup outputs the gateway URL and API key; it does not configure a model name in Claude Desktop. The gateway route must already accept the key and support the Anthropic Messages API at `/v1/messages`, and agentgateway must hold the upstream provider credential. An endpoint that exposes only the OpenAI-compatible `/v1/chat/completions` API is not sufficient. For more information about the UI, see [UI]({{< link-hextra path="/operations/ui/" >}}).
+For Claude Desktop, Client Setup outputs the gateway URL and API key; it does not configure a model name in Claude Desktop. The gateway route must already accept the key and support the Anthropic Messages API at `/v1/messages`, and agentgateway must hold the upstream provider credential. An endpoint that exposes only the OpenAI-compatible `/v1/chat/completions` API is not sufficient. For more information about the UI, see [UI]({{< link-hextra path="/documentation/operations/ui/" >}}).
 
 For a managed rollout, see [Manage gateway API keys with Microsoft
 Intune]({{< link-hextra
-path="/integrations/llm-clients/microsoft-intune/#claude-gateway-api-key" >}}).
+path="/integrations/llm/clients/microsoft-intune/#claude-gateway-api-key" >}}).
 
 To preserve per-user subscription billing instead of using a gateway API key,
 continue with the following advanced configuration.
@@ -156,7 +156,7 @@ virtual API key policy to this route.
 
 For a managed rollout of this subscription configuration, see [Manage Claude
 subscriptions with Microsoft Intune]({{< link-hextra
-path="/integrations/llm-clients/microsoft-intune/#claude-subscription" >}}).
+path="/integrations/llm/clients/microsoft-intune/#claude-subscription" >}}).
 
 ## Authenticate users with your identity provider {#sso}
 
@@ -246,7 +246,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    discovery-document URL, which ends in `/.well-known/openid-configuration`,
    as the issuer.
 
-   For more detail on JWT validation, see [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}).
+   For more detail on JWT validation, see [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}).
 
 4. Restart agentgateway to load the new configuration.
 
@@ -264,7 +264,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    | Issuer URL | `https://login.microsoftonline.com/$TENANT_ID/v2.0` |
    | Bearer token | **ID token** |
    | Scopes | `openid profile email offline_access` |
-   | Sign-in flow | **Browser** for this initial test; use the [Intune guide]({{< link-hextra path="/integrations/llm-clients/microsoft-intune/#claude-entra" >}}) to move managed devices to **Broker** |
+   | Sign-in flow | **Browser** for this initial test; use the [Intune guide]({{< link-hextra path="/integrations/llm/clients/microsoft-intune/#claude-entra" >}}) to move managed devices to **Broker** |
    | Model discovery | **Off** when you use a fixed model list |
    | Models | One or more full model IDs that the backend exposes |
 
@@ -290,7 +290,7 @@ Configure and test one machine in developer mode first. When the connection work
 
 For an end-to-end Microsoft Intune rollout with Entra ID and managed-device
 enforcement, see [Manage Claude Desktop with Microsoft Intune]({{< link-hextra
-path="/integrations/llm-clients/microsoft-intune/#claude-entra" >}}).
+path="/integrations/llm/clients/microsoft-intune/#claude-entra" >}}).
 
 Managed configuration takes precedence over local settings, so a user cannot point the app at a different endpoint. The delivery mechanism differs per operating system.
 
@@ -356,6 +356,6 @@ If you configured gateway API key or OIDC authentication in strict mode, send a 
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/llm/providers/anthropic" title="Anthropic provider" subtitle="Complete Anthropic provider configuration" >}}
-  {{< card path="/llm/prompt-guards/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
+  {{< card path="/integrations/llm/providers/anthropic" title="Anthropic provider" subtitle="Complete Anthropic provider configuration" >}}
+  {{< card path="/documentation/llm/prompt-guards/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
 {{< /cards >}}

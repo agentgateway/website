@@ -2,7 +2,7 @@ Create an HTTP listener on your gateway proxy. Your proxy listens for HTTP traff
 
 ## Before you begin
 
-Deploy the [httpbin sample app]({{< link-hextra path="/install/sample-app/" >}}).
+Deploy the [httpbin sample app]({{< link-hextra path="/documentation/install/sample-app/" >}}).
    
 ## Set up an HTTP listener {#setup-http}
 

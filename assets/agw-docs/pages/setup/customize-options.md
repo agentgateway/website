@@ -1,4 +1,4 @@
-In the standalone agentgateway deployment, you can manage [configuration](https://agentgateway.dev/docs/standalone/latest/configuration/overview/) via a YAML or JSON file. The configuration features of agentgateway are captured in the [schema of the agentgateway codebase](https://github.com/agentgateway/agentgateway/tree/main/schema). 
+In the standalone agentgateway deployment, you can manage [configuration](https://agentgateway.dev/docs/standalone/latest/documentation/configuration/overview/) via a YAML or JSON file. The configuration features of agentgateway are captured in the [schema of the agentgateway codebase](https://github.com/agentgateway/agentgateway/tree/main/schema). 
 
 Unlike in the standalone agentgateway deployment, you do not configure these features in a raw configuration file when running agentgateway on Kubernetes. Instead, you configure them in a Kubernetes Gateway API-native way by using an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
 
@@ -8,7 +8,7 @@ The following options can be used to provide custom agentgateway proxy configura
 * [Overlays (strategic merge patch)](#overlays) 
 * [Raw upstream config](#raw-config)
 
-To see a setup example for each option, see [Customize the gateway]({{< link-hextra path="/setup/customize/customize/" >}}). For common customization examples, see [Example configs]({{< link-hextra path="/setup/customize/configs/" >}}). 
+To see a setup example for each option, see [Customize the gateway]({{< link-hextra path="/documentation/setup/customize/customize/" >}}). For common customization examples, see [Example configs]({{< link-hextra path="/documentation/setup/customize/configs/" >}}). 
 
 ## Built-in customization (recommended) {#built-in}
 
@@ -27,7 +27,7 @@ Review the built-in configurations that are provided via the [{{< reuse "agw-doc
 > [!NOTE]
 > Because the built-in customization options are provided by the agentgateway API, they are considered stable and do not change between upgrades. Use the built-in customization options where possible. To change configuration that is not exposed via the built-in options, use [overlays](#overlays) instead, or [add raw upstream agentgateway configuration](#raw-config) to your proxies. 
 
-To find common configuration examples, [Example configs]({{< link-hextra path="/setup/customize/configs/" >}}). 
+To find common configuration examples, [Example configs]({{< link-hextra path="/documentation/setup/customize/configs/" >}}). 
 
 
 
@@ -129,12 +129,12 @@ spec:
 
 For configuration that is not exposed via the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}'s built-in or overlay configuration options, or if you prefer to pass in raw upstream configuration, such as to migrate more easily from the agentgateway standalone binary to agentgateway on Kubernetes, you can use the `rawConfig` option in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
 
-To find the raw configuration that you want to apply, review [Configuration](https://agentgateway.dev/docs/standalone/latest/configuration/) in the standalone agentgateway binary docs. 
+To find the raw configuration that you want to apply, review [Configuration](https://agentgateway.dev/docs/standalone/latest/documentation/configuration/) in the standalone agentgateway binary docs. 
 
 > [!CAUTION]
 > Note that raw configuration is not automatically validated. If configuration is malformatted or includes unsupported fields, the agentgateway proxy does not start. You can run `kubectl logs deploy/agentgateway-proxy -n agentgateway-system` to view the logs of the proxy and find more information about why the configuration could not be applied. 
 
-For a setup example, see [Customize the gateway]({{< link-hextra path="/setup/customize/customize/#rawconfig" >}}). 
+For a setup example, see [Customize the gateway]({{< link-hextra path="/documentation/setup/customize/customize/#rawconfig" >}}). 
 
 
 ## Configuration priority and precedence

@@ -146,7 +146,7 @@ Use the cards shortcode to display a card in the documentation that links to a s
 Example card: 
 
 {{< cards >}}
-{{< card path="/quickstart" title="Get started" >}}
+{{< card path="/documentation/quickstart" title="Get started" >}}
 {{< /cards >}}
 
 Shortcode syntax
@@ -248,4 +248,4 @@ The kgateway project automatically generates the following documentation from th
 
 * [API reference]({{< link-hextra path="/reference/api/" >}})
 * [Helm reference]({{< link-hextra path="/reference/helm/" >}})
-* [Control plane metrics]({{< link-hextra path="/observability/control-plane-metrics/">}})
+* [Control plane metrics]({{< link-hextra path="/documentation/observability/control-plane-metrics/">}})

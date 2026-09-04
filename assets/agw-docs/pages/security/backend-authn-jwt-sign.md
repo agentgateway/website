@@ -5,7 +5,7 @@ Some upstreams do not accept a durable credential at all. The Snowflake SQL API,
 With the `jwtSign` backend authentication method, the gateway mints the token itself. It reads a PEM-encoded private key from a Kubernetes Secret, signs a JWT that carries the claims that you configure, and writes that token to each request that it forwards to the backend. Nothing is cached, so every request is signed afresh.
 
 > [!NOTE]
-> The `jwtSign` method is not the same as the `clientAuth.privateKeyJwt` setting on [Cross App Access]({{< link-hextra path="/security/backend-authn/cross-app-access/" >}}). The two share the signing implementation, but `privateKeyJwt` authenticates the gateway to an OAuth token endpoint, and `jwtSign` sends a signed JWT to the backend itself.
+> The `jwtSign` method is not the same as the `clientAuth.privateKeyJwt` setting on [Cross App Access]({{< link-hextra path="/documentation/security/backend-authn/cross-app-access/" >}}). The two share the signing implementation, but `privateKeyJwt` authenticates the gateway to an OAuth token endpoint, and `jwtSign` sends a signed JWT to the backend itself.
 
 Two behaviors are worth knowing before you configure the method:
 

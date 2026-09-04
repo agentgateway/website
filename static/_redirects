@@ -21,14 +21,14 @@
 /docs/local/* /docs/standalone/:splat 301
 
 # Quickstart
-/docs/quickstart /docs/standalone/latest/quickstart 301
-/docs/quickstart/ /docs/standalone/latest/quickstart 301
-/docs/quickstart/* /docs/standalone/latest/quickstart/:splat 301
+/docs/quickstart /docs/standalone/latest/documentation/quickstart 301
+/docs/quickstart/ /docs/standalone/latest/documentation/quickstart 301
+/docs/quickstart/* /docs/standalone/latest/documentation/quickstart/:splat 301
 
 # About
-/docs/about /docs/standalone/latest/about 301
-/docs/about/ /docs/standalone/latest/about 301
-/docs/about/* /docs/standalone/latest/about/:splat 301
+/docs/about /docs/standalone/latest/documentation/about 301
+/docs/about/ /docs/standalone/latest/documentation/about 301
+/docs/about/* /docs/standalone/latest/documentation/about/:splat 301
 
 # Deployment
 /docs/deployment /docs/standalone/latest/deployment 301
@@ -36,91 +36,91 @@
 /docs/deployment/* /docs/standalone/latest/deployment/:splat 301
 
 # Configuration
-/docs/configuration /docs/standalone/latest/configuration 301
-/docs/configuration/ /docs/standalone/latest/configuration 301
-/docs/configuration/* /docs/standalone/latest/configuration/:splat 301
+/docs/configuration /docs/standalone/latest/documentation/configuration 301
+/docs/configuration/ /docs/standalone/latest/documentation/configuration 301
+/docs/configuration/* /docs/standalone/latest/documentation/configuration/:splat 301
 
 # Tutorials (removed in solo-io/docs#1872 — content consolidated into other sections)
 # Standalone latest
-/docs/standalone/latest/tutorials /docs/standalone/latest/quickstart 301
-/docs/standalone/latest/tutorials/ /docs/standalone/latest/quickstart 301
-/docs/standalone/latest/tutorials/a2a /docs/standalone/latest/agent/a2a 301
-/docs/standalone/latest/tutorials/a2a/ /docs/standalone/latest/agent/a2a 301
-/docs/standalone/latest/tutorials/ai-prompt-guard /docs/standalone/latest/llm/prompt-guards/ 301
-/docs/standalone/latest/tutorials/ai-prompt-guard/ /docs/standalone/latest/llm/prompt-guards/ 301
-/docs/standalone/latest/tutorials/authorization /docs/standalone/latest/configuration/security/mcp-authz 301
-/docs/standalone/latest/tutorials/authorization/ /docs/standalone/latest/configuration/security/mcp-authz 301
-/docs/standalone/latest/tutorials/basic /docs/standalone/latest/quickstart/mcp 301
-/docs/standalone/latest/tutorials/basic/ /docs/standalone/latest/quickstart/mcp 301
-/docs/standalone/latest/tutorials/http-routing /docs/standalone/latest/configuration/routes 301
-/docs/standalone/latest/tutorials/http-routing/ /docs/standalone/latest/configuration/routes 301
-/docs/standalone/latest/tutorials/llm-gateway /docs/standalone/latest/llm 301
-/docs/standalone/latest/tutorials/llm-gateway/ /docs/standalone/latest/llm 301
-/docs/standalone/latest/tutorials/mcp-authentication /docs/standalone/latest/configuration/security/mcp-authn 301
-/docs/standalone/latest/tutorials/mcp-authentication/ /docs/standalone/latest/configuration/security/mcp-authn 301
-/docs/standalone/latest/tutorials/mcp-federation /docs/standalone/latest/mcp/connect/virtual 301
-/docs/standalone/latest/tutorials/mcp-federation/ /docs/standalone/latest/mcp/connect/virtual 301
-/docs/standalone/latest/tutorials/multiplex /docs/standalone/latest/mcp/connect/virtual 301
-/docs/standalone/latest/tutorials/multiplex/ /docs/standalone/latest/mcp/connect/virtual 301
+/docs/standalone/latest/tutorials /docs/standalone/latest/documentation/quickstart 301
+/docs/standalone/latest/tutorials/ /docs/standalone/latest/documentation/quickstart 301
+/docs/standalone/latest/tutorials/a2a /docs/standalone/latest/documentation/agent/a2a 301
+/docs/standalone/latest/tutorials/a2a/ /docs/standalone/latest/documentation/agent/a2a 301
+/docs/standalone/latest/tutorials/ai-prompt-guard /docs/standalone/latest/documentation/llm/prompt-guards/ 301
+/docs/standalone/latest/tutorials/ai-prompt-guard/ /docs/standalone/latest/documentation/llm/prompt-guards/ 301
+/docs/standalone/latest/tutorials/authorization /docs/standalone/latest/documentation/configuration/security/mcp-authz 301
+/docs/standalone/latest/tutorials/authorization/ /docs/standalone/latest/documentation/configuration/security/mcp-authz 301
+/docs/standalone/latest/tutorials/basic /docs/standalone/latest/documentation/quickstart/mcp 301
+/docs/standalone/latest/tutorials/basic/ /docs/standalone/latest/documentation/quickstart/mcp 301
+/docs/standalone/latest/tutorials/http-routing /docs/standalone/latest/documentation/configuration/routes 301
+/docs/standalone/latest/tutorials/http-routing/ /docs/standalone/latest/documentation/configuration/routes 301
+/docs/standalone/latest/tutorials/llm-gateway /docs/standalone/latest/documentation/llm 301
+/docs/standalone/latest/tutorials/llm-gateway/ /docs/standalone/latest/documentation/llm 301
+/docs/standalone/latest/tutorials/mcp-authentication /docs/standalone/latest/documentation/configuration/security/mcp-authn 301
+/docs/standalone/latest/tutorials/mcp-authentication/ /docs/standalone/latest/documentation/configuration/security/mcp-authn 301
+/docs/standalone/latest/tutorials/mcp-federation /docs/standalone/latest/documentation/mcp/connect/virtual 301
+/docs/standalone/latest/tutorials/mcp-federation/ /docs/standalone/latest/documentation/mcp/connect/virtual 301
+/docs/standalone/latest/tutorials/multiplex /docs/standalone/latest/documentation/mcp/connect/virtual 301
+/docs/standalone/latest/tutorials/multiplex/ /docs/standalone/latest/documentation/mcp/connect/virtual 301
 /docs/standalone/latest/tutorials/oauth2-proxy /docs/standalone/latest/integrations/auth/oauth2-proxy 301
 /docs/standalone/latest/tutorials/oauth2-proxy/ /docs/standalone/latest/integrations/auth/oauth2-proxy 301
-/docs/standalone/latest/tutorials/openapi /docs/standalone/latest/mcp/connect/openapi 301
-/docs/standalone/latest/tutorials/openapi/ /docs/standalone/latest/mcp/connect/openapi 301
+/docs/standalone/latest/tutorials/openapi /docs/standalone/latest/documentation/mcp/connect/openapi 301
+/docs/standalone/latest/tutorials/openapi/ /docs/standalone/latest/documentation/mcp/connect/openapi 301
 /docs/standalone/latest/tutorials/tailscale-auth /docs/standalone/latest/integrations/auth/tailscale 301
 /docs/standalone/latest/tutorials/tailscale-auth/ /docs/standalone/latest/integrations/auth/tailscale 301
-/docs/standalone/latest/tutorials/telemetry /docs/standalone/latest/observability/traces/configs/otel 301
-/docs/standalone/latest/tutorials/telemetry/ /docs/standalone/latest/observability/traces/configs/otel 301
-/docs/standalone/latest/tutorials/tls /docs/standalone/latest/configuration/listeners 301
-/docs/standalone/latest/tutorials/tls/ /docs/standalone/latest/configuration/listeners 301
+/docs/standalone/latest/tutorials/telemetry /docs/standalone/latest/documentation/observability/traces/configs/otel 301
+/docs/standalone/latest/tutorials/telemetry/ /docs/standalone/latest/documentation/observability/traces/configs/otel 301
+/docs/standalone/latest/tutorials/tls /docs/standalone/latest/documentation/configuration/listeners 301
+/docs/standalone/latest/tutorials/tls/ /docs/standalone/latest/documentation/configuration/listeners 301
 # Kubernetes latest
-/docs/kubernetes/latest/tutorials /docs/kubernetes/latest/quickstart 301
-/docs/kubernetes/latest/tutorials/ /docs/kubernetes/latest/quickstart 301
-/docs/kubernetes/latest/tutorials/azure-ai-foundry /docs/kubernetes/latest/llm/providers/azure 301
-/docs/kubernetes/latest/tutorials/azure-ai-foundry/ /docs/kubernetes/latest/llm/providers/azure 301
-/docs/kubernetes/latest/tutorials/basic /docs/kubernetes/latest/quickstart/mcp 301
-/docs/kubernetes/latest/tutorials/basic/ /docs/kubernetes/latest/quickstart/mcp 301
+/docs/kubernetes/latest/tutorials /docs/kubernetes/latest/documentation/quickstart 301
+/docs/kubernetes/latest/tutorials/ /docs/kubernetes/latest/documentation/quickstart 301
+/docs/kubernetes/latest/tutorials/azure-ai-foundry /docs/kubernetes/latest/documentation/llm/providers/azure 301
+/docs/kubernetes/latest/tutorials/azure-ai-foundry/ /docs/kubernetes/latest/documentation/llm/providers/azure 301
+/docs/kubernetes/latest/tutorials/basic /docs/kubernetes/latest/documentation/quickstart/mcp 301
+/docs/kubernetes/latest/tutorials/basic/ /docs/kubernetes/latest/documentation/quickstart/mcp 301
 /docs/kubernetes/latest/tutorials/claude-code-proxy /docs/kubernetes/latest/integrations/llm-clients/claude-code 301
 /docs/kubernetes/latest/tutorials/claude-code-proxy/ /docs/kubernetes/latest/integrations/llm-clients/claude-code 301
-/docs/kubernetes/latest/tutorials/jwt-authorization /docs/kubernetes/latest/security/jwt/setup 301
-/docs/kubernetes/latest/tutorials/jwt-authorization/ /docs/kubernetes/latest/security/jwt/setup 301
-/docs/kubernetes/latest/tutorials/llm-gateway /docs/kubernetes/latest/quickstart/llm 301
-/docs/kubernetes/latest/tutorials/llm-gateway/ /docs/kubernetes/latest/quickstart/llm 301
-/docs/kubernetes/latest/tutorials/mcp-federation /docs/kubernetes/latest/mcp/virtual 301
-/docs/kubernetes/latest/tutorials/mcp-federation/ /docs/kubernetes/latest/mcp/virtual 301
-/docs/kubernetes/latest/tutorials/prompt-enrichment /docs/kubernetes/latest/llm/prompt-templates 301
-/docs/kubernetes/latest/tutorials/prompt-enrichment/ /docs/kubernetes/latest/llm/prompt-templates 301
-/docs/kubernetes/latest/tutorials/telemetry /docs/kubernetes/latest/observability/tracing 301
-/docs/kubernetes/latest/tutorials/telemetry/ /docs/kubernetes/latest/observability/tracing 301
+/docs/kubernetes/latest/tutorials/jwt-authorization /docs/kubernetes/latest/documentation/security/jwt/setup 301
+/docs/kubernetes/latest/tutorials/jwt-authorization/ /docs/kubernetes/latest/documentation/security/jwt/setup 301
+/docs/kubernetes/latest/tutorials/llm-gateway /docs/kubernetes/latest/documentation/quickstart/llm 301
+/docs/kubernetes/latest/tutorials/llm-gateway/ /docs/kubernetes/latest/documentation/quickstart/llm 301
+/docs/kubernetes/latest/tutorials/mcp-federation /docs/kubernetes/latest/documentation/mcp/virtual 301
+/docs/kubernetes/latest/tutorials/mcp-federation/ /docs/kubernetes/latest/documentation/mcp/virtual 301
+/docs/kubernetes/latest/tutorials/prompt-enrichment /docs/kubernetes/latest/documentation/llm/prompt-templates 301
+/docs/kubernetes/latest/tutorials/prompt-enrichment/ /docs/kubernetes/latest/documentation/llm/prompt-templates 301
+/docs/kubernetes/latest/tutorials/telemetry /docs/kubernetes/latest/documentation/observability/tracing 301
+/docs/kubernetes/latest/tutorials/telemetry/ /docs/kubernetes/latest/documentation/observability/tracing 301
 # Legacy unversioned tutorial paths
-/docs/tutorials /docs/standalone/latest/quickstart 301
-/docs/tutorials/ /docs/standalone/latest/quickstart 301
-/docs/tutorials/* /docs/standalone/latest/quickstart 301
+/docs/tutorials /docs/standalone/latest/documentation/quickstart 301
+/docs/tutorials/ /docs/standalone/latest/documentation/quickstart 301
+/docs/tutorials/* /docs/standalone/latest/documentation/quickstart 301
 # Removed top-level Tutorials landing page
 /tutorials /docs 301
 /tutorials/ /docs 301
 /tutorials/* /docs 301
 
 # LLM consumption
-/docs/llm /docs/standalone/latest/llm 301
-/docs/llm/ /docs/standalone/latest/llm 301
-/docs/llm/* /docs/standalone/latest/llm/:splat 301
-/docs/standalone/main/llm/spending /docs/standalone/main/llm/cost-controls/costs 301
-/docs/standalone/latest/llm/spending /docs/standalone/latest/llm/cost-controls/costs 301
+/docs/llm /docs/standalone/latest/documentation/llm 301
+/docs/llm/ /docs/standalone/latest/documentation/llm 301
+/docs/llm/* /docs/standalone/latest/documentation/llm/:splat 301
+/docs/standalone/main/llm/spending /docs/standalone/main/documentation/llm/cost-controls/costs 301
+/docs/standalone/latest/llm/spending /docs/standalone/latest/documentation/llm/cost-controls/costs 301
 
 # Inference routing
-/docs/inference /docs/standalone/latest/inference 301
-/docs/inference/ /docs/standalone/latest/inference 301
-/docs/inference/* /docs/standalone/latest/inference/:splat 301
+/docs/inference /docs/standalone/latest/documentation/inference 301
+/docs/inference/ /docs/standalone/latest/documentation/inference 301
+/docs/inference/* /docs/standalone/latest/documentation/inference/:splat 301
 
 # MCP connectivity
-/docs/mcp /docs/standalone/latest/mcp 301
-/docs/mcp/ /docs/standalone/latest/mcp 301
-/docs/mcp/* /docs/standalone/latest/mcp/:splat 301
+/docs/mcp /docs/standalone/latest/documentation/mcp 301
+/docs/mcp/ /docs/standalone/latest/documentation/mcp 301
+/docs/mcp/* /docs/standalone/latest/documentation/mcp/:splat 301
 
 # Agent connectivity
-/docs/agent /docs/standalone/latest/agent 301
-/docs/agent/ /docs/standalone/latest/agent 301
-/docs/agent/* /docs/standalone/latest/agent/:splat 301
+/docs/agent /docs/standalone/latest/documentation/agent 301
+/docs/agent/ /docs/standalone/latest/documentation/agent 301
+/docs/agent/* /docs/standalone/latest/documentation/agent/:splat 301
 
 # Integrations
 /docs/integrations /docs/standalone/latest/integrations 301
@@ -133,20 +133,86 @@
 /docs/reference/* /docs/standalone/latest/reference/:splat 301
 
 # FAQs
-/docs/faqs /docs/standalone/latest/faqs 301
-/docs/faqs/ /docs/standalone/latest/faqs 301
+/docs/faqs /docs/standalone/latest/documentation/faqs 301
+/docs/faqs/ /docs/standalone/latest/documentation/faqs 301
 
 
 # Cost controls section reorg (issue solo-io/docs#2921)
-/docs/kubernetes/main/llm/costs /docs/kubernetes/main/llm/cost-controls/costs 301
-/docs/kubernetes/main/llm/cost-tracking /docs/kubernetes/main/llm/cost-controls/cost-tracking 301
-/docs/kubernetes/main/llm/budget-limits /docs/kubernetes/main/llm/cost-controls/budget-limits 301
-/docs/kubernetes/main/llm/virtual-keys /docs/kubernetes/main/llm/cost-controls/virtual-keys 301
-/docs/kubernetes/latest/llm/costs /docs/kubernetes/latest/llm/cost-controls/costs 301
-/docs/kubernetes/latest/llm/cost-tracking /docs/kubernetes/latest/llm/cost-controls/cost-tracking 301
-/docs/kubernetes/latest/llm/budget-limits /docs/kubernetes/latest/llm/cost-controls/budget-limits 301
-/docs/kubernetes/latest/llm/virtual-keys /docs/kubernetes/latest/llm/cost-controls/virtual-keys 301
-/docs/standalone/main/llm/costs /docs/standalone/main/llm/cost-controls/costs 301
-/docs/standalone/main/llm/virtual-keys /docs/standalone/main/llm/cost-controls/virtual-keys 301
-/docs/standalone/latest/llm/costs /docs/standalone/latest/llm/cost-controls/costs 301
-/docs/standalone/latest/llm/virtual-keys /docs/standalone/latest/llm/cost-controls/virtual-keys 301
+/docs/kubernetes/main/llm/costs /docs/kubernetes/main/documentation/llm/cost-controls/costs 301
+/docs/kubernetes/main/llm/cost-tracking /docs/kubernetes/main/documentation/llm/cost-controls/cost-tracking 301
+/docs/kubernetes/main/llm/budget-limits /docs/kubernetes/main/documentation/llm/cost-controls/budget-limits 301
+/docs/kubernetes/main/llm/virtual-keys /docs/kubernetes/main/documentation/llm/cost-controls/virtual-keys 301
+/docs/kubernetes/latest/llm/costs /docs/kubernetes/latest/documentation/llm/cost-controls/costs 301
+/docs/kubernetes/latest/llm/cost-tracking /docs/kubernetes/latest/documentation/llm/cost-controls/cost-tracking 301
+/docs/kubernetes/latest/llm/budget-limits /docs/kubernetes/latest/documentation/llm/cost-controls/budget-limits 301
+/docs/kubernetes/latest/llm/virtual-keys /docs/kubernetes/latest/documentation/llm/cost-controls/virtual-keys 301
+/docs/standalone/main/llm/costs /docs/standalone/main/documentation/llm/cost-controls/costs 301
+/docs/standalone/main/llm/virtual-keys /docs/standalone/main/documentation/llm/cost-controls/virtual-keys 301
+/docs/standalone/latest/llm/costs /docs/standalone/latest/documentation/llm/cost-controls/costs 301
+/docs/standalone/latest/llm/virtual-keys /docs/standalone/latest/documentation/llm/cost-controls/virtual-keys 301
+
+# ============================================================================
+# Doc tabs: where the old URLs go
+#
+# Cloudflare allows 2,000 static and 100 DYNAMIC redirects per file, and every
+# rule below is dynamic because it carries placeholders. Writing these per
+# version came to 278 rules, so they are collapsed: :section and :version each
+# match one segment, covering kubernetes and standalone across every published
+# version, and a trailing `*` covers the bare path, the trailing-slash form and
+# everything beneath it at once.
+#
+# ORDER IS LOAD-BEARING — Cloudflare applies the first rule that matches.
+# ============================================================================
+
+# Two inference pages set an explicit `url:`, so they do not live where
+# their file path implies. Most specific first.
+/docs/:section/:version/llm/inference/multiple-inference-pools* /docs/:section/:version/documentation/llm/multiple-inference-pools:splat 301
+# A parent's `url:` does not move its children, so inference-routing and any
+# other child keeps the plain documentation/ prefix; only the landing moved.
+/docs/:section/:version/llm/inference/* /docs/:section/:version/documentation/llm/inference/:splat 301
+/docs/:section/:version/llm/inference* /docs/:section/:version/documentation/inference:splat 301
+
+# These two left Documentation for Integrations, so they must precede the
+# plain llm* and mcp* rules below, which would otherwise swallow them.
+/docs/:section/:version/llm/providers* /docs/:section/:version/integrations/llm/providers:splat 301
+/docs/:section/:version/mcp/connect* /docs/:section/:version/integrations/mcp/servers:splat 301
+
+# Every other subject directory moved one level down, under documentation/.
+/docs/:section/:version/about* /docs/:section/:version/documentation/about:splat 301
+/docs/:section/:version/agent* /docs/:section/:version/documentation/agent:splat 301
+/docs/:section/:version/configuration* /docs/:section/:version/documentation/configuration:splat 301
+/docs/:section/:version/install* /docs/:section/:version/documentation/install:splat 301
+/docs/:section/:version/llm* /docs/:section/:version/documentation/llm:splat 301
+/docs/:section/:version/mcp* /docs/:section/:version/documentation/mcp:splat 301
+/docs/:section/:version/migrate* /docs/:section/:version/documentation/migrate:splat 301
+/docs/:section/:version/observability* /docs/:section/:version/documentation/observability:splat 301
+/docs/:section/:version/operations* /docs/:section/:version/documentation/operations:splat 301
+/docs/:section/:version/quickstart* /docs/:section/:version/documentation/quickstart:splat 301
+/docs/:section/:version/resiliency* /docs/:section/:version/documentation/resiliency:splat 301
+/docs/:section/:version/security* /docs/:section/:version/documentation/security:splat 301
+/docs/:section/:version/setup* /docs/:section/:version/documentation/setup:splat 301
+/docs/:section/:version/traffic-management* /docs/:section/:version/documentation/traffic-management:splat 301
+/docs/:section/:version/tutorials* /docs/:section/:version/documentation/tutorials:splat 301
+/docs/:section/:version/inference* /docs/:section/:version/documentation/inference:splat 301
+/docs/:section/:version/faqs* /docs/:section/:version/documentation/faqs:splat 301
+
+# The Integrations tab regrouped under LLM / MCP / CI-CD.
+# vllm-semantic-router precedes vllm: `vllm*` matches both.
+/docs/:section/:version/integrations/llm-clients* /docs/:section/:version/integrations/llm/clients:splat 301
+/docs/:section/:version/integrations/llm-observability* /docs/:section/:version/integrations/llm/observability:splat 301
+/docs/:section/:version/integrations/mcp-clients* /docs/:section/:version/integrations/mcp/clients:splat 301
+/docs/:section/:version/integrations/llm-providers/azure-openai* /docs/:section/:version/integrations/llm/providers/azure:splat 301
+/docs/:section/:version/integrations/llm-providers/openai-compatible* /docs/:section/:version/integrations/llm/providers/custom:splat 301
+/docs/:section/:version/integrations/llm-providers* /docs/:section/:version/integrations/llm/providers:splat 301
+/docs/:section/:version/integrations/mcp-servers/streamable-http* /docs/:section/:version/integrations/mcp/servers/http:splat 301
+/docs/:section/:version/integrations/mcp-servers/sse* /docs/:section/:version/integrations/mcp/servers:splat 301
+/docs/:section/:version/integrations/mcp-servers* /docs/:section/:version/integrations/mcp/servers:splat 301
+/docs/:section/:version/integrations/vllm-semantic-router* /docs/:section/:version/integrations/llm/routing/vllm-semantic-router:splat 301
+/docs/:section/:version/integrations/vllm* /docs/:section/:version/integrations/llm/routing/vllm:splat 301
+/docs/:section/:version/integrations/kserve* /docs/:section/:version/integrations/llm/routing/kserve:splat 301
+/docs/:section/:version/integrations/argo* /docs/:section/:version/integrations/ci-cd/argo:splat 301
+
+# Release notes and version support moved out of the Reference tab.
+/docs/:section/:version/reference/release-notes* /docs/:section/:version/release-notes/release-notes:splat 301
+/docs/:section/:version/reference/versions* /docs/:section/:version/release-notes/versions:splat 301
+

@@ -1,4 +1,4 @@
-Enable server-side TLS encryption for the xDS gRPC server in the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane. For more information about the server, see the [Architecture]({{< link-hextra path="/about/architecture" >}}) docs.
+Enable server-side TLS encryption for the xDS gRPC server in the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane. For more information about the server, see the [Architecture]({{< link-hextra path="/documentation/about/architecture" >}}) docs.
 
 {{< version exclude-if="1.0.x,1.1.x,2.2.x" >}}
 The control plane serves xDS over TLS by default (`controller.xds.mode: tls`) and self-manages the certificate: it generates and rotates an internal CA and serving certificate, and propagates the CA bundle to the {{< reuse "agw-docs/snippets/pod-name.md" >}} data plane proxies. No cert-manager setup or pre-created secret is required. Optionally, you can bring your own certificate authority.
@@ -111,7 +111,7 @@ cert-manager is a Kubernetes controller that helps you automate the process of o
 
 ## Step 2: Update the control plane to use TLS {#control-plane}
 
-Upgrade {{< reuse "agw-docs/snippets/kgateway.md" >}} with TLS enabled for the controller. For complete steps, review the [Upgrade guide]({{< link-hextra path="/operations/upgrade" >}}).
+Upgrade {{< reuse "agw-docs/snippets/kgateway.md" >}} with TLS enabled for the controller. For complete steps, review the [Upgrade guide]({{< link-hextra path="/documentation/operations/upgrade" >}}).
 
 1. Set your version of {{< reuse "/agw-docs/snippets/kgateway.md" >}} in an environment variable, such as the latest patch version (`{{< reuse "agw-docs/versions/n-patch.md" >}}`).
    

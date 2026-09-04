@@ -22,7 +22,7 @@ description: Route Goose's LLM traffic through agentgateway to govern an autonom
 
 ## Before you begin
 
-1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/documentation/setup/install/binary/" >}}).
 2. Install Goose by following the [Goose installation guide](https://goose-docs.ai/docs/getting-started/installation/).
 3. Have an LLM provider API key, such as an [OpenAI API key](https://platform.openai.com/api-keys).
 
@@ -108,7 +108,7 @@ info  request gateway=default/default listener=llm route=internal/model:* endpoi
 Goose can also use MCP servers as tools. To proxy and govern MCP tool calls through agentgateway, see the MCP setup guides.
 
 {{< cards >}}
-  {{< card path="/quickstart/mcp/" title="MCP quickstart" subtitle="Front an MCP server with agentgateway." >}}
-  {{< card path="/llm/cost-controls/virtual-keys/" title="Virtual key management" subtitle="Apply rate limits to LLM and tool traffic." >}}
-  {{< card path="/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs." >}}
+  {{< card path="/documentation/quickstart/mcp/" title="MCP quickstart" subtitle="Front an MCP server with agentgateway." >}}
+  {{< card path="/documentation/llm/cost-controls/virtual-keys/" title="Virtual key management" subtitle="Apply rate limits to LLM and tool traffic." >}}
+  {{< card path="/documentation/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs." >}}
 {{< /cards >}}

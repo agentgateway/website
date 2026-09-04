@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 #
 # Gateway config for the MULTIPLEX (virtual MCP) playground capture. Mirrors
-# content/docs/standalone/main/mcp/connect/virtual.md, which federates two MCP targets
+# content/docs/standalone/main/integrations/mcp/servers/virtual.md, which federates two MCP targets
 # (`time` + `everything`) into one unified backend so their tools appear prefixed:
 # `time_get_current_time`, `everything_echo`, etc.
 #

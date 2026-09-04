@@ -83,21 +83,21 @@ The Gateway API is an API which can be used to program an ingress or an API gate
 {{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} provides the following extensions on top of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} to configure advanced routing, security, and resiliency capabilities.
 
 {{< cards >}}
-  {{< card path="/security/access-logging/" title="Access logging" tag="Security" >}}
+  {{< card path="/documentation/security/access-logging/" title="Access logging" tag="Security" >}}
   {{< card path="/integrations/aws-elb/" title="AWS ALB and NLB" tag="Traffic" >}}
-  {{< card path="/traffic-management/destination-types/backends/lambda" title="AWS Lambda" tag="Traffic" >}}
-  {{< card path="/traffic-management/route-delegation/" title="Delegation" tag="Traffic" >}}
-  {{< card path="/traffic-management/direct-response/" title="Direct responses" tag="Traffic" >}}
-  {{< card path="/traffic-management/extproc/" title="Direct responses" tag="Traffic" >}}
-  {{< card path="/setup/customize/" title="Gateway customization" tag="Setup" >}}
+  {{< card path="/documentation/traffic-management/destination-types/backends/lambda" title="AWS Lambda" tag="Traffic" >}}
+  {{< card path="/documentation/traffic-management/route-delegation/" title="Delegation" tag="Traffic" >}}
+  {{< card path="/documentation/traffic-management/direct-response/" title="Direct responses" tag="Traffic" >}}
+  {{< card path="/documentation/traffic-management/extproc/" title="Direct responses" tag="Traffic" >}}
+  {{< card path="/documentation/setup/customize/" title="Gateway customization" tag="Setup" >}}
   {{< card path="/integrations/" title="Integrations" tag="Setup" >}}
-  {{< card path="/resiliency/mirroring/" title="Mirroring" tag="Resiliency" >}}
-  {{< card path="/traffic-management/transformations/" title="Transformations" tag="Traffic" >}}
-  {{< card path="/traffic-management/weighted-routes/" title="Weighted routing" tag="Traffic" >}}
+  {{< card path="/documentation/resiliency/mirroring/" title="Mirroring" tag="Resiliency" >}}
+  {{< card path="/documentation/traffic-management/transformations/" title="Transformations" tag="Traffic" >}}
+  {{< card path="/documentation/traffic-management/weighted-routes/" title="Weighted routing" tag="Traffic" >}}
 {{< /cards >}}
 
 ## Default gateway proxy setup
 
 {{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} automatically spins up, bootstraps, and manages gateway proxy deployments when you create a Kubernetes Gateway resource. To do that, a combination of kgateway and Kubernetes resources are used, such as GatewayClass, GatewayParameters, and a gateway proxy template that includes the Envoy configuration that each proxy is bootstrapped with. 
 
-To learn more about the default setup and how these resources interact with each other, see the [Default gateway proxy setup]({{< link-hextra path="/setup/default/" >}}).
+To learn more about the default setup and how these resources interact with each other, see the [Default gateway proxy setup]({{< link-hextra path="/documentation/setup/default/" >}}).

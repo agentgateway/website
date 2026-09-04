@@ -53,7 +53,7 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-You can use this metric to configure alerts in Prometheus that fire when rejections occur. For guidance on setting up the observability stack, see the [OTel stack guide]({{< link path="/observability/otel-stack/" >}}).
+You can use this metric to configure alerts in Prometheus that fire when rejections occur. For guidance on setting up the observability stack, see the [OTel stack guide]({{< link path="/documentation/observability/otel-stack/" >}}).
 
 ## View rejection events
 

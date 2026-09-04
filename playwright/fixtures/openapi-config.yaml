@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 #
 # Gateway config for the OPENAPI -> MCP playground capture. Mirrors
-# content/docs/standalone/main/mcp/connect/openapi.md, which exposes the Swagger Petstore
+# content/docs/standalone/main/integrations/mcp/servers/openapi.md, which exposes the Swagger Petstore
 # OpenAPI spec as MCP tools (getPetById, findPetsByStatus, addPet, ...).
 #
 # Adjustments for capturing inside the distroless sl8 container:

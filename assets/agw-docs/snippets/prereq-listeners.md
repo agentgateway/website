@@ -1,6 +1,6 @@
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 
-2. Deploy the [httpbin sample app]({{< link-hextra path="/install/sample-app/" >}}).
+2. Deploy the [httpbin sample app]({{< link-hextra path="/documentation/install/sample-app/" >}}).
 
 3. {{% reuse "agw-docs/snippets/prereq-listenerset.md" %}}
 

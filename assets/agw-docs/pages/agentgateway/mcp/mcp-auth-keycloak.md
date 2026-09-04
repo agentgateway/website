@@ -4,7 +4,7 @@ Set up Keycloak in your cluster as your OAuth identity provider. Then, configure
 
 ## Next
 
-[Set up MCP auth]({{< link-hextra path="/mcp/auth/setup/" >}}).
+[Set up MCP auth]({{< link-hextra path="/documentation/mcp/auth/setup/" >}}).
 
 ## Cleanup
 

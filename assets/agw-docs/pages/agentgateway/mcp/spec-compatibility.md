@@ -2,7 +2,7 @@ Agentgateway supports MCP servers and clients across MCP specification versions 
 
 ## Supported specification versions
 
-Agentgateway supports MCP protocol versions{{< conditional-text include-if="kubernetes" >}} as described in [Version support]({{< link-hextra path="/reference/versions/" >}}){{< /conditional-text >}}. Earlier versions are automatically negotiated as described later and typically work, but are not guaranteed.
+Agentgateway supports MCP protocol versions{{< conditional-text include-if="kubernetes" >}} as described in [Version support]({{< link-hextra path="/release-notes/versions/" >}}){{< /conditional-text >}}. Earlier versions are automatically negotiated as described later and typically work, but are not guaranteed.
 
 ### 2026-07-28 support
 
@@ -18,7 +18,7 @@ Agentgateway sits between a downstream client and one or more upstream MCP serve
 - **Newer client to older server**: The older server rejects the modern request, and the client falls back to the older `initialize` flow. Agentgateway handles the fallback transparently. Make sure that your client can handle the older flow gracefully.
 - **Older client to newer server**: The client uses the older `initialize` flow, which agentgateway continues to support.
 
-When you federate multiple MCP servers into one endpoint, agentgateway takes the **intersection** of the protocol versions that the targets support, so the client only negotiates a version that every target can serve. For more information, see the {{< conditional-text include-if="standalone" >}}[Virtual MCP]({{< link-hextra path="/mcp/connect/virtual" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[Virtual MCP]({{< link-hextra path="/mcp/virtual" >}}){{< /conditional-text >}} guide.
+When you federate multiple MCP servers into one endpoint, agentgateway takes the **intersection** of the protocol versions that the targets support, so the client only negotiates a version that every target can serve. For more information, see the {{< conditional-text include-if="standalone" >}}[Virtual MCP]({{< link-hextra path="/integrations/mcp/servers/virtual" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[Virtual MCP]({{< link-hextra path="/documentation/mcp/virtual" >}}){{< /conditional-text >}} guide.
 
 > [!NOTE]
 > Because most environments run a mix of MCP versions for the foreseeable future, this compatibility handling is on by default and requires no configuration. You do not need to upgrade all of your MCP servers to the newer specification at once.
@@ -29,9 +29,9 @@ The `2026-07-28` revision adds caching controls to responses such as `server/dis
 
 ## What you can still configure
 
-Version negotiation, sessionless protocol support, and [MCP Apps]({{< link-hextra path="/mcp/apps" >}}) all work automatically. 
+Version negotiation, sessionless protocol support, and [MCP Apps]({{< link-hextra path="/documentation/mcp/apps" >}}) all work automatically. 
 
 The MCP behavior that you can tune includes:
 
-- {{< conditional-text include-if="standalone" >}}[Session handling]({{< link-hextra path="/mcp/connect/http#stateless-sessions" >}}) (`statefulMode`) for how agentgateway proxies session-based servers.{{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[Session routing]({{< link-hextra path="/mcp/session" >}}) (`sessionRouting`) for how agentgateway proxies session-based servers.{{< /conditional-text >}}
-- Tool name prefixing when federating multiple MCP servers: {{< conditional-text include-if="standalone" >}}[Virtual MCP]({{< link-hextra path="/mcp/connect/virtual" >}}).{{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[Virtual MCP]({{< link-hextra path="/mcp/virtual" >}}).{{< /conditional-text >}}
+- {{< conditional-text include-if="standalone" >}}[Session handling]({{< link-hextra path="/integrations/mcp/servers/http#stateless-sessions" >}}) (`statefulMode`) for how agentgateway proxies session-based servers.{{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[Session routing]({{< link-hextra path="/documentation/mcp/session" >}}) (`sessionRouting`) for how agentgateway proxies session-based servers.{{< /conditional-text >}}
+- Tool name prefixing when federating multiple MCP servers: {{< conditional-text include-if="standalone" >}}[Virtual MCP]({{< link-hextra path="/integrations/mcp/servers/virtual" >}}).{{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[Virtual MCP]({{< link-hextra path="/documentation/mcp/virtual" >}}).{{< /conditional-text >}}

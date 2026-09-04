@@ -178,7 +178,7 @@ docker stop httpbin
 Check out more guides for managing your APIs with agentgateway.
 
 {{< cards >}}
-  {{< card path="/configuration/traffic-management/" title="Traffic management" subtitle="Control traffic with matching, redirects, body buffering, rewrites, and transformations." >}}
-  {{< card path="/configuration/resiliency/" title="Resiliency" subtitle="Configure retries, timeouts, rate limits, and mirroring for fault tolerance." >}}
-  {{< card path="/configuration/security/" title="Security" subtitle="Secure backends and routes with different types of security, authentication, authorization, and rate limiting policies." >}}
+  {{< card path="/documentation/configuration/traffic-management/" title="Traffic management" subtitle="Control traffic with matching, redirects, body buffering, rewrites, and transformations." >}}
+  {{< card path="/documentation/configuration/resiliency/" title="Resiliency" subtitle="Configure retries, timeouts, rate limits, and mirroring for fault tolerance." >}}
+  {{< card path="/documentation/configuration/security/" title="Security" subtitle="Secure backends and routes with different types of security, authentication, authorization, and rate limiting policies." >}}
 {{< /cards >}}

@@ -7,12 +7,12 @@ In this guide, you configure the agentgateway proxy to protect a static MCP serv
 > [!IMPORTANT]
 > Setting `clientId` is required for open source authentik. Those builds do not implement Dynamic Client Registration ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591.html)), so the pre-registered client in `clientId` is the only way for MCP clients to complete registration. If you omit it, registration requests fail. authentik 2026.8.0 adds a registration endpoint ([authentik#8751](https://github.com/goauthentik/authentik/issues/8751)), but only as an enterprise feature.
 
-For more information about MCP auth, see the [About MCP auth]({{< link-hextra path="/mcp/auth/about/" >}}) page.
+For more information about MCP auth, see the [About MCP auth]({{< link-hextra path="/documentation/mcp/auth/about/" >}}) page.
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/mcp/static-mcp/" >}}).
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
+2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/documentation/mcp/static-mcp/" >}}).
 3. Install the experimental channel Gateway API.
    ```sh {paths="setup-authentik"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
@@ -621,9 +621,9 @@ Point your MCP client at the gateway's MCP endpoint, such as `http://localhost:8
 
 The policy that you created gates the MCP endpoint on the `mcp-agent` group, which authentik puts in the `groups` claim of the token when the client requests the `profile` scope. Authentication alone is not enough: any caller that authentik issues a token to for this client passes JWT validation, including service accounts that authorize themselves rather than a user. The authorization rule denies those tokens with a 403 HTTP response code.
 
-Because MCP authentication runs at the route level, every claim in the verified token is also available to other route-level policies, such as rate limiting and transformations. For more information about the rules that you can write, see [Authorization]({{< link-hextra path="/security/authorization/" >}}).
+Because MCP authentication runs at the route level, every claim in the verified token is also available to other route-level policies, such as rate limiting and transformations. For more information about the rules that you can write, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}).
 
-To authorize individual tools instead of the whole MCP endpoint, use an MCP authorization policy. For more information, see [Tool access]({{< link-hextra path="/mcp/tool-access/" >}}).
+To authorize individual tools instead of the whole MCP endpoint, use an MCP authorization policy. For more information, see [Tool access]({{< link-hextra path="/documentation/mcp/tool-access/" >}}).
 
 ## Clean up
 

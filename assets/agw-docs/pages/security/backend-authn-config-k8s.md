@@ -34,7 +34,7 @@ spec:
 | {{< reuse "agw-docs/snippets/backend.md" >}} | `spec.policies.auth` | All methods. |
 | {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} | `spec.policies.auth` | All methods except `crossAppAccess`{{< version exclude-if="2026.7.1" >}} and `jwtSign`{{< /version >}}. |
 
-Choose the {{< reuse "agw-docs/snippets/policy.md" >}} resource when one credential serves several backends, or when you want to attach the credential higher up, such as to a route or a gateway. Choose the inline `spec.policies.auth` field when the credential belongs to exactly one backend or model. For how the controller resolves a policy that targets more than one level, see [Targeting and merging]({{< link-hextra path="/about/policies/target-merge/" >}}).
+Choose the {{< reuse "agw-docs/snippets/policy.md" >}} resource when one credential serves several backends, or when you want to attach the credential higher up, such as to a route or a gateway. Choose the inline `spec.policies.auth` field when the credential belongs to exactly one backend or model. For how the controller resolves a policy that targets more than one level, see [Targeting and merging]({{< link-hextra path="/documentation/about/policies/target-merge/" >}}).
 
 > [!IMPORTANT]
 > A policy that targets an {{< reuse "agw-docs/snippets/backend.md" >}} takes effect only if a route forwards traffic to that backend. If no route does, the policy reports `Attached=False` with the message `Policy is not attached`, and the gateway sends no credential. The `backendRefs` entry of the HTTPRoute must name the {{< reuse "agw-docs/snippets/backend.md" >}}, not the Kubernetes Service behind it.
@@ -69,12 +69,12 @@ Each method has its own page.
 
 | Method | Page |
 | -- | -- |
-| Static keys, Secrets, passthrough, and extra credentials | [Static keys and passthrough]({{< link-hextra path="/security/backend-authn/key/" >}}) |
-| AWS, Azure, and Google Cloud | [Cloud provider credentials]({{< link-hextra path="/security/backend-authn/providers/" >}}) |{{< version exclude-if="2026.7.1" >}}
-| Signed JWT | [Signed JWT (jwtSign)]({{< link-hextra path="/security/backend-authn/jwt-sign/" >}}) |{{< /version >}}
-| OAuth token exchange | [OAuth token exchange]({{< link-hextra path="/security/backend-authn/oauth-token-exchange/" >}}) |
-| Cross App Access | [Cross App Access (ID-JAG)]({{< link-hextra path="/security/backend-authn/cross-app-access/" >}}) |
+| Static keys, Secrets, passthrough, and extra credentials | [Static keys and passthrough]({{< link-hextra path="/documentation/security/backend-authn/key/" >}}) |
+| AWS, Azure, and Google Cloud | [Cloud provider credentials]({{< link-hextra path="/documentation/security/backend-authn/providers/" >}}) |{{< version exclude-if="2026.7.1" >}}
+| Signed JWT | [Signed JWT (jwtSign)]({{< link-hextra path="/documentation/security/backend-authn/jwt-sign/" >}}) |{{< /version >}}
+| OAuth token exchange | [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn/oauth-token-exchange/" >}}) |
+| Cross App Access | [Cross App Access (ID-JAG)]({{< link-hextra path="/documentation/security/backend-authn/cross-app-access/" >}}) |
 
-For the client side of authentication, see [JWT auth]({{< link-hextra path="/security/jwt/" >}}) and [API key auth]({{< link-hextra path="/security/apikey/" >}}). To control which callers are allowed through, see [Authorization]({{< link-hextra path="/security/authorization/" >}}).
+For the client side of authentication, see [JWT auth]({{< link-hextra path="/documentation/security/jwt/" >}}) and [API key auth]({{< link-hextra path="/documentation/security/apikey/" >}}). To control which callers are allowed through, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}).
 
 {{< reuse "agw-docs/pages/security/backend-authn-mode-differences.md" >}}

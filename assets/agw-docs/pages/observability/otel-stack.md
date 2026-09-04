@@ -157,7 +157,7 @@ Deploy separate collectors for logs and traces so you can scale and tune each on
 > The example pipelines in both OTel collectors set up the `debug` exporter. This exporter is useful for testing and validation purposes. However, for production scenarios, remove this exporter to avoid performance impacts.
 
 > [!TIP]
-> The OTel stack sets up Tempo as your tracing backend. If you want to use a different tracing backend, check out the [Alternative backends]({{< link path="/observability/traces/configs/" >}}) section. 
+> The OTel stack sets up Tempo as your tracing backend. If you want to use a different tracing backend, check out the [Alternative backends]({{< link path="/documentation/observability/traces/configs/" >}}) section. 
 
 1. Deploy the logs collector to process and forward application and access logs.
 
@@ -453,7 +453,7 @@ Prometheus does not automatically scrape metrics from the {{< reuse "/agw-docs/s
 - A **PodMonitor** that scrapes proxy pods in the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace for the `agentgateway` GatewayClass on port `15020`.
 
 > [!NOTE]
-> The PodMonitor only selects proxy pods **in the release namespace** and **for the `agentgateway` GatewayClass** by default. If your Gateway resources provision proxy pods in other namespaces, or if you use additional GatewayClasses, you need additional configuration. See [Scrape additional proxy pods]({{< link-hextra path="/observability/metrics/overview/#other-proxies" >}}) for the available options.
+> The PodMonitor only selects proxy pods **in the release namespace** and **for the `agentgateway` GatewayClass** by default. If your Gateway resources provision proxy pods in other namespaces, or if you use additional GatewayClasses, you need additional configuration. See [Scrape additional proxy pods]({{< link-hextra path="/documentation/observability/metrics/overview/#other-proxies" >}}) for the available options.
 
 1. Upgrade your {{< reuse "/agw-docs/snippets/agentgateway.md" >}} installation to enable the monitoring resources.
 

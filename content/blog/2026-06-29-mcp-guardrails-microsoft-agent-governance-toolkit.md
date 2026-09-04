@@ -73,10 +73,10 @@ Before looking at the configuration, it helps to understand where in the agent l
 | `output` | On the assembled final response to the user |
 | `agent_shutdown` | On session termination — evaluate summaries and audit metadata |
 
-This matters for the agentgateway integration because agentgateway covers several of these intervention points directly at the network layer: the `mcpGuardrails` feature maps onto `pre_tool_call` and `post_tool_call`, while agentgateway's existing [LLM guardrails](https://agentgateway.dev/docs/standalone/latest/llm/prompt-guards/) cover `pre_model_call` and `post_model_call`. The remaining points (startup, input, output, shutdown) can be covered by the AGT SDK inside the agent itself, giving you defense in depth across both the application layer and the network layer.
+This matters for the agentgateway integration because agentgateway covers several of these intervention points directly at the network layer: the `mcpGuardrails` feature maps onto `pre_tool_call` and `post_tool_call`, while agentgateway's existing [LLM guardrails](https://agentgateway.dev/docs/standalone/latest/documentation/llm/prompt-guards/) cover `pre_model_call` and `post_model_call`. The remaining points (startup, input, output, shutdown) can be covered by the AGT SDK inside the agent itself, giving you defense in depth across both the application layer and the network layer.
 
 
-[Agentgateway 1.3](https://github.com/agentgateway/agentgateway/releases/tag/v1.3.0) recently [added a new "mcpGuardrails" functionality](https://github.com/agentgateway/agentgateway/issues/175) (delivered in [PR #1842](https://github.com/agentgateway/agentgateway/pull/1842)) to complement its existing LLM [guardrails capabilities](https://agentgateway.dev/docs/standalone/latest/llm/prompt-guards/) and [External Authz callouts](https://agentgateway.dev/docs/kubernetes/latest/migrate/examples/external-auth/). 
+[Agentgateway 1.3](https://github.com/agentgateway/agentgateway/releases/tag/v1.3.0) recently [added a new "mcpGuardrails" functionality](https://github.com/agentgateway/agentgateway/issues/175) (delivered in [PR #1842](https://github.com/agentgateway/agentgateway/pull/1842)) to complement its existing LLM [guardrails capabilities](https://agentgateway.dev/docs/standalone/latest/documentation/llm/prompt-guards/) and [External Authz callouts](https://agentgateway.dev/docs/kubernetes/latest/documentation/migrate/examples/external-auth/). 
 
 {{< reuse-image src="img/blog/aarm-agt-guardrails/flow-architecture.png"  >}}
 
@@ -127,7 +127,7 @@ You can find it here: [https://github.com/christian-posta/agent-governance-agw](
 
 ## Try it and get involved
 
-Ready to put MCP guardrails in front of your own agents and tools? Start with the [standalone](https://agentgateway.dev/docs/standalone/latest/quickstart/) or [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/quickstart/) quickstart, then follow the [MCP guardrails docs](https://agentgateway.dev/docs/standalone/latest/mcp/guardrails/) to wire up an external policy server. Clone the [AGT + agentgateway demo](https://github.com/christian-posta/agent-governance-agw) to walk through the full AARM flow end to end.
+Ready to put MCP guardrails in front of your own agents and tools? Start with the [standalone](https://agentgateway.dev/docs/standalone/latest/documentation/quickstart/) or [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/documentation/quickstart/) quickstart, then follow the [MCP guardrails docs](https://agentgateway.dev/docs/standalone/latest/documentation/mcp/guardrails/) to wire up an external policy server. Clone the [AGT + agentgateway demo](https://github.com/christian-posta/agent-governance-agw) to walk through the full AARM flow end to end.
 
 
 * Explore the [docs](https://agentgateway.dev/docs/) and [get started](https://agentgateway.dev/#getting-started) today.

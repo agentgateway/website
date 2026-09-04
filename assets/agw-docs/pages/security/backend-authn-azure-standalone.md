@@ -9,7 +9,7 @@ The method has three forms.
 * **`explicitConfig`** names one credential source: a service principal, a managed identity, or a workload identity.
 
 > [!NOTE]
-> This page covers `azure` as a general backend authentication method, which works for any Azure service. To route requests to Azure OpenAI or Azure AI Foundry as an LLM provider, see [Azure]({{< link-hextra path="/llm/providers/azure/" >}}), which covers the same authentication methods alongside the provider settings.
+> This page covers `azure` as a general backend authentication method, which works for any Azure service. To route requests to Azure OpenAI or Azure AI Foundry as an LLM provider, see [Azure]({{< link-hextra path="/integrations/llm/providers/azure/" >}}), which covers the same authentication methods alongside the provider settings.
 
 ## Configuration examples
 

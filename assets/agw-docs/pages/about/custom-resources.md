@@ -16,7 +16,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 
 The [Gateway](https://gateway-api.sigs.k8s.io/api-types/gateway/) custom resource is a network abstraction that defines a point of access at which traffic can be forwarded to a backend in a {{< gloss "Cluster (Kubernetes)" >}}Kubernetes cluster{{< /gloss >}}. A Gateway defines the listeners that you want to open, including the ports, protocols, and hostnames that you want to listen on for incoming traffic. You can also specify how incoming, encrypted traffic is handled. For example, encrypted traffic can be terminated at the gateway or passed through to a backend in the cluster. 
 
-To spin up a Gateway and manage its lifecycle, a gateway controller is used. The gateway controller is defined in the  [GatewayClass](https://gateway-api.sigs.k8s.io/api-types/gatewayclass/) resource and manages the underlying infrastructure to ensure that traffic to endpoints is routed accordingly. When you install kgateway, a GatewayClass resource is automatically created that points to the kgateway controller. For more information, see [GatewayClass]({{< link-hextra path="/setup/default/#gatewayclass">}}). 
+To spin up a Gateway and manage its lifecycle, a gateway controller is used. The gateway controller is defined in the  [GatewayClass](https://gateway-api.sigs.k8s.io/api-types/gatewayclass/) resource and manages the underlying infrastructure to ensure that traffic to endpoints is routed accordingly. When you install kgateway, a GatewayClass resource is automatically created that points to the kgateway controller. For more information, see [GatewayClass]({{< link-hextra path="/documentation/setup/default/#gatewayclass">}}). 
 
 ### HTTPRoute and TCPRoute {#httproute}
 
@@ -58,20 +58,20 @@ A {{< gloss "Gateway Extension" >}}GatewayExtension{{< /gloss >}} is a {{< reuse
 
 When you create a Gateway resource, a [default gateway proxy template](https://github.com/kgateway-dev/kgateway/blob/{{< reuse "agw-docs/versions/github-branch.md" >}}{{< reuse "agw-docs/versions/github-kgateway-deployment.md" >}}) is used to automatically spin up and bootstrap a gateway proxy deployment and service in your cluster. The template includes Envoy configuration that binds the gateway proxy deployment to the Gateway resource that you created. In addition, the settings in the {{< gloss "GatewayParameters" >}}{{< reuse "agw-docs/snippets/gatewayparameters.md" >}}{{< /gloss >}} resource are used to configure the gateway proxy.
 
-To learn more about the default gateway setup and how these resource interact with each other, see [Default gateway proxy setup]({{< link-hextra path="/setup/default/" >}}). 
+To learn more about the default gateway setup and how these resource interact with each other, see [Default gateway proxy setup]({{< link-hextra path="/documentation/setup/default/" >}}). 
 
 ### Policies
 
-While the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} allows you to do simple routing, such as to match, redirect, or rewrite requests, you might want additional capabilities in your API gateway, such as access logging or transformations. [Policies]({{< link-hextra path="/about/policies/" >}}) allow you to apply intelligent traffic management, resiliency, and security standards to HTTPRoutes or Gateways.
+While the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} allows you to do simple routing, such as to match, redirect, or rewrite requests, you might want additional capabilities in your API gateway, such as access logging or transformations. [Policies]({{< link-hextra path="/documentation/about/policies/" >}}) allow you to apply intelligent traffic management, resiliency, and security standards to HTTPRoutes or Gateways.
 
 Kgateway uses the following custom resources to attach policies to routes and gateway listeners: 
 
-* [**DirectResponse**]({{< link-hextra path="/traffic-management/direct-response/" >}}): Directly respond to incoming requests with a custom HTTP response code and body.
-* [**HTTPListenerPolicy**]({{< link-hextra path="/about/policies/httplistenerpolicy/" >}}): Apply policies to all HTTP and HTTPS listeners.
+* [**DirectResponse**]({{< link-hextra path="/documentation/traffic-management/direct-response/" >}}): Directly respond to incoming requests with a custom HTTP response code and body.
+* [**HTTPListenerPolicy**]({{< link-hextra path="/documentation/about/policies/httplistenerpolicy/" >}}): Apply policies to all HTTP and HTTPS listeners.
 * [**TrafficPolicy**](https://kgateway.dev/docs/envoy/main/about/policies/trafficpolicy/): Attach policies to routes in an HTTPRoute resource.
 
 ### {{< reuse "agw-docs/snippets/backend.md" >}}s {#backends}
 
 For workloads within your cluster, you can route incoming traffic to their Kubernetes Service. But what if you have external services such as static hostnames or AWS Lambda functions that you want to route traffic to?
 
-You can use a {{< reuse "agw-docs/snippets/backend.md" >}} resource to accomplish this task. Similar to using Kubernetes Services, you reference the {{< reuse "agw-docs/snippets/backend.md" >}} in your HTTPRoute resource. For more information, see [{{< reuse "agw-docs/snippets/backend.md" >}}s]({{< link-hextra path="/traffic-management/destination-types/backends/" >}}).
+You can use a {{< reuse "agw-docs/snippets/backend.md" >}} resource to accomplish this task. Similar to using Kubernetes Services, you reference the {{< reuse "agw-docs/snippets/backend.md" >}} in your HTTPRoute resource. For more information, see [{{< reuse "agw-docs/snippets/backend.md" >}}s]({{< link-hextra path="/documentation/traffic-management/destination-types/backends/" >}}).

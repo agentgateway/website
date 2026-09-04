@@ -1,7 +1,7 @@
 Configure [OpenAI](https://openai.com/) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
 
 > [!NOTE]
-> Don't have an API key to an LLM provider? You can still try out how LLM traffic works in agentgateway by following the [httpbun guide]({{< link-hextra path="/llm/providers/httpbun">}}). Httpbun provides a mock LLM API endpoint that is compatible with the OpenAI API for chat completions.
+> Don't have an API key to an LLM provider? You can still try out how LLM traffic works in agentgateway by following the [httpbun guide]({{< link-hextra path="/integrations/llm/providers/httpbun">}}). Httpbun provides a mock LLM API endpoint that is compatible with the OpenAI API for chat completions.
 
 ## Before you begin
 

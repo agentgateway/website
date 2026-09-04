@@ -96,6 +96,6 @@ info  request gateway=default/default listener=http route=claude-agent endpoint=
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/llm/providers/anthropic" title="Anthropic provider" subtitle="Complete Anthropic provider configuration" >}}
-  {{< card path="/llm/prompt-guards/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
+  {{< card path="/integrations/llm/providers/anthropic" title="Anthropic provider" subtitle="Complete Anthropic provider configuration" >}}
+  {{< card path="/documentation/llm/prompt-guards/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
 {{< /cards >}}

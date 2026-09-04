@@ -26,7 +26,7 @@ A native Gemini request that is routed to any other provider is rejected with an
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Set up access to the [Gemini]({{< link-hextra path="/llm/providers/gemini/" >}}) or [Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}}) LLM provider.
+2. Set up access to the [Gemini]({{< link-hextra path="/integrations/llm/providers/gemini/" >}}) or [Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/" >}}) LLM provider.
 
 {{< doc-test paths="gemini-inbound" >}}
 # ============================================================================
@@ -79,7 +79,7 @@ EOF
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} that maps the Gemini method suffixes to their route types. The default behavior routes all traffic as `Completions`, so the native Gemini paths must be mapped explicitly.
 
-If you already set up [multiple endpoints]({{< link-hextra path="/llm/providers/multiple-endpoints/" >}}), add these paths to your existing {{< reuse "agw-docs/snippets/backend.md" >}}.
+If you already set up [multiple endpoints]({{< link-hextra path="/integrations/llm/providers/multiple-endpoints/" >}}), add these paths to your existing {{< reuse "agw-docs/snippets/backend.md" >}}.
 
 ```yaml {paths="gemini-inbound"}
 kubectl apply -f- <<EOF

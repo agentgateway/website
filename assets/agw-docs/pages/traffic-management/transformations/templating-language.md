@@ -52,7 +52,7 @@ traffic:
 
 
 
-For more information, see [Create redirect URLs]({{< link-hextra path="/traffic-management/transformations/forward/" >}}).
+For more information, see [Create redirect URLs]({{< link-hextra path="/documentation/traffic-management/transformations/forward/" >}}).
 
 Response header example to encode a header value with a CEL function, set a dynamic status code with a conditional expression, and remove a header:
 
@@ -71,7 +71,7 @@ traffic:
 
 
 
-For more information, see [Inject response headers]({{< link-hextra path="/traffic-management/transformations/inject-response-headers/" >}}).
+For more information, see [Inject response headers]({{< link-hextra path="/documentation/traffic-management/transformations/inject-response-headers/" >}}).
 
 ### Body transformations
 
@@ -86,7 +86,7 @@ traffic:
       body: '"{\"path\": \"" + request.path + "\", \"method\": \"" + request.method + "\"}"'
 ```
 
-For more information, see [Inject response bodies]({{< link-hextra path="/traffic-management/transformations/inject-response-body/" >}}).
+For more information, see [Inject response bodies]({{< link-hextra path="/documentation/traffic-management/transformations/inject-response-body/" >}}).
 
 Request body example to strip internal fields and merge in defaults before forwarding:
 
@@ -97,7 +97,7 @@ traffic:
       body: 'toJson(json(request.body).filterKeys(k, !k.startsWith("x_")).merge({"model": "gpt-4o", "max_tokens": 2048}))'
 ```
 
-For more information, see [Filter and merge request body fields]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}}).
+For more information, see [Filter and merge request body fields]({{< link-hextra path="/documentation/traffic-management/transformations/filter-request-body/" >}}).
 
 ### Pre-compute values with metadata
 
@@ -120,7 +120,7 @@ traffic:
 
 `metadata` values are only available within the same transformation block. They are not accessible in access log or tracing CEL expressions.
 
-For a full example, see [Inject LLM model headers]({{< link-hextra path="/traffic-management/transformations/llm-model-headers/" >}}).
+For a full example, see [Inject LLM model headers]({{< link-hextra path="/documentation/traffic-management/transformations/llm-model-headers/" >}}).
 
 
 ## CEL syntax quick reference {#cel-syntax}
@@ -143,7 +143,7 @@ Use these patterns to build expressions for header values, body content, and con
 
 Context variables give CEL expressions access to information about the current request, response, and connection. They are populated automatically by agentgateway at runtime so you do not need to declare or configure them. Use them to read values such as headers, path, method, JWT claims, or LLM model names and inject them into headers, bodies, or conditions.
 
-Variables are only populated when they are relevant to the current request. For example, `jwt` is only present when a JWT has been validated, and `llm` is only present when the route is backed by an LLM provider. Referencing an absent variable in a CEL expression produces an error. Use `default(expression, fallback)` to avoid this error. For a complete example that forwards validated JWT claims to a backend and routes on them, see [Use JWT claims in transformations]({{< link-hextra path="/security/jwt/setup/#jwt-claims-transformations" >}}).
+Variables are only populated when they are relevant to the current request. For example, `jwt` is only present when a JWT has been validated, and `llm` is only present when the route is backed by an LLM provider. Referencing an absent variable in a CEL expression produces an error. Use `default(expression, fallback)` to avoid this error. For a complete example that forwards validated JWT claims to a backend and routes on them, see [Use JWT claims in transformations]({{< link-hextra path="/documentation/security/jwt/setup/#jwt-claims-transformations" >}}).
 
 Not all variables are available in every policy type. The table below lists which variables are available depending on where the CEL expression is evaluated.
 
@@ -164,22 +164,22 @@ These functions are used in the documentation examples in this section.
 
 | Function | Example topic |
 |----------|---------------|
-| `base64.encode(bytes)` | [Encode base64]({{< link-hextra path="/traffic-management/transformations/encode/" >}}) |
-| `base64.decode(string)` | [Encode base64]({{< link-hextra path="/traffic-management/transformations/encode/" >}}) |
-| `default(expression, fallback)` | [Validate and set request body defaults]({{< link-hextra path="/traffic-management/transformations/validate/" >}}) |
-| `expression.with(variable, result)` | [Rewrite dynamic path segments]({{< link-hextra path="/traffic-management/transformations/rewrite/" >}}) |
-| `fail()` | [Validate and set request body defaults]({{< link-hextra path="/traffic-management/transformations/validate/" >}}) |
-| `json(string)` | [Inject response bodies]({{< link-hextra path="/traffic-management/transformations/inject-response-body/" >}}) |
-| `map.filterKeys(k, predicate)` | [Filter and merge request body fields]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}}) |
-| `map.merge(map2)` | [Filter and merge request body fields]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}}) |
-| `metadata.<name>` | [Inject LLM model headers]({{< link-hextra path="/traffic-management/transformations/llm-model-headers/" >}}) |
-| `random()` | [Generate request tracing headers]({{< link-hextra path="/traffic-management/transformations/tracing/" >}}) |
-| `string(value)` | [Encode base64]({{< link-hextra path="/traffic-management/transformations/encode/" >}}) |
-| `string.contains(substring)` | [Change the response status]({{< link-hextra path="/traffic-management/transformations/status/" >}}) |
-| `string.regexReplace(pattern, replacement)` | [Rewrite dynamic path segments]({{< link-hextra path="/traffic-management/transformations/rewrite/" >}}) |
-| `toJson(value)` | [Filter and merge request body fields]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}}) |
-| `uuid()` | [Generate request tracing headers]({{< link-hextra path="/traffic-management/transformations/tracing/" >}}) |
-| `variables()` | [Enrich access logs]({{< link-hextra path="/traffic-management/transformations/access-logs/" >}}) |
+| `base64.encode(bytes)` | [Encode base64]({{< link-hextra path="/documentation/traffic-management/transformations/encode/" >}}) |
+| `base64.decode(string)` | [Encode base64]({{< link-hextra path="/documentation/traffic-management/transformations/encode/" >}}) |
+| `default(expression, fallback)` | [Validate and set request body defaults]({{< link-hextra path="/documentation/traffic-management/transformations/validate/" >}}) |
+| `expression.with(variable, result)` | [Rewrite dynamic path segments]({{< link-hextra path="/documentation/traffic-management/transformations/rewrite/" >}}) |
+| `fail()` | [Validate and set request body defaults]({{< link-hextra path="/documentation/traffic-management/transformations/validate/" >}}) |
+| `json(string)` | [Inject response bodies]({{< link-hextra path="/documentation/traffic-management/transformations/inject-response-body/" >}}) |
+| `map.filterKeys(k, predicate)` | [Filter and merge request body fields]({{< link-hextra path="/documentation/traffic-management/transformations/filter-request-body/" >}}) |
+| `map.merge(map2)` | [Filter and merge request body fields]({{< link-hextra path="/documentation/traffic-management/transformations/filter-request-body/" >}}) |
+| `metadata.<name>` | [Inject LLM model headers]({{< link-hextra path="/documentation/traffic-management/transformations/llm-model-headers/" >}}) |
+| `random()` | [Generate request tracing headers]({{< link-hextra path="/documentation/traffic-management/transformations/tracing/" >}}) |
+| `string(value)` | [Encode base64]({{< link-hextra path="/documentation/traffic-management/transformations/encode/" >}}) |
+| `string.contains(substring)` | [Change the response status]({{< link-hextra path="/documentation/traffic-management/transformations/status/" >}}) |
+| `string.regexReplace(pattern, replacement)` | [Rewrite dynamic path segments]({{< link-hextra path="/documentation/traffic-management/transformations/rewrite/" >}}) |
+| `toJson(value)` | [Filter and merge request body fields]({{< link-hextra path="/documentation/traffic-management/transformations/filter-request-body/" >}}) |
+| `uuid()` | [Generate request tracing headers]({{< link-hextra path="/documentation/traffic-management/transformations/tracing/" >}}) |
+| `variables()` | [Enrich access logs]({{< link-hextra path="/documentation/traffic-management/transformations/access-logs/" >}}) |
 
 ## Transformation phases {#phases}
 

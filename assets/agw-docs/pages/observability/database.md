@@ -1,4 +1,4 @@
-Agentgateway records each LLM request that flows through the proxy into a database. This data powers the [cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}) and the **Analytics** page in the UI. You configure the database backend in the `config.database.url` field. Agentgateway creates the schema on the first startup, so no migration step is required.{{< version include-if="main" >}} For the steps to set up the database in each installation method, see [Database]({{< link-hextra path="/setup/database/" >}}).{{< /version >}}
+Agentgateway records each LLM request that flows through the proxy into a database. This data powers the [cost dashboard]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/" >}}) and the **Analytics** page in the UI. You configure the database backend in the `config.database.url` field. Agentgateway creates the schema on the first startup, so no migration step is required.{{< version include-if="main" >}} For the steps to set up the database in each installation method, see [Database]({{< link-hextra path="/documentation/setup/database/" >}}).{{< /version >}}
 
 ## Backends
 
@@ -64,7 +64,7 @@ In the default `file` storage mode, the database holds request log records only,
 
 {{< version include-if="main" >}}
 > [!NOTE]
-> The `hybrid` storage mode changes where some of these items live. In that mode, agentgateway also stores the resources that you manage in the UI in the same database, and layers them over the configuration file. For more information, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+> The `hybrid` storage mode changes where some of these items live. In that mode, agentgateway also stores the resources that you manage in the UI in the same database, and layers them over the configuration file. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 {{< /version >}}
 
 ## Disable request logging
