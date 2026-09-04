@@ -119,3 +119,8 @@ src.addr=127.0.0.1:51794 http.method=POST http.host=localhost http.path=/openai 
 http.status=429 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai
 gen_ai.request.model=gpt-4o error=rate limit exceeded duration=206ms
 ```
+
+## Learn more
+
+- [Observability overview]({{< link-hextra path="/observability/" >}}) for metrics, traces, and access logs.
+- [LLM observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}) for external observability platforms.

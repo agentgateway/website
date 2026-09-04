@@ -33,3 +33,6 @@ Agentgateway automatically includes these LLM-specific trace attributes.
 | `gen_ai.provider.name` | LLM provider (openai, anthropic, etc.). |
 
 Tool calls are not in this list, because the gateway does not collect them automatically. To record them, reference the `llm.toolCalls` CEL field in a tracing or access log attribute, as described in [Tool calls]({{< link-hextra path="/llm/observability/#tool-calls" >}}).
+
+For complete proxy and controller metrics, LLM traces, and a dashboard, see
+the [Datadog observability guide]({{< link-hextra path="/observability/traces/configs/datadog/" >}}).
