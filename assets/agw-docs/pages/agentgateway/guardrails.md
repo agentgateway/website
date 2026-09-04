@@ -262,6 +262,7 @@ EOF
 
 By default, agentgateway calls `POST /request` and `POST /response` on the webhook target.
 
+{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 #### Optional: Configure the webhook timeout {#webhook-timeout}
 
 The `webhook` field takes no timeout of its own, so the webhook call has no
@@ -298,6 +299,7 @@ request. The default is `FailClosed`, which rejects the request. Set
 `FailOpen` to let the request continue instead. For more information about
 connection and response deadlines, see
 [Backend timeouts]({{< link-hextra path="/documentation/resiliency/timeouts/backend/" >}}).
+{{< /version >}}
 
 ### Step 3: Test the webhook server {#test-webhook-server}
 
