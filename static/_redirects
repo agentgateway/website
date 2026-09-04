@@ -171,6 +171,10 @@
 /docs/:section/:version/llm/inference/multiple-inference-pools* /docs/:section/:version/documentation/llm/multiple-inference-pools:splat 301
 # A parent's `url:` does not move its children, so inference-routing and any
 # other child keeps the plain documentation/ prefix; only the landing moved.
+# Hugo emits the landing's old URL with a trailing slash, which the `/*` rule
+# would match with an empty splat and send to documentation/llm/inference/ —
+# a path that renders nothing. Catch the trailing-slash form first.
+/docs/:section/:version/llm/inference/ /docs/:section/:version/documentation/inference/ 301
 /docs/:section/:version/llm/inference/* /docs/:section/:version/documentation/llm/inference/:splat 301
 /docs/:section/:version/llm/inference* /docs/:section/:version/documentation/inference:splat 301
 
@@ -210,7 +214,7 @@
 /docs/:section/:version/integrations/mcp-servers/sse* /docs/:section/:version/integrations/mcp/servers:splat 301
 /docs/:section/:version/integrations/mcp-servers* /docs/:section/:version/integrations/mcp/servers:splat 301
 /docs/:section/:version/integrations/vllm-semantic-router* /docs/:section/:version/integrations/llm/routing/vllm-semantic-router:splat 301
-/docs/:section/:version/integrations/vllm* /docs/:section/:version/integrations/llm/routing/vllm:splat 301
+/docs/:section/:version/integrations/vllm* /docs/:section/:version/integrations/llm/providers/vllm:splat 301
 /docs/:section/:version/integrations/kserve* /docs/:section/:version/integrations/llm/routing/kserve:splat 301
 /docs/:section/:version/integrations/argo* /docs/:section/:version/integrations/ci-cd/argo:splat 301
 
