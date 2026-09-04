@@ -75,8 +75,8 @@
 /docs/kubernetes/latest/tutorials/prompt-enrichment/ /docs/kubernetes/latest/documentation/llm/prompt-templates 301
 /docs/kubernetes/latest/tutorials/telemetry /docs/kubernetes/latest/documentation/observability/tracing 301
 /docs/kubernetes/latest/tutorials/telemetry/ /docs/kubernetes/latest/documentation/observability/tracing 301
-# Removed top-level Tutorials landing page
-/tutorials /docs 301
+# Removed top-level Tutorials landing page — the content became integration guides
+/tutorials /docs/standalone/latest/integrations/ 301
 
 # LLM spending page renamed to costs
 /docs/standalone/main/llm/spending /docs/standalone/main/documentation/llm/cost-controls/costs 301
@@ -107,8 +107,10 @@
 # Renamed section: /docs/local -> /docs/standalone
 /docs/local/* /docs/standalone/:splat 301
 
-# Removed top-level Tutorials landing page
-/tutorials/* /docs 301
+# Removed top-level Tutorials landing page — the content became integration guides.
+# Subpages flatten to the section landing: the old tutorial slugs do not map
+# one-to-one onto the new integration slugs, so there is nothing to :splat.
+/tutorials/* /docs/standalone/latest/integrations/ 301
 
 # ----------------------------------------------------------------------------
 # Doc tabs: where the old versioned URLs go
