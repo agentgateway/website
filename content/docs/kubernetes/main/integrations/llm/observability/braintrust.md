@@ -52,7 +52,7 @@ For a self-hosted deployment, replace `spec.static.host` with the Universal API 
 
 ## Configure trace export
 
-Create an `AgentgatewayBackend` that enables TLS and reads the Braintrust headers from the Secret. Then attach an `AgentgatewayPolicy` to the Gateway that serves your LLM route.
+Create an {{< reuse "agw-docs/snippets/backend.md" >}} that enables TLS and reads the Braintrust headers from the Secret. Then attach an {{< reuse "agw-docs/snippets/policy.md" >}} to the Gateway that serves your LLM route.
 
 ```sh
 kubectl apply -f- <<'EOF'
