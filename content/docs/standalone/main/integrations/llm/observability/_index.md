@@ -1,7 +1,7 @@
 ---
 title: Observability
 weight: 40
-description: Send LLM telemetry to Axiom, Langfuse, LangSmith, and other observability platforms.
+description: Send LLM telemetry to Braintrust, Langfuse, LangSmith, and other observability platforms.
 test: skip
 ---
 
