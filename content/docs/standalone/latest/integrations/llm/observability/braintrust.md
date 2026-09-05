@@ -8,7 +8,7 @@ description: Export agentgateway LLM traces to Braintrust over OTLP/HTTP.
 
 ## Before you begin
 
-1. [Complete the LLM quickstart]({{< link-hextra path="/quickstart/llm/" >}}).
+1. [Complete the LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}}).
 2. Create a Braintrust account and a project for agentgateway traces.
 3. Create a Braintrust API key that can write to the project.
 4. Install `curl` for the verification step.
