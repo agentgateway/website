@@ -2,7 +2,6 @@
 title: Braintrust
 weight: 25
 description: Export agentgateway LLM traces to Braintrust over OTLP/HTTP.
-test: skip
 ---
 
 [Braintrust](https://www.braintrust.dev/) is an LLM observability and evaluation platform that accepts OpenTelemetry traces. Agentgateway can export LLM traces directly to Braintrust over OTLP/HTTP, including model, token usage, latency, and optional prompt and response content.
@@ -132,6 +131,6 @@ Braintrust's Logs view shows root spans. Export the root span for each request; 
 - If no traces appear, confirm that the API host matches your organization's data plane and that `path` is `/otel/v1/traces`.
 - Set `randomSampling: true` while testing. The default is to start no new traces when the request has no incoming trace context.
 - Keep prompt and response attributes disabled when the request body contains data that should not leave the proxy.
-- Braintrust limits a single OTLP traces request to 10 MB. Reduce batch size or omit message content if the exporter reports HTTP `413`.
+- Braintrust limits a single OTLP trace request to 10 MB. The tracing policy has no batch size setting, so if the exporter reports HTTP `413`, drop the message content attributes or lower `randomSampling` so that fewer spans are exported.
 
 For more information, see the [Braintrust OpenTelemetry integration](https://www.braintrust.dev/docs/integrations/sdk-integrations/opentelemetry) and [OpenTelemetry trace setup]({{< link-hextra path="/observability/traces/setup/" >}}).

@@ -2,16 +2,15 @@
 title: Braintrust
 weight: 25
 description: Export agentgateway LLM traces to Braintrust over OTLP/HTTP.
-test: skip
 ---
 
 [Braintrust](https://www.braintrust.dev/) is an LLM observability and evaluation platform that accepts OpenTelemetry traces. An agentgateway proxy running in Kubernetes can export LLM traces directly to Braintrust over OTLP/HTTP, including model, token usage, latency, and optional prompt and response content.
 
 ## Before you begin
 
-1. [Install agentgateway]({{< link-hextra path="/quickstart/install/" >}}) in your Kubernetes cluster.
-2. [Set up an agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-3. Set up an [LLM provider]({{< link-hextra path="/llm/providers/" >}}) and route in agentgateway.
+1. [Install agentgateway]({{< link-hextra path="/documentation/quickstart/install/" >}}) in your Kubernetes cluster.
+2. [Set up an agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
+3. Set up an [LLM provider]({{< link-hextra path="/integrations/llm/providers/" >}}) and route in agentgateway.
 4. Create a Braintrust account, a project, and an API key that can write to that project.
 5. Install `kubectl` and `curl`.
 
@@ -32,7 +31,7 @@ test: skip
 
    ```sh
    kubectl create secret generic braintrust-credentials \
-     -n agentgateway-system \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
      --from-literal=api-key="Bearer ${BRAINTRUST_API_KEY}" \
      --from-literal=parent="${BRAINTRUST_PARENT}" \
      --dry-run=client -o yaml | kubectl apply -f-
@@ -56,11 +55,11 @@ Create an {{< reuse "agw-docs/snippets/backend.md" >}} that enables TLS and read
 
 ```sh
 kubectl apply -f- <<'EOF'
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayBackend
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: braintrust-otlp
-  namespace: agentgateway-system
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   static:
     host: api.braintrust.dev
@@ -82,11 +81,11 @@ spec:
           name: braintrust-credentials
           key: parent
 ---
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayPolicy
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: braintrust-tracing
-  namespace: agentgateway-system
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   targetRefs:
   - group: gateway.networking.k8s.io
@@ -96,7 +95,7 @@ spec:
     tracing:
       backendRef:
         group: agentgateway.dev
-        kind: AgentgatewayBackend
+        kind: {{< reuse "agw-docs/snippets/backend.md" >}}
         name: braintrust-otlp
         port: 443
       protocol: HTTP
@@ -136,8 +135,8 @@ Referencing `llm.prompt` or `llm.completion` makes agentgateway inspect request 
 1. Confirm that Kubernetes accepted the backend and attached the policy to the Gateway.
 
    ```sh
-   kubectl get agentgatewaybackend braintrust-otlp -n agentgateway-system
-   kubectl get agentgatewaypolicy braintrust-tracing -n agentgateway-system
+   kubectl get {{< reuse "agw-docs/snippets/backend.md" >}} braintrust-otlp -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} braintrust-tracing -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
    The backend should report `Accepted=True`; the policy should report both `Accepted=True` and `Attached=True` in its status.
@@ -145,10 +144,10 @@ Referencing `llm.prompt` or `llm.completion` makes agentgateway inspect request 
 2. If you run a local cluster, port-forward the agentgateway proxy.
 
    ```sh
-   kubectl port-forward deployment/agentgateway-proxy -n agentgateway-system 8080:80
+   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
    ```
 
-3. Send an LLM request through the proxy. The example assumes an OpenAI-compatible provider and a listener on port `8080`.
+3. Send an LLM request through the proxy. The proxy listens on port 80 in the cluster and is reachable at `localhost:8080` while the port-forward runs.
 
    ```sh
    curl http://localhost:8080/v1/chat/completions \
@@ -164,7 +163,7 @@ Referencing `llm.prompt` or `llm.completion` makes agentgateway inspect request 
 4. Copy the `trace.id` value from the proxy log.
 
    ```sh
-   kubectl logs deployment/agentgateway-proxy -n agentgateway-system \
+   kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
      | grep 'protocol=llm' \
      | tail -1
    ```
@@ -180,6 +179,6 @@ Braintrust's Logs view shows root spans. Export the root span for each request; 
 - Set `randomSampling: "true"` while testing. The default is to start no new traces when the request has no incoming trace context.
 - Check the backend and policy `Accepted` and `Attached` conditions, then inspect proxy logs for OpenTelemetry exporter errors.
 - Keep prompt and response attributes disabled when the request body contains data that should not leave the proxy.
-- Braintrust limits a single OTLP traces request to 10 MB. Omit message content or reduce the exporter batch size if the exporter reports HTTP `413`.
+- Braintrust limits a single OTLP trace request to 10 MB. The tracing policy has no batch size setting, so if the exporter reports HTTP `413`, drop the message content attributes or lower `randomSampling` so that fewer spans are exported.
 
-For more information, see the [Braintrust OpenTelemetry integration](https://www.braintrust.dev/docs/integrations/sdk-integrations/opentelemetry) and [Kubernetes tracing]({{< link-hextra path="/observability/tracing/" >}}).
+For more information, see the [Braintrust OpenTelemetry integration](https://www.braintrust.dev/docs/integrations/sdk-integrations/opentelemetry) and [Kubernetes tracing]({{< link-hextra path="/documentation/observability/traces/setup/" >}}).
