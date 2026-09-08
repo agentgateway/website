@@ -71,19 +71,21 @@ llm:
       - webhook:
           target:
             backend: /content-safety-webhook
+          failureMode: failClosed
       response:
       - webhook:
           target:
             backend: /content-safety-webhook
+          failureMode: failClosed
 EOF
 ```
 
-Backends are referenced as `<namespace>/<name>`. Backends defined in local configuration have no namespace, so the reference starts with `/`. The backend host must include a port.
+Backends are referenced as `<namespace>/<name>`. Backends defined in local configuration have no namespace, so the reference starts with `/`.
 
-The timeout applies separately to each webhook call, so request and response guards each receive their own timeout. A timeout is treated as a webhook failure. By default, `failureMode` is `failClosed`, which rejects the request, even when `action: audit` is set. Set `failureMode: failOpen` on the webhook to allow the request when the webhook times out or otherwise fails.
+The timeout applies separately to each webhook call, so request and response guards each receive their own timeout. A timeout is treated as a webhook failure. By default, `failureMode` is `failClosed`, which rejects the request, even when `action: audit` is set. Change `failureMode` to `failOpen` to allow the request when the webhook times out or otherwise fails.
 
 > [!NOTE]
-> The backend host must be an address that agentgateway can reach, such as `localhost:8000` for a webhook running alongside the proxy.
+> The backend host must include a port, and it must be an address that agentgateway can reach, such as `localhost:8000` for a webhook running alongside the proxy.
 
 ## DeepKeep example
 
