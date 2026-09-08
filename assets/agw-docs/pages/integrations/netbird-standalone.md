@@ -42,7 +42,7 @@ The agentgateway repository includes a standalone Docker Compose example that ru
 - Static management and wildcard certificates generated from a private demo certificate authority (CA).
 - Verification of management connectivity, private listener exposure, virtual-key authentication, and requests through the NetBird tunnel.
 
-The example is a reference deployment. Review its pinned development images, Docker host and DNS requirements, certificate trust setup, and production-hardening notes before adapting it to your environment. For production, automate certificate renewal and deployment; native standalone ACME lifecycle support is tracked in [#3293](https://github.com/agentgateway/agentgateway/issues/3293).
+The example is a reference deployment. Review its pinned component versions, Docker host and DNS requirements, certificate trust setup, and production-hardening notes before adapting it to your environment. For production, automate certificate renewal and deployment; native standalone ACME lifecycle support is tracked in [#3293](https://github.com/agentgateway/agentgateway/issues/3293).
 
 {{< cards >}}
 {{< card link="https://docs.netbird.io/agent-network" title="NetBird Agent Network docs" icon="external-link" description="Learn about Agent Network architecture, policies, providers, usage, and logs." >}}
