@@ -34,7 +34,7 @@ The agentgateway repository includes a Kubernetes example that deploys a self-ho
 The example is a reference deployment. Review its pinned component versions, DNS and LoadBalancer requirements, certificate setup, and production-hardening notes before adapting it to your environment.
 
 {{< cards >}}
-{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/netbird-agent-network" title="NetBird end-to-end example" icon="external-link" description="Deploy and verify NetBird Agent Network with agentgateway on Kubernetes." >}}
+{{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/netbird-agent-network/kubernetes" title="NetBird Kubernetes example" icon="external-link" description="Deploy and verify NetBird Agent Network with agentgateway on Kubernetes." >}}
 {{< card link="https://docs.netbird.io/agent-network" title="NetBird Agent Network docs" icon="external-link" description="Learn about Agent Network architecture, policies, providers, usage, and logs." >}}
 {{< /cards >}}
 
