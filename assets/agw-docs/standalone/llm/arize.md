@@ -1,18 +1,10 @@
----
-title: Arize AX
-weight: 40
-description: Export agentgateway LLM traces to Arize AX over OTLP/HTTP or OTLP/gRPC.
-test: skip
----
-
 [Arize AX](https://arize.com/docs/ax) is an AI observability platform that accepts OpenTelemetry traces and displays LLM inputs, outputs, models, and token usage. Agentgateway can export directly to Arize AX over OTLP/HTTP or OTLP/gRPC without a separate OpenTelemetry Collector.
 
 ## Before you begin
 
-1. [Run agentgateway]({{< link-hextra path="/setup/install/" >}}) in standalone mode.
-2. **LLM provider and model**: Set up an [LLM provider and model]({{< link-hextra path="/llm/providers/" >}}) in agentgateway.
-3. **Arize account**: Sign up for an [Arize account](https://app.arize.com/auth/join).
-4. **Arize API key and Space ID**: Obtain an API key and Space ID from the Arize platform.
+1. [Complete the LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}}).
+2. **Arize account**: Sign up for an [Arize account](https://app.arize.com/auth/join).
+3. **Arize API key and Space ID**: Obtain an API key and Space ID from the Arize platform.
 
 ## Get your Arize API key and Space ID
 
@@ -27,7 +19,7 @@ test: skip
    export ARIZE_SPACE_ID="<your-space-id>"
    ```
 
-   Agentgateway sends the API key and Space ID as request headers.
+   For OTLP/HTTP, agentgateway sends the API key and Space ID in the `arize-api-key` and `arize-space-id` request headers. For OTLP/gRPC, it sends them as the `api_key` and `space_id` metadata headers.
 
 ## Choose an Arize endpoint
 
@@ -35,16 +27,20 @@ Use the collector host for your Arize AX region.
 
 | Region | Collector host |
 |--------|----------------|
-| US | `otlp.arize.com:443` |
-| US regional | `otlp.us-central-1a.arize.com:443` |
-| EU | `otlp.eu-west-1a.arize.com:443` |
-| Canada | `otlp.ca-central-1a.arize.com:443` |
+| US | `otlp.arize.com` |
+| US regional | `otlp.us-central-1a.arize.com` |
+| EU | `otlp.eu-west-1a.arize.com` |
+| Canada | `otlp.ca-central-1a.arize.com` |
 
-The following examples use the US collector. Replace `host` with the collector host for your region.
+Save the collector host for your region in an environment variable. The following examples use the US collector.
+
+```sh
+export ARIZE_HOST="otlp.arize.com"
+```
 
 ## Configure trace export
 
-Choose either OTLP/HTTP or OTLP/gRPC. The authentication header names differ by protocol.
+Update the agentgateway configuration file that you created as part of [Before you begin](#before-you-begin) to add Arize AX as your tracing backend. Choose either OTLP/HTTP or OTLP/gRPC for your protocol, and add the custom tracing attributes that you require. The authentication header names differ by protocol.
 
 {{< tabs >}}
 {{% tab name="OTLP/HTTP" %}}
@@ -55,7 +51,7 @@ For OTLP/HTTP, use the `arize-api-key` and `arize-space-id` headers.
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
   tracing:
-    host: otlp.arize.com:443
+    host: ${ARIZE_HOST}:443
     protocol: http
     randomSampling: true
     clientSampling: true
@@ -94,7 +90,7 @@ For OTLP/gRPC, use the `api_key` and `space_id` metadata headers.
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
   tracing:
-    host: otlp.arize.com:443
+    host: ${ARIZE_HOST}:443
     protocol: grpc
     randomSampling: true
     clientSampling: true
@@ -148,9 +144,9 @@ frontendPolicies:
       deployment.environment.name: '"production"'
 ```
 
-Resource values are static CEL expressions that are initialized with the tracer and apply to every request. If agentgateway routes requests to multiple models, use the `llm.model_name` span attribute from the main configuration to record the model for each request instead of setting a single `model_id` resource value.
+Resource values are static CEL expressions that are initialized with the tracer and apply to every request. If agentgateway routes requests to multiple models, use the `llm.model_name` span attribute from the preceding OTLP/HTTP or OTLP/gRPC configuration to record the model for each request instead of setting a single `model_id` resource value.
 
-For more information, see [Add span and resource attributes]({{< link-hextra path="/observability/traces/setup/#add-attributes" >}}).
+For more information, see [Add span and resource attributes]({{< link-hextra path="/documentation/observability/traces/setup/#add-attributes" >}}).
 
 ## Verify the integration
 
@@ -173,7 +169,7 @@ For more information, see [Add span and resource attributes]({{< link-hextra pat
    ```text
    info request gateway=default/default route=internal/llm:request http.status=200 trace.id=4d50f6d1cb4099a1a22e50b6d339d5f2 span.id=a3f2ae9119406264 protocol=llm gen_ai.provider.name=openai
    ```
-4. In Arize AX, open **Tracing Projects**, select the project from `openinference.project.name`, and search for the trace ID. Trace export is batched, so allow several seconds for the trace to appear.
+4. In Arize AX, open **Tracing Projects**, select the project that you defined in the `openinference.project.name` field, and search for the trace ID. Trace export is batched, so allow several seconds for the trace to appear.
 
 {{< reuse-image src="img/arize-ax-agentgateway-trace.png" srcDark="img/arize-ax-agentgateway-trace.png" alt="Arize AX showing an agentgateway openai.chat trace with its input, output, latency, cost, and token count" caption="An agentgateway LLM trace in Arize AX." >}}
 
