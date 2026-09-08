@@ -1,17 +1,10 @@
----
-title: Arize AX
-weight: 5
-description: Export agentgateway LLM traces to Arize AX over OTLP/HTTP or OTLP/gRPC.
-test: skip
----
-
 [Arize AX](https://arize.com/docs/ax) is an AI observability platform that accepts OpenTelemetry traces and displays LLM operations, models, and token usage. Agentgateway can export directly to Arize AX over OTLP/HTTP or OTLP/gRPC without a separate OpenTelemetry Collector. You can optionally export LLM inputs and outputs.
 
 ## Before you begin
 
-1. [Install agentgateway]({{< link-hextra path="/quickstart/install/" >}}) in your Kubernetes cluster.
-2. [Set up an agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-3. Set up an [LLM provider]({{< link-hextra path="/llm/providers/" >}}) and route in agentgateway.
+1. [Install agentgateway]({{< link-hextra path="/documentation/quickstart/install/" >}}) in your Kubernetes cluster.
+2. [Set up an agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
+3. Set up an [LLM provider]({{< link-hextra path="/documentation/llm/providers/" >}}) and route in agentgateway.
 4. **Arize account**: Sign up for an [Arize account](https://app.arize.com/auth/join).
 5. **Arize API key and Space ID**: Obtain an API key and Space ID from the Arize platform.
 
@@ -34,7 +27,7 @@ test: skip
    kind: Secret
    metadata:
      name: arize-credentials
-     namespace: agentgateway-system
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    type: Opaque
    stringData:
      api-key: "${ARIZE_API_KEY}"
@@ -55,14 +48,18 @@ Use the collector host for your Arize AX region.
 | EU | `otlp.eu-west-1a.arize.com` |
 | Canada | `otlp.ca-central-1a.arize.com` |
 
-The following examples use the US collector. Replace `spec.static.host` with the collector host for your region.
+Save the collector host for your region in an environment variable. The following examples use the US collector.
+
+```sh
+export ARIZE_HOST="otlp.arize.com"
+```
 
 ## Configure trace export
 
 Choose either OTLP/HTTP or OTLP/gRPC. Each option creates the following resources.
 
-- An `AgentgatewayBackend` that connects to Arize AX over TLS and reads the authentication headers from the `arize-credentials` Secret.
-- An `AgentgatewayPolicy` that exports sampled LLM traces from the `agentgateway-proxy` Gateway.
+- An `{{< reuse "agw-docs/snippets/backend.md" >}}` that connects to Arize AX over TLS and reads the authentication headers from the `arize-credentials` Secret.
+- An `{{< reuse "agw-docs/snippets/policy.md" >}}` that exports sampled LLM traces from the `agentgateway-proxy` Gateway.
 
 The authentication header names differ by protocol.
 
@@ -72,15 +69,15 @@ The authentication header names differ by protocol.
 For OTLP/HTTP, use the `arize-api-key` and `arize-space-id` headers.
 
 ```yaml
-kubectl apply -f- <<'EOF'
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayBackend
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: arize-otlp
-  namespace: agentgateway-system
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   static:
-    host: otlp.arize.com
+    host: ${ARIZE_HOST}
     port: 443
   policies:
     tls: {}
@@ -99,11 +96,11 @@ spec:
           name: arize-credentials
           key: space-id
 ---
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayPolicy
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: arize-tracing
-  namespace: agentgateway-system
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   targetRefs:
   - group: gateway.networking.k8s.io
@@ -113,7 +110,7 @@ spec:
     tracing:
       backendRef:
         group: agentgateway.dev
-        kind: AgentgatewayBackend
+        kind: {{< reuse "agw-docs/snippets/backend.md" >}}
         name: arize-otlp
         port: 443
       protocol: HTTP
@@ -134,15 +131,15 @@ EOF
 For OTLP/gRPC, use the `api_key` and `space_id` metadata headers.
 
 ```yaml
-kubectl apply -f- <<'EOF'
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayBackend
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: arize-otlp
-  namespace: agentgateway-system
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   static:
-    host: otlp.arize.com
+    host: ${ARIZE_HOST}
     port: 443
   policies:
     tls: {}
@@ -161,11 +158,11 @@ spec:
           name: arize-credentials
           key: space-id
 ---
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayPolicy
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: arize-tracing
-  namespace: agentgateway-system
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   targetRefs:
   - group: gateway.networking.k8s.io
@@ -175,7 +172,7 @@ spec:
     tracing:
       backendRef:
         group: agentgateway.dev
-        kind: AgentgatewayBackend
+        kind: {{< reuse "agw-docs/snippets/backend.md" >}}
         name: arize-otlp
         port: 443
       protocol: GRPC
@@ -201,11 +198,10 @@ Agentgateway emits model, provider, operation, and token usage attributes that f
 
 ## Optional: Export LLM inputs and outputs
 
-The default configuration does not export prompt or response content. To display structured input and output messages in Arize AX, add the following attributes to the `AgentgatewayPolicy` for your selected transport.
+The default configuration does not export prompt or response content. To display structured input and output messages in Arize AX, add the following attributes to the `{{< reuse "agw-docs/snippets/policy.md" >}}` for your selected transport.
 
-{{< callout type="warning" >}}
-LLM prompts and responses can contain personally identifiable information (PII), credentials, or other sensitive data. Enabling these attributes sends that content to a third-party SaaS platform. Review your organization's data-handling requirements and configure appropriate guardrails or redaction before enabling them.
-{{< /callout >}}
+> [!IMPORTANT]
+> LLM prompts and responses can contain personally identifiable information (PII), credentials, or other sensitive data. Enabling these attributes sends that content to a third-party SaaS platform. Review your organization's data-handling requirements and configure appropriate guardrails or redaction before enabling them.
 
 ```yaml
 spec:
@@ -223,7 +219,7 @@ spec:
 
 Agentgateway supports custom OpenTelemetry resource attributes through `spec.frontend.tracing.resources`. Resource attributes are added to every exported span and can help you filter and group traces in Arize AX.
 
-In Kubernetes mode, agentgateway automatically sets `service.name`, `service.version`, `service.instance.id`, and `service.namespace`. The main configuration explicitly sets `deployment.environment.name`. You can add application-specific attributes such as `model_id` or `model_version` to the `resources` list in the `AgentgatewayPolicy` for your selected transport.
+In Kubernetes mode, agentgateway automatically sets `service.name`, `service.version`, `service.instance.id`, and `service.namespace`. The preceding OTLP/HTTP and OTLP/gRPC configurations explicitly set `deployment.environment.name`. You can add application-specific attributes such as `model_id` or `model_version` to the `resources` list in the `{{< reuse "agw-docs/snippets/policy.md" >}}` for your selected transport.
 
 ```yaml
 spec:
@@ -242,25 +238,27 @@ spec:
 
 Resource values are static CEL expressions that are initialized with the tracer and apply to every request. Do not set a static `service.instance.id`, which must identify a unique agentgateway replica. If agentgateway routes requests to multiple models, use the default `gen_ai.request.model` and `gen_ai.response.model` span attributes instead of setting a single `model_id` resource value.
 
-For more information, see [Add span and resource attributes]({{< link-hextra path="/observability/traces/setup/#add-attributes" >}}).
+For more information, see [Add span and resource attributes]({{< link-hextra path="/documentation/observability/traces/setup/#add-attributes" >}}).
+
+## Get the gateway address
+
+{{< reuse "agw-docs/snippets/agw-get-gateway-url-k8s.md" >}}
 
 ## Verify the integration
 
 1. Verify that Kubernetes accepted the backend and attached the policy to the Gateway.
    ```sh
-   kubectl get agentgatewaybackend arize-otlp -n agentgateway-system
-   kubectl get agentgatewaypolicy arize-tracing -n agentgateway-system
+   kubectl get agentgatewaybackend arize-otlp \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} arize-tracing \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
    Both resources should report `ACCEPTED=True`, and the policy should also report `ATTACHED=True`.
 
-2. If you run a local cluster such as Kind, port-forward the agentgateway proxy.
+2. Send an LLM request through agentgateway. The following example assumes that you configured an OpenAI-compatible provider and the `gpt-3.5-turbo` model.
    ```sh
-   kubectl port-forward deployment/agentgateway-proxy -n agentgateway-system 8080:80
-   ```
-3. In a separate terminal, send an LLM request through agentgateway. The following example assumes that the proxy is available on local port `8080` and has an OpenAI-compatible provider and the `gpt-3.5-turbo` model configured.
-   ```sh
-   curl http://localhost:8080/v1/chat/completions \
+   curl http://$INGRESS_GW_ADDRESS/v1/chat/completions \
      -H 'content-type: application/json' \
      -d '{
        "model": "gpt-3.5-turbo",
@@ -272,13 +270,21 @@ For more information, see [Add span and resource attributes]({{< link-hextra pat
        ]
      }'
    ```
-4. Find the request in the agentgateway proxy logs and copy its `trace.id` value.
+3. Find the request in the agentgateway proxy logs and copy its `trace.id` value.
    ```sh
-   kubectl logs deployment/agentgateway-proxy -n agentgateway-system \
+   kubectl logs deployment/agentgateway-proxy \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
      | grep 'protocol=llm' \
      | tail -1
    ```
-5. In Arize AX, open **Tracing Projects**, select the project from `openinference.project.name`, and search for the trace ID. Trace export is batched, so allow several seconds for the trace to appear.
+
+   A successful request produces a log entry similar to the following abbreviated example.
+
+   ```console
+   info request gateway=agentgateway-system/agentgateway-proxy http.method=POST http.path=/v1/chat/completions http.status=200 trace.id=c4e407d74b582620f42f6fd3382bd63b span.id=f97625410e525bac protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai gen_ai.request.model=gpt-3.5-turbo gen_ai.response.model=gpt-3.5-turbo
+   ```
+
+4. In Arize AX, open **Tracing Projects**, select the project that you set in the `openinference.project.name` resource attribute, and search for the trace ID. Trace export is batched, so allow several seconds for the trace to appear.
 
 {{< reuse-image src="img/arize-ax-agentgateway-trace.png" srcDark="img/arize-ax-agentgateway-trace.png" alt="Arize AX showing an agentgateway openai.chat trace with its input, output, latency, cost, and token count" caption="An agentgateway LLM trace in Arize AX." >}}
 
@@ -291,7 +297,8 @@ For more information, see [Add span and resource attributes]({{< link-hextra pat
 - Set `randomSampling: "true"` while testing so that agentgateway starts a trace for every request.
 - Check the proxy logs for OpenTelemetry exporter errors.
   ```sh
-  kubectl logs deployment/agentgateway-proxy -n agentgateway-system \
+  kubectl logs deployment/agentgateway-proxy \
+    -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
     | grep -i opentelemetry
   ```
 
