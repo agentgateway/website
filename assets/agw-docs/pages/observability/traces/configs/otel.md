@@ -2,7 +2,7 @@
 An [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) is a vendor-neutral component that receives, processes, and exports telemetry data to one or more backends, such as Jaeger, Tempo, or Datadog. The following steps show you how to install a standalone OTel Collector in your cluster and configure {{< reuse "agw-docs/snippets/agentgateway.md" >}} to send traces to it.
 
 > [!TIP]
-> If you already have the [OTel stack]({{< link path="/observability/otel-stack/" >}}) installed, an OTel Collector is already running in the `telemetry` namespace. You do not need to install another one.
+> If you already have the [OTel stack]({{< link path="/documentation/observability/otel-stack/" >}}) installed, an OTel Collector is already running in the `telemetry` namespace. You do not need to install another one.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 

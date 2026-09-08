@@ -201,7 +201,7 @@ print("custom credential location verified")'
 
 If the client already sends the credential that the backend expects, forward it with the `passthrough` method. A client authentication policy strips the credential that it validates before the gateway forwards the request, so without `passthrough` the backend receives nothing.
 
-The method forwards a JWT only. It re-sends the token that a [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) policy validated on the route. An [API key]({{< link-hextra path="/security/apikey/" >}}) or basic auth credential is still stripped, and `passthrough` does not add it back.
+The method forwards a JWT only. It re-sends the token that a [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) policy validated on the route. An [API key]({{< link-hextra path="/documentation/security/apikey/" >}}) or basic auth credential is still stripped, and `passthrough` does not add it back.
 
 ```yaml
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -227,7 +227,7 @@ The `passthrough` method has no field for where to read the credential from, bec
 The `location` field on `passthrough` controls only where the gateway writes the token on the backend request. That location does not have to be where the client sent it. To read a JWT from the `Authorization` header and forward it as an `x-forwarded-token` header, set `location` to that header.
 
 > [!NOTE]
-> Prefer `passthrough` over the `preserveToken` field of the [JWT authentication]({{< link-hextra path="/security/jwt/setup/" >}}) policy. Both get the token to the backend. However, `preserveToken` leaves the token in its original location, where every policy that runs later can read it. The `passthrough` method re-adds the token only on the request that the gateway forwards to the backend.
+> Prefer `passthrough` over the `preserveToken` field of the [JWT authentication]({{< link-hextra path="/documentation/security/jwt/setup/" >}}) policy. Both get the token to the backend. However, `preserveToken` leaves the token in its original location, where every policy that runs later can read it. The `passthrough` method re-adds the token only on the request that the gateway forwards to the backend.
 
 ## Send more than one credential
 

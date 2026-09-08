@@ -1,7 +1,7 @@
 Use the standalone Helm chart when you want the standalone agentgateway model, but you want Kubernetes to run and expose the process for you. The chart runs the same binary and reads the same configuration file that the binary and Docker installations use. You supply that file through Helm values, and the chart renders it into a ConfigMap that the proxy reads at startup.
 
 > [!TIP]
-> This chart installs agentgateway as a single, unmanaged Kubernetes Deployment. You manage agentgateway config by upgrading the Helm values, and optionally by adding a PostgreSQL database so that you can edit the config in the UI. If you want a managed Kubernetes solution that includes a control plane and Gateway API resources, see [Kubernetes control plane]({{< link-hextra path="/setup/install/kubernetes/" >}}).
+> This chart installs agentgateway as a single, unmanaged Kubernetes Deployment. You manage agentgateway config by upgrading the Helm values, and optionally by adding a PostgreSQL database so that you can edit the config in the UI. If you want a managed Kubernetes solution that includes a control plane and Gateway API resources, see [Kubernetes control plane]({{< link-hextra path="/documentation/setup/install/kubernetes/" >}}).
 
 ## Before you begin
 
@@ -65,8 +65,8 @@ Keep in mind that the Helm chart installation does not include the following fea
 
 * No PersistentVolumeClaim for persistent storage.
 * No Service for the admin port. Instead, you can reach the admin interface by port-forwarding the `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` Deployment.
-* No writeable UI by default. To make the UI writable, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
-* No database for features such as LLM analytics, LLM logs, API key budgets, and hybrid storage. To add a database, see [Database]({{< link-hextra path="/setup/database/#helm" >}}).
+* No writeable UI by default. To make the UI writable, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
+* No database for features such as LLM analytics, LLM logs, API key budgets, and hybrid storage. To add a database, see [Database]({{< link-hextra path="/documentation/setup/database/#helm" >}}).
   
 Also keep in mind that this standalone Kubernetes Deployment via Helm does not include the features of [{{< reuse "agw-docs/snippets/agentgateway.md" >}} for Kubernetes](https://docs.solo.io/agentgateway/kubernetes/latest/), such as a control plane, agentgateway custom resources, or additional services such as rate limiting, external auth, and WAF.
 
@@ -122,7 +122,7 @@ For quick access to the UI, port-forward the `{{< reuse "agw-docs/standalone/hel
 
 2. In your browser, open the `/ui` path: [http://localhost:15000/ui](http://localhost:15000/ui)
 
-A port-forward is a quick way to look at the UI on a cluster. To give the UI its own gateway so that you can reach it without one, secure it with OIDC, and expose it on your own hostname, see [UI]({{< link-hextra path="/setup/ui/" >}}).
+A port-forward is a quick way to look at the UI on a cluster. To give the UI its own gateway so that you can reach it without one, secure it with OIDC, and expose it on your own hostname, see [UI]({{< link-hextra path="/documentation/setup/ui/" >}}).
 
 ## Common Helm values
 
@@ -144,8 +144,8 @@ A port-forward is a quick way to look at the UI on a cluster. To give the UI its
 
 ## Next steps
 
-* [Set up the UI]({{< link-hextra path="/setup/ui/" >}}) to give the UI its own gateway and secure it with OIDC.
-* [Set up a database]({{< link-hextra path="/setup/database/#helm" >}}) so that the **Analytics** and **Logs** pages have data to show.
-* [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) so that the UI can save your changes.
-* [Update your configuration]({{< link-hextra path="/setup/update/" >}}) by upgrading your Helm values.
-* [Upgrade agentgateway]({{< link-hextra path="/operations/upgrade/" >}}) to a new chart version.
+* [Set up the UI]({{< link-hextra path="/documentation/setup/ui/" >}}) to give the UI its own gateway and secure it with OIDC.
+* [Set up a database]({{< link-hextra path="/documentation/setup/database/#helm" >}}) so that the **Analytics** and **Logs** pages have data to show.
+* [Choose where configuration is stored]({{< link-hextra path="/documentation/setup/storage/" >}}) so that the UI can save your changes.
+* [Update your configuration]({{< link-hextra path="/documentation/setup/update/" >}}) by upgrading your Helm values.
+* [Upgrade agentgateway]({{< link-hextra path="/documentation/operations/upgrade/" >}}) to a new chart version.

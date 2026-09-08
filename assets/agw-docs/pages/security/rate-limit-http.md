@@ -14,8 +14,8 @@ Additionally, you can set up local or global rate limiting, depending on whether
 | Global | External rate limit service | Shared limits across multiple proxy replicas |
 
 For AI-specific use cases, see:
-- [Rate limiting for LLMs]({{< link-hextra path="/llm/rate-limit" >}})
-- [Rate limiting for MCP]({{< link-hextra path="/mcp/rate-limit" >}})
+- [Rate limiting for LLMs]({{< link-hextra path="/documentation/llm/rate-limit" >}})
+- [Rate limiting for MCP]({{< link-hextra path="/documentation/mcp/rate-limit" >}})
 
 ### Gateway-level global DoS protection
 
@@ -258,13 +258,13 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
 
 Local rate limiting runs independently on each proxy replica. If you run multiple agentgateway replicas and need a shared quota across the fleet, use global rate limiting backed by an external service such as [Envoy's rate limit service](https://github.com/envoyproxy/ratelimit).
 
-For detailed instructions on setting up global rate limiting with descriptors and an external rate limit service, see the [Global rate limiting guide]({{< link-hextra path="/security/rate-limit-global" >}}).
+For detailed instructions on setting up global rate limiting with descriptors and an external rate limit service, see the [Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}).
 
 {{< version exclude-if="1.1.x" >}}
 
 ## Conditional execution
 
-To apply different rate limits based on the request, use the `conditional` field on your `rateLimit` policy. For example, you can apply stricter limits on writes than on reads. For details, see [Conditional policies]({{< link-hextra path="/about/policies/conditional-policies" >}}).
+To apply different rate limits based on the request, use the `conditional` field on your `rateLimit` policy. For example, you can apply stricter limits on writes than on reads. For details, see [Conditional policies]({{< link-hextra path="/documentation/about/policies/conditional-policies" >}}).
 
 {{< /version >}}
 

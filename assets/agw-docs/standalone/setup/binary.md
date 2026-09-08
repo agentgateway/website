@@ -26,7 +26,7 @@ Run the binary with no arguments to start agentgateway with a generated configur
 agentgateway
 ```
 
-Agentgateway creates a `config.yaml` file in your user config directory, which is `$XDG_CONFIG_HOME/agentgateway` if that variable is set and `~/.config/agentgateway` otherwise. The generated file configures a `default` gateway on port 4000, attaches the UI to that gateway, and points agentgateway at a SQLite database in the same directory. The database powers the **Analytics** and **Logs** pages in the UI, and the other features that record data while agentgateway runs. For more information, see [Database]({{< link-hextra path="/setup/database/" >}}).
+Agentgateway creates a `config.yaml` file in your user config directory, which is `$XDG_CONFIG_HOME/agentgateway` if that variable is set and `~/.config/agentgateway` otherwise. The generated file configures a `default` gateway on port 4000, attaches the UI to that gateway, and points agentgateway at a SQLite database in the same directory. The database powers the **Analytics** and **Logs** pages in the UI, and the other features that record data while agentgateway runs. For more information, see [Database]({{< link-hextra path="/documentation/setup/database/" >}}).
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -42,9 +42,9 @@ ui:
 
 Agentgateway does not overwrite an existing file, so a later run reuses the configuration from the first one.
 
-To run a configuration file of your own instead, pass it with the `-f` option. For a runnable starting point, try [this example configuration file](https://agentgateway.dev/examples/mcp-basic/config.yaml). Agentgateway watches the file and reloads it when you change it, so you do not need to restart the process to change a route or a policy. For more information, see [Update your configuration]({{< link-hextra path="/setup/update/" >}}).
+To run a configuration file of your own instead, pass it with the `-f` option. For a runnable starting point, try [this example configuration file](https://agentgateway.dev/examples/mcp-basic/config.yaml). Agentgateway watches the file and reloads it when you change it, so you do not need to restart the process to change a route or a policy. For more information, see [Update your configuration]({{< link-hextra path="/documentation/setup/update/" >}}).
 
-Note that agentgateway does not add a database to a file that you supply. To use the **Analytics** and **Logs** pages with your own file, add the `config.database` field yourself. For more information, see [Database]({{< link-hextra path="/setup/database/" >}}).
+Note that agentgateway does not add a database to a file that you supply. To use the **Analytics** and **Logs** pages with your own file, add the `config.database` field yourself. For more information, see [Database]({{< link-hextra path="/documentation/setup/database/" >}}).
 
 ```sh
 agentgateway -f config.yaml
@@ -59,14 +59,14 @@ Where agentgateway serves the UI depends on which of the two previous commands y
 * **Generated configuration**: The generated file attaches the UI to the `default` gateway, so the UI is served at <http://localhost:4000/ui>.
 * **Your own configuration file**: A file that has no `ui` section serves the UI only on the admin interface, which defaults to <http://localhost:15000/ui> and is reachable only from this host. Add a `ui` section that lists a gateway to serve the UI on a gateway port.
 
-For more information, see [Launch the UI]({{< link-hextra path="/setup/ui/launch-ui/" >}}).
+For more information, see [Launch the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}).
 
 {{% /steps %}}
 
 ## Next steps
 
-* [Set up the UI]({{< link-hextra path="/setup/ui/" >}}) to open, expose, and secure the web interface.
-* [Set up a database]({{< link-hextra path="/setup/database/" >}}) for the **Analytics** and **Logs** pages, and for API key budgets.
-* [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}).
-* [Update your configuration]({{< link-hextra path="/setup/update/" >}}) after agentgateway is running.
-* [Upgrade agentgateway]({{< link-hextra path="/operations/upgrade/" >}}) to a new version.
+* [Set up the UI]({{< link-hextra path="/documentation/setup/ui/" >}}) to open, expose, and secure the web interface.
+* [Set up a database]({{< link-hextra path="/documentation/setup/database/" >}}) for the **Analytics** and **Logs** pages, and for API key budgets.
+* [Choose where configuration is stored]({{< link-hextra path="/documentation/setup/storage/" >}}).
+* [Update your configuration]({{< link-hextra path="/documentation/setup/update/" >}}) after agentgateway is running.
+* [Upgrade agentgateway]({{< link-hextra path="/documentation/operations/upgrade/" >}}) to a new version.

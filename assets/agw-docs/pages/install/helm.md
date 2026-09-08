@@ -19,13 +19,13 @@ Install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane by usin
 
 Now that you have the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane set up and running, check out the following guides to start using the {{< reuse "/agw-docs/snippets/agentgateway.md" >}} data plane.
 
-- Learn more about [{{< reuse "/agw-docs/snippets/agentgateway.md" >}}, its features and benefits]({{< link-hextra path="/about/overview">}}). 
-- [Set up an agentgateway proxy]({{< link-hextra path="/setup/">}}) to start routing to AI workloads.
+- Learn more about [{{< reuse "/agw-docs/snippets/agentgateway.md" >}}, its features and benefits]({{< link-hextra path="/documentation/about/overview">}}). 
+- [Set up an agentgateway proxy]({{< link-hextra path="/documentation/setup/">}}) to start routing to AI workloads.
 
 
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-Follow the [Uninstall guide]({{< link-hextra path="/operations/uninstall">}}).
+Follow the [Uninstall guide]({{< link-hextra path="/documentation/operations/uninstall">}}).
 

@@ -1,5 +1,5 @@
 # Gateway config for the A2A traffic-route capture. Matches the A2A connect guide
-# (content/docs/standalone/latest/agent/a2a.md / agentgateway.dev/examples/a2a/config.yaml):
+# (content/docs/standalone/latest/documentation/agent/a2a.md / agentgateway.dev/examples/a2a/config.yaml):
 # an A2A-marked HTTP route on port 3000 with a backend to the ADK agent on localhost:9999.
 #
 # This is captured as a static Traffic > Routes / Listeners view, so the backend does NOT

@@ -6,13 +6,13 @@ In this guide, you configure the agentgateway proxy to protect a static MCP serv
 
 {{< reuse "agw-docs/pages/agentgateway/mcp/mcp-auth-vs-jwt.md" >}}
 
-For more information, see the [JWT auth docs]({{< link-hextra path="/mcp/mcp-access/">}}).
+For more information, see the [JWT auth docs]({{< link-hextra path="/documentation/mcp/mcp-access/">}}).
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/mcp/static-mcp/" >}}).
-3. Follow the steps to [set up Keycloak]({{< link-hextra path="/mcp/auth/keycloak/" >}}).
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
+2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/documentation/mcp/static-mcp/" >}}).
+3. Follow the steps to [set up Keycloak]({{< link-hextra path="/documentation/mcp/auth/keycloak/" >}}).
 4. Install the experimental channel Gateway API.
    ```sh {paths="mcp-auth-setup"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml

@@ -2,7 +2,7 @@ Distribute requests across multiple LLM providers automatically (also known as P
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
 > [!NOTE]
-> **Model-centric alternative**: To split traffic across models by weight, you can also use the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.weighted`. For more information, see [Virtual models]({{< link-hextra path="/llm/models/virtual/" >}}).
+> **Model-centric alternative**: To split traffic across models by weight, you can also use the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.weighted`. For more information, see [Virtual models]({{< link-hextra path="/documentation/llm/models/virtual/" >}}).
 {{< /version >}}
 
 ## About load balancing {#about}
@@ -37,7 +37,7 @@ This scoring mechanism automatically adapts to changing conditions, routing traf
 
 ### Load balancing within priority groups
 
-When you configure multiple [priority groups]({{< link-hextra path="/llm/failover/" >}}) (for failover or traffic splitting), load balancing applies **within each priority group**. The gateway:
+When you configure multiple [priority groups]({{< link-hextra path="/documentation/llm/failover/" >}}) (for failover or traffic splitting), load balancing applies **within each priority group**. The gateway:
 
 1. Selects the highest-priority group with available providers
 2. Uses P2C algorithm to choose the best provider within that group
@@ -52,7 +52,7 @@ When you register an LLM provider backend that points at an in-cluster Kubernete
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}
 > [!NOTE]
-> This section covers the `host` and `port` fields of an **LLM provider**, not Kubernetes Services in general. When an HTTPRoute routes to a Service directly, the proxy load balances across that Service's endpoints with P2C, for LLM and non-LLM traffic alike. See [Load balancing]({{< link-hextra path="/traffic-management/load-balancing/" >}}).
+> This section covers the `host` and `port` fields of an **LLM provider**, not Kubernetes Services in general. When an HTTPRoute routes to a Service directly, the proxy load balances across that Service's endpoints with P2C, for LLM and non-LLM traffic alike. See [Load balancing]({{< link-hextra path="/documentation/traffic-management/load-balancing/" >}}).
 {{< /version >}}
 
 ### Using `host`/`port` with a normal ClusterIP Service
@@ -158,8 +158,8 @@ Agentgateway will automatically discover all Pod endpoints behind the Service an
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-2. Set up [API access to each LLM provider]({{< link-hextra path="/llm/api-keys/" >}}) that you want to use.
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
+2. Set up [API access to each LLM provider]({{< link-hextra path="/documentation/llm/api-keys/" >}}) that you want to use.
 
 {{< doc-test paths="load-balancing" >}}
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
@@ -389,7 +389,7 @@ EOF
 
 You can use weighted `backendRefs` in HTTPRoute to split traffic for A/B testing or canary deployments. This is useful for comparing model performance or gradually rolling out a new model.
 
-For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}).
+For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< link-hextra path="/documentation/traffic-management/traffic-split/" >}}).
 
 1. Create separate {{< reuse "agw-docs/snippets/backend.md" >}} resources for the stable and canary models.
 
@@ -478,7 +478,7 @@ For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< 
 
 ## Monitoring load balancing
 
-Use [observability features]({{< link-hextra path="/llm/observability/" >}}) to monitor load balancing behavior:
+Use [observability features]({{< link-hextra path="/documentation/llm/observability/" >}}) to monitor load balancing behavior:
 
 - **Metrics**: Track request counts and latencies per provider
 - **Traces**: View which provider handled each request
@@ -497,6 +497,6 @@ kubectl delete httproute loadbalanced-route -n {{< reuse "agw-docs/snippets/name
 
 ## Next steps
 
-- Configure [failover]({{< link-hextra path="/llm/failover/" >}}) with priority groups for high availability
-- Set up [cost tracking]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}) to monitor spending across providers
-- Use [budget limits]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}) to control costs per provider or user
+- Configure [failover]({{< link-hextra path="/documentation/llm/failover/" >}}) with priority groups for high availability
+- Set up [cost tracking]({{< link-hextra path="/documentation/llm/cost-controls/cost-tracking/" >}}) to monitor spending across providers
+- Use [budget limits]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}) to control costs per provider or user

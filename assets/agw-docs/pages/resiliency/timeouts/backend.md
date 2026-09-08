@@ -7,7 +7,7 @@ connection to the destination, and ends when the TCP connection is established.
 A backend response timeout starts when agentgateway sends the request to the
 destination, and ends when the complete response is received. For the other
 timeout types and where each one attaches, see
-[About timeouts]({{< link-hextra path="/resiliency/timeouts/about/" >}}).
+[About timeouts]({{< link-hextra path="/documentation/resiliency/timeouts/about/" >}}).
 
 Set the request timeout long enough to include backend calls and any retries. A
 backend response timeout that is longer than the request timeout cannot extend
@@ -19,7 +19,7 @@ The following example applies both backend timeout types to the `httpbin`
 Service, so that they apply to every route that reaches that Service. Because
 the policy targets a Service, create it in the same namespace as that Service.
 To set the same deadlines on a route instead, see
-[HTTP connection settings]({{< link-hextra path="/resiliency/connection/#backend" >}}).
+[HTTP connection settings]({{< link-hextra path="/documentation/resiliency/connection/#backend" >}}).
 
 1. Create the backend timeout policy.
 
@@ -111,7 +111,7 @@ integration references a Kubernetes Service, attach a separate
 {{< reuse "agw-docs/snippets/policy.md" >}} to that Service and set
 `backend.http.requestTimeout`, the same way as the preceding example. For a
 worked example, see
-[Configure the webhook timeout]({{< link-hextra path="/llm/guardrails/webhook/guardrails/#webhook-timeout" >}}).
+[Configure the webhook timeout]({{< link-hextra path="/documentation/llm/guardrails/webhook/guardrails/#webhook-timeout" >}}).
 
 ## Cleanup
 
@@ -123,4 +123,4 @@ kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} \
 ```
 
 For the other destination settings that use the same attachment model, see
-[Policy sections]({{< link-hextra path="/about/policies/overview/#backend-policy-fields" >}}).
+[Policy sections]({{< link-hextra path="/documentation/about/policies/overview/#backend-policy-fields" >}}).

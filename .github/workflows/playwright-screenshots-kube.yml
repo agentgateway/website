@@ -88,7 +88,7 @@ jobs:
           trap cleanup EXIT
 
           for v in latest main; do
-            page="content/docs/kubernetes/$v/observability/ui.md"
+            page="content/docs/kubernetes/$v/documentation/observability/ui.md"
             echo "::group::kube capture — $v"
             group_open=1
             python3 scripts/doc_test_run.py --repo-root . \

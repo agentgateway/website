@@ -1,7 +1,7 @@
 Learn how policy inheritance and overrides work for `AgentgatewayPolicy` resources in a route delegation setup.
 
 > [!NOTE]
-> Want to learn more about policy inheritance and overrides for Kubernetes Gateway API-native policies, such as timeouts and retries? See [Native Gateway API policies]({{< link-hextra path="/traffic-management/route-delegation/inheritance/native-policies/" >}}).
+> Want to learn more about policy inheritance and overrides for Kubernetes Gateway API-native policies, such as timeouts and retries? See [Native Gateway API policies]({{< link-hextra path="/documentation/traffic-management/route-delegation/inheritance/native-policies/" >}}).
 
 ## About policy inheritance
 

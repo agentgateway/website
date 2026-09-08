@@ -65,16 +65,16 @@ The v1.0.0 alpha releases publish a consistent set of artifacts:
 
 ## 🌟 New features
 
-Agentgateway added a number of exciting features in v1.0. You can find the full list of new features in the [release notes](https://agentgateway.dev/docs/kubernetes/main/reference/release-notes/).
+Agentgateway added a number of exciting features in v1.0. You can find the full list of new features in the [release notes](https://agentgateway.dev/docs/kubernetes/main/release-notes/release-notes/).
 
 ### Kubernetes Gateway API version 1.5.0
 
 The Kubernetes Gateway API dependency is updated to support version 1.5.0. This version introduces several changes, including:
 
 * **XListenerSets promoted to ListenerSets**: The experimental XListenerSet API is promoted to the standard ListenerSet API in version 1.5.0. The experimental XListenerSet API is promoted to ListenerSet in version 1.5.0. You no longer need the `X` prefix—existing experimental resources can continue to use v1alpha, but the API kind should be updated to `ListenerSet`.
-* **AllowInsecureFallback mode for mTLS listeners**: If you set up mTLS listeners on your agentgateway proxy, you can now configure the proxy to establish a TLS connection, even if the client TLS certificate could not be validated successfully. For more information, see the [mTLS listener docs](/docs/kubernetes/latest/setup/listeners/mtls/).
-* **CORS wildcard support**: The `allowOrigins` field now supports wildcard `*` origins to allow any origin. For an example, see the [CORS](/docs/kubernetes/latest/security/cors/) guide.
-* **BackendTLS**: You can now apply BackendTLSPolicy resources to your routes to originate a TLS connection to a backend. For an example, see the [BackendTLS](/docs/kubernetes/latest/security/backendtls/) guide.
+* **AllowInsecureFallback mode for mTLS listeners**: If you set up mTLS listeners on your agentgateway proxy, you can now configure the proxy to establish a TLS connection, even if the client TLS certificate could not be validated successfully. For more information, see the [mTLS listener docs](/docs/kubernetes/latest/documentation/setup/listeners/mtls/).
+* **CORS wildcard support**: The `allowOrigins` field now supports wildcard `*` origins to allow any origin. For an example, see the [CORS](/docs/kubernetes/latest/documentation/security/cors/) guide.
+* **BackendTLS**: You can now apply BackendTLSPolicy resources to your routes to originate a TLS connection to a backend. For an example, see the [BackendTLS](/docs/kubernetes/latest/documentation/security/backendtls/) guide.
 * Agentgateway continues to pass all Gateway API conformance tests (standard, extended, and experimental). TLSRoute is promoted; for users on the standard channel, use v1 instead of v1alpha2.
 
 ### Simplified LLM configuration
@@ -184,7 +184,7 @@ This native approach simplifies operations and dramatically improves performance
 
 Agentgateway v1.0 is available for download on [GitHub](https://github.com/agentgateway/agentgateway/releases).
 
-To get started with agentgateway, check out our getting started guide for [standalone](https://agentgateway.dev/docs/standalone/latest/quickstart/) or [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/quickstart/).
+To get started with agentgateway, check out our getting started guide for [standalone](https://agentgateway.dev/docs/standalone/latest/documentation/quickstart/) or [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/documentation/quickstart/).
 
 ## Get Involved
 

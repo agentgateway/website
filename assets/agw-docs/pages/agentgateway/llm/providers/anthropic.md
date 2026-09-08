@@ -2,7 +2,7 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 > [!NOTE]
-> Anthropic excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Anthropic reports. To read the Anthropic number itself, use `llm.providerInputTokens`. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).
+> Anthropic excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Anthropic reports. To read the Anthropic number itself, use `llm.providerInputTokens`. For more information, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
 {{< /version >}}
 
 ## Before you begin
@@ -611,7 +611,7 @@ Example output:
 
 <!--TODO 1.3 release -->
 > [!NOTE]
-> Before you begin, [install agentgateway with the nightly build]({{< link-hextra path="/quickstart/install/">}}).
+> Before you begin, [install agentgateway with the nightly build]({{< link-hextra path="/documentation/quickstart/install/">}}).
 
 {{< tabs >}}
 {{% tab name="API key" %}}
@@ -760,10 +760,10 @@ Example output:
 
 To use Claude models through Azure AI Foundry, configure the `azure` provider with `resourceType: Foundry` and a `claude-*` model name. Agentgateway automatically routes requests to the Anthropic-native endpoint and injects the required headers — no additional configuration is needed.
 
-For setup instructions, see [Use Claude models on Azure AI Foundry]({{< link-hextra path="/llm/providers/azure/#use-claude-models-on-azure-ai-foundry" >}}).
+For setup instructions, see [Use Claude models on Azure AI Foundry]({{< link-hextra path="/integrations/llm/providers/azure/#use-claude-models-on-azure-ai-foundry" >}}).
 
 ## Connect to Claude Code
 
-{{% conditional-text include-if="kubernetes,standalone" %}}To route Claude Code CLI traffic through agentgateway, see the [Claude Code integration guide]({{< link-hextra path="/integrations/llm-clients/claude-code" >}}).{{% /conditional-text %}}
+{{% conditional-text include-if="kubernetes,standalone" %}}To route Claude Code CLI traffic through agentgateway, see the [Claude Code integration guide]({{< link-hextra path="/integrations/llm/clients/claude-code" >}}).{{% /conditional-text %}}
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

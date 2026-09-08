@@ -18,7 +18,7 @@ Support for ingress-nginx is scheduled to end in March.
 
 The [kgateway](https://kgateway.dev/) and [agentgateway](https://agentgateway.dev/) project maintainers [extended the ingress2gateway migration tool](https://github.com/kgateway-dev/ingress2gateway) to support easily migrating from `ingress-nginx` to their respective projects.
 
-This article dives into the use of this tool to migrate to agentgateway.  You will find the tool's installation instructions in [the project's documentation](https://agentgateway.dev/docs/kubernetes/latest/migrate/).
+This article dives into the use of this tool to migrate to agentgateway.  You will find the tool's installation instructions in [the project's documentation](https://agentgateway.dev/docs/kubernetes/latest/documentation/migrate/).
 
 ## How to use the tool
 
@@ -57,7 +57,7 @@ Besides `providers` and `emitter`, there are flags to control the source of the 
 
 Through the `emitter` flag, you can target either kgateway (`emitter=kgateway`) or agentgateway (`emitter=agentgateway`).
 
-What's special about the tool is its support for a [litany of ingress-nginx annotations](https://agentgateway.dev/docs/kubernetes/latest/migrate/providers/ingressnginx/) for configuring a variety of features including CORS, rate limiting, canaries, timeouts, auth, session affinity, etc..
+What's special about the tool is its support for a [litany of ingress-nginx annotations](https://agentgateway.dev/docs/kubernetes/latest/documentation/migrate/providers/ingressnginx/) for configuring a variety of features including CORS, rate limiting, canaries, timeouts, auth, session affinity, etc..
 
 This version of `ingress2gateway` gives you the ability to automatically translate your `ingress-nginx` configurations to agentgateway, and it knows to configure agentgateway-specific resources as necessary to translate the configuration including the `ingress-nginx` annotations.
 
@@ -73,7 +73,7 @@ Provision a test Kubernetes cluster.  A local cluster such as [kind](https://kin
 
 ### Install kgateway with agentgateway
 
-Install agentgateway per the [install instructions](https://agentgateway.dev/docs/kubernetes/latest/install/helm/).
+Install agentgateway per the [install instructions](https://agentgateway.dev/docs/kubernetes/latest/documentation/install/helm/).
 
 Once installed, confirm that the agentgateway control plane is running in the namespace `agentgateway-system`:
 
@@ -667,7 +667,7 @@ ingress2gateway print --providers=ingress-nginx --emitter=agentgateway --input-f
 
 ## Summary
 
-We invite you to go further and review the project's [migration documentation](https://agentgateway.dev/docs/kubernetes/latest/migrate/) which covers an even wider range of scenarios ranging from basic ingress, to session affinity, rate limiting, and more.
+We invite you to go further and review the project's [migration documentation](https://agentgateway.dev/docs/kubernetes/latest/documentation/migrate/) which covers an even wider range of scenarios ranging from basic ingress, to session affinity, rate limiting, and more.
 
 The agentgateway project has [full conformance with the Gateway API](https://gateway-api.sigs.k8s.io/docs/implementations/list/#conformant).  The companion tool ingress2gateway makes short work of translating your existing `ingress-nginx` Ingress configurations to agentgateway configuration resources, with support for all of these scenarios.
 

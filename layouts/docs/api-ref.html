@@ -12,7 +12,16 @@
   <div class="w-full z-10 pt-10 lg:pt-20">
     {{ partial "announcement.html" .}}
   </div>
-  <div class='hx:mx-auto hx:flex {{ partial "utils/page-width" . }}' style="padding-top: 2.5rem;">
+  {{/*
+    Must run BEFORE sidebar.html: docs-tabs.html writes the `docTabs` page-store
+    entry that the sidebar reads to root its tree at the active tab. Without it
+    the store is nil, so the band never renders AND the left nav falls back to
+    the whole version tree. Emits nothing when params.docTabs is unset or fewer
+    than two tab directories exist in the version.
+  */}}
+  {{ partial "docs-tabs.html" . }}
+  {{ $docTabs := .Store.Get "docTabs" }}
+  <div class='hx:mx-auto hx:flex {{ partial "utils/page-width" . }}' style="padding-top: {{ if and $docTabs $docTabs.enabled }}0.75rem{{ else }}2.5rem{{ end }};">
     {{ partial "sidebar.html" (dict "context" .) }}
     {{ partial "toc.html" . }}
     <article class="hx:w-full hx:break-words hx:flex hx:min-h-[calc(100vh-var(--navbar-height))] hx:min-w-0 hx:justify-center hx:pb-8 hx:pr-[calc(env(safe-area-inset-right)-1.5rem)]">

@@ -1,4 +1,4 @@
-Secure your applications with JSON Web Token (JWT) authentication by using the agentgateway proxy and an identity provider like Keycloak. To learn more about JWT auth, see [About JWT authentication]({{< link-hextra path="/security/jwt/about/" >}}). 
+Secure your applications with JSON Web Token (JWT) authentication by using the agentgateway proxy and an identity provider like Keycloak. To learn more about JWT auth, see [About JWT authentication]({{< link-hextra path="/documentation/security/jwt/about/" >}}). 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
@@ -55,7 +55,7 @@ Configure an {{< reuse "agw-docs/snippets/policy.md" >}} to validate JWTs using 
    | `mode` | Validation mode for JWT authentication. `Strict` requires a valid JWT for all requests. `Optional` validates JWTs if present but allows requests without tokens. `Permissive` is the least strict mode.<br><br>Example value: `Strict` |
    | `issuer` | The issuer URL that must match the `iss` claim in JWT tokens exactly. Agentgateway rejects tokens from other issuers.{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x" >}} Agentgateway also rejects a token that has no `iss` claim.{{< /version >}}<br><br>Example value: `http://keycloak:8080/realms/master` |
    | `audiences` | List of allowed audience values. The JWT's `aud` claim must contain at least one of these values. Omit the field to accept any audience.{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x" >}} An empty list also accepts any audience, and a non-empty list rejects a token that has no `aud` claim.{{< /version >}}<br><br>Example value: `["my-application"]` |{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x" >}}
-   | `preserveToken` | Keeps a validated JWT in the location that it was read from. By default, the gateway removes the token after validation, so the backend does not receive the client's credential. Set this field when another policy on the same route reads the token from the request, such as an [OAuth token exchange]({{< link-hextra path="/security/backend-authn/oauth-token-exchange/" >}}) that takes it as the subject token. When only the backend needs the token, prefer the `passthrough` [backend authentication]({{< link-hextra path="/security/backend-authn/" >}}) method instead, which does not expose the credential to every policy that runs later.<br><br>Example value: `true` |{{< /version >}}
+   | `preserveToken` | Keeps a validated JWT in the location that it was read from. By default, the gateway removes the token after validation, so the backend does not receive the client's credential. Set this field when another policy on the same route reads the token from the request, such as an [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn/oauth-token-exchange/" >}}) that takes it as the subject token. When only the backend needs the token, prefer the `passthrough` [backend authentication]({{< link-hextra path="/documentation/security/backend-authn/" >}}) method instead, which does not expose the credential to every policy that runs later.<br><br>Example value: `true` |{{< /version >}}
    | `jwks.remote.jwksPath` | The path to the JWKS endpoint on the identity provider, relative to the backend root. This endpoint returns the public keys used to verify JWT signatures. {{< reuse "agw-docs/snippets/jwks-path.md" >}}<br><br>Example value: `/realms/master/protocol/openid-connect/certs` |
    | `jwks.remote.cacheDuration` | How long to cache the JWKS keys locally. This setting reduces load on the identity provider and improves performance. Keys are automatically refreshed when the cache expires.<br><br>Example value: `5m` (5 minutes) |
    | `jwks.remote.backendRef` | Reference to the backend that hosts the identity provider. Agentgateway uses this value to fetch the JWKS keys from the identity provider. For an in-cluster provider, reference a Kubernetes Service. For an external provider that is reached over TLS, reference an {{< reuse "/agw-docs/snippets/backend.md" >}} instead. See [External identity provider over TLS](#external-identity-provider-over-tls).{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2026.7.1,2.3.x,2.2.x,2.1.x" >}} Mutually exclusive with `url`. Set exactly one of the two.{{< /version >}} <br><br>Example value: The details of the Keycloak service |{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2026.7.1,2.3.x,2.2.x,2.1.x" >}}
@@ -304,7 +304,7 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-For more authorization rules, such as combining `Allow` with `Require` or restricting access by source address, see [Authorization]({{< link-hextra path="/security/authorization/" >}}). For the claims and functions that you can use in an expression, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
+For more authorization rules, such as combining `Allow` with `Require` or restricting access by source address, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}). For the claims and functions that you can use in an expression, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
 
 ## Other JWT auth examples
 
@@ -506,7 +506,7 @@ traffic:
 
 ## Use JWT claims in transformations {#jwt-claims-transformations}
 
-After a JWT is validated, its claims are available to [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) through the `jwt` context variable. You can use these claims in [transformations]({{< link-hextra path="/traffic-management/transformations/" >}}) to forward the authenticated user's identity to your backends, or to route requests based on a claim. See [Claim-based routing](#claim-based-routing).
+After a JWT is validated, its claims are available to [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) through the `jwt` context variable. You can use these claims in [transformations]({{< link-hextra path="/documentation/traffic-management/transformations/" >}}) to forward the authenticated user's identity to your backends, or to route requests based on a claim. See [Claim-based routing](#claim-based-routing).
 
 The `jwt` variable is populated only after the JWT is validated. Keep `jwtAuthentication` and the `transformation` on the same {{< reuse "agw-docs/snippets/policy.md" >}} and phase so that both apply to the same requests. JWT authentication always runs before transformations in the request pipeline, so the claims are available when the transformation evaluates them.
 

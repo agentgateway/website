@@ -24,11 +24,11 @@ When you set `provider.okta`, agentgateway bridges these gaps as follows:
 > [!IMPORTANT]
 > Unlike the other providers, Okta requires you to set `jwks` explicitly. Okta publishes its keys at `{issuer}/v1/keys`, but agentgateway derives `{issuer}/.well-known/jwks.json` for the `okta` provider, which Okta does not serve. If you omit `jwks`, token validation fails because agentgateway cannot fetch the signing keys.
 
-For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}}).
+For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}).
 
 ## Before you begin {#before-you-begin}
 
-1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/documentation/setup/install/binary/" >}}).
 2. Install [Node.js](https://nodejs.org/) so that `npx` can run the sample MCP server.
 3. Make sure that you have access to an [Okta org](https://developer.okta.com/signup/) and permission to create an authorization server and app integrations in the Okta Admin Console. A free developer org is sufficient.
 
@@ -416,7 +416,7 @@ EOF
 
 ## Step 5: Restrict access by group {#authorization}
 
-Because MCP authentication runs at the route level, you can use claims from the validated Okta token in an [authorization]({{< link-hextra path="/configuration/security/mcp-authz" >}}) policy. Okta includes a user's group memberships in the `groups` claim when you add the groups claim to your authorization server, which you did in [Step 1](#register).
+Because MCP authentication runs at the route level, you can use claims from the validated Okta token in an [authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}) policy. Okta includes a user's group memberships in the `groups` claim when you add the groups claim to your authorization server, which you did in [Step 1](#register).
 
 1. Add an `authorization` policy alongside `mcpAuthentication` in your `config.yaml` that requires membership in the `AI-Users` group.
 
@@ -578,5 +578,5 @@ Point your MCP client at the gateway's MCP endpoint, `http://localhost:3000/mcp`
 ## Learn more
 
 - [Okta developer documentation](https://developer.okta.com/)
-- [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}})
-- [MCP authorization]({{< link-hextra path="/configuration/security/mcp-authz" >}})
+- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}})
+- [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}})

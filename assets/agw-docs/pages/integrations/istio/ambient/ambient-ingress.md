@@ -264,15 +264,15 @@ kubectl -n istio-system exec deploy/prometheus -- sh -c 'wget -qO- "http://local
 
 Once the base flow works, layer additional agentgateway policies on the ingress `Gateway` or the `HTTPRoute` to control and observe traffic before it reaches your ambient-meshed backends:
 
-1. Client authentication and authorization, such as [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) and [authorization policies]({{< link-hextra path="/security/authorization/" >}}).
+1. Client authentication and authorization, such as [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) and [authorization policies]({{< link-hextra path="/documentation/security/authorization/" >}}).
   This lets you enforce identity-based access to backends behind the same ingress gateway.
-2. API key or basic auth, such as [API key auth]({{< link-hextra path="/security/apikey/" >}}) or [basic auth]({{< link-hextra path="/security/extauth/basic/" >}}).
+2. API key or basic auth, such as [API key auth]({{< link-hextra path="/documentation/security/apikey/" >}}) or [basic auth]({{< link-hextra path="/documentation/security/extauth/basic/" >}}).
   Useful when clients cannot use OIDC or when you issue per-team ingress keys.
-3. Rate limiting, such as [HTTP rate limiting]({{< link-hextra path="/security/rate-limit-http/" >}}) or [global rate limiting]({{< link-hextra path="/security/rate-limit-global/" >}}).
+3. Rate limiting, such as [HTTP rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http/" >}}) or [global rate limiting]({{< link-hextra path="/documentation/security/rate-limit-global/" >}}).
   Protects backends from spikes and abusive clients.
-4. Traffic shaping and resilience, such as [traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}), [retries]({{< link-hextra path="/resiliency/retry/retry/" >}}), and [request timeouts]({{< link-hextra path="/resiliency/timeouts/request/" >}}).
+4. Traffic shaping and resilience, such as [traffic splitting]({{< link-hextra path="/documentation/traffic-management/traffic-split/" >}}), [retries]({{< link-hextra path="/documentation/resiliency/retry/retry/" >}}), and [request timeouts]({{< link-hextra path="/documentation/resiliency/timeouts/request/" >}}).
   Improves reliability of ingress traffic to ambient backends.
-5. Observability, such as [access logs]({{< link-hextra path="/security/access-logging/" >}}) and [tracing]({{< link-hextra path="/observability/tracing/" >}}).
+5. Observability, such as [access logs]({{< link-hextra path="/documentation/security/access-logging/" >}}) and [tracing]({{< link-hextra path="/documentation/observability/tracing/" >}}).
   Gives per-request visibility into ingress traffic for compliance and incident response.
 
 ## Cleanup

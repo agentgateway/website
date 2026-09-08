@@ -55,7 +55,7 @@ flowchart TD
 {{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
 
 > [!NOTE]
-> You can manage virtual keys two ways: interactively in the built-in [UI]({{< link-hextra path="/operations/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes. The config file is the source of truth for GitOps workflows.
+> You can manage virtual keys two ways: interactively in the built-in [UI]({{< link-hextra path="/documentation/operations/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes. The config file is the source of truth for GitOps workflows.
 
 ## Set up virtual keys (UI)
 
@@ -365,7 +365,7 @@ EOF
 
 By default, agentgateway does not estimate token counts at request time. To reject requests before they reach the LLM, set `tokenize: true` on your model.
 
-For more information about rate limiting configuration options, see [Rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}).
+For more information about rate limiting configuration options, see [Rate limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/" >}}).
 
 1. Update your configuration with `tokenize: true` for your model. With this setting, requests are denied immediately if the estimated prompt token count exceeds the available budget.
    
@@ -584,7 +584,7 @@ The raw curl output in the previous step is a quick sanity check, but it returns
    > [!NOTE]
    > Queries that use `rate()` or `increase()` over a range such as `[24h]` need that much scrape history to return meaningful values. While testing locally, query the raw `_sum` counters or use a shorter range such as `[5m]`.
    > 
-   > This query *estimates* cost for OpenAI GPT-3.5 by applying your own pricing to token counts. To have agentgateway compute the *realized* USD cost per request from a model cost catalog, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
+   > This query *estimates* cost for OpenAI GPT-3.5 by applying your own pricing to token counts. To have agentgateway compute the *realized* USD cost per request from a model cost catalog, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
 
    {{< tabs >}}
    {{% tab name="Query"%}}

@@ -65,7 +65,7 @@ For example, if a Gateway-level policy sets `backend.tcp` and `backend.tls`, and
 Check out the following sections for policy examples.
 
 {{< cards >}}
-  {{< card path="/security" title="Security" >}}
-  {{< card path="/traffic-management" title="Traffic management" >}}
-  {{< card path="/resiliency" title="Resiliency" >}}
+  {{< card path="/documentation/security" title="Security" >}}
+  {{< card path="/documentation/traffic-management" title="Traffic management" >}}
+  {{< card path="/documentation/resiliency" title="Resiliency" >}}
 {{< /cards >}}

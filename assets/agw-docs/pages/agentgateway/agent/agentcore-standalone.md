@@ -23,7 +23,7 @@ AgentCore runtimes support two authentication modes, which you choose when you d
 
 {{< tabs >}}
 {{% tab name="IAM (SigV4)" %}}
-IAM (SigV4) is the default mode, and needs no policy. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} signs each request with the [default AWS credential chain](https://docs.aws.amazon.com/sdkref/latest/guide/access.html) from its environment, such as environment variables, a shared credentials file, or an instance profile. To assume a role before signing, or to sign with an explicit access key, set a `backendAuth.aws` policy. For the full set of AWS options, see [AWS backend authentication]({{< link-hextra path="/configuration/security/backend-authn/providers/aws/" >}}).
+IAM (SigV4) is the default mode, and needs no policy. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} signs each request with the [default AWS credential chain](https://docs.aws.amazon.com/sdkref/latest/guide/access.html) from its environment, such as environment variables, a shared credentials file, or an instance profile. To assume a role before signing, or to sign with an explicit access key, set a `backendAuth.aws` policy. For the full set of AWS options, see [AWS backend authentication]({{< link-hextra path="/documentation/configuration/security/backend-authn/providers/aws/" >}}).
 {{% /tab %}}
 {{% tab name="JWT authorization" %}}
 The AgentCore runtime validates an OIDC bearer token on each request. To use this mode, set a `backendAuth.key` policy on the backend. The policy replaces SigV4 signing, so requests carry the token instead of a signature.
