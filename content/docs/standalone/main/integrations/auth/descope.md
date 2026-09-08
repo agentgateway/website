@@ -23,11 +23,11 @@ When you set `provider.descope`, agentgateway bridges these gaps as follows:
 
 Descope supports [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html) resource indicators, so no audience workaround is needed.
 
-For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}}).
+For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}).
 
 ## Before you begin {#before-you-begin}
 
-1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/documentation/setup/install/binary/" >}}).
 2. Install [Node.js](https://nodejs.org/) so that `npx` can run the sample MCP server.
 3. Make sure that you have access to the [Descope Console](https://app.descope.com/) and permission to create an MCP Server and a Client.
 
@@ -438,7 +438,7 @@ EOF
 
 ## Step 5: Restrict access by role {#authorization}
 
-Because MCP authentication runs at the route level, you can use claims from the validated Descope token in an [authorization]({{< link-hextra path="/configuration/security/mcp-authz" >}}) policy.
+Because MCP authentication runs at the route level, you can use claims from the validated Descope token in an [authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}) policy.
 
 1. Add an `authorization` policy alongside `mcpAuthentication` in your `config.yaml` that requires the `Tenant Admin` role.
 
@@ -605,5 +605,5 @@ Point your MCP client at the gateway's MCP endpoint, `http://localhost:3000/mcp`
 - [Descope MCP Servers](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers)
 - [Descope Clients](https://docs.descope.com/agentic-identity-hub/core-components/clients)
 - [Descope MCP authorization](https://docs.descope.com/mcp)
-- [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}})
-- [MCP authorization]({{< link-hextra path="/configuration/security/mcp-authz" >}})
+- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}})
+- [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}})

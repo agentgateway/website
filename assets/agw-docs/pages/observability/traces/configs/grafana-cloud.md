@@ -10,7 +10,7 @@
 
 ### Step 1: Set up the OTel Collector
 
-1. Follow the [OTel Collector setup]({{< link path="/observability/traces/configs/otel/" >}}) guide to install a collector in your cluster. Then update the collector's exporter config to forward traces to Grafana Cloud.
+1. Follow the [OTel Collector setup]({{< link path="/documentation/observability/traces/configs/otel/" >}}) guide to install a collector in your cluster. Then update the collector's exporter config to forward traces to Grafana Cloud.
 
 2. In Grafana Cloud, go to **My Account → Stack → OpenTelemetry** to find your OTLP endpoint, instance ID, and API token. Then, base64-encode your credentials. 
    ```sh

@@ -1,4 +1,4 @@
-Route to a Model Context Protocol (MCP) server through a static address. For more information, see the [About MCP]({{< link-hextra path="/mcp/about" >}}) topic.
+Route to a Model Context Protocol (MCP) server through a static address. For more information, see the [About MCP]({{< link-hextra path="/documentation/mcp/about" >}}) topic.
 
 ## Before you begin
 
@@ -209,7 +209,7 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 
 ## Connect an IDE
 
-After verifying connectivity with MCP Inspector, you can connect AI coding assistants such as Claude Code, Cursor, or VS Code to the MCP server through agentgateway.{{% conditional-text include-if="kubernetes" %}} For configuration instructions, see [MCP clients]({{< link-hextra path="/integrations/mcp-clients/" >}}).{{% /conditional-text %}}
+After verifying connectivity with MCP Inspector, you can connect AI coding assistants such as Claude Code, Cursor, or VS Code to the MCP server through agentgateway.{{% conditional-text include-if="kubernetes" %}} For configuration instructions, see [MCP clients]({{< link-hextra path="/integrations/mcp/clients/" >}}).{{% /conditional-text %}}
 
 ## Cleanup
 

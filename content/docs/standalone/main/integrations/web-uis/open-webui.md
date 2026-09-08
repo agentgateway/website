@@ -22,7 +22,7 @@ description: Front Open WebUI with agentgateway to centralize auth, audit, and r
 
 ## Before you begin
 
-1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}) or have a container image available.
+1. [Install the agentgateway binary]({{< link-hextra path="/documentation/setup/install/binary/" >}}) or have a container image available.
 2. Get an API key from your LLM provider, such as an [OpenAI API key](https://platform.openai.com/api-keys).
 3. Install [Docker](https://docs.docker.com/get-started/get-docker/) for running Open WebUI.
 
@@ -46,7 +46,7 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
-For other providers, see the [LLM providers guide]({{< link-hextra path="/llm/providers/" >}}).
+For other providers, see the [LLM providers guide]({{< link-hextra path="/integrations/llm/providers/" >}}).
 
 ### Step 2: Start agentgateway
 
@@ -138,7 +138,7 @@ volumes:
 Layer policies and observability on top of the basic setup.
 
 {{< cards >}}
-  {{< card path="/llm/cost-controls/virtual-keys/" title="Virtual key management" subtitle="Apply rate limits and token budgets to LLM traffic." >}}
-  {{< card path="/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs for every LLM call." >}}
-  {{< card path="/llm/providers/" title="LLM providers" subtitle="Configure additional upstream providers." >}}
+  {{< card path="/documentation/llm/cost-controls/virtual-keys/" title="Virtual key management" subtitle="Apply rate limits and token budgets to LLM traffic." >}}
+  {{< card path="/documentation/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs for every LLM call." >}}
+  {{< card path="/integrations/llm/providers/" title="LLM providers" subtitle="Configure additional upstream providers." >}}
 {{< /cards >}}

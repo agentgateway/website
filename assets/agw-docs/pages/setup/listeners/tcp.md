@@ -10,7 +10,7 @@ The following guide deploys a sample TCP echo app, sets up a TCP listener on the
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
 
-2. Experimental Kubernetes Gateway API features are enabled by default in {{< reuse "agw-docs/snippets/kgateway.md" >}}. To set the feature gate explicitly, install or upgrade with the `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true` Helm flag. For an example, see the [Get started guide]({{< link-hextra path="/quickstart" >}}).
+2. Experimental Kubernetes Gateway API features are enabled by default in {{< reuse "agw-docs/snippets/kgateway.md" >}}. To set the feature gate explicitly, install or upgrade with the `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true` Helm flag. For an example, see the [Get started guide]({{< link-hextra path="/documentation/quickstart" >}}).
 
 3. Deploy the sample TCP echo app.
 

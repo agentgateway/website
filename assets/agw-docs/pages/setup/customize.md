@@ -2,7 +2,7 @@ Customize your agentgateway proxy with the {{< reuse "agw-docs/snippets/gatewayp
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
+Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 
 ## Customize the gateway
 
@@ -16,7 +16,7 @@ Choose between the following options to customize your agentgateway proxy:
 
 You can add your custom configuration to the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} custom resource directly. This way, your configuration is validated when you apply the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource in your cluster. 
 
-1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example changes the logging format from `text` to `json`. For other examples, see [Built-in customization]({{< link-hextra path="/setup/customize/configs/#built-in-customization" >}}). 
+1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example changes the logging format from `text` to `json`. For other examples, see [Built-in customization]({{< link-hextra path="/documentation/setup/customize/configs/#built-in-customization" >}}). 
    ```yaml
    kubectl apply --server-side -f- <<'EOF'
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -97,7 +97,7 @@ spec:
 
 You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to override default settings for the workload, service, and service account that are created for an agentgateway proxy. Use the `deployment` overlay for the default Deployment workload and the `daemonSet` overlay when `workload.kind` is set to `DaemonSet`.
 
-1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example changes the default replica count from 1 to 3. For other examples, see [Overlays]({{< link-hextra path="/setup/customize/configs/#overlays" >}}). 
+1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example changes the default replica count from 1 to 3. For other examples, see [Overlays]({{< link-hextra path="/documentation/setup/customize/configs/#overlays" >}}). 
    ```yaml {paths="customize"}
    kubectl apply --server-side -f- <<'EOF'
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -274,4 +274,4 @@ kubectl delete {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} agentgatew
 
 ## Next
 
-[Explore other common agentgateway proxy configurations]({{< link-hextra path="/setup/customize/configs/" >}}) that you can apply in your environment. 
+[Explore other common agentgateway proxy configurations]({{< link-hextra path="/documentation/setup/customize/configs/" >}}) that you can apply in your environment. 

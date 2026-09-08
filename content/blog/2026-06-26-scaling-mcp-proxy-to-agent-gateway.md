@@ -43,6 +43,6 @@ When we shipped the first version, we thought we were building a convenience. It
 
 ---
 
-*Want to try agentgateway? Start with the getting-started guides for [standalone](https://agentgateway.dev/docs/standalone/latest/quickstart/) or [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/quickstart/), and join the conversation on [Discord](https://discord.gg/BdJpzaPjHv).*
+*Want to try agentgateway? Start with the getting-started guides for [standalone](https://agentgateway.dev/docs/standalone/latest/documentation/quickstart/) or [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/documentation/quickstart/), and join the conversation on [Discord](https://discord.gg/BdJpzaPjHv).*
 
 *This post was originally published on the [Imagine Learning Engineering blog](https://medium.com/imaginelearning/scaling-model-context-protocol-from-a-proxy-to-an-agent-gateway-91d91b3c604f).*

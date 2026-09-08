@@ -9,7 +9,7 @@ Log export happens in addition to the standard stdout output, so you can send lo
 
 {{< tabs >}}
 {{% tab name="OTel stack (recommended)" %}}
-[Set up the OTel stack]({{< link path="/observability/otel-stack/" >}}). It includes an `opentelemetry-collector-logs` deployment in the `telemetry` namespace that accepts OTLP logs on port 4317 and forwards them to Loki for persistent storage.
+[Set up the OTel stack]({{< link path="/documentation/observability/otel-stack/" >}}). It includes an `opentelemetry-collector-logs` deployment in the `telemetry` namespace that accepts OTLP logs on port 4317 and forwards them to Loki for persistent storage.
 
 If the OTel stack is already installed, skip to [Configure OTLP log export](#configure-otlp-log-export).
 {{% /tab %}}
@@ -183,7 +183,7 @@ EOF
 
 ## Filter logs before export
 
-You can filter which access logs are exported to the OTLP backend independently of what is written to stdout by using the `otlp.filter` field. When `otlp.filter` is not set, the [top-level `accessLog.filter`]({{< link path="/observability/access-logs/view/#filter-access-logs" >}}) setting is used as a fallback for the OTLP export as well. When `otlp.filter` is set, it takes precedence over the top-level filter for OTLP export only, so stdout and OTLP can each receive a different subset of logs.
+You can filter which access logs are exported to the OTLP backend independently of what is written to stdout by using the `otlp.filter` field. When `otlp.filter` is not set, the [top-level `accessLog.filter`]({{< link path="/documentation/observability/access-logs/view/#filter-access-logs" >}}) setting is used as a fallback for the OTLP export as well. When `otlp.filter` is set, it takes precedence over the top-level filter for OTLP export only, so stdout and OTLP can each receive a different subset of logs.
 
 1. Update the {{< reuse "agw-docs/snippets/policy.md" >}} to add an `otlp.filter` expression. In this example, you want to send only error responses to the OTLP collector. However, you continue to log all requests to stdout.
 

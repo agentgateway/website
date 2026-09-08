@@ -2,7 +2,7 @@ Route requests to different LLM backends based on request body content, such as 
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
 > [!NOTE]
-> **Model-centric alternative**: To select a model from request context without writing route matches, you can also use the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.conditional`. For more information, see [Virtual models]({{< link-hextra path="/llm/models/virtual/" >}}).
+> **Model-centric alternative**: To select a model from request context without writing route matches, you can also use the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.conditional`. For more information, see [Virtual models]({{< link-hextra path="/documentation/llm/models/virtual/" >}}).
 {{< /version >}}
 
 ## About content-based routing {#about}
@@ -27,8 +27,8 @@ This pattern lets you route based on any field in the request body while using t
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-2. Set up [API access to each LLM provider]({{< link-hextra path="/llm/api-keys/" >}}) that you want to route to.
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
+2. Set up [API access to each LLM provider]({{< link-hextra path="/documentation/llm/api-keys/" >}}) that you want to route to.
 
 {{< doc-test paths="content-routing" >}}
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
@@ -495,10 +495,10 @@ kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai-backend anthr
 
 ## Next steps
 
-- Learn about [transformations]({{< link-hextra path="/traffic-management/transformations/" >}}) for more advanced request manipulation
+- Learn about [transformations]({{< link-hextra path="/documentation/traffic-management/transformations/" >}}) for more advanced request manipulation
 {{% version exclude-if="1.2.x,1.1.x,1.0.x,2.2.x" %}}
-- Route to [multiple inference pools]({{< link-hextra path="/llm/multiple-inference-pools/" >}}) with native body-based routing
+- Route to [multiple inference pools]({{< link-hextra path="/documentation/llm/multiple-inference-pools/" >}}) with native body-based routing
 {{% /version %}}
-- Set up [load balancing]({{< link-hextra path="/llm/load-balancing/" >}}) across multiple providers
-- Configure [failover]({{< link-hextra path="/llm/failover/" >}}) for high availability
-- Use [cost tracking]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}) to monitor spending per route
+- Set up [load balancing]({{< link-hextra path="/documentation/llm/load-balancing/" >}}) across multiple providers
+- Configure [failover]({{< link-hextra path="/documentation/llm/failover/" >}}) for high availability
+- Use [cost tracking]({{< link-hextra path="/documentation/llm/cost-controls/cost-tracking/" >}}) to monitor spending per route

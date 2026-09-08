@@ -49,7 +49,7 @@ Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} by using Flux. The follow
    ```
 
    > [!NOTE]
-   > If you need to use an experimental feature such as TCPRoutes, reconcile the experimental channel by setting `sparseCheckout: [config/crd/experimental]` on the `GitRepository` and `path: ./config/crd/experimental` on the `Kustomization`. For more information, see [Experimental features in Gateway API]({{< link-hextra path="/reference/versions/#experimental-features">}}).
+   > If you need to use an experimental feature such as TCPRoutes, reconcile the experimental channel by setting `sparseCheckout: [config/crd/experimental]` on the `GitRepository` and `path: ./config/crd/experimental` on the `Kustomization`. For more information, see [Experimental features in Gateway API]({{< link-hextra path="/release-notes/versions/#experimental-features">}}).
 
 2. Create the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace and the `OCIRepository` and `HelmRelease` resources that install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} CRD and control plane charts into it. You might also need the following values:
    * **Development builds**: `controller.image.pullPolicy=Always` to ensure you get the latest image.
@@ -161,11 +161,11 @@ Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} by using Flux. The follow
 
 Now that you have {{< reuse "/agw-docs/snippets/kgateway.md" >}} set up and running, check out the following guides to expand your gateway capabilities.
 
-- [Set up your agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-- Review the [LLM consumption]({{< link-hextra path="/llm/" >}}), [inference routing]({{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}{{< link-hextra path="/inference/" >}}{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}{{< link-hextra path="/llm/inference/" >}}{{< /version >}}), [MCP]({{< link-hextra path="/mcp/" >}}), or [agent connectivity]({{< link-hextra path="/agent/" >}}) guides to learn more about common agentgateway use cases.
+- [Set up your agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
+- Review the [LLM consumption]({{< link-hextra path="/documentation/llm/" >}}), [inference routing]({{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}{{< link-hextra path="/documentation/inference/" >}}{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}{{< link-hextra path="/documentation/llm/inference/" >}}{{< /version >}}), [MCP]({{< link-hextra path="/documentation/mcp/" >}}), or [agent connectivity]({{< link-hextra path="/documentation/agent/" >}}) guides to learn more about common agentgateway use cases.
 
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-Follow the [Uninstall with Flux guide]({{< link-hextra path="/operations/uninstall#flux">}}).
+Follow the [Uninstall with Flux guide]({{< link-hextra path="/documentation/operations/uninstall#flux">}}).

@@ -15,7 +15,7 @@ The method supports two grants:
 | Token exchange (default) | `TokenExchange` | [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) | `subject_token` |
 | JWT bearer | `JwtBearer` | [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) | `assertion` |
 
-Both grants are configured on the same policy. You choose the grant with the `grantType` field, as shown in the [Configure token exchange](#configure-token-exchange) tabs. Validation of the incoming credential is the job of a route-level policy, such as [JWT authentication]({{< link-hextra path="/security/jwt/" >}}), not the exchange itself. Some IdPs might have vendor-specific variants of a grant type, such as Microsoft Entra's on-behalf-of flow for JWT bearer as shown later in this guide.
+Both grants are configured on the same policy. You choose the grant with the `grantType` field, as shown in the [Configure token exchange](#configure-token-exchange) tabs. Validation of the incoming credential is the job of a route-level policy, such as [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}), not the exchange itself. Some IdPs might have vendor-specific variants of a grant type, such as Microsoft Entra's on-behalf-of flow for JWT bearer as shown later in this guide.
 
 ### Configuration
 
@@ -392,7 +392,7 @@ Unlike the subject and actor token types, `requestedTokenType` is a closed set. 
 | Value | Result |
 | -- | -- |
 | A custom URI | `Unsupported value: "urn:company:domain:human": supported values: "AccessToken", "Jwt", "IdToken", "IdJag"` |
-| `IdJag` | `requestedTokenType IdJag is only supported by crossAppAccess`. The value appears in the list because the type list is shared with [Cross App Access]({{< link-hextra path="/security/backend-authn/cross-app-access/" >}}). |
+| `IdJag` | `requestedTokenType IdJag is only supported by crossAppAccess`. The value appears in the list because the type list is shared with [Cross App Access]({{< link-hextra path="/documentation/security/backend-authn/cross-app-access/" >}}). |
 | Any value, with the `JwtBearer` grant type | `requestedTokenType is only valid with TokenExchange grantType` |
 
 When you set `requestedTokenType`, the gateway sends `requested_token_type` on the token request, then compares the `issued_token_type` of the response against it. A mismatch fails the exchange with a `500`, and the request never reaches the backend.
@@ -439,7 +439,7 @@ Make sure the incoming credential's issuer matches the token endpoint's issuer a
 This guide uses a demo Keycloak and the httpbin sample app. To use token exchange in production:
 
 * **Point at your own authorization server.** Create an {{< reuse "agw-docs/snippets/backend.md" >}} for your IdP (such as Keycloak, Microsoft Entra, Okta, Auth0, or ZITADEL). Use port `443` for automatic backend TLS. Replace the demo realm, client IDs, audiences, and Kubernetes Secret with your own. The JWT bearer walkthrough relies on a Keycloak preview feature, so confirm that your provider supports the grant you need (for example, Microsoft Entra on-behalf-of is generally available).
-* **Attach the policy to the backends that need scoped tokens.** Target the {{< reuse "agw-docs/snippets/policy.md" >}} at the Services or {{< reuse "agw-docs/snippets/backend.md" >}}s that require their own credential, such as MCP servers, upstream APIs, or LLM providers. Pair it with route-level [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) to validate the inbound credential first.
+* **Attach the policy to the backends that need scoped tokens.** Target the {{< reuse "agw-docs/snippets/policy.md" >}} at the Services or {{< reuse "agw-docs/snippets/backend.md" >}}s that require their own credential, such as MCP servers, upstream APIs, or LLM providers. Pair it with route-level [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) to validate the inbound credential first.
 * **Use token exchange to preserve agent and user identity.** Token exchange lets the gateway hand each backend a narrowly scoped, per-backend token while preserving the caller's identity end-to-end. In agentic flows, the exchange can carry an agent acting on behalf of a user, so every downstream call keeps an auditable, least-privilege identity chain instead of sharing one broad credential.
 
 ## Cleanup

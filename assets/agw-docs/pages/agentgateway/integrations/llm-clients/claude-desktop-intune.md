@@ -12,7 +12,7 @@ passes each user's Claude subscription token upstream.
 ### Prepare the rollout
 
 1. Complete the [Claude Desktop]({{< link-hextra
-   path="/integrations/llm-clients/claude-desktop/" >}}) guide for your
+   path="/integrations/llm/clients/claude-desktop/" >}}) guide for your
    agentgateway mode and chosen credential model.
 2. Expose agentgateway through a stable HTTPS hostname that the managed devices
    can resolve. Claude Desktop rejects plain HTTP for non-loopback addresses
@@ -88,7 +88,7 @@ Gateway API key mode is the recommended starting point. Claude Desktop sends a
 client key that agentgateway validates, and agentgateway replaces it with a
 separately managed Anthropic API key for the upstream request. Complete the
 [Claude Desktop gateway API key setup]({{< link-hextra
-path="/integrations/llm-clients/claude-desktop/#gateway-api-key" >}}) for your
+path="/integrations/llm/clients/claude-desktop/#gateway-api-key" >}}) for your
 agentgateway mode before you build the Intune profile.
 
 For an initial pilot, select **Static API key** and use the revocable gateway
@@ -150,7 +150,7 @@ with a bearer token from
 `claude setup-token`; agentgateway passes that token upstream instead of
 injecting a centrally managed Anthropic API key. Complete the [Claude
 subscription setup]({{< link-hextra
-path="/integrations/llm-clients/claude-desktop/#configure-claude-desktop" >}})
+path="/integrations/llm/clients/claude-desktop/#configure-claude-desktop" >}})
 for your agentgateway mode before you build the Intune profile.
 
 Intune can enforce the gateway address, Bearer auth scheme, model list, and
@@ -203,7 +203,7 @@ managed configuration](#build-and-test-the-managed-configuration).
 ### Option 3: Use Microsoft Entra ID {#claude-entra}
 
 Complete the [Claude Desktop Entra setup]({{< link-hextra
-path="/integrations/llm-clients/claude-desktop/#sso" >}}) for your agentgateway
+path="/integrations/llm/clients/claude-desktop/#sso" >}}) for your agentgateway
 mode before you build the Intune profile.
 
 Replace any strict gateway API key policy on the Claude Desktop route with the

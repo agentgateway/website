@@ -22,9 +22,9 @@ You can run `agctl trace` in two modes:
 
 ## Before you begin
 
-1. [Install agctl]({{< link-hextra path="/operations/agctl" >}}).
+1. [Install agctl]({{< link-hextra path="/documentation/operations/agctl" >}}).
 2. {{< reuse "agw-docs/snippets/agentgateway-prereq.md" >}}
-3. Have an HTTPRoute that the trace request matches. The examples assume the `httpbin` HTTPRoute from the [non-agentic HTTP quickstart]({{< link-hextra path="/quickstart/non-agentic-http" >}}), which routes `www.example.com` to the httpbin service.
+3. Have an HTTPRoute that the trace request matches. The examples assume the `httpbin` HTTPRoute from the [non-agentic HTTP quickstart]({{< link-hextra path="/documentation/quickstart/non-agentic-http" >}}), which routes `www.example.com` to the httpbin service.
 
 ## Trace a request that agctl sends (inject mode)
 

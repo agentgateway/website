@@ -2,7 +2,7 @@
 
 ## Before you begin
 
-1. [Complete the LLM quickstart]({{< link-hextra path="/quickstart/llm/" >}}).
+1. [Complete the LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}}).
 2. Install Docker if you want to export metrics.
 3. Sign up for an [Axiom account](https://app.axiom.co/).
 
@@ -179,7 +179,7 @@ frontendPolicies:
       service.version: '"2.1.0"'
 ```
 
-For per-request values such as the selected model, use span attributes instead of a static resource attribute. For more information, see [Add span and resource attributes]({{< link-hextra path="/observability/traces/setup/#add-attributes" >}}).
+For per-request values such as the selected model, use span attributes instead of a static resource attribute. For more information, see [Add span and resource attributes]({{< link-hextra path="/documentation/observability/traces/setup/#add-attributes" >}}).
 
 ## Verify the integration
 

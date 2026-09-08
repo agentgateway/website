@@ -317,7 +317,7 @@ EOF
    | `expression` | A CEL expression that computes the value for the field. Maximum 16,384 characters. |
 
    > [!WARNING]
-   > In a `finalTransformations` expression, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that reads a field which the converted body does not have, such as `llmRequest.max_tokens` for an OpenAI provider, fails to evaluate. A failed expression removes the target field, so a mistyped field name silently deletes the field that you meant to set. For more information about `fail()`, see [Validate and set request body defaults]({{< link-hextra path="/traffic-management/transformations/validate/" >}}).
+   > In a `finalTransformations` expression, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that reads a field which the converted body does not have, such as `llmRequest.max_tokens` for an OpenAI provider, fails to evaluate. A failed expression removes the target field, so a mistyped field name silently deletes the field that you meant to set. For more information about `fail()`, see [Validate and set request body defaults]({{< link-hextra path="/documentation/traffic-management/transformations/validate/" >}}).
 
 2. Verify that the {{< reuse "agw-docs/snippets/policy.md" >}} is accepted.
 
@@ -590,7 +590,7 @@ When the agentgateway proxy routes to an AI backend, the `llm` CEL context provi
 * `llm.requestModel`: The model name from the original request.
 * `llm.responseModel`: The model name the upstream LLM provider reported in the response.
 
-Use the [`metadata`]({{< link-hextra path="/traffic-management/transformations/templating-language/#pre-compute-values-with-metadata" >}}) context variable to pre-compute LLM model data, and the `default()` function in the `set` expressions to fall back to parsing the raw body if the metadata context variable is unavailable. This approach computes each value once and keeps the `x-model-fallback` comparison readable:
+Use the [`metadata`]({{< link-hextra path="/documentation/traffic-management/transformations/templating-language/#pre-compute-values-with-metadata" >}}) context variable to pre-compute LLM model data, and the `default()` function in the `set` expressions to fall back to parsing the raw body if the metadata context variable is unavailable. This approach computes each value once and keeps the `x-model-fallback` comparison readable:
 
 ```yaml
 kubectl apply -f- <<EOF

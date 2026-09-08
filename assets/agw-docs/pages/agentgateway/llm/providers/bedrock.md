@@ -5,12 +5,12 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 > [!NOTE]
-> Bedrock excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Bedrock reports. To read the Bedrock number itself, use `llm.providerInputTokens`. Do not confuse these CEL fields with the Bedrock wire fields named in the previous note. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).
+> Bedrock excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Bedrock reports. To read the Bedrock number itself, use `llm.providerInputTokens`. Do not confuse these CEL fields with the Bedrock wire fields named in the previous note. For more information, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
 {{< /version >}}
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}). 
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}). 
 2. Make sure that your [Amazon credentials](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html) have access to the Bedrock models that you want to use. You can alternatively use an [AWS Bedrock API key](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html).{{< version exclude-if="1.1.x" >}}
 3. Optional: You can [configure AWS IAM Identity Center](https://docs.aws.amazon.com/singlesignon/latest/userguide/getting-started.html) to allow single sign-on (SSO) credentials to authenticate to AWS Bedrock. Make sure that you have access to AWS Bedrock and set up your AWS profile to use SSO, such as through the [`aws` CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html). Make sure the workload can use that profile (for example with `AWS_PROFILE`). Later when you create the {{< reuse "agw-docs/snippets/backend.md" >}}, omit `policies.auth` so the proxy uses implicit AWS SSO credentials.{{< /version >}}
 

@@ -10,7 +10,7 @@
 
 ### Step 1: Set up the OTel Collector
 
-1. Follow the [OTel Collector setup]({{< link path="/observability/traces/configs/otel/" >}}) guide to install a collector in your cluster. Then update the collector's exporter config to forward traces to Honeycomb with your API key.
+1. Follow the [OTel Collector setup]({{< link path="/documentation/observability/traces/configs/otel/" >}}) guide to install a collector in your cluster. Then update the collector's exporter config to forward traces to Honeycomb with your API key.
 
 2. In Honeycomb, go to **Account → Team Settings** to find or create an API key. Add the following exporter to your collector config. 
    ```yaml

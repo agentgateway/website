@@ -1,4 +1,4 @@
-Set the route-level timeout with an HTTPRoute or {{< reuse "agw-docs/snippets/policy.md" >}}. To ensure that your apps are available even if they are temporarily unavailable, you can use timeouts alongside [Retries]({{< link-hextra path="/resiliency/retry/" >}}).
+Set the route-level timeout with an HTTPRoute or {{< reuse "agw-docs/snippets/policy.md" >}}. To ensure that your apps are available even if they are temporarily unavailable, you can use timeouts alongside [Retries]({{< link-hextra path="/documentation/resiliency/retry/" >}}).
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 

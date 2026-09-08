@@ -29,12 +29,12 @@ sequenceDiagram
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
-2. Follow the steps to connect to the [remote GitHub MCP server via HTTPS]({{< link-hextra path="/mcp/https/" >}}). 
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup" >}}).
+2. Follow the steps to connect to the [remote GitHub MCP server via HTTPS]({{< link-hextra path="/documentation/mcp/https/" >}}). 
 
 ## View MCP tools
 
-1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with your JWT validation rules and apply it to the agentgateway proxy that you created before you began. To learn more about how JWT validation works in the agentgateway proxy and the details of this policy, see the [secure access to an MCP server]({{< link-hextra path="/mcp/mcp-access/" >}}) guide.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with your JWT validation rules and apply it to the agentgateway proxy that you created before you began. To learn more about how JWT validation works in the agentgateway proxy and the details of this policy, see the [secure access to an MCP server]({{< link-hextra path="/documentation/mcp/mcp-access/" >}}) guide.
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}

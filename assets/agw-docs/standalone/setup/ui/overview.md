@@ -19,7 +19,7 @@ A generated configuration includes a `ui` section, so the UI is served on the ga
 In every case, the admin interface also serves a copy of the UI for local use. That copy is not a location that you configure, and it does not change what a gateway serves. For more information, see [The UI and the admin interface are not the same thing](#admin-interface).
 
 > [!WARNING]
-> A gateway serves the UI without authentication until you add a policy. A gateway listener is as reachable as your other proxy traffic, so attach an authentication policy before you put the UI on a network that you do not control. For more information, see [Secure the UI]({{< link-hextra path="/setup/ui/secure-ui/" >}}).
+> A gateway serves the UI without authentication until you add a policy. A gateway listener is as reachable as your other proxy traffic, so attach an authentication policy before you put the UI on a network that you do not control. For more information, see [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).
 
 The UI calls an API of its own for the data that it displays and the changes that it saves. This UI API is served on the `/api` path wherever the UI is served, so a gateway that serves the UI also serves `/api/config/effective` and the other UI endpoints. The policies in `ui.policies` cover both.
 
@@ -43,6 +43,6 @@ They are not the same surface, and only one of them is meant to leave your machi
 > [!CAUTION]
 > The admin interface is separate from the UI. Typically, treat the admin interface address (`config.adminAddr`) as a setting that you do not change. Moving it to a routable address, such as `0.0.0.0:15000`, publishes shutdown and configuration-dump endpoints to anything that can reach that port.
 
-To reach the UI from another host, attach it to a gateway. That is the supported path, and it is the only one that you can authenticate. For the admin interface itself, see [Debug your setup]({{< link-hextra path="/operations/debug/" >}}).
+To reach the UI from another host, attach it to a gateway. That is the supported path, and it is the only one that you can authenticate. For the admin interface itself, see [Debug your setup]({{< link-hextra path="/documentation/operations/debug/" >}}).
 
 ## Guides

@@ -1,7 +1,7 @@
 
 The agentgateway proxy exposes a Prometheus-compatible metrics endpoint on port `15020`. Metrics are collected automatically for every request that passes through the gateway and follow the [OpenMetrics](https://openmetrics.io/) format. All agentgateway metrics use the `agentgateway_` prefix.
 
-To set up automatic scraping of these metrics with Prometheus, see [Enable metrics scraping]({{< link path="/observability/metrics/overview/" >}}).
+To set up automatic scraping of these metrics with Prometheus, see [Enable metrics scraping]({{< link path="/documentation/observability/metrics/overview/" >}}).
 
 ## View data plane metrics
 
@@ -17,7 +17,7 @@ To set up automatic scraping of these metrics with Prometheus, see [Enable metri
    curl http://localhost:15020/metrics
    ```
 
-3. Enable metrics scraping for data plane metrics with the OTel stack so that you can export and visualize metrics in monitoring tools, such as Prometheus and Grafana. For more information, see [Scrape metrics for querying and visualization]({{< link path="/observability/metrics/overview/#scrape-metrics-for-querying-and-visualization" >}}). 
+3. Enable metrics scraping for data plane metrics with the OTel stack so that you can export and visualize metrics in monitoring tools, such as Prometheus and Grafana. For more information, see [Scrape metrics for querying and visualization]({{< link path="/documentation/observability/metrics/overview/#scrape-metrics-for-querying-and-visualization" >}}). 
 
 ## Add custom metric labels
 
@@ -153,6 +153,7 @@ These metrics track process-level memory for the agentgateway process, sourced f
 
 | Metric | Type | Unit | Description |
 | --- | --- | --- | --- |
+| `agentgateway_process_size` | Gauge | bytes | Total virtual memory size of the process. |
 | `agentgateway_process_rss` | Gauge | bytes | RSS (resident set size) memory usage. |
 | `agentgateway_process_pss` | Gauge | bytes | PSS (proportional set size) memory usage. |
 | `agentgateway_process_pss_dirty` | Gauge | bytes | Dirty PSS memory usage. |

@@ -6,8 +6,8 @@ In this guide you explore how to expose the kgateway proxy with an AWS applicati
 ## Before you begin
 
 1. Create or use an existing AWS account. 
-2. Follow the [Get started guide]({{< link-hextra path="/quickstart/">}}) to install kgateway. You do not need to set up a Gateway as you create a custom Gateway as part of this guide.
-3. Follow the [Sample app guide]({{< link-hextra path="/install/sample-app/" >}}) to deploy the httpbin sample app.
+2. Follow the [Get started guide]({{< link-hextra path="/documentation/quickstart/">}}) to install kgateway. You do not need to set up a Gateway as you create a custom Gateway as part of this guide.
+3. Follow the [Sample app guide]({{< link-hextra path="/documentation/install/sample-app/" >}}) to deploy the httpbin sample app.
    
 ## Step 1: Deploy gateway proxy resources
  

@@ -3,14 +3,14 @@ route requests through agentgateway running in Kubernetes.
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-2. [Set up access to the OpenAI LLM provider]({{< link-hextra path="/llm/providers/openai/" >}}).
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
+2. [Set up access to the OpenAI LLM provider]({{< link-hextra path="/integrations/llm/providers/openai/" >}}).
 3. Install either the [Codex CLI](https://learn.chatgpt.com/docs/codex/cli) or
    the [ChatGPT desktop app](https://chatgpt.com/download/).
 
 ## Set the gateway URL
 
-The [installation quickstart]({{< link-hextra path="/quickstart/install/" >}})
+The [installation quickstart]({{< link-hextra path="/documentation/quickstart/install/" >}})
 sets `INGRESS_GW_ADDRESS` to the Gateway address. Set the Codex base URL from
 that value. The `/v1` suffix is required because Codex sends Responses API
 requests to `/v1/responses`.
@@ -33,7 +33,7 @@ export AGENTGATEWAY_API_KEY='<gateway-client-key>'
 
 ## Verify gateway connectivity
 
-Follow [Step 4 of the OpenAI quickstart]({{< link-hextra path="/quickstart/llm/#step-4-send-a-request-to-the-llm" >}})
+Follow [Step 4 of the OpenAI quickstart]({{< link-hextra path="/documentation/quickstart/llm/#step-4-send-a-request-to-the-llm" >}})
 to verify that the configured Gateway can reach the LLM provider.
 
 ## Connect Codex to agentgateway
@@ -188,6 +188,6 @@ found. That warning does not prevent `/v1/responses` traffic from routing.
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/llm/providers/openai" title="OpenAI provider" subtitle="Complete OpenAI provider configuration" >}}
-  {{< card path="/llm/guardrails/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
+  {{< card path="/integrations/llm/providers/openai" title="OpenAI provider" subtitle="Complete OpenAI provider configuration" >}}
+  {{< card path="/documentation/llm/guardrails/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
 {{< /cards >}}

@@ -33,7 +33,7 @@ You can inspect raw metrics directly from either endpoint without installing any
       curl http://localhost:15020/metrics
       ```
 
-Both endpoints return metrics in the [OpenMetrics](https://openmetrics.io/) format. All agentgateway metrics use the `agentgateway_` prefix. For the full list of available metrics, see [Control plane metrics]({{< link path="/observability/metrics/control-plane/" >}}) and [Data plane metrics]({{< link path="/observability/metrics/dataplane/" >}}).
+Both endpoints return metrics in the [OpenMetrics](https://openmetrics.io/) format. All agentgateway metrics use the `agentgateway_` prefix. For the full list of available metrics, see [Control plane metrics]({{< link path="/documentation/observability/metrics/control-plane/" >}}) and [Data plane metrics]({{< link path="/documentation/observability/metrics/dataplane/" >}}).
 
 ## Scrape metrics for querying and visualization
 
@@ -44,7 +44,7 @@ Curling the metrics endpoint gives you a point-in-time snapshot, but it does not
 - **[Prometheus](https://prometheus.io/)**: An open-source monitoring system that can scrape the `/metrics` endpoints on a regular interval. Metrics are stored as a time series, and you can use PromQL to query them. To scrape metrics from pods with Prometheus, you either add Prometheus-specific scraping annotations to the pod, or use the built-in PodMonitor and ServiceMonitor resources that the {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm chart creates for you when you set `monitoring.enabled` to `true`.
 - **[Grafana](https://grafana.com/)**: An open-source visualization platform that connects to Prometheus as a data source and renders dashboards, graphs, and alerts from PromQL queries. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} ships a pre-built dashboard that covers requests, LLM traffic, MCP traffic, and connections.
 
-The {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm chart includes a `monitoring` section that creates the ServiceMonitor, PodMonitor, and Grafana dashboard ConfigMap for you so that you can use Prometheus and Grafana without any additional configuration to monitor the {{< reuse "agw-docs/snippets/agentgateway.md" >}} control and data plane. These resources are discovered automatically when you use the [OTel stack]({{< link path="/observability/otel-stack/" >}}), which configures Prometheus and Grafana to pick them up with no extra setup.
+The {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm chart includes a `monitoring` section that creates the ServiceMonitor, PodMonitor, and Grafana dashboard ConfigMap for you so that you can use Prometheus and Grafana without any additional configuration to monitor the {{< reuse "agw-docs/snippets/agentgateway.md" >}} control and data plane. These resources are discovered automatically when you use the [OTel stack]({{< link path="/documentation/observability/otel-stack/" >}}), which configures Prometheus and Grafana to pick them up with no extra setup.
 
 | Resource | Scrape source | Helm section to tune |
 | --- | --- | --- |
@@ -54,7 +54,7 @@ The {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm chart includes a `mon
 
 ### Enable control and data plane scraping
 
-Follow the [OTel stack guide]({{< link path="/observability/otel-stack/" >}}) to install the observability tools, including Prometheus and Grafana, and set `monitoring.enabled=true` to create the ServiceMonitor, PodMonitor, and Grafana dashboard ConfigMap. 
+Follow the [OTel stack guide]({{< link path="/documentation/observability/otel-stack/" >}}) to install the observability tools, including Prometheus and Grafana, and set `monitoring.enabled=true` to create the ServiceMonitor, PodMonitor, and Grafana dashboard ConfigMap. 
 
 > [!NOTE]
 > By default, the PodMonitor that the Helm chart creates only scrapes proxy pods in the release namespace and for the `agentgateway` GatewayClass. If you need to scrape proxies in other namespaces or for additional GatewayClasses, see [Scrape additional proxy pods](#other-proxies).
@@ -144,7 +144,7 @@ helm upgrade kube-prometheus-stack prometheus-community/kube-prometheus-stack \
 ## Learn more
 
 {{< cards >}}
-  {{< card path="/observability/metrics/control-plane/" title="Control plane metrics" subtitle="View and reference control plane metrics" >}}
-  {{< card path="/observability/metrics/dataplane/" title="Data plane metrics" subtitle="View and customize data plane metrics" >}}
-  {{< card path="/observability/otel-stack/" title="OTel stack" subtitle="Set up Prometheus and Grafana with the recommended observability stack" >}}
+  {{< card path="/documentation/observability/metrics/control-plane/" title="Control plane metrics" subtitle="View and reference control plane metrics" >}}
+  {{< card path="/documentation/observability/metrics/dataplane/" title="Data plane metrics" subtitle="View and customize data plane metrics" >}}
+  {{< card path="/documentation/observability/otel-stack/" title="OTel stack" subtitle="Set up Prometheus and Grafana with the recommended observability stack" >}}
 {{< /cards >}}

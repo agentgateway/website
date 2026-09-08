@@ -1,10 +1,10 @@
-Review common proxy customizations that you might want to apply in your environment. For steps on how to apply these configurations, see [Customize the gateway]({{< link-hextra path="/setup/customize/customize/" >}}).
+Review common proxy customizations that you might want to apply in your environment. For steps on how to apply these configurations, see [Customize the gateway]({{< link-hextra path="/documentation/setup/customize/customize/" >}}).
 
 ## Built-in customization
 
 Use built-in customization options to automatically validate your changes when you create the agentgateway proxy in your cluster.
 
-To learn more, see [Built-in customization]({{< link-hextra path="/setup/customize/options/#built-in" >}}). 
+To learn more, see [Built-in customization]({{< link-hextra path="/documentation/setup/customize/options/#built-in" >}}). 
 
 ### Add environment variables {#env-vars}
 
@@ -153,7 +153,7 @@ EOF
 
 ## Overlays
 
-To learn more about overlays, see [Overlays]({{< link-hextra path="/setup/customize/options/#overlays" >}}).
+To learn more about overlays, see [Overlays]({{< link-hextra path="/documentation/setup/customize/options/#overlays" >}}).
 
 ### Change deployment replicas {#deployment-replicas}
 

@@ -349,15 +349,15 @@ Start with these baseline changes:
 
 Then apply egress workflows that are especially useful for meshed agents:
 
-1. Centralized credential injection for upstream AI providers, such as [OAuth token exchange]({{< link-hextra path="/security/backend-authn-oauth/" >}}), [Cross App Access]({{< link-hextra path="/security/backend-authn-cross-app-access/" >}}), or [JWT signing]({{< link-hextra path="/security/backend-authn-jwt-sign/" >}}).
+1. Centralized credential injection for upstream AI providers, such as [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn-oauth/" >}}), [Cross App Access]({{< link-hextra path="/documentation/security/backend-authn-cross-app-access/" >}}), or [JWT signing]({{< link-hextra path="/documentation/security/backend-authn-jwt-sign/" >}}).
   This keeps provider credentials out of agent workloads and enforces one controlled identity path at egress.
-2. Route-level authentication and authorization, such as [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) and [authorization policies]({{< link-hextra path="/security/authorization/" >}}).
+2. Route-level authentication and authorization, such as [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) and [authorization policies]({{< link-hextra path="/documentation/security/authorization/" >}}).
   This lets you decide which agents and users can call which external providers before traffic leaves the cluster.
-3. AI safety and spend controls, such as [guardrails]({{< link-hextra path="/llm/guardrails/" >}}) and [token-based rate limits]({{< link-hextra path="/llm/rate-limit/" >}}).
+3. AI safety and spend controls, such as [guardrails]({{< link-hextra path="/documentation/llm/guardrails/" >}}) and [token-based rate limits]({{< link-hextra path="/documentation/llm/rate-limit/" >}}).
   This reduces prompt injection risk, blocks sensitive content patterns, and prevents runaway token spend.
-4. Provider resilience and optimization, such as [load balancing]({{< link-hextra path="/llm/load-balancing/" >}}), [failover]({{< link-hextra path="/llm/failover/" >}}), and [content routing]({{< link-hextra path="/llm/content-routing/" >}}).
+4. Provider resilience and optimization, such as [load balancing]({{< link-hextra path="/documentation/llm/load-balancing/" >}}), [failover]({{< link-hextra path="/documentation/llm/failover/" >}}), and [content routing]({{< link-hextra path="/documentation/llm/content-routing/" >}}).
   This improves reliability and cost/performance by choosing the best model endpoint at request time.
-5. Egress observability and audit trails, such as [LLM observability]({{< link-hextra path="/llm/observability/" >}}).
+5. Egress observability and audit trails, such as [LLM observability]({{< link-hextra path="/documentation/llm/observability/" >}}).
   This gives you per-request visibility into tokens, cost, and policy outcomes for compliance and incident response.
 
 ## Cleanup

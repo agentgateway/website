@@ -108,9 +108,9 @@ The literal equivalent (hardcoding `main`) is still accepted, but then copying t
 
 ```yaml
   cors-in-httproute:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: content/docs/kubernetes/main/documentation/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/security/cors.md
+  - file: content/docs/kubernetes/main/documentation/security/cors.md
     path: cors-in-httproute
 ```
 
@@ -336,19 +336,19 @@ Point directly to a file and (optionally) a named scenario. This generates the s
 ```sh
 # Run one specific scenario
 python3 scripts/doc_test_run.py \
-  --file content/docs/kubernetes/main/security/cors.md \
+  --file content/docs/kubernetes/main/documentation/security/cors.md \
   --test cors-in-httproute
 
 # Run all scenarios defined in a single file
 python3 scripts/doc_test_run.py \
-  --file content/docs/kubernetes/main/security/cors.md
+  --file content/docs/kubernetes/main/documentation/security/cors.md
 ```
 
 To only generate the script without running (useful for inspection):
 
 ```sh
 python3 scripts/doc_test_run.py \
-  --file content/docs/kubernetes/main/security/cors.md \
+  --file content/docs/kubernetes/main/documentation/security/cors.md \
   --test cors-in-httproute \
   --generate-only
 
@@ -484,7 +484,7 @@ If a chain still uses **literal** paths (e.g. `content/docs/kubernetes/main/...`
 
 **Wrong prerequisite file paths**
 
-The install prerequisite should point to `content/docs/kubernetes/<version>/quickstart/install.md`, not `content/docs/kubernetes/<version>/install/helm.md` or similar. Check the "Before you begin" section of the guide you're testing and follow the links to confirm the exact paths rather than guessing from memory.
+The install prerequisite should point to `content/docs/kubernetes/<version>/documentation/quickstart/install.md`, not `content/docs/kubernetes/<version>/documentation/install/helm.md` or similar. Check the "Before you begin" section of the guide you're testing and follow the links to confirm the exact paths rather than guessing from memory.
 
 **Test fails immediately with "kubectl port-forward" error**
 

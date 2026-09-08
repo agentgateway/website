@@ -1,0 +1,15 @@
+---
+title: UI
+weight: 10
+description: Use the built-in UI to inspect your Kubernetes agentgateway proxy configuration.
+test:
+  admin-ui:
+  - file: content/docs/kubernetes/latest/documentation/install/helm.md
+    path: standard
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/latest/documentation/observability/ui.md
+    path: ui-k8s
+---
+
+{{< reuse "agw-docs/pages/observability/ui.md" >}}

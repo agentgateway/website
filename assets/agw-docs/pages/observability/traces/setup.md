@@ -5,7 +5,7 @@ When tracing is enabled, {{< reuse "agw-docs/snippets/agentgateway.md" >}} emits
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-3. Set up the [OTel stack]({{< link path="/observability/otel-stack/" >}}). The OTel stack installs the full tracing pipeline that this guide uses. 
+3. Set up the [OTel stack]({{< link path="/documentation/observability/otel-stack/" >}}). The OTel stack installs the full tracing pipeline that this guide uses. 
    - **OpenTelemetry Collector** (`opentelemetry-collector-traces` in the `telemetry` namespace): Receives OTLP traces from the agentgateway proxy and forwards them to Tempo.
    - **Tempo**: Stores the traces.
    - **Grafana**: Queries Tempo and lets you browse and search traces.
@@ -191,7 +191,7 @@ For the full list of available CEL variables, see the [CEL variables reference](
 
 ## Customize span attributes
 
-Agentgateway emits standard OpenTelemetry attributes on every span. You can add custom attributes or remove default ones. Attribute customization applies to all sampled spans, regardless of whether they were selected by `randomSampling` or `clientSampling`. For the full list of default attributes, see [Span attribute reference]({{< link path="/observability/traces/attribute-reference/" >}}).
+Agentgateway emits standard OpenTelemetry attributes on every span. You can add custom attributes or remove default ones. Attribute customization applies to all sampled spans, regardless of whether they were selected by `randomSampling` or `clientSampling`. For the full list of default attributes, see [Span attribute reference]({{< link path="/documentation/observability/traces/attribute-reference/" >}}).
 
 > [!NOTE]
 > Customizing span attributes does not apply to policy call child spans, such as spans for ext_authz or rate limiting calls. Those spans have a fixed attribute set.
@@ -275,11 +275,11 @@ EOF
 
 The primary setup routes traces through the OTel Collector from the OTel stack, which exports them to Tempo. You can route traces to any OTLP-compatible backend by changing the `backendRef` to point to a different service, or by using the `url` field to specify an endpoint directly.
 
-- [Jaeger]({{< link path="/observability/traces/configs/jaeger/" >}})
-- [OTel Collector]({{< link path="/observability/traces/configs/otel/" >}})
-- [Datadog]({{< link path="/observability/traces/configs/datadog/" >}})
-- [Honeycomb]({{< link path="/observability/traces/configs/honeycomb/" >}})
-- [Grafana Cloud]({{< link path="/observability/traces/configs/grafana-cloud/" >}})
+- [Jaeger]({{< link path="/documentation/observability/traces/configs/jaeger/" >}})
+- [OTel Collector]({{< link path="/documentation/observability/traces/configs/otel/" >}})
+- [Datadog]({{< link path="/documentation/observability/traces/configs/datadog/" >}})
+- [Honeycomb]({{< link path="/documentation/observability/traces/configs/honeycomb/" >}})
+- [Grafana Cloud]({{< link path="/documentation/observability/traces/configs/grafana-cloud/" >}})
 
 ## Cleanup
 

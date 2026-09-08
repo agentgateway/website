@@ -155,14 +155,14 @@ backendAuth:
 
 ## Pass through client credentials
 
-Any form of incoming authentication removes the original credential from the request by default, before agentgateway forwards it to the backend. That applies to [JWT]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), [API key]({{< link-hextra path="/configuration/security/apikey-authn/" >}}), and [basic auth]({{< link-hextra path="/configuration/security/basic-authn/" >}}). To send the original credential on to the backend, use the `passthrough` method.
+Any form of incoming authentication removes the original credential from the request by default, before agentgateway forwards it to the backend. That applies to [JWT]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}), [API key]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}), and [basic auth]({{< link-hextra path="/documentation/configuration/security/basic-authn/" >}}). To send the original credential on to the backend, use the `passthrough` method.
 
 ```yaml
 backendAuth:
   passthrough: {}
 ```
 
-The method forwards a JWT only. It re-sends the token that a [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}) policy validated on the route. An API key or basic auth credential is still stripped, and `passthrough` does not add it back.
+The method forwards a JWT only. It re-sends the token that a [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) policy validated on the route. An API key or basic auth credential is still stripped, and `passthrough` does not add it back.
 
 The `passthrough` method has no field for where to read the credential from, because agentgateway does not read it from the request at all. It re-sends the token that the `jwtAuth` policy already validated. The source is therefore wherever that policy's own `location` field reads from, which is the `Authorization` header by default.
 
