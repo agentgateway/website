@@ -1,4 +1,4 @@
-Route [CrewAI](https://www.crewai.com/) multi-agent LLM traffic through agentgateway running in Kubernetes to centralize credentials and capture audit logs for every agent call. Because agentgateway proxies the LLM traffic transparently, you can enforce rate limits, guardrails, and other policies without changing your CrewAI application.
+Route [CrewAI](https://crewai.com/) multi-agent LLM traffic through agentgateway running in Kubernetes to centralize credentials and capture audit logs for every agent call. Because agentgateway proxies the LLM traffic transparently, you can enforce rate limits, guardrails, and other policies without changing your CrewAI application.
 
 ## Before you begin
 
