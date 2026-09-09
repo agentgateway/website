@@ -383,10 +383,18 @@ h6 {
    feeds the wrapper's class attribute, so the rule cannot leak into the blog,
    models or tutorials layouts.
 
-   CAVEAT: if this site ever enables docTabs, the module emits an INLINE
-   `style="padding-top: 0.75rem"` on the same element, and an inline style beats
-   a class rule. Revisit this rule at that point rather than reaching for
-   !important. */
-.agw-docs-topgap {
+   CAVEAT: with docTabs enabled, the module emits an INLINE
+   `style="padding-top: 0.75rem"` on the content wrapper, and an inline style
+   beats this class rule there, so the wrapper's effective clearance is 0.75rem
+   while the band above it is visible.
+
+   `:not(.docs-tabs-inner)` guard: docs-theme-extras' docs-tabs.html now pulls
+   its own max-width from this same width-class.html slot (so the tab band's
+   left edge tracks the content column's instead of drifting apart above the
+   90rem breakpoint), which means .docs-tabs-inner picks up this class too.
+   Without the guard the band would gain an unwanted 2.5rem gap above the tabs
+   on top of the navbar clearance it already gets from .docs-tabs-band's own
+   padding-top. Keep this scoped to the content wrapper only. */
+.agw-docs-topgap:not(.docs-tabs-inner) {
   padding-top: 2.5rem;
 }

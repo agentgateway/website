@@ -1,4 +1,4 @@
-Trace the next request handled by an agentgateway pod or local instance.
+Trace requests handled by an agentgateway pod or local instance.
 
 ### Synopsis
 
@@ -32,6 +32,9 @@ agctl proxy trace [resource] [-- <curl args...>] [flags]
   
   # Watch for the next request matching a CEL expression.
   agctl proxy trace --expression 'request.path == "/healthz"'
+
+  # Follow matching requests for up to 10 minutes (JSONL includes requestId).
+  agctl proxy trace --follow=10m --raw --expression 'request.path == "/v1/responses"'
   
   # Enable tracing and send a request to the gateway, with some curl arguments.
   agctl proxy trace gateway/my-gateway --raw --port 80 -- http://host/some/path -H "Authorization: Bearer sk-123"
@@ -42,6 +45,7 @@ agctl proxy trace [resource] [-- <curl args...>] [flags]
 ```
       --expression string      CEL expression for selecting which request to trace
   -f, --file string            Trace JSONL file to render, or - for stdin
+      --follow duration[=5s]   Continue tracing matching requests for this duration (maximum 1h) (default 5s)
   -h, --help                   help for trace
       --local                  Trace against a local agentgateway instance on 127.0.0.1
   -n, --namespace string       Namespace to use when resolving resources
