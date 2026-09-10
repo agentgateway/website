@@ -221,6 +221,8 @@ Agentgateway supports custom OpenTelemetry resource attributes through `spec.fro
 
 In Kubernetes mode, agentgateway automatically sets `service.name`, `service.version`, `service.instance.id`, and `service.namespace`. The preceding OTLP/HTTP and OTLP/gRPC configurations explicitly set `deployment.environment.name`. You can add application-specific attributes such as `model_id` or `model_version` to the `resources` list in the `{{< reuse "agw-docs/snippets/policy.md" >}}` for your selected transport.
 
+Agentgateway combines these custom resource attributes with the automatically populated `service.*` attributes at runtime, so you do not need to repeat the service attributes in the policy.
+
 ```yaml
 spec:
   frontend:
