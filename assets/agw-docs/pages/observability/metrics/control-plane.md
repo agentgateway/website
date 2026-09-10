@@ -26,7 +26,7 @@ Control plane metrics cannot be customized. To set up automatic scraping of thes
    agentgateway_controller_reconciliations_total{controller="gatewayclass-provisioner",result="success"} 2
    ```
 
-3. Enable metrics scraping for control plane metrics with the OTel stack so that you can export and visualize metrics in monitoring tools, such as Prometheus and Grafana. For more information, see [Scrape metrics for querying and visualization]({{< link path="/documentation/observability/metrics/overview/#access-raw-metrics" >}}). 
+3. Enable metrics scraping for control plane metrics with the OTel stack so that you can export and visualize metrics in monitoring tools, such as Prometheus and Grafana. For more information, see [Scrape metrics for querying and visualization]({{< link path="/documentation/observability/metrics/overview/" >}}).
 
 {{< doc-test paths="control-plane-metrics" >}}
 YAMLTest -f - <<'EOF'
