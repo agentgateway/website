@@ -413,7 +413,7 @@ _Appears in:_
 | `vertexai` _[VertexAISettings](#vertexaisettings)_ | Provider-specific settings for Vertex AI. |  | Optional: \{\} <br /> |
 | `bedrock` _[BedrockSettings](#bedrocksettings)_ | Provider-specific settings for Amazon Bedrock. |  | Optional: \{\} <br /> |
 | `custom` _[CustomProviderSettings](#customprovidersettings)_ | Provider-specific settings for a custom provider. |  | Optional: \{\} <br /> |
-| `baseURL` _[LongString](#longstring)_ | BaseURL overrides the provider address and base path prefix. It must use the<br />http or https scheme. Backend policies may override the default TLS<br />configuration. Query parameters, fragments, and user info are not supported. |  | Format: uri <br />MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `baseURL` _[LongString](#longstring)_ | BaseURL overrides the provider address and base path prefix. It must use the<br />http or https scheme. Backend policies may override the default TLS<br />configuration. Query parameters, fragments, and user info are not supported.<br />The URL path is the upstream base path and defaults to / when omitted.<br />Provider-specific endpoint paths are appended to this base path.<br />For example, https://api.openai.com/v1 sends completions to /v1/chat/completions,<br />while https://api.openai.com sends them to /chat/completions. |  | Format: uri <br />MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `policies` _[ModelPolicies](#modelpolicies)_ | Policies applied to this concrete model. |  | Optional: \{\} <br /> |
 | `virtualModel` _[VirtualModel](#virtualmodel)_ | Request-time routing among concrete AgentgatewayModel resources. |  | ExactlyOneOf: [weighted failover conditional] <br />Optional: \{\} <br /> |
 
