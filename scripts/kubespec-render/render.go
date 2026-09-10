@@ -235,6 +235,49 @@ func resolveSchemaNode(node *yaml.Node, resolver *schemaResolver) *yaml.Node {
 	return resolveSchemaNodeWithState(resolveAlias(node), resolver, map[*yaml.Node]bool{}, 0)
 }
 
+// mergeObjectVariants exposes every externally tagged object alternative. Variant
+// keys are alternatives, so none is individually required; requirements within
+// each variant remain intact. Overlapping shapes retain the existing fallback.
+func mergeObjectVariants(alts *yaml.Node, resolver *schemaResolver, seen map[*yaml.Node]bool, depth int) *yaml.Node {
+	props := &yaml.Node{Kind: yaml.MappingNode}
+	names := map[string]bool{}
+	count := 0
+	for _, alt := range alts.Content {
+		candidate := resolveSchemaNodeWithState(alt, resolver, seen, depth+1)
+		raw := decodeMapping(candidate)
+		if getTypeString(raw, "type") == "null" {
+			continue
+		}
+		fields := getNode(raw, "properties")
+		if fields == nil || fields.Kind != yaml.MappingNode || len(fields.Content) == 0 {
+			return nil
+		}
+		count++
+		for i := 0; i+1 < len(fields.Content); i += 2 {
+			name, value := fields.Content[i], fields.Content[i+1]
+			if names[name.Value] {
+				return nil
+			}
+			names[name.Value] = true
+			if len(fields.Content) == 2 && getString(decodeMapping(value), "description") == "" {
+				if desc := getNode(raw, "description"); desc != nil {
+					copyValue := *value
+					copyValue.Content = append(append([]*yaml.Node{}, value.Content...), &yaml.Node{Kind: yaml.ScalarNode, Value: "description"}, desc)
+					value = &copyValue
+				}
+			}
+			props.Content = append(props.Content, name, value)
+		}
+	}
+	if count < 2 {
+		return nil
+	}
+	return &yaml.Node{Kind: yaml.MappingNode, Content: []*yaml.Node{
+		{Kind: yaml.ScalarNode, Value: "type"}, {Kind: yaml.ScalarNode, Value: "object"},
+		{Kind: yaml.ScalarNode, Value: "properties"}, props,
+	}}
+}
+
 func resolveSchemaNodeWithState(node *yaml.Node, resolver *schemaResolver, seen map[*yaml.Node]bool, depth int) *yaml.Node {
 	n := resolveAlias(node)
 	if n == nil || resolver == nil {
@@ -259,12 +302,15 @@ func resolveSchemaNodeWithState(node *yaml.Node, resolver *schemaResolver, seen 
 		}
 	}
 
-	// For nullable unions like anyOf:[{$ref:...},{type:null}], pick the best
-	// non-null branch so fields become visible in the tree.
+	// Combine disjoint object variants before falling back to the best non-null
+	// branch for nullable or mixed scalar/object unions.
 	for _, key := range []string{"anyOf", "oneOf"} {
 		alts := getNode(raw, key)
 		if alts == nil || alts.Kind != yaml.SequenceNode {
 			continue
+		}
+		if merged := mergeObjectVariants(alts, resolver, seen, depth); merged != nil {
+			return merged
 		}
 		best := (*yaml.Node)(nil)
 		bestScore := -1

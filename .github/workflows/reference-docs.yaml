@@ -312,6 +312,17 @@ jobs:
           echo "Kubespec HTMLs generated successfully:"
           ls -la "$TARGET_DIR"/*.html
 
+      - name: Generate configuration schema widget HTML
+        run: |
+          CONFIG_SCHEMA="${GITHUB_WORKSPACE}/agentgateway/schema/config.json"
+          TARGET_DIR="${GITHUB_WORKSPACE}/website/assets/agw-docs/pages/reference/configuration/${{ matrix.link_version }}"
+          mkdir -p "$TARGET_DIR"
+
+          cd website/scripts/kubespec-render
+          go test ./...
+          go run render.go -title "Configuration schema" "$CONFIG_SCHEMA" \
+            > "${TARGET_DIR}/config-schema.html"
+
       - name: Generate CEL context widget HTML
         run: |
           CEL_SCHEMA="${GITHUB_WORKSPACE}/agentgateway/schema/cel.json"
