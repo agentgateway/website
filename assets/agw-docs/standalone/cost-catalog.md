@@ -72,7 +72,7 @@ For all flags, see the {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}
 
 ## Import costs (UI)
 
-You can also manage the model cost catalog from the built-in [UI]({{< link-hextra path="/documentation/operations/ui/" >}}).
+You can also manage the model cost catalog from the built-in [UI]({{< link-hextra path="/documentation/setup/ui/" >}}).
 
 1. Open the [UI cost page](http://localhost:15000/ui/llm/costs) (**LLM > Costs**). The page lists your configured **Catalog sources** (files and ConfigMaps, merged in order) and any inline **Custom costs** overrides.
 
