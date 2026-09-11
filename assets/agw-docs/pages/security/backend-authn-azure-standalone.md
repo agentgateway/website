@@ -1,6 +1,6 @@
 ## About
 
-The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that agentgateway forwards to the backend. Agentgateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.
+The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that agentgateway forwards to the backend. Agentgateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.{{< version exclude-if="1.5.x" >}} To authenticate to Microsoft Graph or another Microsoft Entra-protected backend, configure the token scopes.{{< /version >}}
 
 The method has three forms.
 
@@ -90,6 +90,7 @@ backendAuth:
 | `azure.explicitConfig.managedIdentity` | Managed identity of the Azure host. Set to `{}` for the system-assigned identity, or set `userAssignedIdentity` to select a user-assigned one. |
 | `azure.explicitConfig.managedIdentity.userAssignedIdentity` | Identifier of a user-assigned managed identity. Set exactly one of `clientId`, `objectId`, or `resourceId`. |
 | `azure.explicitConfig.workloadIdentity` | Set to `{}` to use the projected federated token. |
+{{< version exclude-if="1.5.x" >}}| `azure.scopes` | Scopes to request for the access token. When omitted, agentgateway infers the scope from the backend hostname. |{{< /version >}}
 
 > [!WARNING]
 > The three fields under `clientSecret` are `tenant_id`, `client_id`, and `client_secret`, in `snake_case`. Every field around them is camelCase, so this is easy to get wrong. The camelCase spelling is not accepted, and agentgateway rejects the configuration when it loads rather than falling back to another credential source.
@@ -98,11 +99,29 @@ backendAuth:
 > Error: routes[0]: data did not match any variant of untagged enum BackendAuthCompat
 > ```
 
+{{< version exclude-if="1.5.x" >}}
+## Configure token scopes
+
+Set `scopes` when the backend requires a token for a resource other than Azure Cognitive Services or Azure AI Foundry. For example, the following configuration uses workload identity to request a token for Microsoft Graph. The `scopes` field is a sibling of `explicitConfig`, not a child of it.
+
+```yaml
+backendAuth:
+  azure:
+    scopes:
+    - https://graph.microsoft.com/.default
+    explicitConfig:
+      workloadIdentity: {}
+```
+
+The configured scopes override hostname-based inference. Use the scope required by the backend, commonly the resource application ID URI followed by `/.default`. The identity must have permission to access the requested resource. Azure managed identity credentials support exactly one scope. Unlike the Kubernetes API server, the standalone binary does not reject a configuration that pairs `managedIdentity` with more than one scope; the request fails later, when Azure refuses to issue the token.
+{{< /version >}}
+
 {{< doc-test paths="backend-authn-azure" >}}
 # WHAT THIS TEST VALIDATES:
 #   * Every credential mode in the tabs above is accepted as a complete standalone config:
 #     implicit, developerImplicit, and all three explicitConfig sources, including each of the
 #     three userAssignedIdentity identifiers.
+#   * A Microsoft Graph scope is accepted as a sibling of explicitConfig.
 #   * The snake_case gotcha is real: the camelCase spelling of the clientSecret fields is rejected
 #     with the error that the warning quotes.
 #   * userAssignedIdentity is a one-of: naming two identifiers is rejected.
@@ -201,6 +220,16 @@ azure:
   explicitConfig:
     workloadIdentity: {}
 EOF
+
+{{< version exclude-if="1.5.x" >}}
+azure_case workload-identity-graph ok <<'EOF'
+azure:
+  scopes:
+  - https://graph.microsoft.com/.default
+  explicitConfig:
+    workloadIdentity: {}
+EOF
+{{< /version >}}
 
 # The gotcha the page warns about: camelCase inner fields are rejected.
 azure_case client-secret-camel fail <<'EOF'
