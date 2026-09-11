@@ -5,7 +5,7 @@
 |-----|------|-------------|
 | affinity | object | The affinity rules for scheduling the agentgateway proxy pod.<br/><br/>The default value is `{}`. |
 | commonLabels | object | Additional labels to add to all resources that the Helm chart creates.<br/><br/>The default value is `{}`. |
-| config | object | The standalone agentgateway configuration to serve, in the same format as a local agentgateway config file. Changes outside the nested 'config' section, plus 'config.modelCatalog', are applied without restarting the pods. Changes to other nested 'config' settings restart the pods because agentgateway reads them only at startup. The chart manages the 'config.storage' and 'config.database' sections for you based on the 'mode' value, so do not set them here.<br/><br/>The default value is `{}`. |
+| config | object | The standalone agentgateway configuration to serve, in the same format as a local agentgateway config file. The chart manages the 'config.storage' and 'config.database' sections for you based on the 'mode' value, so do not set them here.<br/><br/>The default value is `{}`. |
 | database.postgres.url | string | The PostgreSQL connection string that the the chart renders into the ConfigMap. Required in database mode.<br/><br/>The default value is `""`. |
 | dnsConfig | object | The DNS configuration for the agentgateway proxy pod, which is merged with the settings that the kubelet derives from the pod's dnsPolicy. For example, 'options: [{name: ndots, value: "3"}]'.<br/><br/>The default value is `{}`. |
 | extraContainers | list | Additional containers to run in the agentgateway proxy pod, such as a sidecar.<br/><br/>The default value is `[]`. |

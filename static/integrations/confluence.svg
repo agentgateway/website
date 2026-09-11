@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <defs>
+    <linearGradient id="confluence-a" x1="21.5" y1="21.5" x2="6" y2="17" gradientUnits="userSpaceOnUse">
+      <stop offset=".18" stop-color="#0052CC"/>
+      <stop offset="1" stop-color="#2684FF"/>
+    </linearGradient>
+    <linearGradient id="confluence-b" x1="2.5" y1="2.5" x2="18" y2="7" gradientUnits="userSpaceOnUse">
+      <stop offset=".18" stop-color="#0052CC"/>
+      <stop offset="1" stop-color="#2684FF"/>
+    </linearGradient>
+  </defs>
+  <path stroke="url(#confluence-a)" stroke-width="4.4" d="M2.4 21.6C5.1 16.2 9.7 15 14.3 17.3l7.3 3.6"/>
+  <path stroke="url(#confluence-b)" stroke-width="4.4" d="M21.6 2.4C18.9 7.8 14.3 9 9.7 6.7L2.4 3.1"/>
+</svg>

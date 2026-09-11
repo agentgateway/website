@@ -100,6 +100,8 @@ info	proxy::gateway	started bind	bind="bind/4000"
 
 Open the address from the log output, such as <http://localhost:4000/ui>, to get started.
 
+{{< reuse-image src="img/agentgateway-ui-landing.png" srcDark="img/agentgateway-ui-landing-dark.png" >}}
+
 {{% /steps %}}
 
 ## Run with Docker Compose {#compose}
@@ -153,6 +155,8 @@ agentgateway   {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-d
 ### Open the UI
 
 Open <http://localhost:4000/ui> to get started.
+
+{{< reuse-image src="img/agentgateway-ui-landing.png" srcDark="img/agentgateway-ui-landing-dark.png" >}}
 
 {{% /steps %}}
 
