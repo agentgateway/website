@@ -10,13 +10,13 @@ Each type of telemetry reaches Azure Monitor through a different path.
 
 Check that you have these resources and permissions before changing the cluster.
 
-- An existing AKS cluster with the agentgateway controller and a working Gateway API proxy. The examples use the documentation defaults in the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace with the `agentgateway-proxy` Gateway name.
+- An existing AKS cluster with [agentgateway installed]({{< link-hextra path="/documentation/install/" >}}) and a running [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}). The examples use the documentation defaults in the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace with the `agentgateway-proxy` Gateway name.
 - [OpenID Connect (OIDC) issuer](https://learn.microsoft.com/azure/aks/use-oidc-issuer) and [AKS Workload Identity](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster) enabled on the cluster.
 - [Azure Monitor managed service for Prometheus](https://learn.microsoft.com/azure/azure-monitor/containers/kubernetes-monitoring-enable) enabled on the cluster. Managed Prometheus queries require the built-in `Monitoring Data Reader` role on the linked Azure Monitor workspace.
 - [Container Insights](https://learn.microsoft.com/azure/azure-monitor/containers/container-insights-overview) enabled on the cluster with the `Microsoft-ContainerLogV2` stream and stdout collection enabled. Access-log queries require the built-in `Log Analytics Reader` role on its linked workspace.
 - Access logs that retain the default `http.status`, `trace.id`, and `duration` fields. The verification supports text and JSON log formats.
-- A working model or provider route through your existing Gateway, plus a representative request for that route. This guide does not create a provider or route.
-- Azure CLI, `kubectl`, `jq`, `curl`, and OpenSSL installed locally. Sign in to Azure and configure `kubectl` for the target cluster.
+- A working model or provider route through your existing Gateway, plus a representative request for that route. Follow the [OpenAI setup guide]({{< link-hextra path="/integrations/llm/providers/openai/" >}}) for an example that creates a provider and an HTTPRoute, or choose another [LLM provider]({{< link-hextra path="/integrations/llm/providers/" >}}).
+- Azure CLI (tested with version 2.85.0), `kubectl`, `jq`, `curl`, and OpenSSL installed locally. Sign in to Azure and configure `kubectl` for the target cluster.
 - `Contributor` on the resource group, or an equivalent custom role that grants create and read access to `Microsoft.OperationalInsights/workspaces`, `Microsoft.Insights/dataCollectionEndpoints`, `Microsoft.Insights/dataCollectionRules`, `Microsoft.ManagedIdentity/userAssignedIdentities`, and `Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`.
 - `Role Based Access Control Administrator`, `User Access Administrator`, or equivalent `Microsoft.Authorization/roleAssignments/read` and `Microsoft.Authorization/roleAssignments/write` permissions at the DCR scope. These permissions let you inspect and assign `Monitoring Metrics Publisher` for the Collector identity.
 - Kubernetes create and get access for the named `ServiceMonitor`, `PodMonitor`, `AgentgatewayPolicy`, `ServiceAccount`, `ConfigMap`, `Deployment`, `Service`, `NetworkPolicy`, and `ReferenceGrant` resources used by this guide.
@@ -812,6 +812,8 @@ Attach tracing to your existing Gateway with an {{< reuse "agw-docs/snippets/pol
 
 > [!IMPORTANT]
 > `randomSampling: "true"` samples requests that arrive without incoming trace context. Use this setting during verification. For an ongoing deployment, set `randomSampling` to `"false"` and send deliberate incoming sampled trace context, or choose a production sampling policy that fits your traffic and data-handling requirements. This guide does not validate either ongoing-deployment approach.
+
+`clientSampling: "true"` honors the sampled flag in an incoming W3C `traceparent` header. Keep it enabled for verification. Set `clientSampling` to `"false"` to prevent clients from requesting traces. Requests with sampled incoming trace context then remain untraced, even when `randomSampling` is `"true"`.
 
 Check that the tracing policy name is available and no other tracing policy targets the Gateway, then create the policy.
 
