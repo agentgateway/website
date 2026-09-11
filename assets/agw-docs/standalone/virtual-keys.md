@@ -55,7 +55,7 @@ flowchart TD
 {{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
 
 > [!NOTE]
-> You can manage virtual keys two ways: interactively in the built-in [UI]({{< link-hextra path="/documentation/operations/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes. The config file is the source of truth for GitOps workflows.
+> You can manage virtual keys two ways: interactively in the built-in [UI]({{< link-hextra path="/documentation/setup/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes. The config file is the source of truth for GitOps workflows.
 
 ## Set up virtual keys (UI)
 
