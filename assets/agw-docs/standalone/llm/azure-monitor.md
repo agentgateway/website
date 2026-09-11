@@ -18,7 +18,7 @@ Check that you have these resources and permissions before starting.
 - [Container Insights](https://learn.microsoft.com/azure/azure-monitor/containers/container-insights-overview) enabled on the cluster with the `Microsoft-ContainerLogV2` stream and stdout collection enabled.
 - Access logs that retain the default `http.status`, `trace.id`, and `duration` fields. The verification supports text and JSON log formats.
 - A working model, provider, and route through the existing release, along with a representative successful request. This guide does not create or change models, providers, or routes.
-- Azure CLI, `kubectl`, `jq`, `helm`, `curl`, and OpenSSL installed locally. Sign in to Azure and configure `kubectl` for the target cluster.
+- Azure CLI (tested with version 2.85.0), `kubectl`, `jq`, `helm`, `curl`, and OpenSSL installed locally. Sign in to Azure and configure `kubectl` for the target cluster.
 - Azure create, get, list, and update permissions for `Microsoft.OperationalInsights/workspaces`, `Microsoft.Insights/dataCollectionEndpoints`, `Microsoft.Insights/dataCollectionRules`, `Microsoft.ManagedIdentity/userAssignedIdentities`, and the fully qualified `Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials` resource type.
 - `Microsoft.ContainerService/managedClusters/read` for the AKS cluster.
 - `Microsoft.Authorization/roleAssignments/read` and `Microsoft.Authorization/roleAssignments/write` at the Data Collection Rule (DCR) scope.
@@ -724,6 +724,8 @@ EOF
 ## Configure standalone Helm values
 
 `randomSampling: true` samples every request that arrives without incoming trace context. This increases proxy overhead and Azure ingestion volume. Use it during verification. For ongoing use, choose a sampling policy for your traffic, such as `randomSampling: false` with sampled incoming trace context.
+
+`clientSampling: true` honors the sampled flag in an incoming W3C `traceparent` header. Keep it enabled for verification. Set `clientSampling` to `false` to prevent clients from requesting traces. Requests with sampled incoming trace context then remain untraced, even when `randomSampling` is `true`.
 
 ### 7. Back up Helm values and enable observability
 
