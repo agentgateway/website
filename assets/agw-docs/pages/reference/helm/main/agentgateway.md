@@ -72,13 +72,14 @@
 | istio.namespace | string | Namespace where the Istio control plane the controller integrates with is installed.    Defaults to "istio-system".<br/><br/>The default value is `""`. |
 | istio.network | string | Istio network for mesh-integrated gateways.<br/><br/>The default value is `""`. |
 | istio.revision | string | Revision of the Istio control plane the controller integrates with.   If unset, the default revision is used.<br/><br/>The default value is `""`. |
-| monitoring | object | Configure Prometheus and Grafana monitoring resources.<br/><br/>The default value is `{"enabled":false,"grafanaDashboard":{"enabled":true,"labels":{"grafana_dashboard":"1"}},"proxy":{"gatewayClassNames":["agentgateway"],"namespaceSelector":{},"podMonitor":{"enabled":true}},"serviceMonitor":{"enabled":true,"extraLabels":{},"interval":"15s"}}`. |
+| monitoring | object | Configure Prometheus and Grafana monitoring resources.<br/><br/>The default value is `{"enabled":false,"grafanaDashboard":{"enabled":true,"labels":{"grafana_dashboard":"1"}},"proxy":{"gatewayClassNames":["agentgateway"],"namespaceSelector":{},"podMonitor":{"enabled":true,"podTargetLabels":["gateway.networking.k8s.io/gateway-name"]}},"serviceMonitor":{"enabled":true,"extraLabels":{},"interval":"15s"}}`. |
 | monitoring.enabled | bool | Create monitoring resources (ServiceMonitors and Grafana dashboard ConfigMap). Requires the Prometheus Operator CRDs to be installed in the cluster.<br/><br/>The default value is `false`. |
 | monitoring.grafanaDashboard.enabled | bool | Create the Grafana dashboard ConfigMap.<br/><br/>The default value is `true`. |
 | monitoring.grafanaDashboard.labels | object | Labels that the Grafana sidecar uses to discover dashboards.<br/><br/>The default value is `{"grafana_dashboard":"1"}`. |
 | monitoring.proxy.gatewayClassNames | list | GatewayClass names whose proxy pods are selected by the proxy PodMonitor.<br/><br/>The default value is `["agentgateway"]`. |
 | monitoring.proxy.namespaceSelector | object | Namespace selector used by the proxy PodMonitor. Defaults to the release namespace only.<br/><br/>The default value is `{}`. |
 | monitoring.proxy.podMonitor.enabled | bool | Create a PodMonitor that scrapes provisioned proxy pods on the pod's    metrics port (15020) directly, without requiring a metrics port on the    provisioned Service.<br/><br/>The default value is `true`. |
+| monitoring.proxy.podMonitor.podTargetLabels | list | Pod labels copied onto scraped proxy metrics. The gateway name is required    by the bundled Grafana dashboard for gateway discovery and filtering.<br/><br/>The default value is `["gateway.networking.k8s.io/gateway-name"]`. |
 | monitoring.serviceMonitor.enabled | bool | Create the controller ServiceMonitor.<br/><br/>The default value is `true`. |
 | monitoring.serviceMonitor.extraLabels | object | Additional labels to add to the controller ServiceMonitor and the proxy PodMonitor (e.g. release: prometheus).<br/><br/>The default value is `{}`. |
 | monitoring.serviceMonitor.interval | string | Scrape interval for the controller ServiceMonitor and the proxy PodMonitor.<br/><br/>The default value is `"15s"`. |
