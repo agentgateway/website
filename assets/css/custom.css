@@ -5,6 +5,71 @@
     display: none !important;
 }
 
+/* ── Sticky-chrome offset for the docs-theme-extras docTabs band ───────────
+   docs-theme-extras >= v0.3.11 makes the docTabs band `position: sticky` and
+   pins it at `--solo-navbar-bottom`, which the module derives from HEXTRA's
+   navbar: `calc(var(--navbar-height, 4rem) + var(--hextra-banner-height, 0rem))`.
+   Neither term describes this site. The rule directly above hides Hextra's
+   navbar outright; the real one is `partials/nav.html`, a `position: fixed`
+   bar, and the real banner is `partials/announcement.html`, a separate fixed
+   bar at `--agw-banner-h`. So the module resolved 4rem + 2rem = 96px while this
+   site's chrome actually ends at 133px, and the band pinned 37px too high —
+   under the navbar, which paints over it at z-20 against the band's z-10. The
+   symptom was a band that slid ~24px up on first scroll and then held, with its
+   tab labels clipped off at the top.
+
+   The module's v0.3.11 notes say to override --solo-navbar-bottom rather than
+   --solo-rail-top: the rail offset is derived (`--solo-navbar-bottom` plus
+   `--solo-tabs-height`), so the sidebar and TOC follow from this one value, as
+   does heading scroll-margin-top.
+
+   --agw-navbar-h is DERIVED, not measured, so the arithmetic is auditable:
+   the logo is pinned to 60px by the `.navbar #logo` rule inside nav.html's
+   inline <style>, `py-4` adds 1rem above and below, and `border-b` adds 1px.
+   60 + 32 + 1 = 93px, which is what the navbar actually measures. If the logo
+   height, the vertical padding, or the border changes in nav.html, this goes
+   stale — docs-tabs-chrome.spec.ts in the docs-theme-extras harness asserts the
+   band sits flush on the navbar's real bottom edge, so it fails there rather
+   than quietly misaligning again.
+
+   The banner is dismissible: dismissing it removes `agw-has-banner` from <html>
+   and drops the navbar back to `top: 0`, so the offset has to lose the banner
+   term in step. Hence the two declarations rather than one. */
+:root {
+    --agw-navbar-logo-h: 60px;
+    --agw-navbar-h: calc(var(--agw-navbar-logo-h) + 2rem + 1px);
+    --solo-navbar-bottom: var(--agw-navbar-h);
+}
+
+html.agw-has-banner {
+    --solo-navbar-bottom: calc(var(--agw-navbar-h) + var(--agw-banner-h));
+}
+
+/* Flow clearance under the fixed navbar, for band pages only.
+   `partials/docs/chrome-top.html` reserves the navbar's height with `lg:pt-20`
+   (80px) on the wrapper, but the navbar is 93px, so the clearance has always
+   been 13px short. On an ordinary page that shortfall is invisible: the content
+   wrapper's own `agw-docs-topgap` adds 2.5rem on top of it. A docTabs page does
+   NOT get that gap — the module emits an inline `padding-top: 0.75rem` there
+   that beats the class rule — so the band starts its life 13px underneath the
+   navbar, and sticky then has to shove it back DOWN to its pin point. That
+   downward correction is motion too, which is why fixing --solo-navbar-bottom
+   alone would not have made the band hold still.
+
+   Scoped three ways on purpose. `body:has(.docs-tabs-band)` keeps every
+   band-less page on exactly the clearance it has today. The 1280px floor is
+   where the band exists at all (below it the module sets `display: none` and
+   moves the tabs into the sidebar drawer) and where `.desktop-navbar` takes
+   over from `.mobile-nav-bar`, which is a different height this value would be
+   wrong for. And the compound selector outranks Tailwind's `lg:pt-20` on
+   specificity, so this does not depend on custom.css winning on source order —
+   it does not: postcss-import hoists this file above Tailwind's utilities. */
+@media (min-width: 1280px) {
+    body:has(.docs-tabs-band) .agw-chrome-top {
+        padding-top: var(--agw-navbar-h);
+    }
+}
+
 /* Theme-toggle icon visibility — explicit fallback for the Tailwind v4
    hx:group-data-[theme=*]:hidden variant.  The v4 rule uses :is()/:where()
    which can lose the battle against Tailwind v3's svg{display:block} preflight
