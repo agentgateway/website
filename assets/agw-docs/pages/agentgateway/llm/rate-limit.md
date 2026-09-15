@@ -43,8 +43,8 @@ Review the following table for example use cases and configuration guidance.
 | Streaming-safe token limits | No special config — token limits are always applied post-stream. |
 | Hard token ceiling across the gateway | {{< reuse "agw-docs/snippets/policy.md" >}} targeting `Gateway`, `local[].tokens`. |
 | Per-minute vs per-hour budget | Change `unit` — use `Minutes` for tighter windows, `Hours` for daily-style quotas. |
-{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" %}}| Give each user or team its own budget | Add `local[].key`, such as `jwt.sub` or `jwt.team`. See [Per-user token budgets](#per-user). |{{% /version %}}
-{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" %}}| Separate budget per model | Add `local[].key` with `llm.requestModel` on a `tokens` limit. |{{% /version %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}| Give each user or team its own budget | Add `local[].key`, such as `jwt.sub` or `jwt.team`. See [Per-user token budgets](#per-user). |{{% /version %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}| Separate budget per model | Add `local[].key` with `llm.requestModel` on a `tokens` limit. |{{% /version %}}
 
 Also, check out the rate limiting guides for other use cases:
 
@@ -310,7 +310,7 @@ EOF
 
 This policy acts as a hard ceiling on total token consumption across the entire gateway, regardless of which route is hit.
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ## Per-user token budgets {#per-user}
 
 A token budget with no `key` is shared by every request on the target, so a single caller can spend the budget for everyone. Set `key` to a CEL expression to give each distinct value its own token bucket with the limits of that rule. This way, per-user, per-team, and per-model budgets do not require an external rate limit service.

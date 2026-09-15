@@ -239,7 +239,7 @@ EOF
 LLMs typically charge per input and output token. Without spending control, users can quickly generate large bills by submitting long prompts, streaming or retrying requests, or running recursive agent loops. To protect against unexpected bills, scaling surprises, and abuse, use token-based rate limits to cap the number of tokens that can be used.
 
 > [!WARNING]
-> `localRateLimit` is a **gateway-wide** limit, not a per-key limit. It enforces a single shared token budget across **all** requests and API keys.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" >}} To give each virtual key its own budget instead, add a `key` field to the rule, as shown in [Step 4](#per-key-budget).{{< /version >}}
+> `localRateLimit` is a **gateway-wide** limit, not a per-key limit. It enforces a single shared token budget across **all** requests and API keys.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} To give each virtual key its own budget instead, add a `key` field to the rule, as shown in [Step 4](#per-key-budget).{{< /version >}}
 
 ### How rate limiting works
 
@@ -420,7 +420,7 @@ For more information about rate limiting configuration options, see [Rate limits
    rate limit exceeded
    ```
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ### Step 4: Give each key its own budget {#per-key-budget}
 
 So far, all of the virtual keys share one token budget, so the busiest key exhausts the budget for everyone else. To give each key its own budget, add a `key` field to the rate limit rule. The `key` field takes a CEL expression, and each distinct value that the expression returns gets its own token bucket with the limits of that rule. Use `apiKey.user` to read the `user` metadata from the authenticated key.

@@ -207,7 +207,7 @@ Now that the control plane is up and running, verify the TLS connection.
    kgateway_xds_auth_rq_total 3
    ```
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 5. Check the certificate metrics to monitor the rotation of the xDS serving certificate. Because the control plane self-manages this certificate, these metrics are how you confirm that rotation keeps happening, and alert if it stops.
 
    ```sh

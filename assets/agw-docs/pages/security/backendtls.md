@@ -9,7 +9,7 @@ When you configure a TLS listener on your Gateway, the Gateway typically termina
 
 You can use the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} BackendTLSPolicy](https://gateway-api.sigs.k8s.io/reference/api-types/policy/backendtlspolicy/) to configure TLS origination from the Gateway to a service in the cluster. This policy supports simple, one-way TLS use cases. 
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ### CA certificate sources {#ca-sources}
 
 In a BackendTLSPolicy, the CA certificate that verifies the backend must come from a Kubernetes ConfigMap. The gateway rejects a `validation.caCertificateRefs` entry that refers to any other kind of resource.
@@ -26,7 +26,7 @@ The `tls.caCertificateRefs` field is available in each place that the {{< reuse 
 
 In this guide, you learn how to originate one-way TLS connections for the following services: 
 * [**In-cluster service**](#in-cluster-service): An NGINX server that is configured with a self-signed TLS certificate and deployed to the same cluster as the Gateway. You use a BackendTLSPolicy to originate TLS connections to NGINX. 
-* [**External service**](#external-service): The `httpbin.org` hostname, which represents an external service that you want to originate a TLS connection to. You use a BackendTLSPolicy resource to originate TLS connections to that hostname. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" >}}
+* [**External service**](#external-service): The `httpbin.org` hostname, which represents an external service that you want to originate a TLS connection to. You use a BackendTLSPolicy resource to originate TLS connections to that hostname. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 * [**CA certificate in a Secret**](#secret-ca): The same NGINX server, but with the CA certificate stored in a Kubernetes Secret instead of a ConfigMap. You use an {{< reuse "agw-docs/snippets/policy.md" >}} to originate TLS connections to NGINX.{{< /version >}}
 
 ## Before you begin
@@ -407,7 +407,7 @@ Set up an {{< reuse "agw-docs/snippets/backend.md" >}} resource that represents 
    }
    ```
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 
 ## CA certificate in a Secret {#secret-ca}
 
@@ -672,7 +672,7 @@ kubectl delete backendtlspolicy httpbin-org -n {{< reuse "agw-docs/snippets/name
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} httpbin-org -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ### CA certificate in a Secret
 
 ```sh {paths="backendtls-secret-ca"}
