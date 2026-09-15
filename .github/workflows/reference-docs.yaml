@@ -327,25 +327,6 @@ jobs:
           echo "CEL widget HTML generated successfully:"
           ls -la "${TARGET_DIR}/cel-context.html"
 
-      # Standalone-mode counterpart of the kubespec widgets above: the config file schema
-      # rather than the CRDs. content/docs/standalone/_content.gotmpl reads this file to
-      # build the "Configuration schema explorer" page, and warns (does not fail) when it
-      # is missing, so a skipped step here degrades to a page with no widget.
-      - name: Generate configuration schema widget HTML
-        run: |
-          CONFIG_SCHEMA="${GITHUB_WORKSPACE}/agentgateway/schema/config.json"
-          TARGET_DIR="${GITHUB_WORKSPACE}/website/assets/agw-docs/pages/reference/configuration/${{ matrix.link_version }}"
-          mkdir -p "$TARGET_DIR"
-
-          cd website/scripts/kubespec-render
-
-          echo "Generating interactive configuration schema widget HTML from schema/config.json..."
-          go run render.go -title "Configuration schema" "$CONFIG_SCHEMA" \
-            > "${TARGET_DIR}/config-schema.html"
-
-          echo "Configuration schema widget HTML generated successfully:"
-          ls -la "${TARGET_DIR}/config-schema.html"
-
       # Create PR: uses the default GITHUB_TOKEN (contents: write + pull-requests: write from
       # the permissions block at the top of this file). See that block for the CI implications.
       - name: Create PR for website repo
@@ -358,14 +339,14 @@ jobs:
             Generate reference documentation for agentgateway (${{ matrix.link_version }}).
 
             Source: agentgateway/agentgateway at `${{ matrix.ref }}`.
-            Updates API reference (including shared types such as CEL expression) and interactive kubespec widgets, the standalone configuration schema widget, Helm (agentgateway + agentgateway-crds for Kubernetes mode, agentgateway-standalone for standalone mode), control plane metrics, and the agctl CLI reference for the ${{ matrix.link_version }} version.
+            Updates API reference (including shared types such as CEL expression) and interactive kubespec widgets, Helm (agentgateway + agentgateway-crds for Kubernetes mode, agentgateway-standalone for standalone mode), control plane metrics, and the agctl CLI reference for the ${{ matrix.link_version }} version.
 
             This PR was created automatically by the reference-docs workflow.
 
             Workflow run: https://github.com/agentgateway/website/actions/runs/${{ github.run_id }}
           branch: ref-docs-${{ matrix.link_version }}
           commit-message: |
-            docs: update API (incl. shared types), kubespec + config schema widgets, Helm, metrics, and agctl CLI docs from agentgateway ${{ matrix.ref }}
+            docs: update API (incl. shared types), kubespec widgets, Helm, metrics, and agctl CLI docs from agentgateway ${{ matrix.ref }}
 
             Signed-off-by: GitHub Action <action@github.com>
           committer: GitHub Action <action@github.com>
