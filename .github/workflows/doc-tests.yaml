@@ -94,7 +94,20 @@ jobs:
           # MAX_ARG_STRLEN (128 KiB), and a PR touching a few thousand pages produces a
           # longer list than that, so execve fails with "Argument list too long" before
           # the next step's bash even starts. A file has no such cap.
-          printf '%s\n' $FILES > "${RUNNER_TEMP}/changed-files.txt"
+          #
+          # `> file` (truncate, don't write) when $FILES is empty: `printf '%s\n' $FILES`
+          # still runs its format string once with no files at all, writing a single
+          # blank line, which makes the file 1 byte. The next step's `[ -s file ]` check
+          # then reads it as "there's a list" and takes the `--file` branch with zero
+          # real entries, so `--file "${FILE_ARGS[@]}"` expands to a bare `--file` with
+          # nothing after it and doc_test_run.py errors on a missing argument. A PR that
+          # touches no content/*.md files (e.g. only go.mod, CSS, workflow files) hits
+          # this on every run.
+          if [ -n "$FILES" ]; then
+            printf '%s\n' $FILES > "${RUNNER_TEMP}/changed-files.txt"
+          else
+            : > "${RUNNER_TEMP}/changed-files.txt"
+          fi
           echo "$FILES" | tr ' ' '\n'
 
       - name: List test cases
