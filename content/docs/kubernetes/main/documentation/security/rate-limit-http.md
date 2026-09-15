@@ -12,7 +12,7 @@ test:
     path: install-httpbin
   - file: ${versionRoot}/documentation/security/rate-limit-http.md
     path: local-rate-limit
-  per-user-rate-limit:
+  claim-level-rate-limit:
   - file: ${versionRoot}/documentation/install/helm.md
     path: standard
   - file: ${versionRoot}/documentation/setup/gateway.md
@@ -20,7 +20,7 @@ test:
   - file: ${versionRoot}/documentation/install/sample-app.md
     path: install-httpbin
   - file: ${versionRoot}/documentation/security/rate-limit-http.md
-    path: per-user-rate-limit
+    path: claim-level-rate-limit
 ---
 
 {{< reuse "agw-docs/pages/security/rate-limit-http.md" >}}

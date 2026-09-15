@@ -1,15 +1,29 @@
-## Per-user rate limiting {#per-user}
+## Claim-level rate limits {#claim-level}
 
-The limit that you applied in the previous section is shared by every request on the route, so one busy client can exhaust it for everyone else. To give each client its own limit, set the `key` field to a CEL expression. Each distinct value that the expression returns gets its own token bucket with the limits of that rule, which means you can enforce per-user limits without an external rate limit service.
+Create claim-level rate limits with CEL expressions.
 
-1. Update the rate limit policy to key the limit on a user header. In production, prefer a value that the client cannot choose, such as the `jwt.sub` claim from a [JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/" >}}).
+The limit that you applied in the previous section is shared by every request on the route, so one busy client can exhaust it for everyone else. To limit each caller separately, set the `key` field to a CEL expression. Each distinct value that the expression returns gets its own token bucket with the limits of that rule. The expression typically reads a claim in a JWT, such as `jwt.sub` for a limit per user, `jwt.team` for a limit per team, or `jwt.sub + "/" + request.path` for a limit per user per path. This way, you can enforce claim-level limits without an external rate limit service.
 
-   ```yaml {paths="per-user-rate-limit"}
+In production, key the limit on a value that the client cannot choose, which means a claim from a [JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/" >}}) that targets the same route.
+
+```yaml
+    rateLimit:
+      local:
+      - requests: 2
+        unit: Minutes
+        key: jwt.sub
+```
+
+The following steps key the limit on a request header instead, so that you can see the behavior without an identity provider.
+
+1. Update the rate limit policy to key the limit on a user header.
+
+   ```yaml {paths="claim-level-rate-limit"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
-     name: httpbin-per-user-rate-limit
+     name: httpbin-claim-level-rate-limit
      namespace: httpbin
    spec:
      targetRefs:
@@ -25,15 +39,15 @@ The limit that you applied in the previous section is shared by every request on
    EOF
    ```
 
-   {{< doc-test paths="per-user-rate-limit" >}}
+   {{< doc-test paths="claim-level-rate-limit" >}}
    YAMLTest -f - <<'EOF'
-   - name: wait for the per-user rate limit policy to be accepted
+   - name: wait for the claim-level rate limit policy to be accepted
      wait:
        target:
          kind: AgentgatewayPolicy
          metadata:
            namespace: httpbin
-           name: httpbin-per-user-rate-limit
+           name: httpbin-claim-level-rate-limit
        jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
        jsonPathExpectation:
          comparator: equals
@@ -102,7 +116,7 @@ The limit that you applied in the previous section is shared by every request on
    bob request 3: HTTP 429
    ```
 
-   {{< doc-test paths="per-user-rate-limit" >}}
+   {{< doc-test paths="claim-level-rate-limit" >}}
    # Drain one user's bucket, then confirm that a different user still gets through.
    for i in $(seq 1 3); do
      curl -s -o /dev/null http://${INGRESS_GW_ADDRESS}:80/anything \
@@ -136,7 +150,7 @@ The limit that you applied in the previous section is shared by every request on
    EOF
    {{< /doc-test >}}
 
-Review the following behavior before you rely on a keyed limit.
+Review the following behavior before you rely on a claim-level limit.
 
 * **Requests without a value**: Requests whose key is empty, or whose expression cannot be evaluated, such as a request with no `x-user` header in this example, all share one bucket. An empty key does not exempt a request from the limit. To apply a limit to only some requests, use [conditional policies]({{< link-hextra path="/documentation/about/policies/conditional-policies" >}}) instead.
 * **How many buckets are kept**: Each rule keeps up to 65,536 buckets and drops the least recently used ones, which for that key is the same as never having been seen.
@@ -145,8 +159,8 @@ Review the following behavior before you rely on a keyed limit.
 
 For the variables that you can read in a key, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
 
-### Clean up the per-user policy
+### Clean up the claim-level policy
 
-```sh {paths="per-user-rate-limit"}
-kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-per-user-rate-limit -n httpbin
+```sh {paths="claim-level-rate-limit"}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-claim-level-rate-limit -n httpbin
 ```

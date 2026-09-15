@@ -145,7 +145,7 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
    | `requests` | Yes | Number of requests allowed per `unit`. |
    | `unit` | Yes | `Seconds`, `Minutes`, or `Hours`. |
    | `burst` | No | Extra requests allowed above the base rate in a short burst. The `burst` field implements a token bucket on top of the base rate. With `requests: 3, burst: 3`, you get up to 6 requests in one burst (3 base + 3 burst capacity), then the bucket refills at 3 per second. This absorbs short traffic spikes without rejecting requests. This setting only works with `requests`, not with `token` rate limits.|
-{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}   | `key` | No | CEL expression that selects the bucket a request counts against, such as `jwt.sub` for a per-user limit. Each distinct value gets its own bucket with the limits above. When unset, all requests on the target share one bucket. For more information, see [Per-user rate limiting](#per-user). |{{% /version %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}   | `key` | No | CEL expression that selects the bucket a request counts against, such as the `jwt.sub` claim for a limit per user. Each distinct value gets its own bucket with the limits above. When unset, all requests on the target share one bucket. For more information, see [Claim-level rate limits](#claim-level). |{{% /version %}}
 
 2. Verify that the policy is attached.
 
@@ -256,7 +256,7 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
    {{< /doc-test >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
-{{< reuse "agw-docs/pages/security/rate-limit-per-user.md" >}}
+{{< reuse "agw-docs/pages/security/rate-limit-claim-level.md" >}}
 {{< /version >}}
 
 ## Global rate limiting {#global}

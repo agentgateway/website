@@ -196,7 +196,7 @@ Local rate limiting uses a [Token bucket](https://en.wikipedia.org/wiki/Token_bu
 |`fillInterval`|How often to refill the bucket|
 |`tokensPerFill`|How many tokens to replenish per fill|
 |`type`|The type of rate limiting. Choose between `requests` for request-based rate limits, and `tokens` for token-based rate limits. |
-|`key`|Optional CEL expression that selects the bucket a request counts against, such as `jwt.sub` for a per-user limit. Each distinct value gets its own bucket with the limits above. When unset, all requests that the rule matches share one bucket. For more information, see [Per-key limits](#per-key).|
+|`key`|Optional CEL expression that selects the bucket a request counts against, such as the `jwt.sub` claim for a limit per user. Each distinct value gets its own bucket with the limits above. When unset, all requests that the rule matches share one bucket. For more information, see [Per-key limits](#per-key).|
 
 Below shows an example rate limit configuration that allows 5,000 tokens per hour, and 60 requests per second.
 
@@ -439,7 +439,7 @@ EOF
 agentgateway -f config-perkey.yaml --validate-only
 {{< /doc-test >}}
 
-Other common keys include `jwt.sub` for a per-user limit, `jwt.team` for a per-team limit, and `jwt.sub + "/" + llm.requestModel` to give each user a separate allowance per model.
+The expression can read anything in the request context. Common keys are the `jwt.sub` claim for a limit per user, `jwt.team` for a limit per team, and `jwt.sub + "/" + llm.requestModel` to give each user a separate allowance per model.
 
 Review the following behavior before you set a key.
 

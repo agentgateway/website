@@ -42,9 +42,9 @@ Review the following table for example use cases and configuration guidance.
 | Limit requests independently of tokens | Add a second `local[]` entry with `requests`. |
 | Streaming-safe token limits | No special config — token limits are always applied post-stream. |
 | Hard token ceiling across the gateway | {{< reuse "agw-docs/snippets/policy.md" >}} targeting `Gateway`, `local[].tokens`. |
-| Per-minute vs per-hour budget | Change `unit` — use `Minutes` for tighter windows, `Hours` for daily-style quotas. |
-{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}| Give each user or team its own budget | Add `local[].key`, such as `jwt.sub` or `jwt.team`. See [Per-user token budgets](#per-user). |{{% /version %}}
-{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}| Separate budget per model | Add `local[].key` with `llm.requestModel` on a `tokens` limit. |{{% /version %}}
+| Per-minute vs per-hour budget | Change `unit` — use `Minutes` for tighter windows, `Hours` for daily-style quotas. |{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}
+| Give each user or team its own budget | Add `local[].key`, such as `jwt.sub` or `jwt.team`. See [Claim-level budget limits](#claim-level). |
+| Separate budget per model | Add `local[].key` with `llm.requestModel` on a `tokens` limit. |{{% /version %}}
 
 Also, check out the rate limiting guides for other use cases:
 
@@ -284,7 +284,7 @@ This configuration enforces:
 
 Both limits apply to the same traffic. If either limit is exceeded, the request is rejected with a 429 response.
 
-## Gateway-level token limits {#gateway}
+## Gateway-level budget limits {#gateway}
 
 Apply a token budget across all LLM routes by targeting the Gateway resource.
 
@@ -311,18 +311,26 @@ EOF
 This policy acts as a hard ceiling on total token consumption across the entire gateway, regardless of which route is hit.
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
-## Per-user token budgets {#per-user}
+## Claim-level budget limits {#claim-level}
 
-A token budget with no `key` is shared by every request on the target, so a single caller can spend the budget for everyone. Set `key` to a CEL expression to give each distinct value its own token bucket with the limits of that rule. This way, per-user, per-team, and per-model budgets do not require an external rate limit service.
+Create claim-level budget limits with JWT authentication and CEL expressions.
 
-The following policy gives each authenticated user 60 requests per minute, each team 100,000 tokens per hour, and each user a separate allowance of 20,000 tokens per hour for each model that they call.
+A token budget without a `key` field is shared by every request on the target, so a single caller can spend the budget for everyone. Set `key` to a CEL expression to give each distinct value its own token bucket with the limits of that rule. The CEL expression checks against claims in a JWT. This way, per-user, per-team, and per-model budgets do not require an external rate limit service.
+
+Before you begin, create a [JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/" >}}) that targets the same backend that you want to rate limit, such as an OpenAI HTTPRoute in the following example. To key on a virtual key instead, use `apiKey.user_id`, as described in the [virtual keys guide]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
+
+The following policy sets up the following budgets: 
+
+* Each authenticated user 60 requests per minute.
+* Each team 100,000 tokens per hour.
+* Each user a separate allowance of 20,000 tokens per hour for each model that they call.
 
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
-  name: llm-per-user-budget
+  name: llm-claim-level-budget
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   targetRefs:
@@ -344,11 +352,9 @@ spec:
 EOF
 ```
 
-Every rule must admit the request, so a caller is rejected as soon as any one of their buckets is empty. Reading `jwt` claims requires a [JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/" >}}) on the same traffic. To key on a virtual key instead, use `apiKey.user_id`, as described in the [virtual keys guide]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
+Review the following behavior before you rely on claim-level budget limits.
 
-Review the following behavior before you rely on a keyed budget.
-
-* **When a key is evaluated**: A `requests` limit is checked before the LLM request body is parsed, so its key cannot read `llm` fields such as `llm.requestModel`. A `tokens` limit is charged after the body is parsed, so its key can read them. A key that reads a value that is not in its context falls back to the shared bucket.
+* **When a key is evaluated**: A `requests` limit is checked before the LLM request body is parsed, so its key cannot read `llm` fields such as `llm.requestModel`. A `tokens` limit is checked after the body is parsed, so its key can read the body tokens. A key that reads a value that is not in its context falls back to the shared bucket.
 * **How usage is settled**: A `tokens` limit charges an estimate when the request is admitted. After the response, the limit settles the real input and output counts against the same per-key bucket, exactly as it does for a single shared bucket.
 * **Requests without a value**: Requests whose key is empty, or whose expression cannot be evaluated, such as an unauthenticated request, all share one bucket. An empty key does not exempt a request from the limit. To apply a budget to only some requests, use [conditional policies]({{< link-hextra path="/documentation/about/policies/conditional-policies" >}}).
 * **Where buckets live**: Buckets are held in memory by a single proxy replica, and each rule keeps up to 65,536 of them, dropping the least recently used. For a budget that is shared across replicas, use [global rate limiting](#global).

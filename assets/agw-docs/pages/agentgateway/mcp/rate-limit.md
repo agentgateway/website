@@ -74,7 +74,7 @@ Review the following table for example use cases and configuration guidance.
 | Allow burst for session initialization | Add `burst` because each session needs several requests before the first tool call runs. |
 | Hard ceiling across all gateway traffic | {{< reuse "agw-docs/snippets/policy.md" >}} on `Gateway`, `local[].requests`. |
 | Per-tool rate limits (e.g. tighter for expensive tools) | Global rate limit + CEL descriptors extracting `body.method` and `body.params.name`. |
-{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}| Give each client its own limit | Add `local[].key`, such as `jwt.sub`. See [Per-client limits](#per-client). |{{% /version %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}| Give each caller its own limit | Add `local[].key`, such as `jwt.sub`. See [Claim-level rate limits](#claim-level). |{{% /version %}}
 | Combine auth + rate limiting | Apply both `mcp.authentication` and `traffic.rateLimit` in the same {{< reuse "agw-docs/snippets/policy.md" >}} or use separate policies. |
 
 Also, check out the rate limiting guides for other use cases:
@@ -208,16 +208,16 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
    The first 5 complete tool call sequences succeed before the rate limit is reached. After that, subsequent requests are rate limited.
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
-## Per-client limits {#per-client}
+## Claim-level rate limits {#claim-level}
 
-The limit in the previous section is shared by every client of the MCP server, so one agent that loops can lock out the rest. To give each client its own limit, set the `key` field to a CEL expression, such as the `jwt.sub` claim of the authenticated caller. Each distinct value gets its own token bucket with the limits of that rule.
+The limit in the previous section is shared by every client of the MCP server, so one agent that loops can lock out the rest. To limit each caller separately, set the `key` field to a CEL expression that reads a claim, such as `jwt.sub` for a limit per user or `jwt.team` for a limit per team. Each distinct value gets its own token bucket with the limits of that rule.
 
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
-  name: mcp-per-client-rate-limit
+  name: mcp-claim-level-rate-limit
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   targetRefs:
@@ -234,7 +234,7 @@ spec:
 EOF
 ```
 
-Size a keyed limit the same way as a shared one: the bucket counts HTTP requests, not tool calls, so each client still spends roughly 3 to 5 requests per tool call session. Reading `jwt` claims requires [MCP authentication]({{< link-hextra path="/documentation/mcp/auth/" >}}) on the same traffic. Clients whose key cannot be evaluated, such as unauthenticated callers, share one bucket. Buckets are held in memory by a single proxy replica. For more information about keyed limits, see [Per-user rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http/#per-user" >}}).
+Size a keyed limit the same way as a shared one: the bucket counts HTTP requests, not tool calls, so each client still spends roughly 3 to 5 requests per tool call session. Reading `jwt` claims requires [MCP authentication]({{< link-hextra path="/documentation/mcp/auth/" >}}) on the same traffic. Clients whose key cannot be evaluated, such as unauthenticated callers, share one bucket. Buckets are held in memory by a single proxy replica. For more information about keyed limits, see [Claim-level budget limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}).
 {{< /version >}}
 
 ## Per-tool rate limits with CEL descriptors {#global-per-tool}
