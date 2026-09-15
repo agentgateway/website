@@ -239,7 +239,7 @@ EOF
 LLMs typically charge per input and output token. Without spending control, users can quickly generate large bills by submitting long prompts, streaming or retrying requests, or running recursive agent loops. To protect against unexpected bills, scaling surprises, and abuse, use token-based rate limits to cap the number of tokens that can be used.
 
 > [!WARNING]
-> `localRateLimit` is a **gateway-wide** limit, not a per-key limit. It enforces a single shared token budget across **all** requests and API keys.
+> `localRateLimit` is a **gateway-wide** limit, not a per-key limit. It enforces a single shared token budget across **all** requests and API keys.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" >}} To give each virtual key its own budget instead, add a `key` field to the rule, as shown in [Step 4](#per-key-budget).{{< /version >}}
 
 ### How rate limiting works
 
@@ -419,6 +419,96 @@ For more information about rate limiting configuration options, see [Rate limits
    ```
    rate limit exceeded
    ```
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" >}}
+### Step 4: Give each key its own budget {#per-key-budget}
+
+So far, all of the virtual keys share one token budget, so the busiest key exhausts the budget for everyone else. To give each key its own budget, add a `key` field to the rate limit rule. The `key` field takes a CEL expression, and each distinct value that the expression returns gets its own token bucket with the limits of that rule. Use `apiKey.user` to read the `user` metadata from the authenticated key.
+
+1. Update your configuration to key the rate limit on the virtual key's user. This example returns to the configuration from [Step 1](#step-1-add-a-token-budget) and adds only the `key` field, so that you can compare the results with Step 2.
+
+   ```yaml
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+   llm:
+     policies:
+       apiKey:
+         mode: strict
+         keys:
+         - key: sk-alice-abc123def456
+           metadata:
+             user: alice
+         - key: sk-bob-xyz789uvw012
+           metadata:
+             user: bob
+       localRateLimit:
+       - maxTokens: 10
+         tokensPerFill: 1
+         fillInterval: 60s
+         type: tokens
+         key: apiKey.user
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   EOF
+   ```
+
+2. Restart agentgateway with the updated configuration.
+
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+3. Send requests with Alice's virtual key until the budget is exhausted.
+
+   ```sh
+   curl http://localhost:4000/v1/chat/completions \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer sk-alice-abc123def456' \
+     -d '{
+       "model": "gpt-3.5-turbo",
+       "messages": [
+         {
+           "role": "user",
+           "content": "Tell me a short story"
+         }
+       ]
+     }'
+   ```
+
+   Example output:
+   ```
+   rate limit exceeded
+   ```
+
+4. Send the same request with Bob's virtual key. Unlike in Step 2, the request succeeds, because Bob's key now has its own token bucket that Alice's requests do not draw from.
+
+   ```sh
+   curl http://localhost:4000/v1/chat/completions \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer sk-bob-xyz789uvw012' \
+     -d '{
+       "model": "gpt-3.5-turbo",
+       "messages": [
+         {
+           "role": "user",
+           "content": "Tell me a short story"
+         }
+       ]
+     }'
+   ```
+
+Review the following behavior before you rely on a keyed budget.
+
+* **Keys that cannot be evaluated**: Requests whose key is empty, or whose expression cannot be evaluated, such as an unauthenticated request when the key reads `apiKey.user`, all share one bucket. An empty key does not exempt a request from the limit.
+* **How many buckets are kept**: Each rule keeps up to 65,536 buckets and drops the least recently used ones. For a virtual key that was dropped, the next request starts from a full bucket.
+* **Where buckets live**: Buckets are held in memory by a single agentgateway instance, so each instance enforces the budget separately. For a budget that is shared across instances, use [remote rate limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/#remote" >}}).
+
+For more information, including how to key a limit on a JWT claim or on the requested model, see [Per-key limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/#per-key" >}}).
+{{< /version >}}
 
 ## Monitor per-key spending
 

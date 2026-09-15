@@ -363,8 +363,8 @@ When your identity provider runs outside the cluster (for example, Okta, Auth0, 
          sni: myorg.okta.com
    EOF
    ```
-   {{< version include-if="main" >}}
-   If your identity provider presents a certificate that is signed by a private CA, add `policies.tls.caCertificateRefs` to the {{< reuse "/agw-docs/snippets/backend.md" >}}. The certificate must be in a `ca.crt` key of a ConfigMap or a Secret in the same namespace as the {{< reuse "/agw-docs/snippets/backend.md" >}}. Omit `kind` to read the certificate from a ConfigMap, or set `kind: Secret` to read it from a Secret, such as a Secret that cert-manager issues.
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" >}}
+   If your identity provider presents a certificate that is signed by a private CA, add `policies.tls.caCertificateRefs` to the {{< reuse "/agw-docs/snippets/backend.md" >}}. The certificate must be in a ConfigMap or a Secret in the same namespace as the {{< reuse "/agw-docs/snippets/backend.md" >}}. Omit `kind` to read the certificate from a ConfigMap, or set `kind: Secret` to read it from a Secret, such as a Secret that cert-manager issues. The certificate is read from the `ca.crt` key, unless you set `key` to another key name.
 
    ```yaml
        policies:

@@ -196,6 +196,7 @@ Local rate limiting uses a [Token bucket](https://en.wikipedia.org/wiki/Token_bu
 |`fillInterval`|How often to refill the bucket|
 |`tokensPerFill`|How many tokens to replenish per fill|
 |`type`|The type of rate limiting. Choose between `requests` for request-based rate limits, and `tokens` for token-based rate limits. |
+|`key`|Optional CEL expression that selects the bucket a request counts against, such as `jwt.sub` for a per-user limit. Each distinct value gets its own bucket with the limits above. When unset, all requests that the rule matches share one bucket. For more information, see [Per-key limits](#per-key).|
 
 Below shows an example rate limit configuration that allows 5,000 tokens per hour, and 60 requests per second.
 
@@ -355,6 +356,96 @@ agentgateway -f config2-mcp.yaml --validate-only
 
 > [!NOTE]
 > The term "tokens" is used for two distinct meanings. In `maxTokens` and `tokensPerFill`, it indicates the "token" in the token bucket counter. Each token can allow either 1 LLM token, or 1 HTTP request, based on the `type`.
+
+#### Per-key limits {#per-key}
+
+By default, every request that a rule matches counts against the same bucket, so the busiest caller can exhaust the limit for everyone else. To limit each caller separately, set `key` to a CEL expression. Each distinct value that the expression returns gets its own bucket with the limits of that rule. This way, you can enforce per-user, per-team, or per-model quotas without running an external rate limit server.
+
+The following example builds on [API key authentication]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) and gives each virtual key its own budget of 1,000 LLM tokens per hour and its own limit of 60 requests per minute.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-alice-abc123def456
+        metadata:
+          user: alice
+      - key: sk-bob-xyz789uvw012
+        metadata:
+          user: bob
+    localRateLimit:
+    # Each API key gets its own budget of 1000 tokens per hour.
+    - maxTokens: 1000
+      tokensPerFill: 1000
+      fillInterval: 1h
+      type: tokens
+      key: apiKey.user
+    # Each API key also gets its own limit of 60 requests per minute.
+    - maxTokens: 60
+      tokensPerFill: 60
+      fillInterval: 60s
+      type: requests
+      key: apiKey.user
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+
+{{< doc-test paths="rate-limits" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The per-key example (two localRateLimit rules keyed on `apiKey.user`) is
+#     accepted by agentgateway, which also compiles each `key` as a CEL
+#     expression and fails validation if it does not compile.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * That each key gets its own bucket at runtime — requires an LLM backend and
+#     enough traffic per key to drain a bucket, which the page does not exercise.
+cat <<'EOF' > config-perkey.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-alice-abc123def456
+        metadata:
+          user: alice
+      - key: sk-bob-xyz789uvw012
+        metadata:
+          user: bob
+    localRateLimit:
+    # Each API key gets its own budget of 1000 tokens per hour.
+    - maxTokens: 1000
+      tokensPerFill: 1000
+      fillInterval: 1h
+      type: tokens
+      key: apiKey.user
+    # Each API key also gets its own limit of 60 requests per minute.
+    - maxTokens: 60
+      tokensPerFill: 60
+      fillInterval: 60s
+      type: requests
+      key: apiKey.user
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+EOF
+agentgateway -f config-perkey.yaml --validate-only
+{{< /doc-test >}}
+
+Other common keys include `jwt.sub` for a per-user limit, `jwt.team` for a per-team limit, and `jwt.sub + "/" + llm.requestModel` to give each user a separate allowance per model.
+
+Review the following behavior before you set a key.
+
+* **Where the key is evaluated**: A `requests` rule is checked before the LLM request body is parsed, so its key cannot read `llm` fields. A `tokens` rule is charged after the body is parsed, so its key can also read fields such as `llm.requestModel`. For the variables that each policy can read, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
+* **Requests without a value**: Requests whose key is empty, or whose expression cannot be evaluated, share a single bucket. An empty key does not exempt a request from the limit. To apply a limit to only some requests, use [conditional policies]({{< link-hextra path="/documentation/configuration/policies/conditional-policies/" >}}) instead.
+* **How many buckets are kept**: Each rule keeps up to 65,536 buckets and drops the least recently used ones, which for that key is the same as never having been seen. Buckets belong to the agentgateway instance that created them, so each instance enforces the limits separately. For a quota that is shared across instances, use [remote rate limits](#remote).
 
 ### Remote
 

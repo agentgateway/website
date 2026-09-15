@@ -2,6 +2,11 @@ Update the `api-key-auth` {{< reuse "agw-docs/snippets/policy.md" >}} from the p
 
 The policy sends a per-user token cost to the rate limit server. It extracts the `user_id` from each API key and reports the token usage of each response under that descriptor. The rate limit server holds the actual budget (100 tokens per day per user), which you deploy in the next step.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" >}}
+> [!NOTE]
+> This guide uses global rate limiting so that every proxy replica draws from the same budget. If you do not need the budget to be shared across replicas, you can skip the rate limit server and set `traffic.rateLimit.local[].key` to `apiKey.user_id` instead, which gives each virtual key its own in-memory budget. For more information, see [Per-user token budgets]({{< link-hextra path="/documentation/llm/rate-limit/#per-user" >}}).
+{{< /version >}}
+
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ```yaml,paths="virtual-keys-with-ratelimit"
 kubectl apply -f- <<EOF

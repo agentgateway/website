@@ -206,3 +206,30 @@ Now that the control plane is up and running, verify the TLS connection.
    # TYPE kgateway_xds_auth_rq_total counter
    kgateway_xds_auth_rq_total 3
    ```
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" >}}
+5. Check the certificate metrics to monitor the rotation of the xDS serving certificate. Because the control plane self-manages this certificate, these metrics are how you confirm that rotation keeps happening, and alert if it stops.
+
+   ```sh
+   curl -s localhost:9092/metrics | grep xds_cert
+   ```
+
+   Example output:
+
+   ```
+   # HELP agentgateway_xds_cert_expiry_seconds Expiry timestamp (Unix seconds) of the current xDS serving certificate
+   # TYPE agentgateway_xds_cert_expiry_seconds gauge
+   agentgateway_xds_cert_expiry_seconds 1.7895646e+09
+   # HELP agentgateway_xds_cert_rotation_total Total number of successful xDS certificate rotations
+   # TYPE agentgateway_xds_cert_rotation_total counter
+   agentgateway_xds_cert_rotation_total 1
+   ```
+
+   Review the following metrics to monitor certificate health.
+
+   | Metric | What to watch for |
+   |--------|-------------------|
+   | `agentgateway_xds_cert_expiry_seconds` | Alert when the value approaches the current time, such as `agentgateway_xds_cert_expiry_seconds - time() < 21600`, which is 6 hours of remaining lifetime. |
+   | `agentgateway_xds_cert_rotation_total` | A counter that increases each time the certificate is rotated successfully. |
+   | `agentgateway_xds_cert_rotation_errors_total` | A counter that increases each time a rotation fails. Any increase means the certificate is not being renewed. This metric appears only after the first failure. |
+{{< /version >}}

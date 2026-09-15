@@ -188,7 +188,7 @@ OpenTelemetry traces include token usage as span attributes. You can view per-re
 
 To enforce per-user spending limits, combine cost tracking with rate limiting:
 
-1. Set up token-based rate limiting with global rate limit descriptors that use `unit: Tokens`, keyed by a per-user value such as the `X-User-ID` header. See the [budget and spend limits guide]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}).
+1. Set up token-based rate limiting with global rate limit descriptors that use `unit: Tokens`, keyed by a per-user value such as the `X-User-ID` header. See the [budget and spend limits guide]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}).{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.1.x,2.2.x,2.3.x,2026.7.1,2026.9.x" >}} If the budget does not need to be shared across proxy replicas, set `local[].key` instead. This field enforces a per-user budget with no external rate limit service. See [Per-user token budgets]({{< link-hextra path="/documentation/llm/rate-limit/#per-user" >}}).{{< /version >}}
 
 2. Configure the daily token limit based on your budget. For example, a $10 daily budget for GPT-4 allows approximately 166,000 input tokens or 166,000 output tokens (assuming mixed usage).
 
