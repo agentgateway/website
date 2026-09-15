@@ -10,7 +10,7 @@ Additionally, you can set up local or global rate limiting, depending on whether
 
 | Mode | Where limits are enforced | Use case |
 |------|-----------------|----------|
-| Local | In-process, per proxy replica | Simple per-route or gateway-wide limits |
+| Local | In-process, per proxy replica | Simple per-route or gateway-wide limits{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}, and per-caller limits that do not need a shared count{{< /version >}} |
 | Global | External rate limit service | Shared limits across multiple proxy replicas |
 
 For AI-specific use cases, see:
@@ -145,6 +145,7 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
    | `requests` | Yes | Number of requests allowed per `unit`. |
    | `unit` | Yes | `Seconds`, `Minutes`, or `Hours`. |
    | `burst` | No | Extra requests allowed above the base rate in a short burst. The `burst` field implements a token bucket on top of the base rate. With `requests: 3, burst: 3`, you get up to 6 requests in one burst (3 base + 3 burst capacity), then the bucket refills at 3 per second. This absorbs short traffic spikes without rejecting requests. This setting only works with `requests`, not with `token` rate limits.|
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}   | `key` | No | CEL expression that selects the bucket a request counts against, such as the `jwt.sub` claim for a limit per user. Each distinct value gets its own bucket with the limits above. When unset, all requests on the target share one bucket. For more information, see [Claim-level rate limits](#claim-level). |{{% /version %}}
 
 2. Verify that the policy is attached.
 
@@ -254,6 +255,10 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
    EOF
    {{< /doc-test >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+{{< reuse "agw-docs/pages/security/rate-limit-claim-level.md" >}}
+{{< /version >}}
+
 ## Global rate limiting {#global}
 
 Local rate limiting runs independently on each proxy replica. If you run multiple agentgateway replicas and need a shared quota across the fleet, use global rate limiting backed by an external service such as [Envoy's rate limit service](https://github.com/envoyproxy/ratelimit).
@@ -272,6 +277,6 @@ To apply different rate limits based on the request, use the `conditional` field
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="local-rate-limit"}
+```sh {paths="local-rate-limit,claim-level-rate-limit"}
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-rate-limit -n httpbin
 ```
