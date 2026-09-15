@@ -592,7 +592,7 @@ A CA source does not have to store the certificate in the `ca.crt` key. Set the 
    Example output:
 
    ```
-   "message": "error extracting CA cert from Secret agentgateway-system/nginx-ca: missing key \"ca.crt\"",
+   "message": "error extracting CA cert from Secret agentgateway-system/nginx-ca-custom-key: missing key \"corporate-roots.pem\"",
    "reason": "PartiallyValid",
    ```
 

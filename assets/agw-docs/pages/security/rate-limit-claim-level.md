@@ -16,14 +16,14 @@ In production, key the limit on a value that the client cannot choose, which mea
 
 The following steps key the limit on a request header instead, so that you can see the behavior without an identity provider.
 
-1. Update the rate limit policy to key the limit on a user header.
+1. Update the `httpbin-rate-limit` policy from the previous section to key the limit on a user header. The rest of the policy is unchanged, so the route keeps one policy rather than gaining a second one.
 
    ```yaml {paths="claim-level-rate-limit"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
-     name: httpbin-claim-level-rate-limit
+     name: httpbin-rate-limit
      namespace: httpbin
    spec:
      targetRefs:
@@ -47,7 +47,7 @@ The following steps key the limit on a request header instead, so that you can s
          kind: AgentgatewayPolicy
          metadata:
            namespace: httpbin
-           name: httpbin-claim-level-rate-limit
+           name: httpbin-rate-limit
        jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
        jsonPathExpectation:
          comparator: equals
@@ -153,14 +153,7 @@ The following steps key the limit on a request header instead, so that you can s
 Review the following behavior before you rely on a claim-level limit.
 
 * **Requests without a value**: Requests whose key is empty, or whose expression cannot be evaluated, such as a request with no `x-user` header in this example, all share one bucket. An empty key does not exempt a request from the limit. To apply a limit to only some requests, use [conditional policies]({{< link-hextra path="/documentation/about/policies/conditional-policies" >}}) instead.
-* **How many buckets are kept**: Each rule keeps up to 65,536 buckets and drops the least recently used ones, which for that key is the same as never having been seen.
-* **Where buckets live**: Buckets are held in memory by a single proxy replica, so each replica enforces the limit separately. For a limit that is shared across replicas, use [global rate limiting](#global).
+* **How many buckets are kept, and where they live**: {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For a limit that is shared across replicas, use [global rate limiting](#global).
 * **Invalid expressions**: If the expression does not compile, the policy is accepted with the `PartiallyValid` reason, and the rest of the policy still applies. Check the policy status for the message `local rate limit key is not a valid CEL expression`.
 
 For the variables that you can read in a key, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
-
-### Clean up the claim-level policy
-
-```sh {paths="claim-level-rate-limit"}
-kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-claim-level-rate-limit -n httpbin
-```

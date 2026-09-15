@@ -277,6 +277,6 @@ To apply different rate limits based on the request, use the `conditional` field
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="local-rate-limit"}
+```sh {paths="local-rate-limit,claim-level-rate-limit"}
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-rate-limit -n httpbin
 ```

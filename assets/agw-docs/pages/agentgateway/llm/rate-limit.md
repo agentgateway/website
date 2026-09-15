@@ -319,7 +319,7 @@ A token budget without a `key` field is shared by every request on the target, s
 
 Before you begin, create a [JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/" >}}) that targets the same backend that you want to rate limit, such as an OpenAI HTTPRoute in the following example. To key on a virtual key instead, use `apiKey.user_id`, as described in the [virtual keys guide]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
 
-The following policy sets up the following budgets: 
+The following policy sets up these budgets:
 
 * Each authenticated user 60 requests per minute.
 * Each team 100,000 tokens per hour.
@@ -357,7 +357,7 @@ Review the following behavior before you rely on claim-level budget limits.
 * **When a key is evaluated**: A `requests` limit is checked before the LLM request body is parsed, so its key cannot read `llm` fields such as `llm.requestModel`. A `tokens` limit is checked after the body is parsed, so its key can read the body tokens. A key that reads a value that is not in its context falls back to the shared bucket.
 * **How usage is settled**: A `tokens` limit charges an estimate when the request is admitted. After the response, the limit settles the real input and output counts against the same per-key bucket, exactly as it does for a single shared bucket.
 * **Requests without a value**: Requests whose key is empty, or whose expression cannot be evaluated, such as an unauthenticated request, all share one bucket. An empty key does not exempt a request from the limit. To apply a budget to only some requests, use [conditional policies]({{< link-hextra path="/documentation/about/policies/conditional-policies" >}}).
-* **Where buckets live**: Buckets are held in memory by a single proxy replica, and each rule keeps up to 65,536 of them, dropping the least recently used. For a budget that is shared across replicas, use [global rate limiting](#global).
+* **How many buckets are kept, and where they live**: {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For a budget that is shared across replicas, use [global rate limiting](#global).
 {{< /version >}}
 
 ## Global rate limiting for LLMs {#global}

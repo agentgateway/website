@@ -74,8 +74,8 @@ Review the following table for example use cases and configuration guidance.
 | Allow burst for session initialization | Add `burst` because each session needs several requests before the first tool call runs. |
 | Hard ceiling across all gateway traffic | {{< reuse "agw-docs/snippets/policy.md" >}} on `Gateway`, `local[].requests`. |
 | Per-tool rate limits (e.g. tighter for expensive tools) | Global rate limit + CEL descriptors extracting `body.method` and `body.params.name`. |
-{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}| Give each caller its own limit | Add `local[].key`, such as `jwt.sub`. See [Claim-level rate limits](#claim-level). |{{% /version %}}
-| Combine auth + rate limiting | Apply both `mcp.authentication` and `traffic.rateLimit` in the same {{< reuse "agw-docs/snippets/policy.md" >}} or use separate policies. |
+| Combine auth + rate limiting | Apply both `mcp.authentication` and `traffic.rateLimit` in the same {{< reuse "agw-docs/snippets/policy.md" >}} or use separate policies. |{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}
+| Give each caller its own limit | Add `local[].key`, such as `jwt.sub`. See [Claim-level rate limits](#claim-level). |{{% /version %}}
 
 Also, check out the rate limiting guides for other use cases:
 
@@ -234,7 +234,7 @@ spec:
 EOF
 ```
 
-Size a keyed limit the same way as a shared one: the bucket counts HTTP requests, not tool calls, so each client still spends roughly 3 to 5 requests per tool call session. Reading `jwt` claims requires [MCP authentication]({{< link-hextra path="/documentation/mcp/auth/" >}}) on the same traffic. Clients whose key cannot be evaluated, such as unauthenticated callers, share one bucket. Buckets are held in memory by a single proxy replica. For more information about keyed limits, see [Claim-level budget limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}).
+Size a keyed limit the same way as a shared one: the bucket counts HTTP requests, not tool calls, so each client still spends roughly 3 to 5 requests per tool call session. Reading `jwt` claims requires [MCP authentication]({{< link-hextra path="/documentation/mcp/auth/" >}}) on the same traffic. Clients whose key cannot be evaluated, such as unauthenticated callers, share one bucket. {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For more information about keyed limits, see [Claim-level budget limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}).
 {{< /version >}}
 
 ## Per-tool rate limits with CEL descriptors {#global-per-tool}

@@ -28,7 +28,7 @@ Depending on the policy, different fields are accessible based on when in the re
 |Policy|Available Variables|
 |------|-------------------|
 |Transformation| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm` |
-|Remote Rate Limit| `source`, `request`, `jwt` |
+|Remote Rate Limit| `source`, `request`, `jwt`, `apiKey` |
 |Local Rate Limit key (`requests`)| `source`, `request`, `jwt`, `apiKey` — the rule is checked before the LLM request is parsed, so a key cannot read `llm`. |
 |Local Rate Limit key (`tokens`)| `source`, `request`, `jwt`, `apiKey`, `llm` — the rule is charged after the LLM request is parsed, so a key can read fields such as `llm.requestModel`. |
 |HTTP Authorization| `source`, `request`, `jwt` |

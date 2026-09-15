@@ -445,7 +445,7 @@ Review the following behavior before you set a key.
 
 * **Where the key is evaluated**: A `requests` rule is checked before the LLM request body is parsed, so its key cannot read `llm` fields. A `tokens` rule is charged after the body is parsed, so its key can also read fields such as `llm.requestModel`. For the variables that each policy can read, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
 * **Requests without a value**: Requests whose key is empty, or whose expression cannot be evaluated, share a single bucket. An empty key does not exempt a request from the limit. To apply a limit to only some requests, use [conditional policies]({{< link-hextra path="/documentation/configuration/policies/conditional-policies/" >}}) instead.
-* **How many buckets are kept**: Each rule keeps up to 65,536 buckets and drops the least recently used ones, which for that key is the same as never having been seen. Buckets belong to the agentgateway instance that created them, so each instance enforces the limits separately. For a quota that is shared across instances, use [remote rate limits](#remote).
+* **How many buckets are kept, and where they live**: {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For a quota that is shared across instances, use [remote rate limits](#remote).
 
 ### Remote
 
