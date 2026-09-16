@@ -1,8 +1,8 @@
-Export agentgateway metrics, access logs, and traces to Azure Monitor from Azure Kubernetes Service (AKS).
+Export agentgateway metrics, access logs, and traces to [Azure Monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/) from Azure Kubernetes Service (AKS).
 
 Each type of telemetry reaches Azure Monitor through a different path.
 
-- Azure Monitor managed Prometheus scrapes controller metrics through a `ServiceMonitor`. It scrapes the Gateway proxy through a `PodMonitor`.
+- Azure Monitor managed Prometheus scrapes controller (control plane) metrics through a `ServiceMonitor`, which discovers targets through the controller's metrics Service. The Gateway proxy (data plane) exposes metrics on each pod, while its Service exposes only traffic ports. A `PodMonitor` discovers and scrapes those pods directly.
 - Agentgateway writes structured access logs to stdout. Container Insights collects the proxy container's stdout and stores each record in the `ContainerLogV2` table in Log Analytics.
 - An {{< reuse "agw-docs/snippets/policy.md" >}} sends traces over OpenTelemetry Protocol (OTLP) and gRPC to an in-cluster OpenTelemetry Collector. The Collector authenticates with AKS Workload Identity and sends OTLP over HTTP to Azure Monitor native ingestion, which stores the spans in Log Analytics' `OTelSpans` table.
 
