@@ -3,7 +3,7 @@
 This integration is distinct from using vLLM as an inference provider. vSR provides the model-selection policy while your configured backend serves the selected model.
 
 {{< conditional-text include-if="kubernetes" >}}
-For inference with vLLM, see [vLLM as an inference provider]({{< link-hextra path="/integrations/llm/providers/vllm/" >}}). Kubernetes backends can also use a Service or InferencePool.
+For inference with vLLM, see [vLLM as an inference provider]({{< link-hextra path="/integrations/llm/providers/vllm/" >}}).
 {{< /conditional-text >}}
 {{< conditional-text include-if="standalone" >}}
 For inference with vLLM, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
