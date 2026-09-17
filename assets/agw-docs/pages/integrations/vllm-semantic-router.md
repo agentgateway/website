@@ -20,7 +20,7 @@ The following flow applies to both standalone and Kubernetes deployments.
 2. **Select a model:** vSR evaluates its configured [signals](https://vllm-sr.ai/docs/tutorials/signal/overview), such as prompt content or caller tier, and returns a processing response that updates the request's `model` field.
 3. **Forward the request:** Agentgateway uses the selected model to choose a configured backend, applies gateway policies such as model authorization, and forwards the request for inference. Agentgateway records usage and latency for observability.
 
-When semantic caching is enabled, vSR can return a cached completion through ExtProc, allowing agentgateway to respond without calling the backend.
+When [response caching](https://vllm-sr.ai/docs/tutorials/plugin/response-cache/) is enabled, vSR can return a cached completion through ExtProc, allowing agentgateway to respond without calling the backend.
 
 ## Choose an integration path
 
