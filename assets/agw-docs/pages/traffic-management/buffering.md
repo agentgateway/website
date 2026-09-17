@@ -3,9 +3,29 @@ Fine-tune connection speeds for read and write operations by setting a connectio
 
 ## About buffer limits
 
-By default, {{< reuse "/agw-docs/snippets/agentgateway.md" >}} allows up to 2 MiB of HTTP body to be buffered into memory for each gateway.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} Requests that enter LLM processing use a larger default of 32 MiB, because a single large-context prompt can exceed the general-traffic limit on its own. Setting `maxBufferSize` yourself replaces both defaults, so a value that suits general traffic also applies to LLM requests.{{< /version >}} For large requests that must be buffered and that exceed the default buffer limit, {{< reuse "/agw-docs/snippets/agentgateway.md" >}} either disconnects the connection to the downstream service if headers were already sent, or returns a 413 HTTP response code. To make sure that large requests can be sent and received, you can specify the maximum number of bytes that can be buffered between the gateway and the downstream service. Alternatively, when using {{< reuse "/agw-docs/snippets/agentgateway.md" >}} as an edge proxy, configuring the buffer limit can be important when dealing with untrusted downstreams. By setting the limit to a small number, such as 32768 bytes (32KiB), you can better guard against potential attacks or misconfigured downstreams that could excessively use the proxy's resources.
+By default, {{< reuse "/agw-docs/snippets/agentgateway.md" >}} allows up to 2 MiB of HTTP body to be buffered into memory for each gateway.
 
-The buffer limit is configured at the Gateway level via a {{< reuse "agw-docs/snippets/policy.md" >}}.
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+Requests that are routed to an LLM backend are the exception and use a larger default of 32 MiB, because a single large-context prompt can exceed the general-traffic limit on its own.
+
+| Buffering happens | Default limit |
+|-|-|
+| Before the request is routed anywhere | 2 MiB |
+| After the request is routed to an LLM backend | 32 MiB |
+
+For example, a policy that runs in the `PreRouting` phase buffers before route selection, so it uses the 2 MiB limit even when the request is bound for an LLM backend.
+{{% /version %}}
+
+For large requests that must be buffered and that exceed the default buffer limit, {{< reuse "/agw-docs/snippets/agentgateway.md" >}} either disconnects the connection to the downstream service if headers were already sent, or returns a 413 HTTP response code. To make sure that large requests can be sent and received, you can use `maxBufferSize` to specify the maximum number of bytes that can be buffered between the gateway and the downstream service. The buffer limit is configured at the Gateway level via a {{< reuse "agw-docs/snippets/policy.md" >}}.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} The value that you set replaces both defaults, so LLM requests use that value instead of 32 MiB.{{< /version >}}
+
+### Choose a buffer limit
+
+The value you choose depends on how large a body your policies must be able to read and how much memory you are willing to spend on buffering.
+
+- **Set it at least as large as the largest body that a policy must inspect.** A policy that needs a complete body cannot act on a body that exceeds the limit, so the request fails instead of being evaluated. Body-based authorization and an external processor that runs in a buffered mode are the common cases.
+- **Account for concurrency, not a single request.** The limit applies to each buffered request, so the worst case is roughly the limit multiplied by the number of requests that buffer at the same time. A generous limit on a busy gateway is a larger commitment than it appears.
+- **Set a small limit when the gateway faces untrusted downstreams.** When using {{< reuse "/agw-docs/snippets/agentgateway.md" >}} as an edge proxy, a small number such as 32768 bytes (32KiB) better guards against potential attacks or misconfigured downstreams that could excessively use the proxy's resources.
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,2.2.x" %}}- **Keep the Gateway limit conservative and raise it only where it is needed.** A [route-level buffer policy]({{< link-hextra path="/documentation/traffic-management/buffer/" >}}) defaults to the Gateway setting, so you can leave the shared limit low and lift it on the routes that carry large bodies.{{% /version %}}
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
