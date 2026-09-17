@@ -889,14 +889,19 @@ func renderTree(pm *propertyMap, scope string, level int, path, widgetID string,
 		typeCls := typeClass(prop.propType, hasChildren)
 		typeHTML := fmt.Sprintf(`<span class="ks-type %s">%s</span>`, typeCls, esc(prop.propType))
 		typeControl := fmt.Sprintf(`<span class="ks-type-toggle">%s</span>`, typeHTML)
+		// A field with children is opened by clicking anywhere on its row, so the
+		// row carries the target too. The type badge stays a real button: it is
+		// what keyboard users reach, and aria-expanded rides on it.
+		rowTarget := ""
 		if hasChildren {
-			typeControl = fmt.Sprintf(`<button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="%s">%s</button>`,
-				esc(childrenID), typeHTML)
+			typeControl = fmt.Sprintf(`<button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="%s" aria-controls="%s" aria-expanded="false">%s</button>`,
+				esc(childrenID), esc(childrenID), typeHTML)
+			rowTarget = fmt.Sprintf(` data-ks-children-target="%s"`, esc(childrenID))
 		}
 		*panelTemplates = append(*panelTemplates, renderFieldPanel(nodeID, searchPath, prop, isRequired, docsByPath[normalizePath(searchPath)]))
 
 		fmt.Fprintf(b, `<li class="ks-row" data-ks-path="%s">`, esc(searchPath))
-		fmt.Fprintf(b, `<div class="ks-row-line" id="%s" data-ks-node-id="%s" data-ks-path="%s">`, esc(nodeID), esc(nodeID), esc(searchPath))
+		fmt.Fprintf(b, `<div class="ks-row-line" id="%s" data-ks-node-id="%s" data-ks-path="%s"%s>`, esc(nodeID), esc(nodeID), esc(searchPath), rowTarget)
 		fmt.Fprintf(b, `<span class="ks-name-toggle">%s<span class="ks-name">%s</span></span>`,
 			reqMark, esc(name))
 		b.WriteString(typeControl)
@@ -1460,7 +1465,12 @@ func renderSearchScript(hostID, templateID string, searchIndex []searchEntry) st
     panelTemplateByID.set(element.getAttribute("data-ks-field-panel"), element);
   });
   const entryByPath = new Map(entries.map((entry) => [normalize(entry.path), entry]));
-  const typeButtons = shadow.querySelectorAll("[data-ks-children-target]");
+  // Rows carry data-ks-children-target too, so scope this to the badge itself.
+  const typeButtons = shadow.querySelectorAll(".ks-type-toggle[data-ks-children-target]");
+  const toggleByTarget = new Map();
+  typeButtons.forEach((element) => {
+    toggleByTarget.set(element.getAttribute("data-ks-children-target"), element);
+  });
 
   let matches = [];
   let activeIndex = -1;
@@ -1626,11 +1636,26 @@ func renderSearchScript(hostID, templateID string, searchIndex []searchEntry) st
     }
   }
 
+  // Single place that opens or closes a subtree, so the badge's aria-expanded
+  // can never drift out of step with what the tree is actually showing. Every
+  // path that changes visibility (row click, badge, ctrl-click, search, deep
+  // links) goes through here.
+  function setChildrenOpen(container, open) {
+    if (!container) {
+      return;
+    }
+    container.hidden = !open;
+    const toggle = toggleByTarget.get(container.id);
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+  }
+
   function revealNode(node) {
     let current = node;
     while (current && current !== root) {
       if (current.hasAttribute && current.hasAttribute("data-ks-children-container")) {
-        current.hidden = false;
+        setChildrenOpen(current, true);
       }
       current = current.parentElement;
     }
@@ -1699,7 +1724,7 @@ func renderSearchScript(hostID, templateID string, searchIndex []searchEntry) st
     }
     const shouldOpen = childContainers.some((candidate) => candidate.hasAttribute("hidden"));
     childContainers.forEach((candidate) => {
-      candidate.hidden = !shouldOpen;
+      setChildrenOpen(candidate, shouldOpen);
     });
   }
 
@@ -1763,7 +1788,7 @@ func renderSearchScript(hostID, templateID string, searchIndex []searchEntry) st
       }
       const children = childrenByID.get(typeButton.getAttribute("data-ks-children-target"));
       if (children) {
-        children.hidden = !children.hidden;
+        setChildrenOpen(children, children.hidden);
       }
     });
   });
@@ -1782,6 +1807,12 @@ func renderSearchScript(hostID, templateID string, searchIndex []searchEntry) st
     }
     if (event.ctrlKey || event.metaKey) {
       return;
+    }
+    // Clicking the field itself opens or closes it. Selecting still happens, so
+    // one click both reveals the children and puts the field in the detail pane.
+    const children = childrenByID.get(selectable.getAttribute("data-ks-children-target"));
+    if (children) {
+      setChildrenOpen(children, children.hidden);
     }
     setHash(path);
     const entry = entryByPath.get(normalize(path));
