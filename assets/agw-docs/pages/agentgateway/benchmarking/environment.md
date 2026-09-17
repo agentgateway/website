@@ -1,0 +1,47 @@
+## Test environment
+
+This campaign compares EPP-based agentgateway routing with a plain Kubernetes
+Service across the same eight vLLM model servers. The published reports call the
+Service baseline `k8s service (RR)` (round-robin). It uses no EPP or scoring to route inference requests to a model server endpoint.
+
+This campaign uses the [`optimized-baseline-qwen3-32b-h100-v0.9` reference profile](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/suites/llm-d-benchmark/references/optimized-baseline-qwen3-32b-h100-v0.9.yaml),
+based on llm-d's [Optimized Baseline](https://llm-d.ai/docs/well-lit-paths/foundations/optimized-baseline).
+The agentgateway treatments use approximate prefix-cache affinity and token-load
+scoring to select model-server endpoints.
+
+**Prefill/decode (P/D) disaggregation is not used.** Each vLLM replica handles both
+prefill and decode. The [comparison configuration](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/suites/llm-d-benchmark/scenarios/defaults/agentgateway-comparison.yaml)
+disables separate prefill replicas and the P/D routing sidecar, so all treatments
+use the same model-server topology. These results compare routing within that
+topology, rather than measuring the effects of P/D disaggregation.
+
+The table summarizes the published campaign. See the [campaign manifest](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/campaign-manifest.yaml)
+for configuration details and the [campaign provenance](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/campaign-provenance.yaml)
+for execution times and shared configuration hashes.
+
+| Setting | Value |
+| --- | --- |
+| Cluster provider | `gke` (Google Kubernetes Engine) |
+| Accelerator type and model | NVIDIA H100 GPU (`gpu`, `h100`) |
+| Total accelerators | 16 GPUs (8 replicas × 2 GPUs per replica) |
+| Backend type | `vllm` |
+| Model | `Qwen/Qwen3-32B` |
+
+{{< callout type="info" >}}
+These are published results for agentgateway **v1.4.1**, regardless of the docs
+version selected. They describe this campaign's configuration and workload;
+they are not measurements of every release or a guarantee for other workloads.
+{{< /callout >}}
+
+### Workload
+
+The [workload configuration](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/suites/llm-d-benchmark/workloads/upstream-optimized-baseline.yaml.in)
+uses streaming completion requests with the following settings:
+
+- **Arrival pattern:** Randomized (Poisson).
+- **Request timeout:** 300 seconds.
+- **Shared-prefix groups:** 150 groups with five prompts per group.
+- **Prompt lengths:** 6,000 tokens for the shared system prompt and 1,200 tokens for the question.
+- **Target output length:** 1,000 tokens.
+- **Multi-turn chat:** Disabled.
+- **Requested rates:** 3–60 requests/s across the measured stages, after warm-up.
