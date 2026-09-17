@@ -11,27 +11,16 @@ For inference with vLLM, see [Custom providers]({{< link-hextra path="/integrati
 
 ## How the integration works
 
-Agentgateway sends the request to vSR for model selection. vSR evaluates its configured signals and returns a model decision. Agentgateway enforces model access, forwards the request to the selected backend, and records telemetry. The following diagram shows this flow in both standalone and Kubernetes modes.
+The following flow applies to both standalone and Kubernetes deployments.
 
 {{< reuse-image-light src="img/integrations/vllm-semantic-router-flow.svg" alt="A client sends a request to agentgateway. Agentgateway exchanges the request and model decision with vLLM Semantic Router through ExtProc, enforces model access, forwards to the selected backend, and records telemetry." >}}
 {{< reuse-image-dark srcDark="img/integrations/vllm-semantic-router-flow.svg" alt="A client sends a request to agentgateway. Agentgateway exchanges the request and model decision with vLLM Semantic Router through ExtProc, enforces model access, forwards to the selected backend, and records telemetry." >}}
 
-The request follows these component boundaries:
+1. **Process the request:** A client sends an LLM request to agentgateway, which calls vSR as an {{< conditional-text include-if="kubernetes" >}}[external processor (ExtProc)]({{< link-hextra path="/documentation/traffic-management/extproc/" >}}){{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}[external processor (ExtProc)]({{< link-hextra path="/documentation/configuration/traffic-management/extproc/" >}}){{< /conditional-text >}} before model selection.
+2. **Select a model:** vSR evaluates its configured signals, such as prompt content or caller tier, and returns a processing response that updates the request's `model` field.
+3. **Forward the request:** Agentgateway uses the selected model to choose a configured backend, applies gateway policies such as model authorization, and forwards the request for inference. Agentgateway records usage and latency for observability.
 
-1. A client sends a supported request to agentgateway.
-2. Agentgateway calls vSR as an external processor (ExtProc) before selecting the model.
-3. vSR evaluates its configured signals. It returns the selected model in its processing response.
-4. Agentgateway applies the routing decision and forwards the request to the configured provider or inference workload.
-5. Agentgateway records the requested and selected models alongside usage, latency, and optional catalog-priced cost data.
-
-{{< conditional-text include-if="kubernetes" >}}
-The [Kubernetes tier-aware routing example with one runtime](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/k8s/tier-aware-single-runtime) uses vSR to select models based on the caller's tier and request content. A Gateway-level {{< reuse "agw-docs/snippets/policy.md" >}} calls vSR during `PreRouting`. After vSR rewrites the request body's `model` field, `AgentgatewayModel` routing selects the provider and enforces model access. `HTTPRoute` matching occurs earlier and cannot use model or header changes produced by this ExtProc call to select a provider.
-{{< /conditional-text >}}
-{{< conditional-text include-if="standalone" >}}
-The [standalone tier-aware routing example](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing/standalone/tier-aware-single-runtime) uses one vSR runtime to select models based on the caller's tier and request content. Its `llm.policies.extProc` configuration calls vSR before model selection. vSR rewrites the request body's `model` field, and agentgateway selects the matching entry in `llm.models`. Each model's `authorization` rules enforce access after selection, including when a client explicitly requests a model. For external-processing configuration, see [External processing]({{< link-hextra path="/documentation/configuration/traffic-management/extproc/" >}}).
-{{< /conditional-text >}}
-
-When semantic caching is enabled, vSR can instead return a cached completion as an immediate ExtProc response. Agentgateway returns the response to the client without calling the configured backend.
+When semantic caching is enabled, vSR can return a cached completion through ExtProc, allowing agentgateway to respond without calling the backend.
 
 ## Choose an integration path
 
