@@ -46,6 +46,20 @@ mcp:
       args: ["@modelcontextprotocol/server-everything"]
 ```
 {{< /tab >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  port: 3000
+  policies:
+    timeout:
+      requestTimeout: 30s
+      responseIdleTimeout: 5s
+  models:
+  - name: gpt-4o-mini
+    provider: openai
+```
+{{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -64,11 +78,17 @@ routes:
 
 {{< doc-test paths="timeouts" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The route-level timeout policy is accepted by agentgateway in both the
-#     routing-based (gateways) and simplified MCP (mcp.policies) forms.
+#   * The route-level timeout policy is accepted by agentgateway in all three
+#     forms the page shows: routing-based (gateways), simplified MCP
+#     (mcp.policies) and simplified LLM (llm.policies).
+#   * That `responseIdleTimeout` is a real field on both the routing-based and
+#     the simplified LLM forms. It is the newest of the three timeouts, so a
+#     rename upstream would otherwise reach the page as prose nobody can run.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests actually time out at runtime — requires a slow backend the
 #     page omits to exceed the configured deadline.
+#   * That the idle window genuinely restarts per body frame — needs a streaming
+#     backend that stalls mid-response, which no fixture here provides.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -78,6 +98,7 @@ routes:
 - policies:
     timeout:
       requestTimeout: 1s
+      responseIdleTimeout: 30s
   backends:
   - host: localhost:8080
 EOF
@@ -97,6 +118,20 @@ mcp:
       args: ["@modelcontextprotocol/server-everything"]
 EOF
 agentgateway -f config-mcp.yaml --validate-only
+
+cat <<'EOF' > config-llm.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  port: 3000
+  policies:
+    timeout:
+      requestTimeout: 30s
+      responseIdleTimeout: 5s
+  models:
+  - name: gpt-4o-mini
+    provider: openai
+EOF
+agentgateway -f config-llm.yaml --validate-only
 {{< /doc-test >}}
 
 ## Backend Timeouts
