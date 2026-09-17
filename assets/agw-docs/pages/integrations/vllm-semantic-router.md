@@ -17,7 +17,7 @@ The following flow applies to both standalone and Kubernetes deployments.
 {{< reuse-image-dark srcDark="img/integrations/vllm-semantic-router-flow.svg" alt="A client sends a request to agentgateway. Agentgateway exchanges the request and model decision with vLLM Semantic Router through ExtProc, enforces model access, forwards to the selected backend, and records telemetry." >}}
 
 1. **Process the request:** A client sends an LLM request to agentgateway, which calls vSR as an {{< conditional-text include-if="kubernetes" >}}[external processor (ExtProc)]({{< link-hextra path="/documentation/traffic-management/extproc/" >}}){{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}[external processor (ExtProc)]({{< link-hextra path="/documentation/configuration/traffic-management/extproc/" >}}){{< /conditional-text >}} before model selection.
-2. **Select a model:** vSR evaluates its configured signals, such as prompt content or caller tier, and returns a processing response that updates the request's `model` field.
+2. **Select a model:** vSR evaluates its configured [signals](https://vllm-sr.ai/docs/tutorials/signal/overview), such as prompt content or caller tier, and returns a processing response that updates the request's `model` field.
 3. **Forward the request:** Agentgateway uses the selected model to choose a configured backend, applies gateway policies such as model authorization, and forwards the request for inference. Agentgateway records usage and latency for observability.
 
 When semantic caching is enabled, vSR can return a cached completion through ExtProc, allowing agentgateway to respond without calling the backend.
