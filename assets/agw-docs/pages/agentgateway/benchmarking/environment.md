@@ -31,8 +31,7 @@ for execution times and shared configuration hashes.
 
 {{< callout type="info" >}}
 These are published results for agentgateway **v1.4.1**, regardless of the docs
-version selected. They describe this campaign's configuration and workload;
-they are not measurements of every release or a guarantee for other workloads.
+version selected.
 {{< /callout >}}
 
 ### Workload
