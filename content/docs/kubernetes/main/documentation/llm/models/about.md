@@ -377,7 +377,7 @@ The path in the URL is the base path for the upstream request, and the endpoint 
 | `https://api.openai.com/v1` | `https://api.openai.com/v1/chat/completions` |
 | `https://api.openai.com` | `https://api.openai.com/chat/completions` |
 
-OpenAI serves its API under `/v1`, so `https://api.openai.com` on its own sends requests to a path that the provider does not serve. This behavior changed in 1.6, so see the [release notes]({{< link-hextra path="/release-notes/release-notes/#v16-baseurl-base-path" >}}) if you set a base URL with no path on an earlier version.
+OpenAI serves its API under `/v1`, so `https://api.openai.com` on its own sends requests to a path that the provider does not serve.
 
 ## Virtual models
 
