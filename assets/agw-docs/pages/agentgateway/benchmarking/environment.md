@@ -1,7 +1,6 @@
 ## Test environment
 
-This {{< gloss "Benchmark campaign" >}}campaign{{< /gloss >}} compares EPP-based agentgateway routing with a plain Kubernetes
-Service across the same eight vLLM model servers.
+This {{< gloss "Benchmark campaign" >}}campaign{{< /gloss >}} compares EPP-based agentgateway routing with a plain Kubernetes Service across eight vLLM model servers. It uses no [EPP](https://llm-d.ai/docs/architecture/core/router#llm-d-endpoint-picker-epp) or [scoring](https://llm-d.ai/docs/architecture/core/router/epp/configuration#plugins) to route inference requests to a model server endpoint.
 
 This campaign uses the `optimized-baseline-qwen3-32b-h100-v0.9` [reference profile](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/suites/llm-d-benchmark/references/optimized-baseline-qwen3-32b-h100-v0.9.yaml),
 based on llm-d's [Optimized Baseline](https://llm-d.ai/docs/well-lit-paths/foundations/optimized-baseline).
