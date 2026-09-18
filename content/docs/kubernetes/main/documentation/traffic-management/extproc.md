@@ -243,7 +243,7 @@ EOF
 By default, ExtProc sends request headers, response headers, request trailers, and response trailers to the external processor, and streams request and response bodies. To change which request or response phases are sent to the external processor, configure `traffic.extProc.processingOptions`.
 
 > [!NOTE]
-> The default body mode is `FullDuplexStreamed`. If the external processor must inspect a complete body before the gateway forwards it, use `Buffered` or `BufferedPartial` and account for the gateway's body buffer limit, which defaults to 2 MiB. To change the limit, set `frontend.http.maxBufferSize` in an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the Gateway. For more information, see [Buffer limits]({{< link-hextra path="/documentation/traffic-management/buffering/" >}}).
+> The default body mode is `FullDuplexStreamed`. If the external processor must inspect a complete body before the gateway forwards it, use `Buffered` or `BufferedPartial` and account for the gateway's body buffer limit, which defaults to 2 MiB, or 32 MiB for requests that enter LLM processing. To change the limit, set `frontend.http.maxBufferSize` in an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the Gateway. For more information, see [Buffer limits]({{< link-hextra path="/documentation/traffic-management/buffering/" >}}).
 
 | Field | Default | Values | Description |
 | --- | --- | --- | --- |
