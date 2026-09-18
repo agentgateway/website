@@ -7,6 +7,10 @@ based on llm-d's [Optimized Baseline](https://llm-d.ai/docs/well-lit-paths/found
 The agentgateway {{< gloss "Benchmark treatment" >}}treatments{{< /gloss >}} use approximate prefix-cache affinity and token-load
 scoring to select model-server endpoints.
 
+If you are interested in benchmarks for other llm-d [well-lit paths](https://llm-d.ai/docs/well-lit-paths)
+or inference topologies, [create an issue](https://github.com/agentgateway/benchmarks/issues)
+that explains your use case.
+
 **Prefill/decode (P/D) disaggregation is not used.** Each vLLM replica handles both
 prefill and decode. The [comparison configuration](https://github.com/agentgateway/benchmarks/blob/main/inference/suites/llm-d-benchmark/scenarios/defaults/agentgateway-comparison.yaml)
 disables separate prefill replicas and the P/D routing sidecar, so all treatments
