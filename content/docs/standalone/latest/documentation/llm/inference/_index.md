@@ -55,3 +55,8 @@ service in `services`, and the route backend references it as
 {{< cards>}}
   {{< card link="https://github.com/agentgateway/agentgateway/blob/main/examples/llm-standalone-epp/README.md" title="Agentgateway llm-standalone-epp example" icon="external-link" >}}
 {{< /cards >}}
+
+## Benchmarking
+
+See [Benchmarking]({{< link-hextra path="/documentation/llm/benchmarking/" >}})
+for the published results, methodology, and reproduction resources.
