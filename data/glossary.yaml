@@ -17,6 +17,9 @@ API Gateway:
 Benchmark campaign:
   short: "A coordinated set of benchmark runs that compares configurations using a defined test environment, workload, and methodology."
 
+Benchmark treatment:
+  short: "A specific configuration evaluated in a benchmark, such as a routing strategy or deployment mode, whose results are compared with a baseline."
+
 Control Plane:
   short: "Components that manage and distribute configuration and policies to the data plane."
   
