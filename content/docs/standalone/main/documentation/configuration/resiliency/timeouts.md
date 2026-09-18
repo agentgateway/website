@@ -24,7 +24,7 @@ You can configure these types of timeouts on a route.
 
 |Timeout|Description|
 |-|-|
-|`requestTimeout`|The time from the start of an incoming request, until the end of the response headers is received. Note if there are retries, this includes the total time across retries. The response body is not included, so use `responseIdleTimeout` to bound gaps between body frames.|
+|`requestTimeout`|The time from the start of an incoming request, until the end of the response headers is received. Note if there are retries, this time includes the total time across retries. The response body is not included, so use `responseIdleTimeout` to bound gaps between body frames.|
 |`backendRequestTimeout`|The time from the start of a request to a backend, until the end of the response headers are completed. Note this is per-request, so with retries this is a per-retry timeout. Like `requestTimeout`, this stops applying once the response headers arrive.|
 |`responseIdleTimeout`|The maximum time the response body may go without producing data. The window restarts on every body frame, so this bounds the gap between frames rather than the total time a response may take. Use it to terminate a backend that stalls mid-stream, without capping how long a legitimately long response may run. The timeout is disabled when the field is unset or set to zero, and it never applies to responses that switch protocols, so upgraded WebSocket and CONNECT tunnels are not terminated by it.|
 
