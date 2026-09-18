@@ -242,7 +242,7 @@ Bedrock serves models on two API surfaces: the Runtime endpoint, which carries t
 
 For chat requests, the endpoint is chosen per model from the `runtime` and `mantle` tags in your [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). Run `agctl catalog import` to populate those tags, because the default sources include `aws-bedrock-mantle`, which reads them from the AWS model cards. Without a catalog, no model carries either tag, so every chat request falls back to the preference alone.
 
-Set `spec.ai.provider.bedrock.endpointPreference` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource to choose how the tags are applied.
+Set `spec.ai.provider.bedrock.endpointPreference` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource to choose how the tags are applied. The AgentgatewayModel resource takes the same setting at `spec.bedrock.endpointPreference`.
 
 ```yaml
 spec:
@@ -261,7 +261,12 @@ spec:
 | `RuntimeOnly` | Always use Runtime, whatever the tags say. |
 | `MantleOnly` | Always use Mantle, whatever the tags say. |
 
+> [!NOTE]
+> These values start with a capital letter. Standalone mode takes the same four values in lowercase, such as `runtimePreferred`, under `params.bedrockEndpointPreference`. A value that you copy from one mode to the other fails to load.
+
 The preference applies to chat completions, messages, responses, and Anthropic token counting. The other route types ignore it: embeddings, reranking, realtime, Gemini token counting, detection, passthrough, and content generation always take Runtime, and model listing always takes Mantle.
+
+Whether the preference changes the request format that a model accepts depends on the endpoint that it selects. A model that resolves to Runtime accepts the Bedrock Converse format only, and its chat format tags do not apply. A model that resolves to Mantle accepts the formats in its tags, except for `anthropic.claude*` models, which always take the Anthropic Messages format. For more information, see [Chat format tags]({{< link-hextra path="/documentation/llm/cost-controls/costs/#chat-format-tags" >}}).
 
 > [!NOTE]
 > Requests to the Mantle endpoint are signed for the `bedrock-mantle` service rather than `bedrock`. If you scope an IAM policy by service name, grant both before you switch a route to Mantle.

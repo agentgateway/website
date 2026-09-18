@@ -19,6 +19,8 @@ Review the release notes for agentgateway standalone.
 ### `agctl catalog import` merges multiple sources and tags Bedrock models by default
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3275 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3187 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3481 -->
 
 The `agctl catalog import` command used to accept a single pricing source. The `--source` flag now takes a comma-separated list, and the sources merge in the order that you list them, so a later source overlays an earlier one. Three sources are available: `models.dev`, `aws-bedrock-mantle`, and `github`.
 
@@ -32,12 +34,12 @@ The `agctl catalog import` command used to accept a single pricing source. The `
 
 Rates are unaffected by the new default, because `models.dev` is still the only source in it that prices models. The catalog file format does not change either, so a catalog that you generated earlier still loads.
 
-What does change is that a default import now writes tags onto the Amazon Bedrock models. The `aws-bedrock-mantle` source reads the AWS model cards and records which endpoint serves each model, `runtime` or `mantle`, along with the request formats that the Mantle endpoint accepts. Two of those tag families feed proxy behavior:
+The change is that a default import now writes tags onto the Amazon Bedrock models. The `aws-bedrock-mantle` source reads the AWS model cards and records which endpoint serves each model, `runtime` or `mantle`, along with the request formats that the Mantle endpoint accepts. Two of those tag groups change how a Bedrock request is routed:
 
-- The `runtime` and `mantle` tags decide which Bedrock endpoint a chat request takes, under the new `bedrockEndpointPreference` setting on the Bedrock provider.
-- The chat format tags, such as `anthropic_messages` and `openai_responses`, replace the built-in list of formats that the proxy accepts for a tagged model. A request in a format that is not tagged then fails with an unsupported conversion error.
+- The `runtime` and `mantle` tags decide which Bedrock endpoint a chat request takes, under the new `bedrockEndpointPreference` setting on the Bedrock provider. The default, `runtimePreferred`, sends a model to Mantle only when that model is tagged `mantle` and not `runtime`.
+- The chat format tags, such as `anthropic_messages` and `openai_responses`, replace the built-in list of accepted formats, but only for a model that the first rule sends to Mantle, and only when that model is not an `anthropic.claude*` model. A request in a format that is not tagged then fails with an unsupported conversion error. A model that stays on Runtime keeps accepting what it accepted in 1.5.x.
 
-**Actions to take**: If you regenerate your catalog on a schedule and you route Bedrock traffic, regenerate it once by hand first and compare the `tags` entries under the `aws.bedrock` provider against the formats that your clients send, because a tagged model no longer accepts the formats that are missing from its tag list. To keep the 1.5.x output, pin the source with `--source models.dev`. For the flags, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference. For the endpoint setting, see [Bedrock Mantle]({{< link-hextra path="/integrations/llm/providers/bedrock/#bedrock-mantle" >}}).
+**Actions to take**: Only Mantle-served Bedrock models change behavior, so the models that concern you are the ones tagged `mantle` and not `runtime`, other than `anthropic.claude*`. If you route traffic to any of those, regenerate your catalog once by hand, list those models from the `aws.bedrock` provider in the generated file, and check their `tags` against the request formats that your clients send. To keep the 1.5.x output, pin the source with `--source models.dev`. For the flags, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference. For the endpoint setting, see [Bedrock Mantle]({{< link-hextra path="/integrations/llm/providers/bedrock/#bedrock-mantle" >}}).
 
 ## 🌟 New features {#v16-new-features}
 

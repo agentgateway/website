@@ -35,7 +35,19 @@ The tags apply as follows.
 - {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} lowercases the requested model name before it looks up tags. Write model names in the catalog in lowercase; otherwise, the lookup misses, and the built-in list applies.
 - A client request in a format that the model does not accept fails with an unsupported conversion error that lists the accepted formats.
 
-{{< version include-if="1.5.x" >}}These tags apply only to the `copilot` provider, which is available in standalone mode. Tag values that are not listed in this table are stored and merged, but {{< reuse "agw-docs/snippets/agentgateway.md" >}} does not act on them yet.{{< /version >}}{{< version exclude-if="1.5.x" >}}These tags apply to the `copilot` provider, which is available in standalone mode, and to the Amazon Bedrock models that the Mantle endpoint serves. The `aws-bedrock-mantle` import source sets them on Bedrock models for you.{{< /version >}}
+{{< version include-if="1.5.x" >}}These tags apply only to the `copilot` provider, which is available in standalone mode. Tag values that are not listed in this table are stored and merged, but {{< reuse "agw-docs/snippets/agentgateway.md" >}} does not act on them yet.{{< /version >}}{{< version exclude-if="1.5.x" >}}These tags apply to the `copilot` provider, which is available in standalone mode, and to Amazon Bedrock. The `aws-bedrock-mantle` import source sets them on Bedrock models for you.{{< /version >}}
+
+{{% version exclude-if="1.5.x" %}}
+On Bedrock, the tags are narrower than the rules above, because they are read only after the request picks an endpoint.
+
+| Bedrock request | Accepted formats |
+|-----------------|------------------|
+| Resolves to the Runtime endpoint | Bedrock Converse only. The chat format tags do not apply. |
+| Resolves to the Mantle endpoint, `anthropic.claude*` model | Anthropic Messages only. The chat format tags do not apply. |
+| Resolves to the Mantle endpoint, any other model | The formats in the model's tags, limited to `openai_completions`, `openai_responses`, and `anthropic_messages`. An untagged model falls back to a built-in list. |
+
+Under the default endpoint preference, a model tagged both `runtime` and `mantle` resolves to Runtime, so its chat format tags never take effect. For the preference that decides this, see [Bedrock Mantle]({{< link-hextra path="/integrations/llm/providers/bedrock/#bedrock-mantle" >}}).
+{{% /version %}}
 
 {{% version exclude-if="1.5.x" %}}
 ### Bedrock endpoint tags
