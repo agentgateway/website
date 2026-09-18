@@ -235,6 +235,38 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    }
    ```
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+## Bedrock Mantle
+
+Bedrock serves models on two API surfaces: the Runtime endpoint, which carries the Converse and Invoke APIs, and the [Mantle](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-mantle.html) endpoint, which carries the native OpenAI and Anthropic APIs. Some models are served on only one of the two.
+
+For chat requests, the endpoint is chosen per model from the `runtime` and `mantle` tags in your [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). Run `agctl catalog import` to populate those tags, because the default sources include `aws-bedrock-mantle`, which reads them from the AWS model cards. Without a catalog, no model carries either tag, so every chat request falls back to the preference alone.
+
+Set `spec.ai.provider.bedrock.endpointPreference` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource to choose how the tags are applied.
+
+```yaml
+spec:
+  ai:
+    provider:
+      bedrock:
+        model: "amazon.nova-micro-v1:0"
+        region: "us-east-1"
+        endpointPreference: RuntimePreferred
+```
+
+| Value | Endpoint selection |
+|-------|--------------------|
+| `RuntimePreferred` | Use Runtime, except for a model tagged `mantle` but not `runtime`. This value is the default. |
+| `MantlePreferred` | Use Mantle, except for a model tagged `runtime` but not `mantle`. |
+| `RuntimeOnly` | Always use Runtime, whatever the tags say. |
+| `MantleOnly` | Always use Mantle, whatever the tags say. |
+
+The preference applies to chat completions, messages, responses, and Anthropic token counting. The other route types ignore it: embeddings, reranking, realtime, Gemini token counting, detection, passthrough, and content generation always take Runtime, and model listing always takes Mantle.
+
+> [!NOTE]
+> Requests to the Mantle endpoint are signed for the `bedrock-mantle` service rather than `bedrock`. If you scope an IAM policy by service name, grant both before you switch a route to Mantle.
+{{% /version %}}
+
 ## Prompt caching
 
 Prompt Caching is a performance, cost-optimization, and cost-reduction feature that allows the model to "remember" frequently used parts of your prompt, including long system instructions, reference documents, or tool definitions. This way, the model does not need to reprocess these parts every time you send a new prompt. 

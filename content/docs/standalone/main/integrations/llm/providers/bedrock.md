@@ -195,8 +195,35 @@ See [here](../anthropic/#use-claude-platform-on-aws) for connect to [Claude Plat
 
 ## Bedrock Mantle
 
-The [Bedrock Mantle](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-mantle.html) endpoint is not currently supported.
-Follow the [GitHub issue](https://github.com/agentgateway/agentgateway/issues/2041) if you are interested!
+Bedrock serves models on two API surfaces: the Runtime endpoint, which carries the Converse and Invoke APIs, and the [Mantle](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-mantle.html) endpoint, which carries the native OpenAI and Anthropic APIs. Some models are served on only one of the two.
+
+For chat requests, the endpoint is chosen per model from the `runtime` and `mantle` tags in your [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). Run `agctl catalog import` to populate those tags, because the default sources include `aws-bedrock-mantle`, which reads them from the AWS model cards. Without a catalog, no model carries either tag, so every chat request falls back to the preference alone.
+
+Set `params.bedrockEndpointPreference` to choose how the tags are applied.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: bedrock
+    params:
+      awsRegion: us-west-2
+      bedrockEndpointPreference: RuntimePreferred
+```
+
+| Value | Endpoint selection |
+|-------|--------------------|
+| `RuntimePreferred` | Use Runtime, except for a model tagged `mantle` but not `runtime`. This value is the default. |
+| `MantlePreferred` | Use Mantle, except for a model tagged `runtime` but not `mantle`. |
+| `RuntimeOnly` | Always use Runtime, whatever the tags say. |
+| `MantleOnly` | Always use Mantle, whatever the tags say. |
+
+The preference applies to chat completions, messages, responses, and Anthropic token counting. The other route types ignore it: embeddings, reranking, realtime, Gemini token counting, detection, passthrough, and content generation always take Runtime, and model listing always takes Mantle.
+
+> [!NOTE]
+> Requests to the Mantle endpoint are signed for the `bedrock-mantle` service rather than `bedrock`. If you scope an IAM policy by service name, grant both before you switch a route to Mantle.
 
 ## Token counting
 
