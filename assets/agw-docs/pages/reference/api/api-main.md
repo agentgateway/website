@@ -413,7 +413,7 @@ _Appears in:_
 | `vertexai` _[VertexAISettings](#vertexaisettings)_ | Provider-specific settings for Vertex AI. |  | Optional: \{\} <br /> |
 | `bedrock` _[BedrockSettings](#bedrocksettings)_ | Provider-specific settings for Amazon Bedrock. |  | Optional: \{\} <br /> |
 | `custom` _[CustomProviderSettings](#customprovidersettings)_ | Provider-specific settings for a custom provider. |  | Optional: \{\} <br /> |
-| `baseURL` _[LongString](#longstring)_ | BaseURL overrides the provider address and base path prefix. It must use the<br />http or https scheme. Backend policies may override the default TLS<br />configuration. Query parameters, fragments, and user info are not supported. |  | Format: uri <br />MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `baseURL` _[LongString](#longstring)_ | BaseURL overrides the provider address and base path prefix. It must use the<br />http or https scheme. Backend policies may override the default TLS<br />configuration. Query parameters, fragments, and user info are not supported.<br />The URL path is the upstream base path and defaults to / when omitted.<br />Provider-specific endpoint paths are appended to this base path.<br />For example, https://api.openai.com/v1 sends completions to /v1/chat/completions,<br />while https://api.openai.com sends them to /chat/completions. |  | Format: uri <br />MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `policies` _[ModelPolicies](#modelpolicies)_ | Policies applied to this concrete model. |  | Optional: \{\} <br /> |
 | `virtualModel` _[VirtualModel](#virtualmodel)_ | Request-time routing among concrete AgentgatewayModel resources. |  | ExactlyOneOf: [weighted failover conditional] <br />Optional: \{\} <br /> |
 
@@ -911,6 +911,7 @@ _Appears in:_
 | `sessionName` _string_ | SessionName is a custom session name (RoleSessionName) for CloudTrail and<br />Cost & Usage Report attribution. If unset, AWS generates a random name. |  | Pattern: `^[\w+=,.@-]\{2,64\}$` <br />Optional: \{\} <br /> |
 | `sessionNameExpression` _[CELExpression](#celexpression)_ | SessionNameExpression is a CEL expression evaluated against each request<br />to produce the session name (RoleSessionName), for example `jwt.sub` or<br />`request.headers["x-team"]`. If the expression does not produce a valid<br />session name at request time, the request is rejected. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `tags` _[AwsSessionTag](#awssessiontag) array_ | Session tags passed to STS AssumeRole for cost attribution in the AWS Cost<br />& Usage Report, once activated. STS allows at most 50 per role session. |  | MaxItems: 50 <br />Optional: \{\} <br /> |
+| `externalId` _string_ | ExternalID is set when the role's trust policy requires sts:ExternalId. |  | MaxLength: 1224 <br />MinLength: 2 <br />Pattern: `^[\w+=,.@:/-]+$` <br />Optional: \{\} <br /> |
 
 
 #### AwsAuth
@@ -1369,7 +1370,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `certificateSource` _[BackendTLSCertificateSource](#backendtlscertificatesource)_ | Source for the gateway's client identity and trust roots (`Inline` default, or `SPIFFE`). | Inline | Optional: \{\} <br /> |
 | `mtlsCertificateRef` _[LocalSecretObjectRef](#localsecretobjectref) array_ | Enables mutual TLS to the backend using `tls.key` and `tls.crt` from the<br />referenced credential source (defaulting to a Kubernetes `Secret`). An<br />optional `ca.cert`, if present, verifies the server certificate, but<br />`caCertificateRefs` takes priority. If unspecified, no client certificate<br />is used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
-| `caCertificateRefs` _[LocalCACertificateRef](#localcacertificateref) array_ | CA certificate source to use to verify the server certificate. Omitted kind<br />and `ConfigMap` select a ConfigMap; `Secret` selects a Secret. The `ca.crt`<br />key is required. If unset, the system's trusted certificates are used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
+| `caCertificateRefs` _[LocalCACertificateRef](#localcacertificateref) array_ | CA certificate source to use to verify the server certificate. Omitted kind<br />and `ConfigMap` select a ConfigMap; `Secret` selects a Secret. The bundle is<br />read from the `ca.crt` key unless `key` names a different one. If unset, the<br />system's trusted certificates are used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `insecureSkipVerify` _[InsecureTLSMode](#insecuretlsmode)_ | Originates TLS but skips verification of the backend's certificate<br />WARNING: insecure; only use if the risks are understood<br />Modes:<br />* `All` disables all TLS verification<br />* `Hostname` trusts the CA certificate but ignores hostname/SAN mismatches.<br />  Still insecure; prefer `verifySubjectAltNames` where possible. |  | Optional: \{\} <br /> |
 | `sni` _[SNI](#sni)_ | Server Name Indicator (`SNI`) to use in the TLS<br />handshake. If unset, the `SNI` is automatically set based on the<br />destination hostname. |  | MaxLength: 253 <br />MinLength: 1 <br />Pattern: `^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Optional: \{\} <br /> |
 | `verifySubjectAltNames` _[ShortString](#shortstring) array_ | Subject Alternative Names (`SAN`)<br />to verify in the server certificate.<br />If not present, the destination hostname is automatically used. |  | MaxItems: 16 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
@@ -1515,7 +1516,28 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `region` _string_ | AWS region to use for the backend.<br />Defaults to `us-east-1` if not specified. | us-east-1 | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-z0-9-]+$` <br />Optional: \{\} <br /> |
 | `guardrail` _[AWSGuardrailConfig](#awsguardrailconfig)_ | Guardrail policy to use for the backend. See<br /><https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html>.<br />If not specified, the AWS Guardrail policy will not be used. |  | Optional: \{\} <br /> |
+| `endpointPreference` _[BedrockEndpointPreference](#bedrockendpointpreference)_ | EndpointPreference selects which Bedrock API surface to prefer.<br />Defaults to preferring runtime over mantle.<br />Decides which endpoint to pick mainly based on the catalog tags<br />`mantle` and `runtime`. | RuntimePreferred | Optional: \{\} <br /> |
 | `model` _[ShortString](#shortstring)_ | Model name override, such as `gpt-4o-mini`.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+
+
+#### BedrockEndpointPreference
+
+_Underlying type:_ _string_
+
+BedrockEndpointPreference selects the Bedrock API endpoint preference.
+
+
+
+_Appears in:_
+- [BedrockConfig](#bedrockconfig)
+- [BedrockSettings](#bedrocksettings)
+
+| Field | Description |
+| --- | --- |
+| `RuntimePreferred` | BedrockEndpointPreferenceRuntimePreferred uses Runtime by default and routes to<br />Mantle only for models the catalog tags `mantle` but not `runtime`. This is the default.<br /> |
+| `MantlePreferred` | BedrockEndpointPreferenceMantlePreferred uses Mantle by default and routes to<br />Runtime only for models the catalog tags `runtime` but not `mantle`.<br /> |
+| `MantleOnly` | BedrockEndpointPreferenceMantleOnly always uses the Mantle endpoint, regardless of catalog tags.<br /> |
+| `RuntimeOnly` | BedrockEndpointPreferenceRuntimeOnly always uses the Runtime endpoint, regardless of catalog tags.<br /> |
 
 
 #### BedrockGuardrails
@@ -1595,6 +1617,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `region` _string_ | AWS region to use for the backend.<br />Defaults to `us-east-1` if not specified. | us-east-1 | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-z0-9-]+$` <br />Optional: \{\} <br /> |
 | `guardrail` _[AWSGuardrailConfig](#awsguardrailconfig)_ | Guardrail policy to use for the backend. See<br /><https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html>.<br />If not specified, the AWS Guardrail policy will not be used. |  | Optional: \{\} <br /> |
+| `endpointPreference` _[BedrockEndpointPreference](#bedrockendpointpreference)_ | EndpointPreference selects which Bedrock API surface to prefer.<br />Defaults to preferring runtime over mantle.<br />Decides which endpoint to pick mainly based on the catalog tags<br />`mantle` and `runtime`. | RuntimePreferred | Optional: \{\} <br /> |
 
 
 #### BodySendMode
@@ -1724,6 +1747,7 @@ _Appears in:_
 - [FieldTransformation](#fieldtransformation)
 - [HeaderTransformation](#headertransformation)
 - [Health](#health)
+- [LocalRateLimit](#localratelimit)
 - [MCPGuardrailsRemote](#mcpguardrailsremote)
 - [NamespacedMetadataContext](#namespacedmetadatacontext)
 - [OAuthTokenExchange](#oauthtokenexchange)
@@ -3219,7 +3243,7 @@ _Appears in:_
 
 
 LocalCACertificateRef references a same-namespace CA certificate source.
-An omitted kind defaults to ConfigMap.
+An omitted kind defaults to ConfigMap, and an omitted key to `ca.crt`.
 
 
 
@@ -3230,6 +3254,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | Name of the referenced CA certificate source. |  | Required: \{\} <br /> |
 | `kind` _string_ | Kind of the referenced CA certificate source. Omitted defaults to ConfigMap. | ConfigMap | Enum: [ConfigMap Secret] <br />Optional: \{\} <br /> |
+| `key` _string_ | Key within the referenced source holding the PEM-encoded CA bundle.<br />Omitted defaults to `ca.crt`. | ca.crt | MaxLength: 253 <br />MinLength: 1 <br />Pattern: `^[A-Za-z0-9]([A-Za-z0-9._-]*[A-Za-z0-9])?$` <br />Optional: \{\} <br /> |
 
 
 #### LocalPolicyTargetReference
@@ -3340,6 +3365,7 @@ _Appears in:_
 | `tokens` _integer_ | Number of LLM tokens per unit of time that are<br />allowed. Requests exceeding this limit will fail with a `429` error.<br />Both input and output tokens are counted. However, token counts are not known until the request completes. As a<br />result, token-based rate limits will apply to future requests only. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `unit` _[LocalRateLimitUnit](#localratelimitunit)_ | Unit of time for the limit. |  | Required: \{\} <br /> |
 | `burst` _integer_ | Allowance of requests above the request-per-unit<br />that should be allowed within a short period of time. |  | Minimum: 0 <br />Optional: \{\} <br /> |
+| `key` _[CELExpression](#celexpression)_ | CEL expression selecting the bucket the request counts against, for example `jwt.sub` for a<br />per-user limit or `jwt.team` for a per-team limit. Each distinct value gets its own bucket with<br />the limit above. Requests without a value, or whose expression cannot be evaluated, share one<br />bucket. When unset, all requests share one bucket. Each proxy instance keeps a bounded number<br />of buckets per rule and drops the least used ones. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### LocalRateLimitUnit
@@ -5124,7 +5150,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `request` _[Duration](#duration)_ | Maximum time allowed from the start of downstream request processing until response headers<br />are received. The response body is not included; use `responseIdle` to bound gaps between body frames. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
-| `responseIdle` _[Duration](#duration)_ | Maximum time the response body may go without producing data. The window restarts on every<br />body frame, so this bounds the gap between frames rather than the total time a response may<br />take. It is what terminates a backend that stops producing data mid-stream without capping<br />how long a legitimately long response may run.<br />This complements Request rather than overlapping it: Request stops applying once the response<br />headers arrive, so it places no bound on how long the response body may take, and it cannot<br />distinguish a stalled stream from a slow one.<br />This does not apply to responses that switch protocols, so upgraded WebSocket connections and<br />CONNECT tunnels are never terminated by it. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
+| `responseIdle` _[Duration](#duration)_ | Maximum time to wait for a frame from the upstream response body.<br />Limits how long the gateway waits for more response data from the backend.<br />Time spent processing the response or waiting for the client to receive it does not count.<br />This complements Request rather than overlapping it: Request stops applying once the response<br />headers arrive, so it places no bound on how long the response body may take, and it cannot<br />distinguish a stalled stream from a slow one.<br />This does not apply to responses that switch protocols, so upgraded WebSocket connections and<br />CONNECT tunnels are never terminated by it. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 
 
 
