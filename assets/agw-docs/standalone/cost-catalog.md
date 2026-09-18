@@ -45,17 +45,33 @@ For general LLM telemetry setup, see [Observe traffic]({{< link-hextra path="/do
 
 ## Import costs (agctl)
 
-<!-- The default import source changed from `models.dev` to `github`. Gated by
-     excluding the older version, not by including "main", so the sentence stays
-     correct when the next release freezes this line under a number. -->
-Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` to generate a catalog file from a supported pricing source. {{< version include-if="1.5.x" >}}The default source is `models.dev`.{{< /version >}}{{< version exclude-if="1.5.x" >}}The default source is `github`, which is the curated catalog that the agentgateway project publishes at [agentgateway.dev/model-catalog](https://agentgateway.dev/model-catalog). To import from [models.dev](https://models.dev) instead, pass `--source models.dev`.{{< /version >}}
+<!-- `--source` went from a single value defaulting to `models.dev` to a merged
+     list defaulting to `models.dev,aws-bedrock-mantle`, new in 1.6.
+
+     Every gate for that change in this file lists the releases 1.5 and older
+     by number, so the two branches form a complete pair: one matches a listed
+     release, the other matches everything else, which is 1.6 and newer. Two
+     shorter forms are both wrong. `exclude-if="1.5.x"` reads as "every version
+     except 1.5", so it shows the 1.6 text on 1.4.x and older. `include-if="main"`
+     pins the text to the development tree, so it disappears the moment a
+     release freezes it under a number. As written, a new release needs no edit
+     here: the new tree is absent from the list and therefore gets the 1.6 text. -->
+Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` to generate a catalog file. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}The command reads from a supported pricing source, and the default source is `models.dev`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}The `--source` flag takes a comma-separated list, and the sources merge in the order that you list them, so a later source overlays an earlier one. The default is `models.dev,aws-bedrock-mantle`, which prices every provider that the proxy supports and then tags the Amazon Bedrock models.{{< /version >}}
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+| Source | What it contributes |
+|--------|---------------------|
+| `models.dev` | Rates for every provider that the proxy supports, from [models.dev](https://models.dev). |
+| `aws-bedrock-mantle` | Tags for Amazon Bedrock models only, read from the AWS model cards. This source contributes no rates. The tags record which endpoint serves a model, `runtime` or `mantle`, and which request formats the Mantle endpoint accepts. |
+| `github` | The curated catalog that the agentgateway project publishes at [agentgateway.dev/model-catalog](https://agentgateway.dev/model-catalog), which covers the models that the agentgateway project tracks rather than everything that models.dev lists. Not imported by default. |
+{{% /version %}}
 
 ```sh
 mkdir -p costs
 agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import --out ./costs/catalog.json
 ```
 
-To keep the catalog smaller, import only the providers that you use. The following provider IDs are the same in both sources.
+To keep the catalog smaller, import only the providers that you use. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}The following provider IDs are the same in both sources.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}The following provider IDs are the same in the `models.dev` and `github` sources.{{< /version >}}
 
 ```sh
 agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import \
@@ -63,9 +79,9 @@ agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import \
   --out ./costs/catalog.json
 ```
 
-{{< version exclude-if="1.5.x" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
 > [!IMPORTANT]
-> The `--providers` flag takes the provider IDs of the source that you import from, and the two sources name some providers differently. The `github` source uses the agentgateway provider IDs, such as `gcp.gemini` and `aws.bedrock`, while `models.dev` uses its own IDs, such as `google` and `amazon-bedrock`. An ID that the source does not recognize is handled differently too: `models.dev` fails with `no providers matched`, but `github` reports `imported 0 providers` and writes a catalog without that provider. Check the provider list in the generated file before you load it.
+> The `--providers` flag takes the provider IDs of the source that you import from, and the sources name some providers differently. The `github` source uses the agentgateway provider IDs, such as `gcp.gemini` and `aws.bedrock`, while `models.dev` uses its own IDs, such as `google` and `amazon-bedrock`. An ID that the source does not recognize is handled differently too: `models.dev` fails with `no providers matched`, but `github` reports `imported 0 providers` and writes a catalog without that provider. A `--providers` list that omits Bedrock also makes `aws-bedrock-mantle` contribute nothing. Check the provider list in the generated file before you load it.
 {{< /version >}}
 
 For all flags, see the {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}){{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}){{< /version >}} reference.

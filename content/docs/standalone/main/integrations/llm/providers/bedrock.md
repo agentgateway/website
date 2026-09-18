@@ -24,6 +24,10 @@ Configure Amazon Bedrock as an LLM provider in agentgateway.
 #     `params.awsRegion` is correct.
 #   * "Passthrough": the `passthrough: detect` config is accepted, including the
 #     `name: us.anthropic*` prefix match.
+#   * "Bedrock Mantle": the `params.bedrockEndpointPreference` config is
+#     accepted, which pins both the field name and the lowercase spelling of the
+#     value. Standalone rejects the capitalized Kubernetes spelling, so this
+#     block is what keeps the two modes from being copied into each other.
 #   * With the base config loaded, agentgateway serves the wildcard model and
 #     resolves it to the `bedrock` provider in the configured AWS region.
 #
@@ -37,6 +41,10 @@ Configure Amazon Bedrock as an LLM provider in agentgateway.
 #     example responses and the `reasoning_effort` budget table are display-only.
 #   * That format translation to Bedrock's Converse API is correct - a different
 #     layer; verifying the translation needs a live Bedrock upstream.
+#   * Which endpoint a given model actually resolves to under
+#     `bedrockEndpointPreference` - external dependency; the resolution reads
+#     `runtime`/`mantle` tags from an imported catalog, and populating that
+#     catalog calls the AWS model-card pages.
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
@@ -195,8 +203,54 @@ See [here](../anthropic/#use-claude-platform-on-aws) for connect to [Claude Plat
 
 ## Bedrock Mantle
 
-The [Bedrock Mantle](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-mantle.html) endpoint is not currently supported.
-Follow the [GitHub issue](https://github.com/agentgateway/agentgateway/issues/2041) if you are interested!
+Bedrock serves models on two API surfaces: the Runtime endpoint, which carries the Converse and Invoke APIs, and the [Mantle](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-mantle.html) endpoint, which carries the native OpenAI and Anthropic APIs. Some models are served on only one of the two.
+
+For chat requests, the endpoint is chosen per model from the `runtime` and `mantle` tags in your [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). Run `agctl catalog import` to populate those tags, because the default sources include `aws-bedrock-mantle`, which reads them from the AWS model cards. Without a catalog, no model carries either tag, so every chat request falls back to the preference alone.
+
+Set `params.bedrockEndpointPreference` to choose how the tags are applied.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: bedrock
+    params:
+      awsRegion: us-west-2
+      bedrockEndpointPreference: runtimePreferred
+```
+
+{{< doc-test paths="bedrock" >}}
+cat <<'EOF' > config-mantle.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: bedrock
+    params:
+      awsRegion: us-west-2
+      bedrockEndpointPreference: runtimePreferred
+EOF
+agentgateway -f config-mantle.yaml --validate-only
+{{< /doc-test >}}
+
+| Value | Endpoint selection |
+|-------|--------------------|
+| `runtimePreferred` | Use Runtime, except for a model tagged `mantle` but not `runtime`. This value is the default. |
+| `mantlePreferred` | Use Mantle, except for a model tagged `runtime` but not `mantle`. |
+| `runtimeOnly` | Always use Runtime, whatever the tags say. |
+| `mantleOnly` | Always use Mantle, whatever the tags say. |
+
+The Kubernetes API takes the same four values capitalized, such as `RuntimePreferred`, under `spec.ai.provider.bedrock.endpointPreference`. A value that you copy from one mode to the other fails to load.
+
+The preference applies to chat completions, messages, responses, and Anthropic token counting. The other route types ignore it: embeddings, reranking, realtime, Gemini token counting, detection, passthrough, and content generation always take Runtime, and model listing always takes Mantle.
+
+Whether the preference changes the request format that a model accepts depends on the endpoint that it selects. A model that resolves to Runtime accepts the Bedrock Converse format only, and its chat format tags do not apply. A model that resolves to Mantle accepts the formats in its tags, except for `anthropic.claude*` models, which always take the Anthropic Messages format. For more information, see [Chat format tags]({{< link-hextra path="/documentation/llm/cost-controls/costs/#chat-format-tags" >}}).
+
+> [!NOTE]
+> Requests to the Mantle endpoint are signed for the `bedrock-mantle` service rather than `bedrock`. If you scope an IAM policy by service name, grant both before you switch a route to Mantle.
 
 ## Token counting
 
