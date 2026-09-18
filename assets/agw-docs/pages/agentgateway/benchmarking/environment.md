@@ -42,7 +42,7 @@ uses streaming completion requests with the following settings:
 - **Arrival pattern:** Randomized (Poisson).
 - **Request timeout:** 300 seconds.
 - **Shared-prefix groups:** 150 groups with five prompts per group.
-- **Prompt lengths:** 6,000 tokens for the shared system prompt and 1,200 tokens for the question.
+- **Prompt lengths:** 6,000 tokens for the shared system prompt and 1,200 tokens for the user prompt.
 - **Target output length:** 1,000 tokens.
 - **Multi-turn chat:** Disabled.
 - **Requested rates:** 3–60 requests/s across the measured stages, after warm-up.
