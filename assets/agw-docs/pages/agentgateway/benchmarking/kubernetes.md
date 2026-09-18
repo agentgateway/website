@@ -47,7 +47,7 @@ The chart shows p90 TTFT in milliseconds while the tables report it in seconds.
 Output throughput is in tokens/s (higher is better); TTFT is in seconds (lower
 is better). `n/a` means the stage had no successful-request latency histogram.
 
-| Requested requests/s | Kubernetes Service Output | agentgateway on Kubernetes Output | Kubernetes Service TTFT p50 | agentgateway on Kubernetes TTFT p50 | Kubernetes Service TTFT p90 | agentgateway on Kubernetes TTFT p90 |
+| Requests/s | Kubernetes Service Output | agentgateway on Kubernetes Output | Kubernetes Service TTFT p50 | agentgateway on Kubernetes TTFT p50 | Kubernetes Service TTFT p90 | agentgateway on Kubernetes TTFT p90 |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 3 | 1,570 | 1,520 | 0.5 | 0.1 | 0.5 | 0.2 |
 | 10 | 5,113 | 4,739 | 0.5 | 0.1 | 1.0 | 0.2 |
