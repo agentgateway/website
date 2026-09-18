@@ -55,4 +55,4 @@ Agentgateway automatically includes these LLM-specific trace attributes:
 | `gen_ai.provider.name` | LLM provider (openai, anthropic, etc.) |
 
 For complete metrics, traces, and a dashboard, see the
-[Datadog observability guide]({{< link-hextra path="/observability/traces/configs/datadog/" >}}).
+[Datadog observability guide]({{< link-hextra path="/documentation/observability/traces/configs/datadog/" >}}).
