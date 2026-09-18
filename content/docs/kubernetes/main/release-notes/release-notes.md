@@ -46,7 +46,7 @@ The two sources also name some providers differently, and they disagree about wh
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3403 -->
 
-`spec.baseURL` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} sets the provider address and the base path that endpoint paths are appended to. A URL with no path, such as `https://api.openai.com`, used to be treated differently from a URL that has one: the base path was left unset and the request path was forwarded unchanged, so a request that had to be translated from another API format went to a path the provider does not serve. A URL with no path now has a base path of `/`, which is the same rule that a URL with a path already followed.
+`spec.baseURL` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} sets the provider address and the base path that endpoint paths are appended to. A URL with no path, such as `https://api.openai.com`, used to be treated differently from a URL that has one. The base path was left unset and the request path was forwarded unchanged, so a request that had to be translated from another API format went to a path the provider does not serve. A URL with no path now has a base path of `/`, which is the same rule that a URL with a path already followed.
 
 | `spec.baseURL` | 1.5.x | 1.6.x |
 | --- | --- | --- |
