@@ -52,7 +52,8 @@ llm:
     provider:
       custom:
         formats:
-          # Indicate this provider supports the completions API. With no `path` specified, this defaults to <baseUrl>/chat/completions
+          # Indicate this provider supports the completions API. When you omit `path`,
+          # agentgateway appends /chat/completions to the base path from `params.baseUrl`.
           - type: completions
           # Indicate this provider supports the messages API, on a custom path /messages-api
           # - type: messages
