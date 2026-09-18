@@ -1,8 +1,7 @@
 ## Test environment
 
 This campaign compares EPP-based agentgateway routing with a plain Kubernetes
-Service across the same eight vLLM model servers. The published reports call the
-Service baseline `k8s service (RR)` (round-robin). It uses no EPP or scoring to route inference requests to a model server endpoint.
+Service across the same eight vLLM model servers.
 
 This campaign uses the [`optimized-baseline-qwen3-32b-h100-v0.9` reference profile](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/suites/llm-d-benchmark/references/optimized-baseline-qwen3-32b-h100-v0.9.yaml),
 based on llm-d's [Optimized Baseline](https://llm-d.ai/docs/well-lit-paths/foundations/optimized-baseline).
