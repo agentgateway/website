@@ -2,6 +2,10 @@ Install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane and get
 
 ## Before you begin
 
+{{< version include-if="1.6.x,1.5.x" >}}
+To provision a new GKE cluster and a private gateway together, follow [GKE with Cluster Toolkit]({{< link-hextra path="/documentation/install/gke/" >}}).
+{{< /version >}}
+
 These steps assume that you have a Kubernetes cluster, `kubectl`, and `helm` already set up. For quick testing, you can use [Kind](https://kind.sigs.k8s.io/).
 
 ```sh
