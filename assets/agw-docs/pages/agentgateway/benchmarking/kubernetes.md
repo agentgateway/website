@@ -70,7 +70,7 @@ is better). `n/a` means the stage had no successful-request latency histogram.
 
 ## Interpreting ITL
 
-At a requested rate of 60 requests/s, agentgateway has higher p50 ITL (49.6 ms versus
+At a rate of 60 requests/s, agentgateway has higher p50 ITL (49.6 ms versus
 30.3 ms for the Kubernetes Service), but higher throughput and lower time to
 first token. Read ITL together with TTFT and throughput to assess this tradeoff.
 
