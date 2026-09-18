@@ -22,6 +22,9 @@ For setup instructions, see the [inference benchmark README](https://github.com/
 
 ### Token throughput
 
+The charts show input, output, and total token throughput in tokens per second
+across the tested request rates.
+
 {{< benchmark-chart src="img/benchmarks/optimized-baseline-v0230-gateway-refresh-20260817/kubernetes/throughput_vs_qps.png" alt="Input, output, and total token throughput versus requested QPS for agentgateway on Kubernetes and the Kubernetes Service baseline." >}}
 
 ### Mean latency

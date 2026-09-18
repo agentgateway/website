@@ -1,7 +1,7 @@
 Compare the performance of agentgateway in standalone mode versus a plain Kubernetes Service for inference routing.
 
 In standalone request scheduler mode, agentgateway runs as a sidecar proxy
-with the Endpoint Picker Extension (EPP) and communicates with it over localhost.
+with the [Endpoint Picker Extension (EPP)](https://llm-d.ai/docs/architecture/core/router/epp) and communicates with it over localhost.
 This benchmark runs that standalone configuration on Kubernetes, without a full
 Gateway API stack.
 
@@ -22,6 +22,9 @@ For setup instructions, see the [inference benchmark README](https://github.com/
 | ITL p50 (ms) | 30.3 | 52.7 | +73.7% |
 
 ### Token throughput
+
+The charts show input, output, and total token throughput in tokens per second
+across the tested request rates.
 
 {{< benchmark-chart src="img/benchmarks/optimized-baseline-v0230-gateway-refresh-20260817/standalone/throughput_vs_qps.png" alt="Input, output, and total token throughput versus requested QPS for agentgateway standalone and the Kubernetes Service baseline." >}}
 
