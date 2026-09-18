@@ -75,13 +75,13 @@ first token. Read ITL together with TTFT and throughput to assess this tradeoff.
 
 ## Evidence and reproduction
 
-The [published report](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/service-vs-agentgateway-gateway/README.md),
+The [published report](https://github.com/agentgateway/benchmarks/blob/main/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/service-vs-agentgateway-gateway/README.md),
 charts, and tables on this page come from campaign `optimized-baseline-v0230-gateway-refresh-20260817`.
 
-- [Normalized metrics (CSV)](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/service-vs-agentgateway-gateway/metrics.csv)
-- [Campaign manifest](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/campaign-manifest.yaml)
-- [Campaign provenance](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/campaign-provenance.yaml)
-- [Benchmark runner and reproduction instructions](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/README.md)
+- [Normalized metrics (CSV)](https://github.com/agentgateway/benchmarks/blob/main/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/service-vs-agentgateway-gateway/metrics.csv)
+- [Campaign manifest](https://github.com/agentgateway/benchmarks/blob/main/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/campaign-manifest.yaml)
+- [Campaign provenance](https://github.com/agentgateway/benchmarks/blob/main/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/campaign-provenance.yaml)
+- [Benchmark runner and reproduction instructions](https://github.com/agentgateway/benchmarks/blob/main/inference/README.md)
 
 Use the campaign manifest's versions and configuration when reproducing these
 results.
