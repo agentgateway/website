@@ -14,6 +14,9 @@ API Gateway:
   short: "A centralized entry point that manages, secures, and routes API traffic."
   
 
+Benchmark campaign:
+  short: "A coordinated set of benchmark runs that compares configurations using a defined test environment, workload, and methodology."
+
 Control Plane:
   short: "Components that manage and distribute configuration and policies to the data plane."
   
