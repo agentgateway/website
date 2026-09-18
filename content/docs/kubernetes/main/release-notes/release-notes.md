@@ -42,6 +42,19 @@ The two sources also name some providers differently, and they disagree about wh
 
 **Actions to take**: If you regenerate your catalog on a schedule and you want to keep importing from models.dev, add `--source models.dev` to the command. Otherwise, regenerate the catalog and compare the rates for the models that you care about before you load the new file, because a rate change alters the costs that appear in logs, traces, metrics, and any CEL policy that reads `llm.cost`. For the flags, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
 
+### A `baseURL` with no path now sets the base path to `/` {#v16-baseurl-base-path}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3403 -->
+
+`spec.baseURL` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} sets the provider address and the base path that endpoint paths are appended to. A URL with no path, such as `https://api.openai.com`, used to be treated differently from a URL that has one: the base path was left unset and the request path was forwarded unchanged, so a request that had to be translated from another API format went to a path the provider does not serve. A URL with no path now has a base path of `/`, which is the same rule that a URL with a path already followed.
+
+| `spec.baseURL` | 1.5.x | 1.6.x |
+| --- | --- | --- |
+| `https://api.openai.com/v1` | Completions go to `/v1/chat/completions` | Unchanged |
+| `https://api.openai.com` | The request path is forwarded unchanged, so an OpenAI-format request works and a translated one does not | Completions go to `/chat/completions` |
+
+**Actions to take**: Review every `spec.baseURL` that you set and add the path that the provider serves its API under. OpenAI serves its API under `/v1`, so `https://api.openai.com` becomes `https://api.openai.com/v1`. A URL that already has a path, such as an in-cluster mock at `http://httpbun.default.svc.cluster.local:3090/llm`, is unaffected. For the field, see [Providers]({{< link-hextra path="/documentation/llm/models/about/#providers" >}}).
+
 ## 🌟 New features {#v16-new-features}
 
 ### Traffic management {#v16-features-traffic}

@@ -264,8 +264,8 @@ spec:
   visibility: Public
   # The provider that serves this model
   provider: OpenAI
-  # Optional: override the provider address
-  baseURL: https://api.openai.com
+  # Optional: override the provider address and base path
+  baseURL: https://api.openai.com/v1
   # Optional: policies that apply to this model only
   policies:
     auth:
@@ -281,7 +281,7 @@ spec:
 | [`match.model`](#model-matching) | The model name that selects this resource in a client request. Defaults to `metadata.name`. |
 | [`visibility`](#visibility) | Whether clients can request the model directly. Defaults to `Public`. |
 | [`provider`](#providers) | The provider that serves the model, such as `OpenAI`. |
-| `baseURL` | Overrides the provider address and base path prefix. |
+| [`baseURL`](#providers) | Overrides the provider address and base path prefix. The path in the URL is the base path that provider endpoint paths are appended to, so include the path that the provider serves its API under. |
 | [`policies`](#model-policies) | Credentials, authorization, transformations, and other settings that apply to this model only. |
 
 ### Model matching
@@ -369,6 +369,15 @@ Some providers require a matching settings field.
 Use `spec.custom.backendRef` to serve a model from a Kubernetes backend, such as an `InferencePool`.
 
 Use `spec.baseURL` to override the provider address and base path prefix. It must be an absolute `http` or `https` URL with a host, and it cannot target localhost, loopback, or link-local addresses. Query parameters, fragments, and user info are not supported.
+
+The path in the URL is the base path for the upstream request, and the endpoint path for each route is appended to it. A URL with no path has a base path of `/`. Because of this, include the path that the provider serves its API under.
+
+| `spec.baseURL` | Completions request goes to |
+| --- | --- |
+| `https://api.openai.com/v1` | `https://api.openai.com/v1/chat/completions` |
+| `https://api.openai.com` | `https://api.openai.com/chat/completions` |
+
+OpenAI serves its API under `/v1`, so `https://api.openai.com` on its own sends requests to a path that the provider does not serve. This behavior changed in 1.6, so see the [release notes]({{< link-hextra path="/release-notes/release-notes/#v16-baseurl-base-path" >}}) if you set a base URL with no path on an earlier version.
 
 ## Virtual models
 
