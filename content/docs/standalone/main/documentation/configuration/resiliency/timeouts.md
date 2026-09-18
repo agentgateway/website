@@ -20,7 +20,7 @@ Request {{< gloss "Timeout" >}}timeouts{{< /gloss >}} allow returning an error f
 
 ## Route Timeouts
 
-You can configure three types of timeouts on a route.
+You can configure these types of timeouts on a route.
 
 |Timeout|Description|
 |-|-|
