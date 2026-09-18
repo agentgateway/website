@@ -243,8 +243,7 @@ agentgateway -f config-mantle.yaml --validate-only
 | `runtimeOnly` | Always use Runtime, whatever the tags say. |
 | `mantleOnly` | Always use Mantle, whatever the tags say. |
 
-> [!NOTE]
-> These values start with a lowercase letter. The Kubernetes API takes the same four values capitalized, such as `RuntimePreferred`. A value that you copy from the Kubernetes docs into a standalone config file fails to load.
+The Kubernetes API takes the same four values capitalized, such as `RuntimePreferred`, under `spec.ai.provider.bedrock.endpointPreference`. A value that you copy from one mode to the other fails to load.
 
 The preference applies to chat completions, messages, responses, and Anthropic token counting. The other route types ignore it: embeddings, reranking, realtime, Gemini token counting, detection, passthrough, and content generation always take Runtime, and model listing always takes Mantle.
 

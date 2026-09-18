@@ -35,9 +35,16 @@ The tags apply as follows.
 - {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} lowercases the requested model name before it looks up tags. Write model names in the catalog in lowercase; otherwise, the lookup misses, and the built-in list applies.
 - A client request in a format that the model does not accept fails with an unsupported conversion error that lists the accepted formats.
 
-{{< version include-if="1.5.x" >}}These tags apply only to the `copilot` provider, which is available in standalone mode. Tag values that are not listed in this table are stored and merged, but {{< reuse "agw-docs/snippets/agentgateway.md" >}} does not act on them yet.{{< /version >}}{{< version exclude-if="1.5.x" >}}These tags apply to the `copilot` provider, which is available in standalone mode, and to Amazon Bedrock. The `aws-bedrock-mantle` import source sets them on Bedrock models for you.{{< /version >}}
+<!-- Bedrock tag support is new in 1.6. The two branches below list every
+     version 1.5 and older, so they stay a complete pair: one branch matches
+     any release in the list, the other matches everything else. Do NOT
+     shorten either list to just "1.5.x" — that reads as "every version except
+     1.5", which shows the 1.6 text on 1.4.x and older. Adding "main" to the
+     exclude side would be wrong for the opposite reason: it would need editing
+     at every release. As written, a new release needs no edit here. -->
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}These tags apply only to the `copilot` provider, which is available in standalone mode. Tag values that are not listed in this table are stored and merged, but {{< reuse "agw-docs/snippets/agentgateway.md" >}} does not act on them yet.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}These tags apply to the `copilot` provider, which is available in standalone mode, and to Amazon Bedrock. The `aws-bedrock-mantle` import source sets them on Bedrock models for you.{{< /version >}}
 
-{{% version exclude-if="1.5.x" %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
 On Bedrock, the tags are narrower than the rules above, because they are read only after the request picks an endpoint.
 
 | Bedrock request | Accepted formats |
@@ -49,7 +56,7 @@ On Bedrock, the tags are narrower than the rules above, because they are read on
 Under the default endpoint preference, a model tagged both `runtime` and `mantle` resolves to Runtime, so its chat format tags never take effect. For the preference that decides this, see [Bedrock Mantle]({{< link-hextra path="/integrations/llm/providers/bedrock/#bedrock-mantle" >}}).
 {{% /version %}}
 
-{{% version exclude-if="1.5.x" %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
 ### Bedrock endpoint tags
 
 Two tags record which Amazon Bedrock API surface serves a model. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} reads them when it picks the endpoint for a chat request, together with the endpoint preference on the Bedrock provider.

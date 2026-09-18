@@ -261,8 +261,7 @@ spec:
 | `RuntimeOnly` | Always use Runtime, whatever the tags say. |
 | `MantleOnly` | Always use Mantle, whatever the tags say. |
 
-> [!NOTE]
-> These values start with a capital letter. Standalone mode takes the same four values in lowercase, such as `runtimePreferred`, under `params.bedrockEndpointPreference`. A value that you copy from one mode to the other fails to load.
+Standalone mode takes the same four values in lowercase, such as `runtimePreferred`, under `params.bedrockEndpointPreference`. A value that you copy from one mode to the other fails to load.
 
 The preference applies to chat completions, messages, responses, and Anthropic token counting. The other route types ignore it: embeddings, reranking, realtime, Gemini token counting, detection, passthrough, and content generation always take Runtime, and model listing always takes Mantle.
 
