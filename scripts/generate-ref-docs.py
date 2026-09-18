@@ -44,23 +44,31 @@ baseline and fails on any new one.
 DOC LINKS ARE FIXED IN TWO PLACES AT ONCE. The chart comments carry absolute
 agentgateway.dev URLs, and a released version is generated from its TAG, so those URLs are
 frozen at release day. When the docs move a page afterwards, the generated file keeps
-citing the old path, which resolves only through a static/_redirects rule.
+citing the old path, which survives only because the site still answers for it.
 
 So each generated artifact is written through normalize_doc_links, which resolves those
-URLs against this repo's own _redirects and writes out the page's current path. That fixes
-the reader's link tonight instead of at the next release.
+URLs against this repo's own record of page moves and writes out the current path. That
+fixes the reader's link tonight instead of at the next release.
+
+That record is in two places, and both are read. static/_redirects holds the moves
+Cloudflare serves as a 301. The content tree's `aliases:` front matter holds the rest,
+which Hugo builds as a stub page served with a 200 and a meta refresh. The alias half is
+currently the larger of the two, and _redirects cannot absorb it: the Pages project applies
+only the first ~100 rules in that file and drops the rest without warning.
 
 This is only half the fix, and on its own it would be a bad trade. The source comment stays
-stale, and once the generated copy is clean nothing reports it: the old path keeps resolving
-through the redirect, so lychee sees a working link (docs-link-checking/lychee.toml
-deliberately leaves 3xx out of its accept list, which is what surfaces these). The link
-would stay healthy right up until someone prunes the redirect rule.
+stale, and once the generated copy is clean nothing reports it: the old path keeps
+resolving, so lychee sees a working link (docs-link-checking/lychee.toml deliberately
+leaves 3xx out of its accept list, which is what surfaces the redirect-backed ones; the
+alias-backed ones answer 200 and are invisible to it entirely). The link would stay healthy
+right up until someone prunes the rule or deletes the stub.
 
 The other half lives in agentgateway itself, as tools/check_doc_links.py and the
 check-doc-links workflow. That runs weekly inside the code repo, follows each of its own
 agentgateway.dev links against the live site, and opens a pull request repointing any that
-have permanently moved. It needs no credentials here, because a repo can write to itself
-with its own GITHUB_TOKEN, and it does not depend on this script or on _redirects.
+have moved, whether the site answers with a 301 or with an alias stub. It needs no
+credentials here, because a repo can write to itself with its own GITHUB_TOKEN, and it does
+not depend on this script or on _redirects.
 
 The two halves cover different windows. The code repo fixes the source promptly; this
 script fixes what a reader sees in the meantime, because a released version is generated
@@ -86,40 +94,62 @@ import shutil
 import subprocess
 import sys
 
-from normalize_doc_links import load_rules, normalize_text, retarget_version
+from normalize_doc_links import (
+    all_rules,
+    make_target_check,
+    normalize_text,
+    retarget_version,
+)
 
 
 # Resolved once per run. See the LINK NORMALIZATION note in the module docstring.
-_REDIRECT_RULES = None
+_LINK_RULES = None
+_TARGET_CHECK = None
 
-def _redirect_rules(website_dir: str):
-    """Load and cache the redirect rules. Returns [] if _redirects is missing."""
-    global _REDIRECT_RULES
-    if _REDIRECT_RULES is None:
+def _link_rules(website_dir: str):
+    """Load and cache the move rules. Returns [] when there is nothing to resolve against.
+
+    Both sources are read. static/_redirects covers the moves Cloudflare serves as a 301,
+    and the content tree's `aliases:` front matter covers the rest, which Hugo serves as a
+    200 with a meta refresh. The alias half is currently the larger one, so loading only
+    _redirects would leave most stale links in place while looking like it worked.
+    """
+    global _LINK_RULES
+    if _LINK_RULES is None:
         redirects_path = os.path.join(website_dir, "static", "_redirects")
-        if os.path.isfile(redirects_path):
-            _REDIRECT_RULES = load_rules(redirects_path)
-            print(f"  → Loaded {len(_REDIRECT_RULES)} redirect rules for link normalization")
-        else:
+        if not os.path.isfile(redirects_path):
             print(f"    Warning: {redirects_path} not found; skipping link normalization")
-            _REDIRECT_RULES = []
-    return _REDIRECT_RULES
+            _LINK_RULES = []
+            return _LINK_RULES
+        _LINK_RULES = all_rules(
+            website_dir,
+            on_skip=lambda alias, reason, paths: print(
+                f"    · skipped alias {alias} ({reason})"
+            ),
+        )
+        print(f"  → Loaded {len(_LINK_RULES)} redirect + alias rules for link normalization")
+    return _LINK_RULES
 
 
 def normalize_links(content: str, website_dir: str, label: str) -> str:
-    """Resolve stale agentgateway.dev URLs against static/_redirects.
+    """Resolve stale agentgateway.dev URLs against the site's own record of page moves.
 
-    Each rewrite is logged and recorded, because it means the source repo is citing a URL
-    that only survives via a 301, which is what the upstream PR goes on to fix.
+    Each rewrite is logged, because it means the source repo is citing a URL that only
+    survives via a redirect or an alias stub, which is what the upstream PR goes on to fix.
     """
-    rules = _redirect_rules(website_dir)
+    global _TARGET_CHECK
+    rules = _link_rules(website_dir)
     if not rules:
         return content
+    if _TARGET_CHECK is None:
+        _TARGET_CHECK = make_target_check(website_dir)
 
     return normalize_text(
         content,
         rules,
-        lambda before, after: print(f"    ↻ {label}: {before} -> {after}"),
+        on_rewrite=lambda before, after: print(f"    ↻ {label}: {before} -> {after}"),
+        on_error=lambda url, msg: print(f"    ! {label}: left {url} alone: {msg}"),
+        target_exists=_TARGET_CHECK,
     )
 
 
