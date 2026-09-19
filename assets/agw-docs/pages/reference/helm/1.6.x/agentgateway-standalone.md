@@ -4,6 +4,7 @@
 | Key | Type | Description |
 |-----|------|-------------|
 | affinity | object | The affinity rules for scheduling the agentgateway proxy pod.<br/><br/>The default value is `{}`. |
+| autoscaling | object | Configures HorizontalPodAutoscaler for your Deployment.<br/><br/>The default value is `{"annotations":{},"behavior":{},"enabled":false,"maxReplicas":3,"minReplicas":1,"targetCPUUtilizationPercentage":80,"targetMemoryUtilizationPercentage":80}`. |
 | commonLabels | object | Additional labels to add to all resources that the Helm chart creates.<br/><br/>The default value is `{}`. |
 | config | object | The standalone agentgateway configuration to serve, in the same format as a local agentgateway config file. Changes outside the nested 'config' section, plus 'config.modelCatalog', are applied without restarting the pods. Changes to other nested 'config' settings restart the pods because agentgateway reads them only at startup. The chart manages the 'config.storage' and 'config.database' sections for you based on the 'mode' value, so do not set them here.<br/><br/>The default value is `{}`. |
 | database.postgres.url | string | The PostgreSQL connection string that the the chart renders into the ConfigMap. Required in database mode.<br/><br/>The default value is `""`. |
@@ -52,6 +53,8 @@
 | nodeSelector | object | The node labels that a node must have for the agentgateway proxy pod to be scheduled on it.<br/><br/>The default value is `{}`. |
 | oidc.cookieSecretName | string | The name of an existing secret that has the 'OIDC_COOKIE_SECRET' key. If unset, the chart references a '<release name>-oidc' secret as an optional secret.<br/><br/>The default value is `""`. |
 | podAnnotations | object | Annotations to add to the agentgateway proxy pod. The defaults let Prometheus scrape the proxy's metrics endpoint.<br/><br/>The default value is `{"prometheus.io/path":"/metrics","prometheus.io/port":"15020","prometheus.io/scrape":"true"}`. |
+| podDisruptionBudget | object | podDisruptionBudget allows you to define minimum and maximum available pods during voluntary disruptions.<br/><br/>The default value is `{"enabled":false,"maxUnavailable":"","minAvailable":1,"unhealthyPodEvictionPolicy":""}`. |
+| podDisruptionBudget.unhealthyPodEvictionPolicy | string | UnhealthyPodEvictionPolicy defines the criteria for when unhealthy pods should be considered for eviction.<br/><br/>The default value is `""`. |
 | podLabels | object | Labels to add to the agentgateway proxy pod.<br/><br/>The default value is `{}`. |
 | podSecurityContext | object | The pod-level security context for the agentgateway proxy pod.<br/><br/>The default value is `{}`. |
 | replicaCount | int | The number of agentgateway proxy pods to run. Both storage modes support multiple replicas.<br/><br/>The default value is `1`. |
