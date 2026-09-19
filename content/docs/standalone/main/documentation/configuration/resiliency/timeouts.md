@@ -28,7 +28,7 @@ You can configure these types of timeouts on a route.
 |`backendRequestTimeout`|The time from the start of a request to a backend, until the end of the response headers are completed. Note this time is per-request, so with retries this time is a per-retry timeout. Like `requestTimeout`, this retry process stops applying once the response headers arrive.|
 |`responseIdleTimeout`|The maximum time the response body can go without producing data. The window restarts on every body frame, so this range bounds the gap between frames rather than the total time a response might take. Use this setting to terminate a backend that stalls mid-stream, without capping how long a legitimately long response might run. The timeout is disabled when the field is unset or set to zero, and it never applies to responses that switch protocols, so upgraded WebSocket and CONNECT tunnels are not terminated by it.|
 
-Because `requestTimeout` and `backendRequestTimeout` both stop at the response headers, neither one places any bound on how long a response body might take, and neither can tell a stalled stream from a slow one. That gap is what `responseIdleTimeout` covers, which matters most for streaming responses that are expected to run for a long time.
+Because requestTimeout and backendRequestTimeout both stop measuring elapsed time once the response headers arrive, neither one places any bound on how long a response body might take, and neither can differentiate a stalled stream from a slow one. The responseIdleTimeout covers this gap by limiting the time that can pass between response body chunks, which matters most for streaming responses that are expected to run for a long time.
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
