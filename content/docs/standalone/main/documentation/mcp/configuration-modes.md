@@ -67,6 +67,48 @@ When you omit the `gateways` field, the `mcp` section attaches to the gateway na
 
 You can use both modes in the same file, but one mode is usually enough.
 
+## Keep idle SSE streams alive {#sse-keep-alive}
+
+Long-lived MCP streams can be idle when no tool calls or notifications are in flight. Some networks close idle connections at a load balancer, API gateway, or network address translation (NAT) device. To keep those streams open, set `sseKeepAlive` on the MCP backend.
+
+Agentgateway sends Server-Sent Events (SSE) comment frames at the configured interval. MCP clients ignore these frames, but network intermediaries count them as traffic. Omit `sseKeepAlive` to disable SSE keep-alives.
+
+In the simplified MCP style, set `mcp.sseKeepAlive`. In the routing-based style, set `routes[].backends[].mcp.sseKeepAlive`.
+
+{{< tabs >}}
+{{% tab name="Simplified (MCP)" %}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  sseKeepAlive: 10s
+  targets:
+  - name: jira
+    mcp:
+      host: https://mcp.atlassian.com/v1/mcp
+```
+{{% /tab %}}
+{{% tab name="Routing-based" %}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 3000
+routes:
+- name: tools
+  matches:
+  - path:
+      pathPrefix: /mcp
+  backends:
+  - mcp:
+      sseKeepAlive: 10s
+      targets:
+      - name: jira
+        mcp:
+          host: https://mcp.atlassian.com/v1/mcp
+```
+{{% /tab %}}
+{{< /tabs >}}
+
 ## One endpoint or separate paths {#topology}
 
 Independently of the configuration mode, you choose how many endpoints your clients connect to. What determines this is how you group targets into backends, not which section you write them in.
