@@ -102,6 +102,10 @@ You can attach an external authorization policy to a Gateway, HTTPRoute, or back
 
 Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authorization runs before the proxy selects a backend. Backend targets use the `backend.extAuth` section so that authorization runs after backend selection, which is useful when the authorization service shapes the outgoing request, for example by inserting a token, or when a route load-balances or fails over across multiple backends.
 
+{{< version exclude-if="1.5.x" >}}
+For gRPC external authorization, agentgateway waits 2 seconds for the authorization service by default. To use a different timeout, set `backend.http.requestTimeout` on the authorization Service or {{< reuse "agw-docs/snippets/backend.md" >}}.
+{{< /version >}}
+
 1. Send a test request to the OpenAI backend. Verify that you get back a 200 HTTP response code and that no authorization is required.
 
    {{< tabs >}}
