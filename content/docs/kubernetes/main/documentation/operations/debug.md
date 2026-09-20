@@ -87,6 +87,15 @@ Most routing and policy issues surface in the status of the corresponding Kubern
    * The wrong parent Gateway is referenced.
    * Multiple HTTPRoutes conflict by having identical matchers or by having no matchers (and so default to `/`).
 
+4. Check AgentgatewayBackend and AgentgatewayPolicy resources for partial acceptance. A resource can report `Accepted=True` with `reason: PartiallyValid` when the controller keeps the usable parts of a backend or policy and reports the invalid part in the condition message.
+
+   ```sh
+   kubectl get agentgatewaybackends.agentgateway.dev <name> -n <namespace> -o yaml
+   kubectl get agentgatewaypolicies.agentgateway.dev <name> -n <namespace> -o yaml
+   ```
+
+   In the output, read the `Accepted` condition in `status.conditions` for a backend, or in `status.ancestors[].conditions` for a policy. If the reason is `PartiallyValid`, the message names the configuration that could not be translated. Common causes include a missing Secret, a missing Service reference, an invalid CEL expression, or a JSON Web Key Set (JWKS) that is not available yet.
+
 ## Inspect the loaded configuration
 
 Sometimes a route is `Accepted` but the proxy still does not behave as expected. To see what the proxy actually loaded, dump its runtime configuration.
@@ -129,6 +138,8 @@ Sometimes a route is `Accepted` but the proxy still does not behave as expected.
    Service  ext-authz  backend-extauth      ext-authz-7c7596b5f6-tvs28  0.70    4         0.00ms
    Service  httpbin    backend-extauth      httpbin-7dc88b5fbc-zqrfn    1.00    2         3.06ms
    ```
+
+   A partially valid backend or policy might still appear in the loaded configuration. For example, if a remote JSON Web Key Set (JWKS) is not available, agentgateway can keep the authentication policy with an empty key set, `{"keys":[]}`. In strict JWT or MCP authentication mode, that placeholder rejects requests with missing tokens or tokens that name an unknown key ID.
 
 For complete steps, see [Inspect agentgateway configuration]({{< link-hextra path="/documentation/operations/inspect-config" >}}).
 

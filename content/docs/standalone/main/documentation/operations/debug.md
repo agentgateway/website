@@ -52,6 +52,8 @@ To dump the configuration that the running proxy has loaded, capture the JSON fr
    agctl proxy config all --file /tmp/agw-dump.json -o yaml
    ```
 
+   If a policy is present in the loaded configuration but traffic still fails, inspect the translated policy for fail-closed placeholders. For example, a policy with an empty JSON Web Key Set (JWKS), `{"keys":[]}`, loads successfully but trusts no keys. In strict JWT or MCP authentication mode, agentgateway rejects requests with missing tokens or tokens that name an unknown key ID.
+
 For complete steps, see [Inspect agentgateway configuration]({{< link-hextra path="/documentation/operations/inspect-config" >}}).
 
 ## Trace requests
@@ -278,4 +280,3 @@ The default admin address binds to the container's own loopback interface, so pu
      {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
      -f /config.yaml
    ```
-
