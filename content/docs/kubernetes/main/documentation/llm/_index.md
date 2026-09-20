@@ -7,5 +7,5 @@ test: skip
 
 Consume services from LLM providers.
 
-
+Agentgateway can translate requests between OpenAI Chat Completions and Anthropic Messages APIs. During this translation, agentgateway preserves extended-thinking history and reasoning signatures between turns.
 
