@@ -370,14 +370,16 @@ Use `spec.custom.backendRef` to serve a model from a Kubernetes backend, such as
 
 Use `spec.baseURL` to override the provider address and base path prefix. It must be an absolute `http` or `https` URL with a host, and it cannot target localhost, loopback, or link-local addresses. Query parameters, fragments, and user info are not supported.
 
-The path in the URL is the base path for the upstream request, and the endpoint path for each route is appended to it. A URL with no path has a base path of `/`, so make sure to include the path that the provider serves its API under.
+The path in the URL is the base path for the upstream request, and the endpoint path for each route is appended to it. A URL with no path has a base path of `/`, so include the path that the provider serves its API under.
 
-| `spec.baseURL` | Completions request goes to |
-| --- | --- |
-| `https://api.openai.com/v1` | `https://api.openai.com/v1/chat/completions` |
-| `https://api.openai.com` | `https://api.openai.com/chat/completions` |
+| `spec.baseURL` | Base path | Completions request goes to |
+| --- | --- | --- |
+| `https://api.openai.com/v1` | `/v1` | `https://api.openai.com/v1/chat/completions` |
+| `https://api.openai.com` | `/` | `https://api.openai.com/chat/completions` |
 
-OpenAI serves its API under `/v1`, so `https://api.openai.com` on its own sends requests to a path that the provider does not serve.
+OpenAI serves its API under `/v1`, so `https://api.openai.com` on its own sends requests to a path that the provider does not serve. Ollama serves its OpenAI-compatible API under `/v1` as well, and `Ollama` is the one provider that requires `spec.baseURL`, so an in-cluster address such as `http://ollama.default.svc.cluster.local:11434` needs `/v1` added too.
+
+A `Custom` provider that sets `spec.custom.formats[].path` is the exception to the rule above. That path is sent as written, and the base path from `spec.baseURL` is not added to it.
 
 ## Virtual models
 

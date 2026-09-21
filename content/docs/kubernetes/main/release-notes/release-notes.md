@@ -46,14 +46,18 @@ The two sources also name some providers differently, and they disagree about wh
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3403 -->
 
-`spec.baseURL` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} sets the provider address and the base path that endpoint paths are appended to. A URL with no path, such as `https://api.openai.com`, is automatically assigned the `/` base path. 
+`spec.baseURL` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} sets the provider address and the base path that endpoint paths are appended to. A URL with no path, such as `https://api.openai.com`, used to leave the base path unset, and the upstream path then depended on the provider. For a built-in provider such as `OpenAI`, the path the client sent was forwarded as it arrived. For `Custom` and `Ollama`, the endpoint path was appended to a hardcoded `/v1`. A URL with no path now has a base path of `/` in both cases, which is the rule that a URL with a path already followed.
 
-| `spec.baseURL` | 1.5.x | 1.6.x |
+| Configuration and client request | 1.5.x | 1.6.x |
 | --- | --- | --- |
-| `https://api.openai.com/v1` | Completions go to `/v1/chat/completions` | Unchanged |
-| `https://api.openai.com` | The request path is forwarded unchanged, so an OpenAI-format request works and a translated one does not | Completions go to `/chat/completions` |
+| Any provider, a URL with a path such as `https://api.openai.com/v1` | Completions go to `/v1/chat/completions` | Unchanged |
+| `OpenAI` with `https://api.openai.com`, client sends `POST /v1/chat/completions` in the OpenAI format | The client's path is forwarded as it arrived, so completions go to `/v1/chat/completions` | Completions go to `/chat/completions` |
+| `OpenAI` with `https://api.openai.com`, client sends `POST /v1/messages` in the Anthropic format | The client's path is forwarded as it arrived, so the translated request goes to `/v1/messages`, which OpenAI does not serve | Completions go to `/chat/completions` |
+| `Custom` or `Ollama` with a URL with no path, and no `spec.custom.formats[].path` | Completions go to `/v1/chat/completions` | Completions go to `/chat/completions` |
 
-**Actions to take**: Review every `spec.baseURL` that you set and add the path that the provider serves its API under. OpenAI serves its API under `/v1`, so `https://api.openai.com` becomes `https://api.openai.com/v1`. A URL that already has a path, such as an in-cluster mock at `http://httpbun.default.svc.cluster.local:3090/llm`, is unaffected. For the field, see [Providers]({{< link-hextra path="/documentation/llm/models/about/#providers" >}}).
+The middle two rows are the ones to read together. `https://api.openai.com` on its own does not reach OpenAI reliably in either release, because OpenAI serves its API under `/v1`. What changed is that the upstream path no longer depends on the path the client sent, so the base URL has to carry the provider's path itself.
+
+**Actions to take**: Review every `spec.baseURL` that you set and add the path that the provider serves its API under. OpenAI serves its API under `/v1`, so `https://api.openai.com` becomes `https://api.openai.com/v1`. Check your `Ollama` models first, because `Ollama` requires `spec.baseURL` and also serves its OpenAI-compatible API under `/v1`, so an in-cluster address such as `http://ollama.default.svc.cluster.local:11434` becomes `http://ollama.default.svc.cluster.local:11434/v1`. A URL that already has a path, such as an in-cluster mock at `http://httpbun.default.svc.cluster.local:3090/llm`, is unaffected. For the field, see [Providers]({{< link-hextra path="/documentation/llm/models/about/#providers" >}}).
 
 ## 🌟 New features {#v16-new-features}
 

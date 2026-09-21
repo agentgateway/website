@@ -43,17 +43,23 @@ The two sources also name some providers differently, and they disagree about wh
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3403 -->
 
-`params.baseUrl` sets the provider address and the base path that endpoint paths are appended to. A URL with no path, such as `https://api.openai.com`, used to be treated differently from a URL that has one. A URL with no path now has a base path of `/`, which is the same rule that a URL with a path already followed.
+`params.baseUrl` sets the provider address and the base path that endpoint paths are appended to. A URL with no path, such as `https://api.openai.com`, used to leave the base path unset, and the upstream path then depended on the provider.
 
-| Provider and `params.baseUrl` | 1.5.x | 1.6.x |
+- For `custom` and the providers built on it, such as `ollama`, the endpoint path was appended to a hardcoded `/v1`, which is OpenAI's convention. A provider that serves its API somewhere else was unreachable.
+- For a built-in provider such as `openai`, the path the client sent was forwarded as it arrived. A request that had to be translated from another API format kept the client's path and went somewhere the provider does not serve.
+
+A URL with no path now has a base path of `/` in both cases, which is the rule that a URL with a path already followed.
+
+| Configuration and client request | 1.5.x | 1.6.x |
 | --- | --- | --- |
-| Any provider, URL with a path, such as `https://api.openai.com/v1` | Completions go to `/v1/chat/completions` | Unchanged |
-| A built-in provider such as `openai`, URL with no path | The request path is forwarded unchanged, so an OpenAI-format request works and a translated one does not | Completions go to `/chat/completions` |
-| `custom`, URL with no path | Completions go to `/v1/chat/completions` | Completions go to `/chat/completions` |
+| Any provider, a URL with a path such as `https://api.openai.com/v1` | Completions go to `/v1/chat/completions` | Unchanged |
+| `openai` with `https://api.openai.com`, client sends `POST /v1/chat/completions` in the OpenAI format | The client's path is forwarded as it arrived, so completions go to `/v1/chat/completions` | Completions go to `/chat/completions` |
+| `openai` with `https://api.openai.com`, client sends `POST /v1/messages` in the Anthropic format | The client's path is forwarded as it arrived, so the translated request goes to `/v1/messages`, which OpenAI does not serve | Completions go to `/chat/completions` |
+| `custom` or `ollama` with a URL with no path, and no `formats[].path` | Completions go to `/v1/chat/completions` | Completions go to `/chat/completions` |
 
-The `custom` row is the one to check most closely, because a custom provider that serves its API at the root, such as Perplexity at `https://api.perplexity.ai/chat/completions`, was unreachable before and now works, while one that serves under `/v1` needs that path added.
+The last row is the one to check most closely. A custom provider that serves its API at the root, such as Perplexity at `https://api.perplexity.ai/chat/completions`, was unreachable before and now works. One that serves under `/v1`, such as Ollama at `http://localhost:11434/v1`, needs that path added.
 
-**Actions to take**: Review every `params.baseUrl` that you set and add the path that the provider serves its API under. OpenAI serves its API under `/v1`, so `https://api.openai.com` becomes `https://api.openai.com/v1`. A URL that already has a path is unaffected, and so is a provider that you use without a `baseUrl` override, because the built-in provider defaults already carry their own paths.
+**Actions to take**: Review every `params.baseUrl` that you set and add the path that the provider serves its API under. OpenAI serves its API under `/v1`, so `https://api.openai.com` becomes `https://api.openai.com/v1`. A URL that already has a path is unaffected, and so is a provider that you use without a `baseUrl` override, because the built-in provider defaults already carry their own paths. A `custom` provider that sets `formats[].path` is also unaffected, because that path is sent as written and the base path is not added to it.
 
 ## 🌟 New features {#v16-new-features}
 
