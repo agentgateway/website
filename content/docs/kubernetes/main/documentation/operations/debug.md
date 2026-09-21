@@ -87,14 +87,33 @@ Most routing and policy issues surface in the status of the corresponding Kubern
    * The wrong parent Gateway is referenced.
    * Multiple HTTPRoutes conflict by having identical matchers or by having no matchers (and so default to `/`).
 
-4. Check AgentgatewayBackend and AgentgatewayPolicy resources for partial acceptance. A resource can report `Accepted=True` with `reason: PartiallyValid` when the controller keeps the usable parts of a backend or policy and reports the invalid part in the condition message.
+4. Check AgentgatewayBackend and AgentgatewayPolicy resources for partial acceptance. A resource can report `Accepted=True` with `reason: PartiallyValid` when the controller keeps the usable parts of a backend or policy and reports the invalid part in the condition message. Read the reason, not only the status: a check that tests the `Accepted` status alone passes in this state.
 
+   {{< tabs >}}
+   {{% tab name="Replace with your own" %}}
    ```sh
    kubectl get agentgatewaybackends.agentgateway.dev <name> -n <namespace> -o yaml
    kubectl get agentgatewaypolicies.agentgateway.dev <name> -n <namespace> -o yaml
    ```
+   {{% /tab %}}
+   {{% tab name="Quickstart example" %}}
+   ```sh
+   kubectl get agentgatewaybackends.agentgateway.dev openai -n agentgateway-system -o yaml
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
    In the output, read the `Accepted` condition in `status.conditions` for a backend, or in `status.ancestors[].conditions` for a policy. If the reason is `PartiallyValid`, the message names the configuration that could not be translated. Common causes include a missing Secret, a missing Service reference, an invalid CEL expression, or a JSON Web Key Set (JWKS) that is not available yet.
+
+   The rest of the resource is still translated and served, so the symptom usually shows up at request time instead of at apply time.
+
+   | Invalid part | What the proxy loads instead |
+   | -- | -- |
+   | The Secret that holds LLM provider credentials does not exist | The backend keeps the credential field, but empty. Provider calls go out unauthenticated, so the failure comes back from the provider rather than from agentgateway. |
+   | A prompt guard `webhook.backendRef` names a Service that does not exist | The webhook stays in the policy with no target to call. Guarded requests then take the webhook's `failureMode`, which is `FailClosed` unless you set it. With `FailOpen`, prompt guarding is skipped instead. |
+   | A remote JWKS is not available yet | The authentication policy keeps an empty key set, `{"keys":[]}`, so it trusts no keys. JWT authentication defaults to `Strict` mode, which rejects a request that carries no token and rejects every token that it does receive, because no key can verify a signature. |
+
+   The controller recomputes the condition when the missing Secret, Service, or key set appears, so you do not need to reapply the resource.
 
 ## Inspect the loaded configuration
 
@@ -139,7 +158,7 @@ Sometimes a route is `Accepted` but the proxy still does not behave as expected.
    Service  httpbin    backend-extauth      httpbin-7dc88b5fbc-zqrfn    1.00    2         3.06ms
    ```
 
-   A partially valid backend or policy might still appear in the loaded configuration. For example, if a remote JSON Web Key Set (JWKS) is not available, agentgateway can keep the authentication policy with an empty key set, `{"keys":[]}`. In strict JWT or MCP authentication mode, that placeholder rejects requests with missing tokens or tokens that name an unknown key ID.
+   A backend or policy that reports `PartiallyValid` still appears here, because the part of it that translated successfully is still served. Compare what the proxy loaded against the condition message from the previous section. For example, an authentication policy whose remote JSON Web Key Set (JWKS) was not available loads with an empty key set, `{"keys":[]}`.
 
 For complete steps, see [Inspect agentgateway configuration]({{< link-hextra path="/documentation/operations/inspect-config" >}}).
 
