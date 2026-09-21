@@ -65,14 +65,14 @@ flowchart TD
 {{< version exclude-if="2.2.x,1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2026.9.x" >}}
 ### Listener precedence {#listener-precedence}
 
-Listeners that share a port must agree on their protocol, hostname, and bind mode. When they do not, only the first listener in precedence order is accepted. Each later listener that collides with it reports `Conflicted: True` and `Accepted: False` in its status, with a reason of `HostnameConflict`, `ProtocolConflict`, or `BindModeConflict`. Precedence follows the order that [GEP-1713](https://gateway-api.sigs.k8s.io/geps/gep-1713/#listener-precedence) defines:
+Listeners that share a port must use the same protocol and the same bind mode, and each one must claim a hostname that no earlier listener on that port already claimed. Several listeners can share a port on those terms, which is how one port serves more than one hostname. Each listener is checked against the listeners that are already accepted on its port, so precedence decides which listener keeps a contested setting. A listener that loses reports `Conflicted: True` and `Accepted: False` in its status, with a reason of `HostnameConflict`, `ProtocolConflict`, or `BindModeConflict`. Precedence follows the order that [GEP-1713](https://gateway-api.sigs.k8s.io/geps/gep-1713/#listener-precedence) defines:
 
 1. Listeners written inline on the Gateway come before any listener that a ListenerSet contributes.
 2. ListenerSets are ordered by `metadata.creationTimestamp`, oldest first.
 3. ListenerSets that share a creation timestamp are ordered alphabetically, first by namespace and then by name.
 4. Within a single ListenerSet, listeners keep the order that they appear in `spec.listeners`.
 
-Because precedence starts from the creation timestamp, re-creating a ListenerSet moves it to the end of the order, and a listener that used to win a conflict can lose it.
+Precedence starts from the creation timestamp, so deleting and re-creating a ListenerSet gives that ListenerSet a later timestamp and sorts it behind every other ListenerSet on the same Gateway. Listeners that previously won a contested port then report a conflict instead.
 {{< /version >}}
 
 ### More information {#more-info}
