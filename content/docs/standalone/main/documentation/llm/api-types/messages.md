@@ -74,7 +74,7 @@ Because `completions` comes before `responses`, a provider that advertises both 
 
 ### Converting to the Chat Completions format
 
-The Chat Completions conversion carries extended-thinking history in both directions, so a thinking session on a converted route keeps its prior reasoning from one turn to the next. This matters when your client speaks Messages but the provider that you route to advertises only `completions`, such as a self-hosted inference engine. Self-hosted engines that report reasoning as `reasoning_content` also accept it back on an assistant message, which is what makes the carryover possible. To declare that an upstream speaks `completions`, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
+The Chat Completions conversion carries extended-thinking history in both directions, so a thinking session on a converted route keeps its prior reasoning from one turn to the next. This behavior matters when your client speaks Messages but the provider that you route to advertises only `completions`, such as a self-hosted inference engine. Self-hosted engines that report reasoning as `reasoning_content` also accept it back on an assistant message, which is what makes the carryover possible. To declare that an upstream speaks `completions`, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
 On the way out, an assistant `thinking` block in the message history is sent as `reasoning_content`. A turn that holds several thinking blocks has its text joined into a single `reasoning_content` value, and a turn made of thinking alone is still sent.
 
