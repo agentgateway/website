@@ -102,7 +102,7 @@ Most routing and policy issues surface in the status of the corresponding Kubern
       kubectl get agentgatewaybackends.agentgateway.dev openai -n agentgateway-system -o yaml
       ```
 
-   3. Find the `Accepted` condition in the output. For a backend, it is in `status.conditions`. For a policy, it is in `status.ancestors[].conditions`, one entry per Gateway that the policy attaches to.
+   3. Find the `Accepted` condition in the output. For a backend, look in `status.conditions`. For a policy, look in `status.ancestors[].conditions`, which has one entry per Gateway that the policy attaches to.
 
       Example output:
 
