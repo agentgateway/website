@@ -55,7 +55,7 @@ sequenceDiagram
     end
 ```
 
-{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2026.7.1,2.3.x,2.2.x,2.1.x" >}}
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2026.9.x,2026.7.1,2.3.x,2.2.x,2.1.x" >}}
 By default, the gateway waits 10 seconds for the rate limit service to return a decision. When the wait runs out, the call counts as a failure. To use a different timeout, apply a second {{< reuse "agw-docs/snippets/policy.md" >}} whose `targetRefs` names the rate limit service, either as a Kubernetes Service or as an {{< reuse "agw-docs/snippets/backend.md" >}}, and set `backend.http.requestTimeout` on it.
 {{< /version >}}
 

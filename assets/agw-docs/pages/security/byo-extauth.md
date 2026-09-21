@@ -102,7 +102,7 @@ You can attach an external authorization policy to a Gateway, HTTPRoute, or back
 
 Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authorization runs before the proxy selects a backend. Backend targets use the `backend.extAuth` section so that authorization runs after backend selection, which is useful when the authorization service shapes the outgoing request, for example by inserting a token, or when a route load-balances or fails over across multiple backends.
 
-{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2026.7.1,2.3.x,2.2.x,2.1.x" >}}
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2026.9.x,2026.7.1,2.3.x,2.2.x,2.1.x" >}}
 For gRPC external authorization, agentgateway waits 2 seconds for the authorization service to respond by default. To use a different timeout, apply a second {{< reuse "agw-docs/snippets/policy.md" >}} whose `targetRefs` names the authorization service, either as a Kubernetes Service or as an {{< reuse "agw-docs/snippets/backend.md" >}}, and set `backend.http.requestTimeout` on it.
 {{< /version >}}
 
