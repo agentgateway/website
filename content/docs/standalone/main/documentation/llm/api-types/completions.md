@@ -49,6 +49,19 @@ routes:
 > [!NOTE]
 > For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/documentation/llm/about/" >}}).
 
+## Reasoning carryover on a converted route
+
+A Chat Completions request does not need a provider that speaks the OpenAI Chat Completions format. When the request is converted to the Anthropic Messages format on the way out, reasoning history is carried across turns, so a client that replays its own assistant messages keeps the model's prior reasoning.
+
+On the way out, an assistant message that carries `reasoning_content` together with a non-empty `reasoning_signature` is replayed as a signed `thinking` block, placed ahead of its text and tool calls. An unsigned `reasoning_content` is left out, because the provider rejects a thinking block that has no signature.
+
+On the way back, the signature of a response thinking block is forwarded as `reasoning_signature`, in both the buffered and the streamed response, so that the client has what it needs to replay the turn.
+
+> [!NOTE]
+> Send the signature back along with the reasoning. A client that keeps `reasoning_content` but discards `reasoning_signature` loses its thinking history on the next turn, with no error and no warning.
+
+For the same behavior in the other direction, where a Messages client reaches a provider that speaks Chat Completions, see [Converting to the Chat Completions format]({{< link-hextra path="/documentation/llm/api-types/messages/#converting-to-the-chat-completions-format" >}}).
+
 ## Using the API
 
 Using the Chat Completions API works exactly the same as consuming OpenAI directly, with only a change to the base URL. This allows you to continue using existing code and SDKs.

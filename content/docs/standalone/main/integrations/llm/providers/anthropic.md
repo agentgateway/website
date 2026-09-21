@@ -156,6 +156,8 @@ Extended thinking and reasoning lets Claude reason through complex problems befo
 > [!NOTE]
 > Extended thinking and reasoning requires a Claude model that supports these, such as `claude-opus-4-6`.
 
+This section describes a route that reaches the Anthropic Messages API directly. On a route that converts between the Messages and Chat Completions formats, thinking history is carried across turns with some exceptions. For those, see [Converting to the Chat Completions format]({{< link-hextra path="/documentation/llm/api-types/messages/#converting-to-the-chat-completions-format" >}}).
+
 To opt in to extended thinking, include the `thinking.type` field in your request. You can also set the `output_config.effort` field to control how much reasoning the model applies.
 
 The following values are supported: 
