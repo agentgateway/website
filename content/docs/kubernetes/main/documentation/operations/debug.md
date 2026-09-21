@@ -117,7 +117,7 @@ Most routing and policy issues surface in the status of the corresponding Kubern
           lastTransitionTime: "2026-09-21T14:02:28Z"
       ```
 
-   4. Read the `reason`, not only the `status`. A check that tests the `Accepted` status alone passes in this state, because the status stays `True`. When the reason is `PartiallyValid`, the message names the configuration that could not be translated.
+   4. Read the `reason`, not only the `status`. A check that tests the `Accepted` status alone passes in this state because the status stays `True`. When the reason is `PartiallyValid`, the message names the configuration that could not be translated.
 
    5. Fix the cause that the message names. The rest of the resource is still translated and served, so the symptom usually shows up at request time instead of at apply time.
 
