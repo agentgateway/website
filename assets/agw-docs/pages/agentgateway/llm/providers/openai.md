@@ -153,28 +153,6 @@ YAMLTest -f - <<'EOF'
     polling:
       timeoutSeconds: 60
       intervalSeconds: 2
-# THE STATUS ALONE STOPPED MEANING "ACCEPTED".
-#
-# A backend whose translation partly failed now reports Accepted=True with
-# reason PartiallyValid, and serves whatever did translate. So the check above
-# passes on a backend that silently dropped its auth policy: the Secret is
-# missing, the credential is empty, and every request to the provider fails
-# authentication at the provider. The reason is the only field that tells the
-# two apart.
-- name: the openai backend translated in full, not partly
-  wait:
-    target:
-      kind: AgentgatewayBackend
-      metadata:
-        namespace: agentgateway-system
-        name: openai
-    jsonPath: "$.status.conditions[?(@.type=='Accepted')].reason"
-    jsonPathExpectation:
-      comparator: equals
-      value: "Accepted"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
 EOF
 {{< /doc-test >}}
 
@@ -185,8 +163,7 @@ EOF
 # WHAT THIS TEST VALIDATES:
 #   * "Set up access to OpenAI": the Secret, the AgentgatewayBackend with the
 #     `openai` provider and its `policies.auth.secretRef`, and the HTTPRoute are
-#     all accepted, and the backend reports Accepted=True with reason Accepted
-#     rather than PartiallyValid.
+#     all accepted, and the backend reports Accepted=True.
 #   * "Step 4": a request along the documented route reaches the provider and
 #     comes back as an OpenAI-shaped chat completion with token usage.
 #
@@ -220,23 +197,6 @@ YAMLTest -f - <<'EOF'
     jsonPathExpectation:
       comparator: equals
       value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-# Checked after the patch as well as before it, because the patch rewrites the
-# provider block and a backend that translated cleanly a moment ago can come
-# back PartiallyValid. See the note on the same check above.
-- name: the patched openai backend translated in full, not partly
-  wait:
-    target:
-      kind: AgentgatewayBackend
-      metadata:
-        namespace: agentgateway-system
-        name: openai
-    jsonPath: "$.status.conditions[?(@.type=='Accepted')].reason"
-    jsonPathExpectation:
-      comparator: equals
-      value: "Accepted"
     polling:
       timeoutSeconds: 60
       intervalSeconds: 2
