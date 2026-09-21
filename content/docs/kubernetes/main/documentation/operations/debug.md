@@ -87,29 +87,48 @@ Most routing and policy issues surface in the status of the corresponding Kubern
    * The wrong parent Gateway is referenced.
    * Multiple HTTPRoutes conflict by having identical matchers or by having no matchers (and so default to `/`).
 
-4. Check AgentgatewayBackend and AgentgatewayPolicy resources for partial acceptance. A resource can report `Accepted=True` with `reason: PartiallyValid` when the controller keeps the usable parts of a backend or policy and reports the invalid part in the condition message. Read the reason, not only the status. A check that tests the `Accepted` status alone passes in this state.
+4. Check AgentgatewayBackend and AgentgatewayPolicy resources for partial acceptance. A resource can report `Accepted=True` with `reason: PartiallyValid` when the controller keeps the usable parts of a backend or policy and reports the invalid part in the condition message.
 
-   ```sh
-   kubectl get agentgatewaybackends.agentgateway.dev -A
-   kubectl get agentgatewaypolicies.agentgateway.dev -A
-   ```
+   1. List the backends and policies in your cluster.
 
-   Then inspect the resource that you want to debug.
+      ```sh
+      kubectl get agentgatewaybackends.agentgateway.dev -A
+      kubectl get agentgatewaypolicies.agentgateway.dev -A
+      ```
 
-   ```sh
-   kubectl get agentgatewaybackends.agentgateway.dev openai -n agentgateway-system -o yaml
-   ```
+   2. Inspect the resource that you want to debug.
 
-   In the output, read the `Accepted` condition in `status.conditions` for a backend, or in `status.ancestors[].conditions` for a policy. If the reason is `PartiallyValid`, the message names the configuration that could not be translated.
+      ```sh
+      kubectl get agentgatewaybackends.agentgateway.dev openai -n agentgateway-system -o yaml
+      ```
 
-   The rest of the resource is still translated and served, so the symptom usually shows up at request time instead of at apply time. In each case the controller recomputes the condition on its own, so you do not need to reapply the resource after you fix the cause.
+   3. Find the `Accepted` condition in the output. For a backend, it is in `status.conditions`. For a policy, it is in `status.ancestors[].conditions`, one entry per Gateway that the policy attaches to.
 
-   | Invalid part | What the proxy loads instead | How to fix it |
-   | -- | -- | -- |
-   | The Secret that holds LLM provider credentials does not exist | The backend keeps the credential field, but empty. Provider calls go out unauthenticated, so the failure comes back from the provider rather than from agentgateway. | Create the Secret in the namespace that `secretRef` names, or correct the reference. |
-   | A prompt guard `webhook.backendRef` names a Service that does not exist | The webhook stays in the policy with no target to call. Guarded requests then take the webhook's `failureMode`, which is `FailClosed` unless you set it. With `FailOpen`, prompt guarding is skipped instead. | Create the Service, or point `backendRef` at one that exists. Until then, treat prompt guarding as not running. |
-   | A remote JWKS is not available yet | The authentication policy keeps an empty key set, `{"keys":[]}`, so it trusts no keys. JWT authentication defaults to `Strict` mode, which rejects a request that carries no token and rejects every token that it does receive, because no key can verify a signature. | Check that the JWKS endpoint is reachable from the control plane. The controller retries the fetch with a backoff and installs the keys when it succeeds. |
-   | A CEL expression does not compile | The rest of the policy is kept and the expression is replaced with one that always fails. An `authorization` rule built on it therefore allows nothing. | Fix the expression. The condition message quotes it and names the field that it came from. |
+      Example output:
+
+      ```yaml
+      status:
+        conditions:
+        - type: Accepted
+          status: "True"
+          reason: PartiallyValid
+          message: 'failed to translate backend: secret agentgateway-system/openai-secret not found'
+          observedGeneration: 1
+          lastTransitionTime: "2026-09-21T14:02:28Z"
+      ```
+
+   4. Read the `reason`, not only the `status`. A check that tests the `Accepted` status alone passes in this state, because the status stays `True`. When the reason is `PartiallyValid`, the message names the configuration that could not be translated.
+
+   5. Fix the cause that the message names. The rest of the resource is still translated and served, so the symptom usually shows up at request time instead of at apply time.
+
+      | Invalid part | What the proxy loads instead | How to fix it |
+      | -- | -- | -- |
+      | The Secret that holds LLM provider credentials does not exist | The backend keeps the credential field, but empty. Provider calls go out unauthenticated, so the failure comes back from the provider rather than from agentgateway. | Create the Secret in the namespace that `secretRef` names, or correct the reference. |
+      | A prompt guard `webhook.backendRef` names a Service that does not exist | The webhook stays in the policy with no target to call. Guarded requests then take the webhook `failureMode`, which is `FailClosed` unless you set it. With `FailOpen`, prompt guarding is skipped instead. | Create the Service, or point `backendRef` at one that exists. Until then, treat prompt guarding as not running. |
+      | A remote JWKS is not available yet | The authentication policy keeps an empty key set, `{"keys":[]}`, so it trusts no keys. JWT authentication defaults to `Strict` mode, which rejects a request that carries no token and rejects every token that it does receive, because no key can verify a signature. | Check that the JWKS endpoint is reachable from the control plane. The controller retries the fetch with a backoff and installs the keys when it succeeds. |
+      | A CEL expression does not compile | The rest of the policy is kept and the expression is replaced with one that always fails. An `authorization` rule built on it therefore allows nothing. | Fix the expression. The condition message quotes it and names the field that it came from. |
+
+   6. Check the condition again. The controller recomputes it on its own when the missing Secret, Service, or key set appears, so you do not need to reapply the resource.
 
 ## Inspect the loaded configuration
 
