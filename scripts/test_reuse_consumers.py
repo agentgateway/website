@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+"""Tests for reuse_consumers.
+
+Run: python3 -m unittest discover -s scripts -p 'test_*.py'
+
+Two halves. The first builds a small tree on disk and asserts the graph walk,
+so the shapes that matter are stated outright rather than inferred from the
+real tree. The second runs against the REAL repository, because the bug this
+script fixes was a heuristic that looked correct and did not match the tree it
+was aimed at -- a unit test over a fixture would have passed for the old code
+too.
+
+Stdlib unittest only, matching the other scripts here, and no network.
+"""
+
+import pathlib
+import sys
+import tempfile
+import unittest
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+
+import reuse_consumers as rc  # noqa: E402
+
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
+
+
+def write(root: pathlib.Path, rel: str, body: str) -> None:
+    path = root / rel
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(body, encoding="utf-8")
+
+
+class GraphWalkTests(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = pathlib.Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def index(self):
+        return rc.build_reverse_index(self.root)
+
+    def test_a_direct_reuse_is_found(self):
+        write(self.root, "assets/agw-docs/snippets/a.md", "body")
+        write(self.root, "content/docs/x.md", '{{< reuse "agw-docs/snippets/a.md" >}}')
+        self.assertEqual(
+            rc.consumers(["assets/agw-docs/snippets/a.md"], self.index()),
+            ["content/docs/x.md"],
+        )
+
+    def test_a_snippet_reached_through_another_snippet_is_found(self):
+        # The openai case, which is what the old path mirror could not do: the
+        # page and the snippet share no path segments, and the link between
+        # them runs through a third file.
+        write(self.root, "assets/agw-docs/pages/llm/providers/openai.md", "body")
+        write(
+            self.root,
+            "assets/agw-docs/pages/quickstart/llm.md",
+            '{{< reuse "agw-docs/pages/llm/providers/openai.md" >}}',
+        )
+        write(
+            self.root,
+            "content/docs/kubernetes/main/documentation/quickstart/llm.md",
+            '{{< reuse "agw-docs/pages/quickstart/llm.md" >}}',
+        )
+        self.assertEqual(
+            rc.consumers(
+                ["assets/agw-docs/pages/llm/providers/openai.md"], self.index()
+            ),
+            ["content/docs/kubernetes/main/documentation/quickstart/llm.md"],
+        )
+
+    def test_a_page_outside_the_mirrored_prefixes_is_found(self):
+        # `integrations/` is neither the version root nor `documentation/`, the
+        # only two prefixes the old mirror knew.
+        write(self.root, "assets/agw-docs/pages/llm/providers/openai.md", "body")
+        write(
+            self.root,
+            "content/docs/kubernetes/main/integrations/llm/providers/openai.md",
+            '{{< reuse "agw-docs/pages/llm/providers/openai.md" >}}',
+        )
+        self.assertEqual(
+            rc.consumers(
+                ["assets/agw-docs/pages/llm/providers/openai.md"], self.index()
+            ),
+            ["content/docs/kubernetes/main/integrations/llm/providers/openai.md"],
+        )
+
+    def test_both_shortcode_delimiters_and_reuse_append_count(self):
+        write(self.root, "assets/agw-docs/snippets/a.md", "body")
+        write(self.root, "content/docs/angle.md", '{{< reuse "agw-docs/snippets/a.md" >}}')
+        write(self.root, "content/docs/percent.md", '{{% reuse "agw-docs/snippets/a.md" %}}')
+        write(
+            self.root,
+            "content/docs/append.md",
+            '{{< reuse-append "agw-docs/snippets/a.md" >}}',
+        )
+        self.assertEqual(
+            rc.consumers(["assets/agw-docs/snippets/a.md"], self.index()),
+            ["content/docs/angle.md", "content/docs/append.md", "content/docs/percent.md"],
+        )
+
+    def test_a_changed_content_page_is_returned_as_itself(self):
+        # The workflow hands over the whole changed-file list, pages included.
+        write(self.root, "content/docs/x.md", "no reuse here")
+        self.assertEqual(
+            rc.consumers(["content/docs/x.md"], self.index()), ["content/docs/x.md"]
+        )
+
+    def test_a_cycle_terminates(self):
+        # Not hypothetical enough to ignore: a snippet pair that includes each
+        # other would otherwise hang the discover job rather than fail it.
+        write(
+            self.root,
+            "assets/agw-docs/snippets/a.md",
+            '{{< reuse "agw-docs/snippets/b.md" >}}',
+        )
+        write(
+            self.root,
+            "assets/agw-docs/snippets/b.md",
+            '{{< reuse "agw-docs/snippets/a.md" >}}',
+        )
+        write(self.root, "content/docs/x.md", '{{< reuse "agw-docs/snippets/a.md" >}}')
+        self.assertEqual(
+            rc.consumers(["assets/agw-docs/snippets/b.md"], self.index()),
+            ["content/docs/x.md"],
+        )
+
+    def test_an_orphan_snippet_resolves_to_nothing(self):
+        write(self.root, "assets/agw-docs/snippets/unused.md", "body")
+        self.assertEqual(
+            rc.consumers(["assets/agw-docs/snippets/unused.md"], self.index()), []
+        )
+
+
+class RealRepositoryTests(unittest.TestCase):
+    """Against the tree as it actually is, which is where the old code failed."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.index = rc.build_reverse_index(REPO_ROOT)
+
+    def test_the_openai_snippet_reaches_its_quickstart_page(self):
+        pages = rc.consumers(
+            ["assets/agw-docs/pages/agentgateway/llm/providers/openai.md"], self.index
+        )
+        self.assertIn(
+            "content/docs/kubernetes/main/documentation/quickstart/llm.md",
+            pages,
+            "the two-hop reuse through quickstart/llm.md is the case this fixes",
+        )
+        self.assertIn(
+            "content/docs/kubernetes/main/integrations/llm/providers/openai.md",
+            pages,
+            "integrations/ was outside the old prefix list",
+        )
+
+    def test_nearly_every_doc_test_snippet_now_resolves(self):
+        """A budget, not a moving target.
+
+        62 of the 134 snippets carrying doc tests resolved to no page under
+        the path mirror, and each of those was a check that could not fail.
+        Five still resolve to nothing, and all five are genuinely unreferenced --
+        version-pinned leftovers such as `trace-requests-standalone-12x.md`
+        that no page reuses any more. They are dead files rather than a gap in
+        this walk, so the budget allows them and nothing more: a regression
+        here, or a new orphan, should be looked at rather than absorbed.
+        """
+        unresolved = []
+        for snippet in sorted((REPO_ROOT / "assets").rglob("*.md")):
+            text = snippet.read_text(encoding="utf-8", errors="ignore")
+            if "{{< doc-test" not in text:
+                continue
+            rel = snippet.relative_to(REPO_ROOT).as_posix()
+            if not rc.consumers([rel], self.index):
+                unresolved.append(rel)
+        self.assertLessEqual(
+            len(unresolved),
+            5,
+            f"snippets with doc tests that reach no page: {unresolved}",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

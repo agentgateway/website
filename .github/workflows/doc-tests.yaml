@@ -40,6 +40,17 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
+      # The step below decides WHICH tests run, so a fault in it does not fail
+      # the build, it empties it. That is the failure mode this whole job just
+      # had, and it went unnoticed for as long as it existed, so the selector
+      # is checked before it is used.
+      - name: Test the changed-file resolver
+        env:
+          # `scripts/` is not gitignored for __pycache__, and a stray compiled
+          # file here would show up in the tree of any job that later commits.
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+
       - name: Get changed markdown files
         id: changed-files
         if: github.event_name == 'pull_request'
@@ -49,34 +60,27 @@ jobs:
           ALL_CHANGED=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files \
             --paginate --jq '.[].filename' || true)
 
-          # Start with directly changed content/*.md files
-          FILES=$(echo "$ALL_CHANGED" | grep '^content/.*\.md$' | tr '\n' ' ' || true)
-
-          # For each changed assets/agw-docs/pages/*.md file, check for corresponding
-          # content files in the kubernetes/standalone main/latest directories
-          ASSET_FILES=$(echo "$ALL_CHANGED" | grep '^assets/agw-docs/pages/.*\.md$' || true)
-          if [ -n "$ASSET_FILES" ]; then
-            while IFS= read -r asset_file; do
-              rel_path="${asset_file#assets/agw-docs/pages/}"
-              rel_path="${rel_path#agentgateway/}"
-              found=0
-              # docTabs moved most subject directories under documentation/, so each
-              # version root has two candidate prefixes: the version root itself (which
-              # still holds integrations/, reference/, and release-notes/) and
-              # documentation/ (everything else). Try both.
-              for content_dir in "content/docs/kubernetes/main" "content/docs/kubernetes/latest" "content/docs/standalone/main" "content/docs/standalone/latest" \
-                                 "content/docs/kubernetes/main/documentation" "content/docs/kubernetes/latest/documentation" "content/docs/standalone/main/documentation" "content/docs/standalone/latest/documentation"; do
-                candidate="${content_dir}/${rel_path}"
-                if [ -f "$candidate" ] && ! echo "$FILES" | grep -qF "$candidate"; then
-                  FILES="$FILES $candidate"
-                  found=1
-                fi
-              done
-              if [ "$found" -eq 0 ]; then
-                echo "No content candidates found for asset file: $asset_file"
-              fi
-            done <<< "$ASSET_FILES"
-          fi
+          # Map every changed markdown file to the content pages that read it,
+          # directly or through a chain of `reuse` shortcodes.
+          #
+          # THIS USED TO MIRROR THE PATH, AND THE MIRROR WAS A CHECK THAT COULD
+          # NOT FAIL. It stripped `assets/agw-docs/pages/` and tried the
+          # remainder under each version root, with and without a
+          # `documentation/` segment. Anything it could not place was announced
+          # as "No content candidates found" and the job went green having run
+          # nothing. That was 62 of the 134 snippets carrying doc tests: pages
+          # under `integrations/`, snippets outside `assets/agw-docs/pages/`
+          # which it never even tried, and -- the case that cannot be fixed by
+          # adding prefixes -- snippets reached only through another snippet,
+          # whose page shares no path segments with them at all.
+          #
+          # `reuse_consumers.py` reads the edges out of the files instead of
+          # guessing, so a page moving cannot silently switch its tests off.
+          # Its own tests run above, before it is trusted with the selection.
+          FILES=$(printf '%s\n' "$ALL_CHANGED" \
+            | grep -E '^(content|assets)/.*\.md$' \
+            | python3 scripts/reuse_consumers.py --repo-root . --stdin \
+            | tr '\n' ' ' || true)
 
           # NOT `xargs` for the trim: it re-wraps its output at ~4096 characters, so a
           # large PR turned this into a MULTI-LINE value and `files=...` below then
