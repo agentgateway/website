@@ -255,13 +255,16 @@ class TestDependencyEdgeTests(unittest.TestCase):
         )
 
     def test_test_dependencies_do_not_chain(self):
-        """The property that keeps the selector from selecting everything.
+        """A depends on B's blocks, B depends on C's blocks.
 
-        A depends on B's blocks, B depends on C's blocks. Changing C changes
-        B's TEST, but not B's CONTENT, so A is untouched. Chaining these was
-        measured at 288 of 468 tests for a one-line change when the honest
-        answer was 30, and a selector that picks most of the suite has stopped
-        being a selector.
+        Changing C changes B's TEST, but not B's CONTENT, so A is untouched.
+
+        This fixture is the only place the property is pinned, and it needs
+        to be, because the effect on the real tree is small enough to hide: a
+        changed snippet gives the same answer either way, and only a changed
+        test-step source differs at all (`install/helm.md`, 24 pages against
+        29). Small is not the same as right, and nothing about the shape
+        guarantees it stays small.
         """
         self.page("content/docs/kubernetes/main/documentation/c.md")
         self.page(

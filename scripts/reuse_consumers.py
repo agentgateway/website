@@ -206,8 +206,7 @@ def build_test_dependency_index(root: pathlib.Path) -> dict[str, set[str]]:
     """``step source file -> {pages whose tests run it}``.
 
     Kept apart from the inclusion index because the two relations do NOT
-    compose, and merging them over-selects badly -- 288 of 468 tests for a
-    one-line version change, when the honest answer is 30.
+    compose.
 
     Inclusion is transitive: if a snippet changes, the page that reuses it
     renders different CONTENT, so whatever consumes that page is affected too,
@@ -217,12 +216,25 @@ def build_test_dependency_index(root: pathlib.Path) -> dict[str, set[str]]:
     changes, a test that runs its blocks changes. But the page DECLARING that
     test is unchanged as a document, so a third page whose own test runs
     blocks from the declaring page sees nothing different. Chaining the two
-    walks that third page in anyway, and then a fourth, until most of the
-    suite is selected and the selector has stopped discriminating -- which
-    costs the ~40 minutes of CI that made it worth selecting at all.
+    walks that third page in anyway, and then a fourth.
 
-    So this index is applied ONCE, as a terminal step, to the closure of the
-    inclusion walk. See `consumers`.
+    ON THE SIZE OF THIS, measured rather than assumed, because the first
+    version of this comment asserted a dramatic number that turned out to be
+    invented. For a changed SNIPPET it makes no difference at all: the
+    inclusion closure already holds the pages, and their dependents are the
+    same set either way (`helm-version-flag.md` is 764 pages both ways,
+    `namespace.md` 1260 both ways). The difference shows only when the changed
+    file is ITSELF a test-step source, where the chained walk adds the
+    dependents of its dependents: `install/helm.md` is 24 pages terminal
+    against 29 chained.
+
+    So this is a correctness split, not a CI-cost one. 5 spurious pages today,
+    and no reason to think the shape stays that small -- the chained answer is
+    wrong for a reason that does not depend on how many pages it happens to
+    add.
+
+    Applied ONCE, as a terminal step, to the closure of the inclusion walk.
+    See `consumers`.
     """
     index: dict[str, set[str]] = {}
     # Front matter only ever lives on a page, so assets/ is skipped rather than
@@ -253,7 +265,9 @@ def consumers(
 
     PASS 2, terminal: any page whose `test:` block runs blocks from a file in
     that closure. Applied once and not followed, because a test dependency
-    moves no content; see `build_test_dependency_index`.
+    moves no content; see `build_test_dependency_index` for the measurement of
+    what that actually changes (less than it sounds, and for snippets,
+    nothing).
 
     A changed path that is already a content page is returned as itself. The
     caller passes the whole changed-file list, and a page that both changed
