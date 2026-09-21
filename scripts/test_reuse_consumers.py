@@ -191,16 +191,123 @@ class GraphWalkTests(unittest.TestCase):
         )
 
 
+class TestDependencyEdgeTests(unittest.TestCase):
+    """The front-matter `test:` relation, which reuse cannot see."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = pathlib.Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def indexes(self):
+        return rc.build_reverse_index(self.root), rc.build_test_dependency_index(self.root)
+
+    def page(self, rel, body="", test_block=""):
+        fm = f"---\ntitle: x\n{test_block}---\n\n"
+        write(self.root, rel, fm + body)
+
+    def test_a_setup_step_on_another_page_is_an_edge(self):
+        # The rate-limit shape: the test runs install/helm.md's blocks, but the
+        # page reuses nothing from it, so only this edge connects them.
+        self.page("content/docs/kubernetes/main/documentation/install/helm.md")
+        self.page(
+            "content/docs/kubernetes/main/documentation/security/rate-limit.md",
+            test_block=(
+                "test:\n"
+                "  rl:\n"
+                "  - file: ${versionRoot}/documentation/install/helm.md\n"
+                "    path: standard\n"
+            ),
+        )
+        inc, tst = self.indexes()
+        self.assertIn(
+            "content/docs/kubernetes/main/documentation/security/rate-limit.md",
+            rc.consumers(
+                ["content/docs/kubernetes/main/documentation/install/helm.md"],
+                inc,
+                test_index=tst,
+            ),
+        )
+
+    def test_a_snippet_reaches_tests_through_the_page_that_reuses_it(self):
+        # The real chain this exists for: version snippet -> install page
+        # (reuse) -> every test that runs that page's blocks (dependency).
+        write(self.root, "assets/agw-docs/versions/helm-version-flag.md", "1.0.0")
+        self.page(
+            "content/docs/kubernetes/main/documentation/install/helm.md",
+            body='{{< reuse "agw-docs/versions/helm-version-flag.md" >}}',
+        )
+        self.page(
+            "content/docs/kubernetes/main/documentation/security/rate-limit.md",
+            test_block=(
+                "test:\n"
+                "  rl:\n"
+                "  - file: ${versionRoot}/documentation/install/helm.md\n"
+                "    path: standard\n"
+            ),
+        )
+        inc, tst = self.indexes()
+        self.assertIn(
+            "content/docs/kubernetes/main/documentation/security/rate-limit.md",
+            rc.consumers(
+                ["assets/agw-docs/versions/helm-version-flag.md"], inc, test_index=tst
+            ),
+        )
+
+    def test_test_dependencies_do_not_chain(self):
+        """The property that keeps the selector from selecting everything.
+
+        A depends on B's blocks, B depends on C's blocks. Changing C changes
+        B's TEST, but not B's CONTENT, so A is untouched. Chaining these was
+        measured at 288 of 468 tests for a one-line change when the honest
+        answer was 30, and a selector that picks most of the suite has stopped
+        being a selector.
+        """
+        self.page("content/docs/kubernetes/main/documentation/c.md")
+        self.page(
+            "content/docs/kubernetes/main/documentation/b.md",
+            test_block="test:\n  t:\n  - file: ${versionRoot}/documentation/c.md\n    path: p\n",
+        )
+        self.page(
+            "content/docs/kubernetes/main/documentation/a.md",
+            test_block="test:\n  t:\n  - file: ${versionRoot}/documentation/b.md\n    path: p\n",
+        )
+        inc, tst = self.indexes()
+        got = rc.consumers(
+            ["content/docs/kubernetes/main/documentation/c.md"], inc, test_index=tst
+        )
+        self.assertIn("content/docs/kubernetes/main/documentation/b.md", got)
+        self.assertNotIn(
+            "content/docs/kubernetes/main/documentation/a.md",
+            got,
+            "a test dependency moves no content, so it must not chain",
+        )
+
+    def test_a_self_referencing_step_adds_no_edge(self):
+        # `file` defaults to the declaring page; the page is already returned
+        # as itself, and a self-edge would make every tested page its own
+        # consumer for no gain.
+        self.page(
+            "content/docs/kubernetes/main/documentation/x.md",
+            test_block="test:\n  t:\n  - file: ${versionRoot}/documentation/x.md\n    path: p\n",
+        )
+        _, tst = self.indexes()
+        self.assertEqual(tst, {})
+
+
 class RealRepositoryTests(unittest.TestCase):
     """Against the tree as it actually is, which is where the old code failed."""
 
     @classmethod
     def setUpClass(cls):
         cls.index = rc.build_reverse_index(REPO_ROOT)
+        cls.test_index = rc.build_test_dependency_index(REPO_ROOT)
 
     def test_the_openai_snippet_reaches_its_quickstart_page(self):
         pages = rc.consumers(
-            ["assets/agw-docs/pages/agentgateway/llm/providers/openai.md"], self.index
+            ["assets/agw-docs/pages/agentgateway/llm/providers/openai.md"],
+            self.index,
+            test_index=self.test_index,
         )
         self.assertIn(
             "content/docs/kubernetes/main/documentation/quickstart/llm.md",
@@ -230,7 +337,7 @@ class RealRepositoryTests(unittest.TestCase):
             if "{{< doc-test" not in text:
                 continue
             rel = snippet.relative_to(REPO_ROOT).as_posix()
-            if not rc.consumers([rel], self.index):
+            if not rc.consumers([rel], self.index, test_index=self.test_index):
                 unresolved.append(rel)
         self.assertLessEqual(
             len(unresolved),

@@ -81,8 +81,10 @@ jobs:
           CHANGED_MD=$(printf '%s\n' "$ALL_CHANGED" | grep -E '^(content|assets)/.*\.md$') \
             || CHANGED_MD=""
 
-          # Map every changed markdown file to the content pages that read it,
-          # directly or through a chain of `reuse` shortcodes.
+          # Map every changed markdown file to the content pages affected by
+          # it: those that read it through a chain of `reuse` shortcodes, and
+          # those whose front-matter `test:` block runs its code blocks as a
+          # setup step.
           #
           # THIS USED TO MIRROR THE PATH, AND THE MIRROR WAS A CHECK THAT COULD
           # NOT FAIL. It stripped `assets/agw-docs/pages/` and tried the
