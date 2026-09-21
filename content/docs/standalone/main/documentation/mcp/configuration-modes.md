@@ -153,7 +153,7 @@ You can also use `prefixMode` to control how tool names are namespaced. For more
 
 ## Keep idle MCP streams alive {#sse-keep-alive}
 
-Use `sseKeepAlive` on the MCP backend to send Server-Sent Events (SSE) comment frames on long-lived MCP streams at a fixed interval. This is useful when a load balancer, API gateway, or network address translation (NAT) device sits between your clients and agentgateway and closes connections that carry no traffic. MCP clients ignore the comment frames, but the intermediaries in the path count them as traffic and leave the connection open.
+Use `sseKeepAlive` on the MCP backend to send Server-Sent Events (SSE) comment frames on long-lived MCP streams at a fixed interval. This setting is useful when a load balancer, API gateway, or network address translation (NAT) device sits between your clients and agentgateway and closes connections that carry no traffic. MCP clients ignore the comment frames, but the intermediaries in the path count them as traffic and leave the connection open.
 
 An MCP stream is idle whenever no tool calls or notifications are in flight, which nothing in the network path can tell apart from a dead connection. Keep-alives are off by default, so omit `sseKeepAlive` if you do not need them.
 
