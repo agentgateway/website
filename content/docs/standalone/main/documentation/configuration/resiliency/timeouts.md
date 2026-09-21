@@ -18,6 +18,9 @@ Attaches to: {{< badge content="Route" path="/documentation/configuration/routes
 
 Request {{< gloss "Timeout" >}}timeouts{{< /gloss >}} allow returning an error for requests that take too long to complete.
 
+> [!NOTE]
+> Timeouts bound how long a request may take. To stop an intermediary from closing a long-lived MCP stream that is merely idle, use `sseKeepAlive` on the MCP backend instead. For more information, see [Keep idle MCP streams alive]({{< link-hextra path="/documentation/mcp/configuration-modes#sse-keep-alive" >}}).
+
 ## Route Timeouts
 
 You can configure two types of timeouts on a route.
