@@ -17,12 +17,6 @@ With ListenerSets, you can group together listeners that have their own unique c
 
 Similar to Gateways, ListenerSets can have a maximum of 64 listeners. However, because you can attach multiple ListenerSets to a single Gateway, now a single Gateway can have more than 64 listeners. Keep in mind that more listeners can impact how long it takes to propagate configuration changes on the Gateway. If you have more than 1,000 listeners, consider attaching ListenerSets to multiple Gateways.
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2026.7.1,2.3.x,2.2.x,2.1.x" >}}
-### ListenerSet precedence {#listenerset-precedence}
-
-When multiple ListenerSets attach to the same Gateway, agentgateway uses deterministic precedence for listener conflicts. The oldest ListenerSet, by `metadata.creationTimestamp`, takes precedence first. If two ListenerSets have the same creation timestamp, agentgateway compares the ListenerSet namespace and name in alphabetical order. For multiple listeners in the same ListenerSet, the order in `spec.listeners` decides which listener takes precedence.
-{{< /version >}}
-
 ### ListenerSet use cases {#listenerset-use-cases}
 
 As such, you might use ListenerSets for the following advantages:
@@ -66,6 +60,20 @@ flowchart TD
   LS2 -- "parentRef" --> GW
   HR2 -- "backendRef" --> SVC2
 ```
+
+<!-- The exclude list names 2026.9.x directly because the OSS-to-enterprise version remap rewrites the literal `1.5.x` only once, and the `latest` entry consumes it. Every other enterprise version is reached through its ossVersion. -->
+{{< version exclude-if="2.2.x,1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2026.9.x" >}}
+### Listener precedence {#listener-precedence}
+
+Listeners that share a port must agree on their protocol, hostname, and bind mode. When they do not, only the first listener in precedence order is accepted. Each later listener that collides with it reports `Conflicted: True` and `Accepted: False` in its status, with a reason of `HostnameConflict`, `ProtocolConflict`, or `BindModeConflict`. Precedence follows the order that [GEP-1713](https://gateway-api.sigs.k8s.io/geps/gep-1713/#listener-precedence) defines:
+
+1. Listeners written inline on the Gateway come before any listener that a ListenerSet contributes.
+2. ListenerSets are ordered by `metadata.creationTimestamp`, oldest first.
+3. ListenerSets that share a creation timestamp are ordered alphabetically, first by namespace and then by name.
+4. Within a single ListenerSet, listeners keep the order that they appear in `spec.listeners`.
+
+Because precedence starts from the creation timestamp, re-creating a ListenerSet moves it to the end of the order, and a listener that used to win a conflict can lose it.
+{{< /version >}}
 
 ### More information {#more-info}
 
