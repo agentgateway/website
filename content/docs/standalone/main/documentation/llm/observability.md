@@ -122,5 +122,5 @@ gen_ai.request.model=gpt-4o error=rate limit exceeded duration=206ms
 
 ## Learn more
 
-- [Observability overview]({{< link-hextra path="/observability/" >}}) for metrics, traces, and access logs.
-- [LLM observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}) for external observability platforms.
+- [Observability overview]({{< link-hextra path="/documentation/observability/" >}}) for metrics, traces, and access logs.
+- [LLM observability integrations]({{< link-hextra path="/integrations/llm/observability/" >}}) for external observability platforms.

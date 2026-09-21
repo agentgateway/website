@@ -31,7 +31,7 @@ Datadog account. The remaining steps export telemetry, so they do.
 The direct setup requires a running {{< reuse "agw-docs/snippets/agentgateway.md" >}}
 installation and a Datadog API key. If you have not installed
 {{< reuse "agw-docs/snippets/agentgateway.md" >}} or configured an LLM provider,
-complete the [LLM quickstart]({{< link-hextra path="/quickstart/llm/" >}})
+complete the [LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}})
 first.
 
 ## Run the complete example
@@ -237,9 +237,9 @@ without the Datadog override.
 
 ## Learn more
 
-- [Observability overview]({{< link-hextra path="/observability/" >}})
-- [Observe LLM traffic]({{< link-hextra path="/llm/observability/" >}})
-- [LLM observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}})
+- [Observability overview]({{< link-hextra path="/documentation/observability/" >}})
+- [Observe LLM traffic]({{< link-hextra path="/documentation/llm/observability/" >}})
+- [LLM observability integrations]({{< link-hextra path="/integrations/llm/observability/" >}})
 - [Complete Datadog example](https://github.com/agentgateway/agentgateway/tree/main/examples/datadog)
 - [Datadog OpenMetrics](https://docs.datadoghq.com/integrations/openmetrics/)
 - [Agent Observability with OpenTelemetry](https://docs.datadoghq.com/llm_observability/instrument/otel_instrumentation/)
