@@ -57,8 +57,29 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # This step picks the tests. EVERY failure in it has to be loud,
+          # because the shape of a selector's failure is an empty matrix and a
+          # green check, not a red one -- that is the bug this job just had.
+          # The default shell here is `bash -e`, which is not enough on its
+          # own: `-e` ignores a failure anywhere but the END of a pipeline,
+          # and the selection is a pipeline. Hence `pipefail`, and hence no
+          # `|| true` anywhere below.
+          set -o pipefail
+
+          # No `|| true`. A flaky `gh api` used to leave this empty, and an
+          # empty changed-file list is indistinguishable from "this PR changes
+          # no docs" -- the run went green having tested nothing. A network
+          # blip should cost a re-run, not a silent pass.
           ALL_CHANGED=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files \
-            --paginate --jq '.[].filename' || true)
+            --paginate --jq '.[].filename')
+
+          # `grep` exits 1 when nothing matches, and "this PR touches no
+          # markdown" is a normal outcome (a CSS or workflow-only PR), so it
+          # is kept OUT of the pipeline below, where pipefail would read that
+          # 1 as a failure. This is the one expected non-zero in the step, and
+          # it is handled here rather than blanket-suppressed.
+          CHANGED_MD=$(printf '%s\n' "$ALL_CHANGED" | grep -E '^(content|assets)/.*\.md$') \
+            || CHANGED_MD=""
 
           # Map every changed markdown file to the content pages that read it,
           # directly or through a chain of `reuse` shortcodes.
@@ -77,17 +98,49 @@ jobs:
           # `reuse_consumers.py` reads the edges out of the files instead of
           # guessing, so a page moving cannot silently switch its tests off.
           # Its own tests run above, before it is trusted with the selection.
-          FILES=$(printf '%s\n' "$ALL_CHANGED" \
-            | grep -E '^(content|assets)/.*\.md$' \
-            | python3 scripts/reuse_consumers.py --repo-root . --stdin \
-            | tr '\n' ' ' || true)
+          #
+          # Under pipefail a traceback out of the resolver now FAILS this step.
+          # It previously could not: `|| true` forced the assignment to 0, so a
+          # crash produced an empty list and the exact green-having-run-nothing
+          # outcome the resolver was written to end.
+          FILES=""
+          UNRESOLVED_LOG="${RUNNER_TEMP}/unresolved.txt"
+          : > "$UNRESOLVED_LOG"
+          if [ -n "$CHANGED_MD" ]; then
+            FILES=$(printf '%s\n' "$CHANGED_MD" \
+              | python3 scripts/reuse_consumers.py --repo-root . --stdin 2>"$UNRESOLVED_LOG" \
+              | tr '\n' ' ')
+          fi
+
+          # A changed file that reaches no page selects no tests. Usually
+          # right -- five snippets in the tree are orphans no page reuses any
+          # more -- but it is also what a genuine gap in the walk looks like,
+          # so it is surfaced as a warning on the PR rather than left in the
+          # log. NOT an error: an orphan edit is legitimate, and a check that
+          # cries wolf on legitimate edits gets ignored, which is how the
+          # original "No content candidates found" line went unread for so
+          # long.
+          if [ -s "$UNRESOLVED_LOG" ]; then
+            echo "::warning::Changed files that reach no content page (no tests selected for them):"
+            cat "$UNRESOLVED_LOG"
+          fi
 
           # NOT `xargs` for the trim: it re-wraps its output at ~4096 characters, so a
           # large PR turned this into a MULTI-LINE value and `files=...` below then
           # failed with "Unable to process file command 'output'". Trim with sed, and
           # write through the heredoc form so the length cannot break the format.
-          FILES=$(echo "$FILES" | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' ' \
-            | sed -e 's/^ *//' -e 's/ *$//')
+          #
+          # Guarded, and `printf` rather than the `grep -v '^$'` this used to drop
+          # blanks with. Under the pipefail added above, that grep matches nothing on
+          # an empty list, exits 1, and takes the whole step down -- which a CSS-only
+          # PR hits, since the workflow's `paths:` filter includes all of `assets/**`.
+          # Unquoted `$FILES` word-splits to one path per line and discards the blanks
+          # on its own, so nothing in this pipeline can report failure for having had
+          # no work to do.
+          if [ -n "$FILES" ]; then
+            FILES=$(printf '%s\n' $FILES | sort -u | tr '\n' ' ' \
+              | sed -e 's/^ *//' -e 's/ *$//')
+          fi
           {
             echo "files<<__CHANGED_FILES__"
             echo "$FILES"

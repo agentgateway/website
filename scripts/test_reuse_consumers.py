@@ -107,6 +107,64 @@ class GraphWalkTests(unittest.TestCase):
             rc.consumers(["content/docs/x.md"], self.index()), ["content/docs/x.md"]
         )
 
+    def test_the_include_shortcode_is_an_edge_too(self):
+        # `doc_test_extract` follows `include` as well as `reuse`, and the two
+        # have to agree on what counts as an inclusion. No page uses it today,
+        # so this fixture is the only thing keeping the agreement true.
+        write(self.root, "content/docs/shared.md", "body")
+        write(self.root, "content/docs/x.md", '{{< include "docs/shared.md" >}}')
+        self.assertEqual(
+            rc.consumers(["content/docs/shared.md"], self.index()),
+            ["content/docs/shared.md", "content/docs/x.md"],
+        )
+
+    def test_an_include_without_a_suffix_finds_the_section_index(self):
+        # The extractor tries `<target>.md` then `<target>/_index.md`; a
+        # resolver that only tried the first would miss a section include.
+        write(self.root, "content/docs/section/_index.md", "body")
+        write(self.root, "content/docs/x.md", '{{< include "docs/section" >}}')
+        self.assertIn(
+            "content/docs/x.md", rc.consumers(["content/docs/section/_index.md"], self.index())
+        )
+
+    def test_unresolved_names_the_file_that_went_nowhere(self):
+        # The warning has to say WHICH file selected nothing. "Some of your
+        # snippets reach no page" is the old useless message with new wording.
+        write(self.root, "assets/agw-docs/snippets/used.md", "body")
+        write(self.root, "assets/agw-docs/snippets/orphan.md", "body")
+        write(
+            self.root, "content/docs/x.md", '{{< reuse "agw-docs/snippets/used.md" >}}'
+        )
+        self.assertEqual(
+            rc.unresolved(
+                [
+                    "assets/agw-docs/snippets/used.md",
+                    "assets/agw-docs/snippets/orphan.md",
+                ],
+                self.index(),
+            ),
+            ["assets/agw-docs/snippets/orphan.md"],
+        )
+
+    def test_only_an_orphan_with_tests_is_warning_worthy(self):
+        # 125 snippets in the real tree reach no page. Warning on all of them
+        # would bury the one case that means a test went dark.
+        write(self.root, "assets/agw-docs/snippets/quiet-orphan.md", "body")
+        write(
+            self.root,
+            "assets/agw-docs/snippets/costly-orphan.md",
+            'body\n{{< doc-test name="x" >}}',
+        )
+        changed = [
+            "assets/agw-docs/snippets/quiet-orphan.md",
+            "assets/agw-docs/snippets/costly-orphan.md",
+        ]
+        self.assertEqual(sorted(rc.unresolved(changed, self.index())), sorted(changed))
+        self.assertEqual(
+            rc.unresolved_losing_tests(changed, self.index(), self.root),
+            ["assets/agw-docs/snippets/costly-orphan.md"],
+        )
+
     def test_a_cycle_terminates(self):
         # Not hypothetical enough to ignore: a snippet pair that includes each
         # other would otherwise hang the discover job rather than fail it.
