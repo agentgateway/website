@@ -32,7 +32,7 @@ Prepare a catalog by creating your own JSON file or using the `agctl catalog imp
 
 Use `agctl catalog import` to generate a catalog JSON file, then load it into a ConfigMap.
 
-1. Generate a catalog from one or more supported sources. The `--source` flag takes a comma-separated list, and the sources merge in the order that you list them, so a later source overlays an earlier one. By default, `agctl catalog import` imports `models.dev,aws-bedrock-mantle`, which prices every provider that the proxy supports and then tags the Amazon Bedrock models. To import only a subset of providers, pass a comma-separated list to `--providers`.
+1. Generate a catalog from one or more supported sources. The `--source` flag takes a comma-separated list, and the sources merge in the order that you list them, so a later source overlays an earlier one. By default, `agctl catalog import` imports `models.dev,aws-bedrock-mantle`, which prices every provider that the proxy supports and then tags the Amazon Bedrock models. A source is a catalog to import from, not an LLM provider: each source covers one or more providers and contributes rates, tags, or both. To import only a subset of the providers that a source covers, pass a comma-separated list to `--providers`.
 
    | Source | What it contributes |
    |--------|---------------------|

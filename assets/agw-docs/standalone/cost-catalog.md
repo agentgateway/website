@@ -45,20 +45,15 @@ For general LLM telemetry setup, see [Observe traffic]({{< link-hextra path="/do
 
 ## Import costs (agctl)
 
-<!-- `--source` went from a single value defaulting to `models.dev` to a merged
-     list defaulting to `models.dev,aws-bedrock-mantle`, new in 1.6.
-
-     Every gate for that change in this file lists the releases 1.5 and older
-     by number, so the two branches form a complete pair: one matches a listed
-     release, the other matches everything else, which is 1.6 and newer. Two
-     shorter forms are both wrong. `exclude-if="1.5.x"` reads as "every version
-     except 1.5", so it shows the 1.6 text on 1.4.x and older. `include-if="main"`
-     pins the text to the development tree, so it disappears the moment a
-     release freezes it under a number. As written, a new release needs no edit
-     here: the new tree is absent from the list and therefore gets the 1.6 text. -->
+<!-- The merged `--source` list is new in 1.6. Every gate in this file must keep
+     include/exclude as a complete, matching pair — shortening either to "1.5.x"
+     would also match 1.4.x and older, and adding "main" would need an edit every
+     release. -->
 Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` to generate a catalog file. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}The command reads from a supported pricing source, and the default source is `models.dev`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}The `--source` flag takes a comma-separated list, and the sources merge in the order that you list them, so a later source overlays an earlier one. The default is `models.dev,aws-bedrock-mantle`, which prices every provider that the proxy supports and then tags the Amazon Bedrock models.{{< /version >}}
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+A source is a catalog to import from, not an LLM provider: each source covers one or more providers and contributes rates, tags, or both. Use `--providers` to import a subset of the providers that a source covers.
+
 | Source | What it contributes |
 |--------|---------------------|
 | `models.dev` | Rates for every provider that the proxy supports, from [models.dev](https://models.dev). |
