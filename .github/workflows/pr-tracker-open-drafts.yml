@@ -1,0 +1,367 @@
+# Opens documentation pull requests for drafts prepared by the docs hub's
+# tracking tooling, which cannot open them itself.
+#
+# WHY THIS WORKFLOW EXISTS, RATHER THAN A CREDENTIAL.
+#
+# The drafting pipeline runs in a private repository, because it needs API keys
+# that cannot live in a public repository in another organization. It writes a
+# branch to a fork of this repository and stops. Until now the pull request
+# itself was opened with a personal access token belonging to an individual
+# maintainer, which is why those pull requests were authored by a person who had
+# not written them.
+#
+# This workflow removes that credential entirely. Nothing outside this
+# repository can write to it: the branch is read from a public fork, which needs
+# no authentication in either direction, and the pull request is opened by this
+# repository's own GITHUB_TOKEN. Maintainers here own this file and can turn it
+# off by deleting it, with no coordination required.
+#
+# WHAT IT DOES. On a schedule it lists branches named pr-tracker-draft-* on the
+# fork, skips any that already have a pull request, copies the changed
+# documentation files onto a branch in this repository, and opens the pull
+# request. Title and body come from a metadata file the drafting run committed
+# into the branch; that file is removed before the pull request is created, so
+# it never appears in the diff under review.
+#
+# WHAT TO REVIEW IT FOR. It copies content from a repository in another
+# organization, so it refuses to write anything outside the two documentation
+# paths named in ALLOWED_PATHS below. The drafting side runs its own equivalent
+# guard, and this one deliberately does not trust it.
+name: Open PR tracker draft PRs
+
+on:
+  schedule:
+    # Once a day, and deliberately not more often.
+    #
+    # Drafts appear on two schedules only. The drafting run is weekly, and a
+    # daily release watch dispatches it early on any day a release ships. Both
+    # finish well before this: the weekly run starts at 07:41 UTC and the
+    # release-dispatched one at 09:00, and a drafting job measured 11.5 minutes.
+    # 10:17 leaves roughly an hour of margin on the later of the two.
+    #
+    # An hourly poll was the first version of this, and it was 168 runs a week
+    # of somebody else's Actions budget to collect something that arrives once
+    # or twice. The cost of the slower cadence is that a draft pushed just after
+    # this runs waits a day, which is nothing against a review turnaround, and
+    # workflow_dispatch below covers the case where somebody wants it now.
+    - cron: '17 10 * * *'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Open a PR for this one branch only. Blank = every eligible branch.'
+        required: false
+        default: ''
+
+# Never two runs opening a pull request for the same branch at once.
+concurrency:
+  group: pr-tracker-open-drafts
+  cancel-in-progress: false
+
+# Same shape, and the same consequence, as reference-docs.yaml: the PR is
+# authored by github-actions[bot], so pull_request workflows are queued on it
+# and held as "action_required" until a maintainer clicks "Approve and run".
+# Cloudflare Pages previews and DCO are GitHub Apps rather than Actions, so
+# those run automatically.
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  # The fork the drafting pipeline pushes to. It is public, so every read of it
+  # below is unauthenticated.
+  FORK_REPO: solo-io/agentgateway-website-docs-drafts
+  BRANCH_PREFIX: pr-tracker-draft
+  # The ONLY paths a draft may touch. Anything else in the branch is a reason to
+  # skip the branch entirely rather than to copy part of it.
+  ALLOWED_PATHS: 'content/docs assets'
+  METADATA_FILE: .pr-tracker-draft.json
+
+jobs:
+  find:
+    name: Sort draft branches into new and already-open
+    runs-on: ubuntu-latest
+    outputs:
+      branches: ${{ steps.list.outputs.branches }}
+      refresh: ${{ steps.list.outputs.refresh }}
+    steps:
+      - name: List draft branches, and which of them already have a PR
+        id: list
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ONLY: ${{ inputs.branch }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "${ONLY}" ]; then
+            candidates="${ONLY}"
+          else
+            # A read of a public repository. GH_TOKEN is this repository's own
+            # and carries no access to the fork; it is set because `gh` wants a
+            # token present, not because one is needed to see this.
+            candidates=$(gh api --paginate "repos/${FORK_REPO}/branches" \
+              --jq ".[].name | select(startswith(\"${BRANCH_PREFIX}\"))")
+          fi
+
+          # THREE OUTCOMES, NOT TWO. A branch with no pull request needs one. A
+          # branch whose pull request is still OPEN keeps its description in
+          # sync, because the drafting side can rewrite the body on a re-run and
+          # the text a pull request was born with is otherwise the text it dies
+          # with. A branch whose pull request is merged or closed is finished,
+          # and reopening or rewriting it would be arguing with a decision
+          # somebody already made.
+          needed=()
+          refresh=()
+          for branch in ${candidates}; do
+            # --head takes the BARE ref name. The `owner:branch` form that the
+            # REST API and the compare view accept matches nothing here and
+            # would read as "no pull request yet", so every branch would be
+            # reopened on every poll.
+            found=$(gh pr list --repo "${GITHUB_REPOSITORY}" --head "${branch}" \
+              --state all --json url,state --jq '.[0] | select(.) | "\(.state) \(.url)"')
+            if [ -z "${found}" ]; then
+              needed+=("${branch}")
+              continue
+            fi
+            state="${found%% *}"
+            url="${found#* }"
+            case "${state}" in
+              OPEN)
+                echo "${branch}: open at ${url}; will refresh its description"
+                refresh+=("{\"branch\":\"${branch}\",\"url\":\"${url}\"}")
+                ;;
+              *)
+                echo "${branch}: ${state} at ${url}; leaving it alone"
+                ;;
+            esac
+          done
+
+          printf 'branches=%s\n' "$(printf '%s\n' "${needed[@]+"${needed[@]}"}" | jq -R . | jq -sc 'map(select(. != ""))')" >> "$GITHUB_OUTPUT"
+          printf 'refresh=%s\n' "$(printf '%s\n' "${refresh[@]+"${refresh[@]}"}" | jq -sc 'map(select(. != null))')" >> "$GITHUB_OUTPUT"
+          {
+            echo "${#needed[@]} branch(es) need a pull request."
+            echo "${#refresh[@]} open pull request(s) will have their description refreshed."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # DESCRIPTION ONLY, DELIBERATELY NOT CONTENT. Rewriting the files of an open
+  # pull request would discard anything a maintainer had pushed to it, and this
+  # workflow must never be able to overwrite a human's edit. The body is safe to
+  # replace because nothing but the drafting side writes it.
+  #
+  # For a pull request opened FROM THE FORK, the commits update by themselves
+  # when the drafting side pushes the branch again, because the fork branch is
+  # the pull request's head. So content stays current there without this
+  # workflow touching it. For one this workflow opened, the branch here is a
+  # copy and does NOT follow the fork; that is a known limitation rather than an
+  # oversight, and the body refresh below is what keeps such a pull request
+  # honest about it.
+  refresh:
+    name: Refresh open PR descriptions
+    needs: find
+    if: needs.find.outputs.refresh != '[]' && needs.find.outputs.refresh != ''
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pr: ${{ fromJSON(needs.find.outputs.refresh) }}
+    steps:
+      - name: Rewrite the description from the branch's metadata
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ matrix.pr.branch }}
+          URL: ${{ matrix.pr.url }}
+        run: |
+          set -euo pipefail
+
+          # Read the metadata straight out of the fork over the API: no clone,
+          # no checkout, and nothing from the other organization ever lands in
+          # this workspace.
+          if ! gh api "repos/${FORK_REPO}/contents/${METADATA_FILE}?ref=${BRANCH}" \
+                --jq '.content' 2>/dev/null | base64 -d > /tmp/meta.json; then
+            echo "::notice::${BRANCH} has no ${METADATA_FILE}; leaving ${URL} as it is."
+            exit 0
+          fi
+
+          python3 - <<'PY' > /tmp/body.md
+          import json, os
+          meta = json.load(open("/tmp/meta.json"))
+          branch = os.environ["BRANCH"]
+          fork = os.environ["FORK_REPO"]
+          body = meta.get("body") or "Drafted by the PR tracker."
+          run = meta.get("source_run")
+          if run:
+              body += f"\n\nDrafted by {run}"
+          body += f"\n\nDraft branch: [`{branch}`](https://github.com/{fork}/tree/{branch})"
+          print(body)
+          PY
+
+          # Compare before writing, so an unchanged body is not an edit. Every
+          # `gh pr edit` posts a timeline event and notifies subscribers, and an
+          # hourly poll that rewrote an identical body would mail every reviewer
+          # 24 times a day about nothing.
+          gh pr view "${URL}" --json body --jq '.body' > /tmp/current.md || : > /tmp/current.md
+          if diff -q /tmp/current.md /tmp/body.md >/dev/null 2>&1; then
+            echo "${URL}: description already current."
+            exit 0
+          fi
+
+          gh pr edit "${URL}" --body-file /tmp/body.md
+          echo "- Refreshed ${URL}" >> "$GITHUB_STEP_SUMMARY"
+
+  open:
+    name: Open PR
+    needs: find
+    if: needs.find.outputs.branches != '[]' && needs.find.outputs.branches != ''
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        branch: ${{ fromJSON(needs.find.outputs.branches) }}
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch the draft branch from the fork
+        env:
+          BRANCH: ${{ matrix.branch }}
+        run: |
+          set -euo pipefail
+          git remote add drafts "https://github.com/${FORK_REPO}.git"
+          git fetch drafts "${BRANCH}" --depth 1
+
+      # THE GUARD. Everything below trusts this step and nothing before it.
+      # A branch that touches anything outside ALLOWED_PATHS is skipped whole:
+      # copying the parts that are in bounds would be acting on a branch that
+      # has already shown it is not what it claims to be.
+      - name: Refuse anything outside the documentation paths
+        id: guard
+        env:
+          BRANCH: ${{ matrix.branch }}
+        run: |
+          set -euo pipefail
+          changed=$(git diff --name-only HEAD..."drafts/${BRANCH}")
+          if [ -z "${changed}" ]; then
+            echo "::warning::${BRANCH} changes nothing against main; skipping."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          bad=""
+          while IFS= read -r file; do
+            [ -n "${file}" ] || continue
+            [ "${file}" = "${METADATA_FILE}" ] && continue
+            allowed=false
+            for prefix in ${ALLOWED_PATHS}; do
+              case "${file}" in
+                "${prefix}"/*) allowed=true; break ;;
+              esac
+            done
+            [ "${allowed}" = true ] || bad="${bad}  ${file}\n"
+          done <<< "${changed}"
+
+          if [ -n "${bad}" ]; then
+            echo "::error::${BRANCH} writes outside ${ALLOWED_PATHS}; refusing it:"
+            printf "%b" "${bad}"
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "${changed}" | sed 's/^/  /'
+
+      - name: Read the title and body the drafting run wrote
+        id: meta
+        if: steps.guard.outputs.ok == 'true'
+        env:
+          BRANCH: ${{ matrix.branch }}
+        run: |
+          set -euo pipefail
+          # From the branch, not from the working tree: the metadata file is
+          # deliberately never checked out, so it cannot reach the diff.
+          if ! git show "drafts/${BRANCH}:${METADATA_FILE}" > /tmp/meta.json 2>/dev/null; then
+            echo "::warning::${BRANCH} has no ${METADATA_FILE}; using a fallback title."
+            printf '{}' > /tmp/meta.json
+          fi
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          meta = json.load(open("/tmp/meta.json"))
+          branch = os.environ["BRANCH"]
+          fork = os.environ["FORK_REPO"]
+          title = meta.get("title") or f"[Automated] Draft docs ({branch})"
+          body = meta.get("body") or "Drafted by the PR tracker."
+          run = meta.get("source_run")
+          if run:
+              body += f"\n\nDrafted by {run}"
+          body += f"\n\nDraft branch: [`{branch}`](https://github.com/{fork}/tree/{branch})"
+          # SAY THAT THE CHECKS HAVE NOT RUN, because the quiet is misleading.
+          # This pull request is opened by this repository's own GITHUB_TOKEN,
+          # and GitHub does not trigger workflows for those -- it is how the
+          # recursion of "a workflow opens a PR which starts a workflow" is
+          # broken. So doc tests, link checking and the static checks are held
+          # rather than passing, and a reviewer who reads no red as "verified"
+          # would be wrong. Measured: an equivalent bot-opened pull request runs
+          # 2 checks (Cloudflare Pages and DCO, which are Apps rather than
+          # Actions) where a human-opened one runs 8.
+          body += (
+              "\n\n---\n\n"
+              "> [!IMPORTANT]\n"
+              "> **The test suite has not run on this pull request.** It was opened by "
+              "`github-actions[bot]`, and GitHub does not start workflows for pull requests "
+              "opened with the repository's own token. Doc tests, link checking and the static "
+              "checks are held as `action_required` until somebody presses **Approve and run** "
+              "on the Checks tab. Cloudflare Pages and DCO are GitHub Apps rather than Actions, "
+              "so those two do run on their own.\n"
+              ">\n"
+              "> Please approve the checks before reviewing the content: an absence of failures "
+              "here means the tests have not run, not that they passed."
+          )
+          # Heredoc-delimited because both values are multi-line markdown.
+          print(f"title<<TITLE_EOF\n{title}\nTITLE_EOF")
+          print(f"body<<BODY_EOF\n{body}\nBODY_EOF")
+          PY
+
+      - name: Apply the draft onto a branch here
+        if: steps.guard.outputs.ok == 'true'
+        env:
+          BRANCH: ${{ matrix.branch }}
+        run: |
+          set -euo pipefail
+          # Checkout by path, so only files under the allowed prefixes can land
+          # even if the guard above were somehow wrong about the branch.
+          for prefix in ${ALLOWED_PATHS}; do
+            git checkout "drafts/${BRANCH}" -- "${prefix}" 2>/dev/null || true
+          done
+          rm -f "${METADATA_FILE}"
+
+      - name: Open the pull request
+        id: cpr
+        if: steps.guard.outputs.ok == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          base: main
+          branch: ${{ matrix.branch }}
+          add-paths: |
+            content/docs
+            assets
+          title: ${{ steps.meta.outputs.title }}
+          body: ${{ steps.meta.outputs.body }}
+          commit-message: |
+            ${{ steps.meta.outputs.title }}
+
+            Signed-off-by: GitHub Action <action@github.com>
+          committer: GitHub Action <action@github.com>
+          delete-branch: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Say what happened
+        if: steps.guard.outputs.ok == 'true'
+        env:
+          URL: ${{ steps.cpr.outputs.pull-request-url }}
+          BRANCH: ${{ matrix.branch }}
+        run: |
+          if [ -n "${URL}" ]; then
+            echo "- \`${BRANCH}\` -> ${URL}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- \`${BRANCH}\`: nothing to open (no changes after filtering)" >> "$GITHUB_STEP_SUMMARY"
+          fi
