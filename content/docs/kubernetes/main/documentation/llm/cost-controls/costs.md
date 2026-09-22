@@ -45,7 +45,7 @@ Use `agctl catalog import` to generate a catalog JSON file, then load it into a 
    ```
 
    > [!IMPORTANT]
-   > The `--providers` flag takes the provider IDs of the source that you import from, and the sources name some providers differently. The `models.dev` source uses its own IDs, such as `google` and `amazon-bedrock`, while the `github` source uses the agentgateway provider IDs, such as `gcp.gemini` and `aws.bedrock`. The sources also handle an unrecognized ID differently: `models.dev` fails with `no providers matched`, but `github` reports `imported 0 providers` and writes a catalog without that provider. A `--providers` list that omits Bedrock also makes `aws-bedrock-mantle` contribute nothing. Check the provider list in the generated file before you load it.
+   > The `--providers` flag takes the provider IDs of the source that you import from, and the sources name some providers differently. The `models.dev` source uses its own IDs, such as `google` and `amazon-bedrock`, while the `github` source uses the agentgateway provider IDs, such as `gcp.gemini` and `aws.bedrock`. The sources also handle an unrecognized ID differently. `models.dev` fails with `no providers matched`, but `github` reports `imported 0 providers` and writes a catalog without that provider. A `--providers` list that omits Bedrock also makes `aws-bedrock-mantle` contribute nothing. Check the provider list in the generated file before you load it.
 
 2. Create or update the ConfigMap from the generated file. The `--from-file` syntax sets the data key to `catalog.json`.
 
