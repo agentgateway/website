@@ -72,8 +72,9 @@ Each method has its own page.
 | Static keys, Secrets, passthrough, and extra credentials | [Static keys and passthrough]({{< link-hextra path="/documentation/security/backend-authn/key/" >}}) |
 | AWS, Azure, and Google Cloud | [Cloud provider credentials]({{< link-hextra path="/documentation/security/backend-authn/providers/" >}}) |{{< version exclude-if="2026.7.1" >}}
 | Signed JWT | [Signed JWT (jwtSign)]({{< link-hextra path="/documentation/security/backend-authn/jwt-sign/" >}}) |{{< /version >}}
-| OAuth token exchange | [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn/oauth-token-exchange/" >}}) |
-| Cross App Access | [Cross App Access (ID-JAG)]({{< link-hextra path="/documentation/security/backend-authn/cross-app-access/" >}}) |
+{{< version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}| OAuth token exchange | [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn/oauth-token-exchange/" >}}) |
+| Cross App Access | [Cross App Access (ID-JAG)]({{< link-hextra path="/documentation/security/backend-authn/cross-app-access/" >}}) |{{< /version >}}
+{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}| Token exchange, including Cross App Access | [Token exchange]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/" >}}) |{{< /version >}}
 
 For the client side of authentication, see [JWT auth]({{< link-hextra path="/documentation/security/jwt/" >}}) and [API key auth]({{< link-hextra path="/documentation/security/apikey/" >}}). To control which callers are allowed through, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}).
 

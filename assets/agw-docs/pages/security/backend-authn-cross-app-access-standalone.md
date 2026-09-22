@@ -1,11 +1,3 @@
----
-title: Cross App Access (ID-JAG)
-weight: 50
-description: Call a downstream API as the authenticated end user with the OAuth Identity Assertion Authorization Grant.
----
-
-Attaches to: {{< badge content="Backend" path="/documentation/configuration/backends/" >}}
-
 ## About
 
 The `crossAppAccess` backend authentication method implements the [OAuth Identity Assertion Authorization Grant](https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/), also called "ID-JAG" or "Cross App Access" (XAA). With this method, agentgateway calls a downstream API as the authenticated end user, without requiring the user to interactively log in to that downstream app. This pattern is common in agentic scenarios where an agent calls other apps' APIs on behalf of the user, such as per-user access to MCP servers ([MCP enterprise-managed authorization](https://modelcontextprotocol.io/extensions/auth/enterprise-managed-authorization)).
