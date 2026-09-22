@@ -318,11 +318,11 @@ traffic:
 
 For Layer 4 network-level filtering on downstream connections, use `spec.frontend.networkAuthorization` instead.
 
-{{< version exclude-if="1.5.x" >}}
+{{< version include-if="1.6.x" >}}
 
 ### Restrict network access by TLS SNI
 
-In a `spec.frontend.networkAuthorization` policy, use `destination.hostname` to match the Server Name Indication (SNI) hostname from a TLS connection.
+In a `spec.frontend.networkAuthorization` policy, use `destination.hostname` to match the Server Name Indication (SNI) hostname that agentgateway reads from the TLS handshake.
 
 ```yaml
 frontend:
@@ -332,6 +332,9 @@ frontend:
       matchExpressions:
         - "destination.hostname == 'db.internal.example.com'"
 ```
+
+> [!WARNING]
+> `destination.hostname` is unset unless agentgateway reads an SNI value from the connection, which means it is unset for plaintext connections, for clients that send no SNI, and on listeners where agentgateway does not read SNI. A `Require` rule that references an unset variable never matches, so this policy denies every such connection. Apply it only to listeners that terminate or inspect TLS, and verify it against the traffic you expect.
 
 {{< /version >}}
 

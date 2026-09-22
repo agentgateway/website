@@ -189,9 +189,12 @@ The following CEL variables are available in network authorization rules:
 | `source.port` | `int` | Port of the downstream connection. |
 | `source.tls.identity` | `string` | Client certificate identity (if mTLS). |
 | `source.tls.subject_alt_names` | `list(string)` | Subject Alternative Names from the client certificate. |
-| `destination.address` | `string` | Destination IP address that the gateway connects to. |
-| `destination.port` | `int` | Destination port that the gateway connects to. |
-| `destination.hostname` | `string` | Server Name Indication (SNI) hostname from a TLS connection, when the client sends SNI. |
+| `destination.address` | `string` | IP address on agentgateway that the downstream connection was made to. This is the local address of the listener, not the address of the backend that the connection is routed to. |
+| `destination.port` | `int` | Port on agentgateway that the downstream connection was made to. |
+| `destination.hostname` | `string` | Server Name Indication (SNI) hostname that agentgateway read from the TLS handshake. Unset when the connection is not TLS, when the client sends no SNI, and on listeners where agentgateway does not read SNI. See the warning that follows. |
+
+> [!WARNING]
+> `destination.hostname` is unset unless agentgateway reads an SNI value from the connection, which means it is unset for plaintext connections, for clients that send no SNI, and on listeners where agentgateway does not read SNI. A `require` rule that references an unset variable never matches, so the rule denies every such connection. Verify it against the traffic you expect before you rely on it.
 
 ## Examples
 
@@ -235,7 +238,7 @@ agentgateway -f config-mtls.yaml --validate-only
 
 ### Require TLS SNI
 
-For TLS connections, use `destination.hostname` to require a specific SNI hostname before the connection proceeds.
+For TLS connections, use `destination.hostname` to require a specific SNI hostname before the connection proceeds. Because this is a `require` rule, a connection that carries no SNI does not match it and is rejected. Apply the policy only to listeners that terminate or inspect TLS.
 
 ```yaml
 frontendPolicies:
