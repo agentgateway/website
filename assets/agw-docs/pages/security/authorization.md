@@ -318,6 +318,23 @@ traffic:
 
 For Layer 4 network-level filtering on downstream connections, use `spec.frontend.networkAuthorization` instead.
 
+{{< version exclude-if="1.5.x" >}}
+
+### Restrict network access by TLS SNI
+
+In a `spec.frontend.networkAuthorization` policy, use `destination.hostname` to match the Server Name Indication (SNI) hostname from a TLS connection.
+
+```yaml
+frontend:
+  networkAuthorization:
+    action: Require
+    policy:
+      matchExpressions:
+        - "destination.hostname == 'db.internal.example.com'"
+```
+
+{{< /version >}}
+
 ### MCP authorization
 
 You can apply authorization policies specifically to MCP servers using the `spec.backend.mcp.authorization` field in an {{< reuse "agw-docs/snippets/policy.md" >}}. This lets you control which clients or JWT token holders can access specific MCP tools.
