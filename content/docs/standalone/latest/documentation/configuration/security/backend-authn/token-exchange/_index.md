@@ -5,4 +5,4 @@ description: Exchange the credential that a client sends to the gateway for a di
 test: skip
 ---
 
-{{< reuse "agw-docs/pages/security/backend-authn-te-index-standalone.md" >}}
+{{< reuse "agw-docs/pages/security/backend-authn-te-index.md" >}}
