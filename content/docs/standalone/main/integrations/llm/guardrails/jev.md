@@ -7,13 +7,13 @@ test:
   - path: jev
 ---
 
-[Jev](https://docs.typesafe.ai/introduction) is a new type of "System One" model or decision model from TypeSafe AI. Like other LLMs, Jev accepts text-based input in the form of a "state" object of questions. But instead of returning a text-based answer, Jev returns structured output.
+[Jev](https://docs.typesafe.ai/introduction) is a "System One" or decision model from TypeSafe AI. Like other LLMs, Jev accepts text-based input. You send it the content to check (the "state"), along with the questions that you want answered about that content. But instead of returning a text-based answer, Jev returns structured output.
 
 Consider the following types of questions and responses that you can get.
 
-- _Noul_, or a yes/no question where Jev responds with a floating point number (0 - 1) of its confidence that the statement is true (1).
-- Choice question, where Jev picks an answer from a set of provided options based on confidence and probability distribution.
-- Score questions, where you give a sequence of options and then Jev scores each option with a floating point within the range.
+- Boolean, which maps to TypeSafe's `noul` field. Jev returns the probability from 0 to 1 that the statement is true.
+- Choice, where Jev picks one of your options and reports how likely each option was.
+- Score, where you give a list of ratings in order, such as `None`, `Low`, `High`, and `Severe`. Jev returns one number for where the content lands on that scale. The number can fall between two ratings, such as `2.4`.
 
 Such fast, structured results make Jev a good fit for classification use cases such as ranked options, labels, or guardrails.
 
@@ -237,7 +237,7 @@ The webhook server turns each guardrail check into a Jev evaluation. Agentgatewa
    | `baseURL` | The agentgateway listener, so that the evaluation call is proxied. Point it at `/v1` on the port that the `gateways` section defines. |
    | `apiKey` | A placeholder. Agentgateway replaces it with the value of `params.apiKey` for the `jev-latest` model. |
    | `evaluationModel` | The model name to send. It must match a `name` in the `llm.models` list, otherwise agentgateway has no model to route the call to. |
-   | `questions` | The typed questions that Jev answers. A `score` question rates the state against `criteria` and returns the index of the best match, so `criteria` of `["None", "Low", "High", "Severe"]` produces a score from `0` to `3`. |
+   | `questions` | The typed questions that Jev answers. A `score` question rates the state against `criteria` and returns one number on that scale, so `criteria` of `["None", "Low", "High", "Severe"]` produces a score from `0` to `3`. |
    | `threshold` | The lowest score that the server treats as a rejection. Raise it to allow more content, or lower it to reject more. |
    | `evaluate` | The AI SDK evaluation call, imported as `experimental_evaluate`. The API is experimental, so check the [TypeSafe documentation](https://docs.typesafe.ai/introduction) before you upgrade the SDK. |
 
@@ -324,7 +324,7 @@ Send one prompt that Jev scores as safe and one that it scores as an attack. Bot
 
    The first two lines are the benign prompt and the completion that came back for it. The third line is the attack prompt. It has no `/response` line, because agentgateway never called the LLM.
 
-   Each score is the index of the criterion that Jev chose from `["None", "Low", "High", "Severe"]`, so `0` means `None` and `3` means `Severe`. Per the configuration, the server rejects the content when any score reaches the threshold of `2` with a `403` status code. Both `jailbreak` and `secrets` questions exceeded the threshold of `2`, so the server rejected the request.
+   Each score places the content on the scale `["None", "Low", "High", "Severe"]`, where `0` is `None` and `3` is `Severe`. A score can land between two ratings, such as `2.96`. The server rejects the content when any score reaches the threshold of `2` and returns a `403` status code. Both `jailbreak` and `secrets` reached the threshold, so the server rejected the prompt.
 
 ## Review Jev usage and cost {#observability}
 
