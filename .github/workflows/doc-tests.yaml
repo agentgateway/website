@@ -5,6 +5,12 @@ on:
     paths:
       - 'assets/**'
       - 'content/docs/**'
+      # The selector and this file. Without them a PR that changes only
+      # `reuse_consumers.py` does not trigger this workflow at all, so the
+      # "test the resolver before trusting it" step below had a hole exactly
+      # where the selector lives.
+      - 'scripts/**'
+      - '.github/workflows/doc-tests.yaml'
   schedule:
     # Every day at 06:00 UTC
     - cron: '0 6 * * *'
@@ -46,8 +52,10 @@ jobs:
       # is checked before it is used.
       - name: Test the changed-file resolver
         env:
-          # `scripts/` is not gitignored for __pycache__, and a stray compiled
-          # file here would show up in the tree of any job that later commits.
+          # `__pycache__/` is already gitignored, so this is not about the
+          # tree. It keeps the checkout the job later reads from identical to
+          # the one it checked out, which is one less difference to rule out
+          # when the resolver and a local run disagree.
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 -m unittest discover -s scripts -p 'test_*.py'
 
@@ -108,6 +116,23 @@ jobs:
           FILES=""
           UNRESOLVED_LOG="${RUNNER_TEMP}/unresolved.txt"
           : > "$UNRESOLVED_LOG"
+
+          # Redirecting stderr to a file is what lets the warning below name
+          # the files that reached no page, but on a crash it is exactly wrong:
+          # the traceback lands in the file, `-e` exits on the failed
+          # assignment, and nothing ever reads it. That step is loud in status
+          # and silent in content, which is half of what this job is being
+          # fixed for. So the log is printed on the way out of a failure too.
+          # `if`, not a bare `cat`, because a non-zero test inside the handler
+          # must not become the thing that reports.
+          dump_resolver_log() {
+            if [ -s "$UNRESOLVED_LOG" ]; then
+              echo "::error::reuse_consumers.py failed. Its output was:"
+              cat "$UNRESOLVED_LOG"
+            fi
+          }
+          trap dump_resolver_log ERR
+
           if [ -n "$CHANGED_MD" ]; then
             FILES=$(printf '%s\n' "$CHANGED_MD" \
               | python3 scripts/reuse_consumers.py --repo-root . --stdin 2>"$UNRESOLVED_LOG" \
@@ -123,7 +148,7 @@ jobs:
           # original "No content candidates found" line went unread for so
           # long.
           if [ -s "$UNRESOLVED_LOG" ]; then
-            echo "::warning::Changed files that reach no content page (no tests selected for them):"
+            echo "::warning::Changed files with doc tests that reach no content page (no tests selected for them):"
             cat "$UNRESOLVED_LOG"
           fi
 
@@ -139,6 +164,13 @@ jobs:
           # Unquoted `$FILES` word-splits to one path per line and discards the blanks
           # on its own, so nothing in this pipeline can report failure for having had
           # no work to do.
+          #
+          # The word-splitting is wanted; the globbing that comes with it is not. An
+          # unquoted expansion is also a glob pass, so a path holding `[` or `*` would
+          # expand against the working tree and select whatever it happened to match.
+          # `set -f` turns globbing off for the rest of the step -- it covers the
+          # `printf '%s\n' $FILES` below as well, which splits the same way.
+          set -f
           if [ -n "$FILES" ]; then
             FILES=$(printf '%s\n' $FILES | sort -u | tr '\n' ' ' \
               | sed -e 's/^ *//' -e 's/ *$//')

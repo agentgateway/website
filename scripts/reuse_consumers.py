@@ -297,15 +297,21 @@ def consumers(
     return sorted(found)
 
 
-DOC_TEST_MARKER = "{{< doc-test"
+# `[<%]` for the same reason `REUSE_RE` and `INCLUDE_RE` have it, even though
+# all 1198 uses in the tree are the angle form today. A literal `"{{< doc-test"`
+# means the first `{{% doc-test` somebody writes drops that file out of the
+# warning set, so an unresolved snippet that carries tests goes unreported --
+# the silent gap this module exists to close, in a new place.
+DOC_TEST_RE = re.compile(r"""\{\{[<%]\s*doc-test""")
 
 
 def carries_doc_tests(path: pathlib.Path) -> bool:
     """Whether this file defines doc tests of its own."""
     try:
-        return DOC_TEST_MARKER in path.read_text(encoding="utf-8", errors="ignore")
+        text = path.read_text(encoding="utf-8", errors="ignore")
     except OSError:
         return False
+    return bool(DOC_TEST_RE.search(text))
 
 
 def unresolved(
