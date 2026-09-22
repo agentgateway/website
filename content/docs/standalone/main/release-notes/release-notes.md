@@ -12,6 +12,7 @@ Review the release notes for agentgateway standalone.
 
 ## ✨ Highlights {#v16-highlights}
 
+- **[Response idle timeout and simplified LLM timeouts](#v16-response-idle-timeout)**: Bound the gap between response body frames, and apply the timeout policy to the simplified `llm:` section.
 - **[OpenTelemetry access log field names](#v16-access-log-preset)**: Rename the built-in HTTP fields in the stdout access log to their semantic convention equivalents.
 
 ## 🔥 Breaking changes {#v16-breaking-changes}
@@ -42,6 +43,17 @@ The change is that a default import now writes tags onto the Amazon Bedrock mode
 **Actions to take**: Only Mantle-served Bedrock models change behavior, so the models that concern you are the ones tagged `mantle` and not `runtime`, other than `anthropic.claude*`. If you route traffic to any of those, regenerate your catalog once by hand, list those models from the `aws.bedrock` provider in the generated file, and check their `tags` against the request formats that your clients send. To keep the 1.5.x output, pin the source with `--source models.dev`. For the flags, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference. For the endpoint setting, see [Bedrock Mantle]({{< link-hextra path="/integrations/llm/providers/bedrock/#bedrock-mantle" >}}).
 
 ## 🌟 New features {#v16-new-features}
+
+### Resiliency {#v16-features-resiliency}
+
+#### `responseIdleTimeout` and simplified LLM timeouts {#v16-response-idle-timeout}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3310 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3366 -->
+
+A new `responseIdleTimeout` field bounds the gap between response body frames, rather than the total response duration. `requestTimeout` and `backendRequestTimeout` both stop measuring elapsed time after the response headers arrive, so neither one can terminate a backend that stalls mid-stream without also capping how long a legitimately long response is allowed to run. `responseIdleTimeout` restarts its window on every body frame, is disabled when the field is unset or set to zero, and never applies to responses that switch protocols, so upgraded WebSocket and CONNECT tunnels are unaffected. The timeout policy is also now available on the simplified `llm:` section, alongside the existing routing-based and simplified MCP forms.
+
+For the field descriptions and examples, see [Route timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts/#route-timeouts" >}}).
 
 ### Operations {#v16-features-operations}
 
