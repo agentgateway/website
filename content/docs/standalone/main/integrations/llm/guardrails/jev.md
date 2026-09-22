@@ -7,7 +7,15 @@ test:
   - path: jev
 ---
 
-[Jev](https://docs.typesafe.ai/introduction) is the evaluation model from TypeSafe. Instead of generating text, Jev answers typed questions about a  state and returns a score, a probability distribution, and a confidence value. That structured output is a decision your code can act on, which makes Jev a good fit for a guardrail webhook.
+[Jev](https://docs.typesafe.ai/introduction) is a new type of "System One" model or decision model from TypeSafe AI. Like other LLMs, Jev accepts text-based input in the form of a "state" object of questions. But instead of returning a text-based answer, Jev returns structured output.
+
+Consider the following types of questions and responses that you can get.
+
+- _Noul_, or a yes/no question where Jev responds with a floating point number (0 - 1) of its confidence that the statement is true (1).
+- Choice question, where Jev picks an answer from a set of provided options based on confidence and probability distribution.
+- Score questions, where you give a sequence of options and then Jev scores each option with a floating point within the range.
+
+Such fast, structured results make Jev a good fit for classification use cases such as ranked options, labels, or guardrails.
 
 In this guide, you run a webhook server that scores each prompt and each response for three risks: jailbreak attempts, harmful content, and secret disclosure. The server rejects any content that scores too high. You also configure Jev as a model in agentgateway, so that agentgateway proxies, authenticates, and records the guardrail's own evaluation calls alongside your LLM traffic.
 
@@ -50,17 +58,15 @@ sequenceDiagram
 6. If every score is below the threshold, the webhook returns a pass action, and agentgateway forwards the prompt to the LLM. Agentgateway then repeats the check against the completion by calling `POST /response`.
 7. If any score reaches the threshold, the webhook returns a reject action with status code `403`, and agentgateway returns that status to the client without calling the LLM.
 
-Routing the evaluation calls through agentgateway has three benefits. The webhook server never holds the TypeSafe API key. Agentgateway records every Jev call in the same logs, traces, and cost data as your LLM traffic. You can change the evaluation model without redeploying the webhook server.
+Routing the evaluation calls through agentgateway has several benefits. The webhook server never holds the TypeSafe API key. Agentgateway records every Jev call in the same logs, traces, and cost data as your LLM traffic. You can change the evaluation model without redeploying the webhook server.
 
 ## Before you begin {#before-you-begin}
-
-This guide needs an agentgateway build from `main`. A custom provider that sets `passthrough` and no format became valid after the `v1.6.0-alpha.1` release, so an earlier build rejects the configuration in this guide.
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. Create a TypeSafe account and an API key. For the model names and rates, see the [TypeSafe models reference](https://docs.typesafe.ai/models).
 3. Get an API key for the LLM provider that you want to protect. This guide uses OpenAI.
 4. Install [Bun](https://bun.sh/) to run the example webhook server. The server needs AI SDK 7.0.105 or later, which Bun installs on the first run.
-5. Set the two API keys in the shell that starts agentgateway. Do not commit them to the configuration file or to source control.
+5. Set the two API keys in the shell that starts agentgateway.
 
    ```sh
    export OPENAI_API_KEY="<your-openai-key>"
@@ -134,19 +140,7 @@ The agentgateway repository ships this integration as a runnable example, so you
    | `frontendPolicies.tracing` | Where agentgateway exports traces. The example sends them to an OTLP collector on `localhost:4317`. Agentgateway starts and serves traffic normally when no collector listens there, so you can leave this section in place while you work through this guide. |
    | `ui` | Serves the agentgateway UI on the `default` gateway in addition to the admin interface, so the UI answers on both `localhost:4000/ui/` and `localhost:15000/ui/`. |
 
-3. Validate the configuration.
-
-   ```sh
-   agentgateway -f config.yaml --validate-only
-   ```
-
-   Example output:
-
-   ```
-   Configuration is valid!
-   ```
-
-4. Start agentgateway. Requests to `gpt-5.6-luna` fail until the webhook server runs, because the guardrail fails closed by default.
+3. Start agentgateway. Requests to `gpt-5.6-luna` fail with a `503` until the webhook server runs, because the guardrail fails closed by default.
 
    ```sh
    agentgateway -f config.yaml
@@ -196,6 +190,12 @@ The webhook server turns each guardrail check into a Jev evaluation. Agentgatewa
    ```
 
 2. Review how the server asks Jev its questions. The `baseURL` points at agentgateway, not at TypeSafe, because agentgateway supplies the real API key. Each question returns a score from `0` to `3`. The server rejects the content when any score reaches the threshold.
+
+   ```sh
+   cat guardrail.ts
+   ```
+
+   Example from file:
 
    ```ts
    const typesafe = createTypeSafeAi({
@@ -248,15 +248,15 @@ The webhook server turns each guardrail check into a Jev evaluation. Agentgatewa
      action: rejected.length
        ? {
            status_code: 403,
-           body: `Rejected by Jev: ${rejected.join(", ")}`,
+           body: `Rejected by JEV: ${rejected.join(", ")}`,
            reason: `Score >= ${threshold}`,
          }
-       : { reason: "Jev scores below threshold" },
+       : { reason: "JEV scores below threshold" },
    };
    ```
 
-   > [!IMPORTANT]
-   > The webhook server always answers with HTTP `200`. The `action.status_code` field, not the webhook's own status code, is what tells agentgateway to reject the request. A webhook that fails to answer is a different case: agentgateway applies `failureMode`, and the default `failClosed` returns `503` with `failed to process LLM request: prompt guard failed`. A `503` from this guide therefore means that agentgateway cannot reach the webhook server, not that Jev rejected the content.
+   > [!NOTE]
+   > The guardrail webhook server itself answers agentgateway with HTTP `200`, regardless of the response to the request. The `action.status_code` field determines how to reject the request, including the status code that the client gets back.
 
 4. Start the server in a second terminal. Bun installs the dependencies on the first run.
 
@@ -267,7 +267,7 @@ The webhook server turns each guardrail check into a Jev evaluation. Agentgatewa
    Example output:
 
    ```
-   Jev guardrail listening on http://127.0.0.1:8000
+   JEV guardrail listening on http://127.0.0.1:8000
    ```
 
 ## Verify the guardrail {#verify}
@@ -283,6 +283,16 @@ Send one prompt that Jev scores as safe and one that it scores as an attack. Bot
        "model": "gpt-5.6-luna",
        "messages": [{"role": "user", "content": "What is the capital of France?"}]
      }'
+   ```
+
+   Example output. The completion comes back from the LLM, which means that Jev scored the prompt below the threshold.
+
+   ```console
+   {"model":"gpt-5.6-luna","object":"chat.completion","choices":
+   [{"message":{"content":"The capital of France is Paris.",
+   "role":"assistant","refusal":null,"annotations":[]},"index":0,
+   "logprobs":null,"finish_reason":"stop"}],"usage":
+   {"prompt_tokens":14,"completion_tokens":8,"total_tokens":22}}
    ```
 
 2. Send a prompt that tries to override the system instructions and extract credentials. Agentgateway returns the rejection without calling the LLM.
@@ -301,24 +311,30 @@ Send one prompt that Jev scores as safe and one that it scores as an attack. Bot
    ```
    HTTP/1.1 403 Forbidden
 
-   Rejected by Jev: jailbreak, secrets
+   Rejected by JEV: jailbreak, secrets
    ```
 
-3. Check the scores in the terminal that runs the webhook server. Each line names the path that agentgateway called and the score for each question.
+3. Check the scores in the terminal that runs the webhook server. Each line names the path that agentgateway called and the score that Jev returned for each question.
 
+   ```console
+   /request { jailbreak: 0, harmful: 0, secrets: 0 }
+   /response { jailbreak: 0, harmful: 0, secrets: 0 }
+   /request { jailbreak: 2.96, harmful: 0.87, secrets: 2.94 }
    ```
-   /request { jailbreak: 3, harmful: 0, secrets: 3 }
-   ```
+
+   The first two lines are the benign prompt and the completion that came back for it. The third line is the attack prompt. It has no `/response` line, because agentgateway never called the LLM.
+
+   Each score is the index of the criterion that Jev chose from `["None", "Low", "High", "Severe"]`, so `0` means `None` and `3` means `Severe`. Per the configuration, the server rejects the content when any score reaches the threshold of `2` with a `403` status code. Both `jailbreak` and `secrets` questions exceeded the threshold of `2`, so the server rejected the request.
 
 ## Review Jev usage and cost {#observability}
 
-Because the evaluation calls pass through agentgateway, they carry the same telemetry as your LLM traffic. The example configuration already records them: `config.database` gives agentgateway somewhere to write, `frontendPolicies.accessLog.database.llm` decides how much of each request to keep, and `config.modelCatalog` prices the Jev calls.
+Review the telemetry data for the calls to Jev through agentgateway. For more information, see [Analytics dashboard]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/" >}}).
 
-1. Open the **LLM > Analytics** page at [http://localhost:15000/ui/llm/analytics](http://localhost:15000/ui/llm/analytics). Agentgateway also serves the UI on the `default` gateway at [http://localhost:4000/ui/llm/analytics](http://localhost:4000/ui/llm/analytics), because the example sets the `ui` section.
+1. Open the **LLM > Analytics** page in the agentgateway UI, such as at [http://localhost:15000/ui/llm/analytics](http://localhost:15000/ui/llm/analytics).
 
 2. Compare the rows for the two requests that you sent. Agentgateway prices each `jev-latest` row from the `config.modelCatalog` rates. The rejected prompt has no `gpt-5.6-luna` row, because agentgateway never called the LLM.
 
-3. Send more traffic and reload the page to see the numbers change. The example stores records in memory, so restarting agentgateway clears them. For more information, see [Analytics dashboard]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/" >}}).
+3. Send more traffic and reload the page to see the numbers change. The example stores records in memory, so restarting agentgateway clears them.
 
 ## More information {#more-information}
 
