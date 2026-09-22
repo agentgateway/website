@@ -12,6 +12,7 @@ Review the release notes for agentgateway standalone.
 
 ## ✨ Highlights {#v16-highlights}
 
+- **[Response idle timeout and simplified LLM timeouts](#v16-response-idle-timeout)**: Bound the gap between response body frames, and apply the timeout policy to the simplified `llm:` section.
 - **[OpenTelemetry access log field names](#v16-access-log-preset)**: Rename the built-in HTTP fields in the stdout access log to their semantic convention equivalents.
 
 ## 🔥 Breaking changes {#v16-breaking-changes}
@@ -40,6 +41,17 @@ The two sources also name some providers differently, and they disagree about wh
 **Actions to take**: If you regenerate your catalog on a schedule and you want to keep importing from models.dev, add `--source models.dev` to the command. Otherwise, regenerate the catalog and compare the rates for the models that you care about before you load the new file, because a rate change alters the costs that appear in logs, traces, metrics, and any CEL policy that reads `llm.cost`. For the flags, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
 
 ## 🌟 New features {#v16-new-features}
+
+### Resiliency {#v16-features-resiliency}
+
+#### `responseIdleTimeout` and simplified LLM timeouts {#v16-response-idle-timeout}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3310 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3366 -->
+
+A new `responseIdleTimeout` field bounds the gap between response body frames, rather than the total response duration. `requestTimeout` and `backendRequestTimeout` both stop measuring elapsed time once the response headers arrive, so neither one can terminate a backend that stalls mid-stream without also capping how long a legitimately long response is allowed to run. `responseIdleTimeout` restarts its window on every body frame, is disabled when the field is unset or set to zero, and never applies to responses that switch protocols, so upgraded WebSocket and CONNECT tunnels are unaffected. The timeout policy is also now available on the simplified `llm:` section, alongside the existing routing-based and simplified MCP forms.
+
+For the field descriptions and examples, see [Route timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts/#route-timeouts" >}}).
 
 ### Operations {#v16-features-operations}
 
