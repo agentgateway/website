@@ -1,10 +1,10 @@
-Exchange the caller's credential for a backend-scoped token with the [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) token exchange grant, configured on an {{< reuse "agw-docs/snippets/policy.md" >}}.
+Exchange the incoming token for a backend-scoped token with the [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) token exchange grant, configured on an {{< reuse "agw-docs/snippets/policy.md" >}}.
 
 ## About
 
-The `TokenExchange` grant is the default grant of the `oauthTokenExchange` backend authentication method. The gateway sends the incoming credential to the authorization server as the `subject_token` and forwards the token that comes back to the backend.
+The `TokenExchange` grant is the default grant of the `oauthTokenExchange` backend authentication method. The gateway sends the incoming token to the authorization server as the `subject_token` and forwards the exchanged token to the backend.
 
-For the JWT bearer grant, which sends the credential as an `assertion` instead, see [JWT bearer grant]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/jwt-bearer/" >}}). For an exchange that crosses a trust boundary between two authorization servers, see [Cross App Access]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/cross-app-access/" >}}).
+For the JWT bearer grant, which sends the incoming token as an `assertion` instead, see [JWT bearer grant]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/jwt-bearer/" >}}). For an exchange that crosses a trust boundary between two authorization servers, see [Cross App Access]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/cross-app-access/" >}}).
 
 ## Before you begin
 
@@ -87,7 +87,7 @@ Configure agentgateway to exchange tokens.
 
 ## Verify the exchange
 
-Mint an inbound credential, send a request through agentgateway with it, and verify that the forwarded token was exchanged: it is issued for the `target-client` audience with `requester-client` as the authorized party (`azp`), not the client that minted the inbound credential.
+Mint the incoming token, send a request through agentgateway with it, and verify that the token the gateway forwards is a different one: it is issued for the `target-client` audience with `requester-client` as the authorized party (`azp`), not the client that minted the incoming token.
 
 1. Port-forward the Keycloak Service so that you can reach its token endpoint locally.
 
@@ -95,7 +95,7 @@ Mint an inbound credential, send a request through agentgateway with it, and ver
    kubectl port-forward -n httpbin svc/keycloak 8080:8080
    ```
 
-2. In another terminal, mint the inbound credential. Mint a user token from the `backend-oauth` realm as `initial-client`; the gateway sends this as the `subject_token`. Tokens expire, so re-mint if you come back later.
+2. In another terminal, mint the incoming token. Mint a user token from the `backend-oauth` realm as `initial-client`; the gateway sends this as the `subject_token`. Tokens expire, so re-mint if you come back later.
 
    ```sh
    export INBOUND_TOKEN="$(curl -s http://localhost:8080/realms/backend-oauth/protocol/openid-connect/token \
@@ -104,7 +104,7 @@ Mint an inbound credential, send a request through agentgateway with it, and ver
    echo $INBOUND_TOKEN
    ```
 
-3. Send a request to the httpbin `/headers` endpoint through the gateway, with the inbound credential. The gateway exchanges the credential at Keycloak and forwards the request to httpbin with the *exchanged* token. Because httpbin reflects the request headers, you can see the token that the gateway forwarded.
+3. Send a request to the httpbin `/headers` endpoint through the gateway, with the incoming token. The gateway exchanges the token at Keycloak and forwards the request to httpbin with the *exchanged* token. Because httpbin reflects the request headers, you can see the token that the gateway forwarded.
 
    ```sh
    curl -s http://$INGRESS_GW_ADDRESS:80/headers \
@@ -114,7 +114,7 @@ Mint an inbound credential, send a request through agentgateway with it, and ver
 
    In the response, note that the `Authorization` header reflected by httpbin contains a *different* token than the one you sent.
 
-4. Copy the forwarded token from the `Authorization` header in the response, and save it to an environment variable.
+4. Copy the exchanged token from the `Authorization` header in the response, and save it to an environment variable.
 
    ```sh
    export FORWARDED_TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUI...
@@ -126,7 +126,7 @@ Mint an inbound credential, send a request through agentgateway with it, and ver
    echo "$FORWARDED_TOKEN" | cut -d. -f2 | jq -R 'gsub("-";"+") | gsub("_";"/") | . + ("=" * ((4 - (length % 4)) % 4)) | @base64d | fromjson'
    ```
 
-   The decoded token was issued for the target audience (`aud`), and its authorized party (`azp`) is the gateway's client (`requester-client`), not the client that minted the inbound credential. The JWT bearer grant produces the same exchanged token from a different inbound credential.
+   The decoded token was issued for the target audience (`aud`), and its authorized party (`azp`) is the gateway's client (`requester-client`), not the client that minted the incoming token. The JWT bearer grant produces the same exchanged token from a different incoming token.
 
    ```json
    {
@@ -202,11 +202,11 @@ The token endpoint returns an `invalid_token` or `invalid_request` error, and th
 
 **Why it's happening:**
 
-The authorization server cannot validate the incoming credential, often because the credential's issuer (`iss`) does not match the issuer that the authorization server expects when the gateway reaches it. With Keycloak, this happens when the token is minted through one hostname (for example, a port-forward) but the gateway calls the token endpoint through a different in-cluster hostname.
+The authorization server cannot validate the incoming token, often because the token's issuer (`iss`) does not match the issuer that the authorization server expects when the gateway reaches it. With Keycloak, this happens when the token is minted through one hostname (for example, a port-forward) but the gateway calls the token endpoint through a different in-cluster hostname.
 
 **How to fix it:**
 
-Make sure the incoming credential's issuer matches the token endpoint's issuer as the gateway reaches it. For Keycloak in a cluster, pin the issuer with the `KC_HOSTNAME` environment variable so it is stable regardless of how Keycloak is reached.
+Make sure the incoming token's issuer matches the token endpoint's issuer as the gateway reaches it. For Keycloak in a cluster, pin the issuer with the `KC_HOSTNAME` environment variable so it is stable regardless of how Keycloak is reached.
 
 -->
 
@@ -215,7 +215,7 @@ Make sure the incoming credential's issuer matches the token endpoint's issuer a
 This guide uses a demo Keycloak and the httpbin sample app. To use token exchange in production:
 
 * **Point at your own authorization server.** Create an {{< reuse "agw-docs/snippets/backend.md" >}} for your IdP (such as Keycloak, Microsoft Entra, Okta, Auth0, or ZITADEL). Use port `443` for automatic backend TLS. Replace the demo realm, client IDs, audiences, and Kubernetes Secret with your own.
-* **Attach the policy to the backends that need scoped tokens.** Target the {{< reuse "agw-docs/snippets/policy.md" >}} at the Services or {{< reuse "agw-docs/snippets/backend.md" >}}s that require their own credential, such as MCP servers, upstream APIs, or LLM providers. Pair it with route-level [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) to validate the inbound credential first.
+* **Attach the policy to the backends that need scoped tokens.** Target the {{< reuse "agw-docs/snippets/policy.md" >}} at the Services or {{< reuse "agw-docs/snippets/backend.md" >}}s that require their own credential, such as MCP servers, upstream APIs, or LLM providers. Pair it with route-level [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) to validate the incoming token first.
 * **Use token exchange to preserve agent and user identity.** Token exchange lets the gateway hand each backend a narrowly scoped, per-backend token while preserving the caller's identity end-to-end. In agentic flows, the exchange can carry an agent acting on behalf of a user, so every downstream call keeps an auditable, least-privilege identity chain instead of sharing one broad credential.
 
 ## Cleanup

@@ -1,8 +1,8 @@
-Exchange the caller's credential for a backend-scoped token with the [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) JWT bearer grant.
+Exchange the incoming token for a backend-scoped token with the [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) JWT bearer grant.
 
 ## About
 
-The `jwtBearer` grant sends the incoming credential to the authorization server as the `assertion` rather than as the `subject_token`. Use it when the credential is a JWT issued by an identity provider that the authorization server trusts, but that did not itself issue the backend token.
+The `jwtBearer` grant sends the incoming token to the authorization server as the `assertion` rather than as the `subject_token`. Use it when the incoming token is a JWT issued by an identity provider that the authorization server trusts, but that did not itself issue the backend token.
 
 For the default RFC 8693 exchange, see [Standard token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/standard/" >}}). For an exchange that crosses a trust boundary between two authorization servers, see [Cross App Access]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/cross-app-access/" >}}).
 
@@ -12,7 +12,7 @@ For the default RFC 8693 exchange, see [Standard token exchange]({{< link-hextra
 
 ## Exchange a token
 
-Set `grantType: jwtBearer` to use the RFC 7523 JWT bearer grant, which sends the incoming credential as the `assertion` instead of the `subject_token`. This grant requires the authorization server to trust the issuer that signed the incoming token. The following example uses a two-realm Keycloak stack, where realm `idp` issues the assertion and realm `backend-oauth` trusts it and mints the upstream token.
+Set `grantType: jwtBearer` to use the RFC 7523 JWT bearer grant, which sends the incoming token as the `assertion` instead of the `subject_token`. This grant requires the authorization server to trust the issuer that signed the incoming token. The following example uses a two-realm Keycloak stack, where realm `idp` issues the assertion and realm `backend-oauth` trusts it and mints the upstream token.
 
 1. Start the example stack. It runs Keycloak 26.5 with two realms and an echo upstream on port `18080`.
 
@@ -46,7 +46,7 @@ Set `grantType: jwtBearer` to use the RFC 7523 JWT bearer grant, which sends the
 
    In the response, note that the `Authorization` header forwarded to the upstream contains a *different* token than the assertion you sent.
 
-6. Copy the forwarded token from the `Authorization` header in the previous response, and save it to an environment variable.
+6. Copy the exchanged token from the `Authorization` header in the previous response, and save it to an environment variable.
 
    ```sh
    export FORWARDED_TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUI...
@@ -58,7 +58,7 @@ Set `grantType: jwtBearer` to use the RFC 7523 JWT bearer grant, which sends the
    echo "$FORWARDED_TOKEN" | cut -d. -f2 | jq -R 'gsub("-";"+") | gsub("_";"/") | . + ("=" * ((4 - (length % 4)) % 4)) | @base64d | fromjson'
    ```
 
-   The assertion was issued by realm `idp`, but the forwarded token is issued by realm `backend-oauth` for `aud=target-client`.
+   The assertion was issued by realm `idp`, but the exchanged token is issued by realm `backend-oauth` for `aud=target-client`.
 
    ```json
    {
@@ -72,12 +72,6 @@ Set `grantType: jwtBearer` to use the RFC 7523 JWT bearer grant, which sends the
      "azp": "requester-client",
      "scope": ""
    }
-   ```
-
-8. Stop the gateway and clean up the stack.
-
-   ```sh
-   docker compose -f examples/traffic-token-exchange/jwt-authz-grant/docker-compose.yaml down
    ```
 
 ## Microsoft Entra on-behalf-of {#entra-obo}
@@ -114,3 +108,11 @@ The `jwt-authz-grant` example includes an `/obo` route and a mock token endpoint
 
 - Read the [Shielding AI agents from sensitive credentials](https://agentgateway.dev/blog/2026-07-12-agentgateway-token-exchange-jwt-assertion-entra-obo/) blog post for a walkthrough of token exchange, JWT assertion, and Entra on-behalf-of.
 - Validate incoming JWTs with the [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) policy.
+
+## Cleanup
+
+Stop the gateway with `Ctrl+C`, then remove the example stack.
+
+```sh
+docker compose -f examples/traffic-token-exchange/jwt-authz-grant/docker-compose.yaml down
+```

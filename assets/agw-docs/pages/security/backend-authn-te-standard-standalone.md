@@ -1,10 +1,10 @@
-Exchange the caller's credential for a backend-scoped token with the [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) token exchange grant.
+Exchange the incoming token for a backend-scoped token with the [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) token exchange grant.
 
 ## About
 
-The `tokenExchange` grant is the default grant of the `oauthTokenExchange` backend authentication method. The gateway sends the incoming credential to the authorization server as the `subject_token` and forwards the token that comes back to the backend.
+The `tokenExchange` grant is the default grant of the `oauthTokenExchange` backend authentication method. The gateway sends the incoming token to the authorization server as the `subject_token` and forwards the exchanged token to the backend.
 
-For the JWT bearer grant, which sends the credential as an `assertion` instead, see [JWT bearer grant]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/jwt-bearer/" >}}). For an exchange that crosses a trust boundary between two authorization servers, see [Cross App Access]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/cross-app-access/" >}}).
+For the JWT bearer grant, which sends the incoming token as an `assertion` instead, see [JWT bearer grant]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/jwt-bearer/" >}}). For an exchange that crosses a trust boundary between two authorization servers, see [Cross App Access]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/cross-app-access/" >}}).
 
 ## Before you begin
 
@@ -30,7 +30,7 @@ In this example, a user authenticates to Keycloak as one client, and the gateway
    agentgateway -f config.yaml
    ```
 
-4. In another terminal, mint a user token from Keycloak to use as the incoming credential.
+4. In another terminal, mint a user token from Keycloak to use as the incoming token.
 
    ```sh
    SUBJECT_TOKEN="$(curl -s http://localhost:7080/realms/backend-oauth/protocol/openid-connect/token \
@@ -54,7 +54,7 @@ In this example, a user authenticates to Keycloak as one client, and the gateway
    ...
    ```
 
-6. Copy the forwarded token from the `Authorization` header in the previous response, and save it to an environment variable.
+6. Copy the exchanged token from the `Authorization` header in the previous response, and save it to an environment variable.
 
    ```sh
    export FORWARDED_TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUI...
@@ -66,7 +66,7 @@ In this example, a user authenticates to Keycloak as one client, and the gateway
    echo "$FORWARDED_TOKEN" | cut -d. -f2 | jq -R 'gsub("-";"+") | gsub("_";"/") | . + ("=" * ((4 - (length % 4)) % 4)) | @base64d | fromjson'
    ```
 
-   The forwarded token is issued by the `backend-oauth` realm for `aud=target-client`, and its authorized party (`azp`) is the gateway's `requester-client`, not the original `initial-client`.
+   The exchanged token is issued by the `backend-oauth` realm for `aud=target-client`, and its authorized party (`azp`) is the gateway's `requester-client`, not the original `initial-client`.
 
    ```json
    {
@@ -83,27 +83,20 @@ In this example, a user authenticates to Keycloak as one client, and the gateway
    }
    ```
 
-8. Stop the gateway and clean up the stack.
-
-   ```sh
-   docker compose -f examples/traffic-token-exchange/oauth-rfc8693/docker-compose.yaml down
-   ```
-
-
 ## More examples
 
 The [`traffic-token-exchange` examples](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-token-exchange) in the agentgateway repository also include an `extauthz` example that performs a token exchange by building the token request by hand with [external authorization]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}) and CEL, as an alternative to the built-in `oauthTokenExchange` method.
 
 ### Custom headers
 
-To read the incoming credential from a custom location and place the exchanged token somewhere other than the `Authorization` header, update the source header.
+To read the incoming token from a custom location and place the exchanged token somewhere other than the `Authorization` header, update the source header.
 
 ```yaml
 backendAuth:
   oauthTokenExchange:
     host: idp.example.com:443
     path: /token
-    # Read the incoming credential from a custom header and declare its token type.
+    # Read the incoming token from a custom header and declare its token type.
     subjectToken:
       tokenType: urn:ietf:params:oauth:token-type:jwt
       source:
@@ -116,7 +109,6 @@ backendAuth:
         name: x-upstream-auth
         prefix: "Bearer "
 ```
-
 
 ### Actor tokens
 
@@ -147,3 +139,11 @@ backendAuth:
 
 - Read the [Shielding AI agents from sensitive credentials](https://agentgateway.dev/blog/2026-07-12-agentgateway-token-exchange-jwt-assertion-entra-obo/) blog post for a walkthrough of token exchange, JWT assertion, and Entra on-behalf-of.
 - Validate incoming JWTs with the [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) policy.
+
+## Cleanup
+
+Stop the gateway with `Ctrl+C`, then remove the example stack.
+
+```sh
+docker compose -f examples/traffic-token-exchange/oauth-rfc8693/docker-compose.yaml down
+```

@@ -1,8 +1,8 @@
-Exchange the caller's credential for a backend-scoped token before the gateway forwards a request to an MCP server.
+Exchange the incoming token for a backend-scoped token before the gateway forwards a request to an MCP server.
 
 ## About
 
-MCP servers are a common target for token exchange. The client that calls the gateway authenticates as a user or an agent, but the MCP server behind the gateway expects a token that is scoped to itself, issued by an authorization server that the server trusts. Token exchange lets the gateway make that swap, so the MCP server never sees the caller's original credential and the caller never holds a credential for the MCP server.
+MCP servers are a common target for token exchange. The client that calls the gateway authenticates as a user or an agent, but the MCP server behind the gateway expects a token that is scoped to itself, issued by an authorization server that the server trusts. Token exchange lets the gateway make that swap, so the MCP server never sees the incoming token, and the caller never holds a credential for the MCP server.
 
 The configuration is the same `oauthTokenExchange` backend authentication method that the [standard token exchange guide]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/" >}}) covers. What differs is the target: the policy attaches to an MCP {{< reuse "agw-docs/snippets/backend.md" >}} rather than to a plain Service.
 
@@ -130,7 +130,7 @@ The MCP server goes in the same `httpbin` namespace as the Keycloak deployment f
 
 ## Configure token exchange
 
-Configure agentgateway to exchange the caller's token before it reaches the MCP server.
+Configure agentgateway to exchange the incoming token before it reaches the MCP server.
 
 1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for the token endpoint, pointing at the in-cluster Keycloak Service.
 
@@ -209,7 +209,7 @@ Call the `echo` tool through the gateway and confirm that the `Authorization` he
    kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 8888:80 &
    ```
 
-2. Mint the inbound credential as `initial-client`. The gateway sends this as the `subject_token`. Tokens expire, so re-mint if you come back later.
+2. Mint the incoming token as `initial-client`. The gateway sends this as the `subject_token`. Tokens expire, so re-mint if you come back later.
 
    ```sh
    export INBOUND_TOKEN="$(curl -s http://localhost:8080/realms/backend-oauth/protocol/openid-connect/token \
@@ -244,7 +244,7 @@ Call the `echo` tool through the gateway and confirm that the `Authorization` he
    }
    ```
 
-4. Copy the forwarded token from that `authorization` header, and save it to an environment variable.
+4. Copy the exchanged token from that `authorization` header, and save it to an environment variable.
 
    ```sh
    export FORWARDED_TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUI...
@@ -258,7 +258,7 @@ Call the `echo` tool through the gateway and confirm that the `Authorization` he
    done
    ```
 
-   The inbound token was issued to `initial-client` for the `requester-client` audience. The forwarded token was issued for the `target-client` audience, with the gateway's own client (`requester-client`) as the authorized party.
+   The inbound token was issued to `initial-client` for the `requester-client` audience. The exchanged token was issued for the `target-client` audience, with the gateway's own client (`requester-client`) as the authorized party.
 
    ```json
    {
@@ -275,9 +275,9 @@ Call the `echo` tool through the gateway and confirm that the `Authorization` he
 
 ## Next steps
 
-* **Validate the caller's credential at the edge.** The exchange forwards the caller's token to the authorization server as received, without validating it first. Pair the policy with route-level [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) or [MCP authentication]({{< link-hextra path="/documentation/security/jwt/mcp/" >}}) so invalid tokens are rejected before any call to the token endpoint.
+* **Validate the incoming token at the edge.** The exchange forwards the incoming token to the authorization server as received, without validating it first. Pair the policy with route-level [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) or [MCP authentication]({{< link-hextra path="/documentation/security/jwt/mcp/" >}}) so invalid tokens are rejected before any call to the token endpoint.
 * **Scope the exchanged token per MCP server.** Attach a separate policy to each MCP {{< reuse "agw-docs/snippets/backend.md" >}}, each with its own `audiences`, so every server receives a token that is valid only for itself.
-* **Restrict which tools each caller may reach.** Token exchange decides which credential the gateway sends, not who is allowed through. Add an [MCP authorization]({{< link-hextra path="/documentation/security/authorization/" >}}) policy alongside it.
+* **Restrict which tools each caller may reach.** Token exchange decides which token the gateway sends, not who is allowed through. Add an [MCP authorization]({{< link-hextra path="/documentation/security/authorization/" >}}) policy alongside it.
 
 ## Cleanup
 
