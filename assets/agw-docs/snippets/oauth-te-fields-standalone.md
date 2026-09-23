@@ -1,4 +1,4 @@
-The following table describes the most common `oauthTokenExchange` fields. For the full set of fields, see the [configuration reference]({{< link-hextra path="/reference/configuration/" >}}).
+The following table describes the most common `oauthTokenExchange` fields. For the full set of fields, see the [configuration reference]({{< link-hextra path="/reference/configuration/schema/#mcp.policies.backendAuth.oauthTokenExchange" >}}).
 
 | Field | Description |
 | -- | -- |
