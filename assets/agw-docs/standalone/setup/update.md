@@ -136,8 +136,16 @@ The container reads the configuration from the path that you mounted, so you edi
 
 With the Helm chart, you do not edit a file on the proxy. The `config` Helm value holds the entire agentgateway configuration file, and the chart renders it into the ConfigMap that the pod mounts. To change the configuration, change your values and upgrade the release.
 
+{{< version exclude-if="1.5.x" >}}
+Whether the upgrade restarts the pods depends on what you changed. The chart hashes only the settings that agentgateway reads at startup, which is agentgateway's own nested `config` section apart from `config.modelCatalog`. A change to one of those settings changes the hash, and the pods roll. A change to anything else, such as `gateways`, `routes`, `llm`, `mcp`, `ui`, or `config.modelCatalog`, reaches the running pods through the mounted ConfigMap, and agentgateway reloads it without a restart. For the fields that fall on each side of this line, see [Fields that require a restart](#restart-required).
+
+> [!WARNING]
+> The default replicas for your agentgateway Deployment is `1`. To avoid a brief interruption in traffic when a change does roll the pods, increase the `replicaCount` setting to a value greater than `1`. This way, one of the pods can continue serving traffic while the new configuration is rolled out.
+{{< /version >}}
+{{< version include-if="1.5.x" >}}
 > [!WARNING]
 > The default replicas for your agentgateway Deployment is `1`. To avoid a brief interruption in traffic during the rollout, increase the `replicaCount` setting to a value greater than `1`. This way, one of the pods can continue serving traffic while the new configuration is rolled out.
+{{< /version >}}
 
 1. Create or edit a Helm values file, such as `values.yaml`. Agentgateway's own top-level fields include a section that is also named `config`. That section ends up nested inside the `config` Helm value. For possible agentgateway settings, check out the schema and interactive explorer tool in the [Configuration reference docs]({{< link-hextra path="/reference/configuration/" >}}).
 
@@ -171,7 +179,7 @@ With the Helm chart, you do not edit a file on the proxy. The `config` Helm valu
      -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.data.config\.yaml}'
    ```
 
-4. **Optional**: To restart the pods without a configuration change, such as to pick up a change in a mounted Secret, roll out the Deployment. The Helm upgrade in the previous step already restarts the pods when the ConfigMap changes.
+4. **Optional**: To restart the pods without a configuration change, such as to pick up a change in a mounted Secret, roll out the Deployment.{{< version include-if="1.5.x" >}} The Helm upgrade in the previous step already restarts the pods when the ConfigMap changes.{{< /version >}}{{< version exclude-if="1.5.x" >}} The Helm upgrade in the previous step rolls the pods on its own only when you change a setting that agentgateway reads at startup.{{< /version >}}
 
    ```sh
    kubectl rollout restart deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \

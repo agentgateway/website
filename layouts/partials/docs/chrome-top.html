@@ -24,6 +24,10 @@
   }
 </style>
 {{ partial "nav.html" . }}
-<div class="w-full z-10 pt-10 lg:pt-20">
+{{- /* `agw-chrome-top` is the hook custom.css uses to correct this wrapper's
+       navbar clearance on docTabs pages. `lg:pt-20` reserves 80px for a navbar
+       that actually measures 93px; see the --agw-navbar-h block in custom.css
+       for why the shortfall only shows up once the tab band is sticky. */ -}}
+<div class="agw-chrome-top w-full z-10 pt-10 lg:pt-20">
   {{ partial "docs/announcement-banner.html" . }}
 </div>

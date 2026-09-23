@@ -59,6 +59,10 @@ Follow the [OTel stack guide]({{< link path="/documentation/observability/otel-s
 > [!NOTE]
 > By default, the PodMonitor that the Helm chart creates only scrapes proxy pods in the release namespace and for the `agentgateway` GatewayClass. If you need to scrape proxies in other namespaces or for additional GatewayClasses, see [Scrape additional proxy pods](#other-proxies).
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+The PodMonitor also copies the `gateway.networking.k8s.io/gateway-name` pod label onto the metrics that it scrapes, which is how the built-in Grafana dashboard discovers gateways and filters panels by gateway. If you set your own `monitoring.proxy.podMonitor.podTargetLabels` list, include that label, or the dashboard's gateway selector stays empty.
+{{< /version >}}
+
 ### Scrape additional proxy pods {#other-proxies}
 
 The {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm chart creates a single PodMonitor resource in the release namespace when `monitoring.enabled` is set to `true`. By default, the PodMonitor resource only finds proxy pods that are deployed to the same release namespace. Because gateway proxies run in the namespace of the Gateway resource that provisions them, proxies in other namespaces are not scraped automatically. To scape proxy pods in other namespaces, you must use the `namespaceSelector` field. 

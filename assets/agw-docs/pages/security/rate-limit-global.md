@@ -11,6 +11,11 @@ Global rate limiting coordinates rate limits across multiple agentgateway proxy 
 
 Global rate limiting is essential when running multiple proxy replicas and you need to enforce a single quota across the entire fleet — for example, "100 requests per minute per user" should apply to the sum of requests across all replicas, not 100 per replica.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+> [!NOTE]
+> A shared counter is the reason to choose global rate limiting, not claim-level granularity. Local rate limits can also apply per user, per team, or per model by setting a CEL expression in the `local[].key` field, which needs no external service but counts separately on each replica. For more information, see [Claim-level rate limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}).
+{{< /version >}}
+
 Global rate limiting requires two components:
 
 1. **{{< reuse "agw-docs/snippets/policy.md" >}} with `rateLimit.global`**: Configure your rate limit policy with descriptors that extract request attributes using CEL expressions. The policy specifies the rate limit service reference (`backendRef`), a domain identifier, and CEL-based descriptor rules.

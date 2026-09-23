@@ -74,7 +74,8 @@ Review the following table for example use cases and configuration guidance.
 | Allow burst for session initialization | Add `burst` because each session needs several requests before the first tool call runs. |
 | Hard ceiling across all gateway traffic | {{< reuse "agw-docs/snippets/policy.md" >}} on `Gateway`, `local[].requests`. |
 | Per-tool rate limits (e.g. tighter for expensive tools) | Global rate limit + CEL descriptors extracting `body.method` and `body.params.name`. |
-| Combine auth + rate limiting | Apply both `mcp.authentication` and `traffic.rateLimit` in the same {{< reuse "agw-docs/snippets/policy.md" >}} or use separate policies. |
+| Combine auth + rate limiting | Apply both `mcp.authentication` and `traffic.rateLimit` in the same {{< reuse "agw-docs/snippets/policy.md" >}} or use separate policies. |{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}
+| Give each caller its own limit | Add `local[].key`, such as `jwt.sub`. See [Claim-level rate limits](#claim-level). |{{% /version %}}
 
 Also, check out the rate limiting guides for other use cases:
 
@@ -205,6 +206,36 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
    ```
 
    The first 5 complete tool call sequences succeed before the rate limit is reached. After that, subsequent requests are rate limited.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+## Claim-level rate limits {#claim-level}
+
+The limit in the previous section is shared by every client of the MCP server, so one agent that loops can lock out the rest. To limit each caller separately, set the `key` field to a CEL expression that reads a claim, such as `jwt.sub` for a limit per user or `jwt.team` for a limit per team. Each distinct value gets its own token bucket with the limits of that rule.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: mcp-claim-level-rate-limit
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: mcp
+  traffic:
+    rateLimit:
+      local:
+      - requests: 5
+        unit: Seconds
+        burst: 10
+        key: jwt.sub
+EOF
+```
+
+Size a keyed limit the same way as a shared one: the bucket counts HTTP requests, not tool calls, so each client still spends roughly 3 to 5 requests per tool call session. Reading `jwt` claims requires [MCP authentication]({{< link-hextra path="/documentation/mcp/auth/" >}}) on the same traffic. Clients whose key cannot be evaluated, such as unauthenticated callers, share one bucket. {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For more information about keyed limits, see [Claim-level budget limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}).
+{{< /version >}}
 
 ## Per-tool rate limits with CEL descriptors {#global-per-tool}
 

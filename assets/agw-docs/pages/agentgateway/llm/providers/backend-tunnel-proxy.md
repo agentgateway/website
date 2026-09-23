@@ -63,8 +63,8 @@ This example configures an {{< reuse "agw-docs/snippets/agentgateway.md" >}} bac
    | `spec.policies.tunnel.backendRef.port` | The port the proxy listens on |
    | `spec.policies.tls.insecureSkipVerify` | Skip TLS certificate validation when connecting to the upstream backend. Set to `All` to skip all verification or `Hostname` to skip only hostname verification. Use with caution — only in trusted environments. |
 
-   {{< version include-if="main" >}}
-   If your forward proxy inspects TLS traffic and re-signs the upstream certificate with its own CA, verify that CA instead of skipping verification. Replace `insecureSkipVerify` with `caCertificateRefs`, which reads the CA certificate from the `ca.crt` key of a ConfigMap (the default) or a Secret in the same namespace as the {{< reuse "agw-docs/snippets/backend.md" >}}.
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+   If your forward proxy inspects TLS traffic and re-signs the upstream certificate with its own CA, verify that CA instead of skipping verification. Replace `insecureSkipVerify` with `caCertificateRefs`, which reads the CA certificate from a ConfigMap (the default) or a Secret in the same namespace as the {{< reuse "agw-docs/snippets/backend.md" >}}. The certificate is read from the `ca.crt` key, unless you set `key` to another key name.
 
    ```yaml
      policies:

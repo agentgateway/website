@@ -1,7 +1,7 @@
 ---
 title: Observability
 weight: 40
-description: Send LLM telemetry to Axiom, Langfuse, LangSmith, and other observability platforms.
+description: Send LLM telemetry to Axiom, Braintrust, Langfuse, LangSmith, and other observability platforms.
 test: skip
 ---
 
@@ -53,3 +53,6 @@ Agentgateway automatically includes these LLM-specific trace attributes:
 | `gen_ai.usage.input_tokens` | Input token count, including the tokens read from or written to the prompt cache. See [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}). |
 | `gen_ai.usage.output_tokens` | Output token count |
 | `gen_ai.provider.name` | LLM provider (openai, anthropic, etc.) |
+
+For complete metrics, traces, and a dashboard, see the
+[Datadog observability guide]({{< link-hextra path="/documentation/observability/traces/configs/datadog/" >}}).

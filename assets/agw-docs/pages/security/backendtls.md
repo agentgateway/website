@@ -9,12 +9,15 @@ When you configure a TLS listener on your Gateway, the Gateway typically termina
 
 You can use the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} BackendTLSPolicy](https://gateway-api.sigs.k8s.io/reference/api-types/policy/backendtlspolicy/) to configure TLS origination from the Gateway to a service in the cluster. This policy supports simple, one-way TLS use cases. 
 
-{{< version include-if="main" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ### CA certificate sources {#ca-sources}
 
 In a BackendTLSPolicy, the CA certificate that verifies the backend must come from a Kubernetes ConfigMap. The gateway rejects a `validation.caCertificateRefs` entry that refers to any other kind of resource.
 
-If you keep your CA certificates in Kubernetes Secrets, such as when a Secret is issued by cert-manager or synced from an external secret store, use the {{< reuse "agw-docs/snippets/policy.md" >}} resource instead. The `tls.caCertificateRefs` field in this resource takes an optional `kind` setting that you can set to `ConfigMap` (the default) or `Secret`. Either source must provide the certificate in a `ca.crt` key. For an example, see [CA certificate in a Secret](#secret-ca).
+If you keep your CA certificates in Kubernetes Secrets, such as when a Secret is issued by cert-manager or synced from an external secret store, use the {{< reuse "agw-docs/snippets/policy.md" >}} resource instead. The `tls.caCertificateRefs` field in this resource takes an optional `kind` setting that you can set to `ConfigMap` (the default) or `Secret`. Either source provides the certificate in a `ca.crt` key by default. To read the certificate from another key, set the optional `key` setting to that key name. This setting helps when a trust-manager bundle or an external secret store writes the certificate under a descriptive name, or when one object holds several bundles. For an example, see [CA certificate in a Secret](#secret-ca).
+
+> [!NOTE]
+> The `key` setting applies only to the `caCertificateRefs` field in the {{< reuse "agw-docs/snippets/policy.md" >}} and {{< reuse "agw-docs/snippets/backend.md" >}} resources. A BackendTLSPolicy and a Gateway listener's `frontendValidation` field use the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} reference type, which has no key setting, so those references always read the `ca.crt` key.
 
 The `tls.caCertificateRefs` field is available in each place that the {{< reuse "agw-docs/snippets/policy.md" >}} and {{< reuse "agw-docs/snippets/backend.md" >}} resources configure backend TLS, such as `spec.backend.tls` in a policy, `spec.policies.tls` in a backend, and the per-target `policies.tls` settings of an MCP or LLM backend.
 {{< /version >}}
@@ -23,7 +26,7 @@ The `tls.caCertificateRefs` field is available in each place that the {{< reuse 
 
 In this guide, you learn how to originate one-way TLS connections for the following services: 
 * [**In-cluster service**](#in-cluster-service): An NGINX server that is configured with a self-signed TLS certificate and deployed to the same cluster as the Gateway. You use a BackendTLSPolicy to originate TLS connections to NGINX. 
-* [**External service**](#external-service): The `httpbin.org` hostname, which represents an external service that you want to originate a TLS connection to. You use a BackendTLSPolicy resource to originate TLS connections to that hostname. {{< version include-if="main" >}}
+* [**External service**](#external-service): The `httpbin.org` hostname, which represents an external service that you want to originate a TLS connection to. You use a BackendTLSPolicy resource to originate TLS connections to that hostname. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 * [**CA certificate in a Secret**](#secret-ca): The same NGINX server, but with the CA certificate stored in a Kubernetes Secret instead of a ConfigMap. You use an {{< reuse "agw-docs/snippets/policy.md" >}} to originate TLS connections to NGINX.{{< /version >}}
 
 ## Before you begin
@@ -404,7 +407,7 @@ Set up an {{< reuse "agw-docs/snippets/backend.md" >}} resource that represents 
    }
    ```
 
-{{< version include-if="main" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 
 ## CA certificate in a Secret {#secret-ca}
 
@@ -418,7 +421,7 @@ This section reuses the NGINX server and the `nginx-route` HTTPRoute that you cr
    kubectl delete backendtlspolicy tls-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
    ```
 
-2. Create a Kubernetes Secret that has the same CA certificate that you stored in the ConfigMap earlier. The certificate must be in the `ca.crt` key, which is the same key that a ConfigMap source uses.
+2. Create a Kubernetes Secret that has the same CA certificate that you stored in the ConfigMap earlier. This example uses the `ca.crt` key, which is the default key for a Secret and a ConfigMap alike. To store the certificate under another key, such as `corporate-roots.pem`, name that key in the policy in the next step.
 
    ```sh {paths="backendtls-secret-ca"}
    kubectl create secret generic nginx-ca \
@@ -459,7 +462,7 @@ This section reuses the NGINX server and the `nginx-route` HTTPRoute that you cr
    | Setting | Description |
    |---------|-------------|
    | `targetRefs` | The Service that you want the Gateway to originate a TLS connection to. Use `sectionName` to select the port that the policy applies to. For a Service, `sectionName` must be the numeric port, such as `"8443"`, and not the name of the port. |
-   | `backend.tls.caCertificateRefs` | The CA certificate source that has the certificate used to verify the backend, in a `ca.crt` key. Set `kind` to `Secret` to read the certificate from a Kubernetes Secret, or omit `kind` to read it from a ConfigMap. The gateway does not fall back between sources, so if a Secret and a ConfigMap have the same name, only the source that the `kind` field selects is used. |
+   | `backend.tls.caCertificateRefs` | The CA certificate source that has the certificate used to verify the backend. Set `kind` to `Secret` to read the certificate from a Kubernetes Secret, or omit `kind` to read it from a ConfigMap. The gateway does not fall back between sources, so if a Secret and a ConfigMap have the same name, only the source that the `kind` field selects is used. The certificate is read from the `ca.crt` key unless you set `key` to another key name. |
    | `backend.tls.sni` | The Server Name Indication (SNI) value to send in the TLS handshake. If unset, the SNI is derived from the destination hostname, which does not match the NGINX server certificate in this example. |
    | `backend.tls.verifySubjectAltNames` | The Subject Alternative Names (SANs) to verify in the server certificate. If unset, the destination hostname is used, which does not match the NGINX server certificate in this example. |
 
@@ -527,6 +530,118 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
+### Read the certificate from another key {#ca-key}
+
+A CA source does not have to store the certificate in the `ca.crt` key. Set the `key` field to read the bundle from another key in the same Secret or ConfigMap. This setting helps when a trust-manager bundle or an external secret store writes the certificate under a descriptive name, or when one object holds several bundles.
+
+1. Store the same CA certificate in a Secret under a different key.
+
+   ```sh {paths="backendtls-secret-ca"}
+   kubectl create secret generic nginx-ca-custom-key \
+     --from-file=corporate-roots.pem=ca-cert.pem \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+2. Update the {{< reuse "agw-docs/snippets/policy.md" >}} to name that key.
+
+   ```yaml {paths="backendtls-secret-ca"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: nginx-backend-tls
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app: nginx
+   spec:
+     targetRefs:
+     - group: ""
+       kind: Service
+       name: nginx
+       sectionName: "8443"
+     backend:
+       tls:
+         caCertificateRefs:
+         - name: nginx-ca-custom-key
+           kind: Secret
+           key: corporate-roots.pem
+         sni: example.com
+         verifySubjectAltNames:
+         - example.com
+   EOF
+   ```
+
+3. Send another request to the NGINX server. You still get back a 200 HTTP response code, because the gateway now reads the CA certificate from the `corporate-roots.pem` key.
+
+   * **Cloud Provider LoadBalancer**
+     ```sh
+     curl -vi http://$INGRESS_GW_ADDRESS:80/ -H "host: example.com:80"
+     ```
+   * **Port-forward for local testing**
+     ```sh
+     curl -vi http://localhost:8080/ -H "host: example.com:8080"
+     ```
+
+   If the key does not exist in the source, the request fails with a 503 HTTP response code, and the policy reports the missing key in its status.
+
+   ```sh
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} nginx-backend-tls -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -o jsonpath='{.status.ancestors[0].conditions}' | jq .
+   ```
+
+   Example output:
+
+   ```
+   "message": "error extracting CA cert from Secret agentgateway-system/nginx-ca-custom-key: missing key \"corporate-roots.pem\"",
+   "reason": "PartiallyValid",
+   ```
+
+{{< doc-test paths="backendtls-secret-ca" >}}
+# WHAT THIS TEST VALIDATES:
+#   * A CA bundle stored under a non-default key is resolved when the policy
+#     names that key: the gateway originates TLS to NGINX and returns 200, which
+#     only succeeds if it read the certificate from `corporate-roots.pem`.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * The failure case shown in the step above - asserting it would leave a
+#     broken policy attached for the rest of the scenario.
+YAMLTest -f - <<'EOF'
+- name: nginx-backend-tls policy with a custom CA key is accepted
+  wait:
+    target:
+      kind: AgentgatewayPolicy
+      metadata:
+        namespace: agentgateway-system
+        name: nginx-backend-tls
+    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].reason"
+    jsonPathExpectation:
+      comparator: equals
+      value: "Valid"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 5
+EOF
+
+for i in $(seq 1 60); do
+  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/" -H "host: example.com" && break
+  sleep 2
+done
+
+YAMLTest -f - <<'EOF'
+- name: gateway reads the CA from the key that the policy names
+  retries: 1
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /
+    method: GET
+    headers:
+      host: "example.com"
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
+
 {{< /version >}}
 
 ## Cleanup
@@ -557,11 +672,11 @@ kubectl delete backendtlspolicy httpbin-org -n {{< reuse "agw-docs/snippets/name
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} httpbin-org -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
-{{< version include-if="main" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ### CA certificate in a Secret
 
 ```sh {paths="backendtls-secret-ca"}
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} nginx-backend-tls -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
-kubectl delete secret nginx-ca -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete secret nginx-ca nginx-ca-custom-key -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 ```
 {{< /version >}}

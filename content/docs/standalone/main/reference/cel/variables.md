@@ -28,6 +28,8 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 | Transformation (request) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — not `response`, `mcp`, or `llmRequest`. [^1] |
 | Transformation (response) | Same as request-path, plus `response` for response-side rules. [^2] |
 | Remote rate limit | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, `metadata` |
+| Local rate limit key (`requests` rule) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — not `llm`, because the rule is checked before the LLM request is parsed. [^7] |
+| Local rate limit key (`tokens` rule) | Same as a `requests` rule, plus `llm` for fields such as `llm.requestModel`, because the rule is charged after the LLM request is parsed. [^7] |
 | HTTP Authorization | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, `metadata` |
 | Network authorization | `env`, `source` [^3] |
 | External Authorization | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — some expressions run after the authorization service returns and can read `response`. [^4] |
@@ -49,6 +51,8 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 [^5]: LLM route transforms bind `llmRequest` to the parsed JSON body and restore the other fields from the stored request snapshot when available.
 
 [^6]: For TCP logging, the executor is narrowed to `env`, `source`, and request timing fields (no full HTTP `request`/`response` objects).
+
+[^7]: A key that reads a variable that is not bound where its rule runs cannot be evaluated, so the request counts against the rule's shared bucket instead. For more information, see [Per-key limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/#per-key" >}}).
 
 ## Functions {#functions-policy-all}
 

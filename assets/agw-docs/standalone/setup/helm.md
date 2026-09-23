@@ -122,6 +122,8 @@ For quick access to the UI, port-forward the `{{< reuse "agw-docs/standalone/hel
 
 2. In your browser, open the `/ui` path: [http://localhost:15000/ui](http://localhost:15000/ui)
 
+{{< reuse-image src="img/agentgateway-ui-landing.png" srcDark="img/agentgateway-ui-landing-dark.png" >}}
+
 A port-forward is a quick way to look at the UI on a cluster. To give the UI its own gateway so that you can reach it without one, secure it with OIDC, and expose it on your own hostname, see [UI]({{< link-hextra path="/documentation/setup/ui/" >}}).
 
 ## Common Helm values

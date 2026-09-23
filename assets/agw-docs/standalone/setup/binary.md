@@ -59,6 +59,8 @@ Where agentgateway serves the UI depends on which of the two previous commands y
 * **Generated configuration**: The generated file attaches the UI to the `default` gateway, so the UI is served at <http://localhost:4000/ui>.
 * **Your own configuration file**: A file that has no `ui` section serves the UI only on the admin interface, which defaults to <http://localhost:15000/ui> and is reachable only from this host. Add a `ui` section that lists a gateway to serve the UI on a gateway port.
 
+{{< reuse-image src="img/agentgateway-ui-landing.png" srcDark="img/agentgateway-ui-landing-dark.png" >}}
+
 For more information, see [Launch the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}).
 
 {{% /steps %}}

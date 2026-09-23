@@ -8,5 +8,13 @@
        for the custom fixed navbar. That used to be an inline
        `style="padding-top: 2.5rem"` in the forked layout; the rule now lives in
        assets/css/custom.css, and this is how it gets onto the element.
+
+  NOTE: docs-tabs.html (docs-theme-extras) also calls this same slot now, for
+  its .docs-tabs-inner band, so that the tab row's max-width tracks the
+  content row's instead of drifting apart above the 90rem breakpoint. That
+  means `agw-docs-topgap` lands on .docs-tabs-inner too whenever this site's
+  docTabs config renders the band. The custom.css rule for that class is
+  scoped with `:not(.docs-tabs-inner)` to keep the 2.5rem navbar clearance on
+  the content wrapper only — don't drop that guard if you touch the rule.
 */ -}}
 {{- return printf "%s agw-docs-topgap" (partial "utils/page-width" .) -}}

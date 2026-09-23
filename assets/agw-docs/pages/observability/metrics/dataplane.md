@@ -17,7 +17,7 @@ To set up automatic scraping of these metrics with Prometheus, see [Enable metri
    curl http://localhost:15020/metrics
    ```
 
-3. Enable metrics scraping for data plane metrics with the OTel stack so that you can export and visualize metrics in monitoring tools, such as Prometheus and Grafana. For more information, see [Scrape metrics for querying and visualization]({{< link path="/documentation/observability/metrics/overview/#scrape-metrics-for-querying-and-visualization" >}}). 
+3. Enable metrics scraping for data plane metrics with the OTel stack so that you can export and visualize metrics in monitoring tools, such as Prometheus and Grafana. For more information, see [Scrape metrics for querying and visualization]({{< link path="/documentation/observability/metrics/overview/" >}}).
 
 ## Add custom metric labels
 

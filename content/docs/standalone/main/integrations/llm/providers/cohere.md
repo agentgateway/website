@@ -92,7 +92,9 @@ curl -X POST http://localhost:4000/v1/chat/completions \
 {{< doc-test paths="cohere" >}}
 # Confirm the default `params.baseUrl` documented in the settings table is what
 # agentgateway actually resolves. The admin config dump reports the upstream host
-# and path prefix separately, so they are recombined before comparing.
+# and path prefix separately, so they are recombined before comparing. Cohere's
+# default base URL is the only one with no path, and agentgateway normalizes that
+# empty path to `/` in the dump, so a lone `/` prefix is dropped before comparing.
 agentgateway -f config.yaml &
 AGW_PID=$!
 trap 'kill $AGW_PID 2>/dev/null' EXIT
@@ -103,7 +105,7 @@ RESOLVED=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '
   [ .backends[].backend.ai
     | select(. != null)
     | .target.providers[].active[].endpoint
-    | "https://" + (.hostOverride | sub(":443$"; "")) + (.pathPrefix // "")
+    | "https://" + (.hostOverride | sub(":443$"; "")) + ((.pathPrefix // "") | sub("^/$"; ""))
   ] | first')
 if [ "$RESOLVED" != "$EXPECTED" ]; then
   echo "FAIL: settings table documents a default baseUrl of $EXPECTED but agentgateway resolved $RESOLVED"

@@ -11,7 +11,7 @@ Configure the agentgateway binary to route chat completion requests to an LLM pr
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
-3. Get credentials for the provider that you want to use. The steps below cover API keys, cloud credentials, GitHub Copilot, custom providers, and local Ollama models.
+2. Get credentials for the provider that you want to use. The steps below cover API keys, cloud credentials, GitHub Copilot, custom providers, and local Ollama models.
 
 ## Steps
 

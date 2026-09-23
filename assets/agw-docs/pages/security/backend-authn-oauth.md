@@ -73,9 +73,9 @@ Steps to deploy Keycloak:
            image: quay.io/keycloak/keycloak:{{< reuse "agw-docs/versions/keycloak.md" >}}
            args: ["start-dev", "--import-realm", "--http-port=8080", "--features=preview"]
            env:
-           - name: KEYCLOAK_ADMIN
+           - name: KC_BOOTSTRAP_ADMIN_USERNAME
              value: admin
-           - name: KEYCLOAK_ADMIN_PASSWORD
+           - name: KC_BOOTSTRAP_ADMIN_PASSWORD
              value: admin
            - name: KC_HOSTNAME
              value: "http://keycloak.httpbin.svc.cluster.local:8080"
