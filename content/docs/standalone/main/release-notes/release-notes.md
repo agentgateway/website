@@ -57,7 +57,10 @@ A URL with no path now has a base path of `/` in both cases, which is the rule t
 | `openai` with `https://api.openai.com`, client sends `POST /v1/messages` in the Anthropic format | The client's path is forwarded as it arrived, so the translated request goes to `/v1/messages`, which OpenAI does not serve | Completions go to `/chat/completions` |
 | `custom` or `ollama` with a URL with no path, and no `formats[].path` | Completions go to `/v1/chat/completions` | Completions go to `/chat/completions` |
 
-The last row is the one to check most closely. A custom provider that serves its API at the root, such as Perplexity at `https://api.perplexity.ai/chat/completions`, was unreachable before and now works. One that serves under `/v1`, such as Ollama at `http://localhost:11434/v1`, needs that path added.
+The change matters most for `custom` providers and the `openai` provider.
+
+- A `custom` provider that serves its API at the root, such as Perplexity at `https://api.perplexity.ai/chat/completions`, was unreachable before and now works. A `custom` provider that serves its API under `/v1`, such as Ollama, needs that path in the base URL, such as `http://localhost:11434/v1`.
+- A base URL of `https://api.openai.com` does not reliably reach the OpenAI endpoint at `https://api.openai.com/v1` in either release. Going forward, set `params.baseUrl` to `https://api.openai.com/v1`, or omit `params.baseUrl` to use that address by default.
 
 **Actions to take**: Review every `params.baseUrl` that you set and add the path that the provider serves its API under. OpenAI serves its API under `/v1`, so `https://api.openai.com` becomes `https://api.openai.com/v1`. A URL that already has a path is unaffected, and so is a provider that you use without a `baseUrl` override, because the built-in provider defaults already carry their own paths. A `custom` provider that sets `formats[].path` is also unaffected, because that path is sent as written and the base path is not added to it.
 
