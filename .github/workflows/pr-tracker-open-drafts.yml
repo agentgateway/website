@@ -1,49 +1,33 @@
-# Opens documentation pull requests for drafts prepared by the docs hub's
-# tracking tooling, which cannot open them itself.
+# Opens documentation pull requests for drafts prepared by the PR tracker, which
+# cannot open them itself.
 #
 # WHY THIS WORKFLOW EXISTS, RATHER THAN A CREDENTIAL.
 #
 # The drafting pipeline runs in a private repository, because it needs API keys
-# that cannot live in a public repository in another organization. It writes a
-# branch to a fork of this repository and stops. Until now the pull request
-# itself was opened with a personal access token belonging to an individual
-# maintainer, which is why those pull requests were authored by a person who had
-# not written them.
+# that cannot live in a public repository in another organization. It has no
+# write access here, so it pushes its branch to a public fork of this repository
+# and stops. This workflow opens the pull request from that branch with this
+# repository's own GITHUB_TOKEN. Nothing outside this repository can write to
+# it, and maintainers here can turn it off by deleting this file.
 #
-# This workflow removes that credential entirely. Nothing outside this
-# repository can write to it: the branch is read from a public fork, which needs
-# no authentication in either direction, and the pull request is opened by this
-# repository's own GITHUB_TOKEN. Maintainers here own this file and can turn it
-# off by deleting it, with no coordination required.
-#
-# WHAT IT DOES. On a schedule it lists branches named pr-tracker-draft-* on the
-# fork, skips any that already have a pull request, copies the changed
-# documentation files onto a branch in this repository, and opens the pull
-# request. Title and body come from a metadata file the drafting run committed
-# into the branch; that file is removed before the pull request is created, so
-# it never appears in the diff under review.
+# WHAT IT DOES. Once a day it lists branches named pr-tracker-draft-* on the
+# fork, skips any that already have a pull request, applies the branch's
+# documentation changes onto a branch here, and opens the pull request. Title
+# and body come from the message of the branch's tip commit, an empty commit the
+# drafting run signs. It changes no file, so nothing of it appears in the diff
+# under review, and a pull request opened by hand from the fork has no file to
+# delete either.
 #
 # WHAT TO REVIEW IT FOR. It copies content from a repository in another
-# organization, so it refuses to write anything outside the two documentation
-# paths named in ALLOWED_PATHS below. The drafting side runs its own equivalent
-# guard, and this one deliberately does not trust it.
+# organization, so it refuses any branch that touches a path outside
+# ALLOWED_PATHS. The drafting side runs its own equivalent check, and this one
+# deliberately does not trust it.
 name: Open PR tracker draft PRs
 
 on:
   schedule:
-    # Once a day, and deliberately not more often.
-    #
-    # Drafts appear on two schedules only. The drafting run is weekly, and a
-    # daily release watch dispatches it early on any day a release ships. Both
-    # finish well before this: the weekly run starts at 07:41 UTC and the
-    # release-dispatched one at 09:00, and a drafting job measured 11.5 minutes.
-    # 10:17 leaves roughly an hour of margin on the later of the two.
-    #
-    # An hourly poll was the first version of this, and it was 168 runs a week
-    # of somebody else's Actions budget to collect something that arrives once
-    # or twice. The cost of the slower cadence is that a draft pushed just after
-    # this runs waits a day, which is nothing against a review turnaround, and
-    # workflow_dispatch below covers the case where somebody wants it now.
+    # Once a day. Drafts arrive weekly, or early on a day a release ships, and
+    # both runs finish well before 10:17 UTC. workflow_dispatch covers "now".
     - cron: '17 10 * * *'
   workflow_dispatch:
     inputs:
@@ -57,11 +41,9 @@ concurrency:
   group: pr-tracker-open-drafts
   cancel-in-progress: false
 
-# Same shape, and the same consequence, as reference-docs.yaml: the PR is
-# authored by github-actions[bot], so pull_request workflows are queued on it
-# and held as "action_required" until a maintainer clicks "Approve and run".
-# Cloudflare Pages previews and DCO are GitHub Apps rather than Actions, so
-# those run automatically.
+# The PR is authored by github-actions[bot], so this repository's
+# pull_request workflows are held as "action_required" until a maintainer
+# clicks "Approve and run"; see the note added to each body.
 # NOTHING BY DEFAULT; each job below asks for only what it uses. Listing
 # branches and pull requests is read-only, refreshing a description only edits
 # pull requests, and only the job that opens a pull request pushes a branch.
@@ -75,7 +57,9 @@ env:
   # The ONLY paths a draft may touch. Anything else in the branch is a reason to
   # skip the branch entirely rather than to copy part of it.
   ALLOWED_PATHS: 'content/docs assets'
-  METADATA_FILE: .pr-tracker-draft.json
+  # The tip commit's message carries the draft's metadata as JSON between
+  # `-----BEGIN <marker>-----` and `-----END <marker>-----` lines.
+  METADATA_MARKER: PR-TRACKER-DRAFT
   # The public half of the key the drafting side signs every draft commit with.
   # A branch whose tip is not signed by it is refused, however it got onto the
   # fork. Empty refuses everything, which is the safe way for this to be
@@ -108,9 +92,8 @@ jobs:
           if [ -n "${ONLY}" ]; then
             candidates="${ONLY}"
           else
-            # A read of a public repository. GH_TOKEN is this repository's own
-            # and carries no access to the fork; it is set because `gh` wants a
-            # token present, not because one is needed to see this.
+            # A read of a public repository. `gh` wants a token present; this
+            # one carries no access to the fork and needs none.
             candidates=$(gh api --paginate "repos/${FORK_REPO}/branches" \
               --jq ".[].name | select(startswith(\"${BRANCH_PREFIX}\"))")
           fi
@@ -133,20 +116,14 @@ jobs:
             valid=("${valid[@]:0:${MAX_BRANCHES}}")
           fi
 
-          # THREE OUTCOMES, NOT TWO. A branch with no pull request needs one. A
-          # branch whose pull request is still OPEN keeps its description in
-          # sync, because the drafting side can rewrite the body on a re-run and
-          # the text a pull request was born with is otherwise the text it dies
-          # with. A branch whose pull request is merged or closed is finished,
-          # and reopening or rewriting it would be arguing with a decision
-          # somebody already made.
+          # THREE OUTCOMES. No pull request: open one. An OPEN one: keep its
+          # description in sync, because the drafting side can rewrite the body
+          # on a re-run. MERGED or CLOSED: finished, and left alone.
           needed=()
           refresh=()
           for branch in "${valid[@]+"${valid[@]}"}"; do
-            # --head takes the BARE ref name. The `owner:branch` form that the
-            # REST API and the compare view accept matches nothing here and
-            # would read as "no pull request yet", so every branch would be
-            # reopened on every poll.
+            # --head takes the BARE ref name. The `owner:branch` form matches
+            # nothing here and would reopen every branch on every run.
             #
             # ONLY A PULL REQUEST WHOSE HEAD IS OURS COUNTS. `--head` matches the
             # branch NAME in any repository, and anybody can open a pull request
@@ -194,18 +171,9 @@ jobs:
             echo "${#refresh[@]} open pull request(s) will have their description refreshed."
           } >> "$GITHUB_STEP_SUMMARY"
 
-  # DESCRIPTION ONLY, DELIBERATELY NOT CONTENT. Rewriting the files of an open
-  # pull request would discard anything a maintainer had pushed to it, and this
-  # workflow must never be able to overwrite a human's edit. The body is safe to
+  # DESCRIPTION ONLY, NEVER CONTENT. Rewriting the files of an open pull request
+  # would discard anything a maintainer had pushed to it. The body is safe to
   # replace because nothing but the drafting side writes it.
-  #
-  # For a pull request opened FROM THE FORK, the commits update by themselves
-  # when the drafting side pushes the branch again, because the fork branch is
-  # the pull request's head. So content stays current there without this
-  # workflow touching it. For one this workflow opened, the branch here is a
-  # copy and does NOT follow the fork; that is a known limitation rather than an
-  # oversight, and the body refresh below is what keeps such a pull request
-  # honest about it.
   refresh:
     name: Refresh open PR descriptions
     needs: find
@@ -258,7 +226,9 @@ jobs:
           # branch name and the push time into the signed metadata; a mismatch,
           # or a draft older than 30 days, is refused. Parked drafts are pushed
           # again every weekly run, so a real one never gets that old.
-          if ! git -C "$v" show "FETCH_HEAD:${METADATA_FILE}" > "${RUNNER_TEMP}/meta-check.json" 2>/dev/null \
+          if ! git -C "$v" log -1 --format=%B FETCH_HEAD 2>/dev/null \
+            | awk -v m="${METADATA_MARKER}" '$0 == "-----END " m "-----" && f { ok = 1; exit } f { print } $0 == "-----BEGIN " m "-----" { f = 1 } END { exit !ok }' \
+            > "${RUNNER_TEMP}/meta-check.json" \
              || ! BRANCH="${BRANCH}" python3 - "${RUNNER_TEMP}/meta-check.json" <<'PY'
           import datetime, json, os, sys
           m = json.load(open(sys.argv[1]))
@@ -273,8 +243,10 @@ jobs:
             exit 1
           fi
 
-          if ! git -C "$v" show "FETCH_HEAD:${METADATA_FILE}" > /tmp/meta.json 2>/dev/null; then
-            echo "::notice::${BRANCH} has no ${METADATA_FILE}; leaving ${URL} as it is."
+          if ! git -C "$v" log -1 --format=%B FETCH_HEAD 2>/dev/null \
+            | awk -v m="${METADATA_MARKER}" '$0 == "-----END " m "-----" && f { ok = 1; exit } f { print } $0 == "-----BEGIN " m "-----" { f = 1 } END { exit !ok }' \
+            > /tmp/meta.json; then
+            echo "::notice::the tip of ${BRANCH} carries no draft metadata; leaving ${URL} as it is."
             exit 0
           fi
 
@@ -296,17 +268,12 @@ jobs:
           branch = os.environ["BRANCH"]
           fork = os.environ["FORK_REPO"]
           body = clean_body(str(meta.get("body") or "Drafted by the PR tracker."))
-          run = meta.get("source_run")
-          if run:
-              body += f"\n\nDrafted by {run}"
           body += f"\n\nDraft branch: [`{branch}`](https://github.com/{fork}/tree/{branch})"
           print(body)
           PY
 
-          # Compare before writing, so an unchanged body is not an edit. Every
-          # `gh pr edit` posts a timeline event and notifies subscribers, and an
-          # hourly poll that rewrote an identical body would mail every reviewer
-          # 24 times a day about nothing.
+          # Compare first: every `gh pr edit` posts a timeline event and
+          # notifies subscribers, so an unchanged body is not an edit.
           gh pr view "${URL}" --json body --jq '.body' > /tmp/current.md || : > /tmp/current.md
           # KEEP THE REFERENCE TABLE. It was worked out against the code change
           # when this pull request opened, and this job has no checkout to work
@@ -350,10 +317,6 @@ jobs:
         run: |
           set -euo pipefail
           git remote add drafts "https://github.com/${FORK_REPO}.git"
-          # NOT --depth 1. A shallow tip hides its parent, so the three-dot
-          # diffs below find "no merge base" and exit 128 on every branch. The
-          # fork shares this repository's history, so a full fetch moves only
-          # the draft's own commits.
           git fetch drafts "${BRANCH}"
 
       # THE GUARD. Everything below trusts this step and nothing before it.
@@ -370,7 +333,8 @@ jobs:
           # not the same as being the drafting pipeline: anybody who can push a
           # branch there could otherwise have this workflow open a pull request
           # here as github-actions[bot]. The tip's signature covers its whole
-          # tree, so checking the tip checks everything this would copy.
+          # tree and its message, so checking the tip checks everything this would
+          # copy and the metadata it is opened with.
           if [ -z "${DRAFTS_SIGNING_KEY}" ]; then
             echo "::error::DRAFTS_SIGNING_KEY is not set, so no draft can be verified. Refusing ${BRANCH}."
             echo "ok=false" >> "$GITHUB_OUTPUT"
@@ -399,7 +363,9 @@ jobs:
           # branch name and the push time into the signed metadata; a mismatch,
           # or a draft older than 30 days, is refused. Parked drafts are pushed
           # again every weekly run, so a real one never gets that old.
-          if ! git show "drafts/${BRANCH}:${METADATA_FILE}" > "${RUNNER_TEMP}/meta-check.json" 2>/dev/null \
+          if ! git log -1 --format=%B "drafts/${BRANCH}" 2>/dev/null \
+            | awk -v m="${METADATA_MARKER}" '$0 == "-----END " m "-----" && f { ok = 1; exit } f { print } $0 == "-----BEGIN " m "-----" { f = 1 } END { exit !ok }' \
+            > "${RUNNER_TEMP}/meta-check.json" \
              || ! BRANCH="${BRANCH}" python3 - "${RUNNER_TEMP}/meta-check.json" <<'PY'
           import datetime, json, os, sys
           m = json.load(open(sys.argv[1]))
@@ -427,7 +393,6 @@ jobs:
           bad=""
           while IFS= read -r file; do
             [ -n "${file}" ] || continue
-            [ "${file}" = "${METADATA_FILE}" ] && continue
             allowed=false
             for prefix in ${ALLOWED_PATHS}; do
               case "${file}" in
@@ -471,10 +436,12 @@ jobs:
           BRANCH: ${{ matrix.branch }}
         run: |
           set -euo pipefail
-          # From the branch, not from the working tree: the metadata file is
-          # deliberately never checked out, so it cannot reach the diff.
-          if ! git show "drafts/${BRANCH}:${METADATA_FILE}" > /tmp/meta.json 2>/dev/null; then
-            echo "::warning::${BRANCH} has no ${METADATA_FILE}; using a fallback title."
+          # From the tip commit's message, not from the working tree: the
+          # metadata commit is empty, so it cannot reach the diff.
+          if ! git log -1 --format=%B "drafts/${BRANCH}" 2>/dev/null \
+            | awk -v m="${METADATA_MARKER}" '$0 == "-----END " m "-----" && f { ok = 1; exit } f { print } $0 == "-----BEGIN " m "-----" { f = 1 } END { exit !ok }' \
+            > /tmp/meta.json; then
+            echo "::warning::the tip of ${BRANCH} carries no draft metadata; using a fallback title."
             printf '{}' > /tmp/meta.json
           fi
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
@@ -585,9 +552,6 @@ jobs:
           table = reference_table("HEAD", f"drafts/{branch}", os.environ["ALLOWED_PATHS"].split(), code_prs)
           if table:
               body = table + "\n" + body
-          run = meta.get("source_run")
-          if run:
-              body += f"\n\nDrafted by {run}"
           body += f"\n\nDraft branch: [`{branch}`](https://github.com/{fork}/tree/{branch})"
           # SAY THAT THE CHECKS HAVE NOT RUN, because the quiet is misleading.
           # This pull request is opened by this repository's own GITHUB_TOKEN,
@@ -626,9 +590,8 @@ jobs:
       # the draft's own changes, and a conflict with a newer edit fails this
       # branch loudly instead of silently undoing it.
       #
-      # Limited to ALLOWED_PATHS by pathspec as well as by the guard, so the
-      # metadata file and anything else cannot land even if the guard were
-      # somehow wrong.
+      # Limited to ALLOWED_PATHS by pathspec as well as by the guard, so
+      # nothing else can land even if the guard were somehow wrong.
       - name: Apply the draft onto a branch here
         if: steps.guard.outputs.ok == 'true'
         env:
@@ -639,6 +602,7 @@ jobs:
           git diff --binary --no-renames HEAD..."drafts/${BRANCH}" -- ${ALLOWED_PATHS} \
             | git apply --index --3way
 
+      # DCO: every commit here needs a Signed-off-by trailer, including this one.
       - name: Open the pull request
         id: cpr
         if: steps.guard.outputs.ok == 'true'
@@ -651,11 +615,10 @@ jobs:
             assets
           title: ${{ steps.meta.outputs.title }}
           body: ${{ steps.meta.outputs.body }}
-          commit-message: |
-            ${{ steps.meta.outputs.title }}
-
-            Signed-off-by: GitHub Action <action@github.com>
+          commit-message: ${{ steps.meta.outputs.title }}
           committer: GitHub Action <action@github.com>
+          author: GitHub Action <action@github.com>
+          signoff: true
           delete-branch: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
