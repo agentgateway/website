@@ -7,7 +7,7 @@ Steps to deploy Keycloak:
 
 1. Download the realm definitions and load them into a ConfigMap in the `httpbin` namespace, alongside the sample app. The `sed` command rewrites the issuer host in the import (which is pinned to `localhost:7080` for local Docker use) to the in-cluster Keycloak address, so that the realms trust each other when Keycloak runs in the cluster.
 
-   ```sh
+   ```sh {paths="te-standard,te-jwt-bearer,te-mcp"}
    BASE=https://agentgateway.dev/examples/traffic-token-exchange/jwt-authz-grant/jwtbearer-import
    for realm in backend-oauth-realm idp-realm; do
      curl -sL "$BASE/$realm.json" \
@@ -22,7 +22,7 @@ Steps to deploy Keycloak:
 
 2. Deploy Keycloak and its Service into the `httpbin` namespace. The `--features=preview` flag enables Keycloak's JWT Authorization Grant, which the RFC 7523 JWT bearer grant requires. The `KC_HOSTNAME` variable pins the token issuer to the in-cluster DNS name, so that tokens minted through a port-forward and the gateway's token-exchange call agree on the issuer (`iss`). Without this, Keycloak rejects the token with an issuer mismatch.
 
-   ```yaml
+   ```yaml {paths="te-standard,te-jwt-bearer,te-mcp"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -82,6 +82,6 @@ Steps to deploy Keycloak:
 
 3. Wait for Keycloak to be ready.
 
-   ```sh
+   ```sh {paths="te-standard,te-jwt-bearer,te-mcp"}
    kubectl rollout status deployment/keycloak -n httpbin --timeout=180s
    ```

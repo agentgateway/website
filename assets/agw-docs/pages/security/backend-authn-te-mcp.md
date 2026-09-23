@@ -24,7 +24,7 @@ The MCP server goes in the same `httpbin` namespace as the Keycloak deployment f
 
 1. Deploy the `echo` MCP server.
 
-   ```yaml
+   ```yaml {paths="te-mcp"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -73,7 +73,7 @@ The MCP server goes in the same `httpbin` namespace as the Keycloak deployment f
 
 2. Create an {{< reuse "agw-docs/snippets/backend.md" >}} that targets the `echo` server. This backend sets no backend-level authentication, so the policy that you apply later is the only place that token exchange happens.
 
-   ```yaml
+   ```yaml {paths="te-mcp"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -93,7 +93,7 @@ The MCP server goes in the same `httpbin` namespace as the Keycloak deployment f
 
 3. Create an `HTTPRoute` that exposes the MCP backend on the `/mcp` path of your gateway.
 
-   ```yaml
+   ```yaml {paths="te-mcp"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -118,7 +118,7 @@ The MCP server goes in the same `httpbin` namespace as the Keycloak deployment f
 
 4. Verify that the route is accepted.
 
-   ```sh
+   ```sh {paths="te-mcp"}
    kubectl -n httpbin get httproute mcp-echo -o jsonpath='{.status.parents[*].conditions[*].type}={.status.parents[*].conditions[*].status}{"\n"}'
    ```
 
@@ -134,7 +134,7 @@ Configure agentgateway to exchange the incoming token before it reaches the MCP 
 
 1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for the token endpoint, pointing at the in-cluster Keycloak Service.
 
-   ```yaml
+   ```yaml {paths="te-mcp"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -150,7 +150,7 @@ Configure agentgateway to exchange the incoming token before it reaches the MCP 
 
 2. Create a Kubernetes Secret with the gateway client's secret. This matches the `requester-client` secret from the imported realm.
 
-   ```yaml
+   ```yaml {paths="te-mcp"}
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -165,7 +165,7 @@ Configure agentgateway to exchange the incoming token before it reaches the MCP 
 
 3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `oauthTokenExchange` method to the MCP {{< reuse "agw-docs/snippets/backend.md" >}}. Unlike the Service-targeted policies in the other guides, `targetRefs` names the backend.
 
-   ```yaml
+   ```yaml {paths="te-mcp"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -273,6 +273,113 @@ Call the `echo` tool through the gateway and confirm that the `Authorization` he
    }
    ```
 
+{{< doc-test paths="te-mcp" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The echo MCP server, the MCP AgentgatewayBackend, and the HTTPRoute apply and become ready.
+#   * The oauthTokenExchange policy is accepted when targetRefs names an AgentgatewayBackend rather
+#     than a Service -- the one thing this guide does differently from the other two.
+#   * End to end: an MCP tools/call reaches the echo server carrying an *exchanged* token, issued for
+#     target-client with requester-client as the authorized party, not the token the caller sent.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * The MCP Inspector CLI in the visible steps -- it needs npx and a network fetch, so the hidden
+#     test speaks the same streamable HTTP protocol with curl instead. Same requests, no toolchain.
+
+# Expose the Keycloak token endpoint through the gateway so the token can be minted without a
+# port-forward.
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: keycloak
+  namespace: httpbin
+spec:
+  parentRefs:
+  - name: agentgateway-proxy
+    namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  hostnames:
+  - "keycloak.local"
+  rules:
+  - backendRefs:
+    - name: keycloak
+      port: 8080
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="te-mcp" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for the mcp token exchange policy to be accepted
+  wait:
+    target:
+      kind: AgentgatewayPolicy
+      metadata:
+        namespace: httpbin
+        name: mcp-token-exchange
+    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="te-mcp" >}}
+# Mint the incoming token. Keycloak readiness and data plane programming both lag the rollout, and
+# an unready upstream answers 503, so retry until a real token comes back.
+INBOUND_TOKEN=""
+for i in $(seq 1 60); do
+  INBOUND_TOKEN=$(curl -s --max-time 10 "http://${INGRESS_GW_ADDRESS}:80/realms/backend-oauth/protocol/openid-connect/token" -H "host: keycloak.local" -u initial-client:initial-secret -d grant_type=password -d username=testuser -d password=testpass | jq -r '.access_token // empty' 2>/dev/null || true)
+  [ -n "$INBOUND_TOKEN" ] && break
+  sleep 2
+done
+test -n "$INBOUND_TOKEN" || { echo "FAILED: could not mint the incoming token"; exit 1; }
+
+# Speak MCP streamable HTTP directly, so the test needs no npx. Open a session, complete the
+# handshake, then call the echo tool asking it to reflect the headers the MCP server received.
+MCP_URL="http://${INGRESS_GW_ADDRESS}:80/mcp"
+ACCEPT='application/json, text/event-stream'
+AZP=""
+BODY=""
+for i in $(seq 1 30); do
+  SID=$(curl -sD- -o /dev/null --max-time 15 -X POST "$MCP_URL" \
+    -H 'content-type: application/json' -H "accept: $ACCEPT" \
+    -H "authorization: Bearer $INBOUND_TOKEN" \
+    -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"doc-test","version":"1"}}}' \
+    | grep -i '^mcp-session-id:' | tr -d '\r' | cut -d' ' -f2- || true)
+  if [ -n "$SID" ]; then
+    curl -s --max-time 15 -o /dev/null -X POST "$MCP_URL" \
+      -H 'content-type: application/json' -H "accept: $ACCEPT" \
+      -H "authorization: Bearer $INBOUND_TOKEN" -H "mcp-session-id: $SID" \
+      -d '{"jsonrpc":"2.0","method":"notifications/initialized"}' || true
+    BODY=$(curl -s --max-time 15 -X POST "$MCP_URL" \
+      -H 'content-type: application/json' -H "accept: $ACCEPT" \
+      -H "authorization: Bearer $INBOUND_TOKEN" -H "mcp-session-id: $SID" \
+      -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"echo","arguments":{"input":"test","includeHttpHeaders":true}}}' || true)
+    AZP=$(printf '%s' "$BODY" | python3 -c '
+import sys,json,base64,re
+try:
+    raw=sys.stdin.read()
+    line=[l for l in raw.splitlines() if l.startswith("data: ")][-1][6:]
+    items=json.loads(line)["result"]["content"]
+    req=json.loads(items[1]["text"])
+    tok=req["headers"]["authorization"].split()[1]
+    seg=tok.split(".")[1]
+    print(json.loads(base64.urlsafe_b64decode(seg+"="*(-len(seg)%4)))["azp"])
+except Exception:
+    pass')
+  fi
+  [ "$AZP" = "requester-client" ] && break
+  sleep 2
+done
+if [ "$AZP" != "requester-client" ]; then
+  echo "FAILED: expected the token the MCP server received to have azp=requester-client, got '$AZP'"
+  echo "last response (first 500 chars): $(printf '%s' "$BODY" | head -c 500)"
+  exit 1
+fi
+echo "mcp token exchange verified (token reaching the MCP server has azp=$AZP)"
+{{< /doc-test >}}
+
 ## Next steps
 
 * **Validate the incoming token at the edge.** The exchange forwards the incoming token to the authorization server as received, without validating it first. Pair the policy with a route-level [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) or [MCP authentication]({{< link-hextra path="/documentation/security/jwt/mcp/" >}}) policy so that invalid tokens are rejected before any call to the token endpoint. Set `preserveToken: true` on it, or the exchange finds no `subject_token`; for a worked example, see [Validate the incoming token at the edge]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/#edge-validation" >}}).
@@ -281,7 +388,7 @@ Call the `echo` tool through the gateway and confirm that the `Authorization` he
 
 ## Cleanup
 
-```sh
+```sh {paths="te-mcp"}
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} mcp-token-exchange -n httpbin
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} mcp-backend-echo keycloak-token-endpoint -n httpbin
 kubectl delete httproute mcp-echo -n httpbin
@@ -290,3 +397,7 @@ kubectl delete deployment echo keycloak -n httpbin
 kubectl delete service echo keycloak -n httpbin
 kubectl delete configmap backend-oauth-realm -n httpbin
 ```
+
+{{< doc-test paths="te-mcp" >}}
+kubectl delete httproute keycloak -n httpbin --ignore-not-found
+{{< /doc-test >}}
