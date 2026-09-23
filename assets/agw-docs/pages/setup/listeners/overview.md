@@ -61,11 +61,14 @@ flowchart TD
   HR2 -- "backendRef" --> SVC2
 ```
 
-<!-- The exclude list names 2026.9.x directly because the OSS-to-enterprise version remap rewrites the literal `1.5.x` only once, and the `latest` entry consumes it. Every other enterprise version is reached through its ossVersion. -->
-{{< version exclude-if="2.2.x,1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2026.9.x" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
 ### Listener precedence {#listener-precedence}
 
-Listeners that share a port must use the same protocol and the same bind mode, and each one must claim a hostname that no earlier listener on that port already claimed. Several listeners can share a port on those terms, which is how one port serves more than one hostname. Each listener is checked against the listeners that are already accepted on its port, so precedence decides which listener keeps a contested setting. A listener that loses reports `Conflicted: True` and `Accepted: False` in its status, with a reason of `HostnameConflict`, `ProtocolConflict`, or `BindModeConflict`. Precedence follows the order that [GEP-1713](https://gateway-api.sigs.k8s.io/geps/gep-1713/#listener-precedence) defines:
+Listeners that share a port must use the same protocol and the same bind mode. Each listener must also claim a hostname that no earlier listener on that port already claimed.
+
+Several listeners can share a port, which is how one port serves more than one hostname. Each listener is checked against the listeners that are already accepted on its port, so precedence decides which listener keeps a contested setting.
+
+The losing listener reports `Conflicted: True` and `Accepted: False` in its status, with a reason of `HostnameConflict`, `ProtocolConflict`, or `BindModeConflict`. Precedence follows the order that [GEP-1713](https://gateway-api.sigs.k8s.io/geps/gep-1713/#listener-precedence) defines:
 
 1. Listeners written inline on the Gateway come before any listener that a ListenerSet contributes.
 2. ListenerSets are ordered by `metadata.creationTimestamp`, oldest first.
