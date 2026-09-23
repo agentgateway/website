@@ -25,7 +25,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "agentgateway": {
-      "url": "http://localhost:3000/mcp/http"
+      "url": "http://localhost:3000/mcp"
     }
   }
 }
@@ -38,7 +38,7 @@ Edit `%APPDATA%\Claude\claude_desktop_config.json`:
 {
   "mcpServers": {
     "agentgateway": {
-      "url": "http://localhost:3000/mcp/http"
+      "url": "http://localhost:3000/mcp"
     }
   }
 }
@@ -51,7 +51,7 @@ Edit `%APPDATA%\Claude\claude_desktop_config.json`:
 Configure Claude Code to connect to agentgateway.
 
 ```bash
-claude mcp add agentgateway --transport http http://localhost:3000/mcp/http
+claude mcp add agentgateway --transport http http://localhost:3000/mcp
 ```
 
 Or, add to your project's `.mcp.json`.
@@ -61,14 +61,14 @@ Or, add to your project's `.mcp.json`.
   "mcpServers": {
     "agentgateway": {
       "type": "http",
-      "url": "http://localhost:3000/mcp/http"
+      "url": "http://localhost:3000/mcp"
     }
   }
 }
 ```
 
 > [!WARNING]
-> The SSE transport (`/mcp/sse`) is deprecated. Use the streamable HTTP transport (`/mcp/http`) for all new setups.
+> The SSE transport (`/mcp/sse`) is deprecated. Use the streamable HTTP transport (`/mcp`) for all new setups.
 
 ## Authentication
 
@@ -78,7 +78,7 @@ If agentgateway requires authentication, include the token in the URL or headers
 {
   "mcpServers": {
     "agentgateway": {
-      "url": "http://localhost:3000/mcp/http",
+      "url": "http://localhost:3000/mcp",
       "headers": {
         "Authorization": "Bearer your-token-here"
       }
