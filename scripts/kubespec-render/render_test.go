@@ -142,3 +142,142 @@ properties:
 		t.Error("a row rendered as already expanded")
 	}
 }
+
+// A union variant that is not an object, and a property restated by more than
+// one variant, both used to abandon the merge and cost the reader every
+// alternative but one. `backendAuth` has both, which is how a field with ten
+// alternatives rendered only `key`.
+func TestUnionVariantsSurvive(t *testing.T) {
+	parse := func(t *testing.T, src string) *propertyMap {
+		t.Helper()
+		var doc yaml.Node
+		if err := yaml.Unmarshal([]byte(src), &doc); err != nil {
+			t.Fatal(err)
+		}
+		root := doc.Content[0]
+		return toPropertyMapWithResolver(root, nil, &schemaResolver{root: root}, nil)
+	}
+	keys := func(t *testing.T, pm *propertyMap) string {
+		t.Helper()
+		auth := pm.props["auth"]
+		if auth.definition == nil {
+			t.Fatal("auth has no definition")
+		}
+		return strings.Join(auth.definition.keys, ",")
+	}
+
+	// A serde unit variant serializes as the bare tag (`auth: copilot`), so its
+	// schema is a scalar with a const. It is an alternative like any other.
+	t.Run("unit variant becomes a named leaf", func(t *testing.T) {
+		pm := parse(t, `type: object
+properties:
+  auth: {$ref: '#/$defs/Auth'}
+$defs:
+  Auth:
+    oneOf:
+      - type: object
+        required: [key]
+        properties: {key: {type: string}}
+      - type: string
+        const: copilot
+        description: Authenticate to GitHub Copilot.
+      - type: object
+        required: [jwtSign]
+        properties: {jwtSign: {type: object, properties: {alg: {type: string}}}}
+`)
+		if got := keys(t, pm); got != "key,copilot,jwtSign" {
+			t.Fatalf("variants = %q, want key,copilot,jwtSign", got)
+		}
+		copilot := pm.props["auth"].definition.props["copilot"]
+		if copilot.description != "Authenticate to GitHub Copilot." {
+			t.Errorf("unit variant lost its description: %q", copilot.description)
+		}
+		html := renderWidget("Configuration schema", "", "", "Schema", pm, "test", nil)
+		for _, want := range []string{"auth.key", "auth.copilot", "auth.jwtSign"} {
+			if !strings.Contains(html, `data-ks-path="`+want+`"`) {
+				t.Errorf("missing rendered path %s", want)
+			}
+		}
+	})
+
+	// A compat wrapper restates one property across variants. Identical
+	// restatements are not ambiguous, so they must not cost the other variants.
+	t.Run("identical repeat collapses", func(t *testing.T) {
+		pm := parse(t, `type: object
+properties:
+  auth: {$ref: '#/$defs/Auth'}
+$defs:
+  Auth:
+    anyOf:
+      - type: object
+        required: [key]
+        properties: {key: {type: string}}
+      - type: object
+        required: [credentials]
+        properties: {credentials: {type: array, items: {type: string}}}
+      - type: object
+        required: [credentials]
+        properties: {credentials: {type: array, items: {type: string}}}
+`)
+		if got := keys(t, pm); got != "key,credentials" {
+			t.Fatalf("variants = %q, want key,credentials", got)
+		}
+	})
+
+	// A repeat that genuinely disagrees is a naming clash, not a reason to drop
+	// the other variants: the fuller schema wins the name and the rest survive.
+	// This is `backendAuth`, where the legacy `key: <value>` shorthand meets the
+	// canonical `key: {value, location}`.
+	t.Run("conflicting repeat keeps the fuller schema", func(t *testing.T) {
+		pm := parse(t, `type: object
+properties:
+  auth: {$ref: '#/$defs/Auth'}
+$defs:
+  Auth:
+    anyOf:
+      - type: object
+        required: [key]
+        properties: {key: {type: string}}
+      - type: object
+        required: [key]
+        properties:
+          key:
+            type: object
+            properties:
+              value: {type: string}
+              location: {type: string}
+      - type: object
+        required: [jwtSign]
+        properties: {jwtSign: {type: object, properties: {alg: {type: string}}}}
+`)
+		if got := keys(t, pm); got != "key,jwtSign" {
+			t.Fatalf("variants = %q, want key,jwtSign", got)
+		}
+		key := pm.props["auth"].definition.props["key"]
+		if key.definition == nil || strings.Join(key.definition.keys, ",") != "value,location" {
+			t.Fatalf("clash kept the thinner schema: %+v", key.definition)
+		}
+	})
+
+	// The remaining guard: a scalar with no const names nothing, so there is no
+	// row to merge it into and the single-variant fallback still applies.
+	t.Run("const-less scalar falls back", func(t *testing.T) {
+		pm := parse(t, `type: object
+properties:
+  auth: {$ref: '#/$defs/Auth'}
+$defs:
+  Auth:
+    oneOf:
+      - type: string
+      - type: object
+        required: [key]
+        properties: {key: {type: string}}
+      - type: object
+        required: [jwtSign]
+        properties: {jwtSign: {type: string}}
+`)
+		if got := keys(t, pm); got != "key" {
+			t.Fatalf("variants = %q, want the fallback's single variant", got)
+		}
+	})
+}

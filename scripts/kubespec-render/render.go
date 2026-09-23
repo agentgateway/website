@@ -27,6 +27,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -200,6 +201,25 @@ type nodeMap = map[string]*yaml.Node
 
 type schemaResolver struct {
 	root *yaml.Node
+	// Synthesised union nodes, keyed by the node they were built from.
+	//
+	// LOAD-BEARING, not just a speed-up. toPropertyMapWithResolver guards against
+	// a type that contains itself by pointer identity (`visiting[n]`), and a
+	// merged union is a NEW node on every call, so without this each occurrence
+	// looks unrelated and the guard never fires. Returning one node per source
+	// keeps that guard working now that unions merge rather than collapse.
+	merged map[*yaml.Node]*yaml.Node
+}
+
+func (r *schemaResolver) memoizeMerge(src, out *yaml.Node) *yaml.Node {
+	if r == nil || src == nil {
+		return out
+	}
+	if r.merged == nil {
+		r.merged = map[*yaml.Node]*yaml.Node{}
+	}
+	r.merged[src] = out
+	return out
 }
 
 func resolveAlias(n *yaml.Node) *yaml.Node {
@@ -237,10 +257,30 @@ func resolveSchemaNode(node *yaml.Node, resolver *schemaResolver) *yaml.Node {
 
 // mergeObjectVariants exposes every externally tagged object alternative. Variant
 // keys are alternatives, so none is individually required; requirements within
-// each variant remain intact. Overlapping shapes retain the existing fallback.
+// each variant remain intact. Genuinely overlapping shapes retain the existing
+// fallback, which keeps a single variant.
+//
+// Two shapes used to abandon the merge and cost the reader every variant but one.
+// Both appear in `backendAuth`, which is why it rendered `key` alone out of ten
+// alternatives:
+//
+//   - A serde unit variant serializes as the bare tag, so its schema is a scalar
+//     with a `const` rather than an object (`backendAuth: copilot`). It is still
+//     an alternative and now renders as a named leaf. A scalar with no `const`
+//     names nothing, so those unions still fall back.
+//   - A compat wrapper restates the same property across variants, sometimes
+//     identically (`BackendAuthCompat` lists `credentials` twice) and sometimes
+//     not (its legacy `key` shorthand against the canonical `key` object). A
+//     repeat is a naming clash, not a reason to discard the other nine
+//     alternatives, so it is now resolved in place: an identical restatement
+//     collapses, and a genuine disagreement keeps the more specific schema.
+//
+// Merging can only ever ADD names, since the union of every variant's properties
+// contains whatever single variant the fallback would have kept. So no shape
+// renders fewer alternatives than before this change.
 func mergeObjectVariants(alts *yaml.Node, resolver *schemaResolver, seen map[*yaml.Node]bool, depth int) *yaml.Node {
 	props := &yaml.Node{Kind: yaml.MappingNode}
-	names := map[string]bool{}
+	byName := map[string]*yaml.Node{}
 	count := 0
 	for _, alt := range alts.Content {
 		candidate := resolveSchemaNodeWithState(alt, resolver, seen, depth+1)
@@ -250,15 +290,22 @@ func mergeObjectVariants(alts *yaml.Node, resolver *schemaResolver, seen map[*ya
 		}
 		fields := getNode(raw, "properties")
 		if fields == nil || fields.Kind != yaml.MappingNode || len(fields.Content) == 0 {
-			return nil
+			tag := getString(raw, "const")
+			if tag == "" {
+				return nil
+			}
+			// The variant schema carries the type, the const and the description,
+			// so reuse it as the leaf rather than synthesising one.
+			if _, ok := byName[tag]; !ok {
+				byName[tag] = candidate
+				count++
+				props.Content = append(props.Content, &yaml.Node{Kind: yaml.ScalarNode, Value: tag}, candidate)
+			}
+			continue
 		}
 		count++
 		for i := 0; i+1 < len(fields.Content); i += 2 {
 			name, value := fields.Content[i], fields.Content[i+1]
-			if names[name.Value] {
-				return nil
-			}
-			names[name.Value] = true
 			if len(fields.Content) == 2 && getString(decodeMapping(value), "description") == "" {
 				if desc := getNode(raw, "description"); desc != nil {
 					copyValue := *value
@@ -266,6 +313,22 @@ func mergeObjectVariants(alts *yaml.Node, resolver *schemaResolver, seen map[*ya
 					value = &copyValue
 				}
 			}
+			if prev, ok := byName[name.Value]; ok {
+				if sameSchemaNode(prev, value) {
+					continue
+				}
+				// Two spellings of one field, such as the legacy `key: <value>`
+				// shorthand beside the canonical `key: {value, location}`. Keep
+				// whichever describes more, so the row a reader expands is the
+				// fuller one; the alternative is discarding every other variant.
+				if specificity(value, resolver, seen, depth) <= specificity(prev, resolver, seen, depth) {
+					continue
+				}
+				replaceProp(props, name.Value, value)
+				byName[name.Value] = value
+				continue
+			}
+			byName[name.Value] = value
 			props.Content = append(props.Content, name, value)
 		}
 	}
@@ -276,6 +339,50 @@ func mergeObjectVariants(alts *yaml.Node, resolver *schemaResolver, seen map[*ya
 		{Kind: yaml.ScalarNode, Value: "type"}, {Kind: yaml.ScalarNode, Value: "object"},
 		{Kind: yaml.ScalarNode, Value: "properties"}, props,
 	}}
+}
+
+// specificity ranks two spellings of one property name by how much shape they
+// describe, so a clash keeps the fuller one. Counting resolved properties is
+// enough to separate the cases that occur here and stays deterministic.
+func specificity(n *yaml.Node, resolver *schemaResolver, seen map[*yaml.Node]bool, depth int) int {
+	resolved := resolveSchemaNodeWithState(n, resolver, seen, depth+1)
+	fields := getNode(decodeMapping(resolved), "properties")
+	if fields == nil || fields.Kind != yaml.MappingNode {
+		return 0
+	}
+	return len(fields.Content) / 2
+}
+
+// replaceProp swaps the value of an already-appended property, keeping its
+// position so the merged order still follows the order the variants declared.
+func replaceProp(props *yaml.Node, name string, value *yaml.Node) {
+	for i := 0; i+1 < len(props.Content); i += 2 {
+		if props.Content[i].Value == name {
+			props.Content[i+1] = value
+			return
+		}
+	}
+}
+
+// sameSchemaNode reports whether two schema nodes describe the same thing.
+// Serialising is enough here: these are small subtrees read from one document,
+// and the alternative is hand-rolling a comparison over every node kind.
+func sameSchemaNode(a, b *yaml.Node) bool {
+	if a == b {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	left, err := yaml.Marshal(a)
+	if err != nil {
+		return false
+	}
+	right, err := yaml.Marshal(b)
+	if err != nil {
+		return false
+	}
+	return bytes.Equal(left, right)
 }
 
 func resolveSchemaNodeWithState(node *yaml.Node, resolver *schemaResolver, seen map[*yaml.Node]bool, depth int) *yaml.Node {
@@ -304,13 +411,26 @@ func resolveSchemaNodeWithState(node *yaml.Node, resolver *schemaResolver, seen 
 
 	// Combine disjoint object variants before falling back to the best non-null
 	// branch for nullable or mixed scalar/object unions.
+	//
+	// KNOWN GAP, deliberately left: a node carrying its own `properties` AND a
+	// union keeps only the union, so `OAuthTokenExchangeAuth` renders the three
+	// ways of addressing the token endpoint but not the thirteen fields declared
+	// beside them. Folding the two together is correct and was measured, but this
+	// widget materialises every path in the schema and `backendAuth` alone occurs
+	// ~361 times, so it took the output from 18 MB to 98 MB. Fixing it properly
+	// means rendering each type once and cross-referencing the repeats.
+	if resolver != nil {
+		if cached, ok := resolver.merged[n]; ok {
+			return cached
+		}
+	}
 	for _, key := range []string{"anyOf", "oneOf"} {
 		alts := getNode(raw, key)
 		if alts == nil || alts.Kind != yaml.SequenceNode {
 			continue
 		}
 		if merged := mergeObjectVariants(alts, resolver, seen, depth); merged != nil {
-			return merged
+			return resolver.memoizeMerge(n, merged)
 		}
 		best := (*yaml.Node)(nil)
 		bestScore := -1
@@ -343,7 +463,7 @@ func resolveSchemaNodeWithState(node *yaml.Node, resolver *schemaResolver, seen 
 			}
 		}
 		if best != nil {
-			return best
+			return resolver.memoizeMerge(n, best)
 		}
 	}
 
