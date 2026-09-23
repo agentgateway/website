@@ -27,7 +27,11 @@ Register an application in Microsoft Entra ID, and collect the values that agent
 2. [Register an application](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app) in the Microsoft Entra admin center. 
    
    1. For **Supported account types**, choose the option that fits your organization. 
-   2. Under **Redirect URI**, select the **Mobile and desktop applications** platform and add the callback URLs of the MCP clients that you plan to connect.
+   2. Under **Redirect URI**, select the **Mobile and desktop applications** platform and add a loopback redirect URI for each MCP client that you plan to connect, such as `http://localhost/oauth/callback` for the MCP inspector that you use later in this guide. For other clients, check the callback path in the client's documentation.
+
+      Entra ignores the port of a loopback redirect URI, so one entry matches whatever port the client picks at runtime. However, Entra matches the path exactly. If you register `http://localhost` without the client's callback path, sign-in fails with an `AADSTS50011` redirect URI mismatch error.
+
+      Do not register the redirect URI under the **Web** platform. Web redirect URIs make the app registration a confidential client, and Entra then requires a client secret that MCP clients do not have.
 
 3. From the app's **Overview** page, note the **Directory (tenant) ID** and the **Application (client) ID**, and save them as environment variables.
       
@@ -41,7 +45,17 @@ Register an application in Microsoft Entra ID, and collect the values that agent
    1. Next to **Application ID URI**, click **Set** and accept the default value of `api://${ENTRA_CLIENT_ID}`. 
    2. Click **Add a scope**, enter a scope name such as `mcp_access`, set **Who can consent** to **Admins and users**, and click **Add scope**.
 
-5. Select **App roles** and click **Create app role**. Enter a display name and set the **Value** to `mcp.admin`. Then, assign the role to the users or groups that need access to your MCP server. You use this role in the authorization rule that you configure later.
+5. Select **Manifest** and set the access token version to `2`. Then, save the manifest.
+
+   ```json
+   "api": {
+     "requestedAccessTokenVersion": 2
+   }
+   ```
+
+   By default, Entra issues v1 access tokens for your API, with an issuer of `https://sts.windows.net/<tenant-id>/`. The policy in this guide validates the v2 issuer, `https://login.microsoftonline.com/<tenant-id>/v2.0`, so v1 tokens fail issuer validation with a 401 HTTP response code even after a successful sign-in. In the older Azure AD Graph manifest format, the equivalent setting is `"accessTokenAcceptedVersion": 2`.
+
+6. Select **App roles** and click **Create app role**. Enter a display name and set the **Value** to `mcp.admin`. Then, assign the role to the users or groups that need access to your MCP server. You use this role in the authorization rule that you configure later.
 
 {{< doc-test paths="setup-entra" >}}
 # The controller fetches the provider's remote JWKS when it translates the policy,
@@ -133,8 +147,10 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
            # Entra has no Dynamic Client Registration, so the gateway answers
            # registration requests with this pre-registered client ID.
            clientId: "${ENTRA_CLIENT_ID}"
+           # Do not set resource or authorizationServers. The gateway derives
+           # the resource from the request URL and advertises itself as the
+           # authorization server, which is what makes the Entra bridge work.
            resourceMetadata:
-             resource: http://localhost:8080/mcp
              scopesSupported:
              - "api://${ENTRA_CLIENT_ID}/mcp_access"
              bearerMethodsSupported:
@@ -152,13 +168,13 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
 
    | Setting | Description |
    | -- | -- |
-   | `providers[].issuer` | The Entra token issuer URL. Use the v2 form `https://login.microsoftonline.com/<tenant-id>/v2.0` or the v1 form `https://sts.windows.net/<tenant-id>/`, depending on which version your app registration mints. This value must match the `iss` claim in the token. |
+   | `providers[].issuer` | The Entra token issuer URL. Use the v2 form `https://login.microsoftonline.com/<tenant-id>/v2.0` or the v1 form `https://sts.windows.net/<tenant-id>/`, depending on which version your app registration mints. This value must match the `iss` claim in the token. If you set the access token version to `2` in the app manifest, use the v2 form. |
    | `providers[].audiences` | The accepted audiences. List both `api://<client-id>` and the bare `<client-id>` to accept the `aud` claim formats that Entra mints for v1 and v2 tokens. |
    | `providers[].jwks.remote.backendRef` | The `entra-jwks` backend that points to `login.microsoftonline.com`. |
    | `providers[].jwks.remote.jwksPath` | The path to Entra's JWKS endpoint for your tenant. |
    | `mcp.provider` | The identity provider. Set to `Entra` to enable the native Entra bridging behavior. |
    | `mcp.clientId` | The Application (client) ID of your Entra app registration. Because Entra has no Dynamic Client Registration, agentgateway answers registration requests with this value. |
-   | `mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. Includes the resource identifier, supported scopes, and bearer token methods. |
+   | `mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. In this example, the supported scopes and bearer token methods. Do not set `resource`. The gateway derives it from the request URL, so the metadata stays correct whether clients reach the gateway through a load balancer, a port-forward, or a different MCP route. If you set it, every route advertises that one value. Do not set `authorizationServers` either. The gateway advertises itself as the authorization server. If you point clients at Entra instead, they bypass the bridge and fail as described in [Troubleshooting](#troubleshooting). |
    | `authorization.policy.matchExpressions` | CEL rules that authorize the claims in the verified JWT. Entra puts the app roles that you assign in the `roles` claim, so this example requires the `mcp.admin` app role. Requests that present a valid token without that role are denied with a 403 HTTP response code. |
 
 2. Verify that the policy was accepted.
@@ -249,6 +265,8 @@ EOF
    EOF
    ```
 
+   The gateway serves the discovery documents and the bridged `authorize`, `token`, and `client-registration` endpoints before it validates JWTs, even with the `Strict` policy on the route, because MCP clients need them to learn how to authenticate. You do not need a separate route or policy to exempt them. However, the gateway serves these paths only when the HTTPRoute matches them. If you leave out a discovery path, the `WWW-Authenticate` challenge still points clients to it, and the client fails when the path returns a 404 HTTP response code.
+
 {{< doc-test paths="setup-entra" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The Entra MCP auth resources (entra-jwks backend + BackendTLSPolicy, the
@@ -309,9 +327,98 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
+## Verify MCP discovery
+
+Before you sign in, check that the gateway serves the discovery documents that MCP clients need. These checks do not require a browser, so they are a quick way to rule out routing and policy problems.
+
+1. Get the address of the agentgateway proxy.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy \
+     -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+
+   echo "Gateway address: $INGRESS_GW_ADDRESS"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   After you port-forward, the gateway is available at `http://localhost:8080`. Use `localhost:8080` wherever the following steps reference `$INGRESS_GW_ADDRESS:80`.
+
+   ```sh
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 8080:80
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+2. Send an unauthenticated request to the MCP endpoint. Verify that the request is rejected with a 401 HTTP response code and a `WWW-Authenticate` header that points MCP clients to the protected resource metadata.
+   ```sh
+   curl -i http://$INGRESS_GW_ADDRESS:80/mcp -X POST \
+     -H "Content-Type: application/json" \
+     -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{}},"id":1}'
+   ```
+
+   Example output:
+   ```
+   HTTP/1.1 401 Unauthorized
+   www-authenticate: Bearer resource_metadata="http://localhost:8080/.well-known/oauth-protected-resource/mcp"
+   ```
+
+3. Get the protected resource metadata. Verify that `authorization_servers` points to the gateway, not to `login.microsoftonline.com`.
+   ```sh
+   curl -s http://$INGRESS_GW_ADDRESS:80/.well-known/oauth-protected-resource/mcp | jq
+   ```
+
+   Example output:
+   ```json
+   {
+     "resource": "http://localhost:8080/mcp",
+     "authorization_servers": ["http://localhost:8080/mcp"],
+     "mcp_protocol_version": "2025-06-18",
+     "resource_type": "mcp-server",
+     "scopes_supported": ["api://<client-id>/mcp_access"],
+     "bearer_methods_supported": ["header"]
+   }
+   ```
+
+4. Get the bridged authorization server metadata. Verify that the `authorize`, `token`, and `client-registration` endpoints point back to the gateway, and that PKCE with `S256` is advertised.
+   ```sh
+   curl -s http://$INGRESS_GW_ADDRESS:80/.well-known/oauth-authorization-server/mcp \
+     | jq '{authorization_endpoint, token_endpoint, registration_endpoint, code_challenge_methods_supported}'
+   ```
+
+   Example output:
+   ```json
+   {
+     "authorization_endpoint": "http://localhost:8080/.well-known/oauth-authorization-server/mcp/authorize",
+     "token_endpoint": "http://localhost:8080/.well-known/oauth-authorization-server/mcp/token",
+     "registration_endpoint": "http://localhost:8080/.well-known/oauth-authorization-server/mcp/client-registration",
+     "code_challenge_methods_supported": ["S256"]
+   }
+   ```
+
+5. Register a test client. Verify that the response returns your Entra application (client) ID and no client secret.
+   ```sh
+   curl -s -X POST http://$INGRESS_GW_ADDRESS:80/.well-known/oauth-authorization-server/mcp/client-registration \
+     -H "Content-Type: application/json" \
+     -d '{"client_name":"test","redirect_uris":["http://localhost:8080/callback"],"grant_types":["authorization_code"],"response_types":["code"],"token_endpoint_auth_method":"none"}' | jq
+   ```
+
+   Example output:
+   ```json
+   {
+     "client_id": "<client-id>",
+     "client_id_issued_at": 0,
+     "token_endpoint_auth_method": "none",
+     "grant_types": ["authorization_code"],
+     "response_types": ["code"],
+     "redirect_uris": ["http://localhost:8080/callback"]
+   }
+   ```
+
 ## Verify MCP auth
 
-Verify the auth flow with the [MCP inspector](https://github.com/modelcontextprotocol/inspector). Because the flow redirects you to Microsoft to sign in, this verification is interactive and requires a live Entra tenant.
+Verify the sign-in flow with the [MCP inspector](https://github.com/modelcontextprotocol/inspector). Because the flow redirects you to Microsoft to sign in, this verification is interactive and requires a live Entra tenant.
 
 1. Open the MCP inspector.
    ```sh
@@ -327,6 +434,10 @@ Verify the auth flow with the [MCP inspector](https://github.com/modelcontextpro
 
 4. Verify that tool calls work without re-authentication. From the **Tools** tab, click **List Tools**, select the `fetch` tool, enter a URL such as `https://example.com/`, and click **Run Tool**. The call succeeds because the token from the initial connection is reused for all tool calls within the session.
 
+## Connect an MCP client
+
+Configure your MCP client with the gateway's MCP endpoint URL only, such as `http://localhost:8080/mcp`. Do not configure a client ID, client secret, or authorization server URL in the client. The client discovers the gateway as its authorization server, registers against your pre-registered application (client) ID, and redirects the user to Microsoft to sign in. Make sure that the client's callback path is registered as a redirect URI in your Entra app registration, as described in [Set up Entra ID](#set-up-entra-id).
+
 ## Role-based authorization
 
 The policy that you created gates the MCP endpoint on the `mcp.admin` app role, which Entra puts in the `roles` claim of tokens that it issues to the users and groups that you assigned the role to. Authentication alone is not enough: any caller that Entra issues a token to for your app registration passes JWT validation, including daemon apps that use the client credentials flow to authorize themselves rather than a user. The authorization rule denies those tokens with a 403 HTTP response code.
@@ -334,6 +445,21 @@ The policy that you created gates the MCP endpoint on the `mcp.admin` app role, 
 Because MCP authentication runs at the route level, every claim in the verified token is also available to other route-level policies, such as rate limiting and transformations. For more information about the rules that you can write, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}).
 
 To authorize individual tools instead of the whole MCP endpoint, use an MCP authorization policy. For more information, see [Tool access]({{< link-hextra path="/documentation/mcp/tool-access/" >}}).
+
+## Troubleshooting
+
+Review the following common errors and what to check for each.
+
+| Error | What to check |
+| -- | -- |
+| `Dynamic Client Registration rejected (HTTP 404)` | The HTTPRoute does not match the `/.well-known/oauth-authorization-server/mcp` path. Add the path as a `PathPrefix` match, as shown in [Configure MCP auth](#configure-mcp-auth). |
+| `Incompatible auth server: does not support dynamic client registration` | The client is contacting Entra directly instead of the gateway. Remove `authorizationServers` from `mcp.resourceMetadata`, and check that the HTTPRoute matches both discovery paths. |
+| `AADSTS9010010: The resource parameter provided in the request doesn't match with the requested scopes` | Same cause as the previous error. The client reached Entra without going through the gateway, which strips the `resource` parameter. |
+| `AADSTS50011: The redirect URI ... does not match the redirect URIs configured for the application` | The redirect URI in the app registration is missing the client's callback path, or is registered under the **Web** platform instead of **Mobile and desktop applications**. |
+| `AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'` | The app registration is treated as a confidential client. Move the redirect URI to the **Mobile and desktop applications** platform. |
+| A 401 HTTP response code without a `WWW-Authenticate` header | The `mcp` section is missing from the `jwtAuthentication` policy. |
+| Sign-in succeeds, but MCP requests return a 401 HTTP response code | Decode the access token and compare its `iss` and `aud` claims with `providers[].issuer` and `providers[].audiences`. An issuer of `https://sts.windows.net/<tenant-id>/` means that the app registration issues v1 tokens. Set the access token version to `2` in the manifest, as described in [Set up Entra ID](#set-up-entra-id). |
+| Sign-in succeeds, but MCP requests return a 403 HTTP response code | The token is valid but does not carry the `mcp.admin` app role. Assign the role to the user or group, then sign in again to get a new token. |
 
 ## Clean up
 
