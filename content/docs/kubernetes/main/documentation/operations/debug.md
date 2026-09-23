@@ -87,19 +87,19 @@ Most routing and policy issues surface in the status of the corresponding Kubern
    * The wrong parent Gateway is referenced.
    * Multiple HTTPRoutes conflict by having identical matchers or by having no matchers (and so default to `/`).
 
-4. Check AgentgatewayBackend and AgentgatewayPolicy resources for partial acceptance. A resource can report `Accepted=True` with `reason: PartiallyValid` when the controller keeps the usable parts of a backend or policy and reports the invalid part in the condition message.
+4. Check {{< reuse "agw-docs/snippets/backend.md" >}} and {{< reuse "agw-docs/snippets/policy.md" >}} resources for partial acceptance. A resource can report `Accepted=True` with `reason: PartiallyValid` when the controller keeps the usable parts of a backend or policy and reports the invalid part in the condition message.
 
-   1. List the backends and policies in your cluster.
+   1. Find the backends and policies that report `PartiallyValid`. The `ACCEPTED` column of `kubectl get` shows `True` for these resources, so filter on the reason instead.
 
       ```sh
-      kubectl get agentgatewaybackends.agentgateway.dev -A
-      kubectl get agentgatewaypolicies.agentgateway.dev -A
+      kubectl get {{< reuse "agw-docs/snippets/backend.md" >}} -A -o json | jq -r '.items[] | .metadata as $m | .status.conditions[]? | select(.type == "Accepted" and .reason == "PartiallyValid") | "\($m.namespace)/\($m.name): \(.message)"'
+      kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} -A -o json | jq -r '.items[] | .metadata as $m | .status.ancestors[]?.conditions[]? | select(.type == "Accepted" and .reason == "PartiallyValid") | "\($m.namespace)/\($m.name): \(.message)"'
       ```
 
-   2. Inspect the resource that you want to debug.
+   2. Inspect the resource that you want to debug, such as the `openai` backend in the following example.
 
       ```sh
-      kubectl get agentgatewaybackends.agentgateway.dev openai -n agentgateway-system -o yaml
+      kubectl get {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
       ```
 
    3. Find the `Accepted` condition in the output. For a backend, look in `status.conditions`. For a policy, look in `status.ancestors[].conditions`, which has one entry per Gateway that the policy attaches to.
@@ -112,7 +112,7 @@ Most routing and policy issues surface in the status of the corresponding Kubern
         - type: Accepted
           status: "True"
           reason: PartiallyValid
-          message: 'failed to translate backend: secret agentgateway-system/openai-secret not found'
+          message: 'failed to translate backend: secret {{< reuse "agw-docs/snippets/namespace.md" >}}/openai-secret not found'
           observedGeneration: 1
           lastTransitionTime: "2026-09-21T14:02:28Z"
       ```
