@@ -11,7 +11,7 @@ test:
 
 Consider the following types of questions and responses that you can get.
 
-- Boolean, which maps to TypeSafe's `noul` field. Jev returns the probability from 0 to 1 that the statement is true.
+- Noul, which returns the probability from 0 to 1 that a statement is true. The AI SDK calls this question type `boolean`.
 - Choice, where Jev picks one of your options and reports how likely each option was.
 - Score, where you give a list of ratings in order, such as `None`, `Low`, `High`, and `Severe`. Jev returns one number for where the content lands on that scale. The number can fall between two ratings, such as `2.4`.
 
@@ -23,10 +23,11 @@ In this guide, you run a webhook server that scores each prompt and each respons
 
 Agentgateway sits on both sides of the guardrail. It calls your webhook server through the [Guardrail Webhook API]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/" >}}), and your webhook server calls Jev back through agentgateway.
 
-The following diagram shows the path of one prompt. Follow the numbered arrows to see how a single client request produces one evaluation call to Jev before the prompt reaches the LLM.
+The following diagram shows the path of one prompt. A single client request produces one evaluation call to Jev before the prompt reaches the LLM, and a second one before the completion returns to the client. The steps after the diagram walk through the same flow.
 
 ```mermaid
 sequenceDiagram
+    autonumber
     participant Client
     participant Gateway as Agentgateway
     participant Webhook as Guardrail webhook
@@ -43,6 +44,9 @@ sequenceDiagram
         Webhook-->>Gateway: action.reason (pass)
         Gateway->>LLM: Forward the prompt
         LLM-->>Gateway: Completion
+        Gateway->>Webhook: POST /response
+        Note over Webhook,Jev: The webhook scores the completion<br/>with a second Jev evaluation
+        Webhook-->>Gateway: action.reason (pass)
         Gateway-->>Client: Completion
     else Any score at or above the threshold
         Webhook-->>Gateway: action.status_code 403
@@ -127,6 +131,7 @@ The agentgateway repository ships this integration as a runnable example, so you
 
    | Setting | Description |
    |---------|-------------|
+   | `gateways.default.port` | The port that agentgateway serves proxy traffic on. The webhook server sends its evaluation calls to this port. |
    | `llm.models[].guardrails.request` | The guards that agentgateway runs on the prompt before it calls the LLM. The webhook target is the address of your guardrail webhook server, and it must include a port. Agentgateway calls `POST /request` on this target. |
    | `llm.models[].guardrails.response` | The guards that agentgateway runs on the completion before it returns it to the client. Agentgateway calls `POST /response` on this target. Omit this field to check prompts only. |
    | `provider.custom.providerOverride` | The provider name that agentgateway reports for this model in logs, traces, and cost data. Set it to `typesafe` so that the name matches the `config.modelCatalog` entry that holds the rates. |
@@ -209,6 +214,7 @@ The webhook server turns each guardrail check into a Jev evaluation. Agentgatewa
 
    const { answers } = await evaluate({
      model: typesafe.evaluationModel("jev-latest"),
+     headers,
      state: { messages },
      questions: {
        jailbreak: {
@@ -236,6 +242,7 @@ The webhook server turns each guardrail check into a Jev evaluation. Agentgatewa
    |---------|-------------|
    | `baseURL` | The agentgateway listener, so that the evaluation call is proxied. Point it at `/v1` on the port that the `gateways` section defines. |
    | `apiKey` | A placeholder. Agentgateway replaces it with the value of `params.apiKey` for the `jev-latest` model. |
+   | `headers` | The trace context headers that agentgateway sent, so that the Jev call joins the same trace as the client request. |
    | `evaluationModel` | The model name to send. It must match a `name` in the `llm.models` list, otherwise agentgateway has no model to route the call to. |
    | `questions` | The typed questions that Jev answers. A `score` question rates the state against `criteria` and returns one number on that scale, so `criteria` of `["None", "Low", "High", "Severe"]` produces a score from `0` to `3`. |
    | `threshold` | The lowest score that the server treats as a rejection. Raise it to allow more content, or lower it to reject more. |
