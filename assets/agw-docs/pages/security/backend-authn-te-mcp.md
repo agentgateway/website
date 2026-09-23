@@ -275,7 +275,7 @@ Call the `echo` tool through the gateway and confirm that the `Authorization` he
 
 ## Next steps
 
-* **Validate the incoming token at the edge.** The exchange forwards the incoming token to the authorization server as received, without validating it first. Pair the policy with route-level [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) or [MCP authentication]({{< link-hextra path="/documentation/security/jwt/mcp/" >}}) so invalid tokens are rejected before any call to the token endpoint.
+* **Validate the incoming token at the edge.** The exchange forwards the incoming token to the authorization server as received, without validating it first. Pair the policy with a route-level [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) or [MCP authentication]({{< link-hextra path="/documentation/security/jwt/mcp/" >}}) policy so that invalid tokens are rejected before any call to the token endpoint. Set `preserveToken: true` on it, or the exchange finds no `subject_token`; for a worked example, see [Validate the incoming token at the edge]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/#edge-validation" >}}).
 * **Scope the exchanged token per MCP server.** Attach a separate policy to each MCP {{< reuse "agw-docs/snippets/backend.md" >}}, each with its own `audiences`, so every server receives a token that is valid only for itself.
 * **Restrict which tools each caller may reach.** Token exchange decides which token the gateway sends, not who is allowed through. Add an [MCP authorization]({{< link-hextra path="/documentation/security/authorization/" >}}) policy alongside it.
 

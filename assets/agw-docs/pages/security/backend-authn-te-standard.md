@@ -4,6 +4,17 @@ Exchange the incoming token for a backend-scoped token with the [RFC 8693](https
 
 The `TokenExchange` grant is the default grant of the `oauthTokenExchange` backend authentication method. The gateway sends the incoming token to the authorization server as the `subject_token` and forwards the exchanged token to the backend.
 
+In this guide, one Keycloak instance plays both roles: the authorization server that mints the exchanged token, and, after you add [edge validation](#edge-validation), the issuer that the gateway validates the incoming token against.
+
+```mermaid
+flowchart LR
+    Client -- "1. Keycloak JWT" --> AGW[Agentgateway]
+    AGW -- "2. validate against JWKS" --> KC["Keycloak<br>(validator + token endpoint)"]
+    AGW -- "3. exchange (RFC 8693 subject_token)" --> KC
+    KC -- "exchanged token" --> AGW
+    AGW -- "4. Authorization: Bearer<br>exchanged token" --> Backend[httpbin]
+```
+
 For the JWT bearer grant, which sends the incoming token as an `assertion` instead, see [JWT bearer grant]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/jwt-bearer/" >}}). For an exchange that crosses a trust boundary between two authorization servers, see [Cross App Access]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/cross-app-access/" >}}).
 
 ## Before you begin
@@ -85,6 +96,18 @@ Configure agentgateway to exchange tokens.
 
    {{< reuse "agw-docs/snippets/oauth-token-exchange-fields.md" >}}
 
+4. Confirm that the policy is accepted and attached.
+
+   ```sh
+   kubectl -n httpbin get {{< reuse "agw-docs/snippets/policy.md" >}} backend-token-exchange -o jsonpath='{.status.ancestors[0].conditions[*].type}={.status.ancestors[0].conditions[*].status}{"\n"}'
+   ```
+
+   Example output:
+
+   ```
+   Accepted Attached=True True
+   ```
+
 ## Verify the exchange
 
 Mint the incoming token, send a request through agentgateway with it, and verify that the token the gateway forwards is a different one: it is issued for the `target-client` audience with `requester-client` as the authorized party (`azp`), not the client that minted the incoming token.
@@ -135,6 +158,77 @@ Mint the incoming token, send a request through agentgateway with it, and verify
      "azp": "requester-client",
      "sub": "4f5b414b-1f66-4251-ae2c-fc7f488ab141"
    }
+   ```
+
+## Validate the incoming token at the edge {#edge-validation}
+
+The exchange presents the incoming token to the authorization server exactly as it arrived, and does not verify the signature first. Add a route-level `jwtAuthentication` policy so that an invalid or expired token is rejected at the gateway before any call to the token endpoint. The preceding steps leave it out so that the exchange is easy to follow on its own; add it before you use token exchange in production.
+
+1. Create a second {{< reuse "agw-docs/snippets/policy.md" >}} that validates the incoming token against Keycloak's JWKS. This policy targets the `HTTPRoute`, not the Service, because validation belongs at the route.
+
+   > [!IMPORTANT]
+   > Set `preserveToken: true`. By default the gateway removes the JWT after it validates it, so the exchange finds no `subject_token` and every request fails with a `400` and the message `invalid request`. For more information, see [`preserveToken`]({{< link-hextra path="/documentation/security/jwt/setup/" >}}).
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: jwt-edge
+     namespace: httpbin
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: httpbin
+     traffic:
+       jwtAuthentication:
+         preserveToken: true
+         providers:
+         - issuer: "http://keycloak.httpbin.svc.cluster.local:8080/realms/backend-oauth"
+           jwks:
+             remote:
+               jwksPath: /realms/backend-oauth/protocol/openid-connect/certs
+               backendRef:
+                 group: ""
+                 kind: Service
+                 name: keycloak
+                 port: 8080
+   EOF
+   ```
+
+2. Send the same request again with the valid token from the previous section. The exchange still runs, and httpbin still reflects the exchanged token.
+
+   ```sh
+   curl -s http://$INGRESS_GW_ADDRESS:80/headers \
+     -H "host: www.example.com" \
+     -H "authorization: Bearer $INBOUND_TOKEN"
+   ```
+
+3. Send a request with a token that does not validate. The gateway rejects it with a `401`, and never calls the token endpoint.
+
+   ```sh
+   curl -s http://$INGRESS_GW_ADDRESS:80/headers \
+     -H "host: www.example.com" \
+     -H "authorization: Bearer not-a-valid-token"
+   ```
+
+   Example output:
+
+   ```
+   authentication failure: the token header is malformed: Error(InvalidToken)
+   ```
+
+4. Send a request with no token at all. The gateway rejects this case too.
+
+   ```sh
+   curl -s http://$INGRESS_GW_ADDRESS:80/headers -H "host: www.example.com"
+   ```
+
+   Example output:
+
+   ```
+   authentication failure: no bearer token found
    ```
 
 ## Token types {#token-types}
@@ -221,7 +315,7 @@ This guide uses a demo Keycloak and the httpbin sample app. To use token exchang
 ## Cleanup
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} backend-token-exchange -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} backend-token-exchange jwt-edge -n httpbin
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} keycloak-token-endpoint -n httpbin
 kubectl delete secret oauth-client -n httpbin
 kubectl delete deployment keycloak -n httpbin

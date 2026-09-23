@@ -20,7 +20,7 @@ flowchart LR
     AGW -- "Authorization: Bearer<br>access token" --> API[Downstream API]
 ```
 
-Cross App Access differs from [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/oauth-token-exchange/" >}}) in that it crosses a trust boundary: the IdP and the resource's authorization server are separate parties, so the gateway performs two exchanges and holds two client registrations, one at each token endpoint. For a single-leg exchange at one authorization server, use `oauthTokenExchange` instead.
+Cross App Access differs from [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/standard/" >}}) in that it crosses a trust boundary: the IdP and the resource's authorization server are separate parties, so the gateway performs two exchanges and holds two client registrations, one at each token endpoint. For a single-leg exchange at one authorization server, use `oauthTokenExchange` instead.
 
 ## Before you begin
 
@@ -240,5 +240,5 @@ The following parts of the Identity Assertion Authorization Grant draft are not 
 
 ## Next steps
 
-- Exchange the incoming credential for a per-backend token at a single authorization server with [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/oauth-token-exchange/" >}}).
+- Exchange the incoming credential for a per-backend token at a single authorization server with [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/standard/" >}}).
 - Validate incoming JWTs with the [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) policy.
