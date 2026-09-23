@@ -84,10 +84,10 @@ $defs:
 	}
 }
 
-// The whole row is the disclosure control, so a field with children must carry
-// the target on its row line as well as on its type badge, and neither may
-// render as already open. Rows without children must carry no target at all,
-// or clicking them would try to open nothing.
+// The whole row is the disclosure control, so a field with children must be
+// marked expandable on its row line as well as carrying the target on its type
+// badge, and neither may render as already open. Rows without children must
+// carry no marker at all, or clicking them would try to open nothing.
 func TestRowDisclosure(t *testing.T) {
 	var doc yaml.Node
 	err := yaml.Unmarshal([]byte(`type: object
@@ -108,17 +108,19 @@ properties:
 	html := renderWidget("Configuration schema", "", "", "Schema", pm, "test", nil)
 
 	for _, want := range []string{
-		// The row line opens the same container the badge does.
-		`<div class="ks-row-line" id="test-node-1" data-ks-node-id="test-node-1" data-ks-path="spec" data-ks-children-target="test-node-1-children">`,
-		`<button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="test-node-1-children" aria-controls="test-node-1-children" aria-expanded="false">`,
+		// The row line opens the same container the badge does. The row is only
+		// marked expandable: the container is its next sibling, so repeating the
+		// id here would cost bytes on every field for nothing.
+		`<div class="ks-row-line" id="n1" data-ks-path="spec" data-ks-panel="p1" data-ks-expandable>`,
+		`<button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="c1" aria-controls="c1" aria-expanded="false">`,
 	} {
 		if !strings.Contains(html, want) {
 			t.Errorf("missing markup: %s", want)
 		}
 	}
 
-	// A leaf row must stay inert: no target, so the click only selects.
-	if !strings.Contains(html, `<div class="ks-row-line" id="test-node-0" data-ks-node-id="test-node-0" data-ks-path="name">`) {
+	// A leaf row must stay inert: no marker, so the click only selects.
+	if !strings.Contains(html, `<div class="ks-row-line" id="n0" data-ks-path="name" data-ks-panel="p0">`) {
 		t.Error("leaf row line gained a children target")
 	}
 
