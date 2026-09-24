@@ -108,7 +108,7 @@ The following cases do not round-trip.
 | An unsigned `reasoning_content`, sent to a `Messages` provider | Left out, because the provider rejects a thinking block that has no signature. |
 | A turn with more than one signed thinking block, sent to a `Completions` provider | The thinking text is joined into a single `reasoning_content`, but no `reasoning_signature` is sent. The signature is carried only when the turn has exactly one signed block. |
 | A `redacted_thinking` block, sent to a `Completions` provider | Dropped, because it holds nothing that an OpenAI-compatible engine can replay. |
-| A provider that declares `Responses` and not `Completions` | Thinking history is refused outright, and the request fails. |
+| A provider that declares `Responses` and not `Completions` | The thinking history is dropped from the converted request, with no error and no warning, so the model loses its prior reasoning. |
 
 ## Set the provider identity {#provider-override}
 

@@ -76,7 +76,7 @@ Because `completions` comes before `responses`, a provider that advertises both 
 
 The Chat Completions conversion carries extended-thinking history in both directions, so a thinking session on a converted route keeps its prior reasoning from one turn to the next. This behavior matters when your client speaks Messages but the provider that you route to advertises only `completions`, such as a self-hosted inference engine. Self-hosted engines that report reasoning as `reasoning_content` also accept it back on an assistant message, which is what makes the carryover possible. To declare that an upstream speaks `completions`, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
-On the way out, an assistant `thinking` block in the message history is sent as `reasoning_content`. A turn that holds several thinking blocks has its text joined into a single `reasoning_content` value, and a turn made of thinking alone is still sent.
+On the way out, an assistant `thinking` block in the message history is sent as `reasoning_content`. A turn made of thinking alone is still sent.
 
 On the way back, the `reasoning_content` in a buffered response becomes a `thinking` block ahead of the text block. In a stream, a thinking content block opens with `thinking_delta` events, adds a `signature_delta` when the engine sends a signature, and stops before the text or tool-use block that follows. Reasoning that the engine withholds arrives with an empty text and a signature that carries it, so the block is sent on the signature alone, in both the buffered and the streamed form.
 
@@ -86,7 +86,7 @@ Three cases do not round-trip.
 |------|--------------|
 | A turn with more than one signed thinking block | The thinking text is joined, but no `reasoning_signature` is sent. The signature is carried only when the turn has exactly one signed block. |
 | A `redacted_thinking` block | Dropped, because it holds nothing that an OpenAI-compatible engine can replay. |
-| A provider that advertises `responses` and not `completions` | Thinking history is refused outright, and the request fails. See [Converting to the Responses format](#converting-to-the-responses-format). |
+| A provider that advertises `responses` and not `completions` | The thinking history is dropped from the converted request, with no error and no warning, so the model loses its prior reasoning. See [Converting to the Responses format](#converting-to-the-responses-format). |
 
 ### Converting to the Responses format
 
@@ -95,7 +95,7 @@ The Responses conversion covers a common agent subset:
 - Text and system instructions
 - Image inputs, supplied by URL, base64 data, or file ID
 - Function tools, tool choice, and the parallel tool-call preference
-- Assistant tool-use history, and tool results that are text
+- Assistant tool-use history, and tool results that are text or images
 - Structured output JSON schemas
 - Prompt cache breakpoints
 - Streaming and usage reporting
@@ -103,11 +103,10 @@ The Responses conversion covers a common agent subset:
 > [!WARNING]
 > The Responses format has no equivalent for `stop_sequences` or `top_k`. Agentgateway accepts both fields and drops them, with no error and no warning to the client. A request that relies on a stop sequence to end generation behaves differently against a provider that advertises only `responses`.
 
-A Messages feature that the Responses format cannot represent at all fails before the upstream request is sent, and returns a `400` with an `unsupported conversion` message. These features fail this way:
+A Messages feature that the Responses format cannot represent at all is also dropped from the converted request, with no error and no warning. These features are dropped this way:
 
-- Thinking and redacted-thinking history
-- Document, search-result, and server-tool content blocks
-- Tool results that are not text
+- Thinking and redacted-thinking history, so the model loses its prior reasoning on each turn
+- Document, search-result, and server-tool content blocks, including document and search-result parts of a tool result
 
 ## Using the API
 
