@@ -68,7 +68,7 @@ Or, add to your project's `.mcp.json`.
 ```
 
 > [!WARNING]
-> The SSE transport (`/mcp/sse`) is deprecated. Use the streamable HTTP transport (`/mcp`) for all new setups.
+> The SSE transport (`/sse`) is deprecated. Use the streamable HTTP transport (`/mcp`) for all new setups.
 
 ## Authentication
 
