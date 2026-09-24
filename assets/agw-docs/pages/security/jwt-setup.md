@@ -346,7 +346,7 @@ traffic:
 
 When your identity provider runs outside the cluster (for example, Okta, Auth0, or Microsoft Entra ID) and is served over HTTPS, reference an {{< reuse "/agw-docs/snippets/backend.md" >}} in the `jwks.remote.backendRef` instead of a Kubernetes Service. The {{< reuse "/agw-docs/snippets/backend.md" >}} sets the upstream host and TLS SNI together, so the JWKS fetch connects to the provider with the correct hostname and certificate.
 
-1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} for the identity provider. Set `static.host` to the provider's public hostname and `policies.tls.sni` to the same hostname. Because no `caCertificateRefs` are set, the provider's certificate is verified against the system trust store.
+1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} for the identity provider. Set `static.host` to the provider's public hostname and `policies.tls.sni` to the same hostname. Because no `caCertificateRefs` are set, the provider's certificate is verified against the system trust store. A `policies.tls` section is required even on port 443: without it the gateway fetches the JWKS in clear text against the HTTPS port, the fetch fails and retries with backoff, and the policy still reports `Accepted=True`, so the only symptom is that every valid token is rejected.
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "/agw-docs/snippets/api-version.md" >}}
