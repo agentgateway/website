@@ -154,4 +154,3 @@ Two details are worth knowing before you rely on the method.
 
 * **The method names are camelCase here.** The Kubernetes custom resources spell the same values in PascalCase, as `ClientSecretBasic`, `ClientSecretPost`, and `PrivateKeyJwt`. Agentgateway rejects the PascalCase spelling.
 * **The leaf public key of `certificate` must match `signingKey`.** A mismatch is logged and does not stop the configuration from loading, so the failure appears as a rejected assertion at the token endpoint rather than as a startup error.
-
