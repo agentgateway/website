@@ -1,7 +1,7 @@
 The following guide deploys a sample TCP echo app, sets up a TCP listener on the gateway, and creates a [TCPRoute](https://gateway-api.sigs.k8s.io/guides/user-guides/tcp/) to the sample app.
 
 > [!NOTE]
-> TCPRoute is generally available as `gateway.networking.k8s.io/v1` in the standard channel of the Kubernetes Gateway API since version 1.6. On Gateway API 1.3–1.5, use `v1alpha2` and the experimental channel.
+> TCPRoute is generally available as `gateway.networking.k8s.io/v1` in the standard channel of the Kubernetes Gateway API since Gateway API 1.6. On Gateway API 1.3–1.5, use `v1alpha2` and the experimental channel.
 
 ## Before you begin
 
