@@ -246,7 +246,7 @@ EOF
                - X-HTTPRoute-Header
              maxAge: 86400
        backendRefs:
-       - group: agentgateway.dev
+       - group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
          name: mcp-backend
        matches:
