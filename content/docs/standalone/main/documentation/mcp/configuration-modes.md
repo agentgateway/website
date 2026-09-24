@@ -157,7 +157,7 @@ Use `sseKeepAlive` on the MCP backend to send Server-Sent Events (SSE) comment f
 
 An MCP stream is idle whenever no tool calls or notifications are in flight, which nothing in the network path can tell apart from a dead connection. Keep-alives are off by default, so omit `sseKeepAlive` if you do not need them.
 
-Set the interval where you configure the backend: `mcp.sseKeepAlive` in the simplified MCP style, and `routes[].backends[].mcp.sseKeepAlive` in the routing-based style.
+Set the duration for the keep-alive where you configure the backend: `mcp.sseKeepAlive` in the simplified MCP style, and `routes[].backends[].mcp.sseKeepAlive` in the routing-based style.
 
 {{< tabs >}}
 {{% tab name="Simplified (MCP)" %}}
