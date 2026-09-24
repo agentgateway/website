@@ -30,6 +30,8 @@ Agentgateway is API-compatible with the Envoy External Authorization gRPC servic
 
 When an ExtAuthz server returns header modifications, agentgateway uses `insert` instead of `append` for response headers. This ensures headers are properly set rather than potentially duplicated.
 
+By default, gRPC external authorization calls time out after 2 seconds. To use a different timeout, set `policies.http.requestTimeout`.
+
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
@@ -208,6 +210,8 @@ extAuthz:
 HTTP External Authorization allows sending plain HTTP requests to an authorization service.
 If the service returns a 2xx status code, the request is allowed. Otherwise, it is denied.
 
+By default, HTTP external authorization calls time out after 2 seconds. To use a different timeout, set `policies.http.requestTimeout`.
+
 Example configuration: For the full set of options, see the [configuration reference]({{< link-hextra path="/reference/configuration" >}}).
 
 ```yaml
@@ -266,7 +270,7 @@ extAuthz:
 |-------|-------------|
 | `policies.backendTLS` | TLS settings for the connection to the authorization service. Use `root` to specify a CA cert, `hostname` to override the SNI hostname, `insecure: true` to skip certificate verification (not recommended for production). |
 | `policies.backendAuth` | Credentials to authenticate to the authorization service. Supports `key` (API key from file or inline), `gcp`, `aws`, and `azure` auth. |
-| `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). |
+| `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). If unset, external authorization calls time out after 2 seconds for both the gRPC and HTTP protocols. |
 | `policies.tcp.connectTimeout` | Connection timeout as a duration string, such as `3s`. |
 
 ## Backend-level external authorization
