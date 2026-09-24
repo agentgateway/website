@@ -47,7 +47,7 @@ The MCP server goes in the same `httpbin` namespace as the Keycloak deployment f
          - name: echo
            image: gcr.io/product-excellence-424719/mcp-echo:1.0
            imagePullPolicy: IfNotPresent
-           args: ["--server-url", "https://echomcp.is.solo.io", "--oauth-enabled", "false"]
+           args: ["--oauth-enabled", "false"]
            ports:
            - containerPort: 3002
            readinessProbe:
@@ -67,7 +67,7 @@ The MCP server goes in the same `httpbin` namespace as the Keycloak deployment f
      ports:
      - port: 3002
        targetPort: 3002
-       appProtocol: kgateway.dev/mcp
+       appProtocol: agentgateway.dev/mcp
    EOF
    ```
 
@@ -198,7 +198,7 @@ Configure agentgateway to exchange the incoming token before it reaches the MCP 
 
    {{< reuse "agw-docs/snippets/oauth-token-exchange-fields.md" >}}
 
-## Verify the exchange
+## Verify the exchange {#verify-the-exchange}
 
 Call the `echo` tool through the gateway and confirm that the `Authorization` header the MCP server received carries the exchanged token, not the one you sent.
 
@@ -387,6 +387,14 @@ echo "mcp token exchange verified (token reaching the MCP server has azp=$AZP)"
 * **Restrict which tools each caller may reach.** Token exchange decides which token the gateway sends, not who is allowed through. Add an [MCP authorization]({{< link-hextra path="/documentation/security/authorization/" >}}) policy alongside it.
 
 ## Cleanup
+
+Stop the port-forwards that you started in [Verify the exchange](#verify-the-exchange).
+
+```sh
+kill %1 %2
+```
+
+Then delete the resources.
 
 ```sh {paths="te-mcp"}
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} mcp-token-exchange -n httpbin

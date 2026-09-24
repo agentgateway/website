@@ -51,7 +51,6 @@ Configure agentgateway to exchange tokens.
    EOF
    ```
 
-
 3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `oauthTokenExchange` method to the `httpbin` Service, with `grantType: JwtBearer`. Apart from the grant, the policy is the same as the one in the [standard token exchange guide]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/" >}}).
 
    > [!NOTE]
@@ -119,26 +118,25 @@ Mint the incoming token, send a request through agentgateway with it, and verify
 
    In the response, note that the `Authorization` header reflected by httpbin contains a *different* token than the one you sent.
 
-4. Copy the exchanged token from the `Authorization` header in the response, and save it to an environment variable.
+4. Extract the exchanged token from the reflected `Authorization` header and decode its payload, to confirm the exchange.
 
    ```sh
-   export FORWARDED_TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUI...
+   curl -s http://$INGRESS_GW_ADDRESS:80/headers \
+     -H "host: www.example.com" \
+     -H "authorization: Bearer $INBOUND_TOKEN" \
+     | jq -r '.headers.Authorization | sub("^Bearer ";"")' \
+     | cut -d. -f2 \
+     | jq -R 'gsub("-";"+") | gsub("_";"/") | . + ("=" * ((4 - (length % 4)) % 4)) | @base64d | fromjson'
    ```
 
-5. Decode the token's payload to confirm the exchange.
-
-   ```sh
-   echo "$FORWARDED_TOKEN" | cut -d. -f2 | jq -R 'gsub("-";"+") | gsub("_";"/") | . + ("=" * ((4 - (length % 4)) % 4)) | @base64d | fromjson'
-   ```
-
-   The decoded token was issued for the target audience (`aud`), and its authorized party (`azp`) is the gateway's client (`requester-client`), not the client that minted the incoming token. The standard token exchange grant produces the same exchanged token from a different incoming token.
+   The exchanged token is issued by `backend-oauth`, not by the `idp` realm that issued the assertion, and its authorized party (`azp`) is the gateway's client (`requester-client`). The `sub` claim is `idpuser` as `backend-oauth` knows them, so it differs from the subject in the assertion you sent.
 
    ```json
    {
      "iss": "http://keycloak.httpbin.svc.cluster.local:8080/realms/backend-oauth",
      "aud": "target-client",
      "azp": "requester-client",
-     "sub": "4f5b414b-1f66-4251-ae2c-fc7f488ab141"
+     "sub": "6aabea9b-d35a-469c-9fd7-1c5dc2073eff"
    }
    ```
 

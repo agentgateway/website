@@ -60,7 +60,6 @@ Configure agentgateway to exchange tokens.
    EOF
    ```
 
-
 3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `oauthTokenExchange` method to the `httpbin` Service. The `backendRef` field references the {{< reuse "agw-docs/snippets/backend.md" >}}, `path` sets the token endpoint path, and `grantType` selects the RFC 8693 exchange.
 
    ```yaml {paths="te-standard"}
@@ -137,26 +136,25 @@ Mint the incoming token, send a request through agentgateway with it, and verify
 
    In the response, note that the `Authorization` header reflected by httpbin contains a *different* token than the one you sent.
 
-4. Copy the exchanged token from the `Authorization` header in the response, and save it to an environment variable.
+4. Extract the exchanged token from the reflected `Authorization` header and decode its payload, to confirm the exchange.
 
    ```sh
-   export FORWARDED_TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUI...
+   curl -s http://$INGRESS_GW_ADDRESS:80/headers \
+     -H "host: www.example.com" \
+     -H "authorization: Bearer $INBOUND_TOKEN" \
+     | jq -r '.headers.Authorization | sub("^Bearer ";"")' \
+     | cut -d. -f2 \
+     | jq -R 'gsub("-";"+") | gsub("_";"/") | . + ("=" * ((4 - (length % 4)) % 4)) | @base64d | fromjson'
    ```
 
-5. Decode the token's payload to confirm the exchange.
-
-   ```sh
-   echo "$FORWARDED_TOKEN" | cut -d. -f2 | jq -R 'gsub("-";"+") | gsub("_";"/") | . + ("=" * ((4 - (length % 4)) % 4)) | @base64d | fromjson'
-   ```
-
-   The decoded token was issued for the target audience (`aud`), and its authorized party (`azp`) is the gateway's client (`requester-client`), not the client that minted the incoming token. The JWT bearer grant produces the same exchanged token from a different incoming token.
+   The decoded token was issued for the target audience (`aud`), and its authorized party (`azp`) is the gateway's client (`requester-client`), not the client that minted the incoming token. The `sub` claim still identifies `testuser`, so the backend sees the same end user.
 
    ```json
    {
      "iss": "http://keycloak.httpbin.svc.cluster.local:8080/realms/backend-oauth",
      "aud": "target-client",
      "azp": "requester-client",
-     "sub": "4f5b414b-1f66-4251-ae2c-fc7f488ab141"
+     "sub": "de07f63e-1e3e-4c17-ba99-882b1954fb04"
    }
    ```
 
@@ -174,7 +172,9 @@ Mint the incoming token, send a request through agentgateway with it, and verify
 #   * The port-forward in the visible steps -- local forwarding is unsupported in automated tests, so
 #     the hidden test mints through the gateway instead. KC_HOSTNAME pins the issuer either way.
 #   * Token types, requestedTokenType, and the non-compliant-provider warnings -- those sections are
-#     reference tables, not a walkthrough; the invalid values are rejected at apply time by the CRD.
+#     reference tables, not a walkthrough. requestedTokenType IS enforced at apply time by the CRD
+#     enum, but subjectToken.tokenType is NOT: the API server accepts any string and the data plane
+#     rejects a bad one afterwards, which is what the "Token types" section documents.
 
 # Expose the Keycloak token endpoint through the gateway so tokens can be minted without a
 # port-forward. The issuer stays the pinned in-cluster hostname, so jwtAuthentication still matches.
@@ -473,9 +473,6 @@ The gateway accepts the following three settings for compatibility with provider
 | A `scopes` entry with characters outside the [RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749) scope-token grammar, such as a space, a quotation mark, a backslash, a control character, or a non-ASCII character | `oauth token exchange scopes contains an invalid OAuth scope-token` |
 | `location.queryParameter`, which carries the exchanged token in a URI query parameter | `oauth token exchange is configured to forward the exchanged bearer token in a URI query parameter` |
 
-
-<!--
-
 ## Troubleshooting
 
 ### subject_token validation failure
@@ -491,8 +488,6 @@ The authorization server cannot validate the incoming token, often because the t
 **How to fix it:**
 
 Make sure the incoming token's issuer matches the token endpoint's issuer as the gateway reaches it. For Keycloak in a cluster, pin the issuer with the `KC_HOSTNAME` environment variable so it is stable regardless of how Keycloak is reached.
-
--->
 
 ## Next steps
 

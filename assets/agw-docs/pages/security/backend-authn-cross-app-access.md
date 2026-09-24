@@ -22,7 +22,7 @@ flowchart LR
     AGW -- "Authorization: Bearer<br>access token" --> API[Downstream API]
 ```
 
-Cross App Access differs from {{< version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}[OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn/oauth-token-exchange/" >}}){{< /version >}}{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}[Standard token exchange]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/" >}}){{< /version >}} in that it crosses a trust boundary: the IdP and the resource's authorization server are separate parties, so the gateway performs two exchanges and holds two client registrations, one at each token endpoint. For a single-leg exchange at one authorization server, use `oauthTokenExchange` instead.
+Cross App Access differs from [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn/oauth-token-exchange/" >}}) in that it crosses a trust boundary: the IdP and the resource's authorization server are separate parties, so the gateway performs two exchanges and holds two client registrations, one at each token endpoint. For a single-leg exchange at one authorization server, use `oauthTokenExchange` instead.
 
 > [!NOTE]
 > To keep the demo self-contained, a single Keycloak instance acts as both parties: the user's IdP and the resource authorization server. In production, these parties are typically separate trust domains. For examples against separate providers, review the [traffic-cross-app-access examples](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-cross-app-access) in the upstream `agentgateway` repository. That example uses `xaa-dev` (hosted IdenX IdP + hosted resource authorization server) and `okta-auth0` (Okta IdP + Auth0 resource authorization server). These IdPs illustrate the two-party topology, but note that the configs are written for standalone mode, not Kubernetes.
@@ -518,5 +518,5 @@ kubectl delete service keycloak -n httpbin
 
 ## Next steps
 
-- Exchange the incoming credential for a per-backend token at a single authorization server with {{< version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}[OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn/oauth-token-exchange/" >}}){{< /version >}}{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}[Standard token exchange]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/" >}}){{< /version >}}.
+- Exchange the incoming credential for a per-backend token at a single authorization server with [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn/oauth-token-exchange/" >}}).
 - Validate incoming JWTs with the [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) policy.
