@@ -416,6 +416,54 @@ Before you sign in, check that the gateway serves the discovery documents that M
    }
    ```
 
+{{< doc-test paths="setup-entra" >}}
+# WHAT THIS TEST VALIDATES:
+#   * With no `resource` configured in mcp.resourceMetadata, the gateway derives
+#     the advertised resource from the request URL, so it carries the gateway
+#     address that the client used instead of a fixed value.
+#   * Client registration is short-circuited: the gateway answers with the
+#     pre-registered clientId as a public client, without calling Entra.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * The bridged authorization server metadata, because the gateway builds it
+#     from Entra's live OIDC discovery document at request time, which would make
+#     the test depend on login.microsoftonline.com availability.
+YAMLTest -f - <<EOF
+- name: protected resource metadata derives the resource from the request URL
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/.well-known/oauth-protected-resource/mcp"
+    method: GET
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "\$.resource"
+        comparator: contains
+        value: "${INGRESS_GW_ADDRESS}"
+  retries: 3
+- name: client registration returns the pre-registered Entra client ID
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/.well-known/oauth-authorization-server/mcp/client-registration"
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
+      {"client_name":"test","redirect_uris":["http://localhost:8080/callback"],"grant_types":["authorization_code"],"response_types":["code"],"token_endpoint_auth_method":"none"}
+  source:
+    type: local
+  expect:
+    statusCode: 201
+    bodyJsonPath:
+      - path: "\$.client_id"
+        comparator: equals
+        value: "${ENTRA_CLIENT_ID}"
+      - path: "\$.token_endpoint_auth_method"
+        comparator: equals
+        value: "none"
+  retries: 3
+EOF
+{{< /doc-test >}}
+
 ## Verify MCP auth
 
 Verify the sign-in flow with the [MCP inspector](https://github.com/modelcontextprotocol/inspector). Because the flow redirects you to Microsoft to sign in, this verification is interactive and requires a live Entra tenant.
