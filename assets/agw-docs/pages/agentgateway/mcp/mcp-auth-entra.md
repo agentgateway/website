@@ -138,7 +138,7 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
                backendRef:
                  name: entra-jwks
                  kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-                 group: agentgateway.dev
+                 group: {{< reuse "agw-docs/snippets/group.md" >}}
                  port: 443
                jwksPath: "/${ENTRA_TENANT_ID}/discovery/v2.0/keys"
          mcp:
