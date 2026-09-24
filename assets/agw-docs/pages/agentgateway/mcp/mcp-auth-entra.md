@@ -27,7 +27,7 @@ Register an application in Microsoft Entra ID, and collect the values that agent
 2. [Register an application](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app) in the Microsoft Entra admin center. 
    
    1. For **Supported account types**, choose the option that fits your organization. 
-   2. Under **Redirect URI**, select the **Mobile and desktop applications** platform and add a loopback redirect URI for each MCP client that you plan to connect, such as `http://localhost/oauth/callback` for the MCP inspector that you use later in this guide. For other clients, check the callback path in the client's documentation.
+   2. Under **Redirect URI**, select the **Mobile and desktop applications** platform and add a loopback redirect URI for each MCP client that you plan to connect. For the MCP inspector that you use later in this guide, add both `http://localhost/oauth/callback` and `http://localhost/oauth/callback/debug`. For Claude Code, add `http://localhost/callback`. For other clients, check the callback path in the client's documentation.
 
       Entra ignores the port of a loopback redirect URI, so one entry matches whatever port the client picks at runtime. However, Entra matches the path exactly. If you register `http://localhost` without the client's callback path, sign-in fails with an `AADSTS50011` redirect URI mismatch error.
 
