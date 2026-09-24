@@ -42,6 +42,31 @@ The change is that a default import now writes tags onto the Amazon Bedrock mode
 
 **Actions to take**: Only Mantle-served Bedrock models change behavior, so the models that concern you are the ones tagged `mantle` and not `runtime`, other than `anthropic.claude*`. If you route traffic to any of those, regenerate your catalog once by hand, list those models from the `aws.bedrock` provider in the generated file, and check their `tags` against the request formats that your clients send. To keep the 1.5.x output, pin the source with `--source models.dev`. For the flags, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference. For the endpoint setting, see [Bedrock Mantle]({{< link-hextra path="/integrations/llm/providers/bedrock/#bedrock-mantle" >}}).
 
+### A `baseUrl` with no path now sets the base path to `/` {#v16-baseurl-base-path}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3403 -->
+
+`params.baseUrl` sets the provider address and the base path that endpoint paths are appended to. A URL with no path, such as `https://api.openai.com`, used to leave the base path unset, and the upstream path then depended on the provider.
+
+- For `custom` and the providers built on it, such as `ollama`, the endpoint path was appended to a hardcoded `/v1`, which is OpenAI's convention. A provider that serves its API somewhere else was unreachable.
+- For a built-in provider such as `openai`, the path the client sent was forwarded as it arrived. A request that had to be translated from another API format kept the client's path and went somewhere the provider does not serve.
+
+A URL with no path now has a base path of `/` in both cases, which is the rule that a URL with a path already followed.
+
+| Configuration and client request | 1.5.x | 1.6.x |
+| --- | --- | --- |
+| Any provider, a URL with a path such as `https://api.openai.com/v1` | Completions go to `/v1/chat/completions` | Unchanged |
+| `openai` with `https://api.openai.com`, client sends `POST /v1/chat/completions` in the OpenAI format | The client's path is forwarded as it arrived, so completions go to `/v1/chat/completions` | Completions go to `/chat/completions` |
+| `openai` with `https://api.openai.com`, client sends `POST /v1/messages` in the Anthropic format | The client's path is forwarded as it arrived, so the translated request goes to `/v1/messages`, which OpenAI does not serve | Completions go to `/chat/completions` |
+| `custom` or `ollama` with a URL with no path, and no `formats[].path` | Completions go to `/v1/chat/completions` | Completions go to `/chat/completions` |
+
+The change matters most for `custom` providers and the `openai` provider.
+
+- A `custom` provider that serves its API at the root, such as Perplexity at `https://api.perplexity.ai/chat/completions`, was unreachable before and now works. A `custom` provider that serves its API under `/v1`, such as Ollama, needs that path in the base URL, such as `http://localhost:11434/v1`.
+- A base URL of `https://api.openai.com` does not reliably reach the OpenAI endpoint at `https://api.openai.com/v1` in either release. Going forward, set `params.baseUrl` to `https://api.openai.com/v1`, or omit `params.baseUrl` to use that address by default.
+
+**Actions to take**: Review every `params.baseUrl` that you set and add the path that the provider serves its API under. OpenAI serves its API under `/v1`, so `https://api.openai.com` becomes `https://api.openai.com/v1`. A URL that already has a path is unaffected, and so is a provider that you use without a `baseUrl` override, because the built-in provider defaults already carry their own paths. A `custom` provider that sets `formats[].path` is also unaffected, because that path is sent as written and the base path is not added to it.
+
 ## 🌟 New features {#v16-new-features}
 
 ### Resiliency {#v16-features-resiliency}
