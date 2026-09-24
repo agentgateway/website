@@ -283,6 +283,39 @@ mcp:
 > [!NOTE]
 > The `time` target pins the MCP Python SDK with `--with mcp<2` because `mcp-server-time` does not yet support version 2.x of the SDK. Without the constraint, the target fails to start. Drop the constraint after `mcp-server-time` adds support.
 
+## Server information overrides {#server-information-overrides}
+
+When you multiplex multiple targets, the client receives the gateway MCP `serverInfo` values and instructions. To customize that metadata, set the `server` block on the MCP configuration. The override applies only to multiplexed targets. A backend with one target keeps the target server's normal metadata.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  server:
+    name: company-mcp-gateway
+    version: "2026.09"
+    title: Company MCP Gateway
+    instructions: "Use this gateway to access approved internal MCP tools."
+  targets:
+  - name: time
+    stdio:
+      cmd: uvx
+      args: ["--with", "mcp<2", "mcp-server-time"]
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+
+| Field | Description |
+| ----- | ----------- |
+| `mcp.server` | Optional overrides for the MCP `serverInfo` response and gateway instructions in `initialize` and `server/discover` responses. Omit this block to keep the default values. |
+| `mcp.server.name` | Value to report in `serverInfo.name`. Set this field together with `mcp.server.version`. The configuration is invalid when only one of the two fields is set. |
+| `mcp.server.version` | Value to report in `serverInfo.version`. Set this field together with `mcp.server.name`. The configuration is invalid when only one of the two fields is set. |
+| `mcp.server.title` | Optional value to report in `serverInfo.title`. You can set this field without `mcp.server.name` or `mcp.server.version`. |
+| `mcp.server.instructions` | Gateway instructions preamble to report to clients. When upstream targets also return instructions, the merged target instructions start with this value. |
+
+
 ## Next steps
 
 - Apply different policies to different MCP targets with [MCP target policies]({{< link-hextra path="/documentation/mcp/mcp-target-policies/" >}}).

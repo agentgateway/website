@@ -80,6 +80,18 @@ A new `responseIdleTimeout` field bounds the gap between response body frames, r
 
 For the field descriptions and examples, see [Route timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts/#route-timeouts" >}}).
 
+### MCP {#v16-features-mcp}
+
+#### Gateway server information overrides {#v16-mcp-server-info}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3425 -->
+
+When agentgateway multiplexes several MCP targets, the `initialize` response carries `serverInfo` and instructions that describe the gateway itself, not any one target. A new `mcp.server` block overrides those values. Set `name` and `version` together to replace `serverInfo.name` and `serverInfo.version`, for example to avoid exposing the gateway software and version. Set `title` to report a `serverInfo.title`, and set `instructions` to add a preamble that comes before any instructions that the targets return. A backend with a single target is unaffected and keeps reporting the target server's own metadata.
+
+The `mcp.server` block is available only in the standalone configuration file. It is not yet part of the Kubernetes API.
+
+For the fields and an example, see [Server information overrides]({{< link-hextra path="/integrations/mcp/servers/virtual/#server-information-overrides" >}}).
+
 ### Operations {#v16-features-operations}
 
 #### OpenTelemetry field names for stdout access logs {#v16-access-log-preset}
