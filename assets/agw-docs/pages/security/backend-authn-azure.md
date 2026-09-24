@@ -68,22 +68,11 @@ auth:
 | `azure.secretRef` | Secret in the policy namespace that holds service principal credentials under the `clientID`, `tenantID`, and `clientSecret` keys. |
 | `azure.workloadIdentity` | Set to `{}` to use the federated token and the Azure environment variables that are projected into the gateway pod. |
 | `azure.managedIdentity` | Names a user-assigned managed identity. |
-{{< /version >}}
-
-{{< version exclude-if="1.5.x,1.4.x" >}}
-| Field | Description |
-| -- | -- |
-| `azure` | Set to `{}` to detect the credential from the environment. Set exactly one child field to name a credential source instead. |
-| `azure.scopes` | Scopes to request for the access token. When omitted, the gateway infers the scope from the backend hostname. Set 1–64 scopes. With `managedIdentity`, set exactly one scope. |
-| `azure.secretRef` | Secret in the policy namespace that holds service principal credentials under the `clientID`, `tenantID`, and `clientSecret` keys. |
-| `azure.workloadIdentity` | Set to `{}` to use the federated token and the Azure environment variables that are projected into the gateway pod. |
-| `azure.managedIdentity` | Names a user-assigned managed identity. |
-{{< /version >}}
 
 > [!WARNING]
 > The `managedIdentity` field requires all three of `clientId`, `objectId`, and `resourceId`, but the gateway uses only the first one that is not empty, in that order. A policy that names one identifier is rejected with `objectId: Required value`. To use a user-assigned managed identity, set `clientId` to the identifier that you want the gateway to use, and set the other two fields to a placeholder. Prefer `workloadIdentity` or the implicit form where you can, because neither has this restriction.
 
-{{< version exclude-if="1.5.x,1.4.x" >}}
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 ## Configure token scopes
 
 Set `scopes` when the backend requires a token for a resource other than Azure Cognitive Services or Azure AI Foundry. For example, the following configuration uses workload identity to request a token for Microsoft Graph.
