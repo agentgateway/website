@@ -141,7 +141,7 @@ For the full list of policies that you can set per target, see [MCP target polic
 
 If you want each user to authenticate to each MCP server themselves, such as through a browser-based OAuth flow with dynamic client registration, do not multiplex those servers. A client that connects to one federated endpoint has no way to run a separate authorization flow for every upstream server behind it. Expose those servers on separate paths instead.
 
-For an alternative that works across servers, agentgateway can exchange the user identity for a per-service token with the OAuth Identity Assertion Authorization Grant, so that the client does not run a separate flow per server. Support on the MCP server side is required. For more information, see [Cross App Access (ID-JAG)]({{< link-hextra path="/documentation/configuration/security/backend-authn/cross-app-access" >}}).
+For an alternative that works across servers, agentgateway can exchange the user identity for a per-service token with the OAuth Identity Assertion Authorization Grant, so that the client does not run a separate flow per server. Support on the MCP server side is required. For more information, see [Cross App Access (ID-JAG)]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/cross-app-access/" >}}).
 
 ## Control how many tools a client sees {#tool-filtering}
 
