@@ -37,8 +37,8 @@ Each method has its own page.
 | Static keys, passthrough, and extra credentials | [Static keys and passthrough]({{< link-hextra path="/documentation/configuration/security/backend-authn/key/" >}}) |
 | AWS, Azure, Google Cloud, and GitHub Copilot | [Cloud provider credentials]({{< link-hextra path="/documentation/configuration/security/backend-authn/providers/" >}}) |
 | Signed JWT | [Signed JWT]({{< link-hextra path="/documentation/configuration/security/backend-authn/jwt-sign/" >}}) |
-| OAuth token exchange | [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/oauth-token-exchange/" >}}) |
-| Cross App Access | [Cross App Access]({{< link-hextra path="/documentation/configuration/security/backend-authn/cross-app-access/" >}}) |
+| OAuth token exchange | [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/standard/" >}}) |
+| Cross App Access | [Cross App Access]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/cross-app-access/" >}}) |
 
 For the client side of authentication, see [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}), [API Key authentication]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}), and [Basic authentication]({{< link-hextra path="/documentation/configuration/security/basic-authn/" >}}). To control which callers are allowed through, see [HTTP authorization]({{< link-hextra path="/documentation/configuration/security/http-authz/" >}}) and [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz/" >}}).
 

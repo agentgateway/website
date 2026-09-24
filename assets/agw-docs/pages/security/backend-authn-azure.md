@@ -63,8 +63,8 @@ auth:
 
 | Field | Description |
 | -- | -- |
-| `azure` | Set to `{}` to detect the credential from the environment. Set exactly one child field to name a credential source instead. |
-{{< version exclude-if="1.5.x,1.4.x" >}}| `azure.scopes` | Scopes to request for the access token. When omitted, the gateway infers the scope from the backend hostname. Set 1–64 scopes. With `managedIdentity`, set exactly one scope. |{{< /version >}}
+| `azure` | Set to `{}` to detect the credential from the environment. Set exactly one child field to name a credential source instead. |{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+| `azure.scopes` | Scopes to request for the access token. When omitted, the gateway infers the scope from the backend hostname. Set 1–64 scopes. With `managedIdentity`, set exactly one scope. |{{< /version >}}
 | `azure.secretRef` | Secret in the policy namespace that holds service principal credentials under the `clientID`, `tenantID`, and `clientSecret` keys. |
 | `azure.workloadIdentity` | Set to `{}` to use the federated token and the Azure environment variables that are projected into the gateway pod. |
 | `azure.managedIdentity` | Names a user-assigned managed identity. |
