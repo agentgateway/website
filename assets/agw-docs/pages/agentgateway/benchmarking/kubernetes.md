@@ -4,7 +4,7 @@ In `kubernetes` mode, an agentgateway proxy runs as the `Gateway` data plane.
 An `HTTPRoute` targets an `InferencePool`, and the [Endpoint Picker Extension (EPP)](https://llm-d.ai/docs/architecture/core/router/epp)
 selects the model-server endpoint.
 
-For setup instructions, see the [inference benchmark README](https://github.com/agentgateway/benchmarks/blob/main/inference/README.md).
+For setup instructions, see the [inference benchmark README](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/README.md).
 
 {{< reuse "agw-docs/pages/agentgateway/benchmarking/environment.md" >}}
 
@@ -45,7 +45,7 @@ The chart shows p90 TTFT in milliseconds while the tables report it in seconds.
 {{< details title="Per-rate breakdown" >}}
 
 Output throughput is in tokens/s (higher is better); TTFT is in seconds (lower
-is better). `n/a` means the stage had no successful-request latency histogram.
+is better).
 
 | Requests/s | Kubernetes Service Output | agentgateway on Kubernetes Output | Kubernetes Service TTFT p50 | agentgateway on Kubernetes TTFT p50 | Kubernetes Service TTFT p90 | agentgateway on Kubernetes TTFT p90 |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -78,13 +78,13 @@ first token. Read ITL together with TTFT and throughput to assess this tradeoff.
 
 ## Evidence and reproduction
 
-The [published report](https://github.com/agentgateway/benchmarks/blob/main/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/service-vs-agentgateway-gateway/README.md),
+The [published report](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/service-vs-agentgateway-gateway/README.md),
 charts, and tables on this page come from campaign `optimized-baseline-v0230-gateway-refresh-20260817`.
 
-- [Normalized metrics (CSV)](https://github.com/agentgateway/benchmarks/blob/main/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/service-vs-agentgateway-gateway/metrics.csv)
-- [Campaign manifest](https://github.com/agentgateway/benchmarks/blob/main/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/campaign-manifest.yaml)
-- [Campaign provenance](https://github.com/agentgateway/benchmarks/blob/main/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/campaign-provenance.yaml)
-- [Benchmark runner and reproduction instructions](https://github.com/agentgateway/benchmarks/blob/main/inference/README.md)
+- [Normalized metrics (CSV)](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/service-vs-agentgateway-gateway/metrics.csv)
+- [Campaign manifest](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/campaign-manifest.yaml)
+- [Campaign provenance](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/reports/llm-d-benchmark/optimized-baseline-qwen3-32b-h100/optimized-baseline-v0230-gateway-refresh-20260817/campaign-provenance.yaml)
+- [Benchmark runner and reproduction instructions](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/README.md)
 
 Use the campaign manifest's versions and configuration when reproducing these
 results.

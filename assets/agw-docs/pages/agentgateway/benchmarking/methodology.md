@@ -16,5 +16,3 @@ hashes. These reports compare each agentgateway deployment mode with the Kuberne
   end-to-end latency divided by output tokens.
 
 Warm-up stages whose requested rate repeats in the measured ladder are excluded.
-Missing successful-request latency histograms appear as `n/a` and are omitted
-from latency lines.

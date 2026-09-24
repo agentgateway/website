@@ -11,10 +11,12 @@ The source of truth is `agentgateway/benchmarks`. This snapshot uses commit
   immediately after the charts.
 - `kubernetes.md` and `standalone.md` contain the respective published tables and
   interpretation, reused by the `latest` and `main` page wrappers at
-  `documentation/llm/benchmarking.md`. The inference overview at `/documentation/inference/` links to these
+  `documentation/llm/inference/benchmarking.md`. The inference overview at `/documentation/inference/` links to these
   reports and the routing guide at `documentation/llm/inference/inference-routing/`.
 - The six PNGs under `assets/img/benchmarks/optimized-baseline-v0230-gateway-refresh-20260817/`
-  are byte-for-byte copies of the published charts, grouped by mode.
+  are regenerated from the pinned metrics with the published plotting code,
+  grouped by mode. The baseline legend reads `Service load-balancing` instead
+  of `k8s service (RR)`; the plotted measurements are unchanged.
 
 To publish another campaign, review its manifest, provenance, reports, and CSVs
 at one pinned commit. Update the methodology, mode-specific tables and text,
