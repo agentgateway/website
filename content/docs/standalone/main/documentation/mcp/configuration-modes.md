@@ -4,7 +4,15 @@ weight: 15
 prev: /mcp/about
 next: /mcp/connect
 description: Choose between the simplified `mcp` section and routing-based configuration, and decide whether to expose your MCP servers on one endpoint or on separate paths
+test:
+  mcp-keep-alive:
+  - path: mcp-keep-alive
 ---
+
+{{< doc-test paths="mcp-keep-alive" >}}
+# Install agentgateway binary
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+{{< /doc-test >}}
 
 Agentgateway offers two ways to configure Model Context Protocol (MCP) servers, and two ways to expose them to clients. The two choices are independent of each other.
 
@@ -133,7 +141,7 @@ For the full list of policies that you can set per target, see [MCP target polic
 
 If you want each user to authenticate to each MCP server themselves, such as through a browser-based OAuth flow with dynamic client registration, do not multiplex those servers. A client that connects to one federated endpoint has no way to run a separate authorization flow for every upstream server behind it. Expose those servers on separate paths instead.
 
-For an alternative that works across servers, agentgateway can exchange the user identity for a per-service token with the OAuth Identity Assertion Authorization Grant, so that the client does not run a separate flow per server. Support on the MCP server side is required. For more information, see [Cross App Access (ID-JAG)]({{< link-hextra path="/documentation/configuration/security/backend-authn/cross-app-access" >}}).
+For an alternative that works across servers, agentgateway can exchange the user identity for a per-service token with the OAuth Identity Assertion Authorization Grant, so that the client does not run a separate flow per server. Support on the MCP server side is required. For more information, see [Cross App Access (ID-JAG)]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/cross-app-access/" >}}).
 
 ## Control how many tools a client sees {#tool-filtering}
 
@@ -143,9 +151,93 @@ To keep the list small, restrict which tools the endpoint exposes with an `mcpAu
 
 You can also use `prefixMode` to control how tool names are namespaced. For more information, see [Tool name prefixing]({{< link-hextra path="/integrations/mcp/servers/virtual#tool-name-prefixing" >}}).
 
+## Keep idle MCP streams alive {#sse-keep-alive}
+
+Use `sseKeepAlive` on the MCP backend to send Server-Sent Events (SSE) comment frames on long-lived MCP streams at a fixed interval. This setting is useful when a load balancer, API gateway, or network address translation (NAT) device sits between your clients and agentgateway and closes connections that carry no traffic. MCP clients ignore the comment frames, but the intermediaries in the path count them as traffic and leave the connection open.
+
+An MCP stream is idle whenever no tool calls or notifications are in flight, which nothing in the network path can tell apart from a dead connection. Keep-alives are off by default, so omit `sseKeepAlive` if you do not need them.
+
+Set the duration for the keep-alive where you configure the backend: `mcp.sseKeepAlive` in the simplified MCP style, and `routes[].backends[].mcp.sseKeepAlive` in the routing-based style.
+
+{{< tabs >}}
+{{% tab name="Simplified (MCP)" %}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  sseKeepAlive: 10s
+  targets:
+  - name: jira
+    mcp:
+      host: https://mcp.atlassian.com/v1/mcp
+```
+{{% /tab %}}
+{{% tab name="Routing-based" %}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 3000
+routes:
+- name: tools
+  matches:
+  - path:
+      pathPrefix: /mcp
+  backends:
+  - mcp:
+      sseKeepAlive: 10s
+      targets:
+      - name: jira
+        mcp:
+          host: https://mcp.atlassian.com/v1/mcp
+```
+{{% /tab %}}
+{{< /tabs >}}
+
+{{< doc-test paths="mcp-keep-alive" >}}
+# WHAT THIS TEST VALIDATES:
+#   * `sseKeepAlive` is accepted on the MCP backend in both the simplified MCP
+#     and routing-based forms, at the field paths this section names.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * That comment frames are actually emitted every 10s — requires an MCP
+#     upstream held idle past the interval, which this page does not stand up.
+cat <<'EOF' > config-mcp-keepalive.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  sseKeepAlive: 10s
+  targets:
+  - name: jira
+    mcp:
+      host: https://mcp.atlassian.com/v1/mcp
+EOF
+agentgateway -f config-mcp-keepalive.yaml --validate-only
+
+cat <<'EOF' > config-route-keepalive.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 3000
+routes:
+- name: tools
+  matches:
+  - path:
+      pathPrefix: /mcp
+  backends:
+  - mcp:
+      sseKeepAlive: 10s
+      targets:
+      - name: jira
+        mcp:
+          host: https://mcp.atlassian.com/v1/mcp
+EOF
+agentgateway -f config-route-keepalive.yaml --validate-only
+{{< /doc-test >}}
+
+For request and connection timeouts, which are separate route and backend policies, see [Timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts" >}}).
+
 ## Next steps
 
 - Federate several MCP servers into one endpoint with [Virtual MCP]({{< link-hextra path="/integrations/mcp/servers/virtual" >}}).
 - Apply per-target policies with [MCP target policies]({{< link-hextra path="/documentation/mcp/mcp-target-policies" >}}).
 - Filter the tools that clients can see with [MCP authorization]({{< link-hextra path="/documentation/mcp/mcp-authz" >}}).
+- Set request and connection deadlines with [Timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts" >}}).
 - Configure LLM providers with [Routing-based configuration for LLMs]({{< link-hextra path="/documentation/llm/configuration-modes/" >}}).
