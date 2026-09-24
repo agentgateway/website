@@ -318,23 +318,138 @@ traffic:
 
 For Layer 4 network-level filtering on downstream connections, use `spec.frontend.networkAuthorization` instead.
 
-{{< version include-if="1.6.x" >}}
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 
 ### Restrict network access by TLS SNI
 
-In a `spec.frontend.networkAuthorization` policy, use `destination.hostname` to match the Server Name Indication (SNI) hostname that agentgateway reads from the TLS handshake.
+In a `spec.frontend.networkAuthorization` policy, use the `destination.hostname` variable to admit only TLS connections for a specific Server Name Indication (SNI) hostname.
 
-```yaml
-frontend:
-  networkAuthorization:
-    action: Require
-    policy:
-      matchExpressions:
-        - "destination.hostname == 'db.internal.example.com'"
-```
+1. Create a self-signed TLS certificate for two hostnames, `db.internal.example.com` and `other.internal.example.com`, and store it in a Kubernetes secret.
 
-> [!WARNING]
-> `destination.hostname` is unset unless agentgateway reads an SNI value from the connection, which means it is unset for plaintext connections, for clients that send no SNI, and on listeners where agentgateway does not read SNI. A `Require` rule that references an unset variable never matches, so this policy denies every such connection. Apply it only to listeners that terminate or inspect TLS, and verify it against the traffic you expect.
+   ```sh
+   mkdir -p example_certs
+   openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
+     -subj "/CN=db.internal.example.com" \
+     -addext "subjectAltName=DNS:db.internal.example.com,DNS:other.internal.example.com" \
+     -keyout example_certs/internal.example.com.key -out example_certs/internal.example.com.crt
+   kubectl create secret tls tls-sni-cert -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --key example_certs/internal.example.com.key --cert example_certs/internal.example.com.crt
+   ```
+
+2. Create a Gateway with a TLS listener that terminates TLS, and a TLSRoute that forwards the decrypted traffic to the httpbin sample app. agentgateway sets `destination.hostname` only on listeners with `protocol: TLS`. On HTTP and HTTPS listeners, the variable is always unset, even when the client sends SNI.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: Gateway
+   metadata:
+     name: tls-sni
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
+     listeners:
+     - name: tls
+       protocol: TLS
+       port: 8443
+       tls:
+         mode: Terminate
+         certificateRefs:
+         - name: tls-sni-cert
+           kind: Secret
+       allowedRoutes:
+         namespaces:
+           from: All
+   ---
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: TLSRoute
+   metadata:
+     name: tls-sni
+     namespace: httpbin
+   spec:
+     parentRefs:
+     - name: tls-sni
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     hostnames:
+     - "*.internal.example.com"
+     rules:
+     - backendRefs:
+       - name: httpbin
+         port: 8000
+   EOF
+   ```
+
+3. Apply a network authorization policy to the Gateway that requires the `db.internal.example.com` SNI hostname. `destination.hostname` is unset when a client sends no SNI, and a `Require` expression that references an unset variable never matches, so the policy denies every connection without SNI. The policy also denies every connection to an HTTP or HTTPS listener on the Gateway that you target, so target only a Gateway whose listeners use `protocol: TLS`.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: tls-sni
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: tls-sni
+     frontend:
+       networkAuthorization:
+         action: Require
+         policy:
+           matchExpressions:
+             - "destination.hostname == 'db.internal.example.com'"
+   EOF
+   ```
+
+4. Port-forward the Gateway on port 8443.
+
+   ```sh
+   kubectl port-forward deployment/tls-sni -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8443:8443
+   ```
+
+5. In another terminal, send a request with each SNI hostname. The `--http1.1` option is required because agentgateway forwards the decrypted TCP stream to httpbin as is, so the client must not negotiate HTTP/2 in the TLS handshake.
+
+   * `db.internal.example.com`: The connection is admitted and httpbin returns a 200 HTTP response code.
+     ```sh
+     curl -s -o /dev/null -w '%{http_code}\n' --http1.1 \
+       --cacert example_certs/internal.example.com.crt \
+       --resolve db.internal.example.com:8443:127.0.0.1 \
+       https://db.internal.example.com:8443/headers
+     ```
+     Example output:
+     ```console
+     200
+     ```
+
+   * `other.internal.example.com`: The TLSRoute matches the hostname, but the policy rejects the connection before any data is proxied.
+     ```sh
+     curl -s -o /dev/null -w '%{http_code}\n' --http1.1 \
+       --cacert example_certs/internal.example.com.crt \
+       --resolve other.internal.example.com:8443:127.0.0.1 \
+       https://other.internal.example.com:8443/headers
+     ```
+     Example output:
+     ```console
+     000
+     ```
+
+     The proxy logs record the denial.
+     ```sh
+     kubectl logs deployment/tls-sni -n {{< reuse "agw-docs/snippets/namespace.md" >}} | grep "authorization failed"
+     ```
+     Example output:
+     ```console
+     2026-09-24T16:15:16.736075Z	error	request src.addr=10.244.0.1:54721 tls.sni=other.internal.example.com protocol=tcp error="authorization failed" duration=0ms
+     ```
+
+6. Stop the port-forward, and delete the resources that you created.
+
+   ```sh
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} tls-sni -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete tlsroute tls-sni -n httpbin
+   kubectl delete gateway tls-sni -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete secret tls-sni-cert -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
 
 {{< /version >}}
 

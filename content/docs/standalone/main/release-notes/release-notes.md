@@ -98,8 +98,14 @@ For the field rename table and an example, see [Use OpenTelemetry field names]({
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3540 -->
 
-Network authorization rules could match only on the source of a connection. The `destination.address`, `destination.port`, and `destination.hostname` CEL variables are now available in `frontendPolicies.networkAuthorization` rules too. `destination.address` and `destination.port` are the listener address and port on agentgateway that the client connected to, not the backend that the connection is routed to. `destination.hostname` is the Server Name Indication (SNI) hostname from the TLS handshake, so a rule such as `require: 'destination.hostname == "db.internal.example.com"'` admits only TLS connections for that hostname.
+Previously, network authorization rules could match only on the source of a connection.
 
-`destination.hostname` is unset for connections that are not TLS, for clients that send no SNI, and on listeners where agentgateway does not read SNI. A `require` rule that references it rejects every such connection, so apply it only to listeners that terminate or inspect TLS.
+Now, the `destination.address`, `destination.port`, and `destination.hostname` CEL variables are available in `frontendPolicies.networkAuthorization` rules.
+
+`destination.address` and `destination.port` are the listener address and port on agentgateway that the client connected to, not the backend that the connection is routed to.
+
+`destination.hostname` is the Server Name Indication (SNI) hostname from the TLS handshake, so a rule such as `require: 'destination.hostname == "db.internal.example.com"'` admits only TLS connections for that hostname.
+
+`destination.hostname` is set only on listeners with the `TLS` protocol. It is unset on HTTP and HTTPS listeners, even when the client sends SNI, and for clients that send no SNI. A `require` rule that references it rejects every such connection, so apply it only to `TLS` listeners.
 
 For the variables and an example, see [Require TLS SNI]({{< link-hextra path="/documentation/configuration/security/network-authz/#require-tls-sni" >}}).

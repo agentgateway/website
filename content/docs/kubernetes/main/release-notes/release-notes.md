@@ -95,8 +95,14 @@ For the field rename table and an example, see [Use OpenTelemetry field names]({
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3540 -->
 
-Network authorization expressions could match only on the source of a connection. The `destination.address`, `destination.port`, and `destination.hostname` CEL variables are now available in `spec.frontend.networkAuthorization` expressions on an {{< reuse "agw-docs/snippets/policy.md" >}} too. `destination.address` and `destination.port` are the listener address and port on agentgateway that the client connected to, not the backend that the connection is routed to. `destination.hostname` is the Server Name Indication (SNI) hostname from the TLS handshake, so an expression such as `destination.hostname == 'db.internal.example.com'` with `action: Require` admits only TLS connections for that hostname.
+Previously, network authorization expressions could match only on the source of a connection.
 
-`destination.hostname` is unset for connections that are not TLS, for clients that send no SNI, and on listeners where agentgateway does not read SNI. A `Require` policy that references it denies every such connection, so apply it only to listeners that terminate or inspect TLS.
+Now, the `destination.address`, `destination.port`, and `destination.hostname` CEL variables are available in `spec.frontend.networkAuthorization` expressions on an {{< reuse "agw-docs/snippets/policy.md" >}}.
+
+`destination.address` and `destination.port` are the listener address and port on agentgateway that the client connected to, not the backend that the connection is routed to.
+
+`destination.hostname` is the Server Name Indication (SNI) hostname from the TLS handshake, so an expression such as `destination.hostname == 'db.internal.example.com'` with `action: Require` admits only TLS connections for that hostname.
+
+`destination.hostname` is set only on Gateway listeners with `protocol: TLS`. It is unset on HTTP and HTTPS listeners, even when the client sends SNI, and for clients that send no SNI. A `Require` policy that references it denies every such connection, so apply it only to Gateways whose listeners use `protocol: TLS`.
 
 For an example, see [Restrict network access by TLS SNI]({{< link-hextra path="/documentation/security/authorization/#restrict-network-access-by-tls-sni" >}}).
