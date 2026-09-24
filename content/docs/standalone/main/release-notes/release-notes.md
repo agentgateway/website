@@ -91,3 +91,15 @@ The stdout access log uses short, human-oriented field names, such as `http.path
 Only the built-in HTTP field set is renamed. The `gen_ai.*` and `mcp.*` fields already use semantic convention names, fields that you add yourself keep the names that you give them, and an OTLP export is unaffected.
 
 For the field rename table and an example, see [Use OpenTelemetry field names]({{< link-hextra path="/documentation/observability/access-logs/view/#preset" >}}).
+
+### Security {#v16-features-security}
+
+#### Destination and TLS SNI variables in network authorization {#v16-network-authz-sni}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3540 -->
+
+Network authorization rules could match only on the source of a connection. The `destination.address`, `destination.port`, and `destination.hostname` CEL variables are now available in `frontendPolicies.networkAuthorization` rules too. `destination.address` and `destination.port` are the listener address and port on agentgateway that the client connected to, not the backend that the connection is routed to. `destination.hostname` is the Server Name Indication (SNI) hostname from the TLS handshake, so a rule such as `require: 'destination.hostname == "db.internal.example.com"'` admits only TLS connections for that hostname.
+
+`destination.hostname` is unset for connections that are not TLS, for clients that send no SNI, and on listeners where agentgateway does not read SNI. A `require` rule that references it rejects every such connection, so apply it only to listeners that terminate or inspect TLS.
+
+For the variables and an example, see [Require TLS SNI]({{< link-hextra path="/documentation/configuration/security/network-authz/#require-tls-sni" >}}).
