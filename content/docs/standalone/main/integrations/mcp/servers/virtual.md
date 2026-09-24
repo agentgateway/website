@@ -315,7 +315,6 @@ mcp:
 | `mcp.server.title` | Optional value to report in `serverInfo.title`. You can set this field without `mcp.server.name` or `mcp.server.version`. |
 | `mcp.server.instructions` | Gateway instructions preamble to report to clients. When upstream targets also return instructions, the merged target instructions start with this value. |
 
-The `server` block is available only in the standalone static configuration surface. Kubernetes mode does not expose these fields through the xDS/proto control plane yet.
 
 ## Next steps
 
