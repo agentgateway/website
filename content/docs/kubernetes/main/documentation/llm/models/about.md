@@ -264,8 +264,8 @@ spec:
   visibility: Public
   # The provider that serves this model
   provider: OpenAI
-  # Optional: override the provider address
-  baseURL: https://api.openai.com
+  # Optional: override the provider address and base path
+  baseURL: https://api.openai.com/v1
   # Optional: policies that apply to this model only
   policies:
     auth:
@@ -281,7 +281,7 @@ spec:
 | [`match.model`](#model-matching) | The model name that selects this resource in a client request. Defaults to `metadata.name`. |
 | [`visibility`](#visibility) | Whether clients can request the model directly. Defaults to `Public`. |
 | [`provider`](#providers) | The provider that serves the model, such as `OpenAI`. |
-| `baseURL` | Overrides the provider address and base path prefix. |
+| [`baseURL`](#providers) | Overrides the provider address and base path prefix. The path in the URL is the base path that provider endpoint paths are appended to, so include the path that the provider serves its API under. |
 | [`policies`](#model-policies) | Credentials, authorization, transformations, and other settings that apply to this model only. |
 
 ### Model matching
@@ -369,6 +369,19 @@ Some providers require a matching settings field.
 Use `spec.custom.backendRef` to serve a model from a Kubernetes backend, such as an `InferencePool`.
 
 Use `spec.baseURL` to override the provider address and base path prefix. It must be an absolute `http` or `https` URL with a host, and it cannot target localhost, loopback, or link-local addresses. Query parameters, fragments, and user info are not supported.
+
+The path in the URL is the base path for the upstream request, and the endpoint path for each route is appended to it. A URL with no path has a base path of `/`, so include the path that the provider serves its API under.
+
+| `spec.baseURL` | Base path | Completions request goes to |
+| --- | --- | --- |
+| `https://api.openai.com/v1` | `/v1` | `https://api.openai.com/v1/chat/completions` |
+| `https://api.openai.com` | `/` | `https://api.openai.com/chat/completions` |
+
+The OpenAI provider serves its API under `/v1`, so a `spec.baseURL` of `https://api.openai.com` results in requests to a path that the provider does not serve. You can omit `spec.baseURL` to use the default address and base path of `https://api.openai.com/v1`, or set it to `https://api.openai.com/v1`.
+
+Ollama also serves its OpenAI-compatible API under `/v1`, and `Ollama` is the one provider that requires `spec.baseURL`. Add `/v1` to the in-cluster address, such as `http://ollama.default.svc.cluster.local:11434/v1`.
+
+A `Custom` provider behaves differently. When you set `spec.custom.formats[].path`, that path is sent as written. Any base path from `spec.baseURL` is not added to the path.
 
 ## Virtual models
 

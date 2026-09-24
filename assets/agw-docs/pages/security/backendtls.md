@@ -1,7 +1,7 @@
 Originate a one-way TLS connection from the Gateway to a backend. 
 
-> [!WARNING]
-> {{< reuse "agw-docs/versions/warn-experimental.md" >}}
+> [!NOTE]
+> BackendTLSPolicy is generally available in the standard channel of the Kubernetes Gateway API since version 1.4.0. You do not need the experimental CRDs to use it. For details, see the [upstream BackendTLSPolicy documentation](https://gateway-api.sigs.k8s.io/reference/api-types/policy/backendtlspolicy/).
 
 ## About one-way TLS
 
@@ -206,7 +206,7 @@ Create a BackendTLSPolicy for the NGINX workload.
      -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
-2. Create the TLS policy. Note that to use the BackendTLSPolicy, you must have the experimental channel of the Kubernetes Gateway API version 1.4 or later.
+2. Create the TLS policy. The `v1` BackendTLSPolicy requires Kubernetes Gateway API version 1.4 or later. The standard channel is sufficient.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -243,7 +243,7 @@ Create a BackendTLSPolicy for the NGINX workload.
 
    ```yaml {paths="backendtls-secret-ca"}
    kubectl apply -f - <<EOF
-   apiVersion: gateway.networking.k8s.io/v1beta1
+   apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
    metadata:
      name: nginx-route
