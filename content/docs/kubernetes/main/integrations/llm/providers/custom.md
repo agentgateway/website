@@ -79,6 +79,37 @@ shapes, declare each supported format and optionally set a per-format path.
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
 
+### Reasoning carryover between formats
+
+Extended-thinking history is carried between the `Messages` and `Completions`
+formats in both directions, so a thinking session on a converted route keeps its
+prior reasoning from one turn to the next. Self-hosted engines such as
+[vLLM]({{< link-hextra path="/integrations/llm/providers/vllm/" >}}) report
+reasoning as `reasoning_content` and accept it back on an assistant message,
+which is what makes the carryover possible.
+
+For an Anthropic messages client that reaches a `Completions` provider, an
+assistant `thinking` block in the message history is sent as
+`reasoning_content`, and the `reasoning_content` in a response becomes a
+`thinking` block ahead of the text block. In a stream, the thinking block opens
+with `thinking_delta` events, adds a `signature_delta` when the engine sends a
+signature, and stops before the text or tool-use block that follows.
+
+For an OpenAI chat completions client that reaches a `Messages` provider, an
+assistant message that carries `reasoning_content` together with a non-empty
+`reasoning_signature` is replayed as a signed `thinking` block ahead of its text
+and tool calls. The signature of a response thinking block is forwarded back as
+`reasoning_signature`.
+
+The following cases do not round-trip.
+
+| Case | What happens |
+|------|--------------|
+| An unsigned `reasoning_content`, sent to a `Messages` provider | Left out, because the provider rejects a thinking block that has no signature. |
+| A turn with more than one signed thinking block, sent to a `Completions` provider | The thinking text is joined into a single `reasoning_content`, but no `reasoning_signature` is sent. The signature is carried only when the turn has exactly one signed block. |
+| A `redacted_thinking` block, sent to a `Completions` provider | Dropped, because it holds nothing that an OpenAI-compatible engine can replay. |
+| A provider that declares `Responses` and not `Completions` | The thinking history is dropped from the converted request, with no error and no warning, so the model loses its prior reasoning. |
+
 ## Set the provider identity {#provider-override}
 
 A custom provider reports itself as `custom` in cost lookups and telemetry, because agentgateway has no first-class provider type to name it by. Every custom provider therefore shares one identity, which makes per-provider cost and usage impossible to separate.

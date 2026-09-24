@@ -1,5 +1,8 @@
 Set up a TLS listener on the Gateway that serves one or more hosts and passes TLS traffic through to a destination. Because TLS traffic is not terminated at the Gateway, the destination must be capable of handling incoming TLS traffic.
 
+> [!NOTE]
+> These examples use TLSRoute and ListenerSet in the standard channel of Gateway API 1.5 or later. Both resources use `gateway.networking.k8s.io/v1`.
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/cert-prereqs.md" >}}
@@ -160,7 +163,7 @@ To route TLS traffic to the nginx server directly without terminating the TLS co
    |`spec.listeners.tls.mode`|The TLS mode for incoming requests. In this example, TLS requests are passed through to the backend service without being terminated at the Gateway.|
 
 {{% /tab %}}
-{{% tab name="ListenerSets (experimental)" %}}
+{{% tab name="ListenerSets" %}}
 
 1. Create a Gateway that enables the attachment of ListenerSets.
 
@@ -198,8 +201,8 @@ To route TLS traffic to the nginx server directly without terminating the TLS co
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.x-k8s.io/v1alpha1
-   kind: XListenerSet
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: ListenerSet
    metadata:
      name: my-tls-listenerset
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -239,7 +242,7 @@ To route TLS traffic to the nginx server directly without terminating the TLS co
 {{% tab name="Gateway listeners" %}}
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1alpha2
+apiVersion: gateway.networking.k8s.io/v1
 kind: TLSRoute
 metadata:
   name: tlsroute
@@ -257,10 +260,10 @@ spec:
 EOF
 ```
 {{% /tab %}}
-{{% tab name="ListenerSets (experimental)" %}}
+{{% tab name="ListenerSets" %}}
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1alpha2
+apiVersion: gateway.networking.k8s.io/v1
 kind: TLSRoute
 metadata:
   name: tlsroute
@@ -269,8 +272,8 @@ spec:
   parentRefs:
     - name: my-tls-listenerset
       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-      kind: XListenerSet
-      group: gateway.networking.x-k8s.io
+      kind: ListenerSet
+      group: gateway.networking.k8s.io
   rules:
     - backendRefs:
         - group: ""
@@ -406,13 +409,13 @@ kubectl delete service my-nginx
 kubectl delete secret nginx-server-certs   
 ```
 {{% /tab %}}
-{{% tab name="ListenerSet (experimental)" %}}
+{{% tab name="ListenerSet" %}}
 ```sh
 rm -r example_certs
 rm nginx.conf
 kubectl delete configmap nginx-configmap
 kubectl delete tlsroute tlsroute
-kubectl delete XListenerSet my-tls-listenerset -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete ListenerSet my-tls-listenerset -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete gateway tls-passthrough -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete deployment my-nginx
 kubectl delete service my-nginx
