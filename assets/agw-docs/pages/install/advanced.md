@@ -22,6 +22,8 @@ For more information, see the [Helm reference docs]({{< link-hextra path="/refer
 
 When using the development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, add `--set controller.image.pullPolicy=Always` to ensure you get the latest image. For production environments, this setting is not recommended as it might impact performance.
 
+{{< version include-if="main" >}}This version of the docs covers unreleased work, which no released build contains, so every install path in this version installs the development build. The guidance in this section applies to the default installation instructions, not only to an opt-in path. For a production install, use a released version of the docs.{{< /version >}}
+
 {{< /conditional-text >}}
 
 ## Experimental Gateway API features {#experimental-gateway-api-features}

@@ -1,4 +1,4 @@
-<!-- Install-path design (decided 2026-07, PR #702): channel-keyed bundles. Standard = released build (helm-version-flag) + standard Gateway API CRDs (k8s-gw-version). Experimental = nightly build (patch-dev) + experimental Gateway API CRDs at the newest version (k8s-gw-version-exp) + feature gate. As of the 1.5 release both channels watch TCPRoute at v1, so k8s-gw-version and k8s-gw-version-exp both resolve to Gateway API 1.6 and the only remaining difference is the build channel plus the feature gate. Revisit whether the two Gateway API conrefs still need to be separate. See get-started.md for the full rationale. -->
+<!-- Install-path design (decided 2026-07, PR #702): channel-keyed bundles. Standard = released build (helm-version-flag) + standard Gateway API CRDs (k8s-gw-version). Experimental = nightly build (patch-dev) + experimental Gateway API CRDs at the newest version (k8s-gw-version-exp) + feature gate. As of the 1.5 release both channels watch TCPRoute at v1, so k8s-gw-version and k8s-gw-version-exp both resolve to Gateway API 1.6 and the only remaining difference is the build channel plus the feature gate. Revisit whether the two Gateway API conrefs still need to be separate. See get-started.md for the full rationale. ON THE MAIN TREE, "Standard = released build" does not hold, and cannot: main documents unreleased work, and the newest cut alpha does not contain it, so a released build fails the doc tests for anything merged after the cut. helm-version-flag therefore resolves to patch-dev on main, both channels install the nightly there, and the only difference left on main is the Gateway API channel plus the feature gate. That makes the build axis of these tabs near-vacuous on main, which is an argument for collapsing it there rather than gating the prose around it; not done here because it restructures the tabs the paths="standard"/paths="experimental" test labels hang off. Released trees are unaffected: latest still resolves to the released build. -->
 1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}. The examples in this guide use Gateway API {{< reuse "agw-docs/versions/k8s-gw-version.md" >}} for the standard channel and {{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}} for the experimental channel, but you can use any version within the [supported range]({{< link-hextra path="/release-notes/versions/" >}}) by setting the variable accordingly.
    {{< tabs >}}
    {{% tab name="Standard" %}}
@@ -43,7 +43,7 @@
  ```
  {{% /tab %}}
  {{% tab name="Experimental" %}}
- The experimental path uses the nightly development build.
+ {{< version exclude-if="main" >}}The experimental path uses the nightly development build.{{< /version >}}{{< version include-if="main" >}}Both paths use the nightly development build on this version of the docs, because it is the only build that carries the unreleased features documented here. The experimental path differs in the Gateway API CRDs it applies, not in the build.{{< /version >}}
  ```sh {paths="experimental"}
  helm upgrade -i --create-namespace \
    --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
@@ -68,13 +68,14 @@
 
       {{< tabs >}}
 {{% tab name="Basic installation" %}}
-
+{{< version include-if="main" >}}This version of the docs covers unreleased work, so the version that this command installs is the nightly development build. The `--set controller.image.pullPolicy=Always` option is included so that you get the latest image rather than a cached one. For a production install, use a released version of the docs, or refer to the exact image digest instead. For more information, see [Development builds]({{< link-hextra path="/documentation/install/advanced/#development-builds" >}}).{{< /version >}}
 
 
 
 ```sh {paths="standard"}
 helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
---version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
+--version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}{{< version include-if="main" >}} \
+--set controller.image.pullPolicy=Always{{< /version >}}
 ```
 
 
