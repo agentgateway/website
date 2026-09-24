@@ -18,11 +18,12 @@ Attaches to: {{< badge content="Frontend" path="/documentation/configuration/ove
 #   * "Configuration": the example config is accepted by agentgateway
 #     (--validate-only), covering `frontendPolicies.networkAuthorization.rules`
 #     with all three rule types (`allow`, `deny`, `require`) and the
-#     `source.address` / `source.port` CEL variables.
-#   * "Examples": all three example configs are accepted - the private-range
+#     `source.address`, `source.port`, and `destination.hostname` CEL variables.
+#   * "Examples": all four example configs are accepted - the private-range
 #     allowlist (`cidr(...).containsIP(...)`), the mTLS `source.tls.identity`
-#     requirement, and the layered L4+L7 config that combines
-#     `networkAuthorization` with a route-level `authorization` policy.
+#     requirement, the TLS SNI `destination.hostname` requirement, and the
+#     layered L4+L7 config that combines `networkAuthorization` with a
+#     route-level `authorization` policy.
 #   * Allowlist semantics from the "Evaluation order" list, rule 6: with the
 #     Configuration example loaded, a connection from localhost matches no `allow`
 #     rule, so the connection is rejected at L4 before any HTTP response is sent
@@ -48,6 +49,8 @@ Attaches to: {{< badge content="Frontend" path="/documentation/configuration/ove
 #   * `source.tls.identity` and `source.tls.subject_alt_names` at runtime -
 #     requires config/traffic the page omits; the page shows no TLS listener or
 #     client certificate setup, so the mTLS example is only validated as config.
+#   * `destination.hostname` at runtime - requires TLS SNI traffic that the page
+#     omits, so the TLS SNI example is only validated as config.
 #   * The route-level `authorization` JWT requirement in the layered example -
 #     external dependency; enforcing it needs a JWT issuer this page does not set
 #     up. HTTP authorization is covered by its own guide.
@@ -56,7 +59,7 @@ Attaches to: {{< badge content="Frontend" path="/documentation/configuration/ove
 
 Network authorization enforces access control at the L4 (transport) level, before HTTP processing. You can enforce policies for non-HTTP traffic such as raw TCP and TLS connections, and layer L4+L7 controls when you combine policies with [HTTP authorization]({{< link-hextra path="/documentation/configuration/security/http-authz/" >}}).
 
-Network authorization uses [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) evaluated against the connection's source context.
+Network authorization uses [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) evaluated against the connection's source and destination context.
 
 ## Configuration
 
@@ -186,6 +189,12 @@ The following CEL variables are available in network authorization rules:
 | `source.port` | `int` | Port of the downstream connection. |
 | `source.tls.identity` | `string` | Client certificate identity (if mTLS). |
 | `source.tls.subject_alt_names` | `list(string)` | Subject Alternative Names from the client certificate. |
+| `destination.address` | `string` | IP address on agentgateway that the downstream connection was made to. This is the local address of the listener, not the address of the backend that the connection is routed to. |
+| `destination.port` | `int` | Port on agentgateway that the downstream connection was made to. |
+| `destination.hostname` | `string` | Server Name Indication (SNI) hostname that agentgateway read from the TLS handshake. Set only on listeners with the `TLS` protocol. Unset on HTTP and HTTPS listeners, even when the client sends SNI, and when the client sends no SNI. See the warning that follows. |
+
+> [!WARNING]
+> `destination.hostname` is set only on listeners with the `TLS` protocol. It is unset on HTTP and HTTPS listeners, even when the client sends SNI, and for clients that send no SNI. A `require` rule that references an unset variable never matches, so the rule denies every such connection. Verify it against the traffic you expect before you rely on it.
 
 ## Examples
 
@@ -225,6 +234,27 @@ frontendPolicies:
     - require: 'source.tls.identity == "spiffe://cluster.local/ns/default/sa/my-service"'
 EOF
 agentgateway -f config-mtls.yaml --validate-only
+{{< /doc-test >}}
+
+### Require TLS SNI
+
+For TLS connections, use `destination.hostname` to require a specific SNI hostname before the connection proceeds. Because this is a `require` rule, a connection that carries no SNI does not match it and is rejected. Apply the policy only to listeners with the `TLS` protocol.
+
+```yaml
+frontendPolicies:
+  networkAuthorization:
+    rules:
+    - require: 'destination.hostname == "db.internal.example.com"'
+```
+
+{{< doc-test paths="network-authz" >}}
+cat <<'EOF' > config-sni.yaml
+frontendPolicies:
+  networkAuthorization:
+    rules:
+    - require: 'destination.hostname == "db.internal.example.com"'
+EOF
+agentgateway -f config-sni.yaml --validate-only
 {{< /doc-test >}}
 
 ### Layered L4+L7 controls
