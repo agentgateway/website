@@ -51,8 +51,11 @@ llm:
     provider:
       custom:
         formats:
-          # Indicate this provider supports the completions API. With no `path` specified, this defaults to <baseUrl>/chat/completions
+          # Indicate this provider supports the completions API. With no `path` specified, this
+          # defaults to <baseUrl>/v1/chat/completions. Perplexity serves completions at
+          # /chat/completions, so set the path explicitly.
           - type: completions
+            path: /chat/completions
           # Indicate this provider supports the messages API, on a custom path /messages-api
           # - type: messages
           #   path: /messages-api

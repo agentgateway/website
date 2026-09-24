@@ -264,8 +264,8 @@ spec:
   visibility: Public
   # The provider that serves this model
   provider: OpenAI
-  # Optional: override the provider address
-  baseURL: https://api.openai.com
+  # Optional: override the provider address and base path
+  baseURL: https://api.openai.com/v1
   # Optional: policies that apply to this model only
   policies:
     auth:
