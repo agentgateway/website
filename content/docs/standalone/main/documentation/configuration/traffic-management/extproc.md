@@ -53,6 +53,8 @@ You can choose whether you want agentgateway to forward requests if the external
 * **failOpen**: Forward requests to the backend service, even if the connection to the external processing server fails. You might choose this option to ensure availability of the backend services even when the ExtProc service is down.
 * **failClosed**: Block requests if the request to the external processing server fails. This is the default behavior.
 
+By default, agentgateway waits 10 seconds for the external processing server to answer when opening a processing stream. When the wait runs out, the call counts as a failure and the `failureMode` setting decides what happens to the request. To use a different timeout, set `extProc.policies.http.requestTimeout`.
+
 ## Compatibility
 
 The [External Processing gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/ext_proc/v3/external_processor.proto) was designed for Envoy,
