@@ -1,16 +1,13 @@
 The following guide deploys a sample TCP echo app, sets up a TCP listener on the gateway, and creates a [TCPRoute](https://gateway-api.sigs.k8s.io/guides/user-guides/tcp/) to the sample app.
 
-> [!WARNING]
-> {{< reuse "agw-docs/versions/warn-experimental.md" >}}
+> [!NOTE]
+> TCPRoute is generally available as `gateway.networking.k8s.io/v1` in the standard channel of the Kubernetes Gateway API since version 1.6. On Gateway API 1.3–1.5, use `v1alpha2` and the experimental channel.
 
 ## Before you begin
 
-1. To use TCPRoutes in {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} 1.3 - 1.5, install the experimental channel.
-   ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
-   ```
+1. Install the Gateway API CRDs by following the [Get started guide]({{< link-hextra path="/documentation/quickstart/install/" >}}). The standard channel is sufficient for TCPRoute on Gateway API 1.6 or later. If you use Gateway API 1.3–1.5, select the experimental channel instead.
 
-2. Experimental Kubernetes Gateway API features are enabled by default in {{< reuse "agw-docs/snippets/kgateway.md" >}}. To set the feature gate explicitly, install or upgrade with the `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true` Helm flag. For an example, see the [Get started guide]({{< link-hextra path="/documentation/quickstart" >}}).
+2. If you use an earlier version that requires experimental Gateway API features, keep the `AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES` controller setting enabled (the default). To set it explicitly, install or upgrade with the `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true` Helm flag.
 
 3. Deploy the sample TCP echo app.
 
