@@ -62,6 +62,8 @@ An {{< reuse "agw-docs/snippets/backend.md" >}} can set an AI policy inline, in 
 
 The following fields of `ai` each merge separately: `defaults`, `finalTransformations`, `modelAliases`, `overrides`, `prompt`, `promptCaching`, `promptGuard`, `routes`, and `transformations`.
 
+An attached {{< reuse "agw-docs/snippets/policy.md" >}} that targets a provider's `sectionName` inside an AI provider group can also target a separate {{< reuse "agw-docs/snippets/backend.md" >}} in the same `targetRefs` list, so both share the same `auth`, `tls`, and `tunnel` settings. For an example, see [Share connection settings]({{< link-hextra path="/documentation/llm/shared-connection-settings/" >}}).
+
 > [!IMPORTANT]
 > In version 1.4 and earlier, an inline `ai` block replaced an attached `ai` block in full. If the backend set even one field of `ai`, every field of the attached policy was dropped. After you upgrade to version 1.5, a field that only the {{< reuse "agw-docs/snippets/policy.md" >}} sets takes effect where it was previously ignored, which can turn on a prompt guard, a default, or a transformation that had no effect before. Review each {{< reuse "agw-docs/snippets/backend.md" >}} that sets an inline `ai` block alongside an attached policy, and remove any field from the {{< reuse "agw-docs/snippets/policy.md" >}} that you do not want the backend to inherit.
 
