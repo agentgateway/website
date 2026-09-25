@@ -362,7 +362,9 @@ Use the `reasoning_effort` field to control how much reasoning the model applies
 |---|---|
 | `minimal` or `low` | 1,024 tokens |
 | `medium` | 2,048 tokens |
-| `high` or `xhigh` | 4,096 tokens |
+| `high` | 4,096 tokens |
+| `xhigh` | 8,192 tokens in agentgateway 1.4 and later. 4,096 tokens in earlier versions, including 2.2.x. |
+| `max` | 16,384 tokens. Supported in agentgateway 1.4 and later. |
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
 For Claude models that support adaptive thinking, the request is sent with `thinking.type` set to `adaptive` and the effort level in `output_config.effort`, instead of a thinking budget. The value `minimal` is sent as `low`. Which models take this form depends on the `adaptive_thinking` tag in the [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). The built-in catalog sets this tag for these models.

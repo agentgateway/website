@@ -107,6 +107,12 @@ spec:
 EOF
 ```
 
+## Provider failures
+
+Set `failureMode` on a `webhook`, `openAIModeration`, `bedrockGuardrails`, or `googleModelArmor` guard to choose what happens when the provider is unreachable or returns an error. The default, `FailClosed`, rejects the request or response. Set `failureMode: FailOpen` to let the content continue unchanged instead.
+
+A provider error is not a verdict, so `action: Audit` does not change how an error is handled. An audit guard with the default `failureMode` still rejects traffic when the provider call fails.
+
 ## Guard scope {#scope}
 
 A request guard does not inspect the whole request. By default, a guard reads the system prompt and the text of regular user and assistant messages. Tool call content is left alone, so a Social Security number that a tool returns to the model reaches the provider unmasked.

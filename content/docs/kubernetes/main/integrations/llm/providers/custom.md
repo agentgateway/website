@@ -110,6 +110,8 @@ The following cases do not round-trip.
 | A `redacted_thinking` block, sent to a `Completions` provider | Dropped, because it holds nothing that an OpenAI-compatible engine can replay. |
 | A provider that declares `Responses` and not `Completions` | The thinking history is dropped from the converted request, with no error and no warning, so the model loses its prior reasoning. |
 
+Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. When an Anthropic messages client sends a request with tools to one of these models through a `Completions` provider, the request is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped. Every other model receives the reasoning effort that the client asked for, if any.
+
 ## Set the provider identity {#provider-override}
 
 A custom provider reports itself as `custom` in cost lookups and telemetry, because agentgateway has no first-class provider type to name it by. Every custom provider therefore shares one identity, which makes per-provider cost and usage impossible to separate.

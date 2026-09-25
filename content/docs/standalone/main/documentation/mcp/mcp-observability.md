@@ -93,12 +93,29 @@ The following CEL variables are available in access log policies but are **not**
 
 | Variable | Availability | Description |
 |----------|-------------|-------------|
-| `mcp.methodName` | Post-request | The MCP JSON-RPC method name, such as `tools/call` or `tools/list`. |
+| `mcp.methodName` | Request-time | The MCP JSON-RPC method name, such as `tools/call` or `tools/list`. |
 | `mcp.sessionId` | Post-request | The MCP session ID. |
 | `mcp.tool.name` | Request-time | The name of the tool being called. |
 | `mcp.tool.target` | Request-time | The target backend handling the tool call. |
 | `mcp.tool.arguments` | Post-request | The JSON arguments passed to the tool call. |
 | `mcp.tool.result` | Post-request | The tool call result payload. |
 | `mcp.tool.error` | Post-request | The tool call error payload. |
+| `mcp.toolsList` | Post-request | The `tools/list` result returned to the client. |
+| `mcp.promptsList` | Post-request | The `prompts/list` result returned to the client. |
+| `mcp.resourcesList` | Post-request | The `resources/list` result returned to the client. |
+| `mcp.resourceTemplatesList` | Post-request | The `resources/templates/list` result returned to the client. |
+
+The list result variables hold the list that the client receives, not the raw response from each MCP server. Entries that MCP authorization policies deny are removed. For a backend with multiple targets, the list is merged across targets, and names can carry a target prefix. For example, the following access log policy adds the tool list to the log entry for each `tools/list` request:
+
+```yaml
+frontendPolicies:
+  accessLog:
+    filter: 'mcp.methodName == "tools/list"'
+    add:
+      tools: 'mcp.toolsList'
+```
+
+> [!CAUTION]
+> List results can be large, and the whole payload is written to each matching log entry. Filter on the method name so that only the list requests you need are logged.
 
 For the full list of CEL variables, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables" >}}).
