@@ -154,6 +154,8 @@ spec:
         serviceName: bedrock
         assumeRole:
           roleArn: arn:aws:iam::123456789012:role/agentgateway-bedrock
+{{< version exclude-if="1.4.x,1.5.x" >}}          externalId: tenant-a:prod/12345
+{{< /version >}}
           sessionNameExpression: jwt.sub
           tags:
           - key: team
@@ -168,6 +170,8 @@ EOF
 | Field | Description |
 | -- | -- |
 | `assumeRole.roleArn` | Required ARN of the IAM role to assume. |
+{{< version exclude-if="1.4.x,1.5.x" >}}| `assumeRole.externalId` | External ID to pass to STS when the role trust policy requires `sts:ExternalId`. The value must be 2-1224 characters and match `[\w+=,.@:/-]`. The value is part of the assumed-credential cache key. |
+{{< /version >}}
 | `assumeRole.sessionName` | Static session name (`RoleSessionName`), which appears in AWS CloudTrail and in the Cost and Usage Report. Two to 64 characters, matching `[\w+=,.@-]`. Omit the field and AWS generates a random name. |
 | `assumeRole.sessionNameExpression` | CEL expression that the gateway evaluates against each request to produce the session name, such as `jwt.sub`. Cannot be combined with `sessionName`. |
 | `assumeRole.tags` | Session tags that the gateway passes to STS. Each tag sets `key`, plus exactly one of `value` for a static value or `expression` for a CEL expression. STS allows at most 50 tags for one role session. |

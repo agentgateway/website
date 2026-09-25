@@ -72,6 +72,12 @@ The values that `action` takes depend on the guard, because a regex guard can ma
 | `googleModelArmor` | `reject`, `audit` | `reject` |
 | `azureContentSafety` | `reject`, `audit` | `reject` |
 
+## Provider failures {#provider-failures}
+
+Use `failureMode` on a custom webhook or external provider guard to choose what happens when the provider is unreachable or returns an error. The default is `failClosed`, which rejects the request. Set `failureMode: failOpen` on `webhook`, `openAIModeration`, `bedrockGuardrails`, `googleModelArmor`, or `azureContentSafety` to let the request continue.
+
+`action: audit` changes only whether the gateway enforces the provider verdict. A provider error still follows `failureMode`, so an audit guard with `failureMode: failClosed` rejects traffic when the provider call fails.
+
 ## Audit mode {#audit}
 
 By default, a guard enforces the verdict that it reaches. A regex guard masks the content that matches, and an external guard rejects the request that its provider flags. Set `action: audit` to make a guard observe instead. The guard still runs, and it still records what it detected in metrics and in the structured access log, but the content always passes through unchanged.

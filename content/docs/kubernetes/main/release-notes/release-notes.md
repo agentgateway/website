@@ -106,3 +106,11 @@ Now, the `destination.address`, `destination.port`, and `destination.hostname` C
 `destination.hostname` is set only on Gateway listeners with `protocol: TLS`. It is unset on HTTP and HTTPS listeners, even when the client sends SNI, and for clients that send no SNI. A `Require` policy that references it denies every such connection, so apply it only to Gateways whose listeners use `protocol: TLS`.
 
 For an example, see [Restrict network access by TLS SNI]({{< link-hextra path="/documentation/security/authorization/#restrict-network-access-by-tls-sni" >}}).
+
+#### Backend authentication and guardrail controls {#v16-backend-auth-guardrail-controls}
+
+Backend TLS CA certificate references can now set `key` to read a CA bundle from a Secret or ConfigMap key other than `ca.crt`. Omitting the field still reads `ca.crt`.
+
+AWS backend authentication can now set `assumeRole.externalId` when an AWS Security Token Service (STS) AssumeRole trust policy requires `sts:ExternalId`. The value is validated against the STS length and character limits and is part of the assumed-credential cache key.
+
+Cloud provider guardrails can now set `failureMode` to choose whether provider errors fail open or closed. These guardrails now fail closed by default instead of allowing traffic on provider errors.
