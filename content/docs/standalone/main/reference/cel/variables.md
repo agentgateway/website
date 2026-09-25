@@ -40,6 +40,17 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 | Tracing | Same as Logging. |
 | Metrics | Same as Logging. |
 
+### MCP list result fields {#mcp-list-result-fields}
+
+The `mcp` object changes by policy phase. During MCP authorization, `mcp` contains request-time identity fields, such as `mcp.tool.name`. During logging, tracing, and metrics, `mcp` can include terminal MCP server results. These fields are populated after a server returns a `list/*` response.
+
+| Method | Result variable |
+|--------|-----------------|
+| `tools/list` | `mcp.toolsList` |
+| `prompts/list` | `mcp.promptsList` |
+| `resources/list` | `mcp.resourcesList` |
+| `resources/templates/list` | `mcp.resourceTemplatesList` |
+
 [^1]: Request-time transformation evaluation binds `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, and `metadata` when earlier filters have populated them; `mcp` only applies to MCP-specific policies.
 
 [^2]: Response-side transformation sees the HTTP response object as well as the request snapshot fields.

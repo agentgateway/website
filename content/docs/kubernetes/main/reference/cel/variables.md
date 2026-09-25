@@ -38,6 +38,17 @@ Depending on the policy, different fields are accessible based on when in the re
 |Tracing| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm`|
 |Metrics| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm`|
 
+### MCP list result fields {#mcp-list-result-fields}
+
+The `mcp` object changes by policy phase. During MCP authorization, `mcp` contains request-time identity fields, such as `mcp.tool.name`. During logging, tracing, and metrics, `mcp` can include terminal MCP server results. These fields are populated after a server returns a `list/*` response.
+
+| Method | Result variable |
+|--------|-----------------|
+| `tools/list` | `mcp.toolsList` |
+| `prompts/list` | `mcp.promptsList` |
+| `resources/list` | `mcp.resourcesList` |
+| `resources/templates/list` | `mcp.resourceTemplatesList` |
+
 ## Functions {#functions-policy-all}
 
 The following functions can be used in all policy types.

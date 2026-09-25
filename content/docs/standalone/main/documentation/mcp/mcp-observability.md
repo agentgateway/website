@@ -101,4 +101,27 @@ The following CEL variables are available in access log policies but are **not**
 | `mcp.tool.result` | Post-request | The tool call result payload. |
 | `mcp.tool.error` | Post-request | The tool call error payload. |
 
+### Log MCP list results {#mcp-list-results}
+
+To log a terminal MCP list response, filter for the method and add the matching list result variable. The list result variables are populated after the MCP server responds, so use them only in access log policies, traces, and metrics.
+
+The following example logs the result of a `tools/list` response:
+
+```yaml
+frontendPolicies:
+  accessLog:
+    filter: 'mcp.methodName == "tools/list"'
+    add:
+      tools: 'mcp.toolsList'
+```
+
+Use the list result variable that matches the MCP method:
+
+| Method | Result variable |
+|--------|-----------------|
+| `tools/list` | `mcp.toolsList` |
+| `prompts/list` | `mcp.promptsList` |
+| `resources/list` | `mcp.resourcesList` |
+| `resources/templates/list` | `mcp.resourceTemplatesList` |
+
 For the full list of CEL variables, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables" >}}).
