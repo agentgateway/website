@@ -100,12 +100,12 @@ The following CEL variables are available in access log policies but are **not**
 | `mcp.tool.arguments` | Post-request | The JSON arguments passed to the tool call. |
 | `mcp.tool.result` | Post-request | The tool call result payload. |
 | `mcp.tool.error` | Post-request | The tool call error payload. |
+| `mcp.toolsList` | Post-request | The `tools/list` result returned to the client. |
+| `mcp.promptsList` | Post-request | The `prompts/list` result returned to the client. |
+| `mcp.resourcesList` | Post-request | The `resources/list` result returned to the client. |
+| `mcp.resourceTemplatesList` | Post-request | The `resources/templates/list` result returned to the client. |
 
-### Log MCP list results {#mcp-list-results}
-
-To log a terminal MCP list response, filter for the method and add the matching list result variable. The list result variables are populated after the MCP server responds, so use them only in access log policies, traces, and metrics.
-
-The following example logs the result of a `tools/list` response:
+The list result variables hold the list that the client receives, not the raw response from each MCP server. Entries that MCP authorization policies deny are removed. For a backend with multiple targets, the list is merged across targets, and names can carry a target prefix. For example, the following access log policy adds the tool list to the log entry for each `tools/list` request:
 
 ```yaml
 frontendPolicies:
@@ -115,13 +115,7 @@ frontendPolicies:
       tools: 'mcp.toolsList'
 ```
 
-Use the list result variable that matches the MCP method:
-
-| Method | Result variable |
-|--------|-----------------|
-| `tools/list` | `mcp.toolsList` |
-| `prompts/list` | `mcp.promptsList` |
-| `resources/list` | `mcp.resourcesList` |
-| `resources/templates/list` | `mcp.resourceTemplatesList` |
+> [!CAUTION]
+> List results can be large, and the whole payload is written to each matching log entry. Filter on the method name so that only the list requests you need are logged.
 
 For the full list of CEL variables, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables" >}}).
