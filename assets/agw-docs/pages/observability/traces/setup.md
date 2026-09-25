@@ -277,7 +277,7 @@ The primary setup routes traces through the OTel Collector from the OTel stack, 
 
 - [Jaeger]({{< link path="/documentation/observability/traces/configs/jaeger/" >}})
 - [OTel Collector]({{< link path="/documentation/observability/traces/configs/otel/" >}})
-- [Datadog]({{< link path="/documentation/observability/traces/configs/datadog/" >}})
+- [Datadog]({{< link path="/integrations/llm/observability/datadog/" >}})
 - [Honeycomb]({{< link path="/documentation/observability/traces/configs/honeycomb/" >}})
 - [Grafana Cloud]({{< link path="/documentation/observability/traces/configs/grafana-cloud/" >}})
 

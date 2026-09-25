@@ -20,7 +20,7 @@ Add agentgateway to your Devin Desktop MCP configuration. Create or edit `~/.cod
 {
   "mcpServers": {
     "agentgateway": {
-      "serverUrl": "http://localhost:3000/mcp/http"
+      "serverUrl": "http://localhost:3000/mcp"
     }
   }
 }
@@ -37,7 +37,7 @@ Include authentication headers if required:
 {
   "mcpServers": {
     "agentgateway": {
-      "serverUrl": "http://localhost:3000/mcp/http",
+      "serverUrl": "http://localhost:3000/mcp",
       "headers": {
         "Authorization": "Bearer your-token-here"
       }
