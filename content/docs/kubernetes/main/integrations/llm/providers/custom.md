@@ -79,7 +79,7 @@ shapes, declare each supported format and optionally set a per-format path.
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
 
-### Reasoning carryover between formats
+### Reasoning carryover between formats {#reasoning-carryover-between-formats}
 
 Extended-thinking history is carried between the `Messages` and `Completions`
 formats in both directions, so a thinking session on a converted route keeps its
@@ -94,6 +94,11 @@ assistant `thinking` block in the message history is sent as
 `thinking` block ahead of the text block. In a stream, the thinking block opens
 with `thinking_delta` events, adds a `signature_delta` when the engine sends a
 signature, and stops before the text or tool-use block that follows.
+
+When the converted request includes tools, some GPT-5 model names do not support
+reasoning with tools. For those GPT-5 model names, agentgateway sends
+`reasoning_effort: "none"` to disable reasoning. Other models, such as GPT-4o,
+do not receive `reasoning_effort`, because those models reject the field.
 
 For an OpenAI chat completions client that reaches a `Messages` provider, an
 assistant message that carries `reasoning_content` together with a non-empty

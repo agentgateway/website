@@ -72,11 +72,16 @@ The first three rows are values that a `custom` provider declares in its `format
 
 Because `completions` comes before `responses`, a provider that advertises both is unaffected by the Responses conversion. That conversion applies to a provider that advertises `responses` and not `completions`.
 
-### Converting to the Chat Completions format
+### Converting to the Chat Completions format {#converting-to-the-chat-completions-format}
 
 The Chat Completions conversion carries extended-thinking history in both directions, so a thinking session on a converted route keeps its prior reasoning from one turn to the next. This behavior matters when your client speaks Messages but the provider that you route to advertises only `completions`, such as a self-hosted inference engine. Self-hosted engines that report reasoning as `reasoning_content` also accept it back on an assistant message, which is what makes the carryover possible. To declare that an upstream speaks `completions`, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
 On the way out, an assistant `thinking` block in the message history is sent as `reasoning_content`. A turn made of thinking alone is still sent.
+
+When a converted request includes tools, some GPT-5 model names do not support
+reasoning with tools. For those GPT-5 model names, agentgateway sends
+`reasoning_effort: "none"` to disable reasoning. Other models, such as GPT-4o,
+do not receive `reasoning_effort`, because those models reject the field.
 
 On the way back, the `reasoning_content` in a buffered response becomes a `thinking` block ahead of the text block. In a stream, a thinking content block opens with `thinking_delta` events, adds a `signature_delta` when the engine sends a signature, and stops before the text or tool-use block that follows. Reasoning that the engine withholds arrives with an empty text and a signature that carries it, so the block is sent on the signature alone, in both the buffered and the streamed form.
 
