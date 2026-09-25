@@ -72,6 +72,11 @@ The values that `action` takes depend on the guard, because a regex guard can ma
 | `googleModelArmor` | `reject`, `audit` | `reject` |
 | `azureContentSafety` | `reject`, `audit` | `reject` |
 
+For AWS Bedrock Guardrails, `reject` has one response-body exception. If you use the default rejection
+body and Bedrock returns a nonempty block message, the client receives the Bedrock message. A custom
+rejection body still takes precedence, and non-block interventions that fail masking keep the default
+rejection body.
+
 ## Audit mode {#audit}
 
 By default, a guard enforces the verdict that it reaches. A regex guard masks the content that matches, and an external guard rejects the request that its provider flags. Set `action: audit` to make a guard observe instead. The guard still runs, and it still records what it detected in metrics and in the structured access log, but the content always passes through unchanged.
