@@ -45,6 +45,10 @@ When you omit `accessKeyId` and `secretAccessKey`, agentgateway uses the [defaul
 
 To sign with a role rather than with the identity of agentgateway, set `assumeRole`. Agentgateway calls the AWS Security Token Service (STS) with the credentials from the chain, and signs with the credentials that STS returns. It caches the assumed credentials and refreshes them before they expire.
 
+{{< version exclude-if="1.5.x" >}}
+If the role trust policy requires `sts:ExternalId`, set `externalId` in the same `assumeRole` block. Credentials that use different external IDs do not share one cache entry.
+{{< /version >}}
+
 Create the IAM role in AWS before you set the field. The role needs a permissions policy that allows the actions of the service that you call, such as `bedrock:InvokeModel` for Amazon Bedrock. It also needs a trust policy that allows the identity of agentgateway to assume it. Which permissions you attach therefore depends on the service that the backend fronts. For the steps, see [Create a role to delegate permissions to an AWS service](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-service.html) in the AWS documentation.
 
 The session name and the session tags exist for cost attribution. Each accepts a static value, or a CEL expression that agentgateway evaluates against every request, which lets one gateway attribute cost per user or per team.
@@ -56,6 +60,8 @@ backendAuth:
     serviceName: bedrock
     assumeRole:
       roleArn: arn:aws:iam::123456789012:role/agentgateway-bedrock
+{{< version exclude-if="1.5.x" >}}      externalId: tenant-a:prod/12345
+{{< /version >}}
       sessionName:
         expression: jwt.sub
       tags:
@@ -70,6 +76,8 @@ backendAuth:
 | Field | Description |
 | -- | -- |
 | `assumeRole.roleArn` | Required ARN of the IAM role to assume. |
+{{< version exclude-if="1.5.x" >}}| `assumeRole.externalId` | External ID to pass to STS when the role trust policy requires `sts:ExternalId`. The value must be 2 to 1224 characters and match `[\w+=,.@:/-]`. |
+{{< /version >}}
 | `assumeRole.sessionName` | Session name (`RoleSessionName`) that appears in AWS CloudTrail and in the Cost and Usage Report. Either a static string, or `{expression: <cel>}`. Two to 64 characters, matching `[\w+=,.@-]`. Omit the field and AWS generates a random name. |
 | `assumeRole.tags` | Session tags that agentgateway passes to STS. Each tag sets `key`, plus exactly one of `value` for a static value or `expression` for a CEL expression. STS allows at most 50 tags for one role session. |
 
