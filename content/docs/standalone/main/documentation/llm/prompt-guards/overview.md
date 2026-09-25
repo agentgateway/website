@@ -104,6 +104,12 @@ llm:
           action: audit
 ```
 
+## Provider failures
+
+Set `failureMode` on a `webhook`, `openAIModeration`, `bedrockGuardrails`, `googleModelArmor`, or `azureContentSafety` guard to choose what happens when the provider is unreachable or returns an error. The default, `failClosed`, rejects the request or response. Set `failureMode: failOpen` to let the content continue unchanged instead.
+
+A provider error is not a verdict, so `action: audit` does not change how an error is handled. An audit guard with the default `failureMode` still rejects traffic when the provider call fails.
+
 ## Guard scope {#scope}
 
 A request guard does not inspect the whole request. By default, a guard reads the system prompt and the text of regular user and assistant messages. Tool call content is left alone, so a Social Security number that a tool returns to the model reaches the provider unmasked.
