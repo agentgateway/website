@@ -8,7 +8,7 @@ Attaches to: {{< badge content="Route" path="/documentation/configuration/routes
 
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
-OIDC browser authentication provides built-in OpenID Connect login for browser-based clients. Unauthenticated requests are automatically redirected to the identity provider's login page. After successful authentication, the user's session is maintained with encrypted cookies.
+OIDC browser authentication provides built-in OpenID Connect login for browser-based clients. By default, unauthenticated browser navigation requests are redirected to the identity provider's login page, and unauthenticated fetch requests receive a `401 Unauthorized` response instead. You can also send browser navigation requests to a local login page before the identity provider flow starts, and add a local logout endpoint that clears the gateway session. After successful authentication, the user's session is maintained with encrypted cookies.
 
 The OIDC policy uses the OAuth 2.0 Authorization Code Flow with PKCE (Proof Key for Code Exchange) for secure browser-based authentication without requiring a separate proxy like oauth2-proxy.
 
@@ -40,17 +40,28 @@ sequenceDiagram
     AGW->>Browser: Return protected resource
 ```
 
-* **Steps 1-3: Unauthenticated request**. When a browser request arrives without a valid session cookie, the gateway redirects the user to the identity provider's login page.
+* **Steps 1-3: Unauthenticated request**. When a browser navigation arrives without a valid session cookie, the gateway redirects the user to the identity provider's login page.
 * **Steps 4-6: Login**. The user authenticates with the identity provider.
 * **Steps 7-8: Callback**. After login, the identity provider redirects back to the `redirectURI` with an authorization code.
 * **Steps 9-11: Token exchange**. The gateway exchanges the authorization code for an ID token using PKCE.
 * **Steps 12-15: Session cookie**. The gateway sets an encrypted session cookie containing the ID token claims. Subsequent requests use this cookie.
 
-### Session management
+### Navigation and fetch requests {#navigation-and-fetch-requests}
 
-Review the following details about session management.
+The gateway reads the `Sec-Fetch-Mode` request header that browsers send to tell a page navigation apart from a script request.
+
+- Requests with `Sec-Fetch-Mode` set to `cors`, `no-cors`, `same-origin`, or `websocket`, such as `fetch()` calls, receive `401 Unauthorized` instead of a redirect to the identity provider.
+- If you set `login.redirect`, the `401` response also includes a `Location` header with that page, so that your application can send the user there. For more information, see [Custom login page and logout](#custom-login-page-and-logout).
+- Requests without a `Sec-Fetch-Mode` header, such as `curl` requests, are treated as navigation requests and redirected.
+
+### Session cookies {#session-cookies}
+
+Review the following details about session cookies.
 
 - Session cookies are encrypted and tamper-proof.
+- Session cookie payloads are compressed only when the result is smaller. Compression helps ID tokens with large claim sets fit in browser cookie limits.
+- Session cookies written before compression continue to decode.
+- A protected response can include its own cookies and the OIDC session cookie.
 - The gateway always requests the `openid` scope to obtain an ID token.
 - The gateway uses PKCE automatically to protect against authorization code interception.
 
@@ -207,6 +218,46 @@ For a complete runnable setup, including a Compose file that starts a preconfigu
 {{< /tab >}}
 {{< /tabs >}}
 
+## Custom login page and logout {#custom-login-page-and-logout}
+
+Use the optional `login` and `logout` blocks when your application supplies its own sign-in page or sign-out control. The `login.path` endpoint starts the OIDC flow. The `login.redirect` path sends unauthenticated browser navigation requests to your application page before the OIDC flow starts.
+
+```yaml
+policies:
+  oidc:
+    issuer: http://localhost:7080/realms/agentgateway
+    clientId: agentgateway-browser
+    clientSecret: agentgateway-secret
+    redirectURI: http://localhost:3000/oauth/callback
+    login:
+      path: /auth/login
+      redirect: /login
+    logout:
+      path: /auth/logout
+      redirect: /login
+```
+
+Serve the page at `login.redirect` on routes that bypass the OIDC policy. Serve any assets that the page needs on public routes too. The `login.redirect` setting does not make the page public. The path is not the OIDC callback or the destination after successful login. Fetch requests are not redirected. Instead, they receive `401 Unauthorized` with a `Location` header that points to `login.redirect`. When the gateway redirects a browser to `login.redirect`, the redirect includes a `returnTo` query parameter with the original local path and query.
+
+On your sign-in page, link to `login.path` and preserve the `returnTo` value. For example, a request for `/app` can redirect to `/login?returnTo=%2Fapp`. The sign-in link can point to `/auth/login?returnTo=%2Fapp`. If `returnTo` is missing or unsafe, the gateway returns the user to `/`.
+
+Use a same-origin `POST` form for logout, such as the following example.
+
+```html
+<form method="post" action="/auth/logout">
+  <button type="submit">Sign out</button>
+</form>
+```
+
+Logout clears the gateway session and login transaction cookies. Logout does not sign the user out of the identity provider or revoke tokens. Requests to `logout.path` must include an `Origin` header that matches the origin of `redirectURI`.
+
+> [!IMPORTANT]
+> Make the logout destination public, through a route or a policy that bypasses OIDC. The logout destination is `logout.redirect`, or `login.redirect` if you omit `logout.redirect`, or `/` if you omit both. If the destination is protected, the next request starts a new login. The user's identity provider session is still active, so the user can be signed back in without a prompt and logout appears to do nothing.
+
+The `login` and `logout` blocks are independent. Omit `login.redirect` to keep automatic redirects to the identity provider. Omit `logout` to disable the local logout endpoint. All endpoint and redirect values must be safe local paths. Endpoint paths must differ from each other and from the callback path, and cannot include a query string. The `login.redirect` path must also differ from all of these paths.
+
+The built-in UI manages its own `/ui/login`, `/api/auth/login`, and `/api/auth/logout` endpoints. Do not set `login` or `logout` under `ui.policies.oidc`; the configuration is rejected.
+
 ## Fields
 
 {{< reuse "agw-docs/snippets/review-table.md" >}}
@@ -223,6 +274,12 @@ For a complete runnable setup, including a Compose file that starts a preconfigu
 | `tokenEndpoint` | No | Explicit token endpoint. Overrides the value from discovery. |
 | `tokenEndpointAuth` | No | Client authentication method for the token endpoint. Discovery mode derives this from provider metadata. Explicit mode defaults to `clientSecretBasic`. |
 | `jwks` | No | JWKS source for ID token validation. If omitted, uses the `jwks_uri` from discovery. |
+| `login` | No | Optional explicit login endpoint and pre-login redirect block. Omit to keep automatic redirects to the identity provider. |
+| `login.path` | Yes, when `login` is set | Local endpoint that starts the OIDC flow, such as `/auth/login`. The endpoint is handled by the policy and is not forwarded to your application. |
+| `login.redirect` | No | Local page for unauthenticated browser navigation requests, such as `/login`. The gateway appends `returnTo` so that the page can preserve the original destination in its link to `login.path`. Unauthenticated fetch requests receive `401 Unauthorized` with this page in the `Location` header. |
+| `logout` | No | Optional local logout endpoint block. Omit to disable local logout. |
+| `logout.path` | Yes, when `logout` is set | Local endpoint that clears the policy's session and login transaction cookies, such as `/auth/logout`. Submit logout with a same-origin `POST` form. |
+| `logout.redirect` | No | Local destination for the `303` redirect after logout. Defaults to `login.redirect` when set, or `/` when `login.redirect` is omitted. Make this destination public, or the next request starts a new login. |
 
 ## Access log enrichment
 
