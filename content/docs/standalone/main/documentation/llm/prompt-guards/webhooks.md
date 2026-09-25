@@ -46,19 +46,15 @@ EOF
 
 By default, agentgateway calls `POST /request` and `POST /response` on the webhook target.
 
-## Configure a webhook timeout
+## Configure webhook backend policies {#configure-webhook-backend-policies}
 
-Webhook calls use a 10-second timeout by default. The webhook target does not accept inline policies, so to change the timeout, define a named backend that sets `requestTimeout`, then reference that backend from the request and response guards.
+Webhook targets can use the same backend policy slot as other inline callouts. Set `target.policies` when the webhook target needs backend TLS, backend authentication, request header changes, transformations, or HTTP timeouts.
+
+A `host` value that starts with `https://` enables backend TLS with the system trust bundle. Set `target.policies.backendTLS` when the webhook target needs a custom trust bundle, mutual TLS, a server name override, or relaxed certificate checks.
 
 ```yaml
 cat <<EOF > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-backends:
-- name: content-safety-webhook
-  host: content-safety-webhook.example.com:8000
-  policies:
-    http:
-      requestTimeout: "35s"
 llm:
   models:
   - name: "*"
@@ -70,22 +66,68 @@ llm:
       request:
       - webhook:
           target:
-            backend: /content-safety-webhook
+            host: https://content-safety-webhook.example.com
+            policies:
+              backendTLS:
+                root: ./certs/root-cert.pem
+                hostname: content-safety-webhook.example.com
+      response:
+      - webhook:
+          target:
+            host: https://content-safety-webhook.example.com
+            policies:
+              backendTLS:
+                root: ./certs/root-cert.pem
+                hostname: content-safety-webhook.example.com
+EOF
+```
+
+| Setting | Description |
+| -- | -- |
+| `target.host` | The webhook target hostname, IP address, or URL. A value that starts with `https://` opens an HTTPS connection. |
+| `target.policies` | Backend policies for the connection from the gateway to the webhook target. |
+| `target.policies.backendTLS` | TLS settings for the webhook connection. Omit the field to use the system trust bundle with an `https://` host. |
+
+## Configure a webhook timeout
+
+Webhook calls use a 10-second timeout by default. Set `target.policies.http.requestTimeout` to change the timeout for an inline webhook target.
+
+```yaml
+cat <<EOF > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      model: gpt-3.5-turbo
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
+      request:
+      - webhook:
+          target:
+            host: content-safety-webhook.example.com:8000
+            policies:
+              http:
+                requestTimeout: "35s"
           failureMode: failClosed
       response:
       - webhook:
           target:
-            backend: /content-safety-webhook
+            host: content-safety-webhook.example.com:8000
+            policies:
+              http:
+                requestTimeout: "35s"
           failureMode: failClosed
 EOF
 ```
 
-Backends are referenced as `<namespace>/<name>`. Backends defined in local configuration have no namespace, so the reference starts with `/`.
+If multiple guards use the same webhook connection settings, define a named backend with `policies.http.requestTimeout`. Then reference that backend from each webhook target. Backends are referenced as `<namespace>/<name>`. Backends defined in local configuration have no namespace, so the reference starts with `/`.
 
 The timeout applies separately to each webhook call, so request and response guards each receive their own timeout. A timeout is treated as a webhook failure. By default, `failureMode` is `failClosed`, which rejects the request, even when `action: audit` is set. Change `failureMode` to `failOpen` to allow the request when the webhook times out or otherwise fails.
 
 > [!NOTE]
-> The backend host must include a port, and it must be an address that agentgateway can reach, such as `localhost:8000` for a webhook running alongside the proxy.
+> A host without an `http://` or `https://` scheme must include a port. The host must be an address that the gateway can reach, such as `localhost:8000` for a webhook running alongside the proxy.
 
 ## DeepKeep
 
