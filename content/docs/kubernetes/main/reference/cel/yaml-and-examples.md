@@ -93,6 +93,8 @@ mcpAuthorization:
   rules:
   # Allow anyone to call 'echo'
   - 'mcp.tool.name == "echo"'
+  # Allow anyone to list tools, but let only test-user call tools
+  - 'mcp.methodName == "tools/list" || (mcp.methodName == "tools/call" && jwt.sub == "test-user")'
   # Only the test-user can call 'add'
   - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
   # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
