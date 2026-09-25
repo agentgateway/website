@@ -51,7 +51,8 @@
 | nameOverride | string | Override the name to the Helm base release, which by default is 'agentgateway-standalone'.<br/><br/>The default value is `""`. |
 | namespaceOverride | string | Install the agentgateway resources in a different namespace than the Helm release namespace.<br/><br/>The default value is `""`. |
 | nodeSelector | object | The node labels that a node must have for the agentgateway proxy pod to be scheduled on it.<br/><br/>The default value is `{}`. |
-| oidc.cookieSecretName | string | The name of an existing secret that has the 'OIDC_COOKIE_SECRET' key. If unset, the chart references a '<release name>-oidc' secret as an optional secret.<br/><br/>The default value is `""`. |
+| oidc.cookieSecretName | string | The name of an existing secret that has the 'OIDC_COOKIE_SECRET' key. Defaults to '<release name>-oidc'. The secret is required when 'oidc.enabled' is true.<br/><br/>The default value is `""`. |
+| oidc.enabled | bool | Inject the OIDC cookie secret environment variable. Enable this when configuring OIDC authentication.<br/><br/>The default value is `false`. |
 | podAnnotations | object | Annotations to add to the agentgateway proxy pod. The defaults let Prometheus scrape the proxy's metrics endpoint.<br/><br/>The default value is `{"prometheus.io/path":"/metrics","prometheus.io/port":"15020","prometheus.io/scrape":"true"}`. |
 | podDisruptionBudget | object | podDisruptionBudget allows you to define minimum and maximum available pods during voluntary disruptions.<br/><br/>The default value is `{"enabled":false,"maxUnavailable":"","minAvailable":1,"unhealthyPodEvictionPolicy":""}`. |
 | podDisruptionBudget.unhealthyPodEvictionPolicy | string | UnhealthyPodEvictionPolicy defines the criteria for when unhealthy pods should be considered for eviction.<br/><br/>The default value is `""`. |

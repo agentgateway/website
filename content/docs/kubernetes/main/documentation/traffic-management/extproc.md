@@ -56,6 +56,8 @@ The ExtProc server is a gRPC interface that must be able to respond to events in
 
 To implement your own ExtProc server, make sure that you follow [Envoy's technical specification for an external processor](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/http/ext_proc/v3/ext_proc.proto#extensions-filters-http-ext-proc-v3-externalprocessor). This guide uses a sample ExtProc server that you can use to try out the ExtProc functionality.
 
+By default, agentgateway waits 10 seconds for the ExtProc server to answer when it opens a processing stream. When the wait runs out, the call fails and the `traffic.extProc.failureMode` setting decides what happens to the request. `FailClosed`, the default, rejects the request, and `FailOpen` lets it continue. To use a different timeout, apply a second {{< reuse "agw-docs/snippets/policy.md" >}} whose `targetRefs` names the ExtProc server, either as a Kubernetes Service or as an {{< reuse "agw-docs/snippets/backend.md" >}}, and set `backend.http.requestTimeout` on it.
+
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up an ExtProc server

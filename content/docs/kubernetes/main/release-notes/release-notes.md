@@ -44,6 +44,23 @@ The change is that a default import now writes tags onto the Amazon Bedrock mode
 
 **Actions to take**: Only Mantle-served Bedrock models change behavior, so the models that concern you are the ones tagged `mantle` and not `runtime`, other than `anthropic.claude*`. If you route traffic to any of those, regenerate your catalog once by hand, list those models from the `aws.bedrock` provider in the generated file, and check their `tags` against the request formats that your clients send. To keep the 1.5.x output, pin the source with `--source models.dev`. For the flags, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference. For the endpoint setting, see [Bedrock Mantle]({{< link-hextra path="/integrations/llm/providers/bedrock/#bedrock-mantle" >}}).
 
+### A `baseURL` with no path now sets the base path to `/` {#v16-baseurl-base-path}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3403 -->
+
+`spec.baseURL` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} sets the provider address and the base path that endpoint paths are appended to. A URL with no path, such as `https://api.openai.com`, used to leave the base path unset, and the upstream path then depended on the provider. For a built-in provider such as `OpenAI`, the path the client sent was forwarded as it arrived. For `Custom` and `Ollama`, the endpoint path was appended to a hardcoded `/v1`. A URL with no path now has a base path of `/` in both cases, which is the rule that a URL with a path already followed.
+
+| Configuration and client request | 1.5.x | 1.6.x |
+| --- | --- | --- |
+| Any provider, a URL with a path such as `https://api.openai.com/v1` | Completions go to `/v1/chat/completions` | Unchanged |
+| `OpenAI` with `https://api.openai.com`, client sends `POST /v1/chat/completions` in the OpenAI format | The client's path is forwarded as it arrived, so completions go to `/v1/chat/completions` | Completions go to `/chat/completions` |
+| `OpenAI` with `https://api.openai.com`, client sends `POST /v1/messages` in the Anthropic format | The client's path is forwarded as it arrived, so the translated request goes to `/v1/messages`, which OpenAI does not serve | Completions go to `/chat/completions` |
+| `Custom` or `Ollama` with a URL with no path, and no `spec.custom.formats[].path` | Completions go to `/v1/chat/completions` | Completions go to `/chat/completions` |
+
+The change matters most for the `OpenAI` provider. A base URL of `https://api.openai.com` does not reliably reach the OpenAI endpoint at `https://api.openai.com/v1` in either release. Going forward, set `spec.baseURL` to `https://api.openai.com/v1`, or omit `spec.baseURL` to use that address by default.
+
+**Actions to take**: Review every `spec.baseURL` that you set and add the path that the provider serves its API under. OpenAI serves its API under `/v1`, so `https://api.openai.com` becomes `https://api.openai.com/v1`. Check your `Ollama` models first, because `Ollama` requires `spec.baseURL` and also serves its OpenAI-compatible API under `/v1`, so an in-cluster address such as `http://ollama.default.svc.cluster.local:11434` becomes `http://ollama.default.svc.cluster.local:11434/v1`. A URL that already has a path, such as an in-cluster mock at `http://httpbun.default.svc.cluster.local:3090/llm`, is unaffected. For the field, see [Providers]({{< link-hextra path="/documentation/llm/models/about/#providers" >}}).
+
 ## 🌟 New features {#v16-new-features}
 
 ### Traffic management {#v16-features-traffic}
@@ -71,3 +88,21 @@ The stdout access log uses short, human-oriented field names, such as `http.path
 Only the built-in HTTP field set is renamed. Fields that you add with the `attributes` field keep the names that you give them, and an OTLP export is unaffected, because it already uses semantic convention attribute names.
 
 For the field rename table and an example, see [Use OpenTelemetry field names]({{< link-hextra path="/documentation/observability/access-logs/view/#preset" >}}).
+
+### Security {#v16-features-security}
+
+#### Destination and TLS SNI variables in network authorization {#v16-network-authz-sni}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3540 -->
+
+Previously, network authorization expressions could match only on the source of a connection.
+
+Now, the `destination.address`, `destination.port`, and `destination.hostname` CEL variables are available in `spec.frontend.networkAuthorization` expressions on an {{< reuse "agw-docs/snippets/policy.md" >}}.
+
+`destination.address` and `destination.port` are the listener address and port on agentgateway that the client connected to, not the backend that the connection is routed to.
+
+`destination.hostname` is the Server Name Indication (SNI) hostname from the TLS handshake, so an expression such as `destination.hostname == 'db.internal.example.com'` with `action: Require` admits only TLS connections for that hostname.
+
+`destination.hostname` is set only on Gateway listeners with `protocol: TLS`. It is unset on HTTP and HTTPS listeners, even when the client sends SNI, and for clients that send no SNI. A `Require` policy that references it denies every such connection, so apply it only to Gateways whose listeners use `protocol: TLS`.
+
+For an example, see [Restrict network access by TLS SNI]({{< link-hextra path="/documentation/security/authorization/#restrict-network-access-by-tls-sni" >}}).
