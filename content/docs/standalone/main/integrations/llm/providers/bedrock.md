@@ -28,8 +28,11 @@ Configure Amazon Bedrock as an LLM provider in agentgateway.
 #     accepted, which pins both the field name and the lowercase spelling of the
 #     value. Standalone rejects the capitalized Kubernetes spelling, so this
 #     block is what keeps the two modes from being copied into each other.
-#   * With the base config loaded, agentgateway serves the wildcard model and
-#     resolves it to the `bedrock` provider in the configured AWS region.
+#   * With the base config loaded, agentgateway lists at least one model on
+#     `/v1/models` and resolves the wildcard to the `bedrock` provider in the
+#     configured AWS region. The list is not checked for a literal `*`, because
+#     the default `llm.discovery: catalog` expands the wildcard into the catalog's
+#     Bedrock model IDs.
 #
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * "Authentication" - external dependency; AWS credentials are resolved per
@@ -351,16 +354,17 @@ curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
 ```
 
 {{< doc-test paths="bedrock" >}}
-# Confirm the base config serves the wildcard model and that `params.awsRegion`
-# reaches the resolved provider config.
+# Confirm the base config serves models and that `params.awsRegion` reaches the
+# resolved provider config. The default `llm.discovery: catalog` expands `*` into
+# catalog model IDs, so check for a non-empty list rather than a literal `*`.
 agentgateway -f config.yaml &
 AGW_PID=$!
 trap 'kill $AGW_PID 2>/dev/null' EXIT
 sleep 3
 
-SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '[.data[].id] | index("*") // "missing"')
-if [ "$SERVED" = "missing" ]; then
-  echo "FAIL: the wildcard model from the example config is not served"
+SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '.data | length')
+if [ "${SERVED:-0}" -eq 0 ]; then
+  echo "FAIL: /v1/models lists no models for the example config"
   exit 1
 fi
 RESOLVED=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '
@@ -373,5 +377,5 @@ if [ "$RESOLVED" != "bedrock|us-west-2" ]; then
   echo "FAIL: expected bedrock|us-west-2 but agentgateway resolved $RESOLVED"
   exit 1
 fi
-echo "✓ Wildcard model is served and resolves to bedrock in us-west-2"
+echo "✓ Models are served and the wildcard resolves to bedrock in us-west-2"
 {{< /doc-test >}}
