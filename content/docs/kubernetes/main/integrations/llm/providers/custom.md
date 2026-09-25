@@ -6,8 +6,8 @@ test: skip
 ---
 
 Use custom providers for unsupported, self-hosted, or non-standard LLM
-targets when you want to declare the provider target and supported API formats
-explicitly.
+targets when you want to declare the provider target and, when needed, the
+supported API formats explicitly.
 
 If your upstream already matches a first-class provider page, or the provider is 
 generic OpenAI-compatible without special path or format handling,
@@ -49,7 +49,9 @@ not.
 
 Set `custom.formats` to declare the provider-native formats that the upstream
 provider supports. You can also set `formats[].path` when the provider uses a
-non-default path for that format.
+non-default path for that format. Omit `custom.formats` when the provider uses
+request paths that agentgateway detects directly, such as `/v1/systemone`, or
+when the provider should receive only paths that it already understands.
 
 | Format | Default upstream path |
 |--------|-----------------------|
@@ -77,7 +79,8 @@ shapes, declare each supported format and optionally set a per-format path.
 | Rerank | `Rerank` |
 
 If no declared provider format can serve the client request format,
-agentgateway rejects the request.
+agentgateway rejects the request. When `custom.formats` is omitted, the
+provider is not a conversion target for other client request formats.
 
 ### Reasoning carryover between formats
 

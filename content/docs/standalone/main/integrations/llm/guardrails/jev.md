@@ -84,15 +84,11 @@ Routing the evaluation calls through agentgateway has several benefits. The webh
 # WHAT THIS TEST VALIDATES:
 #   * "Configure agentgateway": the upstream example that the page embeds is
 #     downloaded and accepted by agentgateway (--validate-only), so
-#     `passthrough: detect` with an empty `formats` list,
+#     the Jev model without a `formats` list or `passthrough` setting,
 #     `provider.custom.providerOverride`, the `guardrails.request`/`response`
 #     webhook targets, and the `config.modelCatalog` rate entries are all real
 #     fields with the documented nesting. The test validates the same file the
 #     github-yaml shortcode renders, so the page cannot drift from the example.
-#   * The `formats` row of the settings table: a negative control re-validates
-#     the same model with `passthrough` removed and asserts that agentgateway
-#     rejects it. If a future release stops requiring `passthrough` for an empty
-#     `formats` list, that row becomes wrong and this test fails.
 #
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * "Run the guardrail webhook server" - external dependency; the server needs
@@ -113,7 +109,7 @@ export TYPESAFE_API_KEY="${TYPESAFE_API_KEY:-test}"
 
 ## Configure agentgateway {#configure}
 
-The agentgateway repository ships this integration as a runnable example, so you download its configuration rather than write one. It defines two models: `gpt-5.6-luna`, which is the model that the guardrail protects, and `jev-latest`, which agentgateway passes through to TypeSafe.
+The agentgateway repository ships this integration as a runnable example, so you download its configuration rather than write one. It defines two models: `gpt-5.6-luna`, which is the model that the guardrail protects, and `jev-latest`, which agentgateway forwards to TypeSafe by detecting the `/v1/systemone` request path.
 
 1. Download the example configuration.
 
@@ -129,14 +125,14 @@ The agentgateway repository ships this integration as a runnable example, so you
 
    {{% github-yaml url="https://agentgateway.dev/examples/llm-guardrail-jev/config.yaml" %}}
 
+   The Jev model intentionally has no `provider.custom.formats` or `passthrough` setting. The `/v1/systemone` path is detected directly, so agentgateway forwards the Jev request without a conversion list.
+
    | Setting | Description |
    |---------|-------------|
    | `gateways.default.port` | The port that agentgateway serves proxy traffic on. The webhook server sends its evaluation calls to this port. |
    | `llm.models[].guardrails.request` | The guards that agentgateway runs on the prompt before it calls the LLM. The webhook target is the address of your guardrail webhook server, and it must include a port. Agentgateway calls `POST /request` on this target. |
    | `llm.models[].guardrails.response` | The guards that agentgateway runs on the completion before it returns it to the client. Agentgateway calls `POST /response` on this target. Omit this field to check prompts only. |
    | `provider.custom.providerOverride` | The provider name that agentgateway reports for this model in logs, traces, and cost data. Set it to `typesafe` so that the name matches the `config.modelCatalog` entry that holds the rates. |
-   | `provider.custom.formats` | The API formats that agentgateway translates for this provider. Jev has no chat completion API to translate, so the list is empty. An empty list is valid only when `passthrough` is also set. Without `passthrough`, agentgateway fails to start with `custom provider for model jev-latest must specify at least one format`. |
-   | `passthrough` | How agentgateway handles a request that it does not translate. `detect` forwards the body unmodified while still reading token usage for telemetry and cost. Set `opaque` to forward it without reading anything. For more information, see [Passthrough]({{< link-hextra path="/documentation/llm/api-types/passthrough/" >}}). |
    | `params.baseUrl` | The TypeSafe API host. Agentgateway appends the path that the client sent, so a request to `/v1/systemone` reaches `https://api.typesafe.ai/v1/systemone`. |
    | `params.apiKey` | Your TypeSafe API key. Agentgateway attaches it to each evaluation call, so the webhook server never holds the key. |
    | `config.modelCatalog` | The rates that agentgateway uses to price each Jev call. Jev bills input tokens only, so the output rate is `0`. The example prices all three model names, because `jev-latest` and `jev-preview` are aliases that TypeSafe can repoint to a different version. |
@@ -155,32 +151,6 @@ The agentgateway repository ships this integration as a runnable example, so you
 # The visible step downloaded the upstream example, so this validates the file
 # that the page displays, not a transcription of it.
 agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
-
-{{< doc-test paths="jev" >}}
-# Negative control for the `formats` row of the settings table: the same Jev
-# model with `passthrough` removed must be rejected.
-cat <<'EOF' > config-no-passthrough.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 4000
-llm:
-  models:
-  - name: jev-latest
-    provider:
-      custom:
-        providerOverride: typesafe
-        formats: []
-    params:
-      baseUrl: https://api.typesafe.ai
-      apiKey: "$TYPESAFE_API_KEY"
-EOF
-if agentgateway -f config-no-passthrough.yaml --validate-only 2>/dev/null; then
-  echo "FAIL: the settings table says an empty 'formats' list needs 'passthrough', but agentgateway accepted the config without it"
-  exit 1
-fi
-echo "✓ An empty 'formats' list is rejected without 'passthrough', as the settings table documents"
 {{< /doc-test >}}
 
 ## Run the guardrail webhook server {#webhook}

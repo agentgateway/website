@@ -37,10 +37,16 @@ export PERPLEXITY_API_KEY="${PERPLEXITY_API_KEY:-test}"
 
 ## Configuring a custom provider
 
-With a custom provider, you provide the API endpoint and a list of formats it supports.
-Agentgateway will automatically handle mapping between the incoming format and the supported formats.
+With a custom provider, you provide the API endpoint. You can also provide a
+list of formats that the provider supports. Agentgateway maps the incoming
+format to one of the supported formats when the list is present.
 
 The `formats` list decides which conversion an incoming request takes, and the conversions do not all carry the same feature set. A provider that declares `completions` carries extended-thinking history across turns, while one that declares `responses` and not `completions` drops it without an error. For what each conversion keeps and drops, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
+
+Omit `formats` when the provider uses request paths that agentgateway detects
+directly, such as `/v1/systemone`, or when the provider should receive only
+paths that it already understands. A provider with no `formats` list is not a
+conversion target for other client request formats.
 
 Below shows an example of connecting to [Perplexity](https://www.perplexity.ai/), which exposes an OpenAI-compatible API for search-augmented models and does not currently have a first-class provider.
 
