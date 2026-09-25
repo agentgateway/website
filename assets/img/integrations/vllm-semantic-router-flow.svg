@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 510" font-family="Figtree, system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-labelledby="title description">
+  <title id="title">Model selection with agentgateway and vLLM Semantic Router</title>
+  <desc id="description">A client sends a request to agentgateway. Agentgateway calls vLLM Semantic Router through ExtProc and receives a model decision. Agentgateway enforces model access, forwards the request to the selected backend, and records telemetry.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M1,1 L8,4.5 L1,8" fill="none" stroke="#64748B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="510" rx="16" fill="#F8FAFC"/>
+  <g fill="none" stroke="#64748B" stroke-width="2" marker-end="url(#arrow)">
+    <path d="M205 265 H320"/>
+    <path d="M420 205 V125"/>
+    <path d="M490 125 V205"/>
+    <path d="M590 265 H735"/>
+    <path d="M455 335 V395"/>
+  </g>
+  <g font-size="13" fill="#475569">
+    <text x="263" y="247" text-anchor="middle">request</text>
+    <text x="400" y="161" text-anchor="end">ExtProc request</text>
+    <text x="510" y="178">model decision</text>
+    <text x="662" y="247" text-anchor="middle">forward request</text>
+  </g>
+  <rect x="35" y="224" width="170" height="82" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="120" y="272" text-anchor="middle" font-size="21" font-weight="700" fill="#0F172A">Client</text>
+  <rect x="320" y="205" width="270" height="130" rx="16" fill="#6D28D9"/>
+  <g text-anchor="middle" fill="#FFFFFF">
+    <text x="455" y="241" font-size="23" font-weight="700">agentgateway</text>
+    <text x="455" y="272" font-size="15">enforces model access</text>
+    <text x="455" y="300" font-size="15">forwards to selected backend</text>
+  </g>
+  <rect x="310" y="35" width="290" height="90" rx="16" fill="#F5F3FF" stroke="#C4B5FD"/>
+  <g text-anchor="middle" fill="#5B21B6">
+    <text x="455" y="71" font-size="20" font-weight="700">vLLM Semantic Router</text>
+    <text x="455" y="100" font-size="15">evaluates configured signals</text>
+  </g>
+  <rect x="735" y="215" width="230" height="100" rx="14" fill="#FFFFFF" stroke="#99D5CC"/>
+  <g text-anchor="middle">
+    <text x="850" y="254" font-size="20" font-weight="700" fill="#0F172A">Selected backend</text>
+    <text x="850" y="283" font-size="15" fill="#0F766E">serves the selected model</text>
+  </g>
+  <rect x="295" y="395" width="320" height="80" rx="14" fill="#FFFFFF" stroke="#99D5CC"/>
+  <g text-anchor="middle">
+    <text x="455" y="425" font-size="19" font-weight="700" fill="#0F172A">Telemetry</text>
+    <text x="455" y="453" font-size="14" fill="#0F766E">models, tokens, latency, optional cost</text>
+  </g>
+</svg>
