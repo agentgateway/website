@@ -109,7 +109,7 @@ export TYPESAFE_API_KEY="${TYPESAFE_API_KEY:-test}"
 
 ## Configure agentgateway {#configure}
 
-The agentgateway repository ships this integration as a runnable example, so you download its configuration rather than write one. It defines two models: `gpt-5.6-luna`, which is the model that the guardrail protects, and `jev-latest`, which agentgateway forwards to TypeSafe by detecting the `/v1/systemone` request path.
+The agentgateway repository ships this integration as a runnable example, so you download its configuration rather than write one. It defines two models: `gpt-5.6-luna`, which is the model that the guardrail protects, and `jev-latest`, whose `/v1/systemone` requests are forwarded to TypeSafe without format conversion.
 
 1. Download the example configuration.
 
@@ -125,7 +125,7 @@ The agentgateway repository ships this integration as a runnable example, so you
 
    {{% github-yaml url="https://agentgateway.dev/examples/llm-guardrail-jev/config.yaml" %}}
 
-   The Jev model intentionally has no `provider.custom.formats` or `passthrough` setting. The `/v1/systemone` path is detected directly, so agentgateway forwards the Jev request without a conversion list.
+   The `jev-latest` model has no `provider.custom.formats` list, because Jev has no chat completion API to convert requests to. For more information, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
    | Setting | Description |
    |---------|-------------|
