@@ -38,8 +38,7 @@ Configure Amazon Bedrock as an LLM provider in agentgateway.
 #     need real AWS credentials and a Bedrock model grant.
 #   * "Token counting", "Extended thinking and reasoning", and "Structured
 #     outputs" - external dependency; each bills a live Bedrock completion. Their
-#     example responses, the `reasoning_effort` budget table, and the Nova 2
-#     `none` behavior are display-only.
+#     example responses and the `reasoning_effort` budget table are display-only.
 #   * That format translation to Bedrock's Converse API is correct - a different
 #     layer; verifying the translation needs a live Bedrock upstream.
 #   * Which endpoint a given model actually resolves to under
@@ -280,21 +279,28 @@ Example response:
 }
 ```
 
-## Extended thinking and reasoning {#extended-thinking-and-reasoning}
+## Extended thinking and reasoning
 
-Extended thinking and reasoning lets models reason through complex problems before generating a response. To request Bedrock reasoning for supported models, add the OpenAI `reasoning_effort` field to your request. The proxy translates supported values to Bedrock's native format.
+Extended thinking and reasoning lets models reason through complex problems before generating a response. To opt in, add the OpenAI `reasoning_effort` field to your request. The value is added to the `additionalModelRequestFields` of the Bedrock request, in a form that depends on the model family. The family is chosen by matching the model ID.
 
-Claude models that support extended thinking, such as `us.anthropic.claude-opus-4-20250514-v1:0`, use the thinking-budget values in the following table.
+| Model ID contains | What the Bedrock request receives |
+|---|---|
+| `gpt-oss` or `deepseek` | `reasoning_effort`, with the value from your request unchanged. |
+| `openai.`, other than `gpt-oss` models | `reasoning.effort`, with the value from your request unchanged. |
+| `amazon.nova-2-` | `reasoningConfig` with `maxReasoningEffort` set to `low`, `medium`, or `high`. If you set `none` or omit `reasoning_effort`, no reasoning configuration is sent. Any other value is rejected. |
+| Anything else | Claude thinking fields, as described in the rest of this section. |
 
-Use the `reasoning_effort` field to control how much reasoning the model applies.
+For Claude models that support adaptive thinking, such as Claude Opus 4.6 and Claude Sonnet 4.6, the request is sent with `thinking.type` set to `adaptive` and the effort level in `output_config.effort`, instead of a token budget. The value `minimal` is sent as `low`. Which models take this form depends on the `adaptive_thinking` tag in the [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). The built-in catalog sets this tag for these models.
+
+Other Claude models, such as `us.anthropic.claude-opus-4-20250514-v1:0`, receive a thinking budget.
 
 | `reasoning_effort` value | Thinking budget |
 |---|---|
 | `minimal` or `low` | 1,024 tokens |
 | `medium` | 2,048 tokens |
-| `high` or `xhigh` | 4,096 tokens |
-
-For Amazon Nova 2 models, set `reasoning_effort` to `low`, `medium`, or `high`. To send a Nova 2 request without a Bedrock reasoning configuration, omit `reasoning_effort` or set `reasoning_effort` to `none`. The `minimal` and `xhigh` aliases apply to Claude thinking budgets only.
+| `high` | 4,096 tokens |
+| `xhigh` | 8,192 tokens |
+| `max` | 16,384 tokens |
 
 Note that `max_tokens` must be greater than the thinking budget, and the minimum thinking budget is 1,024 tokens.
 
