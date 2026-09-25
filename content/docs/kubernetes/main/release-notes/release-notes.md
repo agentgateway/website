@@ -107,10 +107,22 @@ Now, the `destination.address`, `destination.port`, and `destination.hostname` C
 
 For an example, see [Restrict network access by TLS SNI]({{< link-hextra path="/documentation/security/authorization/#restrict-network-access-by-tls-sni" >}}).
 
-#### Backend authentication and guardrail controls {#v16-backend-auth-guardrail-controls}
+#### Custom key for CA certificate references {#v16-ca-cert-ref-key}
 
-Backend TLS CA certificate references can now set `key` to read a CA bundle from a Secret or ConfigMap key other than `ca.crt`. Omitting the field still reads `ca.crt`.
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3419 -->
 
-AWS backend authentication can now set `assumeRole.externalId` when an AWS Security Token Service (STS) AssumeRole trust policy requires `sts:ExternalId`. The value is validated against the STS length and character limits and is part of the assumed-credential cache key.
+A `caCertificateRefs` entry in the backend TLS settings of an {{< reuse "agw-docs/snippets/policy.md" >}}, {{< reuse "agw-docs/snippets/backend.md" >}}, or {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} now takes an optional `key` field. Set it to read the CA bundle from a key other than `ca.crt` in the referenced ConfigMap or Secret, such as a key that trust-manager or an external secret store writes. Omit the field to keep reading `ca.crt`.
 
-Cloud provider guardrails can now set `failureMode` to choose whether provider errors fail open or closed. These guardrails now fail closed by default instead of allowing traffic on provider errors.
+The field does not apply to a BackendTLSPolicy or to the `frontendValidation` field of a Gateway listener, which still read `ca.crt`. For an example, see [CA certificate in a Secret]({{< link-hextra path="/documentation/security/backendtls/#secret-ca" >}}).
+
+### LLM {#v16-features-llm}
+
+#### Failure mode for provider guardrails {#v16-guardrail-failure-mode}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3618 -->
+
+The `failureMode` field, which was previously available only on `webhook` guards, is now available on `openAIModeration`, `bedrockGuardrails`, and `googleModelArmor` guards. The field sets what happens when the provider is unreachable or returns an error. The default, `FailClosed`, rejects the request or response. Set `failureMode: FailOpen` to let the content continue unchanged instead.
+
+For most traffic, the default keeps the 1.5.x behavior, because a provider error already rejected the request or response. Two paths change. On a realtime WebSocket connection, and for streaming responses that are evaluated as they arrive, a provider error from one of these guards used to let the content through. It now rejects the content, unless you set `failureMode: FailOpen`.
+
+For more information, see [Provider failures]({{< link-hextra path="/documentation/llm/guardrails/overview/#provider-failures" >}}).
