@@ -11,23 +11,21 @@ As a result, agentgateway offers some of the most comprehensive support for the 
 
 You can review the conformance test results by version in the [Gateway API docs](https://gateway-api.sigs.k8s.io/docs/implementations/list/#conformance-levels). For example, as of the time of this writing, agentgateway is the only implementation of Gateway API that passes all conformance tests for Gateway API v1.3. 
 
-In addition to supporting all Core and Extended Gateway API features, Gateway API has a number of "experimental"
-features that are in development.
-Agentgateway supports many of these experimental features, as shown in the following table.
+Gateway API features can graduate from the experimental channel to the standard channel independently of agentgateway releases. The following table distinguishes agentgateway support from upstream channel status. Features marked standard still require experimental CRDs when used with Gateway API versions before their graduation.
 
-| Feature                                                                   | GEP                                                       | Status                                  |
-|---------------------------------------------------------------------------|-----------------------------------------------------------|-----------------------------------------|
-| Client Certificate Validation for TLS terminating at the Gateway Listener | [GEP-91](https://gateway-api.sigs.k8s.io/geps/gep-91)     | ✅ Supported                             |
-| HTTP Auth                                                                 | [GEP-1494](https://gateway-api.sigs.k8s.io/geps/gep-1494) | ✅ Supported                             |
-| Session Persistence                                                       | [GEP-1619](https://gateway-api.sigs.k8s.io/geps/gep-1619) | ❌ Unsupported                           |
-| ListenerSets                                                              | [GEP-1713](https://gateway-api.sigs.k8s.io/geps/gep-1713/) | ✅ Supported                             |
-| HTTPRoute Retries                                                         | [GEP-1731](https://gateway-api.sigs.k8s.io/geps/gep-1731) | ✅ Supported                             |
-| Gateway API Interaction with Multi-Cluster Services                       | [GEP-1748](https://gateway-api.sigs.k8s.io/geps/gep-1748) | ❌ Unsupported                           |
-| CORS Filter                                                               | [GEP-1767](https://gateway-api.sigs.k8s.io/geps/gep-1767) | ✅ Supported                             |
-| TLS based passthrough Route / TLSRoute                                    | [GEP-2643](https://gateway-api.sigs.k8s.io/geps/gep-2643) | ✅ Supported                             |
-| Complete Backend mutual TLS Configuration                                 | [GEP-3155](https://gateway-api.sigs.k8s.io/geps/gep-3155) | ❌ Unsupported (supported via extension) |
-| Retry Budgets                                                             | [GEP-3388](https://gateway-api.sigs.k8s.io/geps/gep-3388) | ❌ Unsupported                           |
-| Gateway TLS Updates for HTTP/2 Connection Coalescing                      | [GEP-3567](https://gateway-api.sigs.k8s.io/geps/gep-3567) | ✅ Supported                             |
+| Feature                                                                   | GEP                                                       | Status                                  | Gateway API channel |
+|---------------------------------------------------------------------------|-----------------------------------------------------------|-----------------------------------------| --- |
+| Client Certificate Validation for TLS terminating at the Gateway Listener | [GEP-91](https://gateway-api.sigs.k8s.io/geps/gep-91)     | ✅ Supported                             | Standard since 1.5 |
+| HTTP Auth                                                                 | [GEP-1494](https://gateway-api.sigs.k8s.io/geps/gep-1494) | ✅ Supported                             | Experimental |
+| Session Persistence                                                       | [GEP-1619](https://gateway-api.sigs.k8s.io/geps/gep-1619) | ❌ Unsupported                           | Experimental |
+| ListenerSets                                                              | [GEP-1713](https://gateway-api.sigs.k8s.io/geps/gep-1713/) | ✅ Supported                             | Standard since 1.5 |
+| HTTPRoute Retries                                                         | [GEP-1731](https://gateway-api.sigs.k8s.io/geps/gep-1731) | ✅ Supported                             | Experimental |
+| Gateway API Interaction with Multi-Cluster Services                       | [GEP-1748](https://gateway-api.sigs.k8s.io/geps/gep-1748) | ❌ Unsupported                           | Experimental |
+| CORS Filter                                                               | [GEP-1767](https://gateway-api.sigs.k8s.io/geps/gep-1767) | ✅ Supported                             | Standard since 1.5 |
+| TLS based passthrough Route / TLSRoute                                    | [GEP-2643](https://gateway-api.sigs.k8s.io/geps/gep-2643) | ✅ Supported                             | Standard since 1.5 |
+| Complete Backend mutual TLS Configuration                                 | [GEP-3155](https://gateway-api.sigs.k8s.io/geps/gep-3155) | ❌ Unsupported (supported via extension) | Standard since 1.5 |
+| Retry Budgets                                                             | [GEP-3388](https://gateway-api.sigs.k8s.io/geps/gep-3388) | ❌ Unsupported                           | Experimental |
+| Gateway TLS Updates for HTTP/2 Connection Coalescing                      | [GEP-3567](https://gateway-api.sigs.k8s.io/geps/gep-3567) | ✅ Supported                             | Standard since 1.5 |
 
 ## Extensions
 
