@@ -68,7 +68,7 @@ Agentgateway includes the following built-in patterns for common PII types that 
 | `email` | Email addresses |
 | `phoneNumber` | Phone numbers |
 | `ssn` | Social Security Numbers |
-| `creditCard` | Credit card numbers |
+| `creditCard` | Credit card numbers that pass the Luhn checksum. Digit groups can be separated by spaces or hyphens. The checksum runs before the guard action, so a number that fails it is not masked, rejected, or audited. |
 | `caSin` | Canadian Social Insurance Numbers |
 
 ### Custom regex patterns
