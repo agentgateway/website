@@ -93,7 +93,7 @@ The following CEL variables are available in access log policies but are **not**
 
 | Variable | Availability | Description |
 |----------|-------------|-------------|
-| `mcp.methodName` | Post-request | The MCP JSON-RPC method name, such as `tools/call` or `tools/list`. |
+| `mcp.methodName` | Request-time | The MCP JSON-RPC method name, such as `tools/call` or `tools/list`. |
 | `mcp.sessionId` | Post-request | The MCP session ID. |
 | `mcp.tool.name` | Request-time | The name of the tool being called. |
 | `mcp.tool.target` | Request-time | The target backend handling the tool call. |
