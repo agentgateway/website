@@ -46,7 +46,7 @@ sequenceDiagram
 5. The modified headers are added to the request.
 6. The request is forwarded to the backend service.
 
-## Failure modes
+## Failure modes {#failure-modes}
 
 You can choose whether you want agentgateway to forward requests if the external processing server is unavailable with the `extProc.failureMode` setting. Choose between the following modes: 
 
@@ -54,6 +54,8 @@ You can choose whether you want agentgateway to forward requests if the external
 * **failClosed**: Block requests if the request to the external processing server fails. This is the default behavior.
 
 By default, agentgateway waits 10 seconds for the external processing server to answer when opening a processing stream. When the wait runs out, the call counts as a failure and the `failureMode` setting decides what happens to the request. To use a different timeout, set `extProc.policies.http.requestTimeout`.
+
+If the connection fails before request-body streaming to the external processing server starts, `failOpen` forwards the original body to the backend. `failClosed` returns an error instead. This behavior applies to streamed request body processing, including `extProc.processingOptions.requestBodyMode: fullDuplexStreamed`.
 
 ## Compatibility
 
@@ -252,4 +254,3 @@ Review the following limits.
 
 > [!WARNING]
 > The expression selects the address that agentgateway connects to, so whatever supplies its input decides where traffic goes. When the expression reads `extproc.*`, you are trusting the external processor to choose the destination. Treat that processor as part of the gateway's trust boundary, run it over a connection you control, and do not build the target from client-supplied headers.
-
