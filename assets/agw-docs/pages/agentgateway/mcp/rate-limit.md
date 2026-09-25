@@ -23,6 +23,10 @@ This is the key insight for sizing MCP rate limits: **count sessions, not raw re
 
 If you need to differentiate between tool calls and other MCP operations (such as to allow unlimited `tools/list` requests but cap `tools/call` requests), use [global rate limiting with CEL descriptors](#global-per-tool) to inspect the JSON-RPC method body.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+Rate limit policies that target an HTTPRoute with an MCP backend can also read the parsed MCP request through the `mcp` CEL variable, so a descriptor can check `mcp.methodName` instead of parsing `request.body`, such as `mcp.methodName == "tools/call" ? "tools/call" : "other"`.
+{{< /version >}}
+
 ### Response headers
 
 {{< reuse "agw-docs/snippets/ratelimit-headers.md" >}}
