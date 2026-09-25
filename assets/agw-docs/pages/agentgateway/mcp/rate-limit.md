@@ -526,7 +526,7 @@ The following steps show how to set up global rate limiting infrastructure and c
    ```
 
    {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
-   Starting in version 1.6, the rate-limited `trigger-long-running-operation` calls return a tool result instead of failing the client, similar to the following. The text includes the limit and the remaining count from the rate limit service.
+   The rate-limited `trigger-long-running-operation` calls return a tool result instead of failing the client, similar to the following. The text includes the limit and the remaining count from the rate limit service.
 
    ```json
    {
