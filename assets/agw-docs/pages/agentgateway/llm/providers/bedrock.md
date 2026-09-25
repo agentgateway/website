@@ -350,19 +350,23 @@ Prompt caching is configured by using the `backend.ai.promptCaching` fields in t
    }
    ```
 
-## Extended thinking and reasoning
+## Extended thinking and reasoning {#extended-thinking-and-reasoning}
 
-Extended thinking and reasoning lets models reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding the OpenAI `reasoning_effort` field to your request. Agentgateway translates this to Bedrock's native thinking budget automatically.
+Extended thinking and reasoning lets models reason through complex problems before generating a response. To request Bedrock reasoning for supported models, add the OpenAI `reasoning_effort` field to your request. The proxy translates supported values to Bedrock's native thinking budget.
 
-**Note**: Extended thinking and reasoning requires a Claude model that supports it, such as `us.anthropic.claude-opus-4-20250514-v1:0`.
+Claude models that support extended thinking, such as `us.anthropic.claude-opus-4-20250514-v1:0`, use the thinking-budget values in the following table.
 
-Use the `reasoning_effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
+Use the `reasoning_effort` field to control how much reasoning the model applies.
 
 | `reasoning_effort` value | Thinking budget |
 |---|---|
 | `minimal` or `low` | 1,024 tokens |
 | `medium` | 2,048 tokens |
 | `high` or `xhigh` | 4,096 tokens |
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+For Amazon Nova 2 models, set `reasoning_effort` to `low`, `medium`, or `high`. To send a Nova 2 request without a Bedrock reasoning configuration, omit `reasoning_effort` or set `reasoning_effort` to `none`. The `minimal` and `xhigh` aliases apply to Claude thinking budgets only.
+{{% /version %}}
 
 **Cloud Provider LoadBalancer**:
 ```sh
