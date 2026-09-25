@@ -46,11 +46,14 @@ sequenceDiagram
 * **Steps 9-11: Token exchange**. The gateway exchanges the authorization code for an ID token using PKCE.
 * **Steps 12-15: Session cookie**. The gateway sets an encrypted session cookie containing the ID token claims. Subsequent requests use this cookie.
 
-### Session management
+### Session cookies {#session-cookies}
 
-Review the following details about session management.
+Review the following details about session cookies.
 
 - Session cookies are encrypted and tamper-proof.
+- Session cookie payloads are compressed only when the result is smaller. Compression helps ID tokens with large claim sets fit in browser cookie limits.
+- Session cookies written before compression continue to decode.
+- A protected response can include its own cookies and the OIDC session cookie.
 - The gateway always requests the `openid` scope to obtain an ID token.
 - The gateway uses PKCE automatically to protect against authorization code interception.
 
