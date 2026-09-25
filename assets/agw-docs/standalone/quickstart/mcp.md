@@ -98,7 +98,7 @@ You can change the target and port configurations in the UI. Any updates you mak
 
 ### Step 5: Connect and list tools in the Playground
 
-1. Go to the [Playground](http://localhost:15000/ui/playground/).
+1. Go to the [Playground](http://localhost:15000/ui/mcp/playground/).
 2. In the **Testing** card, check the **Connection** URL (such as `http://localhost:3000/`) and click **Connect**. The UI connects to the MCP target and lists its tools.
 3. Confirm that **Available Tools** shows tools from the server, such as `echo` or various `get` commands.
 
