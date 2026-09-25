@@ -48,7 +48,7 @@ By default, agentgateway calls `POST /request` and `POST /response` on the webho
 
 ## Configure webhook backend policies
 
-To connect to a webhook target over TLS, authenticate to it, or tune the connection, add backend policies in the `target.policies` field. The following policies are supported: `backendTLS`, `backendAuth`, `backendTunnel`, `http` (such as `requestTimeout`), `tcp` (such as `connectTimeout`), `requestHeaderModifier`, and `transformations`. For every field, see the [configuration schema]({{< link-hextra path="/reference/configuration/schema/" >}}).
+Connect to a webhook target over TLS by authenticating or by tuning the connection with backend policies in the `target.policies` field. The following policies are supported: `backendTLS`, `backendAuth`, `backendTunnel`, `http` (such as `requestTimeout`), `tcp` (such as `connectTimeout`), `requestHeaderModifier`, and `transformations`. For every field, see the [configuration schema]({{< link-hextra path="/reference/configuration/schema/" >}}).
 
 A `host` value that starts with `https://` enables backend TLS with the system trust bundle on port 443, unless the URL sets another port. Set `target.policies.backendTLS` when the webhook target needs a custom trust bundle, mutual TLS, a server name override, or relaxed certificate checks.
 
