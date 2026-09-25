@@ -71,10 +71,10 @@ make framework-test                 # full suite
 make framework-test-report          # re-open the last HTML report
 ```
 
-Each target builds the site first with `hugo160 --gc --minify` (the local
-build pin), then runs the harness via `DOCS_TEST_CONFIG=./.docs-test.toml`.
-The HTML report auto-opens after the run; Ctrl+C dismisses the report
-server. CI pins to Hugo 0.160.1 via [`peaceiris/actions-hugo@v3`](https://github.com/peaceiris/actions-hugo).
+Each target builds the site first with `hugo --gc --minify`, then runs the
+harness via `DOCS_TEST_CONFIG=./.docs-test.toml`. The HTML report auto-opens
+after the run; Ctrl+C dismisses the report server. CI pins Hugo to 0.160.1 via
+[`peaceiris/actions-hugo@v3`](https://github.com/peaceiris/actions-hugo).
 
 ### CI
 
