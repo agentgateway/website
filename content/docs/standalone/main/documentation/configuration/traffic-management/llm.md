@@ -15,6 +15,6 @@ For more information on connecting to LLM providers, see [LLM consumption]({{< l
 |`overrides`| Configure override values for settings in the request.                                             |
 |`prompts`| Append or prepend additional prompts to requests.                                                  |
 |`routes`| Control the type of LLM request, such as OpenAI Completions, Anthropic Messages, or Embeddings. |
-|`promptGuard`| Authorize requests based on their prompts.                                                         |
+|`promptGuard`| Authorize requests based on their prompts. For personally identifiable information (PII) detection, `promptGuard` treats a number as credit card data only when the number passes the Luhn checksum. |
 |`modelAliases`| Configure aliases for model names.                                                                 |
 |`promptCaching`| Configure automatic caching controls in requests.                                                  |
