@@ -875,4 +875,3 @@ HTTP/1.1 200 OK
 Unlike the other guardrail examples, the request is not blocked. The matched credential is replaced with a `<masked>` placeholder in the prompt before it is forwarded to the LLM. To verify the masking is working, check that the model's response does not contain the original credential value.
 
 
-
