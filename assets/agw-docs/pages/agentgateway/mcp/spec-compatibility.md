@@ -23,17 +23,17 @@ When you federate multiple MCP servers into one endpoint, agentgateway takes the
 > [!NOTE]
 > Because most environments run a mix of MCP versions for the foreseeable future, this compatibility handling is on by default and requires no configuration. You do not need to upgrade all of your MCP servers to the newer specification at once.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+## List pagination
+
+When an MCP server returns tools, prompts, resources, or resource templates across multiple pages, the list response includes a `nextCursor` value. To get the next page, the client sends the cursor back in the next list request to the same endpoint.
+
+With one upstream target, the client gets the upstream server's cursor unchanged. When an endpoint federates several targets, the client gets one combined cursor that tracks each target that still has pages left. The combined cursor is encrypted, so treat it as an opaque value and pass it back without parsing or changing it. On the next request, each saved cursor goes only to its original target, and targets that already returned their last page are skipped. If a combined cursor was changed, or names a target that the endpoint does not federate, the list request fails with a JSON-RPC error that includes the message `invalid list cursor`.
+{{< /version >}}
+
 ## Response caching
 
 The `2026-07-28` revision adds caching controls to responses such as `server/discover` and `tools/list`. Because agentgateway can apply policies (such as authorization, external authentication, or external processing) that make a response specific to an individual request, it cannot safely tell clients that a proxied response is cacheable. To guarantee correct behavior, agentgateway disables caching on the responses that it proxies.
-
-{{< version exclude-if="1.5.x" >}}
-## List pagination {#list-pagination}
-
-MCP list responses can include a `nextCursor` value when a server returns tools, prompts, resources, or resource templates across multiple pages. The gateway preserves that cursor, so the client can request the next page through the same gateway endpoint.
-
-With one upstream target, the gateway passes the upstream cursor through unchanged. When one endpoint federates several targets, the gateway returns one opaque cursor that records the unfinished targets. On the next list request, the gateway sends each saved upstream cursor only to its original target. The gateway skips targets that already finished their list response.
-{{< /version >}}
 
 ## What you can still configure
 
