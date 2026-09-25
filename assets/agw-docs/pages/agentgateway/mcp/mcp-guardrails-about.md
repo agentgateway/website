@@ -156,8 +156,8 @@ When a processor denies a call, agentgateway returns a JSON-RPC error to the cli
 | `INVALID` | Invalid request |
 | `UNKNOWN` | Internal error |
 
-The server can also return an explicit JSON-RPC error payload to override the default.
+The error `message` is the server's `reason`. The server can also set the optional `mcp_error` field to a JSON value, which the client receives in the error's `data` field. The `mcp_error` payload does not change the error code or message. If the payload is not valid JSON, it is ignored.
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
-For `tools/call`, the table applies only to the `UNKNOWN` code and to internal failures, such as an unreachable server when the failure mode denies the request. Every other `tools/call` denial returns an HTTP 200 response with a tool result where `isError: true` and the text content is the server's `reason`. The explicit error payload is not included in that tool result. For all other MCP methods, the table applies to every code.
+For `tools/call`, the table applies only to the `UNKNOWN` code and to internal failures, such as an unreachable server when the failure mode denies the request. Every other `tools/call` denial returns an HTTP 200 response with a tool result where `isError: true` and the text content is the server's `reason`. The `mcp_error` payload is not included in that tool result. For all other MCP methods, the table applies to every code.
 {{< /version >}}
