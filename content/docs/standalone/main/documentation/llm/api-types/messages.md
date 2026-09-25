@@ -72,16 +72,11 @@ The first three rows are values that a `custom` provider declares in its `format
 
 Because `completions` comes before `responses`, a provider that advertises both is unaffected by the Responses conversion. That conversion applies to a provider that advertises `responses` and not `completions`.
 
-### Converting to the Chat Completions format {#converting-to-the-chat-completions-format}
+### Converting to the Chat Completions format
 
 The Chat Completions conversion carries extended-thinking history in both directions, so a thinking session on a converted route keeps its prior reasoning from one turn to the next. This behavior matters when your client speaks Messages but the provider that you route to advertises only `completions`, such as a self-hosted inference engine. Self-hosted engines that report reasoning as `reasoning_content` also accept it back on an assistant message, which is what makes the carryover possible. To declare that an upstream speaks `completions`, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
 On the way out, an assistant `thinking` block in the message history is sent as `reasoning_content`. A turn made of thinking alone is still sent.
-
-When a converted request includes tools, some GPT-5 model names do not support
-reasoning with tools. For those GPT-5 model names, agentgateway sends
-`reasoning_effort: "none"` to disable reasoning. Other models, such as GPT-4o,
-do not receive `reasoning_effort`, because those models reject the field.
 
 On the way back, the `reasoning_content` in a buffered response becomes a `thinking` block ahead of the text block. In a stream, a thinking content block opens with `thinking_delta` events, adds a `signature_delta` when the engine sends a signature, and stops before the text or tool-use block that follows. Reasoning that the engine withholds arrives with an empty text and a signature that carries it, so the block is sent on the signature alone, in both the buffered and the streamed form.
 
@@ -92,6 +87,8 @@ Three cases do not round-trip.
 | A turn with more than one signed thinking block | The thinking text is joined, but no `reasoning_signature` is sent. The signature is carried only when the turn has exactly one signed block. |
 | A `redacted_thinking` block | Dropped, because it holds nothing that an OpenAI-compatible engine can replay. |
 | A provider that advertises `responses` and not `completions` | The thinking history is dropped from the converted request, with no error and no warning, so the model loses its prior reasoning. See [Converting to the Responses format](#converting-to-the-responses-format). |
+
+Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. In the Chat Completions conversion, a request with tools to one of these models is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped. Every other model receives the reasoning effort that the client asked for, if any.
 
 ### Converting to the Responses format
 
