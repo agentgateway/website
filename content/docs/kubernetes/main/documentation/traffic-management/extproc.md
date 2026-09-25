@@ -50,7 +50,7 @@ sequenceDiagram
     Gateway->>Downstream: 8. Forward response
 ```
 
-### ExtProc server considerations {#extproc-server-considerations}
+### ExtProc server considerations
 
 The ExtProc server is a gRPC interface that must be able to respond to events in the lifecycle of an HTTP request. When ExtProc is enabled and a request or response is received on the gateway proxy, the proxy communicates with the ExtProc server by using bidirectional gRPC streams.
 
@@ -58,7 +58,7 @@ To implement your own ExtProc server, make sure that you follow [Envoy's technic
 
 By default, agentgateway waits 10 seconds for the ExtProc server to answer when it opens a processing stream. When the wait runs out, the call fails and the `traffic.extProc.failureMode` setting decides what happens to the request. `FailClosed`, the default, rejects the request, and `FailOpen` lets it continue. To use a different timeout, apply a second {{< reuse "agw-docs/snippets/policy.md" >}} whose `targetRefs` names the ExtProc server, either as a Kubernetes Service or as an {{< reuse "agw-docs/snippets/backend.md" >}}, and set `backend.http.requestTimeout` on it.
 
-If the connection fails before request-body streaming to the ExtProc server starts, `FailOpen` forwards the original body to the upstream application. `FailClosed` returns an error instead. This behavior applies to streamed request body processing, including `traffic.extProc.processingOptions.requestBodyMode: FullDuplexStreamed`.
+For requests with a body, `FailOpen` applies only while no request body bytes have been sent to the ExtProc server. If the server can't be reached or fails before that point, the original request, including its body, is forwarded to the upstream application. After the request body starts streaming to the server, a failure returns an error even with `FailOpen`. In the default `FullDuplexStreamed` request body mode (`traffic.extProc.processingOptions.requestBodyMode`), the body starts streaming as soon as the processing stream is established, so `FailOpen` applies only when that stream can't be established.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
