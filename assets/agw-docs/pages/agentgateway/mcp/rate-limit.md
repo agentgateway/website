@@ -97,6 +97,8 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
 
 1. Apply a rate limit directly to the MCP HTTPRoute. The following example allows 5 tool calls per second with a burst of up to 15 (5 base + 10 burst) before the request is rate limited and a 429 HTTP response is returned. The burst headroom is important for MCP clients: during session initialization, an agent typically fires `initialize` → `tools/list` → several `tools/call` requests back-to-back. Without burst capacity, the MCP server would hit the limit before doing any real work.
 
+   {{< version include-if="1.5.x" >}}For an MCP JSON-RPC request, the 429 is converted to an HTTP 200 response that carries a JSON-RPC error with code `-32003`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}For an MCP JSON-RPC request, the 429 is converted to an HTTP 200 response. A rate-limited `tools/call` request gets a tool result with `isError: true`, so that MCP clients can show a tool-execution error instead of treating the session as broken. Other requests, such as `initialize` and `tools/list`, get a JSON-RPC error with code `-32003`.{{< /version >}}
+
    ```yaml {paths="mcp-local-rate-limit"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -210,6 +212,22 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
    ```
 
    The first 5 complete tool call sequences succeed before the rate limit is reached. After that, subsequent requests are rate limited.
+
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+   The preceding failures happen when the bucket runs out on an `initialize` or `tools/list` request. If the bucket runs out on a `tools/call` request, the client gets a tool result similar to the following. The text includes the retry time and the bucket size, which is the base rate plus the burst.
+
+   ```json
+   {
+     "isError": true,
+     "content": [
+       {
+         "type": "text",
+         "text": "rate limit exceeded (retry after 0s; limit 15, remaining 0)"
+       }
+     ]
+   }
+   ```
+   {{< /version >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ## Claim-level rate limits {#claim-level}
@@ -429,7 +447,7 @@ The following steps show how to set up global rate limiting infrastructure and c
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
-   # trigger-long-running-operation: 3/min limit — hits 429 on the 4th call
+   # trigger-long-running-operation: 3/min limit, so the 4th call is rate limited
    for i in $(seq 1 5); do
      npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
        --cli "http://$INGRESS_GW_ADDRESS/mcp" \
@@ -453,7 +471,7 @@ The following steps show how to set up global rate limiting infrastructure and c
    {{% /tab %}}
    {{% tab name="Port-forward for local testing" %}}
    ```sh
-   # trigger-long-running-operation: 3/min limit — hits 429 on the 4th call
+   # trigger-long-running-operation: 3/min limit, so the 4th call is rate limited
    for i in $(seq 1 5); do
      npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
        --cli "http://localhost:8080/mcp" \
@@ -510,6 +528,22 @@ The following steps show how to set up global rate limiting infrastructure and c
      "content": [{ "type": "text", "text": "Echo: Hello World!" }]
    }
    ```
+
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+   The rate-limited `trigger-long-running-operation` calls return a tool result instead of failing the client, similar to the following. The text includes the limit and the remaining count from the rate limit service.
+
+   ```json
+   {
+     "isError": true,
+     "content": [
+       {
+         "type": "text",
+         "text": "rate limit exceeded (retry after <seconds>s; limit 3, remaining 0)"
+       }
+     ]
+   }
+   ```
+   {{< /version >}}
 
 ## Cleanup
 
