@@ -352,7 +352,7 @@ Prompt caching is configured by using the `backend.ai.promptCaching` fields in t
 
 ## Extended thinking and reasoning
 
-Extended thinking and reasoning lets models reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding the OpenAI `reasoning_effort` field to your request. Agentgateway translates this to Bedrock's native thinking budget automatically.
+Extended thinking and reasoning lets models reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding the OpenAI `reasoning_effort` field to your request. Agentgateway translates this setting to Bedrock's native thinking budget automatically.
 
 **Note**: Extended thinking and reasoning requires a Claude model that supports it, such as `us.anthropic.claude-opus-4-20250514-v1:0`.
 
@@ -365,6 +365,20 @@ Use the `reasoning_effort` field to control how much reasoning the model applies
 | `high` | 4,096 tokens |
 | `xhigh` | 8,192 tokens in agentgateway 1.4 and later. 4,096 tokens in earlier versions, including 2.2.x. |
 | `max` | 16,384 tokens. Supported in agentgateway 1.4 and later. |
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+For Claude models that support adaptive thinking, the request is sent with `thinking.type` set to `adaptive` and the effort level in `output_config.effort`, instead of a thinking budget. The value `minimal` is sent as `low`. Which models take this form depends on the `adaptive_thinking` tag in the [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). The built-in catalog sets this tag for these models.
+
+`reasoning_effort` also works with the following non-Claude model families. The family is chosen by matching the model ID, and the value is added to the `additionalModelRequestFields` of the Bedrock request.
+
+| Model ID contains | What the Bedrock request receives |
+|---|---|
+| `gpt-oss` or `deepseek` | `reasoning_effort`, with the value from your request unchanged. |
+| `openai.`, other than `gpt-oss` models | `reasoning.effort`, with the value from your request unchanged. |
+| `amazon.nova-2-` | `reasoningConfig` with `maxReasoningEffort` set to `low`, `medium`, or `high`. If you set `none` or omit `reasoning_effort`, no reasoning configuration is sent. Any other value is rejected. |
+
+Any other model ID is treated as a Claude model.
+{{% /version %}}
 
 **Cloud Provider LoadBalancer**:
 ```sh
