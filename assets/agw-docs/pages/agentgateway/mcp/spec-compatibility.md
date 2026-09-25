@@ -27,6 +27,14 @@ When you federate multiple MCP servers into one endpoint, agentgateway takes the
 
 The `2026-07-28` revision adds caching controls to responses such as `server/discover` and `tools/list`. Because agentgateway can apply policies (such as authorization, external authentication, or external processing) that make a response specific to an individual request, it cannot safely tell clients that a proxied response is cacheable. To guarantee correct behavior, agentgateway disables caching on the responses that it proxies.
 
+{{< version exclude-if="1.5.x" >}}
+## List pagination {#list-pagination}
+
+MCP list responses can include a `nextCursor` value when a server returns tools, prompts, resources, or resource templates across multiple pages. The gateway preserves that cursor, so the client can request the next page through the same gateway endpoint.
+
+With one upstream target, the gateway passes the upstream cursor through unchanged. When one endpoint federates several targets, the gateway returns one opaque cursor that records the unfinished targets. On the next list request, the gateway sends each saved upstream cursor only to its original target. The gateway skips targets that already finished their list response.
+{{< /version >}}
+
 ## What you can still configure
 
 Version negotiation, sessionless protocol support, and [MCP Apps]({{< link-hextra path="/documentation/mcp/apps" >}}) all work automatically. 
