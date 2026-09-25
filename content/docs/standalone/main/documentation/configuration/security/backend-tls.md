@@ -25,7 +25,6 @@ cp certs/cert.pem certs/root-cert.pem
 
 By default, requests to backends use HTTP.
 To use HTTPS, configure a backend {{< gloss "TLS (Transport Layer Security)" >}}TLS{{< /gloss >}} policy.
-For custom prompt guard webhooks, set `target.policies.backendTLS` on the webhook target. For more information, see [Configure webhook backend policies]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/#configure-webhook-backend-policies" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
@@ -78,6 +77,9 @@ routes:
 ```
 {{< /tab >}}
 {{< /tabs >}}
+
+> [!NOTE]
+> To use TLS for a custom prompt guard webhook, set `target.policies.backendTLS` on the webhook target instead. For more information, see [Configure webhook backend policies]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/#configure-webhook-backend-policies" >}}).
 
 {{< doc-test paths="backend-tls" >}}
 # WHAT THIS TEST VALIDATES:
