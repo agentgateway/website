@@ -91,7 +91,16 @@ Also, check out the rate limiting guides for other use cases:
 
 Local rate limiting runs in-process on each agentgateway proxy replica. The following steps show how to apply a per-route rate limit and verify its behavior with rapid tool call sessions.
 
-1. Apply a rate limit directly to the MCP HTTPRoute. The following example allows 5 tool calls per second with a burst of up to 15 (5 base + 10 burst) before the request is rate limited and a 429 HTTP response is returned. The burst headroom is important for MCP clients: during session initialization, an agent typically fires `initialize` → `tools/list` → several `tools/call` requests back-to-back. Without burst capacity, the MCP server would hit the limit before doing any real work.
+1. Apply a rate limit directly to the MCP HTTPRoute. The following example allows 5 tool calls per second with a burst of up to 15 (5 base + 10 burst) before the request is rate limited.
+
+   {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+   For released versions before 1.6.x, MCP clients usually surface the failure as an HTTP or JSON-RPC rate-limit error.
+   {{< /version >}}
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+   For a `tools/call` request, the client receives a tool-execution error result with `isError: true`. Other MCP requests, such as `initialize` and `tools/list`, continue to receive a JSON-RPC rate-limit error.
+   {{< /version >}}
+
+   The burst headroom is important for MCP clients: during session initialization, an agent typically fires `initialize` -> `tools/list` -> several `tools/call` requests back-to-back. Without burst capacity, the MCP server would hit the limit before doing any real work.
 
    ```yaml {paths="mcp-local-rate-limit"}
    kubectl apply -f- <<EOF
@@ -204,6 +213,22 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
    Failed with exit code: 1
    ...
    ```
+
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+   If the bucket is exhausted by the `tools/call` request, the MCP client receives an errored tool result instead:
+
+   ```json
+   {
+     "isError": true,
+     "content": [
+       {
+         "type": "text",
+         "text": "rate limit exceeded (retry after <seconds>s; limit 5, remaining 0)"
+       }
+     ]
+   }
+   ```
+   {{< /version >}}
 
    The first 5 complete tool call sequences succeed before the rate limit is reached. After that, subsequent requests are rate limited.
 
@@ -425,7 +450,7 @@ The following steps show how to set up global rate limiting infrastructure and c
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
-   # trigger-long-running-operation: 3/min limit — hits 429 on the 4th call
+   # trigger-long-running-operation: 3/min limit
    for i in $(seq 1 5); do
      npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
        --cli "http://$INGRESS_GW_ADDRESS/mcp" \
@@ -449,7 +474,7 @@ The following steps show how to set up global rate limiting infrastructure and c
    {{% /tab %}}
    {{% tab name="Port-forward for local testing" %}}
    ```sh
-   # trigger-long-running-operation: 3/min limit — hits 429 on the 4th call
+   # trigger-long-running-operation: 3/min limit
    for i in $(seq 1 5); do
      npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
        --cli "http://localhost:8080/mcp" \
@@ -486,9 +511,28 @@ The following steps show how to set up global rate limiting infrastructure and c
    {
      "content": [{ "type": "text", "text": "Operation started..." }]
    }
+   ```
+   {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+   ```
    Failed to call tool trigger-long-running-operation: Failed to list tools: Streamable HTTP error: Error POSTing to endpoint: rate limit exceeded
    Failed with exit code: 1
+   ```
+   {{< /version >}}
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+   ```json
+   {
+     "isError": true,
+     "content": [
+       {
+         "type": "text",
+         "text": "rate limit exceeded"
+       }
+     ]
+   }
+   ```
+   {{< /version >}}
 
+   ```
    # echo calls (10/min limit) - all succeed
    {
      "content": [{ "type": "text", "text": "Echo: Hello World!" }]

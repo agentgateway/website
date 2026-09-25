@@ -27,6 +27,14 @@ When you federate multiple MCP servers into one endpoint, agentgateway takes the
 
 The `2026-07-28` revision adds caching controls to responses such as `server/discover` and `tools/list`. Because agentgateway can apply policies (such as authorization, external authentication, or external processing) that make a response specific to an individual request, it cannot safely tell clients that a proxied response is cacheable. To guarantee correct behavior, agentgateway disables caching on the responses that it proxies.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+## Tool-call error results {#tool-call-error-results}
+
+For `tools/call`, ExtMCP guardrail denials and rate limits return an HTTP 200 JSON-RPC response with `result.isError: true`. The response content carries the denial or rate-limit text so that MCP clients can show the failure as a tool-execution error instead of treating the session as broken.
+
+Clients that negotiate MCP protocol version `2026-07-28` also receive `result.resultType: complete`. Older clients do not receive `resultType`, for compatibility with pre-2026 clients. Denials for other MCP methods still use JSON-RPC errors, and internal ExtMCP failures remain protocol errors.
+{{< /version >}}
+
 ## What you can still configure
 
 Version negotiation, sessionless protocol support, and [MCP Apps]({{< link-hextra path="/documentation/mcp/apps" >}}) all work automatically. 

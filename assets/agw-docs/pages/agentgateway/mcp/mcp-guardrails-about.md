@@ -15,7 +15,14 @@ Common use cases include the following:
 
 ## How it works
 
-When a client calls an MCP method that you opt in, agentgateway calls your ExtMCP server before it forwards the request, after it receives the response, or both. At each call, the server can pass the message through unchanged, return a mutated message, or deny the call with an error that agentgateway returns to the client as a JSON-RPC error.
+When a client calls an MCP method that you opt in, agentgateway calls your ExtMCP server before it forwards the request, after it receives the response, or both. At each call, the server can pass the message through unchanged, return a mutated message, or deny the call with an error.
+
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+Agentgateway returns denials to the client as JSON-RPC errors.
+{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+For `tools/call`, agentgateway returns the denial as a tool-execution error result with `isError: true`. For other methods, agentgateway returns a JSON-RPC error.
+{{< /version >}}
 
 ```mermaid
 sequenceDiagram
@@ -28,7 +35,7 @@ sequenceDiagram
     AGW->>Ext: CheckRequest (method, tool, params, headers)
     alt Request denied
         Ext-->>AGW: AuthorizationError
-        AGW-->>Client: JSON-RPC error
+        AGW-->>Client: Denied response
     else Request passed or mutated
         Ext-->>AGW: Pass request or return mutated params
         AGW->>MCP: Forward request
@@ -36,7 +43,7 @@ sequenceDiagram
         AGW->>Ext: CheckResponse (result)
         alt Response denied
             Ext-->>AGW: AuthorizationError
-            AGW-->>Client: JSON-RPC error
+            AGW-->>Client: Denied response
         else Response passed or mutated
             Ext-->>AGW: Pass or return mutated response
             AGW-->>Client: Result
@@ -48,7 +55,7 @@ The server returns one of three outcomes for each call:
 
 * **Pass**: Allow the request or response unchanged.
 * **Mutate**: Replace the JSON-RPC `params` (request phase) or `result` (response phase) before agentgateway forwards it.
-* **Deny**: Reject the call with a JSON-RPC error that is returned to the client. The server can deny a call in either the request phase or the response phase.
+* **Deny**: Reject the call. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}The client receives a JSON-RPC error.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}For `tools/call`, the client receives a tool-execution error result with `isError: true`. For other methods, the client receives a JSON-RPC error.{{< /version >}} The server can deny a call in either the request phase or the response phase.
 
 ### Request mutation trust boundary
 
@@ -143,7 +150,12 @@ Keep the following behaviors in mind when you design a policy:
 
 ### Error codes
 
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 When a processor denies a call, agentgateway returns a JSON-RPC error to the client. The server's authorization code maps to a JSON-RPC error code:
+{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+When a processor denies a call, agentgateway maps the server's authorization code to a JSON-RPC error code. For `tools/call`, agentgateway returns `isError: true` instead of a JSON-RPC error, unless the code is `UNKNOWN`. For other methods and internal failures, the mapped JSON-RPC error is returned to the client.
+{{< /version >}}
 
 | ExtMCP code | JSON-RPC code |
 |-------------|---------------|
