@@ -128,10 +128,6 @@ Point at a Secret that holds an access key. Use this form when the gateway does 
 
 The `assumeRole` field calls STS with the ambient credentials of the gateway, and signs with the credentials that STS returns. The gateway caches the assumed credentials and refreshes them before they expire. Concurrent requests that need the same credentials share one STS call.
 
-{{< version exclude-if="1.5.x" >}}
-If the role trust policy requires `sts:ExternalId`, set `externalId` in the same `assumeRole` block. Credentials that use different external IDs do not share one cache entry.
-{{< /version >}}
-
 Create the IAM role in AWS before you set the field. The role needs a permissions policy that allows the actions of the service that you call, such as `bedrock:InvokeModel` for Amazon Bedrock. It also needs a trust policy that allows the ambient identity of the gateway to assume it. Which permissions you attach therefore depends on the service that the backend fronts. For the steps, see [Create a role to delegate permissions to an AWS service](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-service.html) in the AWS documentation.
 
 The optional session name and session tags exist for cost attribution. Both accept either a static value or a Common Expression Language (CEL) expression that the gateway evaluates against each request. One gateway can therefore attribute cost per user or per team.
@@ -158,8 +154,6 @@ spec:
         serviceName: bedrock
         assumeRole:
           roleArn: arn:aws:iam::123456789012:role/agentgateway-bedrock
-{{< version exclude-if="1.5.x" >}}          externalId: tenant-a:prod/12345
-{{< /version >}}
           sessionNameExpression: jwt.sub
           tags:
           - key: team
@@ -173,9 +167,8 @@ EOF
 
 | Field | Description |
 | -- | -- |
-| `assumeRole.roleArn` | Required ARN of the IAM role to assume. |
-{{< version exclude-if="1.5.x" >}}| `assumeRole.externalId` | External ID to pass to STS when the role trust policy requires `sts:ExternalId`. The value must be 2 to 1224 characters and match `[\w+=,.@:/-]`. |
-{{< /version >}}
+| `assumeRole.roleArn` | Required ARN of the IAM role to assume. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+| `assumeRole.externalId` | External ID to pass to STS when the trust policy of the role requires `sts:ExternalId`. The value must be 2 to 1224 characters and match `[\w+=,.@:/-]`. |{{< /version >}}
 | `assumeRole.sessionName` | Static session name (`RoleSessionName`), which appears in AWS CloudTrail and in the Cost and Usage Report. Two to 64 characters, matching `[\w+=,.@-]`. Omit the field and AWS generates a random name. |
 | `assumeRole.sessionNameExpression` | CEL expression that the gateway evaluates against each request to produce the session name, such as `jwt.sub`. Cannot be combined with `sessionName`. |
 | `assumeRole.tags` | Session tags that the gateway passes to STS. Each tag sets `key`, plus exactly one of `value` for a static value or `expression` for a CEL expression. STS allows at most 50 tags for one role session. |
@@ -183,13 +176,22 @@ EOF
 > [!NOTE]
 > A session tag reaches the Cost and Usage Report as `resourceTags/user:<TagKey>`, but only after you activate the tag key as a cost allocation tag in the AWS Billing console. Until you do, the tag is attached to the session and does not appear in any report.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+If the trust policy of the role requires `sts:ExternalId`, set `assumeRole.externalId` to the external ID that the trust policy expects.
+
+```yaml
+assumeRole:
+  roleArn: arn:aws:iam::123456789012:role/agentgateway-bedrock
+  externalId: tenant-a:prod/12345
+```
+{{< /version >}}
+
 ## Troubleshoot
 
 | Symptom | Cause |
 | -- | -- |
-| The API server rejects the policy with `secretRef and assumeRole are mutually exclusive`. | Assumed credentials always come from the environment. Remove `secretRef`, and give the ambient identity permission to assume the role. |
-{{< version exclude-if="1.5.x" >}}| The API server rejects the policy with an `externalId` validation error. | The external ID is shorter than 2 characters, longer than 1224 characters, or contains a character outside `[\w+=,.@:/-]`. |
-{{< /version >}}
+| The API server rejects the policy with `secretRef and assumeRole are mutually exclusive`. | Assumed credentials always come from the environment. Remove `secretRef`, and give the ambient identity permission to assume the role. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+| The API server rejects the policy with `assumeRole.externalId in body should match '^[\w+=,.@:/-]+$'`, or with a length error on `assumeRole.externalId`. | The external ID contains a character outside `[\w+=,.@:/-]`, or is shorter than 2 or longer than 1224 characters. |{{< /version >}}
 | The API server rejects the policy with `exactly one of value or expression must be set`. | A session tag sets both `value` and `expression`, or neither. |
 | The API server rejects the policy with `at most one of the fields in [sessionName sessionNameExpression] may be set`. | The policy sets both session name fields. Choose the static field or the expression field. |
 | The backend returns a signature mismatch. | The signing region or service name does not match the service that the gateway called. Set `region` and `serviceName` explicitly. A signature also breaks when a policy changes the request after it is signed, so check for a transformation policy on the same route. |
