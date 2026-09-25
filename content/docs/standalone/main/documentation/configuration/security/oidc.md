@@ -8,7 +8,7 @@ Attaches to: {{< badge content="Route" path="/documentation/configuration/routes
 
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
-OIDC browser authentication provides built-in OpenID Connect login for browser-based clients. Unauthenticated requests are automatically redirected to the identity provider's login page. After successful authentication, the user's session is maintained with encrypted cookies.
+OIDC browser authentication provides built-in OpenID Connect login for browser-based clients. Unauthenticated document navigations are automatically redirected to the identity provider's login page. When the browser identifies a request as non-navigation, such as a fetch request, the gateway returns `401 Unauthorized` so the caller can start a document navigation. After successful authentication, the user's session is maintained with encrypted cookies.
 
 The OIDC policy uses the OAuth 2.0 Authorization Code Flow with PKCE (Proof Key for Code Exchange) for secure browser-based authentication without requiring a separate proxy like oauth2-proxy.
 
@@ -40,7 +40,7 @@ sequenceDiagram
     AGW->>Browser: Return protected resource
 ```
 
-* **Steps 1-3: Unauthenticated request**. When a browser request arrives without a valid session cookie, the gateway redirects the user to the identity provider's login page.
+* **Steps 1-3: Unauthenticated request**. When a browser document navigation arrives without a valid session cookie, the gateway redirects the user to the identity provider's login page.
 * **Steps 4-6: Login**. The user authenticates with the identity provider.
 * **Steps 7-8: Callback**. After login, the identity provider redirects back to the `redirectURI` with an authorization code.
 * **Steps 9-11: Token exchange**. The gateway exchanges the authorization code for an ID token using PKCE.
@@ -216,7 +216,7 @@ For a complete runnable setup, including a Compose file that starts a preconfigu
 | `issuer` | Yes | OIDC provider issuer URL. Used for discovery and ID token validation. |
 | `clientId` | Yes | OAuth2 client identifier registered with your identity provider. |
 | `clientSecret` | Yes | OAuth2 client secret for token exchange. |
-| `redirectURI` | Yes | Absolute callback URI handled by the gateway, such as `http://localhost:3000/oauth/callback`. |
+| `redirectURI` | Yes | Absolute callback URI handled by the gateway, such as `http://localhost:3000/oauth/callback`. After login from a document navigation, the identity provider sends the browser back to this URI. Browser fetch requests return `401 Unauthorized` instead of being redirected. |
 | `scopes` | No | Additional OAuth2 scopes to request. `openid` is always included automatically. |
 | `discovery` | No | Override the OIDC discovery document location. If omitted, uses `${issuer}/.well-known/openid-configuration`. |
 | `authorizationEndpoint` | No | Explicit authorization endpoint. Overrides the value from discovery. |
