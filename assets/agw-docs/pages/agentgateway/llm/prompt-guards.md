@@ -10,11 +10,11 @@ Regex-based prompt guards let you inspect LLM requests and responses against cus
 
 | Pattern | Description |
 | -- | -- |
-| `email` | Email addresses |
-| `phoneNumber` | Phone numbers |
-| `ssn` | Social Security Numbers |
-| `creditCard` | Credit card numbers |
-| `caSin` | Canadian Social Insurance Numbers |
+| `Email` | Email addresses |
+| `PhoneNumber` | Phone numbers |
+| `Ssn` | Social Security Numbers |
+| `CreditCard` | Credit card numbers |
+| `CaSin` | Canadian Social Insurance Numbers |
 
 ### Custom regex patterns
 
@@ -775,7 +775,7 @@ Request blocked: request contains harmful, hateful, or dangerous advisory conten
 
 ### PII detection with built-ins
 
-Use agentgateway's built-in PII recognizers to reject requests that contain actual PII values — credit card numbers, Social Security Numbers, email addresses, phone numbers, and Canadian Social Insurance Numbers — rather than matching by keyword. The built-in detectors use pattern and checksum validation to detect PII data.
+Use agentgateway's built-in PII recognizers to reject requests that contain actual PII values — credit card numbers, Social Security Numbers, email addresses, phone numbers, and Canadian Social Insurance Numbers — rather than matching by keyword. The built-in detectors match PII by pattern.
 
 ```yaml
 kubectl apply -f - <<'EOF'
