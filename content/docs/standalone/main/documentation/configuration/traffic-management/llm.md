@@ -18,3 +18,9 @@ For more information on connecting to LLM providers, see [LLM consumption]({{< l
 |`promptGuard`| Authorize requests based on their prompts.                                                         |
 |`modelAliases`| Configure aliases for model names.                                                                 |
 |`promptCaching`| Configure automatic caching controls in requests.                                                  |
+
+## Model resolution order {#llm-model-resolution-standalone}
+
+The model that reaches the provider is resolved before provider-specific routes, request formats, token-count behavior, and response conversion are selected. Resolution starts with the client request model, uses a provider `params.model` value when you set one, then applies LLM request transformations and `modelAliases`. The final resolved model is used for provider-specific behavior, such as Azure Foundry Claude routing, Bedrock endpoint selection, and Vertex Gemini path selection.
+
+A request must have a model after resolution. If the client request omits `model`, set a provider `params.model` value or a transformation that supplies one.
