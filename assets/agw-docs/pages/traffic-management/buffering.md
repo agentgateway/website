@@ -18,6 +18,8 @@ For example, a policy that runs in the `PreRouting` phase buffers before route s
 
 For large requests that must be buffered and that exceed the default buffer limit, {{< reuse "/agw-docs/snippets/agentgateway.md" >}} either disconnects the connection to the downstream service if headers were already sent, or returns a 413 HTTP response code. To make sure that large requests can be sent and received, you can use `maxBufferSize` to specify the maximum number of bytes that can be buffered between the gateway and the downstream service. The buffer limit is configured at the Gateway level via a {{< reuse "agw-docs/snippets/policy.md" >}}.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} The value that you set replaces both defaults, so LLM requests use that value instead of 32 MiB.{{< /version >}}
 
+{{< version exclude-if="1.5.x" >}}For MCP traffic, if a JSON-RPC request body exceeds this limit, the client receives HTTP 413 and a response body that includes the configured byte limit. Malformed JSON that stays within the limit receives HTTP 400.{{< /version >}}
+
 ### Choose a buffer limit
 
 The value you choose depends on how large a body your policies must be able to read and how much memory you are willing to spend on buffering.
