@@ -25,6 +25,8 @@ Virtual models let you change which model serves a request without asking client
 
 Three routing strategies are available, and each virtual model uses exactly one of them.
 
+After a virtual model selects a target, the gateway rewrites the request so that the provider receives the selected model. This rewrite applies to JSON request bodies and multipart form data, such as `/v1/audio/transcriptions`. For multipart requests, file fields and non-model fields are preserved while each `model` form field is rewritten.
+
 | Strategy | Selects a target by | Use it for |
 |----------|---------------------|------------|
 | `weighted` | Relative weight. | Traffic splitting, canary rollouts, and A/B tests. |
