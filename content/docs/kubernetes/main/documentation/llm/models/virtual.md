@@ -33,6 +33,8 @@ Three routing strategies are available, and each virtual model uses exactly one 
 
 Targets are usually `Internal` models, so clients cannot request them directly and they stay out of `/v1/models`. For more on visibility, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
 
+If one target does not resolve, the control plane still generates the virtual model with the targets that can resolve. The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` reports `ResolvedRefs: False` with `reason: Invalid`. Valid targets can still serve requests. If weighted routing selects an invalid target, the request fails with `virtual_model_target_not_found`. If conditional routing matches an invalid target, the request also fails instead of falling through to another target. Failover omits invalid targets from the active provider groups.
+
 > [!NOTE]
 > Virtual models must be `Public`, and they cannot set `spec.policies`. Configure policies on the concrete target models instead.
 

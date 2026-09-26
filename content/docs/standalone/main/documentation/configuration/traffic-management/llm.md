@@ -14,7 +14,7 @@ For more information on connecting to LLM providers, see [LLM consumption]({{< l
 |`defaults`| Configure default values for settings in the request. For example, `temperature: 0.7`.             |
 |`overrides`| Configure override values for settings in the request.                                             |
 |`prompts`| Append or prepend additional prompts to requests.                                                  |
-|`routes`| Control the type of LLM request, such as OpenAI Completions, Anthropic Messages, or Embeddings. |
+|`routes`| Control the type of LLM request, such as OpenAI Completions, Anthropic Messages, or Embeddings. Omit `routes` to keep the default route formats enabled when you configure other LLM policies. |
 |`promptGuard`| Authorize requests based on their prompts.                                                         |
 |`modelAliases`| Configure aliases for model names.                                                                 |
 |`promptCaching`| Configure automatic caching controls in requests.                                                  |
