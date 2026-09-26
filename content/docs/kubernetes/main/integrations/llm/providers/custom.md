@@ -79,6 +79,16 @@ shapes, declare each supported format and optionally set a per-format path.
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
 
+When an Anthropic messages request is converted to a `Completions` or
+`Responses` provider, the converted error starts with
+`capability_rejected: prompt_too_long` if the upstream returns an HTTP 400
+context-overflow error. The original upstream message follows the marker.
+Clients such as Claude Code use the marker to compact the prompt and retry.
+The marker is added for confirmed context-overflow errors, such as the
+`context_length_exceeded` code or provider messages that say the prompt exceeds
+the context window. Other HTTP statuses, unrelated error codes, and messages
+that already contain `capability_rejected:` keep the upstream message.
+
 ### Reasoning carryover between formats
 
 Extended-thinking history is carried between the `Messages` and `Completions`
