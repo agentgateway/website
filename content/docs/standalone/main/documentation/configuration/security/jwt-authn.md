@@ -32,6 +32,8 @@ JWT authentication requires a few parameters:
 * The **audiences** lists allowed audience values (`aud`). The token's `aud` claim must contain at least one of these values. Omit the field to accept any audience. An empty list also accepts any audience, and a non-empty list rejects a token that has no `aud` claim.
 * The **jwks** defines the list of public keys to verify against.
 
+When more than one JWT issuer configuration applies to a request, agentgateway selects the provider by the token's `iss` claim and `kid` header. Then, agentgateway verifies the signature and claims. This selection lets multiple issuers publish the same `kid` value without validating a token against the wrong provider.
+
 If a token includes a not-before claim (`nbf`), agentgateway rejects the token when the `nbf` value is more than 60 seconds in the future. The `nbf` claim is optional by default. To require it, add `nbf` to `requiredClaims`.
 
 > [!IMPORTANT]

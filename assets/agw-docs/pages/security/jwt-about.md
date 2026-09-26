@@ -34,6 +34,8 @@ JWT authentication uses asymmetric cryptography with public and private key pair
 2. **Key distribution**: The identity provider publishes its public keys through a JWKS (JSON Web Key Set) endpoint. Each key has a unique key ID (`kid`).
 3. **Token validation**: Agentgateway reads the `kid` from the JWT header and fetches the matching public key from the configured JWKS endpoint. The JWKS endpoint can be added as an inline JWKS or a remote JWKS address in the {{< reuse "agw-docs/snippets/policy.md" >}}. After the agentgateway proxy fetched the public key, it uses the public key to verify the JWT signature.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} If the JWT includes an `nbf` claim, the agentgateway proxy also rejects the token when the `nbf` value is more than 60 seconds in the future.{{< /version >}}
 
+{{< version exclude-if="1.5.x" >}}When multiple JWT providers are configured, the agentgateway proxy selects the provider by the token's `iss` claim and `kid` header. Then, the proxy verifies the signature and claims. This selection is important for multi-tenant identity providers, because a `kid` is unique only within one issuer's JWKS.{{< /version >}}
+
 Review the following diagram to understand the JWT request flow: 
 ```mermaid
 sequenceDiagram
