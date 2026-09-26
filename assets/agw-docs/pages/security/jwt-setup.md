@@ -314,6 +314,8 @@ Review other common JWT auth configuration examples that you can add to your {{<
 
 You can configure multiple JWT providers to accept tokens from different identity providers. The following example uses Keycloak and the Auth0 identity providers. 
 
+{{< version exclude-if="1.5.x" >}}When a request includes a JWT, the agentgateway proxy selects a provider by the token's `iss` claim and `kid` header. This selection lets two issuers publish the same `kid` value without the proxy validating the token against the wrong provider.{{< /version >}}
+
 ```yaml
 
 traffic:
