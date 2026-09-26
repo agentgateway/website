@@ -57,7 +57,7 @@ The diagram shows content flowing through multiple guard layers. Each layer can:
 - **Mask**: Replace sensitive patterns with placeholders and continue
 - **Audit**: Record what the guard detected, and let the content continue unchanged
 
-Every action is available on the request path and the response path. A response guard can reject a response as well as mask it.
+Every action is available on the request path and the response path. A response guard can reject a response as well as mask it. Response guards run only when the request input format supports prompt guards.
 
 ## Possible actions {#actions}
 
