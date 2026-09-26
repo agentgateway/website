@@ -326,6 +326,12 @@ spec:
 
 Each alias is a separate resource, so it can carry its own credentials, authorization rules, and guardrails. For the {{< reuse "agw-docs/snippets/backend.md" >}} equivalent, see [Model aliasing]({{< link-hextra path="/documentation/llm/alias/" >}}).
 
+### Model resolution order {#agentgatewaymodel-resolution}
+
+The model value is resolved before provider-specific routing, request conversion, token-count behavior, and response conversion. First, the request model selects an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} from `spec.match.model`. A virtual model can then select a concrete target model, and `spec.policies.transformations` on the concrete model can rewrite the `model` field. The final resolved model is used for provider-specific behavior, such as Azure Foundry Claude routing, Bedrock endpoint selection, and Vertex Gemini path selection.
+
+A request must have a model after resolution. If the client request omits `model`, configure the selected concrete model to supply one with a `model` transformation.
+
 ### Visibility
 
 Use `spec.visibility` to control whether clients can request a model directly.
