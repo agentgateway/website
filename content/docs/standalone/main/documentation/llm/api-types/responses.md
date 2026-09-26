@@ -55,6 +55,8 @@ routes:
 
 Using the Responses API works exactly the same as consuming OpenAI directly, with only a change to the base URL. This allows you to continue using existing code and SDKs.
 
+Use HTTP POST for Responses requests through agentgateway. The Responses WebSocket transport is not supported. If a client tries to upgrade `/v1/responses` to WebSocket, the gateway returns a `405 Method Not Allowed` error with the `websocket_not_supported` code.
+
 {{< tabs >}}
 {{% tab name="Curl" %}}
 

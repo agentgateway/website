@@ -142,6 +142,12 @@ Some examples:
 | `models.name` | The model name to match in incoming client requests. Agentgateway compares this value against the `model` field in the request body. Use a wildcard `*` to match any model name. |
 | `params.model` | The model name sent to the upstream provider. If set, this overrides the model from the request. If not set, the model from the request is passed through. |
 
+Model routing runs on the standard LLM serving paths, such as `/v1/chat/completions`, `/v1/messages`, `/v1/responses`, `/v1/audio/transcriptions`, and `/v1/models`. The paths must match exactly, except where a provider-specific endpoint format uses a model in the path. For example, `/other/v1/messages` and `/v1/messages/extra` do not match the built-in `/v1/messages` route.
+
+To serve the standard LLM paths under a base path, set `llm.pathPrefix`. For example, `pathPrefix: /tenant-a` lets clients call `/tenant-a/v1/chat/completions`. The gateway removes `/tenant-a` before model routing and before forwarding the request to the provider. A non-empty prefix must start with `/`, and cannot include a query, a fragment, or more than one prefix.
+
+When the selected model changes the upstream model name, the gateway rewrites the model before forwarding the request. The rewrite applies to JSON request bodies and multipart form data, such as `/v1/audio/transcriptions`. For multipart requests, file fields and non-model fields are preserved while each `model` form field is rewritten.
+
 ### Passthrough
 
 Use `name: "*"` without setting `params.model` to accept any model name and pass it directly to the provider. This is the simplest configuration for single-provider setups.
