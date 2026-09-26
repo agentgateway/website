@@ -16,6 +16,10 @@ Failover in {{< reuse "agw-docs/snippets/agentgateway.md" >}} has two parts:
 - **Priority groups** in the {{< reuse "agw-docs/snippets/backend.md" >}} define the failover order. Each group is a tier. Models within the same group are load balanced equally. When all models in a group are evicted, requests fail over to the next group.
 - **A health policy** in an {{< reuse "agw-docs/snippets/policy.md" >}} defines what counts as an unhealthy response (such as 5xx errors or 429 rate limits) and how to evict unhealthy backends. Without a health policy, backends are not evicted and failover does not occur.
 
+{{< version exclude-if="1.5.x" >}}
+In 1.6.x and later, an {{< reuse "agw-docs/snippets/backend.md" >}} with multiple AI priority groups automatically gets default eviction when no health policy targets it. Use a health policy to classify additional responses, such as 429, or to tune eviction settings such as `duration` and `consecutiveFailures`.
+{{< /version >}}
+
 This approach increases the resiliency of your network environment by ensuring that apps that call LLMs can keep working without problems, even if one model has issues.
 
 To watch eviction and failover happen against a mock LLM rather than wait for a real provider outage, see [See failover happen](#see-failover).
@@ -235,6 +239,10 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    
 
 3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with a health policy that targets the {{< reuse "agw-docs/snippets/backend.md" >}}. The health policy defines which responses are considered unhealthy and how to evict backends. Without this policy, backends are not evicted and failover does not occur.
+
+   {{< version exclude-if="1.5.x" >}}
+   In 1.6.x and later, this policy is optional for failover on 5xx responses and connection failures. The policy in this guide adds 429 rate-limit handling and tunes how quickly a backend is evicted.
+   {{< /version >}}
 
    The `unhealthyCondition` field is an optional [CEL expression](https://github.com/cel-expr/cel-spec) that classifies each response. When you set it, `true` means the response counts as unhealthy toward eviction. The `eviction` settings control how many failures and how long an unhealthy backend stays out of its priority group.
 
@@ -728,6 +736,10 @@ Retries and eviction do different jobs here, and transparent failover needs both
 
 > [!IMPORTANT]
 > A retry policy on its own does not fail over. Without a health policy, no backend is evicted, so every retry returns to the same highest-priority group and the client still receives the error. To fail over transparently, configure both policies.
+
+{{< version exclude-if="1.5.x" >}}
+In 1.6.x and later, multiple AI priority groups enable default eviction without a health policy. You still need a health policy when the retry policy must fail over on responses that the default classifier does not mark unhealthy, such as 429.
+{{< /version >}}
 
 ## Cleanup
 
