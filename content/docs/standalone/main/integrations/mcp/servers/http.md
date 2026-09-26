@@ -133,6 +133,10 @@ fi
 echo "PASS: no Mcp-Session-Id header in stateless mode"
 {{< /doc-test >}}
 
+## Request body limits {#mcp-request-body-limits}
+
+The MCP listener applies the gateway HTTP body buffer limit to JSON-RPC request bodies from streamable HTTP and legacy Server-Sent Events (SSE) POST requests. If a request body exceeds the configured limit, the client receives HTTP 413 and a response body that includes the configured byte limit. Malformed JSON that stays within the limit receives HTTP 400.
+
 ## DNS rebinding protection {#dns-rebinding}
 
 A browser page on any origin can resolve a hostname it controls to `127.0.0.1` and then send requests to a locally bound server. This is a DNS rebinding attack, and it is why the MCP specification requires a server that listens on localhost to reject a `Host` or `Origin` header that does not name a loopback address.
