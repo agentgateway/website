@@ -112,6 +112,21 @@ The following cases do not round-trip.
 
 Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. When an Anthropic messages client sends a request with tools to one of these models through a `Completions` provider, the request is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped. Every other model receives the reasoning effort that the client asked for, if any.
 
+### Stop sequences between formats
+
+An Anthropic messages client can use `stop_sequences` through a custom provider
+that declares the `Completions` format. The conversion sends the sequences to
+the upstream Chat Completions provider as `stop`.
+
+When the upstream response is converted back to the Messages format, a buffered
+or streamed response reports a caller-provided stop sequence only if the
+upstream names the matched sequence. If the Chat Completions response has
+`finish_reason: "stop"` and a vLLM `stop_reason` string or SGLang
+`matched_stop` string, the Messages response uses
+`stop_reason: "stop_sequence"` and copies that string into `stop_sequence`. The
+conversion ignores numeric stop-token IDs, so a natural end of turn still
+returns `stop_reason: "end_turn"`.
+
 ## Set the provider identity {#provider-override}
 
 A custom provider reports itself as `custom` in cost lookups and telemetry, because agentgateway has no first-class provider type to name it by. Every custom provider therefore shares one identity, which makes per-provider cost and usage impossible to separate.
