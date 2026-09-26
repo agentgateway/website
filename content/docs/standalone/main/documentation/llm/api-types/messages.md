@@ -80,6 +80,12 @@ On the way out, an assistant `thinking` block in the message history is sent as 
 
 On the way back, the `reasoning_content` in a buffered response becomes a `thinking` block ahead of the text block. In a stream, a thinking content block opens with `thinking_delta` events, adds a `signature_delta` when the engine sends a signature, and stops before the text or tool-use block that follows. Reasoning that the engine withholds arrives with an empty text and a signature that carries it, so the block is sent on the signature alone, in both the buffered and the streamed form.
 
+#### Stop sequences
+
+On the way out, a Messages request with `stop_sequences` sends those values to the Chat Completions provider as `stop`.
+
+On the way back, a converted buffered or streamed response reports a caller-provided stop sequence when the provider names the matched sequence. If the Chat Completions response has `finish_reason: "stop"` and a vLLM `stop_reason` string or SGLang `matched_stop` string, the Messages response uses `stop_reason: "stop_sequence"` and copies that string into `stop_sequence`. The conversion ignores numeric stop-token IDs, so a natural end of turn still returns `stop_reason: "end_turn"`.
+
 Three cases do not round-trip.
 
 | Case | What happens |
