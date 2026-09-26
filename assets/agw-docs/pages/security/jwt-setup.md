@@ -342,6 +342,37 @@ traffic:
             port: 443
 ```
 
+{{< version exclude-if="1.5.x" >}}
+### Require additional claims {#jwt-required-claims}
+
+By default, JWT authentication requires the `exp` claim and validates the expiration when the claim is present. You can use `validation.requiredClaims` to require more registered claims in addition to the `iss` claim and any `aud` claim required by a non-empty `audiences` list.
+
+```yaml
+traffic:
+  jwtAuthentication:
+    mode: Strict
+    providers:
+    - issuer: "${KEYCLOAK_ISSUER}"
+      audiences: ["my-application"]
+      jwks:
+        remote:
+          jwksPath: "${KEYCLOAK_JWKS_PATH}"
+          backendRef:
+            name: keycloak
+            namespace: keycloak
+            kind: Service
+            port: 8080
+      validation:
+        requiredClaims: ["exp", "nbf"]
+```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}}
+
+| Field | Description |
+|-------|-------------|
+| `validation.requiredClaims` | Additional JWT claims that must be present in the token payload. Supported values are `exp`, `nbf`, `aud`, and `sub`. Omit `validation.requiredClaims` to require `exp`. Set `requiredClaims: []` to remove only the additional requirements that this field controls. The policy still requires `iss`, still requires `aud` when `audiences` is non-empty, and still validates expiration when `exp` is present. |
+{{< /version >}}
+
 ### External identity provider over TLS
 
 When your identity provider runs outside the cluster (for example, Okta, Auth0, or Microsoft Entra ID) and is served over HTTPS, reference an {{< reuse "/agw-docs/snippets/backend.md" >}} in the `jwks.remote.backendRef` instead of a Kubernetes Service. The {{< reuse "/agw-docs/snippets/backend.md" >}} sets the upstream host and TLS SNI together, so the JWKS fetch connects to the provider with the correct hostname and certificate.
