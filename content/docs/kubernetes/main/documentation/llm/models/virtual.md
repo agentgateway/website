@@ -351,7 +351,7 @@ Use `virtualModel.conditional` to select a target with a CEL expression. Targets
    EOF
    {{< /doc-test >}}
 
-## Fail over when a model degrades
+## Fail over when a model degrades {#model-failover-inferencepool}
 
 Use `virtualModel.failover` to group targets by priority. Lower values are preferred. Targets in the same priority group are selected by a score that considers health and latency. The next group is used only when every target in the current group is degraded.
 
@@ -431,7 +431,10 @@ Failover depends on eviction. Configure `policies.health` on the concrete target
 
    | Field | Value | Description |
    |-------|-------|-------------|
+   | `targets[].modelRef.name` | `primary-down` | A concrete model in the same namespace. Failover targets cannot point to another virtual model. |
    | `targets[].priority` | `0` | Lower values are preferred. Give several targets the same priority to load balance across them within a group. |
+
+   A concrete target model can use `spec.provider: Custom` and `spec.custom.backendRef` to point to an InferencePool. In that topology, `virtualModel.failover` treats the virtual model's Gateway as a parent of that InferencePool. The InferencePool status includes the concrete model's Gateway and the virtual model's Gateway as parents. The generated configuration includes inference-routing and Endpoint Picker Extension (EPP) policies for both Gateway scopes.
 
 3. Send three requests in a row.
 
