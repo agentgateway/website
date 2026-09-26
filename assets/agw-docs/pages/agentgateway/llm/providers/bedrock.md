@@ -380,6 +380,18 @@ For Claude models that support adaptive thinking, the request is sent with `thin
 Any other model ID is treated as a Claude model.
 {{% /version %}}
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+### Encrypted reasoning responses {#encrypted-reasoning-responses}
+
+Some Bedrock models return encrypted reasoning in a `reasoningContent.redactedContent` block. When a non-streaming response contains this block, the request can complete instead of failing when Bedrock withholds the reasoning text.
+
+For `/v1/chat/completions`, encrypted reasoning is omitted from the response because the API has no encrypted-reasoning field. Signed text reasoning still uses `reasoning_content` and `reasoning_signature` when Bedrock sends them.
+
+For `/v1/responses`, encrypted reasoning is returned as a reasoning item with `encrypted_content`. When the client sends that reasoning item in the next request, the next Bedrock request includes `reasoningContent.redactedContent`.
+
+For `/v1/messages`, encrypted reasoning is returned as a `redacted_thinking` block. When the client sends that block in the next request, the next Bedrock request includes `reasoningContent.redactedContent`.
+{{% /version %}}
+
 **Cloud Provider LoadBalancer**:
 ```sh
 curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json -d '{

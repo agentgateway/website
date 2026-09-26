@@ -307,6 +307,16 @@ Other Claude models, such as `us.anthropic.claude-opus-4-20250514-v1:0`, receive
 
 Note that `max_tokens` must be greater than the thinking budget, and the minimum thinking budget is 1,024 tokens.
 
+### Encrypted reasoning responses {#encrypted-reasoning-responses}
+
+Some Bedrock models return encrypted reasoning in a `reasoningContent.redactedContent` block. When a non-streaming response contains this block, the request can complete instead of failing when Bedrock withholds the reasoning text.
+
+For `/v1/chat/completions`, encrypted reasoning is omitted from the response because the API has no encrypted-reasoning field. Signed text reasoning still uses `reasoning_content` and `reasoning_signature` when Bedrock sends them.
+
+For `/v1/responses`, encrypted reasoning is returned as a reasoning item with `encrypted_content`. When the client sends that reasoning item in the next request, the next Bedrock request includes `reasoningContent.redactedContent`.
+
+For `/v1/messages`, encrypted reasoning is returned as a `redacted_thinking` block. When the client sends that block in the next request, the next Bedrock request includes `reasoningContent.redactedContent`.
+
 ```sh
 curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
   "model": "",
