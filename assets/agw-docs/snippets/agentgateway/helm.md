@@ -52,6 +52,10 @@
  {{% /tab %}}
       {{< /tabs >}}
 
+      {{< callout type="info" >}}
+      **Why does the CRD installation use a namespace?** CRDs are cluster-scoped resources, so the `--namespace` flag does not scope the CRDs themselves. Instead, Helm uses it to decide where to store the metadata of the release, which is kept in a Secret that is named `sh.helm.release.v1.<release-name>` and that *is* namespaced. Installing the CRD chart into the {{< reuse "agw-docs/snippets/namespace.md" >}} namespace keeps the release record for the CRDs next to the release record for the control plane, so that `helm list`, `helm upgrade`, and `helm uninstall` find both releases with the same `-n {{< reuse "agw-docs/snippets/namespace.md" >}}` flag. The CRDs themselves are registered cluster-wide and can be used from any namespace.
+      {{< /callout >}}
+
 3. Install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} Helm chart.
 
    1. **Optional**: Pull and inspect the {{< reuse "/agw-docs/snippets/kgateway.md" >}} Helm chart values before installation. You might want to update the Helm chart values files to customize the installation. For example, you might change the namespace, update the resource limits and requests, or enable extensions such as for AI.
