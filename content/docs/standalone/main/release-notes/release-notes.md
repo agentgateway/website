@@ -121,3 +121,15 @@ Now, the `destination.address`, `destination.port`, and `destination.hostname` C
 `destination.hostname` is set only on listeners with the `TLS` protocol. It is unset on HTTP and HTTPS listeners, even when the client sends SNI, and for clients that send no SNI. A `require` rule that references it rejects every such connection, so apply it only to `TLS` listeners.
 
 For the variables and an example, see [Require TLS SNI]({{< link-hextra path="/documentation/configuration/security/network-authz/#require-tls-sni" >}}).
+
+### LLM {#v16-features-llm}
+
+#### Failure mode for provider guardrails {#v16-guardrail-failure-mode}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3618 -->
+
+The `failureMode` field, which was previously available only on `webhook` guards, is now available on `openAIModeration`, `bedrockGuardrails`, `googleModelArmor`, and `azureContentSafety` guards. The field sets what happens when the provider is unreachable or returns an error. The default, `failClosed`, rejects the request or response. Set `failureMode: failOpen` to let the content continue unchanged instead.
+
+For most traffic, the default keeps the 1.5.x behavior, because a provider error already rejected the request or response. Two paths change. On a realtime WebSocket connection, and for streaming responses that are evaluated as they arrive, a provider error from one of these guards used to let the content through. It now rejects the content, unless you set `failureMode: failOpen`.
+
+For more information, see [Provider failures]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#provider-failures" >}}).

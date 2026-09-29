@@ -42,6 +42,8 @@ Agentgateway will automatically handle mapping between the incoming format and t
 
 The `formats` list decides which conversion an incoming request takes, and the conversions do not all carry the same feature set. A provider that declares `completions` carries extended-thinking history across turns, while one that declares `responses` and not `completions` drops it without an error. For what each conversion keeps and drops, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
 
+The `formats` list is optional. A model without it accepts only requests on paths that are forwarded to the provider without format conversion, such as `/v1/systemone`, `/v1/ocr`, `/v1/images/generations`, and `/v1/responses/compact`. A request in an LLM API format, such as a chat completions or messages request, has no format to convert to and is rejected. For an example, see the [Jev guardrail guide]({{< link-hextra path="/integrations/llm/guardrails/jev/" >}}).
+
 Below shows an example of connecting to [Perplexity](https://www.perplexity.ai/), which exposes an OpenAI-compatible API for search-augmented models and does not currently have a first-class provider.
 
 ```yaml {paths="openai-compat-validate"}

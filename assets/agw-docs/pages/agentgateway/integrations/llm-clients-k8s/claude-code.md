@@ -284,7 +284,7 @@ If you have a Claude Teams or Pro account, use this configuration instead of the
    EOF
    ```
 
-3. Create an `HTTPRoute` that matches the `/claude` path prefix and rewrites it to `/` before forwarding to the backend.
+3. Create an `HTTPRoute` that forwards all traffic to the backend. If you created the `claude` HTTPRoute in the API key setup, delete it first, because both routes match the `/` path prefix.
 
    ```bash
    kubectl apply -f- <<EOF
@@ -301,25 +301,19 @@ If you have a Claude Teams or Pro account, use this configuration instead of the
        - matches:
          - path:
              type: PathPrefix
-             value: /claude
+             value: /
          backendRefs:
          - name: anthropic-teams
            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
            group: {{< reuse "agw-docs/snippets/group.md" >}}
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-         filters:
-         - type: URLRewrite
-           urlRewrite:
-             path:
-               type: ReplacePrefixMatch
-               replacePrefixMatch: /
    EOF
    ```
 
-4. Set the `ANTHROPIC_BASE_URL` environment variable to point Claude Code at the `/claude` path.
+4. Set the `ANTHROPIC_BASE_URL` environment variable to point Claude Code at your gateway address.
 
    ```bash
-   export ANTHROPIC_BASE_URL="http://$INGRESS_GW_ADDRESS/claude"
+   export ANTHROPIC_BASE_URL="http://$INGRESS_GW_ADDRESS"
    ```
 
 5. Verify the connection.

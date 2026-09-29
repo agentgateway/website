@@ -28,15 +28,37 @@ Depending on the policy, different fields are accessible based on when in the re
 |Policy|Available Variables|
 |------|-------------------|
 |Transformation| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm` |
-|Remote Rate Limit| `source`, `request`, `jwt`, `apiKey` |
-|Local Rate Limit key (`requests`)| `source`, `request`, `jwt`, `apiKey` — the rule is checked before the LLM request is parsed, so a key cannot read `llm`. |
-|Local Rate Limit key (`tokens`)| `source`, `request`, `jwt`, `apiKey`, `llm` — the rule is charged after the LLM request is parsed, so a key can read fields such as `llm.requestModel`. |
-|HTTP Authorization| `source`, `request`, `jwt` |
-|External Authorization| `source`, `request`, `jwt` |
-|MCP Authorization| `source`, `request`, `jwt`, `mcp` |
+|Remote Rate Limit| `source`, `request`, `jwt`, `apiKey`, `mcp` |
+|Local Rate Limit key (`requests`)| `source`, `request`, `jwt`, `apiKey`, `mcp` — the rule is checked before the LLM request is parsed, so a key cannot read `llm`. |
+|Local Rate Limit key (`tokens`)| `source`, `request`, `jwt`, `apiKey`, `mcp`, `llm` — the rule is charged after the LLM request is parsed, so a key can read fields such as `llm.requestModel`. |
+|HTTP Authorization| `source`, `request`, `jwt`, `mcp` |
+|External Authorization| `source`, `request`, `jwt`, `mcp` |
+|MCP Authorization| `source`, `request`, `jwt`, `mcp` — `mcp.methodName` distinguishes methods such as `tools/list` and `tools/call`. For list methods, rules run once per listed item. `mcp.sessionId` and `mcp.tool.arguments` aren't set. |
 |Logging| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm`|
 |Tracing| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm`|
 |Metrics| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm`|
+
+### When `mcp` is available {#mcp-availability}
+
+Request policies, such as transformation, rate limit, and authorization policies, can read `mcp` only when all of the following are true:
+
+* The policy runs after route selection. Policies with `traffic.phase: PreRouting` run before route selection and never see `mcp`.
+* The selected backend is an MCP backend.
+* The request is an MCP JSON-RPC `POST` request. The `mcp` variable isn't set for `/sse`, well-known OAuth metadata, or client registration requests.
+
+At request time, `mcp.methodName` is always set, and `mcp.sessionId` is set when the client sends a session ID. The field for the method's target depends on the method.
+
+| Method | Target field |
+| -- | -- |
+| `tools/call` | `mcp.tool`, including `mcp.tool.arguments` |
+| `prompts/get` | `mcp.prompt` |
+| Resource reads and subscriptions | `mcp.resource` |
+| Task methods | `mcp.task` |
+| List methods, such as `tools/list` | None. List methods have no target, so `mcp.tool` isn't set. |
+
+MCP authorization rules differ in two ways. `mcp.sessionId` and `mcp.tool.arguments` aren't set. For list methods, the rules also run once for each listed item, and in each run the target field contains that item, such as `mcp.tool` for each tool in a `tools/list` response.
+
+Response payload fields, such as `mcp.tool.result` and `mcp.tool.error`, are available only in logging, tracing, and metrics.
 
 ## Functions {#functions-policy-all}
 

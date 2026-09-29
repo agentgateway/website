@@ -88,6 +88,8 @@ Three cases do not round-trip.
 | A `redacted_thinking` block | Dropped, because it holds nothing that an OpenAI-compatible engine can replay. |
 | A provider that advertises `responses` and not `completions` | The thinking history is dropped from the converted request, with no error and no warning, so the model loses its prior reasoning. See [Converting to the Responses format](#converting-to-the-responses-format). |
 
+Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. In the Chat Completions conversion, a request with tools to one of these models is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped. Every other model receives the reasoning effort that the client asked for, if any.
+
 ### Converting to the Responses format
 
 The Responses conversion covers a common agent subset:

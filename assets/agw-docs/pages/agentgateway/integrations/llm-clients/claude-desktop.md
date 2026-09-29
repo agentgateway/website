@@ -41,7 +41,7 @@ continue with the following advanced configuration.
 
 ## Optional: Use Claude subscription passthrough {#configure-agentgateway}
 
-Start agentgateway with the Teams configuration. Agentgateway listens on port `4001` and exposes Claude at the `/claude` path.
+Start agentgateway with the Teams configuration. Agentgateway listens on port `4001` and routes requests to Anthropic.
 
 1. Create a configuration file.
 
@@ -51,26 +51,10 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
      default:
        port: 4001
        protocol: HTTP
-   routes:
-   - name: claude-agent
-     matches:
-     - path:
-         pathPrefix: /claude
-     policies:
-       urlRewrite:
-         path:
-           prefix: /
-     backends:
-     - ai:
-         name: claude-agent
-         provider:
-           anthropic: {}
-         policies:
-           ai:
-             routes:
-               /v1/messages: messages
-               /v1/messages/count_tokens: anthropicTokenCount
-               '*': passthrough
+   llm:
+     models:
+     - name: '*'
+       provider: anthropic
    EOF
    ```
 
@@ -80,19 +64,22 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
    agentgateway -f config.yaml
    ```
 
-The backend deliberately has no `backendAuth` policy. In subscription mode,
-the bearer token that each user creates with `claude setup-token` must pass
-through agentgateway to Anthropic. Do not add a provider API key or apply a
-virtual API key policy to this route.
+The model deliberately has no `apiKey`. In subscription mode, the bearer token
+that each user creates with `claude setup-token` must pass through agentgateway
+to Anthropic. Do not add a provider API key or apply a virtual API key policy
+to this model.
 
 > [!NOTE]
-> Claude Code automatically sends the `anthropic-beta: oauth-2025-04-20` header required for OAuth-based authentication. Claude Desktop may require this header to be set as well depending on your client version. If requests fail with a 400 error, add the following to the `passthrough` route policy in your config:
+> Claude Code automatically sends the `anthropic-beta: oauth-2025-04-20` header required for OAuth-based authentication. Claude Desktop may require this header to be set as well depending on your client version. If requests fail with a 400 error, add the header to the model in your config:
 >
 > ```yaml
-> policies:
->   requestHeaderModifier:
->     add:
->       anthropic-beta: oauth-2025-04-20
+> llm:
+>   models:
+>   - name: '*'
+>     provider: anthropic
+>     requestHeaders:
+>       add:
+>         anthropic-beta: oauth-2025-04-20
 > ```
 
 ## Configure Claude Desktop with a Claude subscription {#configure-claude-desktop}
@@ -112,7 +99,7 @@ virtual API key policy to this route.
 4. Enter the gateway URL. Use `127.0.0.1` rather than `localhost`.
 
    ```
-   http://127.0.0.1:4001/claude
+   http://127.0.0.1:4001
    ```
 
 5. For **Credential kind**, select **Static API key**. For **Gateway auth
@@ -129,8 +116,9 @@ virtual API key policy to this route.
 
 7. Click **Test connection**. Claude Desktop tests inference with the first
    configured model. If no explicit model is configured, the test first calls
-   `<base-url>/v1/models` and fails when the gateway or provider does not make
-   that endpoint available to the subscription token.
+   `<base-url>/v1/models`. Agentgateway answers that request itself with the
+   model names in its configuration, such as `*`, rather than the models that
+   your subscription can use, so configure an explicit model.
 
    > [!NOTE]
    > With subscription passthrough, the connection test might return HTTP 429
@@ -191,7 +179,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    export ANTHROPIC_API_KEY=<your-anthropic-api-key>
    ```
 
-3. Update your configuration file to validate the token on the route and to send an Anthropic API key upstream. Interactive sign-in puts the identity provider token in the `Authorization` header, so the proxy must supply the provider credential itself rather than pass a user token upstream. Replace any client API key authentication on this route instead of requiring both authentication methods.
+3. Update your configuration file to validate the token and to send an Anthropic API key upstream. Interactive sign-in puts the identity provider token in the `Authorization` header, so the proxy must supply the provider credential itself rather than pass a user token upstream. Replace any client API key authentication instead of requiring both authentication methods.
 
    ```yaml
    cat > config.yaml << 'EOF'
@@ -200,15 +188,8 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
      default:
        port: 4001
        protocol: HTTP
-   routes:
-   - name: claude-agent
-     matches:
-     - path:
-         pathPrefix: /claude
+   llm:
      policies:
-       urlRewrite:
-         path:
-           prefix: /
        jwtAuth:
          mode: strict
          issuer: https://login.microsoftonline.com/$TENANT_ID/v2.0
@@ -216,19 +197,11 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
          - $CLIENT_ID
          jwks:
            url: https://login.microsoftonline.com/$TENANT_ID/discovery/v2.0/keys
-     backends:
-     - ai:
-         name: claude-agent
-         provider:
-           anthropic: {}
-         policies:
-           backendAuth:
-             key: "$ANTHROPIC_API_KEY"
-           ai:
-             routes:
-               /v1/messages: messages
-               /v1/messages/count_tokens: anthropicTokenCount
-               '*': passthrough
+     models:
+     - name: '*'
+       provider: anthropic
+       params:
+         apiKey: "$ANTHROPIC_API_KEY"
    EOF
    ```
 
@@ -240,7 +213,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    | `jwtAuth.issuer` | The expected `iss` claim. Validating the issuer alongside the signature is what ties a token to your tenant. |
    | `jwtAuth.audiences` | The expected `aud` claim. For an ID token, the audience is the client ID of the application that you registered. |
    | `jwtAuth.jwks.url` | The JWKS endpoint that agentgateway fetches signing keys from. |
-   | `backendAuth.key` | The Anthropic API key that agentgateway sends upstream. Because the user token authenticates the caller, this credential no longer comes from the client. |
+   | `params.apiKey` | The Anthropic API key that agentgateway sends upstream. Because the user token authenticates the caller, this credential no longer comes from the client. |
 
    Use the issuer base URL shown in the example. Do not use the OpenID
    discovery-document URL, which ends in `/.well-known/openid-configuration`,
@@ -259,7 +232,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    | Field | Value |
    | -- | -- |
    | Credential kind | **Interactive sign-in** |
-   | Gateway base URL | `http://127.0.0.1:4001/claude` |
+   | Gateway base URL | `http://127.0.0.1:4001` |
    | Client ID | The client ID of the application that you registered |
    | Issuer URL | `https://login.microsoftonline.com/$TENANT_ID/v2.0` |
    | Bearer token | **ID token** |
@@ -305,7 +278,7 @@ The following example shows the Linux form. On macOS and Windows, write every va
 ```json
 {
   "inferenceProvider": "gateway",
-  "inferenceGatewayBaseUrl": "https://agentgateway.example.com/claude",
+  "inferenceGatewayBaseUrl": "https://agentgateway.example.com",
   "inferenceCredentialKind": "interactive",
   "inferenceGatewayOidcAuthFlow": "browser",
   "inferenceGatewayOidc": {
@@ -331,7 +304,7 @@ Send a message in Claude Desktop. If the connection is successful, responses flo
 Look for log entries like the following in your running agentgateway output:
 
 ```
-info  request gateway=default/default listener=http route=claude-agent endpoint=api.anthropic.com:443 http.method=POST http.path=/v1/messages http.status=200 protocol=llm
+info  request gateway=default/default listener=default route=internal/llm:request endpoint=api.anthropic.com:443 http.method=POST http.path=/v1/messages http.status=200 protocol=llm
 ```
 
 If you configured gateway API key or OIDC authentication in strict mode, send a request without the `Authorization` header and confirm that agentgateway rejects it. This negative check verifies that the route does not admit unauthenticated requests.
@@ -340,12 +313,12 @@ If you configured gateway API key or OIDC authentication in strict mode, send a 
 
 | Symptom | Likely cause and action |
 | -- | -- |
-| The connection test calls an unexpected path such as `/claude/claude/v1/models` | Make the base URL match the route prefix exactly. Claude Desktop appends `/v1/models` and `/v1/messages`. |
+| The connection test calls an unexpected path such as `/v1/v1/models` | Set the base URL to the gateway address without a path. Claude Desktop appends `/v1/models` and `/v1/messages`. |
 | The gateway API key connection returns HTTP 401 | Confirm that Claude Desktop sends the client key generated by Client Setup and that the route is protected by the matching virtual-key policy. |
 | Entra sign-in returns `api key authentication failure` | The Claude Desktop route still requires its old virtual API key. Replace that authentication with JWT validation; do not require both. |
 | Entra Test connection succeeds, but restart logs `InvalidToken` | An older managed profile restored a static key. Update the assigned profile to `interactive`, remove `inferenceGatewayApiKey`, sync the device, and fully restart Claude Desktop. |
 | A subscription request logs `api key authentication failure` | A virtual API key policy is protecting the subscription route. Remove it from this route so that the subscription bearer token can pass upstream. |
-| The test needs at least one model after `/v1/models` fails | Add a full model ID under **Models** and disable or skip model discovery. |
+| The test needs at least one model, or model discovery returns only `*` | Add a full model ID under **Models** and disable or skip model discovery. |
 | Anthropic returns `authentication_error` in gateway API key or OIDC mode | Confirm that the backend holds a valid Anthropic API key. |
 | Anthropic returns `authentication_error` in subscription mode | Generate a new token with `claude setup-token`, confirm that the auth scheme is **Bearer**, and make sure the backend does not inject a provider API key. |
 | Anthropic returns HTTP 400 in subscription mode | Add or forward `anthropic-beta: oauth-2025-04-20` as described in [Configure agentgateway with a Claude subscription](#configure-agentgateway). |

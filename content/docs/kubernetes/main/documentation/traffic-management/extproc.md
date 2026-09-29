@@ -58,6 +58,8 @@ To implement your own ExtProc server, make sure that you follow [Envoy's technic
 
 By default, agentgateway waits 10 seconds for the ExtProc server to answer when it opens a processing stream. When the wait runs out, the call fails and the `traffic.extProc.failureMode` setting decides what happens to the request. `FailClosed`, the default, rejects the request, and `FailOpen` lets it continue. To use a different timeout, apply a second {{< reuse "agw-docs/snippets/policy.md" >}} whose `targetRefs` names the ExtProc server, either as a Kubernetes Service or as an {{< reuse "agw-docs/snippets/backend.md" >}}, and set `backend.http.requestTimeout` on it.
 
+For requests with a body, `FailOpen` applies only while no request body bytes have been sent to the ExtProc server. If the server can't be reached or fails before that point, the original request, including its body, is forwarded to the upstream application. After the request body starts streaming to the server, a failure returns an error even with `FailOpen`. In the default `FullDuplexStreamed` request body mode (`traffic.extProc.processingOptions.requestBodyMode`), the body starts streaming as soon as the processing stream is established, so `FailOpen` applies only when that stream can't be established.
+
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up an ExtProc server

@@ -28,8 +28,11 @@ Configure Amazon Bedrock as an LLM provider in agentgateway.
 #     accepted, which pins both the field name and the lowercase spelling of the
 #     value. Standalone rejects the capitalized Kubernetes spelling, so this
 #     block is what keeps the two modes from being copied into each other.
-#   * With the base config loaded, agentgateway serves the wildcard model and
-#     resolves it to the `bedrock` provider in the configured AWS region.
+#   * With the base config loaded, agentgateway lists at least one model on
+#     `/v1/models` and resolves the wildcard to the `bedrock` provider in the
+#     configured AWS region. The list is not checked for a literal `*`, because
+#     the default `llm.discovery: catalog` expands the wildcard into the catalog's
+#     Bedrock model IDs.
 #
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * "Authentication" - external dependency; AWS credentials are resolved per
@@ -281,18 +284,26 @@ Example response:
 
 ## Extended thinking and reasoning
 
-Extended thinking and reasoning lets models reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. Agentgateway maps these parameters to Bedrock's native format automatically.
+Extended thinking and reasoning lets models reason through complex problems before generating a response. To opt in, add the OpenAI `reasoning_effort` field to your request. The value is added to the `additionalModelRequestFields` of the Bedrock request, in a form that depends on the model family. The family is chosen by matching the model ID.
 
-> [!NOTE]
-> Extended thinking and reasoning requires a Claude model that supports it, such as `us.anthropic.claude-opus-4-20250514-v1:0`.
+| Model ID contains | What the Bedrock request receives |
+|---|---|
+| `gpt-oss` or `deepseek` | `reasoning_effort`, with the value from your request unchanged. |
+| `openai.`, other than `gpt-oss` models | `reasoning.effort`, with the value from your request unchanged. |
+| `amazon.nova-2-` | `reasoningConfig` with `maxReasoningEffort` set to `low`, `medium`, or `high`. If you set `none` or omit `reasoning_effort`, no reasoning configuration is sent. Any other value is rejected. |
+| Anything else | Claude thinking fields, as described in the rest of this section. |
 
-Use the `reasoning_effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
+For Claude models that support adaptive thinking, the request is sent with `thinking.type` set to `adaptive` and the effort level in `output_config.effort`, instead of a token budget. The value `minimal` is sent as `low`. Which models take this form depends on the `adaptive_thinking` tag in the [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). The built-in catalog sets this tag for these models.
+
+Other Claude models, such as `us.anthropic.claude-opus-4-20250514-v1:0`, receive a thinking budget.
 
 | `reasoning_effort` value | Thinking budget |
 |---|---|
 | `minimal` or `low` | 1,024 tokens |
 | `medium` | 2,048 tokens |
-| `high` or `xhigh` | 4,096 tokens |
+| `high` | 4,096 tokens |
+| `xhigh` | 8,192 tokens |
+| `max` | 16,384 tokens |
 
 Note that `max_tokens` must be greater than the thinking budget, and the minimum thinking budget is 1,024 tokens.
 
@@ -343,16 +354,17 @@ curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
 ```
 
 {{< doc-test paths="bedrock" >}}
-# Confirm the base config serves the wildcard model and that `params.awsRegion`
-# reaches the resolved provider config.
+# Confirm the base config serves models and that `params.awsRegion` reaches the
+# resolved provider config. The default `llm.discovery: catalog` expands `*` into
+# catalog model IDs, so check for a non-empty list rather than a literal `*`.
 agentgateway -f config.yaml &
 AGW_PID=$!
 trap 'kill $AGW_PID 2>/dev/null' EXIT
 sleep 3
 
-SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '[.data[].id] | index("*") // "missing"')
-if [ "$SERVED" = "missing" ]; then
-  echo "FAIL: the wildcard model from the example config is not served"
+SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '.data | length')
+if [ "${SERVED:-0}" -eq 0 ]; then
+  echo "FAIL: /v1/models lists no models for the example config"
   exit 1
 fi
 RESOLVED=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '
@@ -365,5 +377,5 @@ if [ "$RESOLVED" != "bedrock|us-west-2" ]; then
   echo "FAIL: expected bedrock|us-west-2 but agentgateway resolved $RESOLVED"
   exit 1
 fi
-echo "✓ Wildcard model is served and resolves to bedrock in us-west-2"
+echo "✓ Models are served and the wildcard resolves to bedrock in us-west-2"
 {{< /doc-test >}}
