@@ -166,7 +166,7 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
    Your request contains an email address.
    ```
 
-   If Bedrock returns no blocked message, the body is `The request was rejected due to inappropriate content`. To return your own message instead, set `response.message` on the guard. If you set only `response.statusCode`, the status code changes, but the body is still the Bedrock message.
+   If Bedrock returns no blocked message, set `response.message` on the guard to choose the body. If you set only `response.statusCode`, the status code changes. The body still comes from Bedrock or the controller's rejection fallback.
 
 ## Backend connection and authentication policies
 

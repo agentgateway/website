@@ -75,8 +75,5 @@ curl "localhost:4000/v1beta/openai/chat/completions" -H content-type:application
 }'
 ```
 
-Example output: 
-```console
-The request was rejected due to inappropriate content%  
-```
+The request is rejected with the default `403` status code. The response body depends on the Google Model Armor verdict. The response fields that you configure can also change the response body.
 
