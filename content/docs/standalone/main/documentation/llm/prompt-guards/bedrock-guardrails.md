@@ -60,4 +60,4 @@ EOF
 | `region` | The AWS region where the guardrail is configured, such as `us-west-2`. |
 | `policies.backendAuth.aws` | AWS authentication configuration. Agentgateway uses the credentials available in the environment, such as environment variables or an instance profile.  |
 
-When a request or response matches a guardrail policy, agentgateway blocks the interaction and returns an error such as: `The request was rejected due to inappropriate content`.
+When a guardrail blocks a request or response, the client receives a response with the default `403` status code, and the body is the blocked messaging that you configured for the guardrail in AWS. If Bedrock returns no blocked message, the body is `The request was rejected due to inappropriate content`. To return your own body instead, set `rejection.body` on the guard. If you set only `rejection.status` or `rejection.headers`, the status code and headers change, but the body is still the Bedrock message.

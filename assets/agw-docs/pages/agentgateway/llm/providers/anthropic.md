@@ -358,7 +358,9 @@ Use the `reasoning_effort` field in your request to enable extended thinking. Th
 |---|---|
 | `minimal` or `low` | 1,024 tokens |
 | `medium` | 2,048 tokens |
-| `high` or `xhigh` | 4,096 tokens |
+| `high` | 4,096 tokens |
+| `xhigh` | 8,192 tokens in agentgateway 1.4 and later. 4,096 tokens in earlier versions, including 2.2.x. |
+| `max` | 16,384 tokens. Supported in agentgateway 1.4 and later. |
 
 Note that the `max_tokens` value must be greater than the tokens in the thinking budget for the request to succeed. 
 

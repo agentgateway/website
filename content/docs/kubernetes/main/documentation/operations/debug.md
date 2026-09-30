@@ -87,6 +87,49 @@ Most routing and policy issues surface in the status of the corresponding Kubern
    * The wrong parent Gateway is referenced.
    * Multiple HTTPRoutes conflict by having identical matchers or by having no matchers (and so default to `/`).
 
+4. Check {{< reuse "agw-docs/snippets/backend.md" >}} and {{< reuse "agw-docs/snippets/policy.md" >}} resources for partial acceptance. A resource can report `Accepted=True` with `reason: PartiallyValid` when the controller keeps the usable parts of a backend or policy and reports the invalid part in the condition message.
+
+   1. Find the backends and policies that report `PartiallyValid`. The `ACCEPTED` column of `kubectl get` shows `True` for these resources, so filter on the reason instead.
+
+      ```sh
+      kubectl get {{< reuse "agw-docs/snippets/backend.md" >}} -A -o json | jq -r '.items[] | .metadata as $m | .status.conditions[]? | select(.type == "Accepted" and .reason == "PartiallyValid") | "\($m.namespace)/\($m.name): \(.message)"'
+      kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} -A -o json | jq -r '.items[] | .metadata as $m | .status.ancestors[]?.conditions[]? | select(.type == "Accepted" and .reason == "PartiallyValid") | "\($m.namespace)/\($m.name): \(.message)"'
+      ```
+
+   2. Inspect the resource that you want to debug, such as the `openai` backend in the following example.
+
+      ```sh
+      kubectl get {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
+      ```
+
+   3. Find the `Accepted` condition in the output. For a backend, look in `status.conditions`. For a policy, look in `status.ancestors[].conditions`, which has one entry per Gateway that the policy attaches to.
+
+      Example output:
+
+      ```yaml
+      status:
+        conditions:
+        - type: Accepted
+          status: "True"
+          reason: PartiallyValid
+          message: 'failed to translate backend: secret {{< reuse "agw-docs/snippets/namespace.md" >}}/openai-secret not found'
+          observedGeneration: 1
+          lastTransitionTime: "2026-09-21T14:02:28Z"
+      ```
+
+   4. Read the `reason`, not only the `status`. A check that tests the `Accepted` status alone passes in this state because the status stays `True`. When the reason is `PartiallyValid`, the message names the configuration that could not be translated.
+
+   5. Fix the cause that the message names. The rest of the resource is still translated and served, so the symptom usually shows up at request time instead of at apply time.
+
+      | Invalid part | What the proxy loads instead | How to fix it |
+      | -- | -- | -- |
+      | The Secret that holds LLM provider credentials does not exist | The backend keeps the credential field, but empty. Provider calls go out unauthenticated, so the failure comes back from the provider rather than from agentgateway. | Create the Secret in the namespace that `secretRef` names or correct the reference. |
+      | A prompt guard `webhook.backendRef` names a Service that does not exist | The webhook stays in the policy with no target to call. Guarded requests then take the webhook `failureMode`, which is `FailClosed` unless you set it. With `FailOpen`, prompt guarding is skipped instead. | Create the Service or point `backendRef` at one that exists. |
+      | A remote JWKS is not available yet | The authentication policy keeps an empty key set, `{"keys":[]}`, so the policy trusts no keys. JWT authentication defaults to `Strict` mode, which rejects a request that carries no token and rejects any token that does arrive because no key can verify a signature. | Check that the JWKS endpoint is reachable from the control plane. The controller retries the fetch with a backoff and installs the keys when it succeeds. |
+      | A CEL expression does not compile | The rest of the policy is kept and the expression is replaced with one that always fails. An `authorization` rule that depends on that replacement therefore allows nothing. | Fix the expression. The condition message names the field, then the expression that did not compile. |
+
+   6. Check the condition again. The controller recomputes it on its own when the missing Secret, Service, or key set appears, so you do not need to reapply the resource.
+
 ## Inspect the loaded configuration
 
 Sometimes a route is `Accepted` but the proxy still does not behave as expected. To see what the proxy actually loaded, dump its runtime configuration.
@@ -129,6 +172,8 @@ Sometimes a route is `Accepted` but the proxy still does not behave as expected.
    Service  ext-authz  backend-extauth      ext-authz-7c7596b5f6-tvs28  0.70    4         0.00ms
    Service  httpbin    backend-extauth      httpbin-7dc88b5fbc-zqrfn    1.00    2         3.06ms
    ```
+
+   A backend or policy that reports `PartiallyValid` still appears here because the part of it that translated successfully is still served. Compare what the proxy loaded against the condition message from the previous section. For example, an authentication policy whose remote JSON Web Key Set (JWKS) was not available loads with an empty key set, `{"keys":[]}`.
 
 For complete steps, see [Inspect agentgateway configuration]({{< link-hextra path="/documentation/operations/inspect-config" >}}).
 

@@ -252,7 +252,7 @@ For the provisioned objects and the chart values, see the [Helm reference]({{< l
 
 A new `jwtSign` backend authentication method signs a JSON Web Token per request with a private key that you supply, and attaches it to the backend request. Use it for upstreams that require a keypair-signed JWT rather than a static credential, such as the Snowflake SQL API. You reference the signing key through a Secret, and claim values accept CEL expressions, so you can derive a claim from the incoming request.
 
-For the key ID, token lifetime, claims, placement, and supported algorithms, see [Signed JWT backend authentication]({{< link-hextra path="/documentation/security/backend-authn-jwt-sign/" >}}).
+For the key ID, token lifetime, claims, placement, and supported algorithms, see [Signed JWT backend authentication]({{< link-hextra path="/documentation/security/backend-authn/jwt-sign/" >}}).
 
 #### Secret references for backend CA certificates
 
@@ -272,7 +272,7 @@ Gateway API `BackendTLSPolicy` still accepts only ConfigMap references, because 
 - **Configurable subject token type**: Cross App Access takes `subjectToken.tokenType`, so a workload identity that authenticates with client credentials can exchange an access token. The default is still `id_token`.
 - **Optional `requested_token_type`**: The parameter is optional in OAuth token exchange, which matches [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693).
 
-For more information, see [Cross App Access]({{< link-hextra path="/documentation/security/backend-authn-cross-app-access/" >}}) and [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn-oauth/" >}}).
+For more information, see [Cross App Access]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/cross-app-access/" >}}) and [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/" >}}).
 
 #### Other security improvements
 

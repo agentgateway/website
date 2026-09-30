@@ -40,14 +40,12 @@ Throughout this guide, you use self-signed TLS certificates for the Certificate 
       - For example, openssl might be installed along the following path: `/usr/local/opt/openssl@3/bin/`
       - To run commands, you can append the path so that your terminal uses this installed version of OpenSSL, and not the default LibreSSL. `/usr/local/opt/openssl@3/bin/openssl req -new -newkey rsa:4096 -x509 -sha256 -days 3650...`
 
-3. Install the experimental channel of the Kubernetes Gateway API. This API is required to use the FrontendTLS configuration on a Gateway.   
+3. Install the standard channel of the Kubernetes Gateway API version 1.5 or later. Frontend client-certificate validation is generally available in this channel.
    ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
    ```
 
-4. Experimental Kubernetes Gateway API features are enabled by default in {{< reuse "agw-docs/snippets/kgateway.md" >}}. To set the feature gate explicitly, install or upgrade with the `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true` Helm flag. For an example, see the [Get started guide]({{< link-hextra path="/documentation/quickstart" >}}).
-   
-
+   If you use Gateway API 1.4, install the experimental channel instead and keep the `AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES` controller setting enabled (the default). For installation steps, see the [Get started guide]({{< link-hextra path="/documentation/quickstart/install/" >}}).
 
 ## Create TLS certificates 
 

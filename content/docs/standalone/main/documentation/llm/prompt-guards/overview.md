@@ -104,6 +104,12 @@ llm:
           action: audit
 ```
 
+## Provider failures
+
+Set `failureMode` on a `webhook`, `openAIModeration`, `bedrockGuardrails`, `googleModelArmor`, or `azureContentSafety` guard to choose what happens when the provider is unreachable or returns an error. The default, `failClosed`, rejects the request or response. Set `failureMode: failOpen` to let the content continue unchanged instead.
+
+A provider error is not a verdict, so `action: audit` does not change how an error is handled. An audit guard with the default `failureMode` still rejects traffic when the provider call fails.
+
 ## Guard scope {#scope}
 
 A request guard does not inspect the whole request. By default, a guard reads the system prompt and the text of regular user and assistant messages. Tool call content is left alone, so a Social Security number that a tool returns to the model reaches the provider unmasked.
@@ -228,7 +234,7 @@ Check out the following guides to build your guardrail system.
   {{< card link="../moderation" title="OpenAI moderation" description="Use the OpenAI Moderation API to detect harmful content across categories including hate, harassment, and violence." >}}
   {{< card link="../bedrock-guardrails" title="AWS Bedrock Guardrails" description="Apply AWS Bedrock Guardrails to filter LLM requests and responses for policy-violating content." >}}
   {{< card link="../google-model-armor" title="Google Model Armor" description="Apply Google Cloud Model Armor templates to sanitize LLM requests and responses." >}}
-  {{< card path="/documentation/llm/prompt-guards/webhooks/#deepkeep-example" title="DeepKeep" description="Use DeepKeep AI Firewall as an external guardrail through the Guardrail Webhook API." >}}
+  {{< card path="/integrations/llm/guardrails/deepkeep/" title="DeepKeep" description="Use DeepKeep AI Firewall as an external guardrail through the Guardrail Webhook API." >}}
   {{< card path="/documentation/llm/prompt-guards/webhooks/" title="Custom webhooks" description="Integrate your own content safety logic by forwarding requests and responses to a custom webhook." >}}
   {{< card link="../multi-layer" title="Multi-layered guardrails" description="Run prompt guards in sequence, creating defense-in-depth protection." >}}
 {{< /cards >}}
