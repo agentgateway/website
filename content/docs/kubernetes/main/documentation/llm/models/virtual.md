@@ -25,13 +25,13 @@ Virtual models let you change which model serves a request without asking client
 
 Three routing strategies are available, and each virtual model uses exactly one of them.
 
-After a virtual model selects a target, the gateway rewrites the request so that the provider receives the selected model. This rewrite applies to JSON request bodies and multipart form data, such as `/v1/audio/transcriptions`. For multipart requests, file fields and non-model fields are preserved while each `model` form field is rewritten.
-
 | Strategy | Selects a target by | Use it for |
 |----------|---------------------|------------|
 | `weighted` | Relative weight. | Traffic splitting, canary rollouts, and A/B tests. |
 | `failover` | Priority group, then health and latency. | Resiliency when a provider degrades. |
 | `conditional` | The first CEL expression that evaluates to `true`. | Tiering by header, body, or other request context. |
+
+After a virtual model selects a target, the gateway rewrites the request so that the provider receives the selected model. This rewrite applies to JSON request bodies and multipart form data, such as `/v1/audio/transcriptions`. For multipart requests, file fields and non-model fields are preserved while each `model` form field is rewritten.
 
 Targets are usually `Internal` models, so clients cannot request them directly and they stay out of `/v1/models`. For more on visibility, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
 

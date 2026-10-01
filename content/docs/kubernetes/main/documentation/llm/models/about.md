@@ -21,7 +21,7 @@ The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API removes the sca
 Every model that attaches to the same parent is aggregated into a single model table, called a *model router*. From that table, agentgateway serves the following behavior.
 
 - Model extraction from the request body.
-- The standard LLM API paths, such as `/v1/chat/completions`, `/v1/audio/transcriptions`, and `/v1/models`.
+- The standard LLM API paths, such as `/v1/chat/completions` and `/v1/audio/transcriptions`.
 - Model discovery on `/v1/models`.
 - Per-model provider routing.
 - OpenAI-compatible error responses for unknown models.
@@ -58,7 +58,12 @@ A `Gateway` parent is the default choice. Use an `HTTPRoute` parent when one lis
 
 Models on different routers are isolated from each other. A request to one router's paths can select only the models on that router, and `/v1/models` on that router lists only those models.
 
-Model routers match standard serving paths exactly. A request to `/other/v1/messages` or `/v1/messages/extra` does not match a listener-root router. To serve LLM paths under a prefix, attach the models to an `HTTPRoute` parent with a `PathPrefix` match.
+How a router matches paths depends on its parent.
+
+* **Listener root** (`Gateway` or `ListenerSet` parent): The router serves only the standard LLM paths, and each path must match exactly. A request to another path, such as `/other/v1/messages` or `/v1/messages/extra`, does not reach the router, and returns a `404` error unless another route on the listener matches it.
+* **`HTTPRoute` parent**: The router receives every request under the rule's `PathPrefix`. A request under the prefix that is not a standard LLM path, such as `/tenant-a/v1/messages/extra`, is not rejected. Agentgateway still selects the model from the request body, but forwards the request to the provider as passthrough, without format conversion.
+
+To serve the standard LLM paths under a prefix, attach the models to an `HTTPRoute` parent.
 
 ## Listener opt-in
 
