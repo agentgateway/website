@@ -8,7 +8,7 @@ test: skip
 Learn how the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API provides a model-centric way to serve LLMs in Kubernetes.
 
 > [!WARNING]
-> The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is experimental and disabled by default. The `v1alpha1` API is subject to change in a future release. To enable it, set the `agentgatewayModels.enabled=true` Helm value on the {{< reuse "agw-docs/snippets/agentgateway.md" >}} control plane.
+> The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is enabled by default. It is a `v1alpha1` API, so it is subject to change in a future release. To turn it off, set the `agentgatewayModels.enabled=false` Helm value on the {{< reuse "agw-docs/snippets/agentgateway.md" >}} control plane.
 
 ## About
 
@@ -217,7 +217,7 @@ Agentgateway strips the `/tenant-a` prefix before it forwards the request, so th
 
 ### Router scoping constraints
 
-- **A virtual model and the concrete models it selects must share one router.** A `weighted` or `conditional` virtual model resolves its targets by model name inside its own router's table. Attach the virtual model and its targets to the same parent; otherwise, the request fails with `virtual_model_not_resolved`.
+- **A virtual model and the concrete models it selects must share one router.** A `weighted` or `conditional` virtual model resolves its targets by model name inside its own router's table. Attach the virtual model and its targets to the same parent. Otherwise, the request fails with a `404` error and the `virtual_model_target_not_found` code. The virtual model still reports `Accepted: True`, so the model status does not show this problem.
 - **A root-path model route cannot share a listener with directly attached models.** If a model-serving rule matches `/`, has no matches at all, or has a match with no path, then no `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` can attach directly to the same listener through a `Gateway` parent. Both would claim the same paths, so the model on the route is rejected with a conflict message. Give the route a distinct prefix, or move the directly attached models onto routes.
 - **The rule name is part of the router identity.** Renaming a route rule moves its models to a new router. If you omit the rule name, the rule's index in the list identifies the router instead, so reordering rules has the same effect.
 
@@ -473,5 +473,5 @@ You can also confirm attachment from the data plane by listing the models on the
 
 ## Known limitations
 
-- The API is experimental and turned off by default.
+- The API is `v1alpha1` and is subject to change in a future release.
 - An {{< reuse "agw-docs/snippets/policy.md" >}} cannot target an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` directly. To scope a policy to a group of models, target the `HTTPRoute` rule that the models attach to. For more information, see [Path-scoped models on an HTTPRoute](#path-scoped-models-on-an-httproute).

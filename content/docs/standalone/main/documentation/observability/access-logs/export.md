@@ -184,7 +184,9 @@ frontendPolicies:
 
 ### Customize exported fields
 
-You can add or remove fields to the log entry that you export to the OTLP endpoint. 
+You can add or remove fields to the log entry that you export to the OTLP endpoint. The following example adds a `trace_id` field from the `x-trace-id` request header and removes the `server.address` field.
+
+The `remove` list matches the attribute names in the OTLP record, which are the OpenTelemetry semantic convention names, such as `server.address`, `url.path`, and `http.response.status_code`. The stdout log keeps the `http.host`, `http.path`, and `http.status` names, and the OTLP `fields` setting does not change it. A name that does not appear in the OTLP record, such as `http.host`, removes nothing.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -196,6 +198,6 @@ frontendPolicies:
         add:
           trace_id: 'request.headers["x-trace-id"]'
         remove:
-          - http.host
+          - server.address
 ```
 

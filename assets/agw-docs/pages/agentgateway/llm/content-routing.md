@@ -2,7 +2,7 @@ Route requests to different LLM backends based on request body content, such as 
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
 > [!NOTE]
-> **Model-centric alternative**: To select a model from request context without writing route matches, you can also use the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.conditional`. For more information, see [Virtual models]({{< link-hextra path="/documentation/llm/models/virtual/" >}}).
+> **Model-centric alternative**: To select a model from request context without writing route matches, you can also use the {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}experimental {{< /version >}}`{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.conditional`. For more information, see [Virtual models]({{< link-hextra path="/documentation/llm/models/virtual/" >}}).
 {{< /version >}}
 
 ## About content-based routing {#about}
