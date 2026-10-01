@@ -55,6 +55,8 @@ routes:
 
 Using the Responses API works exactly the same as consuming OpenAI directly, with only a change to the base URL. This allows you to continue using existing code and SDKs.
 
+Use HTTP POST for Responses requests through agentgateway, because the Responses WebSocket transport is not supported. With the simplified `llm` configuration, a WebSocket upgrade request to `/v1/responses` returns a `405 Method Not Allowed` error with the `websocket_not_supported` code. With the `routes` format, when `policies.ai.routes` maps `/v1/responses` to `responses`, the upgrade request fails with a `400` error instead.
+
 {{< tabs >}}
 {{% tab name="Curl" %}}
 
