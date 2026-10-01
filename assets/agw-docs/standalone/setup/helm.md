@@ -170,6 +170,58 @@ Use a PodDisruptionBudget (PDB) to keep one proxy pod available during voluntary
    ```txt
    1
    ```
+
+### Scale the proxy automatically {#helm-autoscaling}
+
+Enable the chart's HorizontalPodAutoscaler (HPA) to adjust the number of proxy pods based on CPU or memory utilization. The cluster must provide the Kubernetes resource metrics API, typically through Metrics Server. Utilization targets are percentages of the pods' resource requests, so set requests for each resource that you use as a scaling signal.
+
+1. Save the autoscaling settings in a values file. This example keeps two to five replicas, targets 80% CPU utilization, and disables the chart's default memory target.
+
+   ```yaml
+   cat <<'EOF' > autoscaling-values.yaml
+   autoscaling:
+     enabled: true
+     minReplicas: 2
+     maxReplicas: 5
+     targetCPUUtilizationPercentage: 80
+     targetMemoryUtilizationPercentage: 0
+   resources:
+     requests:
+       cpu: 100m
+       memory: 128Mi
+   EOF
+   ```
+
+   | Value | Description |
+   | --- | --- |
+   | `autoscaling.enabled` | Creates an `autoscaling/v2` HPA for the proxy Deployment. The HPA manages replicas instead of `replicaCount`. |
+   | `autoscaling.minReplicas`, `autoscaling.maxReplicas` | Minimum and maximum replica counts. If you also enable a PDB, keep `minReplicas` greater than `1`. |
+   | `autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization as a percentage of the CPU request. Defaults to `80`. Set to `0` to omit this scaling signal. |
+   | `autoscaling.targetMemoryUtilizationPercentage` | Target memory utilization as a percentage of the memory request. Defaults to `80`. Set to `0` to omit this scaling signal. Keep at least one signal enabled. |
+   | `resources.requests` | Resource requests used to calculate utilization. |
+
+2. Upgrade the release while retaining its existing values.
+
+   ```sh
+   helm upgrade {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --reuse-values \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     -f autoscaling-values.yaml
+   ```
+
+3. Check the HPA and its metrics. If utilization is `<unknown>`, inspect the HPA events and confirm that the resource metrics API is available.
+
+   ```sh
+   kubectl get hpa {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl describe hpa {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+For scaling policies and stabilization windows, set `autoscaling.behavior`. For custom HPA annotations, set `autoscaling.annotations`. See the [Helm reference]({{< link-hextra path="/reference/helm/" >}}) for all chart values.
+
 {{< /version >}}
 
 ## Uninstall
