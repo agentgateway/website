@@ -92,6 +92,10 @@ For more certificate options, see [Gateways]({{< link-hextra path="/documentatio
 
 2. Mount the TLS Secret as a volume and configure the `ui-gateway` to terminate TLS traffic on the gateway by using the certs from that Secret. You also expose the UI with a separate Service so that the UI and proxy traffic do not share the same service address. The chart names the extra Service `<release name>-<name>`, such as `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-ui`.
 
+   {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+   Set the chart value `oidc.enabled: true` to inject `OIDC_COOKIE_SECRET` from the named Secret. Setting only `oidc.cookieSecretName` does not inject the key, and agentgateway cannot start with an OIDC policy without it.
+   {{< /version >}}
+
    ```yaml
    cat <<EOF > values.yaml
    gateway:
@@ -136,6 +140,9 @@ For more certificate options, see [Gateways]({{< link-hextra path="/documentatio
        backends:
        - host: httpbin.httpbin.svc.cluster.local:8000
    oidc:
+   {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+     enabled: true
+   {{< /version >}}
      cookieSecretName: agentgateway-ui-secrets
    extraEnv:
    - name: UI_CLIENT_SECRET
