@@ -86,6 +86,36 @@ Independently of the configuration mode, you choose how many endpoints your clie
 
 Multiplexing is also called federation. For a walkthrough, see [Virtual MCP]({{< link-hextra path="/integrations/mcp/servers/virtual" >}}).
 
+### Select targets with conditions {#target-conditions}
+
+A virtual MCP backend can select upstream servers with a boolean CEL `condition` on each target. Agentgateway evaluates the condition with the request context before initializing or contacting that target. The `mcp.target.name` variable identifies the target being evaluated.
+
+The following example lets a client select a server with the `x-mcp-target` header. A request with `x-mcp-target: engineering` includes only the `engineering` target.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  targets:
+  - name: engineering
+    condition: '"x-mcp-target" in request.headers && request.headers["x-mcp-target"] == mcp.target.name'
+    mcp:
+      host: http://engineering-mcp:8080/mcp
+  - name: support
+    condition: '"x-mcp-target" in request.headers && request.headers["x-mcp-target"] == mcp.target.name'
+    mcp:
+      host: http://support-mcp:8080/mcp
+```
+
+| Field | Description |
+| --- | --- |
+| `mcp.targets[].name` | Target name, available to the condition as `mcp.target.name`. |
+| `mcp.targets[].condition` | Boolean CEL expression that selects this target. An omitted condition always includes the target. Conditions require at least two configured targets. |
+| `mcp.targets[].mcp.host` | Upstream MCP endpoint, contacted only when its condition allows it. |
+
+In routing-based configuration, set the same fields under `routes[].backends[].mcp.targets[]`. Conditions can also use authenticated request context, such as JWT claims populated by a [JWT policy]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}). A client-supplied selection header by itself does not establish the client's identity.
+
+If every condition is false, agentgateway presents an empty virtual MCP server. Target conditions choose which servers participate; [MCP authorization]({{< link-hextra path="/documentation/mcp/mcp-authz/" >}}) separately controls which tools and other resources a client can use after a server responds.
+
 ### When to use one endpoint {#multiplex}
 
 Multiplexing gives your clients a single endpoint to configure. You can add and remove MCP servers, or restrict individual tools, without reconfiguring any client. Tool names are prefixed with the target name by default so that tools from different servers do not collide.
