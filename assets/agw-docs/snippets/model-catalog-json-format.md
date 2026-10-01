@@ -31,6 +31,7 @@ A model catalog is JSON with the following high-level structure. Field names are
   }
 }
 ```
+
 {{% /version %}}
 
 {{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
@@ -67,10 +68,29 @@ A model catalog is JSON with the following high-level structure. Field names are
 ```
 {{% /version %}}
 
+{{% version exclude-if="1.5.x" %}}
+For page-billed document models, set `perPage` instead of token rates. The following example charges `$0.005` for each processed page.
+
+```json
+{
+  "providers": {
+    "openai": {
+      "models": {
+        "mistral-ocr-latest": {
+          "rates": { "perPage": "0.005" }
+        }
+      }
+    }
+  }
+}
+```
+{{% /version %}}
+
 Key points:
 
 - Lookups are by **provider id** (such as `openai`, `anthropic`, or `gcp.gemini`) and **model name** (such as `gpt-4o-mini`).
 - Rates are **strings** (exact decimals), in **USD per 1,000,000 tokens**.
+{{< version exclude-if="1.5.x" >}}- `perPage` is **USD per page** for document or OCR models that report page usage, not USD per 1,000,000 tokens.{{< /version >}}
 - If a rate is omitted, that token type is not priced for the model.
 - `tiers[]` is optional. Each tier selects alternate `rates` when the request context length is **over** the tier's `contextOver` value. Tiers must be ordered by strictly increasing `contextOver`.
 {{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}

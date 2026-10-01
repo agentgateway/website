@@ -126,3 +126,7 @@ The `failureMode` field, which was previously available only on `webhook` guards
 For most traffic, the default keeps the 1.5.x behavior, because a provider error already rejected the request or response. Two paths change. On a realtime WebSocket connection, and for streaming responses that are evaluated as they arrive, a provider error from one of these guards used to let the content through. It now rejects the content, unless you set `failureMode: FailOpen`.
 
 For more information, see [Provider failures]({{< link-hextra path="/documentation/llm/guardrails/overview/#provider-failures" >}}).
+
+#### Model cost catalogs can price page-billed OCR requests
+
+Model cost catalogs now accept `rates.perPage` for document and OCR models that bill by processed page instead of by token. Agentgateway extracts Mistral OCR page counts from `usage_info.pages_processed`, prices `/v1/ocr` requests per page, and exposes the page cost in `llm.cost.pages`, `llm.costRates.perPage`, and `agw.ai.usage.cost.pages`. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).

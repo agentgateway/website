@@ -80,6 +80,10 @@ A new `responseIdleTimeout` field bounds the gap between response body frames, r
 
 For the field descriptions and examples, see [Route timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts/#route-timeouts" >}}).
 
+#### Model cost catalogs can price page-billed OCR requests
+
+Model cost catalogs now accept `rates.perPage` for document and OCR models that bill by processed page instead of by token. Agentgateway extracts Mistral OCR page counts from `usage_info.pages_processed`, prices `/v1/ocr` requests per page, and exposes the page cost in `llm.cost.pages`, `llm.costRates.perPage`, and `agw.ai.usage.cost.pages`. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
+
 ### MCP {#v16-features-mcp}
 
 #### Gateway server information overrides {#v16-mcp-server-info}
