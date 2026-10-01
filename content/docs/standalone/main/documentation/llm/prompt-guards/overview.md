@@ -78,7 +78,7 @@ Request and response guards run only on route types that carry an LLM conversati
 | `passthrough` | No |
 | `detect` | No |
 
-A streamed response on any route type is checked only when streaming guardrails are enabled. For more information, see [Streaming guardrails](#streaming-guardrails). To configure route types, see [API types]({{< link-hextra path="/documentation/llm/api-types/" >}}).
+On the route types that run guards, a streamed response is checked only when streaming guardrails are enabled. For more information, see [Streaming guardrails](#streaming-guardrails). To configure route types, see [API types]({{< link-hextra path="/documentation/llm/api-types/" >}}).
 
 ## Possible actions {#actions}
 
