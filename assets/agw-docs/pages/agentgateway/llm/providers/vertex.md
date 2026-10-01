@@ -54,6 +54,11 @@ Configure [Vertex AI](https://cloud.google.com/products/gemini-enterprise-agent-
            name: vertex-ai-secret
    EOF
    ```
+
+{{< version exclude-if="1.5.x" >}}
+With Vertex AI Gemini models, an OpenAI-compatible request can include response schemas and tool parameter schemas. The Gemini schema translation preserves `minItems`, `maxItems`, `minProperties`, `maxProperties`, and `example`.
+{{< /version >}}
+
 5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 
    {{< tabs >}}

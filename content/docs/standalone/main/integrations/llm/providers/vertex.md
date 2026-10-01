@@ -88,6 +88,8 @@ agentgateway -f config.yaml --validate-only
 | `params.vertexRegion` | The Google Cloud region. Defaults to `global` if not specified. |
 | `auth.gcp` | Google Cloud authentication configuration. Uses Application Default Credentials (ADC) by default. |
 
+With Vertex AI Gemini models, an OpenAI-compatible request can include response schemas and tool parameter schemas. The Gemini schema translation preserves `minItems`, `maxItems`, `minProperties`, `maxProperties`, and `example`.
+
 {{< doc-test paths="vertex" >}}
 # Confirm the client-facing `name` is served and that `params.model`,
 # `params.vertexProject`, and `params.vertexRegion` reach the resolved provider
