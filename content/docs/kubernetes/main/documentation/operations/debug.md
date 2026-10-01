@@ -285,6 +285,14 @@ The agentgateway controller tracks a log level per component, such as the transl
    kubectl logs -n agentgateway-system deploy/agentgateway -f
    ```
 
+4. After you install or enable custom plugins, check for duplicate `AddResourceExtension` fields when loaded routes, listeners, or binds are missing.
+
+   ```sh
+   kubectl logs -n agentgateway-system deploy/agentgateway | grep 'addResourceExtension fields contributed by more than one plugin'
+   ```
+
+   When this message appears, more than one plugin contributed the same `AddResourceExtension` collection field. The merge keeps one contribution and discards the rest for that field. Compose the plugins before you register them. You can also change the plugins so that only one plugin contributes each field. `ParentResolvers` can have more than one contributor.
+
 > [!NOTE]
 > You can also get and set the proxy log level directly through the `/logging` admin endpoint, such as `curl -X POST "http://localhost:15000/logging?level=debug"` after you port-forward to the proxy pod. The endpoint accepts the same `RUST_LOG` filter syntax for fine-grained, per-module levels, such as `info,proxy::httpproxy=trace`.
 
