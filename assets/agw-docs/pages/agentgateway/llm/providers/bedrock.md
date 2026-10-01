@@ -256,10 +256,12 @@ spec:
 
 | Value | Endpoint selection |
 |-------|--------------------|
-| `RuntimePreferred` | Use Runtime, except for a model tagged `mantle` but not `runtime`. This value is the default. |
-| `MantlePreferred` | Use Mantle, except for a model tagged `runtime` but not `mantle`. |
+| `RuntimePreferred` | Use Runtime, except for a model tagged `mantle` but not `runtime`. This value is the default. If `guardrail` is set, Runtime is always used. |
+| `MantlePreferred` | Use Mantle, except for a model tagged `runtime` but not `mantle`. The API server rejects this value when `guardrail` is set. |
 | `RuntimeOnly` | Always use Runtime, whatever the tags say. |
-| `MantleOnly` | Always use Mantle, whatever the tags say. |
+| `MantleOnly` | Always use Mantle, whatever the tags say. The API server rejects this value when `guardrail` is set. |
+
+The `guardrail` field sets an inline Bedrock guardrail, which only the Runtime endpoint supports. You can set it under `spec.ai.provider.bedrock` or `spec.ai.groups[].providers[].bedrock` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource, or under `spec.bedrock` on the {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} resource. If you set `guardrail` together with `MantlePreferred` or `MantleOnly`, the API server rejects the resource with the message `Bedrock guardrails cannot be used with MantlePreferred or MantleOnly`. With `RuntimePreferred`, a `guardrail` keeps requests on Runtime even when the model tags would choose Mantle. To apply Bedrock Guardrails with either endpoint, use a [Bedrock Guardrails prompt guard]({{< link-hextra path="/documentation/llm/guardrails/bedrock-guardrails/" >}}) in the `backend.ai.promptGuard` field of an {{< reuse "agw-docs/snippets/policy.md" >}} instead.
 
 Standalone mode takes the same four values in lowercase, such as `runtimePreferred`, under `params.bedrockEndpointPreference`. A value that you copy from one mode to the other fails to load.
 

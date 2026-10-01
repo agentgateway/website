@@ -246,6 +246,13 @@ agentgateway -f config-mantle.yaml --validate-only
 | `runtimeOnly` | Always use Runtime, whatever the tags say. |
 | `mantleOnly` | Always use Mantle, whatever the tags say. |
 
+Inline Bedrock guardrails are available only on route and `backends` AI backends, through the `ai.provider.bedrock.guardrailIdentifier` and `guardrailVersion` fields. Those backends set the preference in `ai.provider.bedrock.endpointPreference`. `llm.models` and `llm.providers` have no inline guardrail fields, and a `params.guardrailIdentifier` setting fails to load with an unknown field error. An inline guardrail requires the Runtime endpoint:
+
+- If either guardrail field is set together with `mantlePreferred` or `mantleOnly`, the configuration fails to load with `Bedrock guardrails cannot be used with MantlePreferred or MantleOnly`.
+- With `runtimePreferred`, an inline guardrail keeps requests on Runtime even when the model tags would choose Mantle.
+
+To apply Bedrock Guardrails with either endpoint, including on `llm.models`, use a [Bedrock Guardrails prompt guard]({{< link-hextra path="/documentation/llm/prompt-guards/bedrock-guardrails/" >}}) in `guardrails.request[].bedrockGuardrails` or `guardrails.response[].bedrockGuardrails`.
+
 The Kubernetes API takes the same four values capitalized, such as `RuntimePreferred`, under `spec.ai.provider.bedrock.endpointPreference`. A value that you copy from one mode to the other fails to load.
 
 In the agentgateway UI, the **LLM Models** and **LLM Providers** editors set `bedrockEndpointPreference` to `mantlePreferred` when you change an entry's provider to **Amazon Bedrock**. An existing Bedrock entry that does not set `bedrockEndpointPreference` shows **Prefer Runtime** in the **Bedrock endpoint** selector and keeps the `runtimePreferred` default. The UI writes the field only after you choose a value and save the entry.
