@@ -212,6 +212,8 @@ For chat requests, the endpoint is chosen per model from the `runtime` and `mant
 
 Set `params.bedrockEndpointPreference` to choose how the tags are applied.
 
+When you create a Bedrock provider in the agentgateway UI, the **Bedrock endpoint** selector writes `mantlePreferred` by default. Existing Bedrock providers without `bedrockEndpointPreference` keep the configuration-file default of `runtimePreferred` until you choose a value and save the provider.
+
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 
