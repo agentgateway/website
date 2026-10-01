@@ -67,6 +67,23 @@ The change matters most for `custom` providers and the `openai` provider.
 
 **Actions to take**: Review every `params.baseUrl` that you set and add the path that the provider serves its API under. OpenAI serves its API under `/v1`, so `https://api.openai.com` becomes `https://api.openai.com/v1`. A URL that already has a path is unaffected, and so is a provider that you use without a `baseUrl` override, because the built-in provider defaults already carry their own paths. A `custom` provider that sets `formats[].path` is also unaffected, because that path is sent as written and the base path is not added to it.
 
+### LLM serving paths must match exactly {#v16-llm-exact-paths}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3539 -->
+
+With the simplified `llm` configuration, agentgateway used to recognize a standard LLM path by its suffix, so a request to `/tenant-a/v1/messages` was handled as a Messages request. A standard path, such as `/v1/chat/completions` or `/v1/messages`, now must match exactly. A request to a prefixed path is not rejected. Agentgateway still selects the model from the request body, but forwards the request to the provider as passthrough, without format conversion and without the `params.model` override. A provider that does not serve that path then returns an error.
+
+| Client request | 1.5.x | 1.6.x |
+| --- | --- | --- |
+| `/v1/messages` | Handled as a Messages request | Unchanged |
+| `/tenant-a/v1/messages`, no `llm.pathPrefix` | Handled as a Messages request, and converted for the provider | Forwarded as passthrough, with the client's path appended to the provider base path, such as `/v1/tenant-a/v1/messages` for a base URL that ends in `/v1` |
+| `/tenant-a/v1/messages`, with `llm.pathPrefix: /tenant-a` | `llm.pathPrefix` is not available | Handled as a Messages request |
+| `/v1/messages/extra` | Forwarded as passthrough | Unchanged |
+
+The `routes` configuration with `ai` backends is unaffected. Its `policies.ai.routes` keys still match by suffix.
+
+**Actions to take**: If your clients call the LLM paths under a base path, set `llm.pathPrefix` to that base path, such as `pathPrefix: /tenant-a`. The gateway removes the prefix before model routing, and returns a `404` error for requests outside the prefix. You can set only one prefix. For more information, see [Model routing and aliases]({{< link-hextra path="/documentation/llm/about/#model-routing-and-aliases" >}}).
+
 ## 🌟 New features {#v16-new-features}
 
 ### Resiliency {#v16-features-resiliency}
