@@ -270,7 +270,10 @@ In your GKE cluster, set up workload identity.
    {{% /tab %}}
    {{< /tabs >}}
 
-   The request is rejected with the default `403` status code. The response body depends on the Google Model Armor verdict. The response fields that you configure can also change the response body.
+   Example output: 
+   ```console
+   The request was rejected due to inappropriate content
+   ```
 
 ## Backend connection and authentication policies
 
