@@ -3,7 +3,7 @@
 | Value | Use |
 | --- | --- |
 | `replicaCount` | Run more than one proxy pod. |{{< version exclude-if="1.5.x" >}}
-| `podDisruptionBudget.enabled`, `podDisruptionBudget.minAvailable`, `podDisruptionBudget.maxUnavailable`, `podDisruptionBudget.unhealthyPodEvictionPolicy` | Create a PodDisruptionBudget for multi-replica proxy deployments. Set `replicaCount` greater than `1`. The chart skips the PodDisruptionBudget for one replica. |{{< /version >}}
+| `podDisruptionBudget.enabled`, `podDisruptionBudget.minAvailable`, `podDisruptionBudget.maxUnavailable`, `podDisruptionBudget.unhealthyPodEvictionPolicy` | Create a PodDisruptionBudget for multi-replica proxy deployments. Set `replicaCount` greater than `1`, or `autoscaling.minReplicas` greater than `1` when `autoscaling.enabled` is `true`. The chart skips the PodDisruptionBudget for one replica. |{{< /version >}}
 | `monitoring.enabled` | Create a PodMonitor and expose the metrics port for Prometheus Operator. |
 | `extraEnv`, `extraVolumes`, `extraVolumeMounts`, `extraContainers` | Add environment variables, mount secrets, or run sidecars. |
 | `imagePullSecrets` | Pull the proxy image from a private registry. |
