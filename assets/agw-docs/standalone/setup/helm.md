@@ -55,7 +55,8 @@ The chart creates the following resources. Each resource is named after the Helm
 | Deployment | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Runs the agentgateway proxy. |
 | ConfigMap | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-config` | Holds the rendered `config.yaml`, mounted read-only at `/config`. |
 | Service | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Exposes the gateway listener. Type `LoadBalancer` and port `80` to container port `4000` by default. |
-| ServiceAccount | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Identity for the proxy pod. |
+| ServiceAccount | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Identity for the proxy pod. |{{< version exclude-if="1.5.x" >}}
+| PodDisruptionBudget | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Protects multi-replica proxy Deployments during voluntary disruptions when `podDisruptionBudget.enabled` is `true` and `replicaCount` is greater than `1`. |{{< /version >}}
 
 If you installed with a different release name or namespace, such as with the **Unique name and namespace** tab, adjust the resource names and the `-n` values in the commands throughout this documentation accordingly.
 
@@ -129,6 +130,47 @@ A port-forward is a quick way to look at the UI on a cluster. To give the UI its
 ## Common Helm values
 
 {{< reuse "agw-docs/standalone/helm-standalone-values-table.md" >}}
+
+{{< version exclude-if="1.5.x" >}}
+### Create a PodDisruptionBudget {#helm-pdb}
+
+Use a PodDisruptionBudget (PDB) to keep one proxy pod available during voluntary disruptions. The chart creates the PDB only when `podDisruptionBudget.enabled` is `true` and `replicaCount` is greater than `1`.
+
+1. Upgrade the Helm release with multiple replicas and enable the PDB.
+
+   ```sh
+   helm upgrade {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --reuse-values \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --set replicaCount=2 \
+     --set podDisruptionBudget.enabled=true \
+     --set podDisruptionBudget.minAvailable=1
+   ```
+
+   | Value | Description |
+   | --- | --- |
+   | `replicaCount` | Must be greater than `1`. The chart skips the PDB for one replica. |
+   | `podDisruptionBudget.enabled` | Set to `true` to render the PDB. |
+   | `podDisruptionBudget.minAvailable` | Sets `spec.minAvailable`. The default value is `1`. |
+   | `podDisruptionBudget.maxUnavailable` | Sets `spec.maxUnavailable` when you use that field instead of `minAvailable`. |
+   | `podDisruptionBudget.unhealthyPodEvictionPolicy` | Sets `spec.unhealthyPodEvictionPolicy` when the value is not empty. |
+
+2. Verify that Kubernetes created the PDB for the release.
+
+   ```sh
+   kubectl get poddisruptionbudget {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -o jsonpath='{.spec.minAvailable}'
+   ```
+
+   Expected output:
+
+   ```txt
+   1
+   ```
+{{< /version >}}
 
 ## Uninstall
 
