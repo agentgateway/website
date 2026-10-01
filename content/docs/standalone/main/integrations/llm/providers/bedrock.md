@@ -241,10 +241,12 @@ agentgateway -f config-mantle.yaml --validate-only
 
 | Value | Endpoint selection |
 |-------|--------------------|
-| `runtimePreferred` | Use Runtime, except for a model tagged `mantle` but not `runtime`. This value is the default. |
-| `mantlePreferred` | Use Mantle, except for a model tagged `runtime` but not `mantle`. |
+| `runtimePreferred` | Use Runtime, except for a model tagged `mantle` but not `runtime`. This value is the default. If the model has inline Bedrock guardrail settings, always use Runtime. |
+| `mantlePreferred` | Use Mantle, except for a model tagged `runtime` but not `mantle`. Do not use this value with inline Bedrock guardrail settings. |
 | `runtimeOnly` | Always use Runtime, whatever the tags say. |
-| `mantleOnly` | Always use Mantle, whatever the tags say. |
+| `mantleOnly` | Always use Mantle, whatever the tags say. Do not use this value with inline Bedrock guardrail settings. |
+
+Inline Bedrock guardrail settings require Runtime. With `runtimePreferred`, inline guardrails keep the request on Runtime even when model tags would otherwise choose Mantle. To apply Bedrock Guardrails independently of the endpoint preference, use [prompt guardrails]({{< link-hextra path="/documentation/llm/prompt-guards/bedrock-guardrails/" >}}) with `guardrails[].bedrockGuardrails`.
 
 The Kubernetes API takes the same four values capitalized, such as `RuntimePreferred`, under `spec.ai.provider.bedrock.endpointPreference`. A value that you copy from one mode to the other fails to load.
 

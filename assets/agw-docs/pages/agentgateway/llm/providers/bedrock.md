@@ -256,10 +256,12 @@ spec:
 
 | Value | Endpoint selection |
 |-------|--------------------|
-| `RuntimePreferred` | Use Runtime, except for a model tagged `mantle` but not `runtime`. This value is the default. |
-| `MantlePreferred` | Use Mantle, except for a model tagged `runtime` but not `mantle`. |
+| `RuntimePreferred` | Use Runtime, except for a model tagged `mantle` but not `runtime`. This value is the default. If `guardrail` is set, always use Runtime. |
+| `MantlePreferred` | Use Mantle, except for a model tagged `runtime` but not `mantle`. Do not use this value with `guardrail`. |
 | `RuntimeOnly` | Always use Runtime, whatever the tags say. |
-| `MantleOnly` | Always use Mantle, whatever the tags say. |
+| `MantleOnly` | Always use Mantle, whatever the tags say. Do not use this value with `guardrail`. |
+
+The `guardrail` block under `spec.ai.provider.bedrock` or `spec.bedrock` is an inline Bedrock guardrail, and it requires Runtime. With `RuntimePreferred`, inline guardrails keep the request on Runtime even when model tags would otherwise choose Mantle. Prompt guard policies that use `bedrockGuardrails` are separate and can apply with either endpoint.
 
 Standalone mode takes the same four values in lowercase, such as `runtimePreferred`, under `params.bedrockEndpointPreference`. A value that you copy from one mode to the other fails to load.
 
