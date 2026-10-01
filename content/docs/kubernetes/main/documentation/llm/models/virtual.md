@@ -433,6 +433,7 @@ Failover depends on eviction. Configure `policies.health` on the concrete target
 
    | Field | Value | Description |
    |-------|-------|-------------|
+   | `targets[].modelRef.name` | `primary-down` | A concrete model in the same namespace. Failover targets cannot point to another virtual model. |
    | `targets[].priority` | `0` | Lower values are preferred. Give several targets the same priority to load balance across them within a group. |
 
 3. Send three requests in a row.
@@ -496,6 +497,9 @@ Failover depends on eviction. Configure `policies.health` on the concrete target
 
    > [!WARNING]
    > Failover is not a per-request retry. The request that triggers eviction still fails and returns an error to the client, and only later requests route to the next priority group. Evicted targets are restored after the eviction duration expires. To retry a failed request, configure a retry policy on the Gateway with an {{< reuse "agw-docs/snippets/policy.md" >}}.
+
+> [!NOTE]
+> A failover target can be a concrete model that points to an InferencePool, by setting `spec.provider: Custom` and `spec.custom.backendRef`. In that case, the controller records the virtual model's Gateway as a parent of the InferencePool, in addition to the concrete model's Gateway. The InferencePool status lists both Gateways as parents, and the inference-routing and Endpoint Picker Extension (EPP) policies are generated for both Gateways.
 
 ## Verify model discovery
 
