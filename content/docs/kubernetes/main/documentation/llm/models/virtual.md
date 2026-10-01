@@ -31,7 +31,11 @@ Three routing strategies are available, and each virtual model uses exactly one 
 | `failover` | Priority group, then health and latency. | Resiliency when a provider degrades. |
 | `conditional` | The first CEL expression that evaluates to `true`. | Tiering by header, body, or other request context. |
 
+After a virtual model selects a target, the gateway rewrites the request so that the provider receives the selected model. This rewrite applies to JSON request bodies and multipart form data, such as `/v1/audio/transcriptions`. For multipart requests, file fields and non-model fields are preserved while each `model` form field is rewritten.
+
 Targets are usually `Internal` models, so clients cannot request them directly and they stay out of `/v1/models`. For more on visibility, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
+
+If a target does not resolve, the control plane still generates the virtual model with the targets that do. The virtual model's status reports the `ResolvedRefs` condition as `False` with the `Invalid` reason, and valid targets keep serving requests. If weighted routing selects an invalid target, the request fails with a `404` and the `virtual_model_target_not_found` error code. If conditional routing matches an invalid target, the request fails the same way instead of falling through to the next target. Failover leaves invalid targets out of its priority groups. If every failover target is invalid, the control plane does not generate the virtual model, and requests for it return `404` with the `model_not_found` error code.
 
 > [!NOTE]
 > Virtual models must be `Public`, and they cannot set `spec.policies`. Configure policies on the concrete target models instead.
@@ -355,7 +359,7 @@ Use `virtualModel.conditional` to select a target with a CEL expression. Targets
 
 Use `virtualModel.failover` to group targets by priority. Lower values are preferred. Targets in the same priority group are selected by a score that considers health and latency. The next group is used only when every target in the current group is degraded.
 
-Failover depends on eviction. Configure `policies.health` on the concrete target models to define when a target is evicted. Without a health policy, targets are never evicted and failover does not occur.
+Failover depends on eviction. A virtual model with more than one priority group uses default eviction: a single 5xx response or connection failure evicts a target for 3 seconds, and each repeated eviction lasts longer. To change when a target is evicted, configure `policies.health` on the concrete target models. A health policy replaces the default eviction instead of adding to it, so include an `eviction` block, as in the following example.
 
 1. Create a model that points at an address with no backing workload, so that requests to it always fail. In a real deployment, the target would be a healthy primary provider.
 

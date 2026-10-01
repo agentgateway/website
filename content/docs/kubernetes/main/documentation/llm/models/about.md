@@ -21,7 +21,7 @@ The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API removes the sca
 Every model that attaches to the same parent is aggregated into a single model table, called a *model router*. From that table, agentgateway serves the following behavior.
 
 - Model extraction from the request body.
-- The standard LLM API paths, such as `/v1/chat/completions`.
+- The standard LLM API paths, such as `/v1/chat/completions` and `/v1/audio/transcriptions`.
 - Model discovery on `/v1/models`.
 - Per-model provider routing.
 - OpenAI-compatible error responses for unknown models.
@@ -57,6 +57,13 @@ Each `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` lists one or more 
 A `Gateway` parent is the default choice. Use an `HTTPRoute` parent when one listener needs more than one independent set of models, or when a group of models needs its own policies. For more information, see [Path-scoped models on an HTTPRoute](#path-scoped-models-on-an-httproute).
 
 Models on different routers are isolated from each other. A request to one router's paths can select only the models on that router, and `/v1/models` on that router lists only those models.
+
+How a router matches paths depends on its parent.
+
+* **Listener root** (`Gateway` or `ListenerSet` parent): The router serves only the standard LLM paths, and each path must match exactly. A request to another path, such as `/other/v1/messages` or `/v1/messages/extra`, does not reach the router, and returns a `404` error unless another route on the listener matches it.
+* **`HTTPRoute` parent**: The router receives every request under the rule's `PathPrefix`. A request under the prefix that is not a standard LLM path, such as `/tenant-a/v1/messages/extra`, is not rejected. Agentgateway still selects the model from the request body, but forwards the request to the provider as passthrough, without format conversion.
+
+To serve the standard LLM paths under a prefix, attach the models to an `HTTPRoute` parent.
 
 ## Listener opt-in
 
@@ -352,6 +359,8 @@ Concrete models accept an inline `spec.policies` block that supports the followi
 | `tunnel` | Proxy tunnel used to reach the provider. |
 | `headers` | Request and response header changes. |
 
+Setting `spec.policies`, such as `transformations`, does not change which API formats the model serves. Requests to `/v1/messages`, `/v1/responses`, and the other standard serving paths keep their format.
+
 Virtual models cannot set `spec.policies`, because a virtual model has no provider of its own to authenticate to, transform for, or health check. Configure these policies on the concrete models that the virtual model targets.
 
 ### Providers
@@ -431,6 +440,24 @@ For examples of each strategy, see [Virtual models]({{< link-hextra path="/docum
 - Targets must be `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources in the same namespace. Cross-namespace references are not supported.
 - Virtual models must be `Public`. The restriction stops virtual models from targeting each other, which could otherwise create routing loops.
 - Virtual models cannot set `spec.policies`. Configure policies on the concrete target models instead.
+
+## Model resolution order {#agentgatewaymodel-resolution}
+
+The model value is resolved before provider-specific routing, request conversion, token-count behavior, and response conversion. First, the request model selects an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} from `spec.match.model`. A virtual model can then select a concrete target model, and `spec.policies.transformations` on the concrete model can rewrite the `model` field. The final resolved model is used for provider-specific behavior, such as Azure Foundry Claude routing, Bedrock endpoint selection, and Vertex Gemini path selection.
+
+The following diagram shows how the request model resolves to the model that the provider receives.
+
+```mermaid
+flowchart LR
+  R["Request sets model"] --> M["Match spec.match.model"]
+  M -->|Virtual model| S["Select a target and<br/>rewrite model"]
+  M -->|Concrete model| T["Apply model<br/>transformations"]
+  S --> T
+  T --> P["Provider receives<br/>the resolved model"]
+  style P fill:#7734be,color:#fff
+```
+
+The request must include `model`, because the model router uses it to select an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}. A request without `model` fails with a `400` and the `missing_model` error code before any transformation runs.
 
 ## Verify that a model attached
 
