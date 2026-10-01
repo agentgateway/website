@@ -25,16 +25,18 @@ Steps to install:
        configs:
          - from: 2024-04-01
            store: tsdb
-           object_store: s3
+           object_store: filesystem
            schema: v13
            index:
              prefix: loki_index_
              period: 24h
+     storage:
+       type: filesystem
      auth_enabled: false
    singleBinary:
      replicas: 1
    minio:
-     enabled: true
+     enabled: false
    gateway:
      enabled: false
    test:
