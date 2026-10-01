@@ -31,8 +31,10 @@ JWT parts are structured as follows:
 JWT authentication uses asymmetric cryptography with public and private key pairs to sign and verify JWTs. Review the following phases during the JWT validation: 
 
 1. **Token issuance**: The identity provider, such as Keycloak signs JWTs with its private key.
-2. **Key distribution**: The identity provider publishes its public keys through a JWKS (JSON Web Key Set) endpoint. Each key has a unique key ID (`kid`).
+2. **Key distribution**: The identity provider publishes its public keys through a JWKS (JSON Web Key Set) endpoint. Each key has a key ID (`kid`) that is unique within its JWKS.
 3. **Token validation**: Agentgateway reads the `kid` from the JWT header and fetches the matching public key from the configured JWKS endpoint. The JWKS endpoint can be added as an inline JWKS or a remote JWKS address in the {{< reuse "agw-docs/snippets/policy.md" >}}. After the agentgateway proxy fetched the public key, it uses the public key to verify the JWT signature.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} If the JWT includes an `nbf` claim, the agentgateway proxy also rejects the token when the `nbf` value is more than 60 seconds in the future.{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}When multiple JWT providers are configured, the agentgateway proxy tries each provider whose `issuer` matches the token's `iss` claim and whose JWKS contains the token's `kid`, in the order that the providers are listed. The first provider that validates the signature and claims accepts the token. This matching is important for multi-tenant identity providers, because a `kid` is unique only within one issuer's JWKS. Several providers can also share one issuer, such as one provider for each audience.{{< /version >}}
 
 Review the following diagram to understand the JWT request flow: 
 ```mermaid

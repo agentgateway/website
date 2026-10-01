@@ -420,6 +420,11 @@ Parse the `model` field from the incoming request body and the upstream response
 * `json(request.body).model`: Reads the `model` field from the incoming request body.
 * `json(response.body).model`: Reads the `model` field from the upstream response body.
 
+> [!WARNING]
+> `json(response.body)` requires buffering and parsing the entire upstream response body before the transformation can run. On routes that can return streaming (SSE) responses, such as chat completions sent with `stream: true`, this buffering prevents the gateway from flushing response chunks to the client as they arrive. In practice, an incremental, token-by-token stream can turn into a single delayed burst delivered all at once.
+>
+> If you need model information on streaming routes, avoid parsing `response.body` directly. Either scope this policy to non-streaming routes only, or extract the model name from the `llm.responseModel` [CEL context variable]({{< link-hextra path="/reference/cel/" >}}) instead, which is populated from the LLM protocol layer rather than by parsing the raw response body.
+
 {{< doc-test paths="llm-model-headers" >}}
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
