@@ -127,7 +127,7 @@ frontendPolicies:
 
 Use the `remove` field to drop attributes from spans before your `attributes` expressions are applied. This setting is useful for stripping default attributes that are redundant or that you do not want to export.
 
-The following example removes the HTTP version and source address from the span. 
+The following example removes the HTTP protocol version and client address from the span. The `remove` list matches the attribute names on the request span, as listed in [Default span attributes]({{< link-hextra path="/documentation/observability/traces/attribute-reference/" >}}). A name that is not on the span, such as the earlier `src.addr` or `http.version`, removes nothing.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -136,6 +136,6 @@ frontendPolicies:
     host: localhost:4317
     randomSampling: true
     remove:
-      - src.addr
-      - http.version
+      - client.address
+      - network.protocol.version
 ```

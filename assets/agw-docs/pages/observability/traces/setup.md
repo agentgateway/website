@@ -89,8 +89,8 @@ EOF
    | Goal | TraceQL query |
    |---|---|
    | All traces from the proxy | `{resource.service.name="agentgateway-proxy"}` |
-   | Traces for a specific HTTP path | `{resource.service.name="agentgateway-proxy" && span.http.path="/get"}` |
-   | Error traces (4xx/5xx) | `{resource.service.name="agentgateway-proxy" && span.http.status >= 400}` |
+   | Traces for a specific HTTP path | {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`{resource.service.name="agentgateway-proxy" && span.http.path="/get"}`{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`{resource.service.name="agentgateway-proxy" && span.url.path="/get"}`{{< /version >}} |
+   | Error traces (4xx/5xx) | {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`{resource.service.name="agentgateway-proxy" && span.http.status >= 400}`{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`{resource.service.name="agentgateway-proxy" && span.http.response.status_code >= 400}`{{< /version >}} |
    | Slow traces | `{resource.service.name="agentgateway-proxy"} \| duration > 100ms` |
 
    {{< reuse-image src="img/agw-tempo.png" srcDark="img/agw-tempo.png" >}}
@@ -244,6 +244,11 @@ Use the `attributes.remove` field to drop attributes from spans. This is useful 
 
 The following example removes the source address and HTTP version from a trace span. 
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+The `remove` list matches the attribute names on the request span, as listed in [Default span attributes]({{< link path="/documentation/observability/traces/attribute-reference/" >}}). A name that is not on the span, such as the earlier `src.addr` or `http.version`, removes nothing.
+{{% /version %}}
+
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -270,6 +275,35 @@ spec:
           - http.version
 EOF
 ```
+{{% /version %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: tracing
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+    - kind: Gateway
+      name: agentgateway-proxy
+      group: gateway.networking.k8s.io
+  frontend:
+    tracing:
+      backendRef:
+        name: opentelemetry-collector-traces
+        namespace: telemetry
+        port: 4317
+      protocol: GRPC
+      randomSampling: "true"
+      attributes:
+        remove:
+          - client.address
+          - network.protocol.version
+EOF
+```
+{{% /version %}}
 
 ## Alternative backends
 
