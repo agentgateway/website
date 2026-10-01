@@ -441,6 +441,24 @@ For examples of each strategy, see [Virtual models]({{< link-hextra path="/docum
 - Virtual models must be `Public`. The restriction stops virtual models from targeting each other, which could otherwise create routing loops.
 - Virtual models cannot set `spec.policies`. Configure policies on the concrete target models instead.
 
+## Model resolution order {#agentgatewaymodel-resolution}
+
+The model value is resolved before provider-specific routing, request conversion, token-count behavior, and response conversion. First, the request model selects an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} from `spec.match.model`. A virtual model can then select a concrete target model, and `spec.policies.transformations` on the concrete model can rewrite the `model` field. The final resolved model is used for provider-specific behavior, such as Azure Foundry Claude routing, Bedrock endpoint selection, and Vertex Gemini path selection.
+
+The following diagram shows how the request model resolves to the model that the provider receives.
+
+```mermaid
+flowchart LR
+  R["Request sets model"] --> M["Match spec.match.model"]
+  M -->|Virtual model| S["Select a target and<br/>rewrite model"]
+  M -->|Concrete model| T["Apply model<br/>transformations"]
+  S --> T
+  T --> P["Provider receives<br/>the resolved model"]
+  style P fill:#7734be,color:#fff
+```
+
+The request must include `model`, because the model router uses it to select an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}. A request without `model` fails with a `400` and the `missing_model` error code before any transformation runs.
+
 ## Verify that a model attached
 
 Each `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` reports one entry in `status.parents` per parent reference, with an `Accepted` condition for the attachment and a `ResolvedRefs` condition for the references in the spec, such as virtual model targets and Secrets. Parent status includes the selected `sectionName` or `port`, so one rejected parent reference does not hide another accepted reference to the same parent resource.
