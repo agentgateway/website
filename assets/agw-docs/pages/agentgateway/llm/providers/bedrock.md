@@ -242,7 +242,7 @@ Bedrock serves models on two API surfaces: the Runtime endpoint, which carries t
 
 For chat requests, the endpoint is chosen per model from the `runtime` and `mantle` tags in your [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). Run `agctl catalog import` to populate those tags, because the default sources include `aws-bedrock-mantle`, which reads them from the AWS model cards. Without a catalog, no model carries either tag, so every chat request falls back to the preference alone.
 
-Set `spec.ai.provider.bedrock.endpointPreference` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource to choose how the tags are applied. The AgentgatewayModel resource takes the same setting at `spec.bedrock.endpointPreference`.
+Set `spec.ai.provider.bedrock.endpointPreference` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource to choose how the tags are applied. The {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} resource takes the same setting at `spec.bedrock.endpointPreference`.
 
 ```yaml
 spec:
