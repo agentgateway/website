@@ -79,6 +79,11 @@ shapes, declare each supported format and optionally set a per-format path.
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
 
+Format conversion also preserves tool schema strictness. A Messages request
+converted to `Completions` keeps each function tool's `strict` setting. A
+converted `Responses` request uses `strict: false` for a tool that omits
+`strict`, so optional schema properties stay optional.
+
 ### Reasoning carryover between formats
 
 Extended-thinking history is carried between the `Messages` and `Completions`

@@ -78,6 +78,8 @@ The Chat Completions conversion carries extended-thinking history in both direct
 
 On the way out, an assistant `thinking` block in the message history is sent as `reasoning_content`. A turn made of thinking alone is still sent.
 
+Function tools keep their `strict` setting in the Chat Completions request. If a tool omits `strict`, the converted request omits it too.
+
 On the way back, the `reasoning_content` in a buffered response becomes a `thinking` block ahead of the text block. In a stream, a thinking content block opens with `thinking_delta` events, adds a `signature_delta` when the engine sends a signature, and stops before the text or tool-use block that follows. Reasoning that the engine withholds arrives with an empty text and a signature that carries it, so the block is sent on the signature alone, in both the buffered and the streamed form.
 
 Three cases do not round-trip.
@@ -96,7 +98,7 @@ The Responses conversion covers a common agent subset:
 
 - Text and system instructions
 - Image inputs, supplied by URL, base64 data, or file ID
-- Function tools, tool choice, and the parallel tool-call preference
+- Function tools, tool choice, the parallel tool-call preference, and the `strict` setting on tool input schemas. A converted Responses request uses `strict: false` for a Messages tool that omits `strict`, so optional schema properties stay optional.
 - Assistant tool-use history, and tool results that are text or images
 - Structured output JSON schemas
 - Prompt cache breakpoints
