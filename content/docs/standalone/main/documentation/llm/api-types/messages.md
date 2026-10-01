@@ -102,6 +102,8 @@ The Responses conversion covers a common agent subset:
 - Prompt cache breakpoints
 - Streaming and usage reporting
 
+When the conversion carries assistant tool-use history, the Messages tool-use `id` is sent as the Responses `call_id`. The converted request leaves the optional Responses item `id` unset, because the client did not supply a Responses item ID.
+
 > [!WARNING]
 > The Responses format has no equivalent for `stop_sequences` or `top_k`. Agentgateway accepts both fields and drops them, with no error and no warning to the client. A request that relies on a stop sequence to end generation behaves differently against a provider that advertises only `responses`.
 
