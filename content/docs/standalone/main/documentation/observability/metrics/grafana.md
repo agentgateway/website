@@ -1,7 +1,7 @@
 ---
 title: Grafana
 weight: 40
-description: Visualize agentgateway metrics in Grafana by using the pre-built Kubernetes dashboard or custom PromQL panels for binary and Docker deployments.
+description: Visualize standalone agentgateway metrics in Grafana with the pre-built dashboard for binary, Docker, and Helm deployments.
 test:
   grafana:
   - file: ${versionRoot}/documentation/observability/metrics/grafana.md
@@ -12,22 +12,20 @@ aliases:
 
 [Grafana](https://grafana.com/) is an open-source visualization platform that turns time-series data into dashboards, graphs, and alerts. It is the standard way to visualize agentgateway metrics that are collected by [Prometheus]({{< link-hextra path="/documentation/observability/metrics/prometheus/" >}}), and supports correlating metrics with traces by adding Jaeger as a second data source in the same Grafana instance.
 
-Agentgateway ships a pre-built dashboard for Kubernetes deployments that covers requests, LLM traffic, MCP traffic, and connections out of the box.
+Agentgateway ships a pre-built standalone dashboard for binary, Docker, and standalone Helm deployments. It covers requests, latency, LLM traffic, MCP traffic, and runtime statistics without requiring Kubernetes namespace, gateway, or pod labels.
 
-For binary and Docker deployments where the pre-built dashboard does not apply, you can use the [PromQL queries](#common-promql-queries) that are included in this guide to help you get started with building your own Grafana panels.
+Use the [PromQL queries](#common-promql-queries) to add custom panels or alerts.
 
 ## Before you begin
 
-[Set up a Prometheus instance]({{< link-hextra path="/documentation/observability/metrics/prometheus/" >}}) so that you can start collecting metrics and feeding them into Grafana. Do not run that guide's cleanup step until you finish this one, because both guides use the `monitoring` namespace.
+[Set up a Prometheus instance]({{< link-hextra path="/documentation/observability/metrics/prometheus/" >}}) so that you can start collecting metrics and feeding them into Grafana. Do not run that guide's cleanup step until you finish this one, if you use the Kubernetes installation steps, because both guides use the `monitoring` namespace.
 
 > [!NOTE]
 > The `kube-prometheus-stack` chart already installs Grafana as the `kube-prometheus-stack-grafana` service. If you set up Prometheus with that chart, skip steps 1 through 3 and port-forward `svc/kube-prometheus-stack-grafana` instead. Get its admin password with `kubectl get secret -n monitoring kube-prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode`.
 
-## Use the pre-built Grafana dashboard (Kubernetes only)
+## Use Grafana in Kubernetes
 
-The pre-built dashboard includes the following sections:
-
-{{< reuse "agw-docs/snippets/agentgateway/grafana-dashboard-metrics.md" >}}
+The standalone dashboard includes request rates by status, route, and reason; request latency; LLM token usage and latency; MCP calls; and runtime statistics. The Kubernetes control-plane dashboard is a separate dashboard that requires Kubernetes labels.
 
 1. Add the Grafana Helm repository and install Grafana.
    ```sh
@@ -60,7 +58,7 @@ The pre-built dashboard includes the following sections:
 
 7. Download the agentgateway dashboard JSON.
    ```sh
-   curl -L "https://raw.githubusercontent.com/agentgateway/agentgateway/main/controller/install/helm/agentgateway/files/agentgateway-dashboard.json" \
+   curl -L "https://raw.githubusercontent.com/agentgateway/agentgateway/main/controller/install/helm/agentgateway-standalone/files/agentgateway-dashboard.json" \
      -o agentgateway-dashboard.json
    ```
 
@@ -76,7 +74,7 @@ The pre-built dashboard includes the following sections:
     kubectl delete namespace monitoring
     ```
 
-## Build your own Grafana panels (Binary and Docker)
+## Use Grafana with binary or Docker
 
 1. Run Grafana with Docker.
 
@@ -93,7 +91,7 @@ The pre-built dashboard includes the following sections:
    # WHAT THIS TEST VALIDATES:
    #   * Step 1: the docker run command starts Grafana and its API becomes healthy.
    #   * "Use the pre-built Grafana dashboard" step 7: the curl download URL resolves and
-   #     returns valid JSON whose `uid` is "agentgateway".
+   #     returns valid JSON whose `uid` is "agentgateway-standalone".
    #   * Dashboard import (proxy for the manual UI steps 8-10): the dashboard imports into the
    #     running Grafana through the API, and Grafana loads it.
    #
@@ -113,9 +111,9 @@ The pre-built dashboard includes the following sections:
    # Confirm that the dashboard JSON downloaded in the Kubernetes section is the expected
    # agentgateway dashboard, then import it through the API to mirror the manual
    # "Upload dashboard JSON file" step.
-   curl -sL "https://raw.githubusercontent.com/agentgateway/agentgateway/main/controller/install/helm/agentgateway/files/agentgateway-dashboard.json" \
+   curl -sL "https://raw.githubusercontent.com/agentgateway/agentgateway/main/controller/install/helm/agentgateway-standalone/files/agentgateway-dashboard.json" \
      -o agentgateway-dashboard.json
-   jq -e '.uid == "agentgateway"' agentgateway-dashboard.json >/dev/null
+   jq -e '.uid == "agentgateway-standalone"' agentgateway-dashboard.json >/dev/null
    jq '{dashboard: ., overwrite: true}' agentgateway-dashboard.json \
      | curl -sf -u admin:admin -H "Content-Type: application/json" \
          -X POST http://localhost:3001/api/dashboards/db -d @- >/dev/null
@@ -128,7 +126,7 @@ The pre-built dashboard includes the following sections:
    - name: Agentgateway dashboard is loaded in Grafana
      retries: 10
      http:
-       url: "http://localhost:3001/api/dashboards/uid/agentgateway"
+       url: "http://localhost:3001/api/dashboards/uid/agentgateway-standalone"
        method: GET
        headers:
          authorization: "Basic YWRtaW46YWRtaW4="
@@ -151,17 +149,16 @@ The pre-built dashboard includes the following sections:
    3. Set the Prometheus server URL to `http://host.docker.internal:9090`.
    4. Click **Save & Test**.
 
-4. Create a dashboard.
-   1. Go to **Dashboards** → **New** → **New dashboard**.
-   2. Add a Panel and click **Configure visualization**.
-   3. Select your Prometheus data source.
-   4. Switch to the **Code** view and enter a PromQL query in the query editor. For example, to see request rate by route:
-      ```promql
-      rate(agentgateway_requests_total[5m])
-      ```
-   5. Click **Apply** to save the panel, then save the dashboard.
+4. Download and import the standalone dashboard.
 
-   For more queries to build out your dashboard, see [Common PromQL queries](#common-promql-queries).
+   ```sh
+   curl -L "https://raw.githubusercontent.com/agentgateway/agentgateway/main/controller/install/helm/agentgateway-standalone/files/agentgateway-dashboard.json" \
+     -o agentgateway-dashboard.json
+   ```
+
+   In Grafana, go to **Dashboards** → **New** → **Import**, upload the JSON file, select your Prometheus data source, and click **Import**. The dashboard does not require Kubernetes labels on your metrics.
+
+   To add your own panels, select **New dashboard**, add a visualization, and enter one of the [Common PromQL queries](#common-promql-queries) in the query editor's **Code** view.
 
 5. When you are done, remove the Grafana container.
    ```sh
