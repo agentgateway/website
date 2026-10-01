@@ -12,7 +12,7 @@ Review the release notes for agentgateway on Kubernetes.
 
 ## ✨ Highlights {#v16-highlights}
 
-Version 1.6 refines the features that you already use rather than adding new ones. Most changes make LLM routing more resilient and authentication more flexible. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
+Version 1.6 provides many updates to existing features. Most changes make LLM routing more resilient and authentication more flexible. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
 
 - **[`AgentgatewayModel` is on by default](#v16-llm)**: The model-centric API is no longer experimental, so you can serve LLMs without a Helm flag.
 - **[More resilient LLM routing](#v16-llm)**: Failover evicts unhealthy targets automatically, a virtual model with one broken target keeps serving, and a new idle timeout catches backends that stall mid-stream.

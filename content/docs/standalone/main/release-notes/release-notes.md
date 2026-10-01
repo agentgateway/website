@@ -12,7 +12,7 @@ Review the release notes for agentgateway standalone.
 
 ## ✨ Highlights {#v16-highlights}
 
-Version 1.6 refines the features that you already use rather than adding new ones. Most changes make LLM routing more resilient, sign-in smoother, and MCP more complete. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
+Version 1.6 provides many updates to existing features. Most changes make LLM routing more resilient, sign-in smoother, and MCP more complete. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
 
 - **[Sign-in improvements for the UI and your apps](#v16-security)**: OIDC sessions gain login and logout endpoints, answer `fetch` requests with `401` instead of a redirect, and fit more group claims into the session cookie.
 - **[Cost tracking with no configuration](#v16-built-in-catalog)**: A built-in model catalog prices requests to common public models.
