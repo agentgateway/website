@@ -79,7 +79,7 @@ shapes, declare each supported format and optionally set a per-format path.
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
 
-### Reasoning carryover between formats
+### Reasoning carryover between formats {#messages-to-completions-reasoning}
 
 Extended-thinking history is carried between the `Messages` and `Completions`
 formats in both directions, so a thinking session on a converted route keeps its
@@ -110,7 +110,7 @@ The following cases do not round-trip.
 | A `redacted_thinking` block, sent to a `Completions` provider | Dropped, because it holds nothing that an OpenAI-compatible engine can replay. |
 | A provider that declares `Responses` and not `Completions` | The thinking history is dropped from the converted request, with no error and no warning, so the model loses its prior reasoning. |
 
-Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. When an Anthropic messages client sends a request with tools to one of these models through a `Completions` provider, the request is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped. Every other model receives the reasoning effort that the client asked for, if any.
+Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. When an Anthropic messages client sends a request with tools to one of these models through a `Completions` provider, the request is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped. For other models, `output_config.effort` sets the Chat Completions `reasoning_effort` even when the request omits `thinking`. A request that disables `thinking` sends no `reasoning_effort`, even when `output_config.effort` is set.
 
 ## Set the provider identity {#provider-override}
 
