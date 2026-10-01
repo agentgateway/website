@@ -212,8 +212,6 @@ For chat requests, the endpoint is chosen per model from the `runtime` and `mant
 
 Set `params.bedrockEndpointPreference` to choose how the tags are applied.
 
-When you create a Bedrock provider in the agentgateway UI, the **Bedrock endpoint** selector writes `mantlePreferred` by default. Existing Bedrock providers without `bedrockEndpointPreference` keep the configuration-file default of `runtimePreferred` until you choose a value and save the provider.
-
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 
@@ -249,6 +247,8 @@ agentgateway -f config-mantle.yaml --validate-only
 | `mantleOnly` | Always use Mantle, whatever the tags say. |
 
 The Kubernetes API takes the same four values capitalized, such as `RuntimePreferred`, under `spec.ai.provider.bedrock.endpointPreference`. A value that you copy from one mode to the other fails to load.
+
+In the agentgateway UI, the **LLM Models** and **LLM Providers** editors set `bedrockEndpointPreference` to `mantlePreferred` when you change an entry's provider to **Amazon Bedrock**. An existing Bedrock entry that does not set `bedrockEndpointPreference` shows **Prefer Runtime** in the **Bedrock endpoint** selector and keeps the `runtimePreferred` default. The UI writes the field only after you choose a value and save the entry.
 
 The preference applies to four route types: chat completions, messages, responses, and Anthropic token counting. Every other route type ignores the preference and uses a fixed endpoint.
 
