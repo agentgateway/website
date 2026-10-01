@@ -15,6 +15,10 @@ Most examples in both the {{< reuse "agw-docs/snippets/kgateway.md" >}} and Kube
 
 With ListenerSets, you can group together listeners that have their own unique configuration, such as different protocols, ports, hostnames, or TLS settings. Then, the ListenerSet refers to a Gateway, which can be in a different namespace than the ListenerSet. The same Gateway can also have multiple ListenerSets.
 
+{{< version exclude-if="1.5.x" >}}
+Integrations that call `WithExtraListenerSets` can contribute listener sets without creating Gateway API ListenerSet resources. The syncer admits these `translator.ListenerSet` contributions only when the parent Gateway's `allowedListeners` policy accepts the contribution namespace and the contribution carries a valid listener identity. After admission, these contributions use the same bind, route-parent, and listener precedence rules as CRD-derived ListenerSets. Rejected contributions are not written to Gateway API status. The integration reports them from `Outputs.RejectedListenerSets`.
+{{< /version >}}
+
 Similar to Gateways, ListenerSets can have a maximum of 64 listeners. However, because you can attach multiple ListenerSets to a single Gateway, now a single Gateway can have more than 64 listeners. Keep in mind that more listeners can impact how long it takes to propagate configuration changes on the Gateway. If you have more than 1,000 listeners, consider attaching ListenerSets to multiple Gateways.
 
 ### ListenerSet use cases {#listenerset-use-cases}
