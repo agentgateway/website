@@ -102,6 +102,8 @@ The Responses conversion covers a common agent subset:
 - Prompt cache breakpoints
 - Streaming and usage reporting
 
+When a streamed Responses reply is a refusal, the converted Messages stream emits the refusal text once and sets `stop_reason` to `refusal`.
+
 > [!WARNING]
 > The Responses format has no equivalent for `stop_sequences` or `top_k`. Agentgateway accepts both fields and drops them, with no error and no warning to the client. A request that relies on a stop sequence to end generation behaves differently against a provider that advertises only `responses`.
 
