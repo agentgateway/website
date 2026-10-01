@@ -27,11 +27,11 @@ You can configure these types of timeouts on a route.
 
 |Timeout|Description|
 |-|-|
-|`requestTimeout`|The time from the start of an incoming request, until the end of the response headers is received. Note if there are retries, this time includes the total time across retries. The response body is not included, so use `responseIdleTimeout` to bound gaps between body frames.|
+|`requestTimeout`|The time from the start of an incoming request, until the end of the response headers is received. Note if there are retries, this time includes the total time across retries. The response body is not included, so use `responseIdleTimeout` to bound waits for upstream response body frames.|
 |`backendRequestTimeout`|The time from the start of a request to a backend, until the end of the response headers are completed. Note this time is per-request, so with retries this time is a per-retry timeout. Like `requestTimeout`, this retry process stops applying once the response headers arrive.|
-|`responseIdleTimeout`|The maximum time the response body can go without producing data. The window restarts on every body frame, so this range bounds the gap between frames rather than the total time a response might take. Use this setting to terminate a backend that stalls mid-stream, without capping how long a legitimately long response might run. The timeout is disabled when the field is unset or set to zero, and it never applies to responses that switch protocols, so upgraded WebSocket and CONNECT tunnels are not terminated by it.|
+|`responseIdleTimeout`|The maximum time to wait for the next frame from the upstream response body. Time spent processing the response body, buffering response guardrails, transforming the response, or waiting for the client to receive data does not count. Use this setting to terminate a backend that stalls mid-stream, without capping how long a legitimately long upstream response might run. The timeout is disabled when the field is unset or set to zero, and it never applies to responses that switch protocols, so upgraded WebSocket and CONNECT tunnels are not terminated by it.|
 
-Because requestTimeout and backendRequestTimeout both stop measuring elapsed time once the response headers arrive, neither one places any bound on how long a response body might take, and neither can differentiate a stalled stream from a slow one. The responseIdleTimeout covers this gap by limiting the time that can pass between response body chunks, which matters most for streaming responses that are expected to run for a long time.
+Because requestTimeout and backendRequestTimeout both stop measuring elapsed time once the response headers arrive, neither one places any bound on how long a response body might take, and neither can differentiate a stalled upstream stream from a slow one. The responseIdleTimeout covers this gap by limiting the time that agentgateway waits for more data from the backend, which matters most for streaming responses that are expected to run for a long time.
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
@@ -90,8 +90,9 @@ routes:
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests actually time out at runtime — requires a slow backend the
 #     page omits to exceed the configured deadline.
-#   * That the idle window genuinely restarts per body frame — needs a streaming
-#     backend that stalls mid-response, which no fixture here provides.
+#   * That the idle window counts only pending upstream body reads, not response
+#     processing time — needs a streaming backend and response processing path
+#     that this page does not provide.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
