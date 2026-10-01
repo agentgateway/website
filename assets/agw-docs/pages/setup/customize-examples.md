@@ -485,6 +485,10 @@ EOF
 
 Configure graceful shutdown timeouts using the `shutdown` config.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+During the `min` window, the proxy keeps accepting new connections and asks clients on existing connections to close them after the current request. After `min`, the proxy closes the listener, refuses new connections, and lets existing connections finish until all tracked connections close or `max` passes.
+{{< /version >}}
+
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -498,6 +502,13 @@ spec:
     max: 120
 EOF
 ```
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+| Field | Description |
+| ----- | ----------- |
+| `spec.shutdown.min` | Time, in seconds, that the proxy keeps accepting new connections after it receives SIGTERM. Defaults to `10`. |
+| `spec.shutdown.max` | Sets the `terminationGracePeriodSeconds` of the proxy pod. Defaults to `60`. The proxy's total drain window is this value minus 5 seconds, or minus 1 second when the value is `10` or less, so that the proxy closes any remaining connections before Kubernetes stops the pod. For example, `max: 120` gives a drain window of 115 seconds. If `min` is longer than the drain window, the proxy shortens `min` to match it. |
+{{< /version >}}
 
 ### Static IP for LoadBalancer {#static-ip}
 
