@@ -57,7 +57,28 @@ The diagram shows content flowing through multiple guard layers. Each layer can:
 - **Mask**: Replace sensitive patterns with placeholders and continue
 - **Audit**: Record what the guard detected, and let the content continue unchanged
 
-Every action is available on the request path and the response path. A response guard can reject a response as well as mask it.
+Every action is available on the request path and the response path. A response guard can reject a response as well as mask it. The exception is streamed traffic: the `Mask` action does not apply to a streamed response or to OpenAI Realtime WebSocket traffic.
+
+## Supported route types {#route-types}
+
+Request and response guards run only on route types that carry an LLM conversation. Use this table to check whether your guardrails apply before you route traffic through a route type that skips them, such as embeddings or passthrough traffic.
+
+| Route type | Request and response guards |
+| -- | -- |
+| `Completions` | Yes |
+| `Messages` | Yes |
+| `Responses` | Yes |
+| `GenerateContent` | Yes |
+| `Realtime` | Only when streaming guardrails are enabled. The `Reject` action applies, but `Mask` does not, because WebSocket frames cannot be rewritten. |
+| `Embeddings` | No |
+| `Rerank` | No |
+| `AnthropicTokenCount` | No |
+| `GeminiCountTokens` | No |
+| `Models` | No |
+| `Passthrough` | No |
+| `Detect` | No |
+
+On the route types that run guards, a streamed response is checked only when streaming guardrails are enabled. For more information, see [Streaming guardrails](#streaming). To configure route types, see [Multiple endpoints]({{< link-hextra path="/integrations/llm/providers/multiple-endpoints/" >}}). For a description of each route type, see the [API reference]({{< link-hextra path="/reference/api/#routetype" >}}).
 
 ## Possible actions {#actions}
 

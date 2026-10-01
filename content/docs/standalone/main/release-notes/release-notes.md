@@ -104,6 +104,10 @@ Only the built-in HTTP field set is renamed. The `gen_ai.*` and `mcp.*` fields a
 
 For the field rename table and an example, see [Use OpenTelemetry field names]({{< link-hextra path="/documentation/observability/access-logs/view/#preset" >}}).
 
+#### Standalone Helm chart can create a PodDisruptionBudget {#v16-standalone-helm-pdb}
+
+The standalone Helm chart now includes `podDisruptionBudget` values that create a PodDisruptionBudget for multi-replica proxy deployments. Set `podDisruptionBudget.enabled=true` with `replicaCount` greater than `1`, or with `autoscaling.minReplicas` greater than `1` when autoscaling is enabled. Use `minAvailable`, `maxUnavailable`, or `unhealthyPodEvictionPolicy` to tune the generated resource. For more information, see [Create a PodDisruptionBudget]({{< link-hextra path="/documentation/setup/install/helm/#helm-pdb" >}}).
+
 ### Security {#v16-features-security}
 
 #### Destination and TLS SNI variables in network authorization {#v16-network-authz-sni}

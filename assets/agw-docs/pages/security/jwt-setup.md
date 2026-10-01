@@ -314,6 +314,8 @@ Review other common JWT auth configuration examples that you can add to your {{<
 
 You can configure multiple JWT providers to accept tokens from different identity providers. The following example uses Keycloak and the Auth0 identity providers. 
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}When a request includes a JWT, the agentgateway proxy tries each provider whose `issuer` matches the token's `iss` claim and whose JWKS contains the token's `kid`, in the listed order. The first provider that validates the token accepts it. As a result, two issuers can publish the same `kid` value, and several providers can share one issuer, such as providers with different `audiences`.{{< /version >}}
+
 ```yaml
 
 traffic:
@@ -341,6 +343,37 @@ traffic:
             kind: Service
             port: 443
 ```
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+### Set the required claims {#jwt-required-claims}
+
+By default, JWT authentication requires the `exp` claim and validates the expiration when the claim is present. You can use `validation.requiredClaims` to set which registered claims must be present in the token. The list replaces the default `["exp"]`, so include `exp` to keep requiring it. The `iss` claim is always required, and the `aud` claim is required when the `audiences` list is not empty, regardless of this setting.
+
+```yaml
+traffic:
+  jwtAuthentication:
+    mode: Strict
+    providers:
+    - issuer: "${KEYCLOAK_ISSUER}"
+      audiences: ["my-application"]
+      jwks:
+        remote:
+          jwksPath: "${KEYCLOAK_JWKS_PATH}"
+          backendRef:
+            name: keycloak
+            namespace: keycloak
+            kind: Service
+            port: 8080
+      validation:
+        requiredClaims: ["exp", "nbf"]
+```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}}
+
+| Field | Description |
+|-------|-------------|
+| `validation.requiredClaims` | The registered JWT claims that must be present in the token payload. Supported values are `exp`, `nbf`, `aud`, and `sub`. The list replaces the default `["exp"]`, so include `exp` to keep requiring it. If you omit the field, only `exp` is required. Set `requiredClaims: []` to require no claims beyond `iss`, which is always required, and `aud`, which is required when `audiences` is set. Agentgateway still validates `exp` and `nbf` whenever they are present in the token. |
+{{< /version >}}
 
 ### External identity provider over TLS
 
