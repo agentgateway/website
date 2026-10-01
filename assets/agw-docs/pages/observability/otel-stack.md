@@ -110,7 +110,8 @@ Steps to install:
        bucketNames:
          chunks: <chunks-bucket>
          ruler: <ruler-bucket>
-         admin: <admin-bucket>
+         # For Grafana Enterprise Logs
+         # admin: <admin-bucket>
        s3:
          region: <region>
      auth_enabled: false
