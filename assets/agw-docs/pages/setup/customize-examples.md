@@ -485,6 +485,10 @@ EOF
 
 Configure graceful shutdown timeouts using the `shutdown` config.
 
+{{< version exclude-if="1.5.x" >}}
+During the `min` window, the proxy keeps accepting new connections and discourages keep-alive reuse. After `min`, the proxy closes the listener, refuses new connections, and lets existing connections finish until all tracked connections close or `max` passes.
+{{< /version >}}
+
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -498,6 +502,13 @@ spec:
     max: 120
 EOF
 ```
+
+{{< version exclude-if="1.5.x" >}}
+| Field | Description |
+| ----- | ----------- |
+| `spec.shutdown.min` | Minimum time, in seconds, to keep accepting connections during shutdown. |
+| `spec.shutdown.max` | Maximum total time, in seconds, to wait for existing connections to close gracefully. |
+{{< /version >}}
 
 ### Static IP for LoadBalancer {#static-ip}
 
