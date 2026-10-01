@@ -279,6 +279,10 @@ For example, let's assume you have a 50-page manual and you want to ask your mod
 
 Prompt caching is configured by using the `backend.ai.promptCaching` fields in the {{< reuse "agw-docs/snippets/policy.md" >}} resource. 
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+If you omit `promptCaching`, prompt caching is disabled. If you set `promptCaching: {}`, the controller enables prompt caching with the following defaults: `cacheSystem: true`, `cacheMessages: true`, `cacheTools: false`, and `minTokens: 1024`. To override a default, set that field explicitly.
+{{% /version %}}
+
 > [!NOTE]
 > Prompt caching is supported for Bedrock Claude 3+ and Nova models. 
 
