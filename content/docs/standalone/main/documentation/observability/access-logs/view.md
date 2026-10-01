@@ -121,6 +121,18 @@ frontendPolicies:
 
 For the full list of available fields, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables/" >}}). 
 
+### Log the selected backend endpoint {#backend-endpoint}
+
+Use `backend.endpoint` to record the resolved destination of a backend call, including its port for a network endpoint. This complements `backend.name`, which identifies the configured backend. The endpoint is available only after the target is resolved, so guard the lookup for requests rejected earlier in processing.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    add:
+      backend_endpoint: 'has(backend.endpoint) ? backend.endpoint : ""'
+```
+
 ### Log guardrail results {#guardrails}
 
 Prompt guards record their evaluation results under the `guardrails` variable, including `allow` when content is accepted. Add the variable to a log field to record which guards ran and their outcomes. The following filter includes all requests with guardrail results, even when every guard allows the content.
