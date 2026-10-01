@@ -104,6 +104,10 @@ Only the built-in HTTP field set is renamed. The `gen_ai.*` and `mcp.*` fields a
 
 For the field rename table and an example, see [Use OpenTelemetry field names]({{< link-hextra path="/documentation/observability/access-logs/view/#preset" >}}).
 
+#### Standalone Helm chart can create a PodDisruptionBudget {#v16-standalone-helm-pdb}
+
+The standalone Helm chart now includes `podDisruptionBudget` values that create a PodDisruptionBudget for multi-replica proxy deployments. Set `podDisruptionBudget.enabled=true` with `replicaCount` greater than `1`, or with `autoscaling.minReplicas` greater than `1` when autoscaling is enabled. Use `minAvailable`, `maxUnavailable`, or `unhealthyPodEvictionPolicy` to tune the generated resource. For more information, see [Create a PodDisruptionBudget]({{< link-hextra path="/documentation/setup/install/helm/#helm-pdb" >}}).
+
 ### Security {#v16-features-security}
 
 #### Destination and TLS SNI variables in network authorization {#v16-network-authz-sni}
@@ -133,3 +137,11 @@ The `failureMode` field, which was previously available only on `webhook` guards
 For most traffic, the default keeps the 1.5.x behavior, because a provider error already rejected the request or response. Two paths change. On a realtime WebSocket connection, and for streaming responses that are evaluated as they arrive, a provider error from one of these guards used to let the content through. It now rejects the content, unless you set `failureMode: failOpen`.
 
 For more information, see [Provider failures]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#provider-failures" >}}).
+
+#### Per-page pricing for OCR requests {#v16-ocr-page-pricing}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3395 -->
+
+Model cost catalogs now accept `rates.perPage` for document and OCR models that bill by processed page instead of by token. Agentgateway reads the page count of a Mistral OCR response from `usage_info.pages_processed` and prices `/v1/ocr` requests per page. On a route with an `ai` backend, map `/v1/ocr` to the `detect` route type. The page cost is available in the `llm.cost.pages` and `llm.costRates.perPage` CEL fields and in the `agw.ai.usage.cost.pages` trace attribute.
+
+For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
