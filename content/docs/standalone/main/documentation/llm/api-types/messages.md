@@ -72,6 +72,8 @@ The first three rows are values that a `custom` provider declares in its `format
 
 Because `completions` comes before `responses`, a provider that advertises both is unaffected by the Responses conversion. That conversion applies to a provider that advertises `responses` and not `completions`.
 
+When a converted provider reply ends with `finish_reason: "content_filter"` from Chat Completions, a Messages client receives `stop_reason: "refusal"`. The same mapping applies to `incomplete_details.reason: "content_filter"` from Responses. Both mappings apply to buffered and streamed replies.
+
 ### Converting to the Chat Completions format
 
 The Chat Completions conversion carries extended-thinking history in both directions, so a thinking session on a converted route keeps its prior reasoning from one turn to the next. This behavior matters when your client speaks Messages but the provider that you route to advertises only `completions`, such as a self-hosted inference engine. Self-hosted engines that report reasoning as `reasoning_content` also accept it back on an assistant message, which is what makes the carryover possible. To declare that an upstream speaks `completions`, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).

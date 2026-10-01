@@ -79,6 +79,11 @@ shapes, declare each supported format and optionally set a per-format path.
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
 
+When a converted provider reply ends with `finish_reason: "content_filter"` from
+Chat Completions, a Messages client receives `stop_reason: "refusal"`. The same
+mapping applies to `incomplete_details.reason: "content_filter"` from Responses.
+Both mappings apply to buffered and streamed replies.
+
 ### Reasoning carryover between formats
 
 Extended-thinking history is carried between the `Messages` and `Completions`
