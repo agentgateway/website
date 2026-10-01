@@ -121,9 +121,9 @@ frontendPolicies:
 
 For the full list of available fields, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables/" >}}). 
 
-### Log guardrail interventions {#guardrails}
+### Log guardrail results {#guardrails}
 
-A prompt guard that masks or rejects content records what it did under the `guardrails` variable, with one entry per intervention. Add that variable to a log field to keep an audit trail of every intervention, including which guard acted and why.
+Prompt guards record their evaluation results under the `guardrails` variable, including `allow` when content is accepted. Add the variable to a log field to record which guards ran and their outcomes. The following filter includes all requests with guardrail results, even when every guard allows the content.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -135,7 +135,9 @@ frontendPolicies:
       guardrail_action: 'guardrails[0].action'
 ```
 
-Each entry carries `phase` (`request` or `response`), `guard` (the guard kind, such as `regex` or `bedrockGuardrails`), `action` (`mask`, `reject`, `audit`, or `failOpen`), `guardrailId`, `guardrailVersion`, `actionReason`, and `assessments`. The `assessments` field holds provider metadata only, so a log never records the content that the guardrail matched.
+To log only requests with an intervention, use `guardrails.exists(g, g.action != "allow")` as the access log filter.
+
+Each entry carries `phase` (`request` or `response`), `guard` (the guard kind, such as `regex` or `bedrockGuardrails`), `action` (`allow`, `mask`, `reject`, `audit`, or `failOpen`), `guardrailId`, `guardrailVersion`, `actionReason`, and `assessments`. The `assessments` field holds provider metadata only, so a log never records the content that the guardrail matched.
 
 > [!NOTE]
 > Only CEL that runs after the request completes, such as a log field or a metric field, receives the `guardrails` variable. An authorization or transformation expression that runs mid-request never sees it.

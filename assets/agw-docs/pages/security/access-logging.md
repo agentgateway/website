@@ -390,17 +390,19 @@ You can add custom fields to every access log line by using CEL expressions that
      enterprise line resolves to one of the tokens above. -->
 {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 
-## Log guardrail interventions {#guardrails}
+## Log guardrail results {#guardrails}
 
-A prompt guard that masks or rejects content records what it did in the request's dynamic metadata, under the `guardrails` variable. Add that variable to an access log field to keep an audit trail of every intervention, including which guard acted and why.
+Prompt guards record their evaluation results in the request's dynamic metadata, under the `guardrails` variable. Results include `allow` when a guard accepts the content, as well as actions that mask, reject, audit, or fail open. Add the variable to an access log field to record which guards ran and their outcomes.
 
-The variable holds one entry per intervention, in either the request or the response phase, so a request that both a request guard and a response guard act on produces two entries.
+The variable holds entries for guardrail evaluations in either the request or the response phase. A nonempty list does not necessarily mean that a guardrail intervened: every entry might have the action `allow`.
+
+To log only requests with an intervention, use `guardrails.exists(g, g.action != "allow")` as the access log filter.
 
 | Field | Description |
 | ------- | ----------- |
-| `guardrails[].phase` | The phase that the guardrail intervened in, either `request` or `response`. |
-| `guardrails[].guard` | The guard kind that intervened, such as `regex`, `webhook`, `openAIModeration`, `bedrockGuardrails`, `googleModelArmor`, or `azureContentSafety`. |
-| `guardrails[].action` | The action that the guardrail took, one of `mask`, `reject`, `audit`, or `failOpen`. |
+| `guardrails[].phase` | The phase that the guardrail evaluated, either `request` or `response`. |
+| `guardrails[].guard` | The guard kind that was evaluated, such as `regex`, `webhook`, `openAIModeration`, `bedrockGuardrails`, `googleModelArmor`, or `azureContentSafety`. |
+| `guardrails[].action` | The action that the guardrail took, one of `allow`, `mask`, `reject`, `audit`, or `failOpen`. |
 | `guardrails[].guardrailId` | The configured guardrail identifier. |
 | `guardrails[].guardrailVersion` | The configured guardrail version. |
 | `guardrails[].actionReason` | The reason that the guardrail reported for its action. |
@@ -409,7 +411,7 @@ The variable holds one entry per intervention, in either the request or the resp
 > [!NOTE]
 > Only CEL that runs after the request completes, such as an access log field or a metric field, receives the `guardrails` variable. An authorization or transformation expression that runs mid-request never sees it.
 
-The following {{< reuse "agw-docs/snippets/policy.md" >}} adds the whole list as one log field, and filters the log down to the requests that a guardrail acted on. To record a single value instead, use an expression such as `guardrails[0].action`.
+The following {{< reuse "agw-docs/snippets/policy.md" >}} adds the whole list as one log field, and filters the log down to requests with guardrail evaluation results. To record a single value instead, use an expression such as `guardrails[0].action`.
 
 ```yaml
 kubectl apply -f- <<EOF
