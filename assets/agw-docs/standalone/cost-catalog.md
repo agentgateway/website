@@ -2,6 +2,8 @@ Agentgateway can track LLM spend by mapping each request's provider, model, and 
 
 Agentgateway extracts token usage from supported LLM APIs automatically. To convert those token counts into cost, configure a model cost catalog. The catalog maps provider and model names to pricing data so agentgateway can attach realized USD cost to logs, traces, metrics, and CEL expressions.
 
+{{< version exclude-if="1.5.x" >}}For document and optical character recognition (OCR) models that report page usage, such as Mistral OCR on `/v1/ocr`, the catalog can also price each processed page. An `llm.models` gateway detects `/v1/ocr` requests automatically. On a route with an `ai` backend, map the path to the `detect` route type in `policies.ai.routes`, such as `"/v1/ocr": detect`. Otherwise, the request is parsed as a chat completion and fails.{{< /version >}}
+
 > [!NOTE]
 > Cost analysis is best-effort and may not exactly match your provider bill in scenarios such as price changes, custom pricing, failed requests, or provider-specific billing rules.
 
@@ -134,6 +136,8 @@ When a request matches an entry in the catalog, agentgateway populates these CEL
 - `llm.cost`: The realized USD cost of the request. Includes `total` plus per-token-type components such as `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, and `outputAudio`. Unset when the model cannot be priced.
 - `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied. Includes the same per-token-type fields when available. Unset when the model cannot be priced.
 
+{{< version exclude-if="1.5.x" >}}For page-billed document models, `llm.cost.pages` reports the page-cost component, and `llm.costRates.perPage` reports the USD-per-page rate that was applied.{{< /version >}}
+
 The request access log always includes `agw.ai.usage.cost.total` for LLM requests when a cost is available.
 Traces always include the full breakdown:
 * `agw.ai.usage.cost.total`
@@ -144,6 +148,7 @@ Traces always include the full breakdown:
 * `agw.ai.usage.cost.reasoning`
 * `agw.ai.usage.cost.input_audio`
 * `agw.ai.usage.cost.output_audio`
+{{< version exclude-if="1.5.x" >}}* `agw.ai.usage.cost.pages`{{< /version >}}
 
 As these are loaded into the CEL context, they can be explicitly emited as well.
 
@@ -172,7 +177,7 @@ Every cost lookup increments the `agentgateway_cost_catalog_lookups_total` count
 | Status | Meaning |
 |--------|---------|
 | `Exact` | The provider and model were found in the catalog and priced. |
-| `Unpriced` | The model was found, but the token types in the request had no matching rates. |
+| `Unpriced` | The model was found, but its catalog entry has no rates, such as an entry with only `tags`. |
 | `Missing` | The provider or model was not found in the catalog. |
 | `NoCatalog` | No catalog is configured. |
 
