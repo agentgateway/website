@@ -79,6 +79,10 @@ shapes, declare each supported format and optionally set a per-format path.
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
 
+When an Anthropic messages request falls back to a `Responses` provider, the
+Messages response includes URL citation annotations with the source URL and
+title. File citation annotations and response `logprobs` are not preserved.
+
 ### Reasoning carryover between formats
 
 Extended-thinking history is carried between the `Messages` and `Completions`

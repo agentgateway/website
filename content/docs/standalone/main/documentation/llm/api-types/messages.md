@@ -86,11 +86,11 @@ Three cases do not round-trip.
 |------|--------------|
 | A turn with more than one signed thinking block | The thinking text is joined, but no `reasoning_signature` is sent. The signature is carried only when the turn has exactly one signed block. |
 | A `redacted_thinking` block | Dropped, because it holds nothing that an OpenAI-compatible engine can replay. |
-| A provider that advertises `responses` and not `completions` | The thinking history is dropped from the converted request, with no error and no warning, so the model loses its prior reasoning. See [Converting to the Responses format](#converting-to-the-responses-format). |
+| A provider that advertises `responses` and not `completions` | The thinking history is dropped from the converted request, with no error and no warning, so the model loses its prior reasoning. See [Converting to the Responses format](#messages-responses-conversion). |
 
 Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. In the Chat Completions conversion, a request with tools to one of these models is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped. Every other model receives the reasoning effort that the client asked for, if any.
 
-### Converting to the Responses format
+### Converting to the Responses format {#messages-responses-conversion}
 
 The Responses conversion covers a common agent subset:
 
@@ -100,6 +100,7 @@ The Responses conversion covers a common agent subset:
 - Assistant tool-use history, and tool results that are text or images
 - Structured output JSON schemas
 - Prompt cache breakpoints
+- URL citation annotations from Responses output text, returned as Messages text citations with the source URL and title
 - Streaming and usage reporting
 
 > [!WARNING]
@@ -109,6 +110,8 @@ A Messages feature that the Responses format cannot represent at all is also dro
 
 - Thinking and redacted-thinking history, so the model loses its prior reasoning on each turn
 - Document, search-result, and server-tool content blocks, including document and search-result parts of a tool result
+
+On the converted reply, URL citation annotations keep the source URL and title. The Responses API does not provide the source excerpt or the Anthropic encrypted replay index. Those citation fields are empty in the Messages response. Non-URL annotations, such as file citations, and response `logprobs` are ignored.
 
 ## Using the API
 
