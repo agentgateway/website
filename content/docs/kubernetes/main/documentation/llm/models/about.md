@@ -330,7 +330,7 @@ Each alias is a separate resource, so it can carry its own credentials, authoriz
 
 The model value is resolved before provider-specific routing, request conversion, token-count behavior, and response conversion. First, the request model selects an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} from `spec.match.model`. A virtual model can then select a concrete target model, and `spec.policies.transformations` on the concrete model can rewrite the `model` field. The final resolved model is used for provider-specific behavior, such as Azure Foundry Claude routing, Bedrock endpoint selection, and Vertex Gemini path selection.
 
-A request must have a model after resolution. If the client request omits `model`, configure the selected concrete model to supply one with a `model` transformation.
+The request must include `model`, because the model router uses it to select an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}. A request without `model` fails with a `400` and the `missing_model` error code before any transformation runs.
 
 ### Visibility
 

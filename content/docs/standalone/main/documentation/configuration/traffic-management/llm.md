@@ -21,6 +21,9 @@ For more information on connecting to LLM providers, see [LLM consumption]({{< l
 
 ## Model resolution order {#llm-model-resolution-standalone}
 
-The model that reaches the provider is resolved before provider-specific routes, request formats, token-count behavior, and response conversion are selected. Resolution starts with the client request model, uses a provider `params.model` value when you set one, then applies LLM request transformations and `modelAliases`. The final resolved model is used for provider-specific behavior, such as Azure Foundry Claude routing, Bedrock endpoint selection, and Vertex Gemini path selection.
+The model that reaches the provider is resolved before provider-specific routes, request formats, token-count behavior, and response conversion are selected. Resolution starts with the client request model. If you set the provider `model` field, such as `provider.openAI.model`, that value replaces it. Then the `defaults`, `overrides`, and `transformations` policies apply, followed by `modelAliases`. The final resolved model is used for provider-specific behavior, such as Azure Foundry Claude routing, Bedrock endpoint selection, and Vertex Gemini path selection.
 
-A request must have a model after resolution. If the client request omits `model`, set a provider `params.model` value or a transformation that supplies one.
+A request must have a model after resolution. If the client request omits `model`, set the provider `model` field, or supply one with a `defaults`, `overrides`, or `transformations` policy.
+
+> [!NOTE]
+> This order applies to AI backends. With the simplified `llm.models` configuration, the request must include `model`, because agentgateway uses it to select the model. A request without `model` fails with a `400` and the `missing_model` error code, even when the model sets `params.model`.
