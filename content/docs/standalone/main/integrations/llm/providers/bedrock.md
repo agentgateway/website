@@ -24,8 +24,15 @@ Configure Amazon Bedrock as an LLM provider in agentgateway.
 #     `params.awsRegion` is correct.
 #   * "Passthrough": the `passthrough: detect` config is accepted, including the
 #     `name: us.anthropic*` prefix match.
-#   * With the base config loaded, agentgateway serves the wildcard model and
-#     resolves it to the `bedrock` provider in the configured AWS region.
+#   * "Bedrock Mantle": the `params.bedrockEndpointPreference` config is
+#     accepted, which pins both the field name and the lowercase spelling of the
+#     value. Standalone rejects the capitalized Kubernetes spelling, so this
+#     block is what keeps the two modes from being copied into each other.
+#   * With the base config loaded, agentgateway lists at least one model on
+#     `/v1/models` and resolves the wildcard to the `bedrock` provider in the
+#     configured AWS region. The list is not checked for a literal `*`, because
+#     the default `llm.discovery: catalog` expands the wildcard into the catalog's
+#     Bedrock model IDs.
 #
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * "Authentication" - external dependency; AWS credentials are resolved per
@@ -37,6 +44,10 @@ Configure Amazon Bedrock as an LLM provider in agentgateway.
 #     example responses and the `reasoning_effort` budget table are display-only.
 #   * That format translation to Bedrock's Converse API is correct - a different
 #     layer; verifying the translation needs a live Bedrock upstream.
+#   * Which endpoint a given model actually resolves to under
+#     `bedrockEndpointPreference` - external dependency; the resolution reads
+#     `runtime`/`mantle` tags from an imported catalog, and populating that
+#     catalog calls the AWS model-card pages.
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
@@ -195,8 +206,58 @@ See [here](../anthropic/#use-claude-platform-on-aws) for connect to [Claude Plat
 
 ## Bedrock Mantle
 
-The [Bedrock Mantle](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-mantle.html) endpoint is not currently supported.
-Follow the [GitHub issue](https://github.com/agentgateway/agentgateway/issues/2041) if you are interested!
+Bedrock serves models on two API surfaces: the Runtime endpoint, which carries the Converse and Invoke APIs, and the [Mantle](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-mantle.html) endpoint, which carries the native OpenAI and Anthropic APIs. Some models are served on only one of the two.
+
+For chat requests, the endpoint is chosen per model from the `runtime` and `mantle` tags in your [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). Run `agctl catalog import` to populate those tags, because the default sources include `aws-bedrock-mantle`, which reads them from the AWS model cards. Without a catalog, no model carries either tag, so every chat request falls back to the preference alone.
+
+Set `params.bedrockEndpointPreference` to choose how the tags are applied.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: bedrock
+    params:
+      awsRegion: us-west-2
+      bedrockEndpointPreference: runtimePreferred
+```
+
+{{< doc-test paths="bedrock" >}}
+cat <<'EOF' > config-mantle.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: bedrock
+    params:
+      awsRegion: us-west-2
+      bedrockEndpointPreference: runtimePreferred
+EOF
+agentgateway -f config-mantle.yaml --validate-only
+{{< /doc-test >}}
+
+| Value | Endpoint selection |
+|-------|--------------------|
+| `runtimePreferred` | Use Runtime, except for a model tagged `mantle` but not `runtime`. This value is the default. |
+| `mantlePreferred` | Use Mantle, except for a model tagged `runtime` but not `mantle`. |
+| `runtimeOnly` | Always use Runtime, whatever the tags say. |
+| `mantleOnly` | Always use Mantle, whatever the tags say. |
+
+The Kubernetes API takes the same four values capitalized, such as `RuntimePreferred`, under `spec.ai.provider.bedrock.endpointPreference`. A value that you copy from one mode to the other fails to load.
+
+The preference applies to four route types: chat completions, messages, responses, and Anthropic token counting. Every other route type ignores the preference and uses a fixed endpoint.
+
+- Model listing always uses Mantle.
+- Embeddings, realtime, Gemini token counting, detection, passthrough, and content generation always use Runtime.
+- Reranking uses a separate Bedrock agent-runtime host rather than the Runtime or Mantle endpoint.
+
+Whether the preference changes the request format that a model accepts depends on the endpoint that it selects. A model that resolves to Runtime accepts the Bedrock Converse format only, and its chat format tags do not apply. A model that resolves to Mantle accepts the formats in its tags, except for `anthropic.claude*` models, which always take the Anthropic Messages format. For more information, see [Chat format tags]({{< link-hextra path="/documentation/llm/cost-controls/costs/#chat-format-tags" >}}).
+
+> [!NOTE]
+> Requests to the Mantle endpoint are signed for the `bedrock-mantle` service rather than `bedrock`. If you scope an IAM policy by service name, grant both before you switch a route to Mantle.
 
 ## Token counting
 
@@ -223,18 +284,26 @@ Example response:
 
 ## Extended thinking and reasoning
 
-Extended thinking and reasoning lets models reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. Agentgateway maps these parameters to Bedrock's native format automatically.
+Extended thinking and reasoning lets models reason through complex problems before generating a response. To opt in, add the OpenAI `reasoning_effort` field to your request. The value is added to the `additionalModelRequestFields` of the Bedrock request, in a form that depends on the model family. The family is chosen by matching the model ID.
 
-> [!NOTE]
-> Extended thinking and reasoning requires a Claude model that supports it, such as `us.anthropic.claude-opus-4-20250514-v1:0`.
+| Model ID contains | What the Bedrock request receives |
+|---|---|
+| `gpt-oss` or `deepseek` | `reasoning_effort`, with the value from your request unchanged. |
+| `openai.`, other than `gpt-oss` models | `reasoning.effort`, with the value from your request unchanged. |
+| `amazon.nova-2-` | `reasoningConfig` with `maxReasoningEffort` set to `low`, `medium`, or `high`. If you set `none` or omit `reasoning_effort`, no reasoning configuration is sent. Any other value is rejected. |
+| Anything else | Claude thinking fields, as described in the rest of this section. |
 
-Use the `reasoning_effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
+For Claude models that support adaptive thinking, the request is sent with `thinking.type` set to `adaptive` and the effort level in `output_config.effort`, instead of a token budget. The value `minimal` is sent as `low`. Which models take this form depends on the `adaptive_thinking` tag in the [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). The built-in catalog sets this tag for these models.
+
+Other Claude models, such as `us.anthropic.claude-opus-4-20250514-v1:0`, receive a thinking budget.
 
 | `reasoning_effort` value | Thinking budget |
 |---|---|
 | `minimal` or `low` | 1,024 tokens |
 | `medium` | 2,048 tokens |
-| `high` or `xhigh` | 4,096 tokens |
+| `high` | 4,096 tokens |
+| `xhigh` | 8,192 tokens |
+| `max` | 16,384 tokens |
 
 Note that `max_tokens` must be greater than the thinking budget, and the minimum thinking budget is 1,024 tokens.
 
@@ -251,6 +320,18 @@ curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
   ]
 }' | jq
 ```
+
+### Encrypted reasoning
+
+Some Bedrock models return encrypted reasoning in a `reasoningContent.redactedContent` block instead of reasoning text. How agentgateway returns encrypted reasoning in a buffered reply depends on the API that the client sends.
+
+| Client API | Encrypted reasoning in the reply | Replay on the next turn |
+|---|---|---|
+| `/v1/messages` | A `redacted_thinking` block. | Send the block back in the message history. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
+| `/v1/responses` | A reasoning item with `encrypted_content`. | Send the reasoning item back in the input. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
+| `/v1/chat/completions` | Omitted, because the Chat Completions format has no field for encrypted reasoning. Signed reasoning text still arrives in `reasoning_content` and `reasoning_signature`. | Not possible. |
+
+A streamed reply does not keep the encrypted payload, so streamed encrypted reasoning cannot be replayed. A `/v1/messages` stream shows the encrypted reasoning as a `thinking` block with the text `[REDACTED]`.
 
 ## Structured outputs
 
@@ -285,16 +366,17 @@ curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
 ```
 
 {{< doc-test paths="bedrock" >}}
-# Confirm the base config serves the wildcard model and that `params.awsRegion`
-# reaches the resolved provider config.
+# Confirm the base config serves models and that `params.awsRegion` reaches the
+# resolved provider config. The default `llm.discovery: catalog` expands `*` into
+# catalog model IDs, so check for a non-empty list rather than a literal `*`.
 agentgateway -f config.yaml &
 AGW_PID=$!
 trap 'kill $AGW_PID 2>/dev/null' EXIT
 sleep 3
 
-SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '[.data[].id] | index("*") // "missing"')
-if [ "$SERVED" = "missing" ]; then
-  echo "FAIL: the wildcard model from the example config is not served"
+SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '.data | length')
+if [ "${SERVED:-0}" -eq 0 ]; then
+  echo "FAIL: /v1/models lists no models for the example config"
   exit 1
 fi
 RESOLVED=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '
@@ -307,5 +389,5 @@ if [ "$RESOLVED" != "bedrock|us-west-2" ]; then
   echo "FAIL: expected bedrock|us-west-2 but agentgateway resolved $RESOLVED"
   exit 1
 fi
-echo "✓ Wildcard model is served and resolves to bedrock in us-west-2"
+echo "✓ Models are served and the wildcard resolves to bedrock in us-west-2"
 {{< /doc-test >}}

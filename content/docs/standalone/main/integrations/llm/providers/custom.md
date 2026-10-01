@@ -3,7 +3,6 @@ title: Custom
 weight: 99
 description: Configure agentgateway for providers without built-in support that implement the OpenAI API format.
 aliases:
-  - /llm/providers/openai-compatible
   - /docs/standalone/main/llm/providers/openai-compatible
   - /docs/standalone/main/documentation/llm/providers/openai-compatible
 test:
@@ -40,6 +39,10 @@ export PERPLEXITY_API_KEY="${PERPLEXITY_API_KEY:-test}"
 
 With a custom provider, you provide the API endpoint and a list of formats it supports.
 Agentgateway will automatically handle mapping between the incoming format and the supported formats.
+
+The `formats` list decides which conversion an incoming request takes, and the conversions do not all carry the same feature set. A Messages request to a provider that declares `responses` takes the Responses conversion, even when the provider also declares `completions`, and that conversion drops extended-thinking history without an error. To carry thinking history across turns, declare `completions` and not `responses`, or set the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable to `true`. For what each conversion keeps and drops, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
+
+The `formats` list is optional. A model without it accepts only requests on paths that are forwarded to the provider without format conversion, such as `/v1/systemone`, `/v1/ocr`, `/v1/images/generations`, and `/v1/responses/compact`. A request in an LLM API format, such as a chat completions or messages request, has no format to convert to and is rejected. For an example, see the [Jev guardrail guide]({{< link-hextra path="/integrations/llm/guardrails/jev/" >}}).
 
 Below shows an example of connecting to [Perplexity](https://www.perplexity.ai/), which exposes an OpenAI-compatible API for search-augmented models and does not currently have a first-class provider.
 

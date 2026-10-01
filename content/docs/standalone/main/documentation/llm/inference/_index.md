@@ -20,9 +20,7 @@ endpoint for each inference request.
 Use this mode when you want Gateway API integration, `InferencePool` resources,
 traffic splitting, route matching, and other Kubernetes networking features.
 
-{{< cards>}}
-  {{< card link="/docs/kubernetes/main/documentation/inference/" title="Set up Kubernetes inference routing" >}}
-{{< /cards >}}
+[Set up Kubernetes inference routing](/docs/kubernetes/main/documentation/inference/).
 
 ## Standalone request scheduler mode
 
@@ -50,6 +48,4 @@ service in `services`, and the route backend references it as
 
 {{% github-yaml url="https://agentgateway.dev/examples/llm-standalone-epp/config.yaml" %}}
 
-{{< cards>}}
-  {{< card link="https://github.com/agentgateway/agentgateway/blob/main/examples/llm-standalone-epp/README.md" title="Agentgateway llm-standalone-epp example" icon="external-link" >}}
-{{< /cards >}}
+See the [agentgateway llm-standalone-epp example](https://github.com/agentgateway/agentgateway/blob/main/examples/llm-standalone-epp/README.md).

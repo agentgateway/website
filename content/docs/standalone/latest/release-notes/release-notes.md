@@ -277,7 +277,7 @@ For per-request authorization and the new policy, see [External authorization]({
 - **Configurable subject token type**: Cross App Access takes `subjectToken.tokenType`, so a workload identity that authenticates with client credentials can exchange an access token. The default is still `id_token`.
 - **Optional `requested_token_type`**: The parameter is optional in OAuth token exchange, which matches [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693).
 
-For more information, see [Cross App Access]({{< link-hextra path="/documentation/configuration/security/backend-authn/cross-app-access/" >}}) and [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/oauth-token-exchange/" >}}).
+For more information, see [Cross App Access]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/cross-app-access/" >}}) and [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/standard/" >}}).
 
 #### Sensitive request header redaction
 

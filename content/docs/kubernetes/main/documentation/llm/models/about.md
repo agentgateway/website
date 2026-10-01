@@ -113,7 +113,7 @@ spec:
 
 ## Path-scoped models on an HTTPRoute
 
-A `Gateway` parent gives a listener one model router at the listener root. That setup is enough for a single set of models, but not when one listener must serve several independent sets. To create additional routers on the same listener, declare each one with an `HTTPRoute` and attach models to the route instead of the Gateway.
+A Gateway parent gives a listener one model router at the listener root. That setup is enough for a single set of models, but not when one listener must serve several independent sets. To create additional routers on the same listener, declare each one with an HTTPRoute and attach models to the route instead of the Gateway. If the route attaches to more than one listener, each listener serves the route's model router.
 
 Use an `HTTPRoute` parent for the following cases.
 
@@ -135,7 +135,7 @@ An `HTTPRoute` is a valid parent for an `{{< reuse "agw-docs/snippets/agentgatew
 | Path matches use `PathPrefix` | An `Exact` or `RegularExpression` path match is rejected, because the router serves a set of paths under the prefix. A rule can have several matches as long as every path match uses `PathPrefix`. |
 | No `URLRewrite` or `RequestRedirect` filter on the rule | Agentgateway rewrites the prefix itself so that the provider receives the standard LLM path. Other rule-level filters, such as `RequestHeaderModifier`, and rule-level `timeouts` and `retry` are supported. |
 
-Requirements are checked per model. When a model's parent reference fails one of them, the model reports `Accepted: False` with the reason in the condition message. To check, run `kubectl get agentgatewaymodel <name> -n <namespace> -o yaml` and read `status.parents`.
+Requirements are checked per model and per parent reference. When a parent reference fails a requirement, the model reports `Accepted: False` with the reason in the condition message. Parent references that select different route rules with `sectionName` report separate conditions, even when they name the same HTTPRoute. To check, run `kubectl get agentgatewaymodel <name> -n <namespace> -o yaml` and read `status.parents`.
 
 ### Example
 
@@ -264,8 +264,8 @@ spec:
   visibility: Public
   # The provider that serves this model
   provider: OpenAI
-  # Optional: override the provider address
-  baseURL: https://api.openai.com
+  # Optional: override the provider address and base path
+  baseURL: https://api.openai.com/v1
   # Optional: policies that apply to this model only
   policies:
     auth:
@@ -281,7 +281,7 @@ spec:
 | [`match.model`](#model-matching) | The model name that selects this resource in a client request. Defaults to `metadata.name`. |
 | [`visibility`](#visibility) | Whether clients can request the model directly. Defaults to `Public`. |
 | [`provider`](#providers) | The provider that serves the model, such as `OpenAI`. |
-| `baseURL` | Overrides the provider address and base path prefix. |
+| [`baseURL`](#providers) | Overrides the provider address and base path prefix. The path in the URL is the base path that provider endpoint paths are appended to, so include the path that the provider serves its API under. |
 | [`policies`](#model-policies) | Credentials, authorization, transformations, and other settings that apply to this model only. |
 
 ### Model matching
@@ -370,6 +370,19 @@ Use `spec.custom.backendRef` to serve a model from a Kubernetes backend, such as
 
 Use `spec.baseURL` to override the provider address and base path prefix. It must be an absolute `http` or `https` URL with a host, and it cannot target localhost, loopback, or link-local addresses. Query parameters, fragments, and user info are not supported.
 
+The path in the URL is the base path for the upstream request, and the endpoint path for each route is appended to it. A URL with no path has a base path of `/`, so include the path that the provider serves its API under.
+
+| `spec.baseURL` | Base path | Completions request goes to |
+| --- | --- | --- |
+| `https://api.openai.com/v1` | `/v1` | `https://api.openai.com/v1/chat/completions` |
+| `https://api.openai.com` | `/` | `https://api.openai.com/chat/completions` |
+
+The OpenAI provider serves its API under `/v1`, so a `spec.baseURL` of `https://api.openai.com` results in requests to a path that the provider does not serve. You can omit `spec.baseURL` to use the default address and base path of `https://api.openai.com/v1`, or set it to `https://api.openai.com/v1`.
+
+Ollama also serves its OpenAI-compatible API under `/v1`, and `Ollama` is the one provider that requires `spec.baseURL`. Add `/v1` to the in-cluster address, such as `http://ollama.default.svc.cluster.local:11434/v1`.
+
+A `Custom` provider behaves differently. When you set `spec.custom.formats[].path`, that path is sent as written. Any base path from `spec.baseURL` is not added to the path.
+
 ## Virtual models
 
 A model that routes across other models is a virtual model. It is an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that sets `spec.virtualModel` instead of `spec.provider`, so it has no provider of its own. It publishes one client-facing name and selects a concrete model to serve each request.
@@ -421,7 +434,7 @@ For examples of each strategy, see [Virtual models]({{< link-hextra path="/docum
 
 ## Verify that a model attached
 
-Each `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` reports one entry in `status.parents` per parent reference, with an `Accepted` condition for the attachment and a `ResolvedRefs` condition for the references in the spec, such as virtual model targets and Secrets.
+Each `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` reports one entry in `status.parents` per parent reference, with an `Accepted` condition for the attachment and a `ResolvedRefs` condition for the references in the spec, such as virtual model targets and Secrets. Parent status includes the selected `sectionName` or `port`, so one rejected parent reference does not hide another accepted reference to the same parent resource.
 
 ```sh
 kubectl get agentgatewaymodel gpt-5-mini -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml

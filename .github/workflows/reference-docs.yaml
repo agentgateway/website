@@ -281,6 +281,39 @@ jobs:
           KGATEWAY_DIR="agentgateway" \
           python3 website/scripts/generate-agctl-ref.py
 
+      # A released version is generated from a TAG, so its agentgateway.dev links are frozen
+      # at release day and a page move afterwards leaves them resolving only via a 301.
+      # Resolving through static/_redirects writes out the current path instead.
+      #
+      # The source comments are fixed separately, by the check-doc-links workflow in
+      # agentgateway itself. That cannot help here, because a tag cannot be amended, so a
+      # source fix only reaches published docs at the next release. This step covers the gap.
+      #
+      # --version additionally repoints links at the version being generated rather than the
+      # "latest" the source comments hardcode. A no-op for any version whose content tree
+      # does not exist yet, and it reports what it skipped.
+      #
+      # generate-ref-docs.py normalizes its own Helm and metrics output, so this step covers
+      # what the other generators emit.
+      - name: Normalize generated doc links
+        working-directory: website
+        run: |
+          LINK_VERSION="${{ matrix.link_version }}"
+          TARGETS=()
+          API_FILE="assets/agw-docs/pages/reference/api/api-${LINK_VERSION}.md"
+          [ -f "$API_FILE" ] && TARGETS+=("$API_FILE")
+          AGCTL_DIR="assets/agw-docs/pages/reference/agctl/${LINK_VERSION}"
+          if [ -d "$AGCTL_DIR" ]; then
+            while IFS= read -r f; do TARGETS+=("$f"); done < <(find "$AGCTL_DIR" -name '*.md')
+          fi
+
+          if [ ${#TARGETS[@]} -eq 0 ]; then
+            echo "No generated reference files to normalize for ${LINK_VERSION}"
+            exit 0
+          fi
+
+          python3 scripts/normalize_doc_links.py --version "${LINK_VERSION}" "${TARGETS[@]}"
+
       - name: Build rendered docs for kubespec index
         working-directory: website
         run: hugo --config hugo.yaml

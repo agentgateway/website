@@ -736,6 +736,8 @@ remoteRateLimit:
 
 You can configure connection policies on the `remoteRateLimit` field to secure or tune how agentgateway connects to the rate limit service. This includes TLS, authentication, and connection timeouts.
 
+By default, agentgateway waits 10 seconds for the rate limit service to respond. When the wait runs out, the call fails and the `failureMode` setting decides what happens to the request. To use a different timeout, set `policies.http.requestTimeout`.
+
 ```yaml
 remoteRateLimit:
   host: ratelimit-service:8081
@@ -761,7 +763,7 @@ remoteRateLimit:
 | `policies.backendAuth` | Credentials to authenticate to the rate limit service. Supports `key` (API key from file or inline), `gcp`, `aws`, and `azure` auth. |
 | `policies.backendTLS` | TLS settings for the connection to the rate limit service. Use `root` to specify a CA cert, `insecure: true` to skip certificate verification (not recommended for production). |
 | `policies.tcp.connectTimeout` | Connection timeout as a duration string, such as `3s`. |
-| `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). Use for HTTP-based rate limit service connections. |
+| `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). If unset, calls to the rate limit service time out after 10 seconds. |
 
 ## Conditional execution
 

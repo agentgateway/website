@@ -25,22 +25,22 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 
 | Policy | Available top-level variables |
 |--------|------------------------------|
-| Transformation (request) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — not `response`, `mcp`, or `llmRequest`. [^1] |
+| Transformation (request) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` — not `response` or `llmRequest`. [^1] |
 | Transformation (response) | Same as request-path, plus `response` for response-side rules. [^2] |
-| Remote rate limit | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, `metadata` |
-| Local rate limit key (`requests` rule) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — not `llm`, because the rule is checked before the LLM request is parsed. [^7] |
+| Remote rate limit | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` |
+| Local rate limit key (`requests` rule) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` — not `llm`, because the rule is checked before the LLM request is parsed. [^7] |
 | Local rate limit key (`tokens` rule) | Same as a `requests` rule, plus `llm` for fields such as `llm.requestModel`, because the rule is charged after the LLM request is parsed. [^7] |
-| HTTP Authorization | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, `metadata` |
+| HTTP Authorization | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` |
 | Network authorization | `env`, `source` [^3] |
-| External Authorization | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — some expressions run after the authorization service returns and can read `response`. [^4] |
-| MCP Authorization | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` |
+| External Authorization | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` — some expressions run after the authorization service returns and can read `response`. [^4] |
+| MCP Authorization | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` — `mcp.methodName` distinguishes methods such as `tools/list` and `tools/call`. For list methods, rules run once per listed item. `mcp.sessionId` and `mcp.tool.arguments` aren't set. |
 | External processing (ExtProc) | Request-phase rules: same as Transformation (request). Response-phase rules: same as Transformation (response). |
 | LLM policy | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `llmRequest`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — `llmRequest` is the raw JSON body during LLM request handling (not `mcp`). [^5] |
 | Logging | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` [^6] |
 | Tracing | Same as Logging. |
 | Metrics | Same as Logging. |
 
-[^1]: Request-time transformation evaluation binds `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, and `metadata` when earlier filters have populated them; `mcp` only applies to MCP-specific policies.
+[^1]: Request-time transformation evaluation binds `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, and `metadata` when earlier filters have populated them. `mcp` is populated only for MCP JSON-RPC requests to an MCP backend.
 
 [^2]: Response-side transformation sees the HTTP response object as well as the request snapshot fields.
 
@@ -53,6 +53,28 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 [^6]: For TCP logging, the executor is narrowed to `env`, `source`, and request timing fields (no full HTTP `request`/`response` objects).
 
 [^7]: A key that reads a variable that is not bound where its rule runs cannot be evaluated, so the request counts against the rule's shared bucket instead. For more information, see [Per-key limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/#per-key" >}}).
+
+### When `mcp` is available {#mcp-availability}
+
+Policies can read request-time `mcp` fields only when all of the following are true:
+
+* The policy runs in the route phase, after route selection. Policies with `phase: gateway` run before route selection and never see `mcp`.
+* The selected backend is an MCP backend.
+* The request is an MCP JSON-RPC `POST` request. The `mcp` variable isn't set for `/sse`, well-known OAuth metadata, or client registration requests.
+
+At request time, `mcp.methodName` is always set, and `mcp.sessionId` is set when the client sends a session ID. The field for the method's target depends on the method.
+
+| Method | Target field |
+| -- | -- |
+| `tools/call` | `mcp.tool`, including `mcp.tool.arguments` |
+| `prompts/get` | `mcp.prompt` |
+| Resource reads and subscriptions | `mcp.resource` |
+| Task methods | `mcp.task` |
+| List methods, such as `tools/list` | None. List methods have no target, so `mcp.tool` isn't set. |
+
+MCP authorization rules differ in two ways. `mcp.sessionId` and `mcp.tool.arguments` aren't set. For list methods, the rules also run once for each listed item, and in each run the target field contains that item, such as `mcp.tool` for each tool in a `tools/list` response.
+
+Response payload fields, such as `mcp.tool.result` and `mcp.tool.error`, are available only in logging, tracing, and metrics.
 
 ## Functions {#functions-policy-all}
 

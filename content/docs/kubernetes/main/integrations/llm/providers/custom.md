@@ -69,7 +69,7 @@ shapes, declare each supported format and optionally set a per-format path.
 | Client request format | Preferred custom provider format |
 |-----------------------|----------------------------------|
 | OpenAI chat completions | `Completions`, then `Messages` |
-| Anthropic messages | `Messages`, then `Completions`, then `Responses` |
+| Anthropic messages | `Messages`, then `Responses`, then `Completions` |
 | OpenAI responses | `Responses`, then `Completions` |
 | OpenAI embeddings | `Embeddings` |
 | Anthropic token count | `AnthropicTokenCount` |
@@ -78,6 +78,119 @@ shapes, declare each supported format and optionally set a per-format path.
 
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
+
+Because `Responses` comes before `Completions`, an Anthropic messages request to
+a provider that declares both formats takes the Responses conversion. The same
+order applies to the built-in `openai` provider, and to the `azure` provider for
+a model that is not a Claude model, because both support the two formats. The
+Responses conversion drops extended-thinking history, which the Completions
+conversion carries. To put `Completions` first again, as in earlier versions,
+set the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable to
+`true` on the proxy, in the `spec.env` field of the
+{{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. For an example,
+see [Add environment variables]({{< link-hextra path="/documentation/setup/customize/configs/#env-vars" >}}).
+This variable is planned for removal in version 1.7.
+
+### Converted replies and errors
+
+When an Anthropic messages request is converted to the `Responses` or the
+`Completions` format, the reply is converted back with these behaviors.
+
+- A reply that the provider stops for content filtering returns
+  `stop_reason: "refusal"`, in both the buffered and the streamed form. The
+  provider signals content filtering as `finish_reason: "content_filter"` in
+  Chat Completions, and as a refusal or
+  `incomplete_details.reason: "content_filter"` in Responses.
+- A function call with empty arguments becomes a `tool_use` block whose `input`
+  is `{}`. When the reply reaches the output token limit partway through the
+  arguments, `stop_reason` is `max_tokens`, and a buffered reply returns the
+  partial arguments in `input` as a string instead of an object. Check
+  `stop_reason` before you parse `input`.
+- When the provider rejects a prompt that is longer than the model's context
+  window, the converted error message starts with
+  `capability_rejected: prompt_too_long`, followed by the original message.
+  Clients such as Claude Code use this marker to compact the prompt and retry.
+  The marker is added only to an HTTP 400 error that has the
+  `context_length_exceeded` code, or that has no code and a message that says
+  the prompt exceeds the context window. An error that already contains
+  `capability_rejected:` keeps its message. A Gemini or Vertex AI provider
+  returns errors in the Google format, which does not get the marker.
+
+### Anthropic messages to the Responses format
+
+The Responses conversion covers text, system instructions, images, function
+tools, tool-use history, tool results that are text or images, structured
+output, prompt cache breakpoints, and streaming. A function tool that omits
+`strict` is sent with `strict: false`, so that the optional properties of its
+input schema stay optional. The reasoning effort, from `output_config.effort` or
+from a `thinking` budget, is sent as `reasoning.effort`. A request that sets
+`thinking.type` to `disabled` sends no reasoning setting.
+
+The following Messages features are dropped from the converted request, with no
+error and no warning to the client.
+
+- Thinking and redacted-thinking history, so the model loses its prior
+  reasoning on each turn
+- The `stop_sequences` and `top_k` fields, so a request that relies on a stop
+  sequence to end generation behaves differently
+- Citations on text blocks in the message history. The text itself is kept.
+- Document, search-result, and server-tool content blocks, and content blocks
+  of a type that agentgateway does not recognize
+- Server tools, such as web search, in the `tools` list
+
+In the reply, the reasoning output of the model is dropped, so the reply has no
+`thinking` block. A buffered reply keeps each URL citation as a
+`web_search_result_location` citation with the source `url` and `title`. The
+`cited_text` and `encrypted_index` fields are empty strings, because the
+Responses format does not return them. File citations and `logprobs` are
+dropped. A streamed reply has no citations.
+
+### Reasoning carryover between formats
+
+Extended-thinking history is carried between the `Messages` and `Completions`
+formats in both directions, so a thinking session on a converted route keeps its
+prior reasoning from one turn to the next. Self-hosted engines such as
+[vLLM]({{< link-hextra path="/integrations/llm/providers/vllm/" >}}) report
+reasoning as `reasoning_content` and accept it back on an assistant message,
+which is what makes the carryover possible.
+
+For an Anthropic messages client that reaches a `Completions` provider, an
+assistant `thinking` block in the message history is sent as
+`reasoning_content`, and the `reasoning_content` in a response becomes a
+`thinking` block ahead of the text block. In a stream, the thinking block opens
+with `thinking_delta` events, adds a `signature_delta` when the engine sends a
+signature, and stops before the text or tool-use block that follows.
+
+For an OpenAI chat completions client that reaches a `Messages` provider, an
+assistant message that carries `reasoning_content` together with a non-empty
+`reasoning_signature` is replayed as a signed `thinking` block ahead of its text
+and tool calls. The signature of a response thinking block is forwarded back as
+`reasoning_signature`.
+
+The following cases do not round-trip.
+
+| Case | What happens |
+|------|--------------|
+| An unsigned `reasoning_content`, sent to a `Messages` provider | Left out, because the provider rejects a thinking block that has no signature. |
+| A turn with more than one signed thinking block, sent to a `Completions` provider | The thinking text is joined into a single `reasoning_content`, but no `reasoning_signature` is sent. The signature is carried only when the turn has exactly one signed block. |
+| A `redacted_thinking` block, sent to a `Completions` provider | Dropped, because it holds nothing that an OpenAI-compatible engine can replay. |
+| An Anthropic messages request that takes the Responses conversion instead | The thinking history is dropped from the converted request, with no error and no warning, so the model loses its prior reasoning. See [Anthropic messages to the Responses format](#anthropic-messages-to-the-responses-format). |
+
+Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. When an Anthropic messages client sends a request with tools to one of these models through a `Completions` provider, the request is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped. Every other model receives the reasoning effort that the client asked for, if any.
+
+### Anthropic messages to the Completions format
+
+An Anthropic messages request takes the Completions conversion when the provider
+declares `Completions` and not `Responses`, or when
+`AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` is set to `true`. Besides the
+reasoning carryover in the preceding section, the conversion handles these
+fields.
+
+| Field | What happens |
+|-------|--------------|
+| `output_config.effort` | Sent as `reasoning_effort`, even when the request omits `thinking`. Without `output_config.effort`, the effort comes from the `thinking` budget. A request that sets `thinking.type` to `disabled` sends no `reasoning_effort`. |
+| `tools[].strict` | Kept as set. A tool that omits `strict` is sent without it. |
+| `stop_sequences` | Sent as `stop`. When the reply has `finish_reason: "stop"` and a string in the vLLM `stop_reason` field or the SGLang `matched_stop` field, the Messages reply has `stop_reason: "stop_sequence"` and that string in `stop_sequence`. A numeric stop-token ID is ignored, so a natural end of turn still returns `stop_reason: "end_turn"`. |
 
 ## Set the provider identity {#provider-override}
 

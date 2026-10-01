@@ -69,7 +69,8 @@ backendAuth:
 
 | Field | Description |
 | -- | -- |
-| `assumeRole.roleArn` | Required ARN of the IAM role to assume. |
+| `assumeRole.roleArn` | Required ARN of the IAM role to assume. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+| `assumeRole.externalId` | External ID to pass to STS when the trust policy of the role requires `sts:ExternalId`. The value must be 2 to 1224 characters and match `[\w+=,.@:/-]`. |{{< /version >}}
 | `assumeRole.sessionName` | Session name (`RoleSessionName`) that appears in AWS CloudTrail and in the Cost and Usage Report. Either a static string, or `{expression: <cel>}`. Two to 64 characters, matching `[\w+=,.@-]`. Omit the field and AWS generates a random name. |
 | `assumeRole.tags` | Session tags that agentgateway passes to STS. Each tag sets `key`, plus exactly one of `value` for a static value or `expression` for a CEL expression. STS allows at most 50 tags for one role session. |
 
@@ -78,6 +79,16 @@ backendAuth:
 
 > [!WARNING]
 > A CEL expression that does not produce a valid session name or tag value at request time causes agentgateway to reject that request. An expression such as `jwt.sub` therefore makes the route depend on a client authentication policy that populates the JWT claims. The failure is per-request, and `--validate-only` does not catch it.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+If the trust policy of the role requires `sts:ExternalId`, set `assumeRole.externalId` to the external ID that the trust policy expects. A value outside the STS limits fails config loading with `external id must be 2-1224 characters` or `external id contains characters STS does not accept`.
+
+```yaml
+assumeRole:
+  roleArn: arn:aws:iam::123456789012:role/agentgateway-bedrock
+  externalId: tenant-a:prod/12345
+```
+{{< /version >}}
 
 {{< doc-test paths="backend-authn-aws" >}}
 # WHAT THIS TEST VALIDATES:

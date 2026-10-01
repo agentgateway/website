@@ -5,6 +5,12 @@ on:
     paths:
       - 'assets/**'
       - 'content/docs/**'
+      # The selector and this file. Without them a PR that changes only
+      # `reuse_consumers.py` does not trigger this workflow at all, so the
+      # "test the resolver before trusting it" step below had a hole exactly
+      # where the selector lives.
+      - 'scripts/**'
+      - '.github/workflows/doc-tests.yaml'
   schedule:
     # Every day at 06:00 UTC
     - cron: '0 6 * * *'
@@ -40,50 +46,135 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
+      # The step below decides WHICH tests run, so a fault in it does not fail
+      # the build, it empties it. That is the failure mode this whole job just
+      # had, and it went unnoticed for as long as it existed, so the selector
+      # is checked before it is used.
+      - name: Test the changed-file resolver
+        env:
+          # `__pycache__/` is already gitignored, so this is not about the
+          # tree. It keeps the checkout the job later reads from identical to
+          # the one it checked out, which is one less difference to rule out
+          # when the resolver and a local run disagree.
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+
       - name: Get changed markdown files
         id: changed-files
         if: github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # This step picks the tests. EVERY failure in it has to be loud,
+          # because the shape of a selector's failure is an empty matrix and a
+          # green check, not a red one -- that is the bug this job just had.
+          # The default shell here is `bash -e`, which is not enough on its
+          # own: `-e` ignores a failure anywhere but the END of a pipeline,
+          # and the selection is a pipeline. Hence `pipefail`, and hence no
+          # `|| true` anywhere below.
+          set -o pipefail
+
+          # No `|| true`. A flaky `gh api` used to leave this empty, and an
+          # empty changed-file list is indistinguishable from "this PR changes
+          # no docs" -- the run went green having tested nothing. A network
+          # blip should cost a re-run, not a silent pass.
           ALL_CHANGED=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files \
-            --paginate --jq '.[].filename' || true)
+            --paginate --jq '.[].filename')
 
-          # Start with directly changed content/*.md files
-          FILES=$(echo "$ALL_CHANGED" | grep '^content/.*\.md$' | tr '\n' ' ' || true)
+          # `grep` exits 1 when nothing matches, and "this PR touches no
+          # markdown" is a normal outcome (a CSS or workflow-only PR), so it
+          # is kept OUT of the pipeline below, where pipefail would read that
+          # 1 as a failure. This is the one expected non-zero in the step, and
+          # it is handled here rather than blanket-suppressed.
+          CHANGED_MD=$(printf '%s\n' "$ALL_CHANGED" | grep -E '^(content|assets)/.*\.md$') \
+            || CHANGED_MD=""
 
-          # For each changed assets/agw-docs/pages/*.md file, check for corresponding
-          # content files in the kubernetes/standalone main/latest directories
-          ASSET_FILES=$(echo "$ALL_CHANGED" | grep '^assets/agw-docs/pages/.*\.md$' || true)
-          if [ -n "$ASSET_FILES" ]; then
-            while IFS= read -r asset_file; do
-              rel_path="${asset_file#assets/agw-docs/pages/}"
-              rel_path="${rel_path#agentgateway/}"
-              found=0
-              # docTabs moved most subject directories under documentation/, so each
-              # version root has two candidate prefixes: the version root itself (which
-              # still holds integrations/, reference/, and release-notes/) and
-              # documentation/ (everything else). Try both.
-              for content_dir in "content/docs/kubernetes/main" "content/docs/kubernetes/latest" "content/docs/standalone/main" "content/docs/standalone/latest" \
-                                 "content/docs/kubernetes/main/documentation" "content/docs/kubernetes/latest/documentation" "content/docs/standalone/main/documentation" "content/docs/standalone/latest/documentation"; do
-                candidate="${content_dir}/${rel_path}"
-                if [ -f "$candidate" ] && ! echo "$FILES" | grep -qF "$candidate"; then
-                  FILES="$FILES $candidate"
-                  found=1
-                fi
-              done
-              if [ "$found" -eq 0 ]; then
-                echo "No content candidates found for asset file: $asset_file"
-              fi
-            done <<< "$ASSET_FILES"
+          # Map every changed markdown file to the content pages affected by
+          # it: those that read it through a chain of `reuse` shortcodes, and
+          # those whose front-matter `test:` block runs its code blocks as a
+          # setup step.
+          #
+          # THIS USED TO MIRROR THE PATH, AND THE MIRROR WAS A CHECK THAT COULD
+          # NOT FAIL. It stripped `assets/agw-docs/pages/` and tried the
+          # remainder under each version root, with and without a
+          # `documentation/` segment. Anything it could not place was announced
+          # as "No content candidates found" and the job went green having run
+          # nothing. That was 62 of the 134 snippets carrying doc tests: pages
+          # under `integrations/`, snippets outside `assets/agw-docs/pages/`
+          # which it never even tried, and -- the case that cannot be fixed by
+          # adding prefixes -- snippets reached only through another snippet,
+          # whose page shares no path segments with them at all.
+          #
+          # `reuse_consumers.py` reads the edges out of the files instead of
+          # guessing, so a page moving cannot silently switch its tests off.
+          # Its own tests run above, before it is trusted with the selection.
+          #
+          # Under pipefail a traceback out of the resolver now FAILS this step.
+          # It previously could not: `|| true` forced the assignment to 0, so a
+          # crash produced an empty list and the exact green-having-run-nothing
+          # outcome the resolver was written to end.
+          FILES=""
+          UNRESOLVED_LOG="${RUNNER_TEMP}/unresolved.txt"
+          : > "$UNRESOLVED_LOG"
+
+          # Redirecting stderr to a file is what lets the warning below name
+          # the files that reached no page, but on a crash it is exactly wrong:
+          # the traceback lands in the file, `-e` exits on the failed
+          # assignment, and nothing ever reads it. That step is loud in status
+          # and silent in content, which is half of what this job is being
+          # fixed for. So the log is printed on the way out of a failure too.
+          # `if`, not a bare `cat`, because a non-zero test inside the handler
+          # must not become the thing that reports.
+          dump_resolver_log() {
+            if [ -s "$UNRESOLVED_LOG" ]; then
+              echo "::error::reuse_consumers.py failed. Its output was:"
+              cat "$UNRESOLVED_LOG"
+            fi
+          }
+          trap dump_resolver_log ERR
+
+          if [ -n "$CHANGED_MD" ]; then
+            FILES=$(printf '%s\n' "$CHANGED_MD" \
+              | python3 scripts/reuse_consumers.py --repo-root . --stdin 2>"$UNRESOLVED_LOG" \
+              | tr '\n' ' ')
+          fi
+
+          # A changed file that reaches no page selects no tests. Usually
+          # right -- five snippets in the tree are orphans no page reuses any
+          # more -- but it is also what a genuine gap in the walk looks like,
+          # so it is surfaced as a warning on the PR rather than left in the
+          # log. NOT an error: an orphan edit is legitimate, and a check that
+          # cries wolf on legitimate edits gets ignored, which is how the
+          # original "No content candidates found" line went unread for so
+          # long.
+          if [ -s "$UNRESOLVED_LOG" ]; then
+            echo "::warning::Changed files with doc tests that reach no content page (no tests selected for them):"
+            cat "$UNRESOLVED_LOG"
           fi
 
           # NOT `xargs` for the trim: it re-wraps its output at ~4096 characters, so a
           # large PR turned this into a MULTI-LINE value and `files=...` below then
           # failed with "Unable to process file command 'output'". Trim with sed, and
           # write through the heredoc form so the length cannot break the format.
-          FILES=$(echo "$FILES" | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' ' \
-            | sed -e 's/^ *//' -e 's/ *$//')
+          #
+          # Guarded, and `printf` rather than the `grep -v '^$'` this used to drop
+          # blanks with. Under the pipefail added above, that grep matches nothing on
+          # an empty list, exits 1, and takes the whole step down -- which a CSS-only
+          # PR hits, since the workflow's `paths:` filter includes all of `assets/**`.
+          # Unquoted `$FILES` word-splits to one path per line and discards the blanks
+          # on its own, so nothing in this pipeline can report failure for having had
+          # no work to do.
+          #
+          # The word-splitting is wanted; the globbing that comes with it is not. An
+          # unquoted expansion is also a glob pass, so a path holding `[` or `*` would
+          # expand against the working tree and select whatever it happened to match.
+          # `set -f` turns globbing off for the rest of the step -- it covers the
+          # `printf '%s\n' $FILES` below as well, which splits the same way.
+          set -f
+          if [ -n "$FILES" ]; then
+            FILES=$(printf '%s\n' $FILES | sort -u | tr '\n' ' ' \
+              | sed -e 's/^ *//' -e 's/ *$//')
+          fi
           {
             echo "files<<__CHANGED_FILES__"
             echo "$FILES"

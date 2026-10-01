@@ -1,7 +1,7 @@
 Enforce client-site access controls with cross-origin resource sharing (CORS).
 
-> [!WARNING]
-> {{< reuse "agw-docs/versions/warn-experimental.md" >}}
+> [!NOTE]
+> The HTTPRoute CORS filter is in the standard channel of the Kubernetes Gateway API since version 1.5. On Gateway API 1.2–1.4, it requires the experimental channel. This channel requirement does not apply to CORS configured through an {{< reuse "agw-docs/snippets/policy.md" >}}.
 
 ## About CORS
 

@@ -78,6 +78,9 @@ routes:
 {{< /tab >}}
 {{< /tabs >}}
 
+> [!NOTE]
+> To use TLS for a custom prompt guard webhook, set `target.policies.backendTLS` on the webhook target instead. For more information, see [Configure webhook backend policies]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/#configure-webhook-backend-policies" >}}).
+
 {{< doc-test paths="backend-tls" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The backendTLS example config is accepted by agentgateway in both the
