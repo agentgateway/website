@@ -60,7 +60,7 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
    ```sh
    docker logs otel-collector
    ```
-   Each proxied request appears as a `LogRecord` entry in the collector output. Look for a block that starts with `LogRecord #` and includes attributes such as `gateway`, `http.method`, `http.path`, and `http.status`.
+   Each proxied request appears as a `LogRecord` entry in the collector output. Look for a block that starts with `LogRecord #` and includes attributes such as `gateway`, `http.method`, `http.path`, and `http.status`. When the collector shows OpenTelemetry scope metadata, the access log record uses the `agentgateway.access` instrumentation scope.
 
 5. When you are done, remove the OTel Collector container.
    ```sh
@@ -129,7 +129,7 @@ Deploy the OTel Collector into your cluster by using the OpenTelemetry Helm char
    ```sh
    kubectl logs -n monitoring deployment/otel-collector
    ```
-   Each proxied request appears as a `LogRecord` entry. Look for a block that starts with `LogRecord #` and includes attributes such as `gateway`, `http.method`, `http.path`, and `http.status`.
+   Each proxied request appears as a `LogRecord` entry. Look for a block that starts with `LogRecord #` and includes attributes such as `gateway`, `http.method`, `http.path`, and `http.status`. When the collector shows OpenTelemetry scope metadata, the access log record uses the `agentgateway.access` instrumentation scope.
 
 8. When you are done, remove the OTel Collector and the monitoring namespace.
    ```sh

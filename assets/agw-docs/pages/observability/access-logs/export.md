@@ -178,6 +178,10 @@ EOF
    Trace ID: 
    Span ID: 
    ```
+
+   {{< version exclude-if="1.5.x" >}}
+   When the collector shows OpenTelemetry scope metadata, the access log record uses the `agentgateway.access` instrumentation scope.
+   {{< /version >}}
    {{% /tab %}}
    {{< /tabs >}}
 
