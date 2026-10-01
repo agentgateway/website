@@ -25,7 +25,7 @@ Use the [PromQL queries](#common-promql-queries) to add custom panels or alerts.
 
 ## Use Grafana in Kubernetes
 
-The standalone dashboard includes request rates by status, route, and reason; request latency; LLM token usage and latency; MCP calls; and runtime statistics. The Kubernetes control-plane dashboard is a separate dashboard that requires Kubernetes labels.
+The standalone dashboard includes request rates by status, route, and reason; request latency; LLM token usage, time to first token, and inter-chunk latency; MCP calls; and runtime statistics. The Kubernetes control-plane dashboard is a separate dashboard that requires Kubernetes labels.
 
 1. Add the Grafana Helm repository and install Grafana.
    ```sh
