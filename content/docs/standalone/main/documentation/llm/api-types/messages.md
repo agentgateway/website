@@ -97,10 +97,13 @@ The Responses conversion covers a common agent subset:
 - Text and system instructions
 - Image inputs, supplied by URL, base64 data, or file ID
 - Function tools, tool choice, and the parallel tool-call preference
-- Assistant tool-use history, and tool results that are text or images
+- Assistant tool-use history, and tool results that are text
 - Structured output JSON schemas
+- Reasoning effort from `output_config.effort`
 - Prompt cache breakpoints
 - Streaming and usage reporting
+
+When a text block includes citation metadata, the conversion preserves the text and omits the citation metadata. If `output_config.effort` is set without a `thinking` block, the conversion sends the matching Responses reasoning effort. If `thinking.type` is `disabled`, no reasoning configuration is sent.
 
 > [!WARNING]
 > The Responses format has no equivalent for `stop_sequences` or `top_k`. Agentgateway accepts both fields and drops them, with no error and no warning to the client. A request that relies on a stop sequence to end generation behaves differently against a provider that advertises only `responses`.
@@ -108,7 +111,9 @@ The Responses conversion covers a common agent subset:
 A Messages feature that the Responses format cannot represent at all is also dropped from the converted request, with no error and no warning. These features are dropped this way:
 
 - Thinking and redacted-thinking history, so the model loses its prior reasoning on each turn
-- Document, search-result, and server-tool content blocks, including document and search-result parts of a tool result
+- Unknown, document, search-result, and server-tool content blocks, including unknown, document, and search-result parts of a tool result
+
+A tool result with image content still fails with an `unsupported conversion` error before the upstream request leaves agentgateway.
 
 ## Using the API
 
