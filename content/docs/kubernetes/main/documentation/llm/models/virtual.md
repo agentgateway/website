@@ -355,7 +355,7 @@ Use `virtualModel.conditional` to select a target with a CEL expression. Targets
 
 Use `virtualModel.failover` to group targets by priority. Lower values are preferred. Targets in the same priority group are selected by a score that considers health and latency. The next group is used only when every target in the current group is degraded.
 
-Failover depends on eviction. Configure `policies.health` on the concrete target models to define when a target is evicted. Without a health policy, targets are never evicted and failover does not occur.
+Failover depends on eviction. A virtual model with more than one priority group uses default eviction: a single 5xx response or connection failure evicts a target for 3 seconds, and each repeated eviction lasts longer. To change when a target is evicted, configure `policies.health` on the concrete target models. A health policy replaces the default eviction instead of adding to it, so include an `eviction` block, as in the following example.
 
 1. Create a model that points at an address with no backing workload, so that requests to it always fail. In a real deployment, the target would be a healthy primary provider.
 

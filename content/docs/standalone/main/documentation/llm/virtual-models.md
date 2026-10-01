@@ -15,7 +15,8 @@ test:
 # WHAT THIS TEST VALIDATES:
 #   * All three example configs are accepted by agentgateway (--validate-only),
 #     covering `llm.virtualModels[].routing.weighted.targets[].weight`,
-#     `routing.failover.targets[].priority`, and `routing.conditional.targets[].when`.
+#     `routing.failover.targets[].priority`, `llm.models[].health.eviction`,
+#     and `routing.conditional.targets[].when`.
 #   * "Public and internal models": with each config loaded, the served model list
 #     contains the virtual model and any `visibility: public` model, and omits every
 #     `visibility: internal` model. This turns the prose description of `public` and
@@ -155,7 +156,7 @@ assert_models config-weighted.yaml '["gpt-4o-public","smart"]'
 
 ### Failover routing
 
-Use failover (also called automatic fallback) to keep serving when a primary model fails or becomes unavailable. Configure `routing.failover.targets` with `priority` on the virtual model. When a virtual model has more than one priority group, agentgateway enables default eviction for the target models so unhealthy backends can leave the active set.
+Use failover (also called automatic fallback) to keep serving when a primary model fails or becomes unavailable. Configure `routing.failover.targets` with `priority` on the virtual model. When a virtual model has more than one priority group, agentgateway enables default eviction for target models that do not set their own `health` policy, so unhealthy backends can leave the active set.
 
 Failover has two levels of grouping:
 
@@ -170,11 +171,11 @@ Configure health on the concrete `llm.models[]` entries that the virtual model t
 
 | Setting | What it does |
 | -- | -- |
-| No `health` policy | The default unhealthy classifier covers `5xx` responses, non-zero gRPC statuses, and connection failures. These failures use default eviction settings, so traffic can fail over to the next priority. |
-| `health` without `eviction` | Use `health.unhealthyExpression` to classify additional responses, such as `429`, as unhealthy. Default eviction settings still apply. |
+| No `health` policy | The default unhealthy classifier covers `5xx` responses, non-zero gRPC statuses, and connection failures. When the virtual model has more than one priority group, these failures use default eviction: a single unhealthy response evicts the endpoint for `3s`, and each repeated eviction lasts longer. Traffic fails over to the next priority. |
+| `health` without `eviction` | Setting `health` replaces the default eviction instead of adding to it. You can use `health.unhealthyExpression` to classify additional responses, such as `429`, as unhealthy. Without an `eviction` block, the endpoint is evicted only when a retry policy's `backoff`, or a `Retry-After` header on a response that is classified as unhealthy, supplies an eviction duration. To keep the default eviction settings, add `eviction: {}`. |
 | `health.eviction` | Override how long an unhealthy endpoint leaves the active set, and which thresholds trigger eviction. When every endpoint in a priority group is evicted, later requests use the next priority. |
 
-You do not need a `health.eviction` block for basic failover on server errors or connection failures. Add health settings when you need to classify rate-limit responses, tune eviction timing, or change the eviction thresholds.
+You do not need a `health` policy for basic failover on server errors or connection failures. Add one when you need to classify rate-limit responses, tune eviction timing, or change the eviction thresholds, and include an `eviction` block in it.
 
 Useful `health` fields:
 
