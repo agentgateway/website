@@ -175,7 +175,7 @@ Configure health on the concrete `llm.models[]` entries that the virtual model t
 | `health` without `eviction` | Setting `health` replaces the default eviction instead of adding to it. You can use `health.unhealthyExpression` to classify additional responses, such as `429`, as unhealthy. Without an `eviction` block, the endpoint is evicted only when a retry policy's `backoff`, or a `Retry-After` header on a response that is classified as unhealthy, supplies an eviction duration. To keep the default eviction settings, add `eviction: {}`. |
 | `health.eviction` | Override how long an unhealthy endpoint leaves the active set, and which thresholds trigger eviction. When every endpoint in a priority group is evicted, later requests use the next priority. |
 
-You do not need a `health` policy for basic failover on server errors or connection failures. Add one when you need to classify rate-limit responses, tune eviction timing, or change the eviction thresholds, and include an `eviction` block in it.
+You do not need a `health` policy for basic failover on server errors or connection failures. To classify rate-limit responses, tune eviction timing, or change eviction thresholds, add a health policy that includes an `eviction` configuration.
 
 Useful `health` fields:
 
