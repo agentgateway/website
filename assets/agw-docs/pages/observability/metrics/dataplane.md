@@ -108,8 +108,9 @@ These metrics follow the [OpenTelemetry semantic conventions for generative AI](
 | --- | --- | --- | --- |
 | `agentgateway_cost_catalog_lookups_total` | Counter | — | Total number of model cost catalog lookups by resolution status. |
 | `agentgateway_gen_ai_client_cost_usd_total` | Counter | usd | Cumulative USD cost of generative AI requests. |
-| `agentgateway_gen_ai_client_token_usage` | Histogram | — | Number of tokens used per request. |
-| `agentgateway_gen_ai_server_request_duration` | Histogram | — | Duration of generative AI request. |
+| `agentgateway_gen_ai_client_token_usage` | Histogram | — | Number of tokens used per request. |{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+| `agentgateway_gen_ai_server_request_duration` | Histogram | — | Duration of generative AI request. |{{< /version >}}{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+| `agentgateway_gen_ai_server_request_duration` | Histogram | — | Duration of a generative AI request in seconds. Failed operations have `error_type="_OTHER"` and successful operations omit the label. |{{< /version >}}
 | `agentgateway_gen_ai_server_time_per_output_token` | Histogram | — | Time to generate each output token for a given request. |
 | `agentgateway_gen_ai_server_time_to_first_token` | Histogram | — | Time to generate the first token for a given request. |
 | `agentgateway_guardrail_checks_total` | Counter | — | Total number of guardrail checks. |
