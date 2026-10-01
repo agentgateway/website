@@ -9,8 +9,12 @@
 
 Steps to install:
 
-1. Deploy Grafana Loki to your cluster.
+1. Deploy Grafana Loki to your cluster. Choose where Loki stores log data.
+   * **Local storage**: Loki stores chunks and indexes on a persistent volume in the cluster. Use this option to try out the OTel stack in a test cluster, such as a kind cluster.
+   * **Object storage**: Loki stores chunks and indexes in an Amazon S3 bucket. Use this option for production environments. Before you begin, create the chunks, ruler, and admin buckets, and an IAM role that grants Loki access to them. For other object storage providers, such as Google Cloud Storage or Azure Blob Storage, see the [Loki storage documentation](https://grafana.com/docs/loki/latest/setup/install/helm/configure-storage/).
 
+   {{< tabs >}}
+   {{% tab name="Local storage" %}}
    ```yaml {paths="otel-stack"}
    helm upgrade --install loki loki \
    --repo https://grafana.github.io/helm-charts \
@@ -80,6 +84,88 @@ Steps to install:
      replicas: 0
    EOF
    ```
+   {{% /tab %}}
+   {{% tab name="Object storage (Amazon S3)" %}}
+   ```yaml
+   helm upgrade --install loki loki \
+   --repo https://grafana.github.io/helm-charts \
+   --version {{< reuse "agw-docs/versions/otel-stack-loki.md" >}} \
+   --namespace telemetry \
+   --create-namespace \
+   --values - <<EOF
+   loki:
+     commonConfig:
+       replication_factor: 1
+     schemaConfig:
+       configs:
+         - from: 2024-04-01
+           store: tsdb
+           object_store: s3
+           schema: v13
+           index:
+             prefix: loki_index_
+             period: 24h
+     storage:
+       type: s3
+       bucketNames:
+         chunks: <chunks-bucket>
+         ruler: <ruler-bucket>
+         admin: <admin-bucket>
+       s3:
+         region: <region>
+     auth_enabled: false
+   serviceAccount:
+     annotations:
+       eks.amazonaws.com/role-arn: <loki-iam-role-arn>
+   singleBinary:
+     replicas: 1
+   minio:
+     enabled: false
+   gateway:
+     enabled: false
+   test:
+     enabled: false
+   monitoring:
+     selfMonitoring:
+       enabled: false
+       grafanaAgent:
+         installOperator: false
+   lokiCanary:
+     enabled: false
+   limits_config:
+     allow_structured_metadata: true
+   memberlist:
+     service:
+       publishNotReadyAddresses: true
+   deploymentMode: SingleBinary
+   backend:
+     replicas: 0
+   read:
+     replicas: 0
+   write:
+     replicas: 0
+   ingester:
+     replicas: 0
+   querier:
+     replicas: 0
+   queryFrontend:
+     replicas: 0
+   queryScheduler:
+     replicas: 0
+   distributor:
+     replicas: 0
+   compactor:
+     replicas: 0
+   indexGateway:
+     replicas: 0
+   bloomCompactor:
+     replicas: 0
+   bloomGateway:
+     replicas: 0
+   EOF
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 2. Deploy Grafana Tempo to your cluster.
 
