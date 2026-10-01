@@ -2,7 +2,7 @@ Agentgateway can track LLM spend by mapping each request's provider, model, and 
 
 Agentgateway extracts token usage from supported LLM APIs automatically. To convert those token counts into cost, configure a model cost catalog. The catalog maps provider and model names to pricing data so agentgateway can attach realized USD cost to logs, traces, metrics, and CEL expressions.
 
-{{< version exclude-if="1.5.x" >}}For document and optical character recognition (OCR) models that report page usage, the catalog can also price each processed page.{{< /version >}}
+{{< version exclude-if="1.5.x" >}}For document and optical character recognition (OCR) models that report page usage, such as Mistral OCR on `/v1/ocr`, the catalog can also price each processed page. An `llm.models` gateway detects `/v1/ocr` requests automatically. On a route with an `ai` backend, map the path to the `detect` route type in `policies.ai.routes`, such as `"/v1/ocr": detect`. Otherwise, the request is parsed as a chat completion and fails.{{< /version >}}
 
 > [!NOTE]
 > Cost analysis is best-effort and may not exactly match your provider bill in scenarios such as price changes, custom pricing, failed requests, or provider-specific billing rules.
@@ -177,7 +177,7 @@ Every cost lookup increments the `agentgateway_cost_catalog_lookups_total` count
 | Status | Meaning |
 |--------|---------|
 | `Exact` | The provider and model were found in the catalog and priced. |
-| `Unpriced` | The model was found, but the token types in the request had no matching rates. |
+| `Unpriced` | The model was found, but its catalog entry has no rates, such as an entry with only `tags`. |
 | `Missing` | The provider or model was not found in the catalog. |
 | `NoCatalog` | No catalog is configured. |
 

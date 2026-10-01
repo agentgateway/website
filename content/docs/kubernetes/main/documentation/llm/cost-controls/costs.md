@@ -18,7 +18,7 @@ test:
 
 {{< reuse "agw-docs/snippets/cost-catalog-default.md" >}}
 
-In Kubernetes mode, you deliver the catalog as a ConfigMap and reference it from a Gateway-level {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. For document and optical character recognition (OCR) models that report page usage, the catalog can price each processed page.
+In Kubernetes mode, you deliver the catalog as a ConfigMap and reference it from a Gateway-level {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. For document and optical character recognition (OCR) models that report page usage, such as Mistral OCR on `/v1/ocr`, the catalog can price each processed page. A listener that serves {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} resources detects `/v1/ocr` requests automatically. On an HTTPRoute with an AI backend, map the path to the `Detect` route type in the `spec.backend.ai.routes` field of an {{< reuse "agw-docs/snippets/policy.md" >}}, such as `"/v1/ocr": "Detect"`. Otherwise, the request is parsed as a chat completion and fails.
 
 ## Step 1: Prepare a catalog
 
@@ -175,10 +175,8 @@ Generate traffic through agentgateway that matches a model entry from the catalo
 
 When a request matches an entry in the catalog, {{< reuse "agw-docs/snippets/agentgateway.md" >}} populates the following CEL fields:
 
-- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-token-type components: `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, and `outputAudio`. Unset when the model cannot be priced.
-- `llm.cost.pages`: The realized USD page-cost component for page-billed document models.
-- `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied, after tier selection. Unset when the model cannot be priced.
-- `llm.costRates.perPage`: The effective USD-per-page rate for page-billed document models.
+- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-usage-type components: `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, `outputAudio`, and `pages` for page-billed document models. Unset when the model cannot be priced.
+- `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied, after tier selection. For page-billed document models, `perPage` holds the USD-per-page rate instead. Unset when the model cannot be priced.
 
 The request access log always includes `agw.ai.usage.cost.total` for LLM requests (it is `0` when the model cannot be priced). For how to view logs and add cost fields, see [Metrics and logs]({{< link-hextra path="/documentation/llm/observability/" >}}).
 
@@ -191,7 +189,7 @@ The `status` label is one of the following values:
 | Status | Meaning |
 |--------|---------|
 | `Exact` | The provider and model were found in the catalog and priced. |
-| `Unpriced` | The model was found, but the usage units in the request had no matching rates. |
+| `Unpriced` | The model was found, but its catalog entry has no rates, such as an entry with only `tags`. |
 | `Missing` | The provider or model was not found in the catalog. |
 | `NoCatalog` | No catalog is configured. |
 

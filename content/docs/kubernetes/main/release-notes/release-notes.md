@@ -127,6 +127,10 @@ For most traffic, the default keeps the 1.5.x behavior, because a provider error
 
 For more information, see [Provider failures]({{< link-hextra path="/documentation/llm/guardrails/overview/#provider-failures" >}}).
 
-#### Model cost catalogs can price page-billed OCR requests
+#### Per-page pricing for OCR requests {#v16-ocr-page-pricing}
 
-Model cost catalogs now accept `rates.perPage` for document and OCR models that bill by processed page instead of by token. Agentgateway extracts Mistral OCR page counts from `usage_info.pages_processed`, prices `/v1/ocr` requests per page, and exposes the page cost in `llm.cost.pages`, `llm.costRates.perPage`, and `agw.ai.usage.cost.pages`. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3395 -->
+
+Model cost catalogs now accept `rates.perPage` for document and OCR models that bill by processed page instead of by token. Agentgateway reads the page count of a Mistral OCR response from `usage_info.pages_processed` and prices `/v1/ocr` requests per page. On an HTTPRoute with an AI backend, map `/v1/ocr` to the `Detect` route type. The page cost is available in the `llm.cost.pages` and `llm.costRates.perPage` CEL fields and in the `agw.ai.usage.cost.pages` trace attribute.
+
+For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
