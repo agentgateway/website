@@ -144,11 +144,12 @@ EOF
       ```
    2. Open Grafana at [http://localhost:3000](http://localhost:3000). 
    3. Log in with the `admin` username and `prom-operator` password. 
-   4. Go to **Explore**, select **Loki** as the data source, and browse recent log entries. Each proxied request is stored as a log entry with attributes such as `gateway`, `http.method`, `http.path`, and `http.status`.
+   4. Go to **Explore**, select **Loki** as the data source, and browse recent log entries. Each proxied request is stored as a log entry with attributes such as {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`gateway`, `http.method`, `http.path`, and `http.status`{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`gateway`, `http.request.method`, `url.path`, and `http.response.status_code`{{< /version >}}.
       
       {{< reuse-image src="img/agw-grafana-loki.png" srcDark="img/agw-grafana-loki.png"  >}}
    {{% /tab %}}
    {{% tab name="Standalone debug" %}}
+   {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
    Check the collector logs for the access log record. Each proxied request appears as a `LogRecord` entry with attributes, such as `gateway`, `http.method`, `http.path`, and `http.status`.
    ```sh
    kubectl logs deploy/opentelemetry-collector-logs -n telemetry | grep -A 20 "LogRecord"
@@ -178,10 +179,40 @@ EOF
    Trace ID: 
    Span ID: 
    ```
+   {{% /version %}}
 
-   {{< version exclude-if="1.5.x" >}}
-   When the collector shows OpenTelemetry scope metadata, the access log record uses the `agentgateway.access` instrumentation scope.
-   {{< /version >}}
+   {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+   Check the collector logs for the access log record. Each proxied request appears as a `LogRecord` entry with attributes, such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope, which the collector prints in the `InstrumentationScope` line of the `ScopeLogs` block that contains the record.
+   ```sh
+   kubectl logs deploy/opentelemetry-collector-logs -n telemetry | grep -A 20 "LogRecord"
+   ```
+
+   Example output: 
+   ```console
+   LogRecord #0
+   ObservedTimestamp: 2026-10-01 11:10:53.937484594 +0000 UTC
+   Timestamp: 1970-01-01 00:00:00 +0000 UTC
+   SeverityText: INFO
+   SeverityNumber: Info(9)
+   Body: Empty()
+   Attributes:
+     -> gateway: Str(agentgateway-system/agentgateway-proxy)
+     -> listener: Str(http)
+     -> route: Str(httpbin/httpbin)
+     -> endpoint: Str(10.244.0.7:8080)
+     -> client.address: Str(127.0.0.1)
+     -> http.request.method: Str(GET)
+     -> server.address: Str(www.example.com)
+     -> url.path: Str(/get)
+     -> network.protocol.version: Str(1.1)
+     -> http.response.status_code: Int(200)
+     -> protocol: Str(http)
+     -> duration: Str(2ms)
+     -> url.scheme: Str(http)
+   Trace ID: 
+   Span ID: 
+   ```
+   {{% /version %}}
    {{% /tab %}}
    {{< /tabs >}}
 
