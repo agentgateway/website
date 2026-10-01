@@ -342,10 +342,10 @@ traffic:
             port: 443
 ```
 
-{{< version exclude-if="1.5.x" >}}
-### Require additional claims {#jwt-required-claims}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+### Set the required claims {#jwt-required-claims}
 
-By default, JWT authentication requires the `exp` claim and validates the expiration when the claim is present. You can use `validation.requiredClaims` to require more registered claims in addition to the `iss` claim and any `aud` claim required by a non-empty `audiences` list.
+By default, JWT authentication requires the `exp` claim and validates the expiration when the claim is present. You can use `validation.requiredClaims` to set which registered claims must be present in the token. The list replaces the default `["exp"]`, so include `exp` to keep requiring it. The `iss` claim is always required, and the `aud` claim is required when the `audiences` list is not empty, regardless of this setting.
 
 ```yaml
 traffic:
@@ -370,7 +370,7 @@ traffic:
 
 | Field | Description |
 |-------|-------------|
-| `validation.requiredClaims` | Additional JWT claims that must be present in the token payload. Supported values are `exp`, `nbf`, `aud`, and `sub`. Omit `validation.requiredClaims` to require `exp`. Set `requiredClaims: []` to remove only the additional requirements that this field controls. The policy still requires `iss`, still requires `aud` when `audiences` is non-empty, and still validates expiration when `exp` is present. |
+| `validation.requiredClaims` | The registered JWT claims that must be present in the token payload. Supported values are `exp`, `nbf`, `aud`, and `sub`. The list replaces the default `["exp"]`, so include `exp` to keep requiring it. If you omit the field, only `exp` is required. Set `requiredClaims: []` to require no claims beyond `iss`, which is always required, and `aud`, which is required when `audiences` is set. Agentgateway still validates `exp` and `nbf` whenever they are present in the token. |
 {{< /version >}}
 
 ### External identity provider over TLS
