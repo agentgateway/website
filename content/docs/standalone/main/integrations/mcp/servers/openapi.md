@@ -160,6 +160,25 @@ Build the Docker image from the source code. The example builds the image for an
 
 Agentgateway generates one MCP tool for each operation in your OpenAPI spec. Each tool is named after the operation's `operationId` field. For example, an operation with `operationId: addPet` becomes an MCP tool named `addPet`. Make sure each operation in your spec defines a unique `operationId` so that the generated tool names are predictable and do not collide.
 
+## Path parameters {#path-parameters}
+
+OpenAPI path parameters are always required. In the MCP tool schema, each OpenAPI path parameter is required, even when the OpenAPI document omits `required` or sets it to `false`.
+
+When a tool call fills a path parameter, the value must be a string or number. String values are percent-encoded before the request is forwarded to the upstream OpenAPI server.
+
+Agentgateway rejects the tool call before it sends any request to the upstream server in the following cases:
+
+- A required path parameter value is missing.
+- A path parameter value is empty.
+- A path parameter value is neither a string nor a number.
+- A string value contains an empty, `.`, or `..` path segment when split on `/` or `\`.
+
+The client receives an HTTP `500` response with a JSON-RPC error instead of a tool result. The error code is `-32603` (internal error), and the message names the parameter and the reason, such as in the following example for a missing parameter.
+
+```json
+{"jsonrpc":"2.0","id":2,"error":{"code":-32603,"message":"failed to send message: invalid request: path parameter 'user_id' is missing"}}
+```
+
 ## Other configurations
 
 ### Schema URL

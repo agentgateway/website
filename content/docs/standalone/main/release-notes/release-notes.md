@@ -67,6 +67,23 @@ The change matters most for `custom` providers and the `openai` provider.
 
 **Actions to take**: Review every `params.baseUrl` that you set and add the path that the provider serves its API under. OpenAI serves its API under `/v1`, so `https://api.openai.com` becomes `https://api.openai.com/v1`. A URL that already has a path is unaffected, and so is a provider that you use without a `baseUrl` override, because the built-in provider defaults already carry their own paths. A `custom` provider that sets `formats[].path` is also unaffected, because that path is sent as written and the base path is not added to it.
 
+### LLM serving paths must match exactly {#v16-llm-exact-paths}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3539 -->
+
+With the simplified `llm` configuration, agentgateway used to recognize a standard LLM path by its suffix, so a request to `/tenant-a/v1/messages` was handled as a Messages request. A standard path, such as `/v1/chat/completions` or `/v1/messages`, now must match exactly. A request to a prefixed path is not rejected. Agentgateway still selects the model from the request body, but forwards the request to the provider as passthrough, without format conversion and without the `params.model` override. A provider that does not serve that path then returns an error.
+
+| Client request | 1.5.x | 1.6.x |
+| --- | --- | --- |
+| `/v1/messages` | Handled as a Messages request | Unchanged |
+| `/tenant-a/v1/messages`, no `llm.pathPrefix` | Handled as a Messages request, and converted for the provider | Forwarded as passthrough, with the client's path appended to the provider base path, such as `/v1/tenant-a/v1/messages` for a base URL that ends in `/v1` |
+| `/tenant-a/v1/messages`, with `llm.pathPrefix: /tenant-a` | `llm.pathPrefix` is not available | Handled as a Messages request |
+| `/v1/messages/extra` | Forwarded as passthrough | Unchanged |
+
+The `routes` configuration with `ai` backends is unaffected. Its `policies.ai.routes` keys still match by suffix.
+
+**Actions to take**: If your clients call the LLM paths under a base path, set `llm.pathPrefix` to that base path, such as `pathPrefix: /tenant-a`. The gateway removes the prefix before model routing, and returns a `404` error for requests outside the prefix. You can set only one prefix. For more information, see [Model routing and aliases]({{< link-hextra path="/documentation/llm/about/#model-routing-and-aliases" >}}).
+
 ## 🌟 New features {#v16-new-features}
 
 ### Resiliency {#v16-features-resiliency}
@@ -104,6 +121,10 @@ Only the built-in HTTP field set is renamed. The `gen_ai.*` and `mcp.*` fields a
 
 For the field rename table and an example, see [Use OpenTelemetry field names]({{< link-hextra path="/documentation/observability/access-logs/view/#preset" >}}).
 
+#### Standalone Helm chart can create a PodDisruptionBudget {#v16-standalone-helm-pdb}
+
+The standalone Helm chart now includes `podDisruptionBudget` values that create a PodDisruptionBudget for multi-replica proxy deployments. Set `podDisruptionBudget.enabled=true` with `replicaCount` greater than `1`, or with `autoscaling.minReplicas` greater than `1` when autoscaling is enabled. Use `minAvailable`, `maxUnavailable`, or `unhealthyPodEvictionPolicy` to tune the generated resource. For more information, see [Create a PodDisruptionBudget]({{< link-hextra path="/documentation/setup/install/helm/#helm-pdb" >}}).
+
 ### Security {#v16-features-security}
 
 #### Destination and TLS SNI variables in network authorization {#v16-network-authz-sni}
@@ -133,3 +154,11 @@ The `failureMode` field, which was previously available only on `webhook` guards
 For most traffic, the default keeps the 1.5.x behavior, because a provider error already rejected the request or response. Two paths change. On a realtime WebSocket connection, and for streaming responses that are evaluated as they arrive, a provider error from one of these guards used to let the content through. It now rejects the content, unless you set `failureMode: failOpen`.
 
 For more information, see [Provider failures]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#provider-failures" >}}).
+
+#### Per-page pricing for OCR requests {#v16-ocr-page-pricing}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3395 -->
+
+Model cost catalogs now accept `rates.perPage` for document and OCR models that bill by processed page instead of by token. Agentgateway reads the page count of a Mistral OCR response from `usage_info.pages_processed` and prices `/v1/ocr` requests per page. On a route with an `ai` backend, map `/v1/ocr` to the `detect` route type. The page cost is available in the `llm.cost.pages` and `llm.costRates.perPage` CEL fields and in the `agw.ai.usage.cost.pages` trace attribute.
+
+For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).

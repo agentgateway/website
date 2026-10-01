@@ -31,7 +31,11 @@ Three routing strategies are available, and each virtual model uses exactly one 
 | `failover` | Priority group, then health and latency. | Resiliency when a provider degrades. |
 | `conditional` | The first CEL expression that evaluates to `true`. | Tiering by header, body, or other request context. |
 
+After a virtual model selects a target, the gateway rewrites the request so that the provider receives the selected model. This rewrite applies to JSON request bodies and multipart form data, such as `/v1/audio/transcriptions`. For multipart requests, file fields and non-model fields are preserved while each `model` form field is rewritten.
+
 Targets are usually `Internal` models, so clients cannot request them directly and they stay out of `/v1/models`. For more on visibility, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
+
+If a target does not resolve, the control plane still generates the virtual model with the targets that do. The virtual model's status reports the `ResolvedRefs` condition as `False` with the `Invalid` reason, and valid targets keep serving requests. If weighted routing selects an invalid target, the request fails with a `404` and the `virtual_model_target_not_found` error code. If conditional routing matches an invalid target, the request fails the same way instead of falling through to the next target. Failover leaves invalid targets out of its priority groups. If every failover target is invalid, the control plane does not generate the virtual model, and requests for it return `404` with the `model_not_found` error code.
 
 > [!NOTE]
 > Virtual models must be `Public`, and they cannot set `spec.policies`. Configure policies on the concrete target models instead.
@@ -431,6 +435,7 @@ Failover depends on eviction. Configure `policies.health` on the concrete target
 
    | Field | Value | Description |
    |-------|-------|-------------|
+   | `targets[].modelRef.name` | `primary-down` | A concrete model in the same namespace. Failover targets cannot point to another virtual model. |
    | `targets[].priority` | `0` | Lower values are preferred. Give several targets the same priority to load balance across them within a group. |
 
 3. Send three requests in a row.
@@ -494,6 +499,9 @@ Failover depends on eviction. Configure `policies.health` on the concrete target
 
    > [!WARNING]
    > Failover is not a per-request retry. The request that triggers eviction still fails and returns an error to the client, and only later requests route to the next priority group. Evicted targets are restored after the eviction duration expires. To retry a failed request, configure a retry policy on the Gateway with an {{< reuse "agw-docs/snippets/policy.md" >}}.
+
+> [!NOTE]
+> A failover target can be a concrete model that points to an InferencePool, by setting `spec.provider: Custom` and `spec.custom.backendRef`. In that case, the controller records the virtual model's Gateway as a parent of the InferencePool, in addition to the concrete model's Gateway. The InferencePool status lists both Gateways as parents, and the inference-routing and Endpoint Picker Extension (EPP) policies are generated for both Gateways.
 
 ## Verify model discovery
 
