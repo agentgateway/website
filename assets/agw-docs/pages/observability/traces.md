@@ -247,7 +247,7 @@ You can optionally enrich the traces that are captured by the agentgateway with 
 4. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
 
 5. Connect to the MCP server with the agentgateway UI playground. 
-   1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/playground/).
+   1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/mcp/playground/).
    2. In the **Connection Settings** card, select your **Listener Endpoint**. 
    3. In the **Bearer Token** field, enter the following JWT token. The JWT token includes the `sub: me` claim that is allowed access to the `everything_echo` tool. 
       ```sh
