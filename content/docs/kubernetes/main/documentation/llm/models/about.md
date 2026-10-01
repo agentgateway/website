@@ -352,7 +352,7 @@ Concrete models accept an inline `spec.policies` block that supports the followi
 | `tunnel` | Proxy tunnel used to reach the provider. |
 | `headers` | Request and response header changes. |
 
-When you configure a model policy, such as `transformations`, and omit `routes`, the standard route formats stay enabled. Set `routes` only when you need to override the paths or formats that the model accepts.
+Setting `spec.policies`, such as `transformations`, does not change which API formats the model serves. Requests to `/v1/messages`, `/v1/responses`, and the other standard serving paths keep their format.
 
 Virtual models cannot set `spec.policies`, because a virtual model has no provider of its own to authenticate to, transform for, or health check. Configure these policies on the concrete models that the virtual model targets.
 
