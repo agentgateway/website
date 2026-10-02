@@ -75,12 +75,206 @@ kubectl() {
 
 ## Configure an AgentgatewayModel
 
-Use a provider preset to serve standard LLM APIs through the gateway. The following example serves `muse-spark-1.3` through Meta, using the Secret from the previous section. It uses Meta's default URL, `https://api.meta.ai/v1`, and supports Chat Completions, Messages, and Responses.
+Use a provider preset to serve standard LLM APIs through the gateway. Each example uses the provider's default URL and the Secret from the previous section. The model names in the tabs are examples. Use a model that your provider supports.
 
-1. [Enable LLM serving on a listener]({{< link-hextra path="/documentation/llm/models/serve/#enable-llm-serving-on-a-listener" >}}). The listener must allow the `AgentgatewayModel` route kind. The example below attaches to the `http` listener of the `agentgateway-proxy` Gateway.
+1. [Enable LLM serving on a listener]({{< link-hextra path="/documentation/llm/models/serve/#enable-llm-serving-on-a-listener" >}}). The listener must allow the `AgentgatewayModel` route kind. The examples below attach to the `http` listener of the `agentgateway-proxy` Gateway.
 
-2. Create the model. For another provider, use its `spec.provider` value from the [provider table](#built-in-openai-compatible-providers). Set `spec.match.model` to a model that the provider supports. Use that provider's API key in the Secret.
+2. Create the model. Select the tab for your provider and use that provider's API key in the Secret. Set `spec.match.model` to the model that you want to serve.
 
+   {{< tabs >}}
+   {{% tab name="Baseten" %}}
+   ```yaml {paths="openai-compatible-validate"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: llm-model
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: meta-llama/Llama-3.1-8B-Instruct
+     provider: Baseten
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab name="Cerebras" %}}
+   ```yaml {paths="openai-compatible-validate"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: llm-model
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: llama-3.3-70b
+     provider: Cerebras
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab name="Cohere" %}}
+   ```yaml {paths="openai-compatible-validate"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: llm-model
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: command-r-plus
+     provider: Cohere
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab name="DeepInfra" %}}
+   ```yaml {paths="openai-compatible-validate"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: llm-model
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: meta-llama/Meta-Llama-3.1-8B-Instruct
+     provider: Deepinfra
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab name="DeepSeek" %}}
+   ```yaml {paths="openai-compatible-validate"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: llm-model
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: deepseek-chat
+     provider: Deepseek
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab name="Fireworks AI" %}}
+   ```yaml {paths="openai-compatible-validate"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: llm-model
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: accounts/fireworks/models/llama-v3p1-70b-instruct
+     provider: Fireworks
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab name="Groq" %}}
+   ```yaml {paths="openai-compatible-validate"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: llm-model
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: llama-3.3-70b-versatile
+     provider: Groq
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab name="Hugging Face" %}}
+   ```yaml {paths="openai-compatible-validate"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: llm-model
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: meta-llama/Llama-3.1-8B-Instruct
+     provider: Huggingface
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab name="Meta" %}}
    ```yaml {paths="openai-compatible-validate"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -103,17 +297,115 @@ Use a provider preset to serve standard LLM APIs through the gateway. The follow
            name: llm-provider-secret
    EOF
    ```
+   {{% /tab %}}
+   {{% tab name="Mistral AI" %}}
+   ```yaml {paths="openai-compatible-validate"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: llm-model
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: mistral-large-latest
+     provider: Mistral
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab name="OpenRouter" %}}
+   ```yaml {paths="openai-compatible-validate"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: llm-model
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: openai/gpt-4o
+     provider: Openrouter
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab name="Together AI" %}}
+   ```yaml {paths="openai-compatible-validate"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: llm-model
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
+     provider: TogetherAI
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab name="xAI" %}}
+   ```yaml {paths="openai-compatible-validate"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: llm-model
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: grok-2-latest
+     provider: XAI
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   EOF
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
    | Setting | Description |
    |---------|-------------|
    | `spec.parentRefs` | Attaches the model to the `http` listener of `agentgateway-proxy` in the same namespace. This listener serves the model without a separate backend or HTTPRoute. |
-   | `spec.match.model` | The model name that clients send in requests. This example forwards the same name to the provider. |
+   | `spec.match.model` | The model name that clients send in requests. Each example forwards the same name to the provider. |
    | `spec.provider` | The provider preset, such as `Meta` or `Groq`. The preset supplies the URL and request formats. |
    | `spec.policies.auth.secretRef.name` | The Secret that contains the provider API key in its `Authorization` entry. The Secret must be in the model's namespace. |
 
    To override a preset's URL, set `spec.baseURL`. For the URL format and examples, see [Providers]({{< link-hextra path="/documentation/llm/models/about/#providers" >}}).
 
-3. Send a request through the gateway. The model endpoint is `/v1/chat/completions`. Replace `muse-spark-1.3` if you configured another model.
+3. Send a request through the gateway. The model endpoint is `/v1/chat/completions`. Replace `<your-model>` with the `spec.match.model` value from your model configuration.
 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
@@ -121,7 +413,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. The follow
    curl "http://$INGRESS_GW_ADDRESS/v1/chat/completions" \
      -H 'Content-Type: application/json' \
      -d '{
-       "model": "muse-spark-1.3",
+       "model": "<your-model>",
        "messages": [{"role": "user", "content": "Explain retrieval-augmented generation in one sentence."}]
      }' | jq
    ```
@@ -133,7 +425,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. The follow
    curl http://localhost:8080/v1/chat/completions \
      -H 'Content-Type: application/json' \
      -d '{
-       "model": "muse-spark-1.3",
+       "model": "<your-model>",
        "messages": [{"role": "user", "content": "Explain retrieval-augmented generation in one sentence."}]
      }' | jq
    ```
