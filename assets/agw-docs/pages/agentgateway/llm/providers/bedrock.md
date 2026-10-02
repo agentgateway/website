@@ -8,6 +8,11 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
 > Bedrock excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Bedrock reports. To read the Bedrock number itself, use `llm.providerInputTokens`. Do not confuse these CEL fields with the Bedrock wire fields named in the previous note. For more information, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
 {{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+> [!NOTE]
+> Client response bodies use the usage convention for the API format that the client called. A `/v1/messages` response uses Anthropic usage fields. In that response, `usage.input_tokens` excludes prompt-cache tokens and cache counts appear separately. A `/v1/chat/completions` or `/v1/responses` response uses OpenAI usage fields. In those responses, the main input count includes prompt-cache tokens.
+{{< /version >}}
+
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}). 
