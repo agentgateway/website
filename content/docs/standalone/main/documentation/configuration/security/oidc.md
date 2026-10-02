@@ -65,7 +65,6 @@ Review the following details about session cookies.
 - The gateway always requests the `openid` scope to obtain an ID token.
 - If the identity provider returns a refresh token, a separate encrypted cookie stores it. The browser session refreshes when the ID token expires. Add the `offline_access` scope when your provider requires that scope to issue refresh tokens.
 - The refresh response must include a new ID token for the same `sub` claim. If the provider omits the ID token, the user must sign in again. If the provider returns an ID token for a different subject, the user must sign in again.
-- With multiple gateway replicas and rotating refresh tokens, configure the provider's refresh-token reuse grace period to tolerate concurrent refreshes from different replicas.
 - The gateway uses PKCE automatically to protect against authorization code interception.
 
 ## Configuration
