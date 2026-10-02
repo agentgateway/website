@@ -74,12 +74,12 @@ build:
 # Start local dev server (drafts and future-dated content shown)
 .PHONY: serve
 serve:
-	hugo160 server --buildDrafts --buildFuture
+	hugo server --buildDrafts --buildFuture
 
 # Start local server with production-like build (GC, minify, no drafts)
 .PHONY: serve-prod
 serve-prod:
-	hugo160 server --gc --minify
+	hugo server --gc --minify
 
 # Alias for serve (drafts and future-dated content shown)
 .PHONY: server
@@ -138,7 +138,7 @@ framework-test-install:
 framework-test:
 	@$(MAKE) _framework_test_preflight
 	rm -rf public
-	hugo160 --gc --minify > .build.log 2>&1
+	hugo --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test; \
 		result=$$?; $(SHOW_REPORT); exit $$result)
@@ -149,7 +149,7 @@ framework-test:
 framework-test-static:
 	@$(MAKE) _framework_test_preflight
 	rm -rf public
-	hugo160 --gc --minify > .build.log 2>&1
+	hugo --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=static; \
 		result=$$?; $(SHOW_REPORT); exit $$result)
@@ -162,7 +162,7 @@ framework-test-static:
 framework-test-content:
 	@$(MAKE) _framework_test_preflight
 	rm -rf public
-	hugo160 --gc --minify > .build.log 2>&1
+	hugo --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=content; \
 		result=$$?; npx playwright show-report; exit $$result)
@@ -175,7 +175,7 @@ framework-test-content:
 framework-test-browser:
 	@$(MAKE) _framework_test_preflight
 	rm -rf public
-	hugo160 --gc --minify > .build.log 2>&1
+	hugo --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=browser; \
 		result=$$?; $(SHOW_REPORT); exit $$result)
@@ -186,7 +186,7 @@ framework-test-browser:
 framework-test-cross-browser:
 	@$(MAKE) _framework_test_preflight
 	rm -rf public
-	hugo160 --gc --minify > .build.log 2>&1
+	hugo --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test \
 			--project=cross-browser-chromium \
