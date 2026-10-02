@@ -4748,8 +4748,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `entries` _[RateLimitDescriptorEntry](#ratelimitdescriptorentry) array_ | Individual components that make up this descriptor. |  | MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `unit` _[RateLimitUnit](#ratelimitunit)_ | Cost unit. If unspecified,<br />`Requests` is used. |  | Optional: \{\} <br /> |
-| `cost` _[CELExpression](#celexpression)_ | Common Expression Language (`CEL`) expression that determines<br />the cost of the request for this descriptor. If unset, `Requests` costs<br />default to 1, and `Tokens` costs default to the total token count.<br />`Tokens` cost are evaluated after the request has completed. For non-streaming requests, `request`, `llm`, and<br />`response` fields are all available; for streaming requests, `response` is not available (however, all LLM<br />attributes are in `llm`). For `Requests`, cost is computed during the request phase.<br />See https://agentgateway.dev/docs/standalone/main/reference/cel/ for more info. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
-| `limitOverride` _[CELExpression](#celexpression)_ | Common Expression Language (`CEL`) expression that returns a dynamic<br />limit override for this descriptor. The expression must evaluate to an<br />object containing `unit` and `requestsPerUnit`, for example<br />`\{"unit":"minute","requestsPerUnit":5\}`.<br />See https://agentgateway.dev/docs/standalone/main/reference/cel/ for more info. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `cost` _[CELExpression](#celexpression)_ | Common Expression Language (`CEL`) expression that determines<br />the cost of the request for this descriptor. If unset, `Requests` costs<br />default to 1, and `Tokens` costs default to the total token count.<br />`Tokens` cost are evaluated after the request has completed. For non-streaming requests, `request`, `llm`, and<br />`response` fields are all available; for streaming requests, `response` is not available (however, all LLM<br />attributes are in `llm`). For `Requests`, cost is computed during the request phase.<br />See https://agentgateway.dev/docs/standalone/latest/reference/cel/ for more info. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `limitOverride` _[CELExpression](#celexpression)_ | Common Expression Language (`CEL`) expression that returns a dynamic<br />limit override for this descriptor. The expression must evaluate to an<br />object containing `unit` and `requestsPerUnit`, for example<br />`\{"unit":"minute","requestsPerUnit":5\}`.<br />See https://agentgateway.dev/docs/standalone/latest/reference/cel/ for more info. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### RateLimitDescriptorEntry
@@ -4766,7 +4766,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `name` _[TinyString](#tinystring)_ | Name of the descriptor. |  | MaxLength: 64 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `expression` _[CELExpression](#celexpression)_ | Common Expression Language (`CEL`) expression that<br />defines the value for the descriptor.<br />For example, to rate limit based on the Client IP: `source.address`.<br />See https://agentgateway.dev/docs/standalone/main/reference/cel/ for more info. |  | MaxLength: 16384 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `expression` _[CELExpression](#celexpression)_ | Common Expression Language (`CEL`) expression that<br />defines the value for the descriptor.<br />For example, to rate limit based on the Client IP: `source.address`.<br />See https://agentgateway.dev/docs/standalone/latest/reference/cel/ for more info. |  | MaxLength: 16384 <br />MinLength: 1 <br />Required: \{\} <br /> |
 
 
 #### RateLimitUnit
