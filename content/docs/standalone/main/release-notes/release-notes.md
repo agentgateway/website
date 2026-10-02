@@ -143,10 +143,6 @@ Now, the `destination.address`, `destination.port`, and `destination.hostname` C
 
 For the variables and an example, see [Require TLS SNI]({{< link-hextra path="/documentation/configuration/security/network-authz/#require-tls-sni" >}}).
 
-#### Backend endpoint available in CEL {#v16-backend-endpoint-cel}
-
-Policy expressions can read `backend.endpoint` after target resolution. The field contains the selected backend call target, including the port for network endpoints. For phase guidance, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
-
 ### LLM {#v16-features-llm}
 
 #### Failure mode for provider guardrails {#v16-guardrail-failure-mode}

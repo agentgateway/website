@@ -25,8 +25,6 @@ For the full list of fields and types on every top-level object, see the [Intera
 
 Depending on the policy, different fields are accessible based on when in the request processing they are applied.
 
-An expression can read `backend.endpoint` only after target resolution. Use `has(backend.endpoint)` before you read `backend.endpoint` in a policy expression.
-
 |Policy|Available Variables|
 |------|-------------------|
 |Transformation| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm` |
