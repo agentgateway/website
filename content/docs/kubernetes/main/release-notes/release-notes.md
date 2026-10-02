@@ -59,7 +59,7 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3208 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3520 -->
 
-- **Legacy token counts**: The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is removed. In 1.5, it restored the earlier token counts that left out cache tokens. Input and total token counts now always include cache tokens.
+- **Legacy token counts**: The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is removed. In 1.5, it restored the earlier token counts that left out cache tokens. In logs, metrics, and CEL, input and total token counts now always include cache tokens. The token usage that agentgateway returns to clients follows the API that the client calls instead. For more information, see [Other behavior changes](#v16-behavior-changes).
 - **Server-side defaults in the CRDs**: The CRD schemas no longer declare default values, such as `action: Allow` or `tracing.protocol: GRPC`. The controller applies the same defaults at runtime, so behavior does not change. However, `kubectl get -o yaml` now shows only the fields that you set. If your GitOps diffs or scripts expect the default values to appear in the stored resource, update them.
 
 ## 🔄 Other behavior changes {#v16-behavior-changes}
@@ -75,6 +75,7 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3426 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3618 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3221 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3687 -->
 
 - **Policy conflicts**: When two policies with the same specificity set the same field, the oldest policy by `metadata.creationTimestamp` now wins consistently. In 1.5, the winner was not predictable.
 - **AI transformation fields**: The `spec.backend.ai.transformations` and `spec.backend.ai.finalTransformations` lists of an {{< reuse "agw-docs/snippets/policy.md" >}} now reject duplicate `field` values. A policy with duplicates fails validation when you next apply it.
@@ -86,6 +87,7 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 - **Failover eviction**: A backend or virtual model with more than one priority group now evicts a failing target by default. A health policy replaces this default. To keep failover, include `spec.backend.health.eviction` in the {{< reuse "agw-docs/snippets/policy.md" >}}. For concrete {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} targets, set `spec.policies.health.eviction`. For more information, see [Model failover]({{< link-hextra path="/documentation/llm/failover/" >}}).
 - **Policy service timeouts**: Calls to external services default to a timeout of 2 seconds for gRPC external authorization and 10 seconds for rate limit and external processing services.
 - **Streaming guardrails**: Agentgateway now rejects content if a provider guard fails while checking a streamed response or realtime connection. To keep the 1.5 behavior, set `failureMode: FailOpen` on the guard. For example, set it in `spec.backend.ai.promptGuard.response[].bedrockGuardrails` of an {{< reuse "agw-docs/snippets/policy.md" >}}. For more information, see [Provider failures]({{< link-hextra path="/documentation/llm/guardrails/overview/#provider-failures" >}}).
+- **Token usage in responses**: The `usage` that agentgateway returns to clients now follows the conventions of the API that the client calls, whichever provider serves the request. Anthropic Messages responses leave cache tokens out of `input_tokens` and report them in `cache_read_input_tokens` and `cache_creation_input_tokens`. OpenAI Chat Completions and Responses include cache tokens in the input and total token counts. For example, a Chat Completions request to an Anthropic or Amazon Bedrock model that writes to the prompt cache now reports those cache tokens in `prompt_tokens`. If a client calculates usage or cost from these fields, review its counts after you upgrade.
 - **Deployer ownership**: The controller no longer overwrites an existing resource of the same name that it does not own. It reports an error instead.
 
 ## 🌟 New features {#v16-new-features}
@@ -172,3 +174,21 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3182 -->
 
 You can now opt in to OpenTelemetry field names for stdout access logs. Set `preset: Otel` in `spec.frontend.accessLog` of an {{< reuse "agw-docs/snippets/policy.md" >}}. For more information, see [Use OpenTelemetry field names]({{< link-hextra path="/documentation/observability/access-logs/view/#preset" >}}).
+
+## 🐛 Fixes {#v16-fixes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3703 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3214 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
+
+**Traffic management**
+
+- Connections with `maxConnectionDuration` close with up to 10% jitter, which reduces synchronized reconnects at the configured connection age.
+
+**LLM**
+
+- Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
+
+**MCP**
+
+- Access-log CEL expressions can now read dynamic metadata that ExtMCP request-phase guardrails return through `mcpGuardrails`, including on resumed stateful MCP sessions. For more information, see [Log MCP guardrail metadata]({{< link-hextra path="/documentation/observability/access-logs/view/#mcp-guardrails" >}}).
