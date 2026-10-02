@@ -1,16 +1,15 @@
 Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider in agentgateway.
 
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
 > [!NOTE]
 > Agentgateway accepts OpenAI-formatted requests (such as the `/v1/chat/completions` request body shape) and returns OpenAI-formatted responses, regardless of the route path that you configure. Agentgateway translates between OpenAI and Bedrock formats internally. Bedrock-native APIs such as the [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html) request and response shapes are not supported. Usage fields in responses follow the OpenAI shape (`prompt_tokens`, `completion_tokens`, `total_tokens`), not the Bedrock shape (`inputTokens`, `outputTokens`, `totalTokens`).
+{{< /version >}}
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 > [!NOTE]
-> Bedrock excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Bedrock reports. To read the Bedrock number itself, use `llm.providerInputTokens`. Do not confuse these CEL fields with the Bedrock wire fields named in the previous note. For more information, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
-{{< /version >}}
-
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
-> [!NOTE]
-> Client response bodies use the usage convention for the API format that the client called. A `/v1/messages` response uses Anthropic usage fields. In that response, `usage.input_tokens` excludes prompt-cache tokens and cache counts appear separately. A `/v1/chat/completions` or `/v1/responses` response uses OpenAI usage fields. In those responses, the main input count includes prompt-cache tokens.
+> Bedrock excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Bedrock reports. To read the Bedrock number itself, use `llm.providerInputTokens`. For more information, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
+>
+> {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Agentgateway translates between the client API format and Bedrock internally. Bedrock-native request and response shapes, such as the [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html), are not supported at the client-facing endpoint. Client response bodies use the usage convention for the API format that the client called. A `/v1/messages` response uses Anthropic usage fields. In that response, `usage.input_tokens` excludes prompt-cache tokens and cache counts appear separately. A `/v1/chat/completions` or `/v1/responses` response uses OpenAI usage fields. In those responses, the main input count includes prompt-cache tokens.{{< /version >}}
 {{< /version >}}
 
 ## Before you begin
