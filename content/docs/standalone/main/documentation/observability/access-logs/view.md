@@ -85,7 +85,7 @@ To view access logs in the UI:
    - **Trajectory**: Review the steps that your request took, including tool calls, and how many tokens were spent in each step. Each step is represented as a line. The longer the line is, the more tokens were used in that step.
    - **Conversation view**: See the details of your conversation with the LLM provider, such as the prompt that you sent and the reply that you got from the LLM. 
 
-4. Select a log entry to open it and review its trajectory and conversation.
+4. Select a log entry to open it and review its trajectory and conversation. If a prompt guard evaluated the request or response, the status column shows a shield badge. The log details include a **Guardrails** section with the phase, guard kind, and action for each evaluation.
 
    {{< reuse-image src="img/agentgateway-ui-log-detail.png" srcDark="img/agentgateway-ui-log-detail-dark.png" >}}
 
@@ -121,9 +121,9 @@ frontendPolicies:
 
 For the full list of available fields, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables/" >}}). 
 
-### Log guardrail interventions {#guardrails}
+### Log guardrail evaluations {#guardrails}
 
-A prompt guard that masks or rejects content records what it did under the `guardrails` variable, with one entry per intervention. Add that variable to a log field to keep an audit trail of every intervention, including which guard acted and why.
+A prompt guard records each evaluation under the `guardrails` variable. Add that variable to a log field to keep an audit trail of every evaluation, including which guard ran and which action was recorded.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -135,7 +135,7 @@ frontendPolicies:
       guardrail_action: 'guardrails[0].action'
 ```
 
-Each entry carries `phase` (`request` or `response`), `guard` (the guard kind, such as `regex` or `bedrockGuardrails`), `action` (`mask`, `reject`, `audit`, or `failOpen`), `guardrailId`, `guardrailVersion`, `actionReason`, and `assessments`. The `assessments` field holds provider metadata only, so a log never records the content that the guardrail matched.
+Each entry carries `phase` (`request` or `response`), `guard` (the guard kind, such as `regex` or `bedrockGuardrails`), `action` (`allow`, `mask`, `reject`, `audit`, or `failOpen`), `guardrailId`, `guardrailVersion`, `actionReason`, and `assessments`. The `allow` action means the guardrail passed the content without changing traffic. The `assessments` field holds provider metadata only, so a log never records the content that the guardrail matched.
 
 > [!NOTE]
 > Only CEL that runs after the request completes, such as a log field or a metric field, receives the `guardrails` variable. An authorization or transformation expression that runs mid-request never sees it.
