@@ -116,9 +116,10 @@ to this model.
 
 7. Click **Test connection**. Claude Desktop tests inference with the first
    configured model. If no explicit model is configured, the test first calls
-   `<base-url>/v1/models`. Agentgateway answers that request itself with the
-   model names in its configuration, such as `*`, rather than the models that
-   your subscription can use, so configure an explicit model.
+   `<base-url>/v1/models`.
+   {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}Agentgateway returns the model names in its configuration, such as `*`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}Agentgateway returns model IDs from its configuration and catalog. A `*` model for Anthropic lists every Anthropic model in the catalog.{{< /version >}}
+   The list does not reflect which models your subscription can use. Configure
+   an explicit model for the test.
 
    > [!NOTE]
    > With subscription passthrough, the connection test might return HTTP 429
@@ -318,7 +319,7 @@ If you configured gateway API key or OIDC authentication in strict mode, send a 
 | Entra sign-in returns `api key authentication failure` | The Claude Desktop route still requires its old virtual API key. Replace that authentication with JWT validation; do not require both. |
 | Entra Test connection succeeds, but restart logs `InvalidToken` | An older managed profile restored a static key. Update the assigned profile to `interactive`, remove `inferenceGatewayApiKey`, sync the device, and fully restart Claude Desktop. |
 | A subscription request logs `api key authentication failure` | A virtual API key policy is protecting the subscription route. Remove it from this route so that the subscription bearer token can pass upstream. |
-| The test needs at least one model, or model discovery returns only `*` | Add a full model ID under **Models** and disable or skip model discovery. |
+| The test needs at least one model, or model discovery {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}returns only `*`{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}lists models that your subscription cannot use{{< /version >}} | Add a full model ID under **Models** and disable or skip model discovery. |
 | Anthropic returns `authentication_error` in gateway API key or OIDC mode | Confirm that the backend holds a valid Anthropic API key. |
 | Anthropic returns `authentication_error` in subscription mode | Generate a new token with `claude setup-token`, confirm that the auth scheme is **Bearer**, and make sure the backend does not inject a provider API key. |
 | Anthropic returns HTTP 400 in subscription mode | Add or forward `anthropic-beta: oauth-2025-04-20` as described in [Configure agentgateway with a Claude subscription](#configure-agentgateway). |

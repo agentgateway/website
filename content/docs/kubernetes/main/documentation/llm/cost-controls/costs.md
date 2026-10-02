@@ -28,7 +28,7 @@ The proxy combines the built-in catalog and your catalog sources into one catalo
 - **Overlays**: A catalog without `metadata` is an overlay. The proxy applies overlays on top of the base catalog in the order that you list them. A later overlay takes precedence at the model level.
 
 > [!CAUTION]
-> An imported catalog that is older than the built-in catalog of your {{< reuse "agw-docs/snippets/agentgateway.md" >}} version is ignored, and the proxy logs no warning. After you upgrade, import the catalog again. To keep a catalog of your own rates in effect regardless of its age, leave out the `metadata` field so that the catalog is applied as an overlay.
+> The proxy ignores imported catalogs that are older than its built-in catalog, without a warning. You can remove your imported catalog if the built-in catalog has the rates that you need. To customize rates, omit `metadata` from your catalog. The proxy then applies your catalog as an overlay, regardless of its age.
 
 ## Step 1: Prepare a catalog
 
@@ -100,6 +100,10 @@ Use `agctl catalog import` to generate a catalog JSON file, then load it into a 
    ```
 
 4. Reference the ConfigMap from your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, as shown in the next section, [Configure a catalog as a ConfigMap](#step-2-configure-a-catalog-as-a-configmap).
+
+### Filter providers and apply import overrides
+
+{{< reuse "agw-docs/snippets/model-catalog-import-options.md" >}}
 
 For all options, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
 

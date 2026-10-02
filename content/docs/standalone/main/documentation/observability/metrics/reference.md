@@ -59,6 +59,7 @@ These metrics follow the [OpenTelemetry semantic conventions for generative AI](
 | `agentgateway_gen_ai_server_request_duration` | Histogram | — | Duration of a generative AI request in seconds. Failed operations have `error_type="_OTHER"` and successful operations omit the label. |
 | `agentgateway_gen_ai_server_time_per_output_token` | Histogram | — | Time to generate each output token for a given request. |
 | `agentgateway_gen_ai_server_time_to_first_token` | Histogram | — | Time to generate the first token for a given request. |
+| `agentgateway_gen_ai_server_inter_chunk_latency` | Histogram | seconds | Time between consecutive streamed output chunks, observed for each chunk after the first. Shows the distribution of gaps within a response, unlike the per-request average in `time_per_output_token`. |
 | `agentgateway_guardrail_checks_total` | Counter | — | Total number of guardrail checks. |
 
 ## Misc

@@ -66,6 +66,17 @@ Two tags record which Amazon Bedrock API surface serves a model. {{< reuse "agw-
 
 A model can carry both tags, which means that either endpoint serves it. Run `agctl catalog import` with the default sources to populate these tags, because `aws-bedrock-mantle` reads them from the AWS model cards. For the preference setting that consumes them, see [Bedrock Mantle]({{< link-hextra path="/integrations/llm/providers/bedrock/#bedrock-mantle" >}}).
 
+### Anthropic thinking tags
+
+These tags tell agentgateway which thinking format a model supports when translating a request to Anthropic Messages or Bedrock Converse.
+
+| Tag | Meaning |
+| --- | --- |
+| `adaptive_thinking` | Supports adaptive thinking with an effort level. When the request asks for reasoning, the translation can use `thinking.type: adaptive` and `output_config.effort`. |
+| `legacy_thinking` | Supports thinking with an explicit token budget. An explicit budget takes precedence when the model supports this format. |
+
+The tags describe model capabilities; adding a tag does not itself request reasoning. For an adaptive-only model, a request with an explicit thinking budget is translated to adaptive thinking, with `high` effort when no effort is supplied. Keep these tags aligned with the model's actual capabilities.
+
 ### Other tags
 
 Tag values that are not listed in the tables above are stored and merged, but {{< reuse "agw-docs/snippets/agentgateway.md" >}} does not act on them yet.
