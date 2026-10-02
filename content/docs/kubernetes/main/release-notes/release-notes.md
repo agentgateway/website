@@ -196,4 +196,4 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 
 **Security**
 
-- A JWT authentication policy that sets `jwks.remote.url` can fetch keys directly without configuring a `backendRef`.
+- The controller no longer fails on a JWT authentication policy that sets `jwks.remote.url` without a `backendRef` when the `AGW_BACKEND_REF_GRANT_MODE` environment variable is set to `route-and-policy`.
