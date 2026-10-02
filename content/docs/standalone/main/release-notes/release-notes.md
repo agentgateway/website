@@ -78,6 +78,7 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 
 ## 🔄 Other behavior changes {#v16-behavior-changes}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3639 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3177 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3599 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3112 -->
@@ -86,6 +87,7 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3426 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3618 -->
 
+- **YAML configuration**: Unquoted values such as `no` stay strings instead of being interpreted as booleans. Use `true` or `false` for boolean settings. YAML configuration errors now include line numbers, and the UI preserves comments and formatting where possible when it writes the configuration file.
 - **Backend authentication errors**: When agentgateway cannot get credentials from a provider, such as an OAuth token endpoint, AWS STS, or Azure, the request now fails with `502` instead of `500`. Local failures, such as a static key that cannot be set, return `500` instead of `503`.
 - **Backend request timeout**: The `backendRequestTimeout` field of the `timeout` policy now also limits the time to read a buffered body. This limit applies to external authorization and CEL expressions that use `response.body`, for example. Streamed bodies are unaffected.
 - **Access log level**: Request log records now use `error` when agentgateway records a request error, and `info` otherwise. In 1.5, all request records used `info`.
