@@ -56,11 +56,13 @@ When multiple policies target the same resource, agentgateway merges the policy 
 
 This field-level merge applies to all fields, including nested sub-fields. Each nested sub-field is treated as an atomic unit. For example, `backend.ai.promptGuard` and `backend.ai.routes` are separate atomic fields. If Policy A sets `backend.ai.promptGuard` and Policy B sets `backend.ai.routes`, both are included in the merged result. However, if both policies set the same nested sub-field such as `backend.ai.promptGuard`, only the higher-precedence policy's entire value for that sub-field is used—no recursive merge occurs within nested fields.
 
-### Inline AI policies on a backend {#backend-ai}
+### Inline AI and authorization policies on a backend {#backend-ai}
 
 An {{< reuse "agw-docs/snippets/backend.md" >}} can set an AI policy inline, in `spec.ai.groups[].providers[].policies.ai`. An {{< reuse "agw-docs/snippets/policy.md" >}} can set one in `spec.backend.ai` and attach it to the same backend. The two policies merge field by field, the same as any other pair of policies. For a field that both of them set, the inline value wins, because a policy inline on the backend object is more specific than an attached policy. For the full order, see [Merge precedence](#merging-precedence).
 
 The following fields of `ai` each merge separately: `defaults`, `finalTransformations`, `modelAliases`, `overrides`, `prompt`, `promptCaching`, `promptGuard`, `routes`, and `transformations`.
+
+An {{< reuse "agw-docs/snippets/backend.md" >}} can also set backend authorization inline. Use `spec.policies.authorization` to set authorization for the whole backend. Use `spec.ai.groups[].providers[].policies.authorization` to set authorization for one AI provider. An {{< reuse "agw-docs/snippets/policy.md" >}} can set backend authorization in `spec.backend.authorization`, separate from the `spec.traffic.authorization` field that runs with traffic policies.
 
 An attached {{< reuse "agw-docs/snippets/policy.md" >}} that targets a provider's `sectionName` inside an AI provider group can also target a separate {{< reuse "agw-docs/snippets/backend.md" >}} in the same `targetRefs` list, so both share the same `auth`, `tls`, and `tunnel` settings. For an example, see [Share connection settings]({{< link-hextra path="/documentation/llm/shared-connection-settings/" >}}).
 
