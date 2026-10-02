@@ -126,6 +126,11 @@ When an Anthropic messages request is converted to the `Responses` or the
   the prompt exceeds the context window. An error that already contains
   `capability_rejected:` keeps its message. A Gemini or Vertex AI provider
   returns errors in the Google format, which does not get the marker.
+- Response usage follows the API format that the client called. Messages
+  responses use Anthropic usage conventions, so `usage.input_tokens` excludes
+  prompt-cache tokens. Chat Completions and Responses replies use OpenAI usage
+  conventions. In those replies, the main input count includes prompt-cache
+  tokens.
 
 ### Anthropic messages to the Responses format
 

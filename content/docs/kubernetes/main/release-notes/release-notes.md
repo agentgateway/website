@@ -177,6 +177,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 
 ## 🐛 Fixes {#v16-fixes}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3703 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3214 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
 
@@ -187,3 +188,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 **LLM**
 
 - Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
+
+**MCP**
+
+- Access-log CEL expressions can now read dynamic metadata that ExtMCP request-phase guardrails return through `mcpGuardrails`, including on resumed stateful MCP sessions. For more information, see [Log MCP guardrail metadata]({{< link-hextra path="/documentation/observability/access-logs/view/#mcp-guardrails" >}}).
