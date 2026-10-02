@@ -76,7 +76,7 @@ endpoints:
 
 `apiKey` must be set, but it is not used to call the upstream provider — agentgateway holds the real key. Set it to any non-empty value or to a key you require LibreChat clients to present (and validate at the gateway).
 
-Set `fetch: false` and list your models explicitly in `models.default`. When agentgateway is configured with a wildcard (`*`) model, the `/v1/models` endpoint returns only the wildcard entry, which LibreChat cannot use to populate its model list.
+Set `fetch: false` and list your chat models in `models.default`. For a wildcard (`*`) model, `/v1/models` returns every catalog model for that provider. The list can include embedding and image models that do not support chat.
 
 > [!NOTE]
 > If LibreChat runs in Docker and agentgateway runs on your host machine, replace `localhost` with `host.docker.internal`:
