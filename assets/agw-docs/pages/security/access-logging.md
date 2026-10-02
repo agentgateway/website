@@ -23,6 +23,7 @@ For logging, CEL exposes these variable groups when enabled or applicable:
      enterprise line resolves to one of the tokens above. -->
 {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 * **Guardrails**: `guardrails`, with entries for prompt-guard evaluations naming the phase, the guard, and the action, including `allow`
+* **MCP guardrails**: `mcpGuardrails`, with dynamic metadata that an ExtMCP request-phase processor returns
 {{< /version >}}
 
 Use the `filter` field in the {{< reuse "agw-docs/snippets/policy.md" >}} to [filter which requests are logged](#filter-access-logs) by path, response code, or any other request attribute. Use the `attributes` list to [add or remove log fields](#add-and-remove-log-fields) by using CEL expressions. For the full variable table, available functions, and examples, see the [CEL expressions reference]({{< link-hextra path="/reference/cel/" >}}).
@@ -519,6 +520,24 @@ If you set up the [OTel stack]({{< link-hextra path="/documentation/observabilit
    | Logs from a specific gateway | `\| gateway="agentgateway-system/agentgateway-proxy"` |
 
    {{< reuse-image src="img/agw-grafana-loki.png" srcDark="img/agw-grafana-loki.png"  >}}
+
+{{< /version >}}
+
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+## Log MCP guardrail metadata {#mcp-guardrails}
+
+An ExtMCP request-phase guardrail can return dynamic metadata with a `Pass` or mutated result. After the MCP request completes, access-log CEL can read that metadata from the `mcpGuardrails` variable. Access-log CEL can also read the metadata for requests that resume a stateful MCP session. Use `mcpGuardrails` to record policy-server decisions that are not part of the default MCP log fields.
+
+The metadata keys depend on the ExtMCP server response. The following example records the `decision` key when the policy server returns metadata such as `{"decision":"allow"}`.
+
+```yaml
+frontend:
+  accessLog:
+    attributes:
+      add:
+      - name: mcp_guardrail_decision
+        expression: 'mcpGuardrails != null ? string(mcpGuardrails.decision) : ""'
+```
 
 {{< /version >}}
 

@@ -8,7 +8,7 @@ test: skip
 Learn how the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API provides a model-centric way to serve LLMs in Kubernetes.
 
 > [!WARNING]
-> The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is experimental and disabled by default. The `v1alpha1` API is subject to change in a future release. To enable it, set the `agentgatewayModels.enabled=true` Helm value on the {{< reuse "agw-docs/snippets/agentgateway.md" >}} control plane.
+> The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is enabled by default. It is a `v1alpha1` API, so it is subject to change in a future release. To turn it off, set the `agentgatewayModels.enabled=false` Helm value on the {{< reuse "agw-docs/snippets/agentgateway.md" >}} control plane.
 
 ## About
 
@@ -21,10 +21,11 @@ The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API removes the sca
 Every model that attaches to the same parent is aggregated into a single model table, called a *model router*. From that table, agentgateway serves the following behavior.
 
 - Model extraction from the request body.
-- The standard LLM API paths, such as `/v1/chat/completions`.
+- The standard LLM API paths, such as `/v1/chat/completions` and `/v1/audio/transcriptions`.
 - Model discovery on `/v1/models`.
 - Per-model provider routing.
 - OpenAI-compatible error responses for unknown models.
+- Response usage fields use the API format that the client called. Messages responses use Anthropic usage conventions. Chat Completions and Responses replies use OpenAI usage conventions.
 
 The parent that you choose decides which model router a model joins, and where that router is served. For more information, see [Parent types](#parent-types).
 
@@ -57,6 +58,13 @@ Each `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` lists one or more 
 A `Gateway` parent is the default choice. Use an `HTTPRoute` parent when one listener needs more than one independent set of models, or when a group of models needs its own policies. For more information, see [Path-scoped models on an HTTPRoute](#path-scoped-models-on-an-httproute).
 
 Models on different routers are isolated from each other. A request to one router's paths can select only the models on that router, and `/v1/models` on that router lists only those models.
+
+How a router matches paths depends on its parent.
+
+* **Listener root** (`Gateway` or `ListenerSet` parent): The router serves only the standard LLM paths, and each path must match exactly. A request to another path, such as `/other/v1/messages` or `/v1/messages/extra`, does not reach the router, and returns a `404` error unless another route on the listener matches it.
+* **`HTTPRoute` parent**: The router receives every request under the rule's `PathPrefix`. A request under the prefix that is not a standard LLM path, such as `/tenant-a/v1/messages/extra`, is not rejected. Agentgateway still selects the model from the request body, but forwards the request to the provider as passthrough, without format conversion.
+
+To serve the standard LLM paths under a prefix, attach the models to an `HTTPRoute` parent.
 
 ## Listener opt-in
 
@@ -113,7 +121,7 @@ spec:
 
 ## Path-scoped models on an HTTPRoute
 
-A `Gateway` parent gives a listener one model router at the listener root. That setup is enough for a single set of models, but not when one listener must serve several independent sets. To create additional routers on the same listener, declare each one with an `HTTPRoute` and attach models to the route instead of the Gateway.
+A Gateway parent gives a listener one model router at the listener root. That setup is enough for a single set of models, but not when one listener must serve several independent sets. To create additional routers on the same listener, declare each one with an HTTPRoute and attach models to the route instead of the Gateway. If the route attaches to more than one listener, each listener serves the route's model router.
 
 Use an `HTTPRoute` parent for the following cases.
 
@@ -135,7 +143,7 @@ An `HTTPRoute` is a valid parent for an `{{< reuse "agw-docs/snippets/agentgatew
 | Path matches use `PathPrefix` | An `Exact` or `RegularExpression` path match is rejected, because the router serves a set of paths under the prefix. A rule can have several matches as long as every path match uses `PathPrefix`. |
 | No `URLRewrite` or `RequestRedirect` filter on the rule | Agentgateway rewrites the prefix itself so that the provider receives the standard LLM path. Other rule-level filters, such as `RequestHeaderModifier`, and rule-level `timeouts` and `retry` are supported. |
 
-Requirements are checked per model. When a model's parent reference fails one of them, the model reports `Accepted: False` with the reason in the condition message. To check, run `kubectl get agentgatewaymodel <name> -n <namespace> -o yaml` and read `status.parents`.
+Requirements are checked per model and per parent reference. When a parent reference fails a requirement, the model reports `Accepted: False` with the reason in the condition message. Parent references that select different route rules with `sectionName` report separate conditions, even when they name the same HTTPRoute. To check, run `kubectl get agentgatewaymodel <name> -n <namespace> -o yaml` and read `status.parents`.
 
 ### Example
 
@@ -210,7 +218,7 @@ Agentgateway strips the `/tenant-a` prefix before it forwards the request, so th
 
 ### Router scoping constraints
 
-- **A virtual model and the concrete models it selects must share one router.** A `weighted` or `conditional` virtual model resolves its targets by model name inside its own router's table. Attach the virtual model and its targets to the same parent; otherwise, the request fails with `virtual_model_not_resolved`.
+- **A virtual model and the concrete models it selects must share one router.** A `weighted` or `conditional` virtual model resolves its targets by model name inside its own router's table. Attach the virtual model and its targets to the same parent. Otherwise, the request fails with a `404` error and the `virtual_model_target_not_found` code. The virtual model still reports `Accepted: True`, so the model status does not show this problem.
 - **A root-path model route cannot share a listener with directly attached models.** If a model-serving rule matches `/`, has no matches at all, or has a match with no path, then no `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` can attach directly to the same listener through a `Gateway` parent. Both would claim the same paths, so the model on the route is rejected with a conflict message. Give the route a distinct prefix, or move the directly attached models onto routes.
 - **The rule name is part of the router identity.** Renaming a route rule moves its models to a new router. If you omit the rule name, the rule's index in the list identifies the router instead, so reordering rules has the same effect.
 
@@ -281,7 +289,7 @@ spec:
 | [`match.model`](#model-matching) | The model name that selects this resource in a client request. Defaults to `metadata.name`. |
 | [`visibility`](#visibility) | Whether clients can request the model directly. Defaults to `Public`. |
 | [`provider`](#providers) | The provider that serves the model, such as `OpenAI`. |
-| `baseURL` | Overrides the provider address and base path prefix. |
+| [`baseURL`](#providers) | Overrides the provider address and base path prefix. The path in the URL is the base path that provider endpoint paths are appended to, so include the path that the provider serves its API under. |
 | [`policies`](#model-policies) | Credentials, authorization, transformations, and other settings that apply to this model only. |
 
 ### Model matching
@@ -352,6 +360,8 @@ Concrete models accept an inline `spec.policies` block that supports the followi
 | `tunnel` | Proxy tunnel used to reach the provider. |
 | `headers` | Request and response header changes. |
 
+Setting `spec.policies`, such as `transformations`, does not change which API formats the model serves. Requests to `/v1/messages`, `/v1/responses`, and the other standard serving paths keep their format.
+
 Virtual models cannot set `spec.policies`, because a virtual model has no provider of its own to authenticate to, transform for, or health check. Configure these policies on the concrete models that the virtual model targets.
 
 ### Providers
@@ -369,6 +379,19 @@ Some providers require a matching settings field.
 Use `spec.custom.backendRef` to serve a model from a Kubernetes backend, such as an `InferencePool`.
 
 Use `spec.baseURL` to override the provider address and base path prefix. It must be an absolute `http` or `https` URL with a host, and it cannot target localhost, loopback, or link-local addresses. Query parameters, fragments, and user info are not supported.
+
+The path in the URL is the base path for the upstream request, and the endpoint path for each route is appended to it. A URL with no path has a base path of `/`, so include the path that the provider serves its API under.
+
+| `spec.baseURL` | Base path | Completions request goes to |
+| --- | --- | --- |
+| `https://api.openai.com/v1` | `/v1` | `https://api.openai.com/v1/chat/completions` |
+| `https://api.openai.com` | `/` | `https://api.openai.com/chat/completions` |
+
+The OpenAI provider serves its API under `/v1`, so a `spec.baseURL` of `https://api.openai.com` results in requests to a path that the provider does not serve. You can omit `spec.baseURL` to use the default address and base path of `https://api.openai.com/v1`, or set it to `https://api.openai.com/v1`.
+
+Ollama also serves its OpenAI-compatible API under `/v1`, and `Ollama` is the one provider that requires `spec.baseURL`. Add `/v1` to the in-cluster address, such as `http://ollama.default.svc.cluster.local:11434/v1`.
+
+A `Custom` provider behaves differently. When you set `spec.custom.formats[].path`, that path is sent as written. Any base path from `spec.baseURL` is not added to the path.
 
 ## Virtual models
 
@@ -419,9 +442,27 @@ For examples of each strategy, see [Virtual models]({{< link-hextra path="/docum
 - Virtual models must be `Public`. The restriction stops virtual models from targeting each other, which could otherwise create routing loops.
 - Virtual models cannot set `spec.policies`. Configure policies on the concrete target models instead.
 
+## Model resolution order {#agentgatewaymodel-resolution}
+
+The model value is resolved before provider-specific routing, request conversion, token-count behavior, and response conversion. First, the request model selects an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} from `spec.match.model`. A virtual model can then select a concrete target model, and `spec.policies.transformations` on the concrete model can rewrite the `model` field. The final resolved model is used for provider-specific behavior, such as Azure Foundry Claude routing, Bedrock endpoint selection, and Vertex Gemini path selection.
+
+The following diagram shows how the request model resolves to the model that the provider receives.
+
+```mermaid
+flowchart LR
+  R["Request sets model"] --> M["Match spec.match.model"]
+  M -->|Virtual model| S["Select a target and<br/>rewrite model"]
+  M -->|Concrete model| T["Apply model<br/>transformations"]
+  S --> T
+  T --> P["Provider receives<br/>the resolved model"]
+  style P fill:#7734be,color:#fff
+```
+
+The request must include `model`, because the model router uses it to select an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}. A request without `model` fails with a `400` and the `missing_model` error code before any transformation runs.
+
 ## Verify that a model attached
 
-Each `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` reports one entry in `status.parents` per parent reference, with an `Accepted` condition for the attachment and a `ResolvedRefs` condition for the references in the spec, such as virtual model targets and Secrets.
+Each `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` reports one entry in `status.parents` per parent reference, with an `Accepted` condition for the attachment and a `ResolvedRefs` condition for the references in the spec, such as virtual model targets and Secrets. Parent status includes the selected `sectionName` or `port`, so one rejected parent reference does not hide another accepted reference to the same parent resource.
 
 ```sh
 kubectl get agentgatewaymodel gpt-5-mini -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
@@ -433,5 +474,5 @@ You can also confirm attachment from the data plane by listing the models on the
 
 ## Known limitations
 
-- The API is experimental and turned off by default.
+- The API is `v1alpha1` and is subject to change in a future release.
 - An {{< reuse "agw-docs/snippets/policy.md" >}} cannot target an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` directly. To scope a policy to a group of models, target the `HTTPRoute` rule that the models attach to. For more information, see [Path-scoped models on an HTTPRoute](#path-scoped-models-on-an-httproute).
