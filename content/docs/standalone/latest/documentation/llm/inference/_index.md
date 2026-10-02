@@ -20,9 +20,7 @@ endpoint for each inference request.
 Use this mode when you want Gateway API integration, `InferencePool` resources,
 traffic splitting, route matching, and other Kubernetes networking features.
 
-{{% upstream %}}
 [Set up Kubernetes inference routing](/docs/kubernetes/latest/documentation/inference/).
-{{% /upstream %}}
 
 ## Standalone request scheduler mode
 

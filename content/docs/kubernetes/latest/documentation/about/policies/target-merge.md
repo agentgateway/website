@@ -85,7 +85,11 @@ For `backend`, precedence works the same way but with more levels. For example, 
 
 ### Equal specificity {#ties}
 
-If multiple policies with the same specificity set the same field, agentgateway picks one policy's value for that field and silently drops the rest. The selection isn't based on creation time, name, or namespace, so which policy wins isn't predictable and can change between controller restarts. Every affected policy still reports `Accepted` and `Attached` status conditions as `True`, with no condition indicating that a field was dropped.
+If multiple policies with the same specificity set the same field, the oldest policy wins, based on its Kubernetes `metadata.creationTimestamp`. If the timestamps are equal, agentgateway uses lexicographic order of the policy key to break the tie. The selection is stable across controller restarts.
+
+Agentgateway uses the winning policy's entire value for the conflicting field. It does not combine the rules or list entries from the other policies, even when they run in the same traffic phase. For example, if two policies set `traffic.headerModifiers.response` at the same attachment point and phase, only the older policy's response header modifications apply. Fields that do not conflict still contribute to the effective policy.
+
+Every affected policy can still report `Accepted` and `Attached` status conditions as `True`, with no condition indicating that a field was dropped.
 
 A tie only happens when two policies share both the same specificity and the same field. You can attach multiple policies to the same target as long as each one sets a different field, or attaches at a different specificity level. For example, a `frontend` policy that sets `tls` at the Gateway level and another that sets `accessLog` using a listener `sectionName` don't tie, because they set different fields. A `frontend` policy that sets `tls` at the Gateway level and another that sets `tls` using `port` also don't tie, because `port` is more specific and wins for that field.
 

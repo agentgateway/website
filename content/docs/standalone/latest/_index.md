@@ -1,6 +1,6 @@
 ---
-linkTitle: "Version 1.5.x"
-title: Version 1.5.x
+linkTitle: "Version 1.6.x"
+title: Version 1.6.x
 description: Use agentgateway as a standalone binary.
 test: skip
 # PDF export. See content/docs/kubernetes/latest/_index.md for why the opt-in is
