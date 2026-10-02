@@ -18,7 +18,8 @@ The following providers expose an OpenAI-compatible chat completions endpoint. T
 | DeepSeek | `api.deepseek.com` | `/v1/chat/completions` |
 | Fireworks AI | `api.fireworks.ai` | `/inference/v1/chat/completions` |
 | Groq | `api.groq.com` | `/openai/v1/chat/completions` |
-| Hugging Face | `router.huggingface.co` | `/v1/chat/completions` |
+| Hugging Face | `router.huggingface.co` | `/v1/chat/completions` |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+| Meta | `api.meta.ai` | `/v1/chat/completions` |{{< /version >}}
 | Mistral AI | `api.mistral.ai` | `/v1/chat/completions` |
 | OpenRouter | `openrouter.ai` | `/api/v1/chat/completions` |
 | Together AI | `api.together.xyz` | `/v1/chat/completions` |
