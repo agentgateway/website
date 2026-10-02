@@ -240,9 +240,9 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
 
 Bedrock serves models on two API surfaces: the Runtime endpoint, which carries the Converse and Invoke APIs, and the [Mantle](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-mantle.html) endpoint, which carries the native OpenAI and Anthropic APIs. Some models are served on only one of the two.
 
-For chat requests, the endpoint is chosen per model from the `runtime` and `mantle` tags in your [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). Run `agctl catalog import` to populate those tags, because the default sources include `aws-bedrock-mantle`, which reads them from the AWS model cards. Without a catalog, no model carries either tag, so every chat request falls back to the preference alone.
+For chat requests, the endpoint is chosen per model from the `runtime` and `mantle` tags in the [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). The built-in catalog that ships with {{< reuse "agw-docs/snippets/agentgateway.md" >}} already tags the Amazon Bedrock models. To tag models that are newer than your agentgateway version, run `agctl catalog import`. Its default sources include `aws-bedrock-mantle`, which reads the tags from the AWS model cards. A model with neither tag falls back to the preference alone.
 
-Set `spec.ai.provider.bedrock.endpointPreference` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource to choose how the tags are applied. The AgentgatewayModel resource takes the same setting at `spec.bedrock.endpointPreference`.
+Set `spec.ai.provider.bedrock.endpointPreference` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource to choose how the tags are applied. The {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} resource takes the same setting at `spec.bedrock.endpointPreference`.
 
 ```yaml
 spec:
@@ -256,10 +256,12 @@ spec:
 
 | Value | Endpoint selection |
 |-------|--------------------|
-| `RuntimePreferred` | Use Runtime, except for a model tagged `mantle` but not `runtime`. This value is the default. |
-| `MantlePreferred` | Use Mantle, except for a model tagged `runtime` but not `mantle`. |
+| `RuntimePreferred` | Use Runtime, except for a model tagged `mantle` but not `runtime`. This value is the default. If `guardrail` is set, Runtime is always used. |
+| `MantlePreferred` | Use Mantle, except for a model tagged `runtime` but not `mantle`. The API server rejects this value when `guardrail` is set. |
 | `RuntimeOnly` | Always use Runtime, whatever the tags say. |
-| `MantleOnly` | Always use Mantle, whatever the tags say. |
+| `MantleOnly` | Always use Mantle, whatever the tags say. The API server rejects this value when `guardrail` is set. |
+
+The `guardrail` field sets an inline Bedrock guardrail, which only the Runtime endpoint supports. You can set it under `spec.ai.provider.bedrock` or `spec.ai.groups[].providers[].bedrock` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource, or under `spec.bedrock` on the {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} resource. If you set `guardrail` together with `MantlePreferred` or `MantleOnly`, the API server rejects the resource with the message `Bedrock guardrails cannot be used with MantlePreferred or MantleOnly`. With `RuntimePreferred`, a `guardrail` keeps requests on Runtime even when the model tags would choose Mantle. To apply Bedrock Guardrails with either endpoint, use a [Bedrock Guardrails prompt guard]({{< link-hextra path="/documentation/llm/guardrails/bedrock-guardrails/" >}}) in the `backend.ai.promptGuard` field of an {{< reuse "agw-docs/snippets/policy.md" >}} instead.
 
 Standalone mode takes the same four values in lowercase, such as `runtimePreferred`, under `params.bedrockEndpointPreference`. A value that you copy from one mode to the other fails to load.
 
@@ -278,6 +280,10 @@ Prompt Caching is a performance, cost-optimization, and cost-reduction feature t
 For example, let's assume you have a 50-page manual and you want to ask your model different questions about the manual. Instead of re-reading the manual for each question, the model can read it once and save it in its internal cache. Then, the model can answer subsequent questions more quickly and more cost efficient. 
 
 Prompt caching is configured by using the `backend.ai.promptCaching` fields in the {{< reuse "agw-docs/snippets/policy.md" >}} resource. 
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+If you omit `promptCaching`, prompt caching is disabled. If you set `promptCaching: {}`, the controller enables prompt caching with the following defaults: `cacheSystem: true`, `cacheMessages: true`, `cacheTools: false`, and `minTokens: 1024`. To override a default, set that field explicitly.
+{{% /version %}}
 
 > [!NOTE]
 > Prompt caching is supported for Bedrock Claude 3+ and Nova models. 
@@ -409,6 +415,20 @@ curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
   ]
 }' | jq
 ```
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+### Encrypted reasoning
+
+Some Bedrock models return encrypted reasoning in a `reasoningContent.redactedContent` block instead of reasoning text. How agentgateway returns encrypted reasoning in a buffered reply depends on the API that the client sends.
+
+| Client API | Encrypted reasoning in the reply | Replay on the next turn |
+|---|---|---|
+| `/v1/messages` | A `redacted_thinking` block. | Send the block back in the message history. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
+| `/v1/responses` | A reasoning item with `encrypted_content`. | Send the reasoning item back in the input. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
+| `/v1/chat/completions` | Omitted, because the Chat Completions format has no field for encrypted reasoning. Signed reasoning text still arrives in `reasoning_content` and `reasoning_signature`. | Not possible. |
+
+A streamed reply does not keep the encrypted payload, so streamed encrypted reasoning cannot be replayed. A `/v1/messages` stream shows the encrypted reasoning as a `thinking` block with the text `[REDACTED]`.
+{{% /version %}}
 
 ## Structured outputs
 

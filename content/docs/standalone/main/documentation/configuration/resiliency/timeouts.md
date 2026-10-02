@@ -27,11 +27,13 @@ You can configure these types of timeouts on a route.
 
 |Timeout|Description|
 |-|-|
-|`requestTimeout`|The time from the start of an incoming request, until the end of the response headers is received. Note if there are retries, this time includes the total time across retries. The response body is not included, so use `responseIdleTimeout` to bound gaps between body frames.|
-|`backendRequestTimeout`|The time from the start of a request to a backend, until the end of the response headers are completed. Note this time is per-request, so with retries this time is a per-retry timeout. Like `requestTimeout`, this retry process stops applying once the response headers arrive.|
-|`responseIdleTimeout`|The maximum time the response body can go without producing data. The window restarts on every body frame, so this range bounds the gap between frames rather than the total time a response might take. Use this setting to terminate a backend that stalls mid-stream, without capping how long a legitimately long response might run. The timeout is disabled when the field is unset or set to zero, and it never applies to responses that switch protocols, so upgraded WebSocket and CONNECT tunnels are not terminated by it.|
+|`requestTimeout`|The time budget for an incoming request, including the total time across retries, before agentgateway returns response headers to the client. It does not limit the duration of a response body streamed to the client.|
+|`backendRequestTimeout`|The time budget for each request to a backend, including receiving response headers and any response body that agentgateway buffers. With retries, each attempt has its own budget. Receiving headers does not reset or end the deadline for buffered body reads. The deadline does not limit a response body that agentgateway streams without buffering.|
+|`responseIdleTimeout`|The maximum time to wait for the next frame from the upstream response body. Time spent processing the response body, buffering response guardrails, transforming the response, or waiting for the client to receive data does not count. Use this setting to terminate a backend that stalls mid-stream, without capping how long a legitimately long upstream response might run. The timeout is disabled when the field is unset or set to zero, and it never applies to responses that switch protocols, so upgraded WebSocket and CONNECT tunnels are not terminated by it.|
 
-Because requestTimeout and backendRequestTimeout both stop measuring elapsed time once the response headers arrive, neither one places any bound on how long a response body might take, and neither can differentiate a stalled stream from a slow one. The responseIdleTimeout covers this gap by limiting the time that can pass between response body chunks, which matters most for streaming responses that are expected to run for a long time.
+The `backendRequestTimeout` deadline also applies when agentgateway buffers a body for processing, such as CEL body inspection, non-SSE MCP responses, A2A responses, or external authorization response processing. For example, if the timeout is `5s` and the response headers arrive after `1s`, buffered body reads have only the remaining `4s`.
+
+For streaming responses, use `responseIdleTimeout` to limit how long agentgateway waits for the next upstream body frame. This idle timeout can end a stalled stream while allowing a stream that continues to send data to run longer than `backendRequestTimeout`.
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
@@ -90,8 +92,9 @@ routes:
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests actually time out at runtime — requires a slow backend the
 #     page omits to exceed the configured deadline.
-#   * That the idle window genuinely restarts per body frame — needs a streaming
-#     backend that stalls mid-response, which no fixture here provides.
+#   * That the idle window counts only pending upstream body reads, not response
+#     processing time — needs a streaming backend and response processing path
+#     that this page does not provide.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -143,7 +146,7 @@ In addition to route level timeouts, you can configure per-backend timeouts with
 
 | Timeout          | Description                                                                                       |
 |------------------|---------------------------------------------------------------------------------------------------|
-| `requestTimeout` | The time from the start of an HTTP request to a backend until the response headers are completed. |
+| `requestTimeout` | The time budget for an HTTP request to this backend, including receiving response headers and any response body that agentgateway buffers. Buffered reads use the remaining budget; streamed response bodies are not limited by this deadline. |
 | `connectTimeout` | The time from the start of a TCP connection to a backend until the connection is established.     |
 
 ```yaml

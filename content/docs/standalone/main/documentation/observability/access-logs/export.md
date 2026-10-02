@@ -60,7 +60,7 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
    ```sh
    docker logs otel-collector
    ```
-   Each proxied request appears as a `LogRecord` entry in the collector output. Look for a block that starts with `LogRecord #` and includes attributes such as `gateway`, `http.method`, `http.path`, and `http.status`.
+   Each proxied request appears as a `LogRecord` entry in the collector output. Look for a block that starts with `LogRecord #` and includes attributes such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope, which the collector prints in the `InstrumentationScope` line of the `ScopeLogs` block that contains the record.
 
 5. When you are done, remove the OTel Collector container.
    ```sh
@@ -129,7 +129,7 @@ Deploy the OTel Collector into your cluster by using the OpenTelemetry Helm char
    ```sh
    kubectl logs -n monitoring deployment/otel-collector
    ```
-   Each proxied request appears as a `LogRecord` entry. Look for a block that starts with `LogRecord #` and includes attributes such as `gateway`, `http.method`, `http.path`, and `http.status`.
+   Each proxied request appears as a `LogRecord` entry. Look for a block that starts with `LogRecord #` and includes attributes such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope, which the collector prints in the `InstrumentationScope` line of the `ScopeLogs` block that contains the record.
 
 8. When you are done, remove the OTel Collector and the monitoring namespace.
    ```sh
@@ -184,7 +184,9 @@ frontendPolicies:
 
 ### Customize exported fields
 
-You can add or remove fields to the log entry that you export to the OTLP endpoint. 
+You can add or remove fields to the log entry that you export to the OTLP endpoint. The following example adds a `trace_id` field from the `x-trace-id` request header and removes the `server.address` field.
+
+The `remove` list matches the attribute names in the OTLP record, which are the OpenTelemetry semantic convention names, such as `server.address`, `url.path`, and `http.response.status_code`. The stdout log keeps the `http.host`, `http.path`, and `http.status` names, and the OTLP `fields` setting does not change it. A name that does not appear in the OTLP record, such as `http.host`, removes nothing.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -196,6 +198,6 @@ frontendPolicies:
         add:
           trace_id: 'request.headers["x-trace-id"]'
         remove:
-          - http.host
+          - server.address
 ```
 

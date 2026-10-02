@@ -23,9 +23,10 @@ Enable OpenTelemetry tracing with LLM-specific attributes.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-config:
+frontendPolicies:
   tracing:
-    otlpEndpoint: http://localhost:4317
+    host: localhost:4317
+    protocol: grpc
     randomSampling: true
 
 gateways:

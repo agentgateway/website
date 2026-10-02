@@ -51,14 +51,15 @@ frontendPolicies:
 
 Use the `randomSampling` setting to control the fraction of requests for which spans are exported. Set `randomSampling: true` to sample 100% of requests, or provide a decimal between `0` and `1` for a percentage.
 
-Two sampling settings decide whether a request is traced, and which one applies depends on the incoming request.
+Three sampling settings decide whether a request is traced, and which one applies depends on the incoming request.
 
 | Setting | Applies when | Default |
 |---------|--------------|---------|
 | `randomSampling` | The incoming request does not already carry a trace, so agentgateway must decide whether to start one. | `false` |
-| `clientSampling` | The incoming request already carries a trace from an upstream client. | `true` |
+| `clientSampling` | The incoming request has a sampled `traceparent` (the sampled flag is `01`). | `true` |
+| `parentNotSampled` | The incoming request has an unsampled `traceparent` (the sampled flag is `00`). | `false` |
 
-Because `clientSampling` defaults to `true`, agentgateway continues a trace that a client already started even when `randomSampling` is `false`. Set `clientSampling` to `false` or to a decimal to sample those requests instead.
+Only one setting applies to each request. Because `clientSampling` defaults to `true`, agentgateway continues sampled client traces even when `randomSampling` is `false`. An unsampled parent is respected by default. Set `parentNotSampled: true` to trace those requests anyway and propagate a sampled flag (`01`) upstream. Each setting accepts `true`, `false`, or a sampling fraction between `0` and `1`.
 
 In the following example, you want to sample 10% of requests.
 
@@ -72,7 +73,7 @@ frontendPolicies:
 
 ## Filter spans
 
-Use the `filter` field to write a [CEL]({{< link-hextra path="/reference/cel/" >}}) expression that controls which sampled spans are exported. A span is exported only when the expression evaluates to `true`. The filter runs after sampling, so it only evaluates spans that were already selected by `randomSampling`.
+Use the `filter` field to write a [CEL]({{< link-hextra path="/reference/cel/" >}}) expression that controls which sampled spans are exported. A span is exported only when the expression evaluates to `true`. The filter runs after sampling, so it evaluates spans selected by any of the three sampling settings.
 
 The following example exports only spans for requests with an HTTP response code of 400 or greater. 
 
@@ -127,7 +128,7 @@ frontendPolicies:
 
 Use the `remove` field to drop attributes from spans before your `attributes` expressions are applied. This setting is useful for stripping default attributes that are redundant or that you do not want to export.
 
-The following example removes the HTTP version and source address from the span. 
+The following example removes the HTTP protocol version and client address from the span. The `remove` list matches the attribute names on the request span, as listed in [Default span attributes]({{< link-hextra path="/documentation/observability/traces/attribute-reference/" >}}). A name that is not on the span, such as the earlier `src.addr` or `http.version`, removes nothing.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -136,6 +137,6 @@ frontendPolicies:
     host: localhost:4317
     randomSampling: true
     remove:
-      - src.addr
-      - http.version
+      - client.address
+      - network.protocol.version
 ```

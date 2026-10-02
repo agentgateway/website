@@ -40,7 +40,9 @@ export PERPLEXITY_API_KEY="${PERPLEXITY_API_KEY:-test}"
 With a custom provider, you provide the API endpoint and a list of formats it supports.
 Agentgateway will automatically handle mapping between the incoming format and the supported formats.
 
-The `formats` list decides which conversion an incoming request takes, and the conversions do not all carry the same feature set. A provider that declares `completions` carries extended-thinking history across turns, while one that declares `responses` and not `completions` drops it without an error. For what each conversion keeps and drops, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
+The `formats` list controls how agentgateway converts incoming requests. Each conversion supports different features. For Messages requests, agentgateway prefers `responses` over `completions`. The Responses conversion drops extended-thinking history without an error. To preserve thinking history across turns, declare `completions` and omit `responses`.
+
+Declare only the formats that the upstream server supports. For example, include `responses` only if the server supports `/v1/responses`. For details about each conversion, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
 
 The `formats` list is optional. A model without it accepts only requests on paths that are forwarded to the provider without format conversion, such as `/v1/systemone`, `/v1/ocr`, `/v1/images/generations`, and `/v1/responses/compact`. A request in an LLM API format, such as a chat completions or messages request, has no format to convert to and is rejected. For an example, see the [Jev guardrail guide]({{< link-hextra path="/integrations/llm/guardrails/jev/" >}}).
 
