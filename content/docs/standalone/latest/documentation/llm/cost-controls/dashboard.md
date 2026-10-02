@@ -17,7 +17,7 @@ The dashboard is populated from a local database that agentgateway writes for ev
 Two pieces of configuration power the dashboard:
 
 - `config.database`: the database where agentgateway records an entry for each request. It is the store behind the dashboard's time series and breakdowns.
-- `config.modelCatalog`: the [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) that turns token counts into dollars. Without a catalog, the dashboard still shows token and call volume, but the cost is `0`.
+- `config.modelCatalog`: the [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) that turns token counts into dollars. The built-in catalog prices common public models without any configuration, so set this field to price other models or to override rates. Requests to models that no catalog prices still count toward token and call volume, but add no cost.
 
 ## Enable the dashboard
 

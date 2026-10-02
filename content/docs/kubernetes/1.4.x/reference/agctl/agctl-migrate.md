@@ -5,4 +5,4 @@ description: Reference for the `agctl migrate` command.
 test: skip
 ---
 
-{{< reuse "agw-docs/pages/reference/agctl/latest/agctl-migrate.md" >}}
+{{< reuse "agw-docs/pages/reference/agctl/1.4.x/agctl-migrate.md" >}}

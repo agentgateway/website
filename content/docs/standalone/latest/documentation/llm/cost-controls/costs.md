@@ -8,7 +8,7 @@ test:
     path: costs
 # This page absorbed the old `llm/spending.md`. Aliases are WHOLE URL paths, so
 # keep the `/docs/standalone/latest` prefix. Without it, the redirect builds at the
-# site root and collides with the identical alias in `main`, and whichever tree
+# site root and collides with the identical alias in `latest`, and whichever tree
 # builds last wins.
 aliases:
   - /docs/standalone/latest/llm/spending/

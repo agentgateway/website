@@ -156,6 +156,8 @@ Extended thinking and reasoning lets Claude reason through complex problems befo
 > [!NOTE]
 > Extended thinking and reasoning requires a Claude model that supports these, such as `claude-opus-4-6`.
 
+This section describes a route that reaches the Anthropic Messages API directly. When a Chat Completions client reaches Anthropic, the request is converted to the Messages format, and thinking history is carried across turns only when the client sends back `reasoning_signature`. For details, see [Reasoning carryover on a converted route]({{< link-hextra path="/documentation/llm/api-types/completions/#reasoning-carryover-on-a-converted-route" >}}).
+
 To opt in to extended thinking, include the `thinking.type` field in your request. You can also set the `output_config.effort` field to control how much reasoning the model applies.
 
 The following values are supported: 
@@ -406,9 +408,11 @@ AGW_PID=$!
 trap 'kill $AGW_PID 2>/dev/null' EXIT
 sleep 3
 
-SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '[.data[].id] | index("*") // "missing"')
-if [ "$SERVED" = "missing" ]; then
-  echo "FAIL: the wildcard model from the example config is not served"
+# The default `llm.discovery: catalog` expands `*` into catalog model IDs, so
+# check for a non-empty list rather than a literal `*`.
+SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '.data | length')
+if [ "${SERVED:-0}" -eq 0 ]; then
+  echo "FAIL: /v1/models lists no models for the example config"
   exit 1
 fi
 PROVIDER=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '
