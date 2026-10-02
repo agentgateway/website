@@ -511,7 +511,7 @@ llm:
     # ...
 ```
 
-A key with `allowedModels: ["gpt-5*"]` sees `gpt-5` and `gpt-5-mini`. A key with no `allowedModels` sees all three. A key with an empty list sees none. Agentgateway returns a model that you configure as a pattern, such as `"*"`, as that pattern rather than as expanded names.
+A key with `allowedModels: ["gpt-5*"]` sees `gpt-5` and `gpt-5-mini`. A key with no `allowedModels` sees all three. A key with an empty list sees none. With the default `llm.discovery: catalog` setting, a wildcard model that is backed by the local model catalog can expand before the `allowedModels` filter is applied. Set `llm.discovery: disabled` to list configured wildcard patterns, such as `"*"`, without catalog expansion.
 
 <!-- TODO troubleshooting
 
