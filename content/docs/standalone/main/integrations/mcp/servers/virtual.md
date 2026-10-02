@@ -283,33 +283,36 @@ mcp:
 > [!NOTE]
 > The `time` target pins the MCP Python SDK with `--with mcp<2` because `mcp-server-time` does not yet support version 2.x of the SDK. Without the constraint, the target fails to start. Drop the constraint after `mcp-server-time` adds support.
 
-## Target conditions
+## Target conditions {#target-conditions}
 
-Use `condition` on an MCP target to include that target only when a CEL expression returns `true` for the current request. The expression can read the authenticated request context and `mcp.target.name`. The `mcp.target.name` field is set to the target under evaluation. Omit `condition` to include the target for every request.
+Use `condition` on an MCP target to include that target only when a CEL expression returns `true` for the current request. The expression can read request attributes, such as headers, and `mcp.target.name`. When authentication is configured, it can also read the authenticated identity. In a target condition, `mcp.target.name` is set to the target under evaluation. Omit `condition` to include the target for every request.
 
 Target conditions run before agentgateway initializes or contacts a target. Target conditions choose which upstream MCP servers participate in the virtual MCP request. By contrast, `mcpAuthorization` filters tools, prompts, and resources after an upstream server responds. A condition requires at least two configured targets. If every target condition returns `false`, clients see an empty virtual MCP server.
 
-The following example includes the `internal` target only when the authenticated user's JSON Web Token (JWT) has `tier` set to `internal`.
+The following example always includes the `everything` target and includes the `time` target only when the request has the header `x-include-time: true`.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 mcp:
   port: 3000
   targets:
-  - name: public
+  - name: everything
     stdio:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
-  - name: internal
-    condition: 'jwt.tier == "internal" && mcp.target.name == "internal"'
-    mcp:
-      host: https://internal-mcp.example.com/mcp
+  - name: time
+    condition: '"x-include-time" in request.headers && request.headers["x-include-time"] == "true"'
+    stdio:
+      cmd: uvx
+      args: ["--with", "mcp<2", "mcp-server-time"]
 ```
+
+Configure your MCP client to send `x-include-time: true` on its requests, including initialization, to expose tools such as `time_get_current_time` alongside `everything_echo`. Without that header, or with a different value, only the `everything` target participates.
 
 | Field | Description |
 | ----- | ----------- |
 | `mcp.targets[].condition` | Optional CEL expression that controls whether the target participates in the virtual MCP request. The expression must return a boolean value. |
-| `mcp.target.name` | Target-scoped CEL field that contains the name of the target being evaluated. Use this field only in a target condition. |
+| `mcp.target.name` | Name of the MCP target for the current target-scoped operation, including condition evaluation. |
 
 ## Server information overrides {#server-information-overrides}
 
