@@ -17,6 +17,10 @@ With ListenerSets, you can group together listeners that have their own unique c
 
 Similar to Gateways, ListenerSets can have a maximum of 64 listeners. However, because you can attach multiple ListenerSets to a single Gateway, now a single Gateway can have more than 64 listeners. Keep in mind that more listeners can impact how long it takes to propagate configuration changes on the Gateway. If you have more than 1,000 listeners, consider attaching ListenerSets to multiple Gateways.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+Gateway status-only updates do not trigger ListenerSet reprocessing. Changes to the parent Gateway spec or to the ListenerSet still update the listener configuration.
+{{< /version >}}
+
 ### ListenerSet use cases {#listenerset-use-cases}
 
 As such, you might use ListenerSets for the following advantages:
