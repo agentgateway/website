@@ -104,6 +104,7 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 
 ### LLM {#v16-llm}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3741 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3310 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3366 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3495 -->
@@ -123,6 +124,7 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3646 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3649 -->
 
+- **Meta provider**: Use `provider: meta` to connect to the Meta Model API with built-in defaults for Chat Completions, Messages, and Responses. For more information, see [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}}).
 - **Wildcard models in `/v1/models`**: For wildcard names in `llm.models`, `/v1/models` lists matching model IDs from the catalog. For example, `*` for the OpenAI provider expands to IDs such as `gpt-4o`. To list the pattern as in 1.5, set `llm.discovery: disabled`. For more information, see [Wildcard expansion]({{< link-hextra path="/documentation/llm/api-types/models/#wildcard-expansion" >}}).
 - **Response idle timeout**: A response idle timeout ends a response if the backend stops sending body data for the configured time. It does not limit the duration of an active stream. Set `responseIdleTimeout` in the `timeout` policy. You can now also set the `timeout` policy in `llm.policies`. For more information, see [Route timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts/#route-timeouts" >}}).
 - **Larger LLM buffer**: LLM requests can now buffer up to 32 MiB by default, up from 2 MiB. The larger buffer supports long-context prompts. To change the limit, set `frontendPolicies.http.maxBufferSize`. For more information, see [Body buffering]({{< link-hextra path="/documentation/configuration/traffic-management/buffer/" >}}).
