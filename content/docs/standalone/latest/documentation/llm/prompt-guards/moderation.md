@@ -199,6 +199,6 @@ Because the gateway sets the parameter, a client cannot weaken the moderation th
 Inline moderation applies only where agentgateway builds the request that it sends to OpenAI. The following conditions apply.
 
 * **The provider must be OpenAI.** The `moderation` field exists only on the `openAI` provider. Azure OpenAI is a separate provider and has no such field. To moderate traffic to any other provider, use the moderation prompt guard instead.
-* **The route type must be `completions` or `responses`.** Requests on a `passthrough` or `detect` route reach OpenAI unchanged, so the moderation parameter is not added.
+* **The route type must be `completions`, `responses`, or `messages`.** Agentgateway converts a `messages` request to the OpenAI Responses or Chat Completions format, and the converted request carries the moderation parameter. Requests on a `passthrough` or `detect` route reach OpenAI unchanged, so the moderation parameter is not added.
 * **Clients keep their own `moderation` value when you omit the field.** If you do not configure `moderation`, a `moderation` value that a client sends passes through to OpenAI unchanged. OpenAI requires `moderation.model`, so a client value that omits it fails with `Missing required parameter: 'moderation.model'`. Configuring `moderation` on the backend avoids this, because agentgateway always sends a model.
 * **Moderation results reach the client only in OpenAI response formats.** A client that uses a different API format, such as the Anthropic Messages API, does not receive the moderation results.

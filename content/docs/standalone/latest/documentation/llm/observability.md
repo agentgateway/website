@@ -63,9 +63,10 @@ For catalog configuration and the full list of cost fields, see [Model costs]({{
    ```yaml
    cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   config:
+   frontendPolicies:
      tracing:
-       otlpEndpoint: http://localhost:4317
+       host: localhost:4317
+       protocol: grpc
        randomSampling: true
    llm:
      models:

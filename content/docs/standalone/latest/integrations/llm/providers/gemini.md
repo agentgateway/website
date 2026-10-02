@@ -83,9 +83,11 @@ AGW_PID=$!
 trap 'kill $AGW_PID 2>/dev/null' EXIT
 sleep 3
 
-SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '[.data[].id] | index("*") // "missing"')
-if [ "$SERVED" = "missing" ]; then
-  echo "FAIL: the wildcard model from the example config is not served"
+# The default `llm.discovery: catalog` expands `*` into catalog model IDs, so
+# check for a non-empty list rather than a literal `*`.
+SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '.data | length')
+if [ "${SERVED:-0}" -eq 0 ]; then
+  echo "FAIL: /v1/models lists no models for the example config"
   exit 1
 fi
 PROVIDER=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '

@@ -344,6 +344,8 @@ agentgateway -f config2-mcp.yaml --validate-only
 
 You can provide a custom body for a request or response. 
 
+When the `body` CEL expression returns a string or bytes value, the result replaces the original body. When the expression returns `null`, the original body is left unchanged. To send JSON `null`, return the string `"null"`. To clear the body, return an empty string. If the expression fails, the transformation returns an error before the body is replaced.
+
 > [!NOTE]
 > To provide a specific string value, add your string in single quotes `'` followed by double quotes `"`. This way, the string is interpreted as a string value. If you provide the value without quotes or with double quotes only, it is interpreted as a CEL expression. 
 
