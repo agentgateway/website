@@ -120,6 +120,10 @@ The `ui.policies` section takes the same policies that a route takes, so you can
 
 3. Add the OIDC policy to the `ui` section, point the chart at the Secret, and pass the client secret to the pod as an environment variable.
 
+   {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+   Set the chart value `oidc.enabled: true` to inject `OIDC_COOKIE_SECRET` from the named Secret. Setting only `oidc.cookieSecretName` does not inject the key, and agentgateway cannot start with an OIDC policy without it.
+   {{< /version >}}
+
    The heredoc in this step is unquoted, so your shell substitutes the issuer, client ID, and redirect URI as it writes the file. The `\$UI_CLIENT_SECRET` reference is escaped, so it stays in the file as a literal `$UI_CLIENT_SECRET` that agentgateway resolves from the pod environment at startup. This way, the client secret stays in the Secret instead of the ConfigMap.
 
    ```yaml
@@ -147,7 +151,8 @@ The `ui.policies` section takes the same policies that a route takes, so you can
            pathPrefix: /
        backends:
        - host: httpbin.httpbin.svc.cluster.local:8000
-   oidc:
+   oidc:{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+     enabled: true{{< /version >}}
      cookieSecretName: agentgateway-ui-secrets
    extraEnv:
    - name: UI_CLIENT_SECRET

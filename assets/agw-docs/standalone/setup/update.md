@@ -11,12 +11,12 @@ INFO state_manager  loaded config from File("/config/config.yaml")
 
 Two things are worth knowing before you edit.
 
-* **Not every field reloads.** The top-level `config` section holds startup settings, such as `adminAddr`, `storage`, `database`, `logging`, and `tracing`. Agentgateway applies those only when the process starts, with the exception of `config.modelCatalog`, which does reload. Everything else, including `gateways`, `routes`, `llm`, `mcp`, and `ui`, reloads in place. For more information, see [Fields that require a restart](#restart-required).
+* **Not every field reloads.** The top-level `config` section holds startup settings, such as `adminAddr`, `storage`, `database`, `logging`, and `tracing`. Agentgateway applies those only when the process starts, with the exception of `config.modelCatalog`{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} and `config.standardAttributes`{{< /version >}}, which reload dynamically. Everything else, including `gateways`, `routes`, `llm`, `mcp`, and `ui`, reloads in place. For more information, see [Fields that require a restart](#restart-required).
 * **The UI might write to this file.** In the default storage mode in binary and Docker deployments, agentgateway writes the resources that you manage in the UI back to the same file. Your file is an output as well as an input. To keep the file read-only, or to send UI edits to a database instead, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
 ### Fields that require a restart {#restart-required}
 
-The top-level `config` section is read at startup. If you change a field in it, agentgateway reloads the file but keeps running with the previous value, and the change takes effect only after the process restarts. For example, setting `config.storage.mode` on a running instance leaves the storage mode unchanged until you restart. The `config.modelCatalog` setting is the exception. Agentgateway reloads the model cost catalog dynamically, so a catalog change does not need a restart.
+The top-level `config` section is read at startup. If you change a field in it, agentgateway reloads the file but keeps running with the previous value, and the change takes effect only after the process restarts. For example, setting `config.storage.mode` on a running instance leaves the storage mode unchanged until you restart. Agentgateway reloads `config.modelCatalog` dynamically, so a catalog change does not need a restart.{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} The `config.standardAttributes` setting also reloads dynamically. Changes to the standard request-log user and group attributes take effect without restarting the process.{{< /version >}}
 
 The steps for each installation method include the restart command for that method.
 
@@ -59,7 +59,7 @@ Edit the file that you passed to `agentgateway -f`, or the generated file in you
    INFO state_manager  loaded config from File("/home/example/.config/agentgateway/config.yaml")
    ```
 
-4. **Optional**: If you changed a field in the top-level `config` section, restart the process. Stop the current process, such as with `ctrl+c`, then start it again.
+4. **Optional**: If you changed a [startup-only field](#restart-required) in the top-level `config` section, restart the process. Stop the current process, such as with `ctrl+c`, then start it again.
 
    ```sh
    agentgateway -f config.yaml
@@ -120,7 +120,7 @@ The container reads the configuration from the path that you mounted, so you edi
    INFO state_manager  loaded config from File("/config/config.yaml")
    ```
 
-3. **Optional**: If you mounted the configuration read-only, or if the change is to the top-level `config` section, restart the container instead.
+3. **Optional**: If you mounted the configuration read-only, or if the change is to a [startup-only field](#restart-required) in the top-level `config` section, restart the container instead.
 
    ```sh
    docker restart <container-name>
