@@ -35,7 +35,7 @@ it is measured after the request, keeping the policy explainable.
 `gpt-5.4-nano` or `gpt-5.5` directly to force a tier and bypass automatic
 routing; the request still passes through agentgateway. Organizations
 that require automatic routing can use a [request-body
-transformation](https://agentgateway.dev/docs/kubernetes/latest/traffic-management/transformations/validate/)
+transformation](https://agentgateway.dev/docs/kubernetes/latest/documentation/traffic-management/transformations/validate/)
 to rewrite every request to `auto`.
 
 ## Price the Outcome at the Gateway
@@ -43,10 +43,10 @@ to rewrite every request to `auto`.
 My company needs prices, not just token counts, to make a budget decision.
 Agentgateway loads a model cost catalog and exposes realized request cost in
 metrics, logs, and traces. The [model cost catalog
-guide](https://agentgateway.dev/docs/kubernetes/latest/llm/cost-controls/costs/) explains how
+guide](https://agentgateway.dev/docs/kubernetes/latest/documentation/llm/cost-controls/costs/) explains how
 to generate and load the catalog with `agctl`.
 
-For this evaluation, I use the integrated [OpenTelemetry stack](https://agentgateway.dev/docs/kubernetes/main/observability/otel-stack/).
+For this evaluation, I use the integrated [OpenTelemetry stack](https://agentgateway.dev/docs/kubernetes/main/documentation/observability/otel-stack/).
 Prometheus, Loki, Tempo, the OpenTelemetry Collector, and Grafana let
 engineering and finance inspect the same model-selection event.
 
@@ -165,6 +165,6 @@ so stay tuned.
 
 ## What's Next
 
-After validating a tiering policy, use [agentgateway cost controls](https://agentgateway.dev/docs/kubernetes/main/llm/cost-controls/)
+After validating a tiering policy, use [agentgateway cost controls](https://agentgateway.dev/docs/kubernetes/main/documentation/llm/cost-controls/)
 to attribute usage with virtual keys, observe realized spend by model and
 consumer, and enforce budget or spend limits.

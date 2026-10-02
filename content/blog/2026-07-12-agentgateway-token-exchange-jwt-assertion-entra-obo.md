@@ -178,7 +178,7 @@ These single-leg grants are also the building blocks for Cross App Access / ID-J
 ## Try it
 
 - Standalone examples: [RFC 8693](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-token-exchange/oauth-rfc8693) · [JWT bearer + Entra OBO shape](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-token-exchange/jwt-authz-grant)
-- Backend auth docs: [standalone backend authentication](https://agentgateway.dev/docs/standalone/main/configuration/security/backend-authn/)
+- Backend auth docs: [standalone backend authentication](https://agentgateway.dev/docs/standalone/main/documentation/configuration/security/backend-authn/)
 - Related reading: [Enterprise MCP SSO with Entra](/blog/2026-01-26-enterprise-mcp-sso/) · [PR #2189](https://github.com/agentgateway/agentgateway/pull/2189) (data plane) · [PR #2458](https://github.com/agentgateway/agentgateway/pull/2458) (Kubernetes controller)
 
 * Explore the [docs](https://agentgateway.dev/docs/) and [get started](https://agentgateway.dev/#getting-started) today.

@@ -19,11 +19,11 @@ MCP clients follow the [MCP authorization specification](https://modelcontextpro
 - Serves authorization server metadata from Keycloak's OpenID Connect discovery document, which works across Keycloak versions. Keycloak 26.4.0 and later also serve RFC 8414 metadata at `/.well-known/oauth-authorization-server/realms/<realm>`.
 - Proxies Dynamic Client Registration through the gateway. Keycloak 26.5.0 added CORS support on its registration endpoint ([keycloak#8863](https://github.com/keycloak/keycloak/issues/8863)), but it is off by default: you must list the MCP client's origin in the realm's **Allowed Registration Web Origins** client registration policy, or supply web origins with an initial access token. Proxying through the gateway avoids that realm configuration and also works on earlier Keycloak versions.
 
-For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}}).
+For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}).
 
 ## Before you begin {#before-you-begin}
 
-1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/documentation/setup/install/binary/" >}}).
 2. Install [Docker](https://docs.docker.com/get-started/get-docker/) to run Keycloak locally.
 3. Install [Node.js](https://nodejs.org/) so that `npx` can run the sample MCP server.
 
@@ -473,7 +473,7 @@ EOF
 
 ## Step 7: Restrict access by realm role {#authorization}
 
-Because MCP authentication runs at the route level, you can use claims from the validated Keycloak token in an [authorization]({{< link-hextra path="/configuration/security/mcp-authz" >}}) policy.
+Because MCP authentication runs at the route level, you can use claims from the validated Keycloak token in an [authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}) policy.
 
 1. Add an `authorization` policy alongside `mcpAuthentication` in your `config.yaml` that requires the `mcp-admin` realm role.
 
@@ -661,5 +661,5 @@ docker rm -f keycloak
 
 - [Keycloak documentation](https://www.keycloak.org/documentation)
 - [Keycloak as an MCP authorization server](https://www.keycloak.org/securing-apps/mcp-authz-server)
-- [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}})
-- [MCP authorization]({{< link-hextra path="/configuration/security/mcp-authz" >}})
+- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}})
+- [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}})

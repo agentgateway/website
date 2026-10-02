@@ -12,7 +12,7 @@ The GRPCRoute approach is more readable, less error-prone, and aligns with the G
 
 ## Before you begin
 
-1. [Install {{< reuse "/agw-docs/snippets/kgateway.md" >}}]({{< link-hextra path="/quickstart/">}}) in a cluster.
+1. [Install {{< reuse "/agw-docs/snippets/kgateway.md" >}}]({{< link-hextra path="/documentation/quickstart/">}}) in a cluster.
 2. [Install `grpcurl`](https://github.com/fullstorydev/grpcurl) for testing on your computer.
 
 ## Deploy a sample gRPC service {#sample-grpc}
@@ -117,7 +117,7 @@ Steps to set up the sample gRPC service:
 
 ## Set up the Gateway for gRPC routes {#gateway}
 
-Create an HTTPS listener so that the gateway can route gRPC traffic. GRPCRoute requires HTTPS listeners for TLS termination. For more information, see the [HTTPS listener guide]({{< link-hextra path="/setup/listeners/https/">}}).
+Create an HTTPS listener so that the gateway can route gRPC traffic. GRPCRoute requires HTTPS listeners for TLS termination. For more information, see the [HTTPS listener guide]({{< link-hextra path="/documentation/setup/listeners/https/">}}).
 
 1. Create a TLS certificate for testing.
 
@@ -346,9 +346,9 @@ Verify that the gRPC route to the echo service is working.
 Explore the traffic management, resiliency, and security policies that you can apply to make your gRPC services more robust and secure.
 
 {{< cards >}}
-  {{< card path="/traffic-management/" title="Traffic management" >}}
-  {{< card path="/resiliency/" title="Resiliency" >}}
-  {{< card path="/security/" title="Security" >}}
+  {{< card path="/documentation/traffic-management/" title="Traffic management" >}}
+  {{< card path="/documentation/resiliency/" title="Resiliency" >}}
+  {{< card path="/documentation/security/" title="Security" >}}
 {{< /cards >}}
 
 ## Cleanup

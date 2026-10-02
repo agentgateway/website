@@ -1,7 +1,7 @@
 import { test, expect, dismissWelcome, maskSession, selectTool } from '../fixtures/test';
 
 /**
- * Capture for the OPENAPI -> MCP guide — content/docs/standalone/main/mcp/connect/openapi.md.
+ * Capture for the OPENAPI -> MCP guide — content/docs/standalone/main/integrations/mcp/servers/openapi.md.
  * The Swagger Petstore OpenAPI spec is exposed as MCP tools (getPetById, findPetsByStatus,
  * addPet, ...). Single target named `openapi`, so tool names are not prefixed.
  *

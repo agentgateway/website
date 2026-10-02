@@ -1,6 +1,6 @@
 Use {{< reuse "/agw-docs/snippets/kgateway.md" >}} to route traffic requests directly to an [Amazon Web Services (AWS) Lambda](https://aws.amazon.com/lambda/resources/) function.
 
-Note that this guide uses a Kubernetes secret that contains **long-lived IAM user access keys** (prefixed `AKIA`), not temporary STS/SSO credentials, which can cause failures with signature errors. To use AWS IAM roles to control access instead, see [Access AWS Lambda with a service account]({{< link-hextra path="/traffic-management/destination-types/backends/lambda/service-accounts/" >}}).
+Note that this guide uses a Kubernetes secret that contains **long-lived IAM user access keys** (prefixed `AKIA`), not temporary STS/SSO credentials, which can cause failures with signature errors. To use AWS IAM roles to control access instead, see [Access AWS Lambda with a service account]({{< link-hextra path="/documentation/traffic-management/destination-types/backends/lambda/service-accounts/" >}}).
 
 ## Before you begin
 

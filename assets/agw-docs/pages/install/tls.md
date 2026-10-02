@@ -1,4 +1,4 @@
-Enable server-side TLS encryption for the xDS gRPC server in the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane. For more information about the server, see the [Architecture]({{< link-hextra path="/about/architecture" >}}) docs.
+Enable server-side TLS encryption for the xDS gRPC server in the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane. For more information about the server, see the [Architecture]({{< link-hextra path="/documentation/about/architecture" >}}) docs.
 
 {{< version exclude-if="1.0.x,1.1.x,2.2.x" >}}
 The control plane serves xDS over TLS by default (`controller.xds.mode: tls`) and self-manages the certificate: it generates and rotates an internal CA and serving certificate, and propagates the CA bundle to the {{< reuse "agw-docs/snippets/pod-name.md" >}} data plane proxies. No cert-manager setup or pre-created secret is required. Optionally, you can bring your own certificate authority.
@@ -111,7 +111,7 @@ cert-manager is a Kubernetes controller that helps you automate the process of o
 
 ## Step 2: Update the control plane to use TLS {#control-plane}
 
-Upgrade {{< reuse "agw-docs/snippets/kgateway.md" >}} with TLS enabled for the controller. For complete steps, review the [Upgrade guide]({{< link-hextra path="/operations/upgrade" >}}).
+Upgrade {{< reuse "agw-docs/snippets/kgateway.md" >}} with TLS enabled for the controller. For complete steps, review the [Upgrade guide]({{< link-hextra path="/documentation/operations/upgrade" >}}).
 
 1. Set your version of {{< reuse "/agw-docs/snippets/kgateway.md" >}} in an environment variable, such as the latest patch version (`{{< reuse "agw-docs/versions/n-patch.md" >}}`).
    
@@ -206,3 +206,30 @@ Now that the control plane is up and running, verify the TLS connection.
    # TYPE kgateway_xds_auth_rq_total counter
    kgateway_xds_auth_rq_total 3
    ```
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+5. Check the certificate metrics to monitor the rotation of the xDS serving certificate. Because the control plane self-manages this certificate, these metrics are how you confirm that rotation keeps happening, and alert if it stops.
+
+   ```sh
+   curl -s localhost:9092/metrics | grep xds_cert
+   ```
+
+   Example output:
+
+   ```
+   # HELP agentgateway_xds_cert_expiry_seconds Expiry timestamp (Unix seconds) of the current xDS serving certificate
+   # TYPE agentgateway_xds_cert_expiry_seconds gauge
+   agentgateway_xds_cert_expiry_seconds 1.7895646e+09
+   # HELP agentgateway_xds_cert_rotation_total Total number of successful xDS certificate rotations
+   # TYPE agentgateway_xds_cert_rotation_total counter
+   agentgateway_xds_cert_rotation_total 1
+   ```
+
+   Review the following metrics to monitor certificate health.
+
+   | Metric | What to watch for |
+   |--------|-------------------|
+   | `agentgateway_xds_cert_expiry_seconds` | Alert when the value approaches the current time, such as `agentgateway_xds_cert_expiry_seconds - time() < 21600`, which is 6 hours of remaining lifetime. |
+   | `agentgateway_xds_cert_rotation_total` | A counter that increases each time the certificate is rotated successfully. |
+   | `agentgateway_xds_cert_rotation_errors_total` | A counter that increases each time a rotation fails. Any increase means the certificate is not being renewed. This metric appears only after the first failure. |
+{{< /version >}}

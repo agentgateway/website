@@ -1,7 +1,7 @@
 
 The agentgateway proxy exposes a Prometheus-compatible metrics endpoint on port `15020`. Metrics are collected automatically for every request that passes through the gateway and follow the [OpenMetrics](https://openmetrics.io/) format. All agentgateway metrics use the `agentgateway_` prefix.
 
-To set up automatic scraping of these metrics with Prometheus, see [Enable metrics scraping]({{< link path="/observability/metrics/overview/" >}}).
+To set up automatic scraping of these metrics with Prometheus, see [Enable metrics scraping]({{< link path="/documentation/observability/metrics/overview/" >}}).
 
 ## View data plane metrics
 
@@ -17,7 +17,7 @@ To set up automatic scraping of these metrics with Prometheus, see [Enable metri
    curl http://localhost:15020/metrics
    ```
 
-3. Enable metrics scraping for data plane metrics with the OTel stack so that you can export and visualize metrics in monitoring tools, such as Prometheus and Grafana. For more information, see [Scrape metrics for querying and visualization]({{< link path="/observability/metrics/overview/#scrape-metrics-for-querying-and-visualization" >}}). 
+3. Enable metrics scraping for data plane metrics with the OTel stack so that you can export and visualize metrics in monitoring tools, such as Prometheus and Grafana. For more information, see [Scrape metrics for querying and visualization]({{< link path="/documentation/observability/metrics/overview/" >}}).
 
 ## Add custom metric labels
 
@@ -108,8 +108,9 @@ These metrics follow the [OpenTelemetry semantic conventions for generative AI](
 | --- | --- | --- | --- |
 | `agentgateway_cost_catalog_lookups_total` | Counter | — | Total number of model cost catalog lookups by resolution status. |
 | `agentgateway_gen_ai_client_cost_usd_total` | Counter | usd | Cumulative USD cost of generative AI requests. |
-| `agentgateway_gen_ai_client_token_usage` | Histogram | — | Number of tokens used per request. |
-| `agentgateway_gen_ai_server_request_duration` | Histogram | — | Duration of generative AI request. |
+| `agentgateway_gen_ai_client_token_usage` | Histogram | — | Number of tokens used per request. |{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+| `agentgateway_gen_ai_server_request_duration` | Histogram | — | Duration of generative AI request. |{{< /version >}}{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+| `agentgateway_gen_ai_server_request_duration` | Histogram | — | Duration of a generative AI request in seconds. Failed operations have `error_type="_OTHER"` and successful operations omit the label. |{{< /version >}}
 | `agentgateway_gen_ai_server_time_per_output_token` | Histogram | — | Time to generate each output token for a given request. |
 | `agentgateway_gen_ai_server_time_to_first_token` | Histogram | — | Time to generate the first token for a given request. |
 | `agentgateway_guardrail_checks_total` | Counter | — | Total number of guardrail checks. |
@@ -153,6 +154,7 @@ These metrics track process-level memory for the agentgateway process, sourced f
 
 | Metric | Type | Unit | Description |
 | --- | --- | --- | --- |
+| `agentgateway_process_size` | Gauge | bytes | Total virtual memory size of the process. |
 | `agentgateway_process_rss` | Gauge | bytes | RSS (resident set size) memory usage. |
 | `agentgateway_process_pss` | Gauge | bytes | PSS (proportional set size) memory usage. |
 | `agentgateway_process_pss_dirty` | Gauge | bytes | Dirty PSS memory usage. |

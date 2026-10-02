@@ -30,7 +30,7 @@ Use the `filter` field in the {{< reuse "agw-docs/snippets/policy.md" >}} to [fi
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-3. [Set up the OTel stack]({{< link path="/observability/otel-stack/" >}}) to export logs to an OTel collector and forward them to Loki. 
+3. [Set up the OTel stack]({{< link path="/documentation/observability/otel-stack/" >}}) to export logs to an OTel collector and forward them to Loki. 
 
 ## Enable access logs {#access-log-stdout-filesink}
 
@@ -66,7 +66,7 @@ Access logs are written to `stdout` automatically for every request that passes 
    protocol=http duration=0ms
    ```
 
-To filter which requests are logged or customize log fields, see [Filter access logs](#filter-access-logs) and [Add and remove log fields](#add-and-remove-log-fields). To export access logs to an external backend over OTLP, see [Export logs over OTLP]({{< link-hextra path="/observability/access-logs/export/" >}}).
+To filter which requests are logged or customize log fields, see [Filter access logs](#filter-access-logs) and [Add and remove log fields](#add-and-remove-log-fields). To export access logs to an external backend over OTLP, see [Export logs over OTLP]({{< link-hextra path="/documentation/observability/access-logs/export/" >}}).
 
   {{< doc-test paths="access-logging" >}}
   YAMLTest -f - <<'EOF'
@@ -150,7 +150,7 @@ The preset also adds `url.scheme`, and it adds `server.port` and `url.query` whe
 Fields that you add yourself with the `attributes` field are not renamed, so choose semantic convention names for them if you want the whole line to be consistent. Fields that are not part of the HTTP field set, such as `gateway`, `route`, and `duration`, keep their names.
 
 > [!NOTE]
-> The preset changes only the stdout access log, and only for HTTP traffic. A TCP listener has no HTTP field set to rename, so the preset has no effect there. An OTLP export already uses semantic convention attribute names, so it is unaffected. For more information, see [Export logs over OTLP]({{< link-hextra path="/observability/access-logs/export/" >}}).
+> The preset changes only the stdout access log, and only for HTTP traffic. A TCP listener has no HTTP field set to rename, so the preset has no effect there. An OTLP export already uses semantic convention attribute names, so it is unaffected. For more information, see [Export logs over OTLP]({{< link-hextra path="/documentation/observability/access-logs/export/" >}}).
 {{< /version >}}
 
 ## Filter access logs
@@ -433,14 +433,14 @@ spec:
 EOF
 ```
 
-Access logging is a frontend policy, so it attaches to a Gateway rather than to the LLM backend that the prompt guard attaches to. To set up a guard that produces these entries, see the [guardrails]({{< link-hextra path="/llm/guardrails/" >}}) docs.
+Access logging is a frontend policy, so it attaches to a Gateway rather than to the LLM backend that the prompt guard attaches to. To set up a guard that produces these entries, see the [guardrails]({{< link-hextra path="/documentation/llm/guardrails/" >}}) docs.
 
 {{< /version >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}
 ## View access logs in Loki {#view-in-loki}
 
-If you set up the [OTel stack]({{< link-hextra path="/observability/otel-stack/" >}}), the `opentelemetry-collector-logs` deployment is ready to receive access logs via OTLPs. Configure the agentgateway proxy to send access logs to it, then query them in Grafana through Loki.
+If you set up the [OTel stack]({{< link-hextra path="/documentation/observability/otel-stack/" >}}), the `opentelemetry-collector-logs` deployment is ready to receive access logs via OTLPs. Configure the agentgateway proxy to send access logs to it, then query them in Grafana through Loki.
 
 1. Create a {{< reuse "agw-docs/snippets/policy.md" >}} resource that points the agentgateway proxy at the OTel collector.
 
@@ -468,7 +468,7 @@ If you set up the [OTel stack]({{< link-hextra path="/observability/otel-stack/"
    ```
 
    > [!TIP]
-   > To filter which logs are exported, add custom fields, or send logs to a different backend, see [Export logs over OTLP]({{< link-hextra path="/observability/access-logs/export/" >}}).
+   > To filter which logs are exported, add custom fields, or send logs to a different backend, see [Export logs over OTLP]({{< link-hextra path="/documentation/observability/access-logs/export/" >}}).
 
 2. Open Grafana.  
 

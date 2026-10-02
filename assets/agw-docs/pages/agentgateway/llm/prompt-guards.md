@@ -10,11 +10,11 @@ Regex-based prompt guards let you inspect LLM requests and responses against cus
 
 | Pattern | Description |
 | -- | -- |
-| `email` | Email addresses |
-| `phoneNumber` | Phone numbers |
-| `ssn` | Social Security Numbers |
-| `creditCard` | Credit card numbers |
-| `caSin` | Canadian Social Insurance Numbers |
+| `Email` | Email addresses |
+| `PhoneNumber` | Phone numbers |
+| `Ssn` | Social Security Numbers |
+| `CreditCard` | Credit card numbers{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} that pass the Luhn checksum. Digit groups can be separated by spaces or hyphens. The checksum runs before the guard action, so a number that fails it is not masked, rejected, or audited.{{< /version >}} |
+| `CaSin` | Canadian Social Insurance Numbers |
 
 ### Custom regex patterns
 
@@ -320,7 +320,7 @@ In the next step, you instruct agentgateway to mask credit card numbers that are
 
 By default, a request guard reads the system prompt and regular message text only. Tool call results that come back to the model are not read, so PII that a tool returns reaches the provider untouched. Set the `scope` field to include `ToolOutput`.
 
-For what each scope value covers and the limits on the field, see [Guard scope]({{< link-hextra path="/llm/guardrails/overview/#scope" >}}).
+For what each scope value covers and the limits on the field, see [Guard scope]({{< link-hextra path="/documentation/llm/guardrails/overview/#scope" >}}).
 
 1. Create a {{< reuse "agw-docs/snippets/policy.md" >}} resource that rejects a request when a tool result contains a Social Security number.
 
@@ -775,7 +775,7 @@ Request blocked: request contains harmful, hateful, or dangerous advisory conten
 
 ### PII detection with built-ins
 
-Use agentgateway's built-in PII recognizers to reject requests that contain actual PII values — credit card numbers, Social Security Numbers, email addresses, phone numbers, and Canadian Social Insurance Numbers — rather than matching by keyword. The built-in detectors use pattern and checksum validation to detect PII data.
+Use agentgateway's built-in PII recognizers to reject requests that contain actual PII values — credit card numbers, Social Security Numbers, email addresses, phone numbers, and Canadian Social Insurance Numbers — rather than matching by keyword. The built-in detectors match PII by pattern.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} Credit card matches must also pass the Luhn checksum.{{< /version >}}
 
 ```yaml
 kubectl apply -f - <<'EOF'
@@ -873,6 +873,5 @@ HTTP/1.1 200 OK
 ```
 
 Unlike the other guardrail examples, the request is not blocked. The matched credential is replaced with a `<masked>` placeholder in the prompt before it is forwarded to the LLM. To verify the masking is working, check that the model's response does not contain the original credential value.
-
 
 

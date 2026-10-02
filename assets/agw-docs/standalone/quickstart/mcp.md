@@ -98,7 +98,7 @@ You can change the target and port configurations in the UI. Any updates you mak
 
 ### Step 5: Connect and list tools in the Playground
 
-1. Go to the [Playground](http://localhost:15000/ui/playground/).
+1. Go to the [Playground](http://localhost:15000/ui/mcp/playground/).
 2. In the **Testing** card, check the **Connection** URL (such as `http://localhost:3000/`) and click **Connect**. The UI connects to the MCP target and lists its tools.
 3. Confirm that **Available Tools** shows tools from the server, such as `echo` or various `get` commands.
 
@@ -214,7 +214,7 @@ The **Gateway Overview** home page opens, with the **MCP** row enabled.
 Check out more guides for using MCP servers with agentgateway.
 
 {{< cards >}}
-  {{< card path="/mcp/connect/stdio" title="stdio" subtitle="Connect to an MCP server via stdio" >}}
-  {{< card path="/mcp/connect/virtual" title="Virtual MCP" subtitle="Federate multiple MCP servers." >}}
-  {{< card path="/mcp/mcp-authn" title="OpenAPI" subtitle="Enable OAuth 2.0 protection for MCP servers." >}}
+  {{< card path="/integrations/mcp/servers/stdio" title="stdio" subtitle="Connect to an MCP server via stdio" >}}
+  {{< card path="/integrations/mcp/servers/virtual" title="Virtual MCP" subtitle="Federate multiple MCP servers." >}}
+  {{< card path="/documentation/mcp/mcp-authn" title="OpenAPI" subtitle="Enable OAuth 2.0 protection for MCP servers." >}}
 {{< /cards >}}

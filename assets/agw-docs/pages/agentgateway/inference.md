@@ -1,6 +1,4 @@
-Use {{< reuse "agw-docs/snippets/kgateway.md" >}} with the Kubernetes Gateway
-API Inference Extension to route requests to Large Language Model (LLM)
-workloads in your Kubernetes environment.
+Use {{< reuse "agw-docs/snippets/kgateway.md" >}} with the [Kubernetes Gateway API Inference Extension](https://gateway-api-inference-extension.sigs.k8s.io/) and [llm-d Router](https://github.com/llm-d/llm-d-router) to route inference requests to Large Language Model (LLM) workloads in your Kubernetes environment.
 
 The Gateway API Inference Extension defines the `InferencePool` API and the
 protocol between gateways and endpoint pickers. The
@@ -12,10 +10,10 @@ and agentgateway routes to that model server endpoint.
 For more information, see the following resources.
 
 {{< cards >}}
-  {{< card link="https://gateway-api-inference-extension.sigs.k8s.io/" title="Gateway API Inference Extension" icon="external-link">}}
-  {{< card link="https://llm-d.ai/docs/infrastructure/gateway" title="llm-d gateway infrastructure" icon="external-link">}}
-  {{< card link="https://llm-d.ai/docs/infrastructure/gateway/agentgateway" title="llm-d with agentgateway" icon="external-link">}}
-  {{< card link="https://agentgateway.dev/docs/standalone/main/inference/" title="Standalone inference routing" >}}
+  {{< card link="https://gateway-api-inference-extension.sigs.k8s.io/" title="Gateway API Inference Extension">}}
+  {{< card link="https://llm-d.ai/docs/infrastructure/gateway" title="llm-d gateway infrastructure">}}
+  {{< card link="https://llm-d.ai/docs/infrastructure/gateway/agentgateway" title="llm-d with agentgateway">}}
+  {{< card link="https://agentgateway.dev/docs/standalone/main/documentation/inference/" title="Standalone inference routing" >}}
 {{< /cards >}}
 
 ## About {#about}

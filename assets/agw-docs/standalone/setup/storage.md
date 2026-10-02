@@ -3,7 +3,7 @@
 Agentgateway always reads a configuration file at startup. To control how configuration updates are persisted while agentgateway is running, such as when you use the UI or send a request to the config resource API, decide on your storage mode.
 
 > [!NOTE]
-> This page covers the storage mode for agentgateway configuration only. For the `config.database` field, the choice between SQLite and PostgreSQL, and the other features that use the same database, see [Database]({{< link-hextra path="/setup/database/" >}}).
+> This page covers the storage mode for agentgateway configuration only. For the `config.database` field, the choice between SQLite and PostgreSQL, and the other features that use the same database, see [Database]({{< link-hextra path="/documentation/setup/database/" >}}).
 
 ### Storage modes
 
@@ -61,9 +61,9 @@ All three modes are available in all three installation methods, because the mod
 
 | Method | Configuration file | Default behavior |
 | --- | --- | --- |
-| [Binary]({{< link-hextra path="/setup/install/binary/" >}}) | A local file, writable. | `file` mode. UI edits are saved to your file. A generated configuration also sets a SQLite database for local runtime features, so `hybrid` mode needs no extra setup. |
-| [Docker]({{< link-hextra path="/setup/install/docker/" >}}) | A mounted file or directory, writable unless you mount it read-only. | `file` mode. UI edits are saved to the file on your host. `hybrid` mode requires an additional database setup. |
-| [Helm]({{< link-hextra path="/setup/install/helm/" >}}) | A ConfigMap that the chart renders from your values and mounts read-only. | The chart sets `file` mode, and because the mount is read-only, a UI save fails. Set the chart's `mode` value to `database` to switch to `hybrid` and store edits in [PostgreSQL](#deploy-postgresql). |
+| [Binary]({{< link-hextra path="/documentation/setup/install/binary/" >}}) | A local file, writable. | `file` mode. UI edits are saved to your file. A generated configuration also sets a SQLite database for local runtime features, so `hybrid` mode needs no extra setup. |
+| [Docker]({{< link-hextra path="/documentation/setup/install/docker/" >}}) | A mounted file or directory, writable unless you mount it read-only. | `file` mode. UI edits are saved to the file on your host. `hybrid` mode requires an additional database setup. |
+| [Helm]({{< link-hextra path="/documentation/setup/install/helm/" >}}) | A ConfigMap that the chart renders from your values and mounts read-only. | The chart sets `file` mode, and because the mount is read-only, a UI save fails. Set the chart's `mode` value to `database` to switch to `hybrid` and store edits in [PostgreSQL](#deploy-postgresql). |
 
 In the binary and Docker installations, you set `config.storage.mode` in your file, so all three modes are available to you directly. In the Helm installation, the chart derives `config.storage.mode` from its own `mode` value and overwrites anything that you set for the field yourself, so the chart offers `file` and `hybrid` storage only.
 
@@ -164,7 +164,7 @@ Use `hybrid` mode when you want the configuration file to stay exactly as you wr
      targets: []
    ```
 
-2. Restart agentgateway. The `config` section is applied at startup, so the new mode does not take effect until the process restarts. For more information, see [Fields that require a restart]({{< link-hextra path="/setup/update/#restart-required" >}}).
+2. Restart agentgateway. The `config` section is applied at startup, so the new mode does not take effect until the process restarts. For more information, see [Fields that require a restart]({{< link-hextra path="/documentation/setup/update/#restart-required" >}}).
 
    {{< tabs >}}
    {{% tab name="Binary" %}}

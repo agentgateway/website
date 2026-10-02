@@ -5,7 +5,7 @@ When tracing is enabled, {{< reuse "agw-docs/snippets/agentgateway.md" >}} emits
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-3. Set up the [OTel stack]({{< link path="/observability/otel-stack/" >}}). The OTel stack installs the full tracing pipeline that this guide uses. 
+3. Set up the [OTel stack]({{< link path="/documentation/observability/otel-stack/" >}}). The OTel stack installs the full tracing pipeline that this guide uses. 
    - **OpenTelemetry Collector** (`opentelemetry-collector-traces` in the `telemetry` namespace): Receives OTLP traces from the agentgateway proxy and forwards them to Tempo.
    - **Tempo**: Stores the traces.
    - **Grafana**: Queries Tempo and lets you browse and search traces.
@@ -89,8 +89,8 @@ EOF
    | Goal | TraceQL query |
    |---|---|
    | All traces from the proxy | `{resource.service.name="agentgateway-proxy"}` |
-   | Traces for a specific HTTP path | `{resource.service.name="agentgateway-proxy" && span.http.path="/get"}` |
-   | Error traces (4xx/5xx) | `{resource.service.name="agentgateway-proxy" && span.http.status >= 400}` |
+   | Traces for a specific HTTP path | {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`{resource.service.name="agentgateway-proxy" && span.http.path="/get"}`{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`{resource.service.name="agentgateway-proxy" && span.url.path="/get"}`{{< /version >}} |
+   | Error traces (4xx/5xx) | {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`{resource.service.name="agentgateway-proxy" && span.http.status >= 400}`{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`{resource.service.name="agentgateway-proxy" && span.http.response.status_code >= 400}`{{< /version >}} |
    | Slow traces | `{resource.service.name="agentgateway-proxy"} \| duration > 100ms` |
 
    {{< reuse-image src="img/agw-tempo.png" srcDark="img/agw-tempo.png" >}}
@@ -191,7 +191,7 @@ For the full list of available CEL variables, see the [CEL variables reference](
 
 ## Customize span attributes
 
-Agentgateway emits standard OpenTelemetry attributes on every span. You can add custom attributes or remove default ones. Attribute customization applies to all sampled spans, regardless of whether they were selected by `randomSampling` or `clientSampling`. For the full list of default attributes, see [Span attribute reference]({{< link path="/observability/traces/attribute-reference/" >}}).
+Agentgateway emits standard OpenTelemetry attributes on every span. You can add custom attributes or remove default ones. Attribute customization applies to all sampled spans, regardless of whether they were selected by `randomSampling` or `clientSampling`. For the full list of default attributes, see [Span attribute reference]({{< link path="/documentation/observability/traces/attribute-reference/" >}}).
 
 > [!NOTE]
 > Customizing span attributes does not apply to policy call child spans, such as spans for ext_authz or rate limiting calls. Those spans have a fixed attribute set.
@@ -244,6 +244,11 @@ Use the `attributes.remove` field to drop attributes from spans. This is useful 
 
 The following example removes the source address and HTTP version from a trace span. 
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+The `remove` list matches the attribute names on the request span, as listed in [Default span attributes]({{< link path="/documentation/observability/traces/attribute-reference/" >}}). A name that is not on the span, such as the earlier `src.addr` or `http.version`, removes nothing.
+{{% /version %}}
+
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -270,16 +275,45 @@ spec:
           - http.version
 EOF
 ```
+{{% /version %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: tracing
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+    - kind: Gateway
+      name: agentgateway-proxy
+      group: gateway.networking.k8s.io
+  frontend:
+    tracing:
+      backendRef:
+        name: opentelemetry-collector-traces
+        namespace: telemetry
+        port: 4317
+      protocol: GRPC
+      randomSampling: "true"
+      attributes:
+        remove:
+          - client.address
+          - network.protocol.version
+EOF
+```
+{{% /version %}}
 
 ## Alternative backends
 
 The primary setup routes traces through the OTel Collector from the OTel stack, which exports them to Tempo. You can route traces to any OTLP-compatible backend by changing the `backendRef` to point to a different service, or by using the `url` field to specify an endpoint directly.
 
-- [Jaeger]({{< link path="/observability/traces/configs/jaeger/" >}})
-- [OTel Collector]({{< link path="/observability/traces/configs/otel/" >}})
-- [Datadog]({{< link path="/observability/traces/configs/datadog/" >}})
-- [Honeycomb]({{< link path="/observability/traces/configs/honeycomb/" >}})
-- [Grafana Cloud]({{< link path="/observability/traces/configs/grafana-cloud/" >}})
+- [Jaeger]({{< link path="/documentation/observability/traces/configs/jaeger/" >}})
+- [OTel Collector]({{< link path="/documentation/observability/traces/configs/otel/" >}})
+- [Datadog]({{< link path="/integrations/llm/observability/datadog/" >}})
+- [Honeycomb]({{< link path="/documentation/observability/traces/configs/honeycomb/" >}})
+- [Grafana Cloud]({{< link path="/documentation/observability/traces/configs/grafana-cloud/" >}})
 
 ## Cleanup
 

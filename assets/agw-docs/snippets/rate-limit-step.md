@@ -1,4 +1,4 @@
-Global rate limiting requires an external rate limit server that stores the budgets and maintains the counters. Deploy Redis and the rate limit service as described in [Deploy the rate limit service]({{< link-hextra path="/security/rate-limit-global#deploy-service" >}}) in the global rate limiting guide. That example deploys a `ratelimit` Service in the `ratelimit` namespace (the target of the `backendRef` in the previous step) and configures it with the `user_id` token-budget descriptor that this guide relies on:
+Global rate limiting requires an external rate limit server that stores the budgets and maintains the counters. Deploy Redis and the rate limit service as described in [Deploy the rate limit service]({{< link-hextra path="/documentation/security/rate-limit-global#deploy-service" >}}) in the global rate limiting guide. That example deploys a `ratelimit` Service in the `ratelimit` namespace (the target of the `backendRef` in the previous step) and configures it with the `user_id` token-budget descriptor that this guide relies on:
 
 ```yaml
 # Excerpt from the rate limit server ConfigMap

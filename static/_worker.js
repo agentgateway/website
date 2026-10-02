@@ -12,8 +12,8 @@
  * How it works
  * ------------
  * Hugo pre-builds a .md file alongside every HTML page. For example:
- *   /docs/kubernetes/latest/quickstart/install/index.html  (HTML page)
- *   /docs/kubernetes/latest/quickstart/install.md          (markdown twin)
+ *   /docs/kubernetes/latest/documentation/quickstart/install/index.html  (HTML page)
+ *   /docs/kubernetes/latest/documentation/quickstart/install.md          (markdown twin)
  *
  * This Worker intercepts every request before it reaches the static assets.
  * When the Accept header includes "text/markdown" and the URL looks like a
@@ -39,7 +39,7 @@
  * This Worker only runs in Cloudflare Pages, not in the local Hugo dev server.
  * There is no supported local emulator; the only way to test is to deploy to a
  * Cloudflare Pages preview or production environment and then run:
- *   curl -H "Accept: text/markdown" https://agentgateway.dev/docs/kubernetes/latest/quickstart/install/
+ *   curl -H "Accept: text/markdown" https://agentgateway.dev/docs/kubernetes/latest/documentation/quickstart/install/
  * or re-run the afdocs scorecard against the live site after deploying.
  */
 

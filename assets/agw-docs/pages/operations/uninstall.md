@@ -179,7 +179,7 @@ For ArgoCD installations, use the following steps to clean up your environment.
 {{% upstream %}}
 ## Uninstall with FluxCD {#flux}
 
-If you followed the [Flux installation steps]({{< link-hextra path="/install/flux" >}}) and want to uninstall, use the following steps to undo them. If you instead manage the manifests from a Git or OCI source that Flux reconciles, remove them from that source and let the controllers prune the resources for you.
+If you followed the [Flux installation steps]({{< link-hextra path="/documentation/install/flux" >}}) and want to uninstall, use the following steps to undo them. If you instead manage the manifests from a Git or OCI source that Flux reconciles, remove them from that source and let the controllers prune the resources for you.
 
 1. Delete the {{< reuse "/agw-docs/snippets/kgateway.md" >}} `HelmRelease` and `OCIRepository` resources. Flux uninstalls the corresponding Helm releases from the cluster.
 

@@ -23,6 +23,10 @@ This is the key insight for sizing MCP rate limits: **count sessions, not raw re
 
 If you need to differentiate between tool calls and other MCP operations (such as to allow unlimited `tools/list` requests but cap `tools/call` requests), use [global rate limiting with CEL descriptors](#global-per-tool) to inspect the JSON-RPC method body.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+Rate limit policies that target an HTTPRoute with an MCP backend can also read the parsed MCP request through the `mcp` CEL variable, so a descriptor can check `mcp.methodName` instead of parsing `request.body`, such as `mcp.methodName == "tools/call" ? "tools/call" : "other"`.
+{{< /version >}}
+
 ### Response headers
 
 {{< reuse "agw-docs/snippets/ratelimit-headers.md" >}}
@@ -74,23 +78,26 @@ Review the following table for example use cases and configuration guidance.
 | Allow burst for session initialization | Add `burst` because each session needs several requests before the first tool call runs. |
 | Hard ceiling across all gateway traffic | {{< reuse "agw-docs/snippets/policy.md" >}} on `Gateway`, `local[].requests`. |
 | Per-tool rate limits (e.g. tighter for expensive tools) | Global rate limit + CEL descriptors extracting `body.method` and `body.params.name`. |
-| Combine auth + rate limiting | Apply both `mcp.authentication` and `traffic.rateLimit` in the same {{< reuse "agw-docs/snippets/policy.md" >}} or use separate policies. |
+| Combine auth + rate limiting | Apply both `mcp.authentication` and `traffic.rateLimit` in the same {{< reuse "agw-docs/snippets/policy.md" >}} or use separate policies. |{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}
+| Give each caller its own limit | Add `local[].key`, such as `jwt.sub`. See [Claim-level rate limits](#claim-level). |{{% /version %}}
 
 Also, check out the rate limiting guides for other use cases:
 
-- [LLM rate limiting by token expenses]({{< link-hextra path="/llm/rate-limit" >}}).
-- [HTTP rate limiting]({{< link-hextra path="/security/rate-limit-http" >}}).
+- [LLM rate limiting by token expenses]({{< link-hextra path="/documentation/llm/rate-limit" >}}).
+- [HTTP rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http" >}}).
 
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Deploy and route to an MCP server through agentgateway. For setup instructions, see [Route to a static MCP server]({{< link-hextra path="/mcp/static-mcp/" >}}).
+2. Deploy and route to an MCP server through agentgateway. For setup instructions, see [Route to a static MCP server]({{< link-hextra path="/documentation/mcp/static-mcp/" >}}).
 
 ## Local rate limiting {#local}
 
 Local rate limiting runs in-process on each agentgateway proxy replica. The following steps show how to apply a per-route rate limit and verify its behavior with rapid tool call sessions.
 
 1. Apply a rate limit directly to the MCP HTTPRoute. The following example allows 5 tool calls per second with a burst of up to 15 (5 base + 10 burst) before the request is rate limited and a 429 HTTP response is returned. The burst headroom is important for MCP clients: during session initialization, an agent typically fires `initialize` → `tools/list` → several `tools/call` requests back-to-back. Without burst capacity, the MCP server would hit the limit before doing any real work.
+
+   {{< version include-if="1.5.x" >}}For an MCP JSON-RPC request, the 429 is converted to an HTTP 200 response that carries a JSON-RPC error with code `-32003`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}For an MCP JSON-RPC request, the 429 is converted to an HTTP 200 response. A rate-limited `tools/call` request gets a tool result with `isError: true`, so that MCP clients can show a tool-execution error instead of treating the session as broken. Other requests, such as `initialize` and `tools/list`, get a JSON-RPC error with code `-32003`.{{< /version >}}
 
    ```yaml {paths="mcp-local-rate-limit"}
    kubectl apply -f- <<EOF
@@ -206,12 +213,58 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
 
    The first 5 complete tool call sequences succeed before the rate limit is reached. After that, subsequent requests are rate limited.
 
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+   The preceding failures happen when the bucket runs out on an `initialize` or `tools/list` request. If the bucket runs out on a `tools/call` request, the client gets a tool result similar to the following. The text includes the retry time and the bucket size, which is the base rate plus the burst.
+
+   ```json
+   {
+     "isError": true,
+     "content": [
+       {
+         "type": "text",
+         "text": "rate limit exceeded (retry after 0s; limit 15, remaining 0)"
+       }
+     ]
+   }
+   ```
+   {{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+## Claim-level rate limits {#claim-level}
+
+The limit in the previous section is shared by every client of the MCP server, so one agent that loops can lock out the rest. To limit each caller separately, set the `key` field to a CEL expression that reads a claim, such as `jwt.sub` for a limit per user or `jwt.team` for a limit per team. Each distinct value gets its own token bucket with the limits of that rule.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: mcp-claim-level-rate-limit
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: mcp
+  traffic:
+    rateLimit:
+      local:
+      - requests: 5
+        unit: Seconds
+        burst: 10
+        key: jwt.sub
+EOF
+```
+
+Size a keyed limit the same way as a shared one: the bucket counts HTTP requests, not tool calls, so each client still spends roughly 3 to 5 requests per tool call session. Reading `jwt` claims requires [MCP authentication]({{< link-hextra path="/documentation/mcp/auth/" >}}) on the same traffic. Clients whose key cannot be evaluated, such as unauthenticated callers, share one bucket. {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For more information about keyed limits, see [Claim-level budget limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}).
+{{< /version >}}
+
 ## Per-tool rate limits with CEL descriptors {#global-per-tool}
 
 Local rate limiting treats every POST to `/mcp` identically. But some tools are more expensive than others, and so they deserve tighter limits. Global rate limiting with CEL descriptors lets you look inside the MCP request body and apply different ceilings per tool name.
 
 > [!NOTE]
-> Global rate limiting requires an external [Envoy Rate Limit service](https://github.com/envoyproxy/ratelimit) backed by Redis. For a complete guide on global rate limiting architecture and setup, see the [Global rate limiting guide]({{< link-hextra path="/security/rate-limit-global" >}}).
+> Global rate limiting requires an external [Envoy Rate Limit service](https://github.com/envoyproxy/ratelimit) backed by Redis. For a complete guide on global rate limiting architecture and setup, see the [Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}).
 
 The following steps show how to set up global rate limiting infrastructure and configure per-tool rate limits using CEL expressions.
 
@@ -394,7 +447,7 @@ The following steps show how to set up global rate limiting infrastructure and c
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
-   # trigger-long-running-operation: 3/min limit — hits 429 on the 4th call
+   # trigger-long-running-operation: 3/min limit, so the 4th call is rate limited
    for i in $(seq 1 5); do
      npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
        --cli "http://$INGRESS_GW_ADDRESS/mcp" \
@@ -418,7 +471,7 @@ The following steps show how to set up global rate limiting infrastructure and c
    {{% /tab %}}
    {{% tab name="Port-forward for local testing" %}}
    ```sh
-   # trigger-long-running-operation: 3/min limit — hits 429 on the 4th call
+   # trigger-long-running-operation: 3/min limit, so the 4th call is rate limited
    for i in $(seq 1 5); do
      npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
        --cli "http://localhost:8080/mcp" \
@@ -475,6 +528,22 @@ The following steps show how to set up global rate limiting infrastructure and c
      "content": [{ "type": "text", "text": "Echo: Hello World!" }]
    }
    ```
+
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+   The rate-limited `trigger-long-running-operation` calls return a tool result instead of failing the client, similar to the following. The text includes the limit and the remaining count from the rate limit service.
+
+   ```json
+   {
+     "isError": true,
+     "content": [
+       {
+         "type": "text",
+         "text": "rate limit exceeded (retry after <seconds>s; limit 3, remaining 0)"
+       }
+     ]
+   }
+   ```
+   {{< /version >}}
 
 ## Cleanup
 

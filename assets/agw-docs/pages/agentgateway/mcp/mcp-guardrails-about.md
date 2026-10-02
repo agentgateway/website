@@ -2,7 +2,7 @@ Use MCP guardrails (also called ExtMCP) to apply external authorization and exte
 
 ## About MCP guardrails
 
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} already supports {{< conditional-text include-if="kubernetes" >}}[external authorization]({{< link-hextra path="/security/extauth/basic" >}}){{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}[external authorization]({{< link-hextra path="/configuration/security/basic-authn" >}}){{< /conditional-text >}} and {{< conditional-text include-if="kubernetes" >}}[external processing (ExtProc)]({{< link-hextra path="/traffic-management/extproc" >}}){{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}[external processing (ExtProc)]({{< link-hextra path="/configuration/traffic-management/extproc" >}}){{< /conditional-text >}} for HTTP traffic. Both call out to an external gRPC server so that you can centralize authorization and request or response mutation outside the proxy. However, these integrations operate on raw HTTP. To make a decision about an MCP tool call, the external server must reassemble the HTTP body, parse the JSON-RPC envelope, and handle MCP framing itself.
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} already supports {{< conditional-text include-if="kubernetes" >}}[external authorization]({{< link-hextra path="/documentation/security/extauth/basic" >}}){{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}[external authorization]({{< link-hextra path="/documentation/configuration/security/basic-authn" >}}){{< /conditional-text >}} and {{< conditional-text include-if="kubernetes" >}}[external processing (ExtProc)]({{< link-hextra path="/documentation/traffic-management/extproc" >}}){{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}[external processing (ExtProc)]({{< link-hextra path="/documentation/configuration/traffic-management/extproc" >}}){{< /conditional-text >}} for HTTP traffic. Both call out to an external gRPC server so that you can centralize authorization and request or response mutation outside the proxy. However, these integrations operate on raw HTTP. To make a decision about an MCP tool call, the external server must reassemble the HTTP body, parse the JSON-RPC envelope, and handle MCP framing itself.
 
 MCP guardrails solve this challenge by calling out at the MCP method layer instead of the HTTP layer. The ExtMCP protocol is modeled on Envoy's `ext_authz` filter, but the external server receives a structured, MCP-native payload, including the JSON-RPC method name, the target backend, the request or response parameters, and selected request headers. The server can then make a decision based on the actual tool, prompt, or resource that is being accessed, without re-implementing MCP semantics.
 
@@ -17,6 +17,10 @@ Common use cases include the following:
 
 When a client calls an MCP method that you opt in, agentgateway calls your ExtMCP server before it forwards the request, after it receives the response, or both. At each call, the server can pass the message through unchanged, return a mutated message, or deny the call with an error that agentgateway returns to the client as a JSON-RPC error.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+The exception is a denied `tools/call` request, which returns a tool result with `isError: true` instead, so that MCP clients can show the denial as a tool-execution error. For details, see [Error codes](#error-codes).
+{{< /version >}}
+
 ```mermaid
 sequenceDiagram
     autonumber
@@ -28,7 +32,7 @@ sequenceDiagram
     AGW->>Ext: CheckRequest (method, tool, params, headers)
     alt Request denied
         Ext-->>AGW: AuthorizationError
-        AGW-->>Client: JSON-RPC error
+        AGW-->>Client: Denied response
     else Request passed or mutated
         Ext-->>AGW: Pass request or return mutated params
         AGW->>MCP: Forward request
@@ -36,7 +40,7 @@ sequenceDiagram
         AGW->>Ext: CheckResponse (result)
         alt Response denied
             Ext-->>AGW: AuthorizationError
-            AGW-->>Client: JSON-RPC error
+            AGW-->>Client: Denied response
         else Response passed or mutated
             Ext-->>AGW: Pass or return mutated response
             AGW-->>Client: Result
@@ -48,7 +52,7 @@ The server returns one of three outcomes for each call:
 
 * **Pass**: Allow the request or response unchanged.
 * **Mutate**: Replace the JSON-RPC `params` (request phase) or `result` (response phase) before agentgateway forwards it.
-* **Deny**: Reject the call with a JSON-RPC error that is returned to the client. The server can deny a call in either the request phase or the response phase.
+* **Deny**: Reject the call with a JSON-RPC error that is returned to the client. The server can deny a call in either the request phase or the response phase. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}For `tools/call`, the client receives a tool result with `isError: true` instead of a JSON-RPC error.{{< /version >}}
 
 ### Request mutation trust boundary
 
@@ -152,4 +156,8 @@ When a processor denies a call, agentgateway returns a JSON-RPC error to the cli
 | `INVALID` | Invalid request |
 | `UNKNOWN` | Internal error |
 
-The server can also return an explicit JSON-RPC error payload to override the default.
+The error `message` is the server's `reason`. The server can also set the optional `mcp_error` field to a JSON value, which the client receives in the error's `data` field. The `mcp_error` payload does not change the error code or message. If the payload is not valid JSON, it is ignored.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+For `tools/call`, the table applies only to the `UNKNOWN` code and to internal failures, such as an unreachable server when the failure mode denies the request. Every other `tools/call` denial returns an HTTP 200 response with a tool result where `isError: true` and the text content is the server's `reason`. The `mcp_error` payload is not included in that tool result. For all other MCP methods, the table applies to every code.
+{{< /version >}}

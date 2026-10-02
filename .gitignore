@@ -4,6 +4,12 @@ public/
 public-*/
 .hugo_build.lock
 hugo_stats.json
+# Hugo regenerates assets/jsconfig.json on every build, and its contents track the
+# Hugo version (0.163.0 dropped the deprecated `baseUrl` key, 0.165.0 changed the
+# source root mapping). Committing it meant every build flipped the file, so the
+# nightly reference-docs PRs carried a phantom diff alongside the real reference
+# changes. It is a VS Code IntelliSense aid only; nothing reads it at build time.
+assets/jsconfig.json
 .vscode/
 resources/
 .devcontainer.json

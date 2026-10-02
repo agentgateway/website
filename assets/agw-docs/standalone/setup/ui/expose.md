@@ -14,8 +14,8 @@ How the address becomes reachable depends on your installation method.
 
 ## Before you begin
 
-1. [Serve the UI on its own gateway]({{< link-hextra path="/setup/ui/gateway-ui/" >}}). The examples on this page expose the `ui-gateway` on port `4001` that you created in that guide.
-2. [Secure the UI]({{< link-hextra path="/setup/ui/secure-ui/" >}}) with an authentication policy. Add the policy before you expose the UI, because a gateway listener is as reachable as your other proxy traffic.
+1. [Serve the UI on its own gateway]({{< link-hextra path="/documentation/setup/ui/gateway-ui/" >}}). The examples on this page expose the `ui-gateway` on port `4001` that you created in that guide.
+2. [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}) with an authentication policy. Add the policy before you expose the UI, because a gateway listener is as reachable as your other proxy traffic.
 3. Get a TLS certificate and key for the hostname that you plan to serve the UI on, such as from your DNS provider or your organization's certificate authority.
 4. Create a DNS record that points that hostname at the address you expose in the steps on this page. The hostname must match both the certificate and the `redirectURI` value in your `oidc` policy.
 
@@ -78,7 +78,7 @@ How the address becomes reachable depends on your installation method.
    notAfter=Sep 23 17:20:56 2026 GMT
    ```
 
-For more certificate options, see [Gateways]({{< link-hextra path="/configuration/gateways/" >}}).
+For more certificate options, see [Gateways]({{< link-hextra path="/documentation/configuration/gateways/" >}}).
 
 ## Helm
 
@@ -155,7 +155,7 @@ For more certificate options, see [Gateways]({{< link-hextra path="/configuratio
    ```
 
    > [!NOTE]
-   > A `kubernetes.io/tls` Secret stores the certificate as `tls.crt` and the key as `tls.key`, which is why the `cert` and `key` paths end with those file names. Setting `tls` on a gateway also switches the gateway protocol to HTTPS. For more certificate options, see [Gateways]({{< link-hextra path="/configuration/gateways/" >}}).
+   > A `kubernetes.io/tls` Secret stores the certificate as `tls.crt` and the key as `tls.key`, which is why the `cert` and `key` paths end with those file names. Setting `tls` on a gateway also switches the gateway protocol to HTTPS. For more certificate options, see [Gateways]({{< link-hextra path="/documentation/configuration/gateways/" >}}).
 
 3. Upgrade the release with your values file.
 
@@ -224,9 +224,9 @@ The login flow is the same in every installation method, because the `oidc` poli
 
    {{< reuse-image src="img/agentgateway-ui-landing.png" srcDark="img/agentgateway-ui-landing-dark.png" >}}
 
-For what you can do from here, see [Launch the UI]({{< link-hextra path="/setup/ui/launch-ui/" >}}).
+For what you can do from here, see [Launch the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}).
 
-To save the configuration changes that you make in the UI, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}). In the Helm chart's default read-only storage mode, the UI shows the running configuration, but a save fails because the chart mounts the configuration file read-only.
+To save the configuration changes that you make in the UI, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}). In the Helm chart's default read-only storage mode, the UI shows the running configuration, but a save fails because the chart mounts the configuration file read-only.
 
 ## Cleanup
 
@@ -284,5 +284,5 @@ To save the configuration changes that you make in the UI, see [Configuration st
 
 ## Next steps
 
-* [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) so that the UI can save your changes.
-* [Update your configuration]({{< link-hextra path="/setup/update/" >}}) by editing the configuration file directly.
+* [Choose where configuration is stored]({{< link-hextra path="/documentation/setup/storage/" >}}) so that the UI can save your changes.
+* [Update your configuration]({{< link-hextra path="/documentation/setup/update/" >}}) by editing the configuration file directly.

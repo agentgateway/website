@@ -21,7 +21,7 @@ Agentgateway reads the `usage` field from every LLM response to accumulate token
 **Counting happens after the fact:** This means token budgets are approximate. With a 1000-token-per-minute limit and a single request that returns 1200 tokens, that request succeeds, you're 200 tokens over budget, and subsequent requests are blocked until the window resets.
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-**Cached tokens count against the budget:** A request debits the input count *including* the tokens that the provider read from or wrote to its prompt cache, plus the output count. Providers disagree about whether their own input count includes cached tokens, so agentgateway normalizes the number first. For providers that exclude cached tokens, such as Anthropic and Amazon Bedrock, a cache-heavy request therefore debits more than the provider's reported input count. For more information, see [Token usage fields]({{< link-hextra path="/llm/observability/#token-usage-fields" >}}).
+**Cached tokens count against the budget:** A request debits the input count *including* the tokens that the provider read from or wrote to its prompt cache, plus the output count. Providers disagree about whether their own input count includes cached tokens, so agentgateway normalizes the number first. For providers that exclude cached tokens, such as Anthropic and Amazon Bedrock, a cache-heavy request therefore debits more than the provider's reported input count. For more information, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
 {{< /version >}}
 
 Token budgets degrade gracefully: requests that exceed the budget fail fast with a 429 and are not forwarded to the backend. After the window resets, the token budget is restored and requests succeed again. No manual intervention is required.
@@ -42,12 +42,14 @@ Review the following table for example use cases and configuration guidance.
 | Limit requests independently of tokens | Add a second `local[]` entry with `requests`. |
 | Streaming-safe token limits | No special config — token limits are always applied post-stream. |
 | Hard token ceiling across the gateway | {{< reuse "agw-docs/snippets/policy.md" >}} targeting `Gateway`, `local[].tokens`. |
-| Per-minute vs per-hour budget | Change `unit` — use `Minutes` for tighter windows, `Hours` for daily-style quotas. |
+| Per-minute vs per-hour budget | Change `unit` — use `Minutes` for tighter windows, `Hours` for daily-style quotas. |{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}
+| Give each user or team its own budget | Add `local[].key`, such as `jwt.sub` or `jwt.team`. See [Claim-level budget limits](#claim-level). |
+| Separate budget per model | Add `local[].key` with `llm.requestModel` on a `tokens` limit. |{{% /version %}}
 
 Also, check out the rate limiting guides for other use cases:
 
-- [Request-based rate limiting on HTTP routes]({{< link-hextra path="/security/rate-limit-http" >}}).
-- [MCP tool call limiting]({{< link-hextra path="/mcp/rate-limit" >}}).
+- [Request-based rate limiting on HTTP routes]({{< link-hextra path="/documentation/security/rate-limit-http" >}}).
+- [MCP tool call limiting]({{< link-hextra path="/documentation/mcp/rate-limit" >}}).
 
 ## Before you begin
 
@@ -282,7 +284,7 @@ This configuration enforces:
 
 Both limits apply to the same traffic. If either limit is exceeded, the request is rejected with a 429 response.
 
-## Gateway-level token limits {#gateway}
+## Gateway-level budget limits {#gateway}
 
 Apply a token budget across all LLM routes by targeting the Gateway resource.
 
@@ -308,11 +310,61 @@ EOF
 
 This policy acts as a hard ceiling on total token consumption across the entire gateway, regardless of which route is hit.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+## Claim-level budget limits {#claim-level}
+
+Create claim-level budget limits with JWT authentication and CEL expressions.
+
+A token budget without a `key` field is shared by every request on the target, so a single caller can spend the budget for everyone. Set `key` to a CEL expression to give each distinct value its own token bucket with the limits of that rule. The CEL expression checks against claims in a JWT. This way, per-user, per-team, and per-model budgets do not require an external rate limit service.
+
+Before you begin, create a [JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/" >}}) that targets the same backend that you want to rate limit, such as an OpenAI HTTPRoute in the following example. To key on a virtual key instead, use `apiKey.user_id`, as described in the [virtual keys guide]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
+
+The following policy sets up these budgets:
+
+* Each authenticated user 60 requests per minute.
+* Each team 100,000 tokens per hour.
+* Each user a separate allowance of 20,000 tokens per hour for each model that they call.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: llm-claim-level-budget
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: openai
+  traffic:
+    rateLimit:
+      local:
+      - requests: 60
+        unit: Minutes
+        key: jwt.sub
+      - tokens: 100000
+        unit: Hours
+        key: jwt.team
+      - tokens: 20000
+        unit: Hours
+        key: jwt.sub + "/" + llm.requestModel
+EOF
+```
+
+Review the following behavior before you rely on claim-level budget limits.
+
+* **When a key is evaluated**: A `requests` limit is checked before the LLM request body is parsed, so its key cannot read `llm` fields such as `llm.requestModel`. A `tokens` limit is checked after the body is parsed, so its key can read the body tokens. A key that reads a value that is not in its context falls back to the shared bucket.
+* **How usage is settled**: A `tokens` limit charges an estimate when the request is admitted. After the response, the limit settles the real input and output counts against the same per-key bucket, exactly as it does for a single shared bucket.
+* **Requests without a value**: Requests whose key is empty, or whose expression cannot be evaluated, such as an unauthenticated request, all share one bucket. An empty key does not exempt a request from the limit. To apply a budget to only some requests, use [conditional policies]({{< link-hextra path="/documentation/about/policies/conditional-policies" >}}).
+* **How many buckets are kept, and where they live**: {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For a budget that is shared across replicas, use [global rate limiting](#global).
+{{< /version >}}
+
 ## Global rate limiting for LLMs {#global}
 
 Local rate limiting runs independently on each proxy replica. For shared token budgets across multiple agentgateway replicas, use global rate limiting with an external rate limit service.
 
-For detailed instructions on setting up global rate limiting with descriptors and an external rate limit service, see the [Global rate limiting guide]({{< link-hextra path="/security/rate-limit-global" >}}).
+For detailed instructions on setting up global rate limiting with descriptors and an external rate limit service, see the [Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}).
 
 ## Cleanup
 

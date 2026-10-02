@@ -1,4 +1,4 @@
-Secure your applications with JSON Web Token (JWT) authentication by using the agentgateway proxy and an identity provider like Keycloak. To learn more about JWT auth, see [About JWT authentication]({{< link-hextra path="/security/jwt/about/" >}}). 
+Secure your applications with JSON Web Token (JWT) authentication by using the agentgateway proxy and an identity provider like Keycloak. To learn more about JWT auth, see [About JWT authentication]({{< link-hextra path="/documentation/security/jwt/about/" >}}). 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
@@ -55,7 +55,7 @@ Configure an {{< reuse "agw-docs/snippets/policy.md" >}} to validate JWTs using 
    | `mode` | Validation mode for JWT authentication. `Strict` requires a valid JWT for all requests. `Optional` validates JWTs if present but allows requests without tokens. `Permissive` is the least strict mode.<br><br>Example value: `Strict` |
    | `issuer` | The issuer URL that must match the `iss` claim in JWT tokens exactly. Agentgateway rejects tokens from other issuers.{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x" >}} Agentgateway also rejects a token that has no `iss` claim.{{< /version >}}<br><br>Example value: `http://keycloak:8080/realms/master` |
    | `audiences` | List of allowed audience values. The JWT's `aud` claim must contain at least one of these values. Omit the field to accept any audience.{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x" >}} An empty list also accepts any audience, and a non-empty list rejects a token that has no `aud` claim.{{< /version >}}<br><br>Example value: `["my-application"]` |{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x" >}}
-   | `preserveToken` | Keeps a validated JWT in the location that it was read from. By default, the gateway removes the token after validation, so the backend does not receive the client's credential. Set this field when another policy on the same route reads the token from the request, such as an [OAuth token exchange]({{< link-hextra path="/security/backend-authn/oauth-token-exchange/" >}}) that takes it as the subject token. When only the backend needs the token, prefer the `passthrough` [backend authentication]({{< link-hextra path="/security/backend-authn/" >}}) method instead, which does not expose the credential to every policy that runs later.<br><br>Example value: `true` |{{< /version >}}
+   | `preserveToken` | Keeps a validated JWT in the location that it was read from. By default, the gateway removes the token after validation, so the backend does not receive the client's credential. Set this field when another policy on the same route reads the token from the request, such as an OAuth token exchange{{< version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}} ([OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn/oauth-token-exchange/" >}})){{< /version >}}{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}} ([Standard token exchange]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/" >}})){{< /version >}} that takes it as the subject token. When only the backend needs the token, prefer the `passthrough` [backend authentication]({{< link-hextra path="/documentation/security/backend-authn/" >}}) method instead, which does not expose the credential to every policy that runs later.<br><br>Example value: `true` |{{< /version >}}
    | `jwks.remote.jwksPath` | The path to the JWKS endpoint on the identity provider, relative to the backend root. This endpoint returns the public keys used to verify JWT signatures. {{< reuse "agw-docs/snippets/jwks-path.md" >}}<br><br>Example value: `/realms/master/protocol/openid-connect/certs` |
    | `jwks.remote.cacheDuration` | How long to cache the JWKS keys locally. This setting reduces load on the identity provider and improves performance. Keys are automatically refreshed when the cache expires.<br><br>Example value: `5m` (5 minutes) |
    | `jwks.remote.backendRef` | Reference to the backend that hosts the identity provider. Agentgateway uses this value to fetch the JWKS keys from the identity provider. For an in-cluster provider, reference a Kubernetes Service. For an external provider that is reached over TLS, reference an {{< reuse "/agw-docs/snippets/backend.md" >}} instead. See [External identity provider over TLS](#external-identity-provider-over-tls).{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2026.7.1,2.3.x,2.2.x,2.1.x" >}} Mutually exclusive with `url`. Set exactly one of the two.{{< /version >}} <br><br>Example value: The details of the Keycloak service |{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2026.7.1,2.3.x,2.2.x,2.1.x" >}}
@@ -304,7 +304,7 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-For more authorization rules, such as combining `Allow` with `Require` or restricting access by source address, see [Authorization]({{< link-hextra path="/security/authorization/" >}}). For the claims and functions that you can use in an expression, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
+For more authorization rules, such as combining `Allow` with `Require` or restricting access by source address, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}). For the claims and functions that you can use in an expression, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
 
 ## Other JWT auth examples
 
@@ -313,6 +313,8 @@ Review other common JWT auth configuration examples that you can add to your {{<
 ### Multiple JWT providers
 
 You can configure multiple JWT providers to accept tokens from different identity providers. The following example uses Keycloak and the Auth0 identity providers. 
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}When a request includes a JWT, the agentgateway proxy tries each provider whose `issuer` matches the token's `iss` claim and whose JWKS contains the token's `kid`, in the listed order. The first provider that validates the token accepts it. As a result, two issuers can publish the same `kid` value, and several providers can share one issuer, such as providers with different `audiences`.{{< /version >}}
 
 ```yaml
 
@@ -342,11 +344,42 @@ traffic:
             port: 443
 ```
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+### Set the required claims {#jwt-required-claims}
+
+By default, JWT authentication requires the `exp` claim and validates the expiration when the claim is present. You can use `validation.requiredClaims` to set which registered claims must be present in the token. The list replaces the default `["exp"]`, so include `exp` to keep requiring it. The `iss` claim is always required, and the `aud` claim is required when the `audiences` list is not empty, regardless of this setting.
+
+```yaml
+traffic:
+  jwtAuthentication:
+    mode: Strict
+    providers:
+    - issuer: "${KEYCLOAK_ISSUER}"
+      audiences: ["my-application"]
+      jwks:
+        remote:
+          jwksPath: "${KEYCLOAK_JWKS_PATH}"
+          backendRef:
+            name: keycloak
+            namespace: keycloak
+            kind: Service
+            port: 8080
+      validation:
+        requiredClaims: ["exp", "nbf"]
+```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}}
+
+| Field | Description |
+|-------|-------------|
+| `validation.requiredClaims` | The registered JWT claims that must be present in the token payload. Supported values are `exp`, `nbf`, `aud`, and `sub`. The list replaces the default `["exp"]`, so include `exp` to keep requiring it. If you omit the field, only `exp` is required. Set `requiredClaims: []` to require no claims beyond `iss`, which is always required, and `aud`, which is required when `audiences` is set. Agentgateway still validates `exp` and `nbf` whenever they are present in the token. |
+{{< /version >}}
+
 ### External identity provider over TLS
 
 When your identity provider runs outside the cluster (for example, Okta, Auth0, or Microsoft Entra ID) and is served over HTTPS, reference an {{< reuse "/agw-docs/snippets/backend.md" >}} in the `jwks.remote.backendRef` instead of a Kubernetes Service. The {{< reuse "/agw-docs/snippets/backend.md" >}} sets the upstream host and TLS SNI together, so the JWKS fetch connects to the provider with the correct hostname and certificate.
 
-1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} for the identity provider. Set `static.host` to the provider's public hostname and `policies.tls.sni` to the same hostname. Because no `caCertificateRefs` are set, the provider's certificate is verified against the system trust store.
+1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} for the identity provider. Set `static.host` to the provider's public hostname and `policies.tls.sni` to the same hostname. Because no `caCertificateRefs` are set, the provider's certificate is verified against the system trust store. A `policies.tls` section is required even on port 443: without it the gateway fetches the JWKS in clear text against the HTTPS port, the fetch fails and retries with backoff, and the policy still reports `Accepted=True`, so the only symptom is that every valid token is rejected.
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "/agw-docs/snippets/api-version.md" >}}
@@ -363,8 +396,8 @@ When your identity provider runs outside the cluster (for example, Okta, Auth0, 
          sni: myorg.okta.com
    EOF
    ```
-   {{< version include-if="main" >}}
-   If your identity provider presents a certificate that is signed by a private CA, add `policies.tls.caCertificateRefs` to the {{< reuse "/agw-docs/snippets/backend.md" >}}. The certificate must be in a `ca.crt` key of a ConfigMap or a Secret in the same namespace as the {{< reuse "/agw-docs/snippets/backend.md" >}}. Omit `kind` to read the certificate from a ConfigMap, or set `kind: Secret` to read it from a Secret, such as a Secret that cert-manager issues.
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+   If your identity provider presents a certificate that is signed by a private CA, add `policies.tls.caCertificateRefs` to the {{< reuse "/agw-docs/snippets/backend.md" >}}. The certificate must be in a ConfigMap or a Secret in the same namespace as the {{< reuse "/agw-docs/snippets/backend.md" >}}. Omit `kind` to read the certificate from a ConfigMap, or set `kind: Secret` to read it from a Secret, such as a Secret that cert-manager issues. The certificate is read from the `ca.crt` key, unless you set `key` to another key name.
 
    ```yaml
        policies:
@@ -506,7 +539,7 @@ traffic:
 
 ## Use JWT claims in transformations {#jwt-claims-transformations}
 
-After a JWT is validated, its claims are available to [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) through the `jwt` context variable. You can use these claims in [transformations]({{< link-hextra path="/traffic-management/transformations/" >}}) to forward the authenticated user's identity to your backends, or to route requests based on a claim. See [Claim-based routing](#claim-based-routing).
+After a JWT is validated, its claims are available to [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) through the `jwt` context variable. You can use these claims in [transformations]({{< link-hextra path="/documentation/traffic-management/transformations/" >}}) to forward the authenticated user's identity to your backends, or to route requests based on a claim. See [Claim-based routing](#claim-based-routing).
 
 The `jwt` variable is populated only after the JWT is validated. Keep `jwtAuthentication` and the `transformation` on the same {{< reuse "agw-docs/snippets/policy.md" >}} and phase so that both apply to the same requests. JWT authentication always runs before transformations in the request pipeline, so the claims are available when the transformation evaluates them.
 

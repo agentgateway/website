@@ -1,4 +1,4 @@
-1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}. This example uses Gateway API {{< reuse "agw-docs/versions/k8s-gw-version.md" >}}, but you can use any version within the [supported range]({{< link-hextra path="/reference/versions/" >}}) by setting the variable accordingly.
+1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}. This example uses Gateway API {{< reuse "agw-docs/versions/k8s-gw-version.md" >}}, but you can use any version within the [supported range]({{< link-hextra path="/release-notes/versions/" >}}) by setting the variable accordingly.
    
    ```sh
    export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version.md" >}}
@@ -16,7 +16,7 @@
    ```
    
    > [!NOTE]
-   > If you need to use an experimental feature such as TCPRoutes, install the experimental CRDs. For more information, see [Experimental features in Gateway API]({{< link-hextra path="/reference/versions/#experimental-features">}}).
+   > If you need to use an experimental feature such as TCPRoutes, install the experimental CRDs. For more information, see [Experimental features in Gateway API]({{< link-hextra path="/release-notes/versions/#experimental-features">}}).
    
 2. Port-forward the Argo CD server on port 9999.
    

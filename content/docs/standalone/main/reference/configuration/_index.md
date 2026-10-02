@@ -1,7 +1,6 @@
 ---
 title: Configuration reference
 weight: 11
-icon: settings
 description: JSON schema reference for the agentgateway configuration file, plus IDE/editor schema validation.
 test: skip
 ---

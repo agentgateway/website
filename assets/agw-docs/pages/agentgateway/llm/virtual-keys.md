@@ -57,7 +57,7 @@ This example creates two virtual keys (for Alice and Bob) with independent daily
 Store your virtual keys in a Kubernetes ConfigMap, with one entry per user. Because a ConfigMap is not confidential, each entry stores a SHA-256 *hash* of the API key (`keyHash`) rather than the raw key. Clients still send the raw key in the `Authorization: Bearer` header. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} hashes the presented key and compares it to the stored hash, so the plaintext key never has to exist in the cluster.
 
 > [!IMPORTANT]
-> ConfigMaps with hashed keys (as opposed to Secrets) are the recommended way to store virtual keys. If you need to use Kubernetes Secrets, refer to the [API key authentication guide]({{< link-hextra path="/security/apikey/" >}}) for an example.
+> ConfigMaps with hashed keys (as opposed to Secrets) are the recommended way to store virtual keys. If you need to use Kubernetes Secrets, refer to the [API key authentication guide]({{< link-hextra path="/documentation/security/apikey/" >}}) for an example.
 >
 > Already storing virtual keys in a Secret? Instead of recreating them by hand, use the [`agctl migrate`]({{< link-hextra path="/reference/agctl/agctl-migrate/" >}}) command to convert your existing Secrets into the recommended ConfigMap format.
 
@@ -297,7 +297,7 @@ spec:
 EOF
 ```
 
-For detailed instructions on creating backends and storing provider API keys, see the [API keys guide]({{< link-hextra path="/llm/api-keys/" >}}).
+For detailed instructions on creating backends and storing provider API keys, see the [API keys guide]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
 
 ### Create a route to the backend
 
@@ -644,7 +644,7 @@ By default, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} token usage me
 
 ### Before you begin {#monitor-prereqs}
 
-Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics, such as by completing the [OpenTelemetry stack guide]({{< link-hextra path="/observability/otel-stack/" >}}). The following steps assume the `kube-prometheus-stack` release exists in the `telemetry` namespace, as deployed by that guide.
+Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics, such as by completing the [OpenTelemetry stack guide]({{< link-hextra path="/documentation/observability/otel-stack/" >}}). The following steps assume the `kube-prometheus-stack` release exists in the `telemetry` namespace, as deployed by that guide.
 
 ### Add a per-key metric label
 
@@ -770,7 +770,7 @@ You can add a per-key metric label such as to track metrics by user ID. Note tha
    {"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1782410758.432,"0"]},{"metric":{"user_id":"bob"},"value":[1782410758.432,"6.101636101191084e-09"]},{"metric":{"user_id":"alice"},"value":[1782410758.432,"5.106526900820178e-09"]}]}}
    ```
 
-For more information on cost tracking, see the [cost tracking guide]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}).
+For more information on cost tracking, see the [cost tracking guide]({{< link-hextra path="/documentation/llm/cost-controls/cost-tracking/" >}}).
 
 ## Advanced configuration
 
@@ -928,7 +928,7 @@ descriptors:
           requests_per_unit: 50000
 ```
 
-For more advanced rate limiting patterns, see the [budget and spend limits guide]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}).
+For more advanced rate limiting patterns, see the [budget and spend limits guide]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}).
 
 ## Cleanup
 
@@ -942,4 +942,4 @@ kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
-To remove the rate limit server, follow the [cleanup steps]({{< link-hextra path="/security/rate-limit-global#cleanup" >}}) in the global rate limiting guide.
+To remove the rate limit server, follow the [cleanup steps]({{< link-hextra path="/documentation/security/rate-limit-global#cleanup" >}}) in the global rate limiting guide.

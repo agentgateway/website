@@ -1,7 +1,6 @@
 ---
 title: Reference
 weight: 900
-icon: import_contacts
 test: skip
 ---
 

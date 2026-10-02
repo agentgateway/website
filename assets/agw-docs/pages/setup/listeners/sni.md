@@ -19,7 +19,7 @@ In this guide, you learn how to set up an HTTPS Gateway that serves two differen
 
 ## Deploy sample apps 
 
-Deploy the Petstore sample app. This app is used alongside the httpbin app from the [Get started]({{< link-hextra path="/quickstart" >}}) guide to demonstrate the SNI routing capabilities.
+Deploy the Petstore sample app. This app is used alongside the httpbin app from the [Get started]({{< link-hextra path="/documentation/quickstart" >}}) guide to demonstrate the SNI routing capabilities.
 
 1. Deploy the Petstore app.
    ```sh
@@ -100,7 +100,7 @@ Create TLS certificates for the `httpbin.example.com` and `petstore.example.com`
 
 Set up an SNI Gateway that serves multiple hosts on the same port. 
 
-If you plan to set up your listener as part of a ListenerSet, keep the following considerations in mind. For more information, see [ListenerSets (experimental)]({{< link-hextra path="/setup/listeners/overview/#listenersets" >}}).
+If you plan to set up your listener as part of a ListenerSet, keep the following considerations in mind. For more information, see [ListenerSets (experimental)]({{< link-hextra path="/documentation/setup/listeners/overview/#listenersets" >}}).
 * {{< reuse "agw-docs/versions/warn-2-1-only.md" >}} 
 * You must install the experimental channel of the Kubernetes Gateway API at version 1.3 or later.
 

@@ -22,11 +22,11 @@ MCP clients follow the [MCP authorization specification](https://modelcontextpro
 > [!IMPORTANT]
 > Setting `clientId` is required for open source authentik. Because those builds do not support Dynamic Client Registration, the pre-registered client in `clientId` is the only way for MCP clients to complete registration. If you omit it, registration requests fail.
 
-For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}}).
+For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}).
 
 ## Before you begin {#before-you-begin}
 
-1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/documentation/setup/install/binary/" >}}).
 2. Install [Docker](https://docs.docker.com/get-started/get-docker/) to run authentik locally.
 3. Install [Node.js](https://nodejs.org/) so that `npx` can run the sample MCP server.
 4. Install [jq](https://jqlang.org/) to read values out of authentik's API responses.
@@ -614,7 +614,7 @@ EOF
 
 ## Step 7: Restrict access by group {#authorization}
 
-authentik includes the user's groups in the token when the request asks for the `profile` scope. Combine those claims with agentgateway [authorization]({{< link-hextra path="/configuration/security/mcp-authz" >}}) rules.
+authentik includes the user's groups in the token when the request asks for the `profile` scope. Combine those claims with agentgateway [authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}) rules.
 
 1. Add an `authorization` policy alongside `mcpAuthentication` in your `config.yaml` that requires the `mcp-agent` group.
 
@@ -769,5 +769,5 @@ docker compose down -v
 ## Learn more
 
 - [authentik documentation](https://docs.goauthentik.io/)
-- [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}})
-- [MCP authorization]({{< link-hextra path="/configuration/security/mcp-authz" >}})
+- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}})
+- [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}})

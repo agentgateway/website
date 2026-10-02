@@ -445,6 +445,6 @@ Now that you have path-based LLM routing working, there's a lot more you can do 
 * **Rate limiting** — protect your API keys and budgets with local or remote rate limiting policies.
 * **Observability** — enable full [OpenTelemetry](https://opentelemetry.io) support for metrics, logs, and distributed tracing across all your LLM traffic.
 
-Check out the [agentgateway docs](https://agentgateway.dev/docs/kubernetes/latest/quickstart/) for more, or come chat with us on [Discord](https://discord.com/invite/y9efgEmppm).
+Check out the [agentgateway docs](https://agentgateway.dev/docs/kubernetes/latest/documentation/quickstart/) for more, or come chat with us on [Discord](https://discord.com/invite/y9efgEmppm).
 
 > With a single Gateway listener and a few YAML resources, you get a unified, Kubernetes-native control point for all your LLM traffic. That's the power of agentgateway.

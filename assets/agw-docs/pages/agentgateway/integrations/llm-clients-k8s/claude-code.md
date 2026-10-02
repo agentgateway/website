@@ -2,7 +2,7 @@ Configure [Claude Code](https://code.claude.com/docs), the AI coding CLI by Anth
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 2. Install the [Claude Code CLI](https://code.claude.com/docs) (`npm install -g @anthropic-ai/claude-code`).
 3. Get an Anthropic API key from the [Anthropic Console](https://platform.claude.com).
 
@@ -20,7 +20,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
    export ANTHROPIC_API_KEY="sk-ant-your-key-here"
    ```
 
-2. Create a Kubernetes secret for your API key. For other authentication methods, see [API keys]({{< link-hextra path="/llm/api-keys/" >}}).
+2. Create a Kubernetes secret for your API key. For other authentication methods, see [API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
 
    ```bash {paths="claude-code-k8s"}
    kubectl apply -f- <<EOF
@@ -284,7 +284,7 @@ If you have a Claude Teams or Pro account, use this configuration instead of the
    EOF
    ```
 
-3. Create an `HTTPRoute` that matches the `/claude` path prefix and rewrites it to `/` before forwarding to the backend.
+3. Create an `HTTPRoute` that forwards all traffic to the backend. If you created the `claude` HTTPRoute in the API key setup, delete it first, because both routes match the `/` path prefix.
 
    ```bash
    kubectl apply -f- <<EOF
@@ -301,25 +301,19 @@ If you have a Claude Teams or Pro account, use this configuration instead of the
        - matches:
          - path:
              type: PathPrefix
-             value: /claude
+             value: /
          backendRefs:
          - name: anthropic-teams
            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
            group: {{< reuse "agw-docs/snippets/group.md" >}}
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-         filters:
-         - type: URLRewrite
-           urlRewrite:
-             path:
-               type: ReplacePrefixMatch
-               replacePrefixMatch: /
    EOF
    ```
 
-4. Set the `ANTHROPIC_BASE_URL` environment variable to point Claude Code at the `/claude` path.
+4. Set the `ANTHROPIC_BASE_URL` environment variable to point Claude Code at your gateway address.
 
    ```bash
-   export ANTHROPIC_BASE_URL="http://$INGRESS_GW_ADDRESS/claude"
+   export ANTHROPIC_BASE_URL="http://$INGRESS_GW_ADDRESS"
    ```
 
 5. Verify the connection.
@@ -331,6 +325,6 @@ If you have a Claude Teams or Pro account, use this configuration instead of the
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/llm/guardrails/" title="Prompt guards" subtitle="Block sensitive content in CLI prompts with regex and built-in PII detectors" >}}
-  {{< card path="/llm/providers/anthropic" title="Anthropic Provider" subtitle="Complete Anthropic provider configuration" >}}
+  {{< card path="/documentation/llm/guardrails/" title="Prompt guards" subtitle="Block sensitive content in CLI prompts with regex and built-in PII detectors" >}}
+  {{< card path="/integrations/llm/providers/anthropic" title="Anthropic Provider" subtitle="Complete Anthropic provider configuration" >}}
 {{< /cards >}}

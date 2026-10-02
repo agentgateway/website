@@ -4,10 +4,13 @@ Import a model catalog
 
 Import a model catalog.
 
+Multiple sources are merged in order, so later sources overlay earlier ones (e.g. models.dev
+supplies pricing and aws-bedrock-mantle overlays Bedrock endpoint tags onto it).
+
 Examples:
-	agctl catalog import > catalog.json
-	agctl catalog import --overlay ./catalog/model-catalog-overrides.yaml --out ./catalog/model-catalog.json --pretty
+	agctl catalog import --out ./costs/catalog.json
 	agctl catalog import --source models.dev --providers anthropic,google,openai
+	agctl catalog import --source models.dev,aws-bedrock-mantle --overlay ./catalog/model-catalog-overrides.yaml --out ./catalog/model-catalog.json --pretty
 
 ```
 agctl catalog import [flags]
@@ -23,7 +26,7 @@ agctl catalog import [flags]
       --overlay string              YAML catalog to merge over imported data
       --pretty                      pretty-print the output JSON
       --providers strings           source provider ids to import (default: every provider the proxy supports)
-      --source string               import source (github, models.dev) (default "github")
+      --source strings              import sources to merge, in order (aws-bedrock-mantle, github, models.dev) (default [models.dev,aws-bedrock-mantle])
 ```
 
 ### Options inherited from parent commands

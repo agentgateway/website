@@ -249,6 +249,6 @@ The following table describes the relevant environment variable:
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/llm/cost-controls/budget-limits/" title="Control spending" subtitle="Apply rate limits and token budgets across providers." >}}
-  {{< card path="/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs for every LLM call." >}}
+  {{< card path="/documentation/llm/cost-controls/budget-limits/" title="Control spending" subtitle="Apply rate limits and token budgets across providers." >}}
+  {{< card path="/documentation/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs for every LLM call." >}}
 {{< /cards >}}

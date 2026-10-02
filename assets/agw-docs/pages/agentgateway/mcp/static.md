@@ -1,4 +1,4 @@
-Route to a Model Context Protocol (MCP) server through a static address. For more information, see the [About MCP]({{< link-hextra path="/mcp/about" >}}) topic.
+Route to a Model Context Protocol (MCP) server through a static address. For more information, see the [About MCP]({{< link-hextra path="/documentation/mcp/about" >}}) topic.
 
 ## Before you begin
 
@@ -79,7 +79,7 @@ Create a {{< reuse "agw-docs/snippets/backend.md" >}} that sets up the {{< reuse
 {{% tab name="Static host" %}}
 ```yaml {paths="setup-mcp-server"}
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: mcp-backend
@@ -98,7 +98,7 @@ EOF
 Instead of specifying the full hostname with `static.host`, you can use `backendRef` to reference a `Service` by name. The `backendRef` approach is simpler and avoids hardcoding the full cluster DNS name.
 
 ```yaml
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: mcp-backend
@@ -136,7 +136,7 @@ spec:
           value: /mcp
       backendRefs:
       - name: mcp-backend
-        group: agentgateway.dev
+        group: {{< reuse "agw-docs/snippets/group.md" >}}
         kind: {{< reuse "agw-docs/snippets/backend.md" >}}  
 EOF
 ```
@@ -209,7 +209,7 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 
 ## Connect an IDE
 
-After verifying connectivity with MCP Inspector, you can connect AI coding assistants such as Claude Code, Cursor, or VS Code to the MCP server through agentgateway.{{% conditional-text include-if="kubernetes" %}} For configuration instructions, see [MCP clients]({{< link-hextra path="/integrations/mcp-clients/" >}}).{{% /conditional-text %}}
+After verifying connectivity with MCP Inspector, you can connect AI coding assistants such as Claude Code, Cursor, or VS Code to the MCP server through agentgateway.{{% conditional-text include-if="kubernetes" %}} For configuration instructions, see [MCP clients]({{< link-hextra path="/integrations/mcp/clients/" >}}).{{% /conditional-text %}}
 
 ## Cleanup
 

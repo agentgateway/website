@@ -4,7 +4,7 @@ Use Common Expression Language (CEL) expressions to secure access to AI resource
 
 Agentgateway proxies use CEL expressions to match requests or responses on specific parameters, such as a request header or source address. If the request matches the condition, it is allowed. Requests that do not match any of the conditions are denied.
 
-The policy matches on request attributes rather than on the destination, so the same pattern works for any backend. The following section shows it for an LLM provider. For an example that applies the same pattern to regular HTTP traffic, see [Authorization]({{< link-hextra path="/security/authorization/" >}}).
+The policy matches on request attributes rather than on the destination, so the same pattern works for any backend. The following section shows it for an LLM provider. For an example that applies the same pattern to regular HTTP traffic, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}).
 
 For an overview of supported CEL expressions, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
 

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <defs>
+    <linearGradient id="atlassian-a" x1="11.34" y1="10.37" x2="5.62" y2="20.28" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0052CC"/>
+      <stop offset=".92" stop-color="#2684FF"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#atlassian-a)" d="M7.05 10.94a.63.63 0 00-1.07.11L.07 22.86a.65.65 0 00.58.94h8.02a.62.62 0 00.58-.35c1.73-3.57.68-9-2.2-12.51z"/>
+  <path fill="#2681FF" d="M11.42.42a14.2 14.2 0 00-.83 14.02l3.86 7.72c.11.22.34.36.58.36h8.02a.65.65 0 00.58-.94L12.9.6a.64.64 0 00-1.48-.18z"/>
+</svg>

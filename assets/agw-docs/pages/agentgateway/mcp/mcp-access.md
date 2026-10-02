@@ -1,7 +1,7 @@
 Control access or route traffic based on verified claims in a JSON web token (JWT).
 
 > [!NOTE]
-> This guide shows how to enforce a standard JWT authentication policy on MCP servers. This policy is not specific to MCP, but can be used for basic service-to-service scenarios involving MCPs. However, for most MCP-specific authentication scenarios, see the MCP-native [MCP authentication guide]({{< link-hextra path="/mcp/auth/" >}}). For general authorization concepts, see the [Authorization guide]({{< link-hextra path="/security/authorization/" >}}).
+> This guide shows how to enforce a standard JWT authentication policy on MCP servers. This policy is not specific to MCP, but can be used for basic service-to-service scenarios involving MCPs. However, for most MCP-specific authentication scenarios, see the MCP-native [MCP authentication guide]({{< link-hextra path="/documentation/mcp/auth/" >}}). For general authorization concepts, see the [Authorization guide]({{< link-hextra path="/documentation/security/authorization/" >}}).
 
 ## About JWT auth
 
@@ -25,12 +25,12 @@ sequenceDiagram
 
 {{< reuse "agw-docs/pages/agentgateway/mcp/mcp-auth-vs-jwt.md" >}}
 
-For more information, see the [MCP auth docs]({{< link-hextra path="/mcp/auth/">}}).
+For more information, see the [MCP auth docs]({{< link-hextra path="/documentation/mcp/auth/">}}).
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
-2. Follow the steps to connect to the [remote GitHub MCP server via HTTPS]({{< link-hextra path="/mcp/https/" >}}). 
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup" >}}).
+2. Follow the steps to connect to the [remote GitHub MCP server via HTTPS]({{< link-hextra path="/documentation/mcp/https/" >}}). 
 
 ## Validate JWT tokens
 
@@ -361,7 +361,7 @@ You can limit access to the MCP server based on specific JWT claims with CEL-bas
    
 ## Next
 
-Explore how to [control access to tools]({{< link-hextra path="/mcp/tool-access/" >}}) with RBAC policies. 
+Explore how to [control access to tools]({{< link-hextra path="/documentation/mcp/tool-access/" >}}) with RBAC policies. 
    
 ## Cleanup
 

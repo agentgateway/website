@@ -2,7 +2,7 @@ Prioritize the failover of requests across different models from an LLM provider
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
 > [!NOTE]
-> **Model-centric alternative**: You can also configure failover with the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API, by using a virtual model with `virtualModel.failover` instead of an {{< reuse "agw-docs/snippets/backend.md" >}} with priority groups. For more information, see [Virtual models]({{< link-hextra path="/llm/models/virtual/" >}}).
+> **Model-centric alternative**: You can also configure failover with the {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}experimental {{< /version >}}`{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API, by using a virtual model with `virtualModel.failover` instead of an {{< reuse "agw-docs/snippets/backend.md" >}} with priority groups. For more information, see [Virtual models]({{< link-hextra path="/documentation/llm/models/virtual/" >}}).
 {{< /version >}}
 
 ## About failover {#about}
@@ -14,7 +14,11 @@ For {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can set up failover a
 Failover in {{< reuse "agw-docs/snippets/agentgateway.md" >}} has two parts:
 
 - **Priority groups** in the {{< reuse "agw-docs/snippets/backend.md" >}} define the failover order. Each group is a tier. Models within the same group are load balanced equally. When all models in a group are evicted, requests fail over to the next group.
-- **A health policy** in an {{< reuse "agw-docs/snippets/policy.md" >}} defines what counts as an unhealthy response (such as 5xx errors or 429 rate limits) and how to evict unhealthy backends. Without a health policy, backends are not evicted and failover does not occur.
+- **A health policy** in an {{< reuse "agw-docs/snippets/policy.md" >}} defines what counts as an unhealthy response (such as 5xx errors or 429 rate limits) and how to evict unhealthy backends. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Without a health policy, backends are not evicted and failover does not occur.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Without a health policy, an {{< reuse "agw-docs/snippets/backend.md" >}} with more than one priority group uses default eviction, as described after this list.{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+When no health policy targets an {{< reuse "agw-docs/snippets/backend.md" >}} that has more than one priority group, default eviction applies. A single 5xx response or connection failure evicts the backend for 3 seconds, and each repeated eviction lasts longer. To classify more responses as unhealthy, such as 429, or to tune eviction, add a health policy. A health policy replaces the default eviction instead of adding to it. If the health policy has no `eviction` block, a backend is evicted only when a retry policy's `backoff`, or a `Retry-After` header on a response that the policy classifies as unhealthy, supplies an eviction duration. To keep the default eviction settings in your health policy, set `eviction: {}`.
+{{< /version >}}
 
 This approach increases the resiliency of your network environment by ensuring that apps that call LLMs can keep working without problems, even if one model has issues.
 
@@ -49,22 +53,22 @@ flowchart LR
 
 Failover uses priority groups to automatically switch between backends when failures occur. 
 
-For weight-based traffic distribution (A/B testing, traffic splitting, or canary deployments), see [Traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}).
+For weight-based traffic distribution (A/B testing, traffic splitting, or canary deployments), see [Traffic splitting]({{< link-hextra path="/documentation/traffic-management/traffic-split/" >}}).
 
-{{< version exclude-if="1.0.x,1.1.x" >}}For locality-aware routing (zones and regions), see [Locality-aware routing]({{< link-hextra path="/traffic-management/locality-aware-routing/" >}}).{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x" >}}For locality-aware routing (zones and regions), see [Locality-aware routing]({{< link-hextra path="/documentation/traffic-management/locality-aware-routing/" >}}).{{< /version >}}
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-2. Set up [API access to each LLM provider]({{< link-hextra path="/llm/api-keys/" >}}) that you want to use. The examples in this guide use OpenAI and Anthropic.
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
+2. Set up [API access to each LLM provider]({{< link-hextra path="/documentation/llm/api-keys/" >}}) that you want to use. The examples in this guide use OpenAI and Anthropic.
 
 ## Fail over to other models {#model-failover}
 
 You can configure failover across multiple models and providers by using priority groups. Each priority group represents a set of providers that share the same priority level. Failover priority is determined by the order in which the priority groups are listed in the {{< reuse "agw-docs/snippets/backend.md" >}}. The priority group that is listed first is assigned the highest priority.
 
-Models within the same priority group are [load balanced]({{< link-hextra path="/llm/load-balancing/" >}}) using the Power of Two Choices (P2C) algorithm, which intelligently routes requests based on health, latency, and current load, not just simple round-robin. This pattern of P2C load balancing within a tier with failover across tiers provides superior performance compared to named strategies.
+Models within the same priority group are [load balanced]({{< link-hextra path="/documentation/llm/load-balancing/" >}}) using the Power of Two Choices (P2C) algorithm, which intelligently routes requests based on health, latency, and current load, not just simple round-robin. This pattern of P2C load balancing within a tier with failover across tiers provides superior performance compared to named strategies.
 
-For weight-based traffic distribution within a priority group (such as 80/20 splits for A/B testing or canary rollouts), see [Traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}).
+For weight-based traffic distribution within a priority group (such as 80/20 splits for A/B testing or canary rollouts), see [Traffic splitting]({{< link-hextra path="/documentation/traffic-management/traffic-split/" >}}).
 
 1. Create or update the {{< reuse "agw-docs/snippets/backend.md" >}} for your LLM providers.
 
@@ -173,7 +177,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    In this example, you configure failover from a self-hosted vLLM instance to a cloud provider. The self-hosted instance is a model that you run yourself, such as vLLM on your own GPU hardware. The cloud provider is a fully managed, externally hosted LLM API, such as OpenAI. Requests route to your in-cluster vLLM deployment first. If vLLM becomes unavailable, requests fail over to OpenAI.
 
-   Before you begin, [set up vLLM]({{< link-hextra path="/llm/providers/vllm/" >}}) in your cluster.
+   Before you begin, [set up vLLM]({{< link-hextra path="/integrations/llm/providers/vllm/" >}}) in your cluster.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -234,7 +238,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    ```
    
 
-3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with a health policy that targets the {{< reuse "agw-docs/snippets/backend.md" >}}. The health policy defines which responses are considered unhealthy and how to evict backends. Without this policy, backends are not evicted and failover does not occur.
+3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with a health policy that targets the {{< reuse "agw-docs/snippets/backend.md" >}}. The health policy defines which responses are considered unhealthy and how to evict backends. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Without this policy, backends are not evicted and failover does not occur.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Without this policy, default eviction still fails over on 5xx responses and connection failures. The policy replaces the default eviction, so each of the following examples sets its own `eviction` settings. The first example also evicts on 429 rate-limit responses.{{< /version >}}
 
    The `unhealthyCondition` field is an optional [CEL expression](https://github.com/cel-expr/cel-spec) that classifies each response. When you set it, `true` means the response counts as unhealthy toward eviction. The `eviction` settings control how many failures and how long an unhealthy backend stays out of its priority group.
 
@@ -341,7 +345,7 @@ This request confirms your priority order. It does not exercise failover, becaus
 
 A real provider outage is hard to arrange on purpose, so the preceding steps cannot show failover as it happens. To see the sequence on demand, point the highest-priority group at an endpoint that always fails, and the fallback group at an endpoint that always succeeds. Eviction and failover then happen on the first request, with no live provider and no token spend.
 
-This example uses [httpbun]({{< link-hextra path="/llm/providers/httpbun/" >}}), a mock LLM that accepts requests without an API key. Two httpbun endpoints matter here.
+This example uses [httpbun]({{< link-hextra path="/integrations/llm/providers/httpbun/" >}}), a mock LLM that accepts requests without an API key. Two httpbun endpoints matter here.
 
 | httpbun endpoint | Response |
 | --- | --- |
@@ -657,7 +661,7 @@ One httpbun deployment serves both endpoints, so a single mock LLM acts as both 
 
 ### Fail over without returning an error {#hide-failure}
 
-In the preceding sequence the client receives the 500 from request 1. To fail over without passing that error back to the client, add a [retry policy]({{< link-hextra path="/resiliency/retry/" >}}) alongside the health policy.
+In the preceding sequence the client receives the 500 from request 1. To fail over without passing that error back to the client, add a [retry policy]({{< link-hextra path="/documentation/resiliency/retry/" >}}) alongside the health policy.
 
 ```yaml {paths="failover"}
 kubectl apply -f- <<EOF
@@ -727,7 +731,7 @@ Retries and eviction do different jobs here, and transparent failover needs both
 * The retry supplies that next attempt inside the same client request, so the client never sees the 500.
 
 > [!IMPORTANT]
-> A retry policy on its own does not fail over. Without a health policy, no backend is evicted, so every retry returns to the same highest-priority group and the client still receives the error. To fail over transparently, configure both policies.
+> A retry fails over only when the failing backend is evicted first. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Without a health policy, no backend is evicted, so every retry returns to the same highest-priority group and the client still receives the error. To fail over transparently, configure both policies.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Without a health policy, default eviction covers 5xx responses and connection failures, so a retry policy on its own fails over on those errors. To retry on other responses, such as 429, add a health policy that classifies them as unhealthy. If that health policy has no `eviction` block, set `backoff` on the retry policy. Otherwise, the backend is not evicted, every retry returns to the same highest-priority group, and the client still receives the error.{{< /version >}}
 
 ## Cleanup
 
@@ -765,7 +769,7 @@ kubectl delete AgentgatewayBackend failover-demo -n agentgateway-system --ignore
 
 Explore other agentgateway features.
 
-* Learn more about [load balancing strategies]({{< link-hextra path="/llm/load-balancing/" >}}) and the P2C algorithm.
-* Pass in [functions]({{< link-hextra path="/llm/functions/">}}) to an LLM to request as a step towards agentic AI.
-* Set up [prompt guards]({{< link-hextra path="/llm/guardrails/overview/">}}) to block unwanted requests and mask sensitive data.
-* [Enrich your prompts]({{< link-hextra path="/llm/prompt-enrichment/">}}) with system prompts to improve LLM outputs.
+* Learn more about [load balancing strategies]({{< link-hextra path="/documentation/llm/load-balancing/" >}}) and the P2C algorithm.
+* Pass in [functions]({{< link-hextra path="/documentation/llm/functions/">}}) to an LLM to request as a step towards agentic AI.
+* Set up [prompt guards]({{< link-hextra path="/documentation/llm/guardrails/overview/">}}) to block unwanted requests and mask sensitive data.
+* [Enrich your prompts]({{< link-hextra path="/documentation/llm/prompt-enrichment/">}}) with system prompts to improve LLM outputs.

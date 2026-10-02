@@ -24,15 +24,15 @@ The following features do not work without a database. When you set up a databas
 
 | Feature | Description | What happens without a database |
 | --- | --- | --- |
-| LLM analytics and logs | The UI shows **Analytics** and **Logs** for LLM requests (not other proxy traffic such as HTTP routes to a backend service). The **Analytics** page is also the cost dashboard. To show spend in dollars instead of tokens and calls, add a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) as well as a database. For the controls on the page, see [Cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}). | Agentgateway starts, but each UI page reports `request log database is not configured` and the admin API returns a `500` response. |
-| [`hybrid` configuration storage]({{< link-hextra path="/setup/storage/" >}}) | When enabled, hybrid mode stores UI edit to agentgateway configuration in the database. | Agentgateway does not start: `config.storage.mode=hybrid requires config.database.url`. |
-| [LLM API key budgets]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}) | API key budgets let you track LLM spend across restarts | Agentgateway does not start: `API key budgets require config.database to be configured`. |
+| LLM analytics and logs | The UI shows **Analytics** and **Logs** for LLM requests (not other proxy traffic such as HTTP routes to a backend service). The **Analytics** page is also the cost dashboard. To show spend in dollars instead of tokens and calls, add a [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) as well as a database. For the controls on the page, see [Cost dashboard]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/" >}}). | Agentgateway starts, but each UI page reports `request log database is not configured` and the admin API returns a `500` response. |
+| [`hybrid` configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}) | When enabled, hybrid mode stores UI edit to agentgateway configuration in the database. | Agentgateway does not start: `config.storage.mode=hybrid requires config.database.url`. |
+| [LLM API key budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}) | API key budgets let you track LLM spend across restarts | Agentgateway does not start: `API key budgets require config.database to be configured`. |
 
 ### Access logging database
 
 Optionally, to keep request logs in a different database from the rest, you can set the `config.logging.database` field. Then, agentgateway writes request logs to the database in `config.logging.database`, and uses `config.database` for the other features.
 
-For more information, see [Store logs in a database]({{< link path="/observability/access-logs/database/" >}}).
+For more information, see [Store logs in a database]({{< link path="/documentation/observability/access-logs/database/" >}}).
 
 > [!IMPORTANT]
 > The `config.logging.database` field covers request logs only. It does not satisfy `hybrid` storage or API key budgets, because both features use the primary database. If you configure either feature with `config.logging.database` alone, agentgateway fails to start with the error in the preceding table.
@@ -53,7 +53,7 @@ SQLite writes to a file, so agentgateway needs a writable directory for it. Post
 
 ## Before you begin
 
-[Install agentgateway]({{< link-hextra path="/setup/install/" >}}) as a binary, a Docker container, or a Kubernetes Deployment with Helm.
+[Install agentgateway]({{< link-hextra path="/documentation/setup/install/" >}}) as a binary, a Docker container, or a Kubernetes Deployment with Helm.
 
 ## Binary and Docker {#binary-docker}
 
@@ -401,13 +401,13 @@ In the default `readonly` mode, the chart sets the storage mode and nothing else
    ```
 
 > [!NOTE]
-> This option gives the **Analytics** and **Logs** pages a database, but it does not make the UI writable. The ConfigMap stays read-only, so a UI save still fails. To make the UI writable, see [Configuration storage]({{< link-hextra path="/setup/storage/" >}}).
+> This option gives the **Analytics** and **Logs** pages a database, but it does not make the UI writable. The ConfigMap stays read-only, so a UI save still fails. To make the UI writable, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
 ### Add PostgreSQL in database mode {#helm-postgres}
 
 The chart's `database` mode sets both `config.database.url` and `config.storage.mode: hybrid` for you. One PostgreSQL instance then serves the request log, the configuration overlay, and API key budgets.
 
-1. Deploy PostgreSQL. For the example manifests, see [Deploy PostgreSQL]({{< link-hextra path="/setup/storage/#deploy-postgresql" >}}).
+1. Deploy PostgreSQL. For the example manifests, see [Deploy PostgreSQL]({{< link-hextra path="/documentation/setup/storage/#deploy-postgresql" >}}).
 
 2. Create a values file that sets the mode and the connection URL.
 
@@ -458,7 +458,7 @@ The chart's `database` mode sets both `config.database.url` and `config.storage.
 
 ## Verify that agentgateway records requests {#verify}
 
-Agentgateway records LLM requests only, so send a request to an LLM model to confirm that the database works. These steps need at least one model in the `llm` section of your configuration. For the steps to add one, see the [LLM quickstart]({{< link-hextra path="/quickstart/llm/" >}}).
+Agentgateway records LLM requests only, so send a request to an LLM model to confirm that the database works. These steps need at least one model in the `llm` section of your configuration. For the steps to add one, see the [LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}}).
 
 1. Make the gateway port and the admin address reachable from your machine.
 
@@ -485,7 +485,7 @@ Agentgateway records LLM requests only, so send a request to an LLM model to con
      }' | jq .
    ```
 
-3. Review the request log. The admin API is served in the same places as the UI, so use the admin address or the gateway port that serves the UI. For more information, see [Launch the UI]({{< link-hextra path="/setup/ui/launch-ui/" >}}).
+3. Review the request log. The admin API is served in the same places as the UI, so use the admin address or the gateway port that serves the UI. For more information, see [Launch the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}).
 
    ```sh
    curl -s -X POST http://localhost:15000/api/logs/search \
@@ -516,7 +516,7 @@ Agentgateway records LLM requests only, so send a request to an LLM model to con
    }
    ```
 
-4. Open the **LLM** > **Analytics** page in the UI, such as <http://localhost:15000/ui/llm/analytics>. The request appears in the chart and in the breakdown. For more information about the controls on the page, see [Cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}).
+4. Open the **LLM** > **Analytics** page in the UI, such as <http://localhost:15000/ui/llm/analytics>. The request appears in the chart and in the breakdown. For more information about the controls on the page, see [Cost dashboard]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/" >}}).
 
 <!--TODO troubleshooting
 
@@ -600,7 +600,7 @@ Configuration is valid!
 
 ## Next steps
 
-* [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) so that the UI can save your changes.
-* [View LLM spend in the cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}).
-* [Set API key budgets]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}) that persist across restarts.
-* [Review what agentgateway stores]({{< link-hextra path="/observability/access-logs/database/" >}}) in each request log record.
+* [Choose where configuration is stored]({{< link-hextra path="/documentation/setup/storage/" >}}) so that the UI can save your changes.
+* [View LLM spend in the cost dashboard]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/" >}}).
+* [Set API key budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}) that persist across restarts.
+* [Review what agentgateway stores]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}) in each request log record.

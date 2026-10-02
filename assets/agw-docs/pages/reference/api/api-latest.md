@@ -228,6 +228,7 @@ _Appears in:_
 | --- | --- |
 | `Mask` | Mask the matched data in the request or response.<br /> |
 | `Reject` | Reject the request or response that contains the matched content.<br /> |
+| `Audit` | Audit runs the guard but never blocks or masks: the would-be action is<br />recorded (metrics + structured log) and the content passes through.<br /> |
 
 
 #### AgentExtAuthGRPC
@@ -1515,6 +1516,7 @@ _Appears in:_
 | `identifier` _[ShortString](#shortstring)_ | Identifier of the Guardrail policy to use for the backend. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `version` _[ShortString](#shortstring)_ | Version of the Guardrail policy to use for the backend. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `region` _[ShortString](#shortstring)_ | AWS region where the guardrail is deployed, for example<br />`us-west-2`). |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether the guardrail's verdict is enforced or only<br />observed. `Reject` (the default) enforces the guardrail: a blocked<br />assessment rejects the request/response and an anonymized assessment masks<br />the matched content. `Audit` runs the guardrail in observe mode: it is<br />invoked and its assessment recorded (metrics + structured log), but the<br />request/response is never blocked or masked. | Reject | Optional: \{\} <br /> |
 | `policies` _[BedrockGuardrailsPolicy](#bedrockguardrailspolicy)_ | Policies for communicating with AWS Bedrock Guardrails. |  | Optional: \{\} <br /> |
 
 
@@ -2468,6 +2470,7 @@ _Appears in:_
 | `http2KeepaliveInterval` _[Duration](#duration)_ | Interval between `HTTP/2` keepalive pings.<br />If unset, keepalive pings are not sent. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `http2KeepaliveTimeout` _[Duration](#duration)_ | Time to wait for a response to an `HTTP/2` keepalive ping before the connection is closed.<br />Only applies when `http2KeepaliveInterval` is set. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `maxConnectionDuration` _[Duration](#duration)_ | Maximum time a connection is allowed to remain open.<br />After this duration, the connection is gracefully closed after the current in-flight request completes.<br />Useful for ensuring even traffic distribution behind load balancers during scaling events. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
+| `maxConcurrentRequests` _integer_ | Maximum number of in-flight HTTP requests across this gateway/port.<br />This includes HTTP/1 requests and HTTP/2 streams. Requests over the limit<br />are rejected immediately with a 503 response. Unset means unlimited. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 
 
 #### FrontendProxyProtocol
@@ -2501,6 +2504,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `keepalive` _[Keepalive](#keepalive)_ | Settings for enabling TCP keepalives on the connection. |  | Optional: \{\} <br /> |
+| `maxConnections` _integer_ | Maximum number of active downstream connections on this gateway/port.<br />Connections over the limit are closed immediately. Unset means unlimited. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 
 
 #### FrontendTLS
@@ -2617,6 +2621,7 @@ _Appears in:_
 | `templateId` _[ShortString](#shortstring)_ | Template ID for Google Model Armor. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `projectId` _[ShortString](#shortstring)_ | Google Cloud project ID. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `location` _[ShortString](#shortstring)_ | Google Cloud location, for example `us-central1`.<br />Defaults to `us-central1` if not specified. | us-central1 | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether flagged content is rejected or only observed.<br />`Reject` (the default) rejects flagged content; `Audit` records the<br />would-be rejection without blocking. | Reject | Optional: \{\} <br /> |
 | `policies` _[GoogleModelArmorPolicy](#googlemodelarmorpolicy)_ | Policies for communicating with Google Model Armor. |  | Optional: \{\} <br /> |
 
 
@@ -2848,7 +2853,7 @@ _Appears in:_
 | `repository` _string_ | Image repository. |  | Optional: \{\} <br /> |
 | `tag` _string_ | Image tag. |  | Optional: \{\} <br /> |
 | `digest` _string_ | Image digest, such as `sha256:12345...`. |  | Optional: \{\} <br /> |
-| `pullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#pullpolicy-v1-core)_ | Image pull policy for the container. See<br />https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy<br />for details. |  | Optional: \{\} <br /> |
+| `pullPolicy` _[PullPolicy](https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy)_ | Image pull policy for the container. See<br />https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy<br />for details. |  | Optional: \{\} <br /> |
 
 
 #### InsecureTLSMode
@@ -4236,6 +4241,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `model` _string_ | Moderation model to use. For example,<br />`omni-moderation`. |  | Optional: \{\} <br /> |
+| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether flagged content is rejected or only observed.<br />`Reject` (the default) rejects flagged content; `Audit` records the<br />would-be rejection without blocking. | Reject | Optional: \{\} <br /> |
 | `policies` _[OpenAIModerationPolicy](#openaimoderationpolicy)_ | Policies for communicating with OpenAI. |  | Optional: \{\} <br /> |
 
 
@@ -4755,6 +4761,28 @@ _Appears in:_
 | `action` _[Action](#action)_ | The action to take if a regex pattern is matched in a request or response.<br />The action applies to request and response matches alike. Note that<br />`Mask` is not applied to streamed responses: matched content in a<br />streamed response is passed through unmodified.<br />Defaults to `Mask`. | Mask | Optional: \{\} <br /> |
 
 
+#### RejectAuditAction
+
+_Underlying type:_ _string_
+
+Action for guards that cannot mask (only reject or observe). `Reject` (the
+default) enforces the guard's native verdict; `Audit` invokes the guard and
+records what it would have done without enforcing.
+
+
+
+_Appears in:_
+- [BedrockGuardrails](#bedrockguardrails)
+- [GoogleModelArmor](#googlemodelarmor)
+- [OpenAIModeration](#openaimoderation)
+- [Webhook](#webhook)
+
+| Field | Description |
+| --- | --- |
+| `Reject` | RejectAuditReject enforces the guard's verdict (the default).<br /> |
+| `Audit` | RejectAuditAudit records the would-be action without blocking or masking.<br /> |
+
+
 #### RemoteJWKS
 
 
@@ -5249,6 +5277,7 @@ _Appears in:_
 | `headers` _object (keys:string, values:[CELExpression](#celexpression))_ | CEL-computed headers to include in webhook requests. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `forwardHeaderMatches` _HTTPHeaderMatch array_ | HTTP header matches used to select the headers to forward to the webhook.<br />Request headers are used when forwarding requests and response headers<br />are used when forwarding responses.<br />By default, no headers are forwarded. |  | Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when the webhook guardrail is unavailable<br />or returns an error. `FailOpen` allows the request to continue.<br />`FailClosed` (default) rejects the request. |  | Optional: \{\} <br /> |
+| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether the webhook's verdict is enforced or only observed.<br />`Reject` (the default) enforces it; `Audit` records the would-be action<br />without blocking or masking. | Reject | Optional: \{\} <br /> |
 
 
 #### WeightedModelRouting

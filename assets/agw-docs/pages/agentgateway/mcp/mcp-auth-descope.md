@@ -10,12 +10,12 @@ In this guide, you configure the agentgateway proxy to protect a static MCP serv
 
 Unlike Auth0 and Okta, Descope supports [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html) resource indicators, so agentgateway does not need to work around the missing `resource` parameter.
 
-For more information about MCP auth, see the [About MCP auth]({{< link-hextra path="/mcp/auth/about/" >}}) page.
+For more information about MCP auth, see the [About MCP auth]({{< link-hextra path="/documentation/mcp/auth/about/" >}}) page.
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/mcp/static-mcp/" >}}).
+1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
+2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/documentation/mcp/static-mcp/" >}}).
 3. Install the experimental channel Gateway API.
    ```sh {paths="setup-descope"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
@@ -289,9 +289,9 @@ Point your MCP client at the gateway's MCP endpoint, such as `http://localhost:8
 
 The policy that you created gates the MCP endpoint on the `Tenant Admin` role, which Descope includes in its tokens according to your [Authorization Claims Configuration](https://docs.descope.com/management/token/jwt-templates#authorization-claims-configuration). Authentication alone is not enough: any caller that Descope issues a token to for your MCP server passes JWT validation, including clients that authorize themselves rather than a user. The authorization rule denies those tokens with a 403 HTTP response code.
 
-Because MCP authentication runs at the route level, every claim in the verified token is also available to other route-level policies, such as rate limiting and transformations. For more information about the rules that you can write, see [Authorization]({{< link-hextra path="/security/authorization/" >}}).
+Because MCP authentication runs at the route level, every claim in the verified token is also available to other route-level policies, such as rate limiting and transformations. For more information about the rules that you can write, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}).
 
-To authorize individual tools instead of the whole MCP endpoint, use an MCP authorization policy. For more information, see [Tool access]({{< link-hextra path="/mcp/tool-access/" >}}).
+To authorize individual tools instead of the whole MCP endpoint, use an MCP authorization policy. For more information, see [Tool access]({{< link-hextra path="/documentation/mcp/tool-access/" >}}).
 
 ## Clean up
 

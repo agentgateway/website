@@ -1,1 +1,1 @@
-Review the [release notes highlights]({{< link path="/reference/release-notes/" >}}) and [GitHub release](https://github.com/agentgateway/agentgateway/releases) for the version that you are moving to.
+Review the [release notes highlights]({{< link path="/release-notes/release-notes/" >}}) and [GitHub release](https://github.com/agentgateway/agentgateway/releases) for the version that you are moving to.

@@ -317,7 +317,7 @@ EOF
    | `expression` | A CEL expression that computes the value for the field. Maximum 16,384 characters. |
 
    > [!WARNING]
-   > In a `finalTransformations` expression, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that reads a field which the converted body does not have, such as `llmRequest.max_tokens` for an OpenAI provider, fails to evaluate. A failed expression removes the target field, so a mistyped field name silently deletes the field that you meant to set. For more information about `fail()`, see [Validate and set request body defaults]({{< link-hextra path="/traffic-management/transformations/validate/" >}}).
+   > In a `finalTransformations` expression, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that reads a field which the converted body does not have, such as `llmRequest.max_tokens` for an OpenAI provider, fails to evaluate. A failed expression removes the target field, so a mistyped field name silently deletes the field that you meant to set. For more information about `fail()`, see [Validate and set request body defaults]({{< link-hextra path="/documentation/traffic-management/transformations/validate/" >}}).
 
 2. Verify that the {{< reuse "agw-docs/snippets/policy.md" >}} is accepted.
 
@@ -419,6 +419,11 @@ Parse the `model` field from the incoming request body and the upstream response
 
 * `json(request.body).model`: Reads the `model` field from the incoming request body.
 * `json(response.body).model`: Reads the `model` field from the upstream response body.
+
+> [!WARNING]
+> `json(response.body)` requires buffering and parsing the entire upstream response body before the transformation can run. On routes that can return streaming (SSE) responses, such as chat completions sent with `stream: true`, this buffering prevents the gateway from flushing response chunks to the client as they arrive. In practice, an incremental, token-by-token stream can turn into a single delayed burst delivered all at once.
+>
+> If you need model information on streaming routes, avoid parsing `response.body` directly. Either scope this policy to non-streaming routes only, or extract the model name from the `llm.responseModel` [CEL context variable]({{< link-hextra path="/reference/cel/" >}}) instead, which is populated from the LLM protocol layer rather than by parsing the raw response body.
 
 {{< doc-test paths="llm-model-headers" >}}
 kubectl apply -f- <<EOF
@@ -590,7 +595,7 @@ When the agentgateway proxy routes to an AI backend, the `llm` CEL context provi
 * `llm.requestModel`: The model name from the original request.
 * `llm.responseModel`: The model name the upstream LLM provider reported in the response.
 
-Use the [`metadata`]({{< link-hextra path="/traffic-management/transformations/templating-language/#pre-compute-values-with-metadata" >}}) context variable to pre-compute LLM model data, and the `default()` function in the `set` expressions to fall back to parsing the raw body if the metadata context variable is unavailable. This approach computes each value once and keeps the `x-model-fallback` comparison readable:
+Use the [`metadata`]({{< link-hextra path="/documentation/traffic-management/transformations/templating-language/#pre-compute-values-with-metadata" >}}) context variable to pre-compute LLM model data, and the `default()` function in the `set` expressions to fall back to parsing the raw body if the metadata context variable is unavailable. This approach computes each value once and keeps the `x-model-fallback` comparison readable:
 
 ```yaml
 kubectl apply -f- <<EOF

@@ -28,11 +28,11 @@ When you set `provider.entra`, agentgateway bridges these gaps as follows:
 - Short-circuits Dynamic Client Registration by returning your pre-registered `clientId`. You verify this in [Step 3](#verify).
 - Injects a `clientSecret` into proxied token requests for confidential (Web platform) app registrations.
 
-For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}}).
+For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}).
 
 ## Before you begin {#before-you-begin}
 
-1. [Install the agentgateway binary]({{< link-hextra path="/setup/install/binary/" >}}).
+1. [Install the agentgateway binary]({{< link-hextra path="/documentation/setup/install/binary/" >}}).
 2. Install [Node.js](https://nodejs.org/) so that `npx` can run the sample MCP server.
 3. Make sure that you have access to a [Microsoft Entra ID tenant](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-create-new-tenant) and permission to register an application in the Microsoft Entra admin center. A free tenant is sufficient for development.
 
@@ -416,7 +416,7 @@ EOF
 
 ## Step 5: Restrict access by app role {#authorization}
 
-Because MCP authentication runs at the route level, you can use claims from the validated Entra token in an [authorization]({{< link-hextra path="/configuration/security/mcp-authz" >}}) policy. Entra puts the app roles that you assign in the `roles` claim.
+Because MCP authentication runs at the route level, you can use claims from the validated Entra token in an [authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}) policy. Entra puts the app roles that you assign in the `roles` claim.
 
 1. Add an `authorization` policy alongside `mcpAuthentication` in your `config.yaml` that requires the `mcp.admin` app role.
 
@@ -601,5 +601,5 @@ Point your MCP client at the gateway's MCP endpoint, `http://localhost:3000/mcp`
 ## Learn more
 
 - [Microsoft identity platform documentation](https://learn.microsoft.com/en-us/entra/identity-platform/)
-- [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}})
-- [MCP authorization]({{< link-hextra path="/configuration/security/mcp-authz" >}})
+- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}})
+- [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}})

@@ -89,8 +89,8 @@ For the `ClientAndServer` mode, the `clientCertificateRef` field must refer to a
 
 ## Before you begin {#before-you-begin}
 
-1. Follow the [Get started guide]({{< link-hextra path="/quickstart/install/" >}}) to install agentgateway. Use the **experimental** path, because `XBackend` is served by the custom resources in the experimental channel of the Gateway API.
-2. Follow the [Sample app guide]({{< link-hextra path="/install/sample-app/" >}}) to create a gateway proxy with an HTTP listener.
+1. Follow the [Get started guide]({{< link-hextra path="/documentation/quickstart/install/" >}}) to install agentgateway. Use the **experimental** path, because `XBackend` is served by the custom resources in the experimental channel of the Gateway API.
+2. Follow the [Sample app guide]({{< link-hextra path="/documentation/install/sample-app/" >}}) to create a gateway proxy with an HTTP listener.
 3. Confirm that the `XBackend` custom resource is present in the cluster.
 
    ```sh
@@ -219,7 +219,7 @@ spec:
 EOF
 ```
 
-Reference this resource from a route in the same way as the previous section. To configure several MCP targets behind one backend, or to change the stateful, prefix, or failure behavior, use an {{< reuse "agw-docs/snippets/backend.md" >}} resource instead. For more information, see the [MCP]({{< link-hextra path="/mcp/" >}}) docs.
+Reference this resource from a route in the same way as the previous section. To configure several MCP targets behind one backend, or to change the stateful, prefix, or failure behavior, use an {{< reuse "agw-docs/snippets/backend.md" >}} resource instead. For more information, see the [MCP]({{< link-hextra path="/documentation/mcp/" >}}) docs.
 
 ## Attach a policy to an XBackend {#policies}
 
@@ -243,7 +243,7 @@ spec:
 EOF
 ```
 
-The policy is rejected if `XBackend` support is off, because the controller does not resolve the target kind. For how policies merge when several apply, see [Policy target and merge rules]({{< link-hextra path="/about/policies/target-merge/" >}}).
+The policy is rejected if `XBackend` support is off, because the controller does not resolve the target kind. For how policies merge when several apply, see [Policy target and merge rules]({{< link-hextra path="/documentation/about/policies/target-merge/" >}}).
 
 ## Review the status {#status}
 
@@ -270,5 +270,5 @@ To turn support off again, set `xBackend.enabled` to `false` and upgrade the cha
 ## Next steps {#next-steps}
 
 - Compare the fields with the {{< reuse "agw-docs/snippets/backend.md" >}} resource in the [API reference]({{< link-hextra path="/reference/api/" >}}).
-- Originate TLS to a backend that is defined in an agentgateway resource with [Backend TLS]({{< link-hextra path="/security/backendtls/" >}}).
-- Resolve upstream hosts at request time with a [Dynamic Forward Proxy]({{< link-hextra path="/traffic-management/dfp/" >}}).
+- Originate TLS to a backend that is defined in an agentgateway resource with [Backend TLS]({{< link-hextra path="/documentation/security/backendtls/" >}}).
+- Resolve upstream hosts at request time with a [Dynamic Forward Proxy]({{< link-hextra path="/documentation/traffic-management/dfp/" >}}).

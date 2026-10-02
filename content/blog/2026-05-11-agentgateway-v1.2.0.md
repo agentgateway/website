@@ -72,7 +72,7 @@ spec:
 
 Platform owns the trunk. Teams own their branches. Nobody opens a PR against `gateway.yaml` ever again. This is the multi-tenant story a *lot* of you have been asking for, and it's straight Gateway API — no proprietary CRDs in the hot path.
 
-For a walkthrough, see the [route delegation docs](https://agentgateway.dev/docs/kubernetes/main/traffic-management/route-delegation/).
+For a walkthrough, see the [route delegation docs](https://agentgateway.dev/docs/kubernetes/main/documentation/traffic-management/route-delegation/).
 
 ## 2. Backend external auth: token exchange without the sidecar tax
 
@@ -139,13 +139,13 @@ spec:
 
 That's the whole pattern. One policy, two paths, zero duplication. And CEL means you can branch on anything in the request — headers, path, JWT claims, even response state for response-side policies.
 
-For details, see the [conditional policies docs](https://agentgateway.dev/docs/kubernetes/main/about/policies/conditional-policies/).
+For details, see the [conditional policies docs](https://agentgateway.dev/docs/kubernetes/main/documentation/about/policies/conditional-policies/).
 
 ## 4. agctl: the debugger you've been asking for
 
 Real talk: debugging a gateway in production has historically been a mix of `kubectl logs`, hope, and human pattern matching. Envoy's admin interface gets you part of the way. The rest is detective work.
 
-The new experimental [`agctl` CLI](https://agentgateway.dev/docs/kubernetes/main/operations/agctl/) changes that. Two commands you'll reach for daily — and both auto-discover the proxy pod and set up the port-forward to the admin endpoint, so there's no `kubectl port-forward` dance every time.
+The new experimental [`agctl` CLI](https://agentgateway.dev/docs/kubernetes/main/documentation/operations/agctl/) changes that. Two commands you'll reach for daily — and both auto-discover the proxy pod and set up the port-forward to the admin endpoint, so there's no `kubectl port-forward` dance every time.
 
 ```bash
 # What did the proxy actually load? Binds, listeners, routes, backends, policies.
@@ -163,11 +163,11 @@ agctl trace
 #   Inject your own request, or watch traffic from real clients.
 ```
 
-`agctl config` is the one most teams hit first. Your `HTTPRoute` reports `Accepted: true`, but traffic isn't doing what you expect — and now you can [see exactly what the proxy loaded](https://agentgateway.dev/docs/kubernetes/main/operations/inspect-config/) instead of guessing from CRD status.
+`agctl config` is the one most teams hit first. Your `HTTPRoute` reports `Accepted: true`, but traffic isn't doing what you expect — and now you can [see exactly what the proxy loaded](https://agentgateway.dev/docs/kubernetes/main/documentation/operations/inspect-config/) instead of guessing from CRD status.
 
-Then when somebody pings you with "the gateway is returning 502s on /v1/checkout," you stop guessing there too. You run [`agctl trace`](https://agentgateway.dev/docs/kubernetes/main/operations/trace-requests/), you see the JWT failed validation because the JWKS cache went stale, and you fix it before the standup ends.
+Then when somebody pings you with "the gateway is returning 502s on /v1/checkout," you stop guessing there too. You run [`agctl trace`](https://agentgateway.dev/docs/kubernetes/main/documentation/operations/trace-requests/), you see the JWT failed validation because the JWKS cache went stale, and you fix it before the standup ends.
 
-Pair it with the proxy's admin endpoint on port 15000 — `/config_dump`, `/debug/trace`, `/logging` for live log-level changes, and `/debug/pprof/{profile,heap}` for CPU and heap profiles — and the gateway stops being a black box. See the [debug guide](https://agentgateway.dev/docs/kubernetes/main/operations/debug/) for the full playbook.
+Pair it with the proxy's admin endpoint on port 15000 — `/config_dump`, `/debug/trace`, `/logging` for live log-level changes, and `/debug/pprof/{profile,heap}` for CPU and heap profiles — and the gateway stops being a black box. See the [debug guide](https://agentgateway.dev/docs/kubernetes/main/documentation/operations/debug/) for the full playbook.
 
 ---
 
@@ -185,7 +185,7 @@ Pair it with the proxy's admin endpoint on port 15000 — `/config_dump`, `/debu
 
 **Performance.** New allocator → higher throughput, lower RSS. Plus a long tail of fixes across CEL, JWKS caching, header/`:authority` alignment, hop-by-hop header stripping, and Gateway status update churn.
 
-For the complete list, see the [release notes](https://agentgateway.dev/docs/kubernetes/main/reference/release-notes/).
+For the complete list, see the [release notes](https://agentgateway.dev/docs/kubernetes/main/release-notes/release-notes/).
 
 ## How fast are we shipping?
 
@@ -195,7 +195,7 @@ We shipped this in months, not quarters. The roadmap moves on the same cadence a
 
 Agentgateway v1.2.0 is available for download on [GitHub](https://github.com/agentgateway/agentgateway/releases).
 
-To get started with agentgateway, check out our getting started guide for [standalone](https://agentgateway.dev/docs/standalone/latest/quickstart/) or [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/quickstart/).
+To get started with agentgateway, check out our getting started guide for [standalone](https://agentgateway.dev/docs/standalone/latest/documentation/quickstart/) or [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/documentation/quickstart/).
 
 ## Contributors
 

@@ -6,8 +6,8 @@ A gateway of its own is also the prerequisite for the next two guides, because a
 
 ## Before you begin
 
-1. [Install standalone agentgateway]({{< link-hextra path="/setup/install/" >}}).
-2. [Launch the UI]({{< link-hextra path="/setup/ui/launch-ui/" >}}) so that you know where agentgateway serves it today.
+1. [Install standalone agentgateway]({{< link-hextra path="/documentation/setup/install/" >}}).
+2. [Launch the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}) so that you know where agentgateway serves it today.
 
 {{< doc-test paths="ui-standalone-gateway" >}}
 # Install agentgateway binary for tests
@@ -116,7 +116,7 @@ The container must publish the new UI port, so this change needs a container res
    ```
 
    > [!NOTE]
-   > If you followed the **Mount a directory** option in the [Docker installation]({{< link-hextra path="/setup/install/docker/" >}}), edit `config.yaml` inside the directory that you mounted, and keep your `-v "$PWD/agentgateway-config:/config"` mount and no `-f` option instead of the file mount in this example.
+   > If you followed the **Mount a directory** option in the [Docker installation]({{< link-hextra path="/documentation/setup/install/docker/" >}}), edit `config.yaml` inside the directory that you mounted, and keep your `-v "$PWD/agentgateway-config:/config"` mount and no `-f` option instead of the file mount in this example.
 
 4. Confirm the UI gateway address in the container logs.
 
@@ -224,7 +224,7 @@ The container must publish the new UI port, so this change needs a container res
       200
       ```
 
-To reach the UI port from outside the cluster instead of through a port-forward, see [Expose the UI]({{< link-hextra path="/setup/ui/expose-ui/" >}}).
+To reach the UI port from outside the cluster instead of through a port-forward, see [Expose the UI]({{< link-hextra path="/documentation/setup/ui/expose-ui/" >}}).
 {{% /tab %}}
 {{< /tabs >}}
 
@@ -282,9 +282,9 @@ kill $AGW_UI_GW_PID 2>/dev/null || true
 {{< /doc-test >}}
 
 > [!NOTE]
-> The UI gateway is an addition, not a replacement. Agentgateway still serves a copy of the UI on the admin interface, which is loopback-only and which you do not need to change. Adding this gateway does not put the admin interface's debugging endpoints on it. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/setup/ui/#admin-interface" >}}).
+> The UI gateway is an addition, not a replacement. Agentgateway still serves a copy of the UI on the admin interface, which is loopback-only and which you do not need to change. Adding this gateway does not put the admin interface's debugging endpoints on it. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/documentation/setup/ui/#admin-interface" >}}).
 
 ## Next steps
 
-* [Secure the UI]({{< link-hextra path="/setup/ui/secure-ui/" >}}) with an OIDC login on the gateway that you created.
-* [Expose the UI]({{< link-hextra path="/setup/ui/expose-ui/" >}}) on your own HTTPS hostname.
+* [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}) with an OIDC login on the gateway that you created.
+* [Expose the UI]({{< link-hextra path="/documentation/setup/ui/expose-ui/" >}}) on your own HTTPS hostname.

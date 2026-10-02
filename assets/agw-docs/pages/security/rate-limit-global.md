@@ -11,6 +11,11 @@ Global rate limiting coordinates rate limits across multiple agentgateway proxy 
 
 Global rate limiting is essential when running multiple proxy replicas and you need to enforce a single quota across the entire fleet — for example, "100 requests per minute per user" should apply to the sum of requests across all replicas, not 100 per replica.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+> [!NOTE]
+> A shared counter is the reason to choose global rate limiting, not claim-level granularity. Local rate limits can also apply per user, per team, or per model by setting a CEL expression in the `local[].key` field, which needs no external service but counts separately on each replica. For more information, see [Claim-level rate limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}).
+{{< /version >}}
+
 Global rate limiting requires two components:
 
 1. **{{< reuse "agw-docs/snippets/policy.md" >}} with `rateLimit.global`**: Configure your rate limit policy with descriptors that extract request attributes using CEL expressions. The policy specifies the rate limit service reference (`backendRef`), a domain identifier, and CEL-based descriptor rules.
@@ -49,6 +54,10 @@ sequenceDiagram
         Gateway->>Client: 6. Deny request & return rate limit message
     end
 ```
+
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+By default, the gateway waits 10 seconds for the rate limit service to return a decision. When the wait runs out, the call counts as a failure. To use a different timeout, apply a second {{< reuse "agw-docs/snippets/policy.md" >}} whose `targetRefs` names the rate limit service, either as a Kubernetes Service or as an {{< reuse "agw-docs/snippets/backend.md" >}}, and set `backend.http.requestTimeout` on it.
+{{< /version >}}
 
 ### Response headers
 
@@ -170,7 +179,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
    EOF
    ```
 
-3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that are enforced by the rate limit service. The configuration includes rate limits by client IP (10 requests per minute), a per-user LLM token budget (100 tokens per day, used by the [virtual keys guide]({{< link-hextra path="/llm/cost-controls/virtual-keys" >}})), by path (100 requests per minute for `/api/v1`, 200 for `/api/v2`), by user ID (50 requests per minute for most users, 500 for VIP users), and by service tier (1000 requests per minute for premium, 100 for standard).
+3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that are enforced by the rate limit service. The configuration includes rate limits by client IP (10 requests per minute), a per-user LLM token budget (100 tokens per day, used by the [virtual keys guide]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys" >}})), by path (100 requests per minute for `/api/v1`, 200 for `/api/v2`), by user ID (50 requests per minute for most users, 500 for VIP users), and by service tier (1000 requests per minute for premium, 100 for standard).
 
    ```yaml {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
    kubectl apply -f- <<EOF
@@ -373,11 +382,11 @@ The table summarizes the examples in the following sections.
 | Combine local and global limits | Include both `local[]` and `global` in same policy |
 | Token-based rate limiting (LLMs) | Set `descriptors[].unit: Tokens` and configure token limits in service |
 
-Global rate limiting is the right choice when you need shared quotas across multiple proxy replicas, fine-grained control based on request attributes, or integration with existing rate limiting infrastructure. For simpler per-replica limits, use [local rate limiting]({{< link-hextra path="/security/rate-limit-http#local" >}}).
+Global rate limiting is the right choice when you need shared quotas across multiple proxy replicas, fine-grained control based on request attributes, or integration with existing rate limiting infrastructure. For simpler per-replica limits, use [local rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http#local" >}}).
 
 For AI-specific use cases:
-- [LLM token-based rate limiting]({{< link-hextra path="/llm/rate-limit" >}})
-- [MCP tool call rate limiting]({{< link-hextra path="/mcp/rate-limit" >}})
+- [LLM token-based rate limiting]({{< link-hextra path="/documentation/llm/rate-limit" >}})
+- [MCP tool call rate limiting]({{< link-hextra path="/documentation/mcp/rate-limit" >}})
 
 ### Rate limit by client IP {#rate-limit-by-client-ip}
 
@@ -886,7 +895,7 @@ Apply both local and global rate limits to the same traffic.
 
 ## Conditional execution
 
-To apply different rate limits based on the request, use the `conditional` field on your `rateLimit` policy. For example, you can apply a strict per-IP limit to anonymous traffic and a higher per-user limit to authenticated traffic. For details, see [Conditional policies]({{< link-hextra path="/about/policies/conditional-policies" >}}).
+To apply different rate limits based on the request, use the `conditional` field on your `rateLimit` policy. For example, you can apply a strict per-IP limit to anonymous traffic and a higher per-user limit to authenticated traffic. For details, see [Conditional policies]({{< link-hextra path="/documentation/about/policies/conditional-policies" >}}).
 
 {{< /version >}}
 

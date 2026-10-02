@@ -7,7 +7,7 @@ You can use an {{< reuse "agw-docs/snippets/policy.md" >}} to apply HTTP connect
 Fine-tune connection speeds for read and write operations by setting a connection buffer limit (`maxBufferSize`). You can use this setting for both HTTP/1 and HTTP/2 connections.
 
 {{< cards >}}
-  {{< card path="/traffic-management/buffering" title="Buffering" subtitle="Configure a buffer size setting." >}}
+  {{< card path="/documentation/traffic-management/buffering" title="Buffering" subtitle="Configure a buffer size setting." >}}
 {{< /cards >}}
 
 
@@ -20,7 +20,7 @@ Use these settings to control header limits and idle connection behavior for HTT
 Set an idle timeout for HTTP/1 traffic to terminate the connection to a downstream or upstream service if there are no active streams.
 
 {{< cards >}}
-  {{< card path="/resiliency/timeouts/idle/" title="Idle timeouts" subtitle="Configure an idle timeout setting." >}}
+  {{< card path="/documentation/resiliency/timeouts/idle/" title="Idle timeouts" subtitle="Configure an idle timeout setting." >}}
 {{< /cards >}}
 
 ### Max headers  {#http1-headers}
@@ -243,7 +243,7 @@ Use these settings to tune HTTP/2 flow control, which governs how much data can 
 Manage idle and stale connections with HTTP/2 keepalive.
 
 {{< cards >}}
-  {{< card path="/resiliency/keepalive/#http-keepalive" title="Keepalive" subtitle="Configure keepalive connection settings." >}}
+  {{< card path="/documentation/resiliency/keepalive/#http-keepalive" title="Keepalive" subtitle="Configure keepalive connection settings." >}}
 {{< /cards >}}
 
 

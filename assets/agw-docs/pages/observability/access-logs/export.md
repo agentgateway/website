@@ -9,7 +9,7 @@ Log export happens in addition to the standard stdout output, so you can send lo
 
 {{< tabs >}}
 {{% tab name="OTel stack (recommended)" %}}
-[Set up the OTel stack]({{< link path="/observability/otel-stack/" >}}). It includes an `opentelemetry-collector-logs` deployment in the `telemetry` namespace that accepts OTLP logs on port 4317 and forwards them to Loki for persistent storage.
+[Set up the OTel stack]({{< link path="/documentation/observability/otel-stack/" >}}). It includes an `opentelemetry-collector-logs` deployment in the `telemetry` namespace that accepts OTLP logs on port 4317 and forwards them to Loki for persistent storage.
 
 If the OTel stack is already installed, skip to [Configure OTLP log export](#configure-otlp-log-export).
 {{% /tab %}}
@@ -144,11 +144,12 @@ EOF
       ```
    2. Open Grafana at [http://localhost:3000](http://localhost:3000). 
    3. Log in with the `admin` username and `prom-operator` password. 
-   4. Go to **Explore**, select **Loki** as the data source, and browse recent log entries. Each proxied request is stored as a log entry with attributes such as `gateway`, `http.method`, `http.path`, and `http.status`.
+   4. Go to **Explore**, select **Loki** as the data source, and browse recent log entries. Each proxied request is stored as a log entry with attributes such as {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`gateway`, `http.method`, `http.path`, and `http.status`{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`gateway`, `http.request.method`, `url.path`, and `http.response.status_code`{{< /version >}}.
       
       {{< reuse-image src="img/agw-grafana-loki.png" srcDark="img/agw-grafana-loki.png"  >}}
    {{% /tab %}}
    {{% tab name="Standalone debug" %}}
+   {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
    Check the collector logs for the access log record. Each proxied request appears as a `LogRecord` entry with attributes, such as `gateway`, `http.method`, `http.path`, and `http.status`.
    ```sh
    kubectl logs deploy/opentelemetry-collector-logs -n telemetry | grep -A 20 "LogRecord"
@@ -178,12 +179,46 @@ EOF
    Trace ID: 
    Span ID: 
    ```
+   {{% /version %}}
+
+   {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+   Check the collector logs for the access log record. Each proxied request appears as a `LogRecord` entry with attributes, such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope, which the collector prints in the `InstrumentationScope` line of the `ScopeLogs` block that contains the record.
+   ```sh
+   kubectl logs deploy/opentelemetry-collector-logs -n telemetry | grep -A 20 "LogRecord"
+   ```
+
+   Example output: 
+   ```console
+   LogRecord #0
+   ObservedTimestamp: 2026-10-01 11:10:53.937484594 +0000 UTC
+   Timestamp: 1970-01-01 00:00:00 +0000 UTC
+   SeverityText: INFO
+   SeverityNumber: Info(9)
+   Body: Empty()
+   Attributes:
+     -> gateway: Str(agentgateway-system/agentgateway-proxy)
+     -> listener: Str(http)
+     -> route: Str(httpbin/httpbin)
+     -> endpoint: Str(10.244.0.7:8080)
+     -> client.address: Str(127.0.0.1)
+     -> http.request.method: Str(GET)
+     -> server.address: Str(www.example.com)
+     -> url.path: Str(/get)
+     -> network.protocol.version: Str(1.1)
+     -> http.response.status_code: Int(200)
+     -> protocol: Str(http)
+     -> duration: Str(2ms)
+     -> url.scheme: Str(http)
+   Trace ID: 
+   Span ID: 
+   ```
+   {{% /version %}}
    {{% /tab %}}
    {{< /tabs >}}
 
 ## Filter logs before export
 
-You can filter which access logs are exported to the OTLP backend independently of what is written to stdout by using the `otlp.filter` field. When `otlp.filter` is not set, the [top-level `accessLog.filter`]({{< link path="/observability/access-logs/view/#filter-access-logs" >}}) setting is used as a fallback for the OTLP export as well. When `otlp.filter` is set, it takes precedence over the top-level filter for OTLP export only, so stdout and OTLP can each receive a different subset of logs.
+You can filter which access logs are exported to the OTLP backend independently of what is written to stdout by using the `otlp.filter` field. When `otlp.filter` is not set, the [top-level `accessLog.filter`]({{< link path="/documentation/observability/access-logs/view/#filter-access-logs" >}}) setting is used as a fallback for the OTLP export as well. When `otlp.filter` is set, it takes precedence over the top-level filter for OTLP export only, so stdout and OTLP can each receive a different subset of logs.
 
 1. Update the {{< reuse "agw-docs/snippets/policy.md" >}} to add an `otlp.filter` expression. In this example, you want to send only error responses to the OTLP collector. However, you continue to log all requests to stdout.
 
@@ -256,12 +291,22 @@ You can filter which access logs are exported to the OTLP backend independently 
    ```
 
    Example output:
+   {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
    ```console
    LogRecord #0
    ...
      -> http.path: Str(/status/500)
      -> http.status: Int(500)
    ```
+   {{% /version %}}
+   {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+   ```console
+   LogRecord #0
+   ...
+     -> url.path: Str(/status/500)
+     -> http.response.status_code: Int(500)
+   ```
+   {{% /version %}}
 
 6. Check the proxy logs and verify that both requests appear in stdout. The `otlp.filter` expression only controls what is exported to the collector — stdout continues to receive all access log entries regardless of the filter.
 
@@ -297,8 +342,11 @@ You can customize which fields are exported over OTLP independently of what is w
 > [!NOTE]
 > If you do not set custom OTLP attributes, but you set custom fields via the top-level `accessLog.attributes` section, the `accessLog.attributes` are also applied to the OTLP export. If you do not want the top-level attributes to also apply in your OTLP export, overwrite them or remove them in the `otlp.attributes` section.
 
-1. Update the {{< reuse "agw-docs/snippets/policy.md" >}} to add an `otlp.attributes` configuration. In this example, you add a `trace_id` field from the `x-trace-id` request header and remove the `http.host` field from OTLP exports. Because no top-level `accessLog.attributes` are defined, the access log output for stdout remains unchanged.
-
+1. Update the {{< reuse "agw-docs/snippets/policy.md" >}} to add an `otlp.attributes` configuration. In this example, you add a `trace_id` field from the `x-trace-id` request header and remove the {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`http.host`{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`server.address`{{< /version >}} field from OTLP exports. Because no top-level `accessLog.attributes` are defined, the access log output for stdout remains unchanged.
+   {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+   The `remove` list matches the attribute names in the OTLP record, which are the OpenTelemetry semantic convention names, such as `server.address`, `url.path`, and `http.response.status_code`. The stdout log keeps the `http.host`, `http.path`, and `http.status` names. A name that does not appear in the OTLP record, such as `http.host`, removes nothing.
+   {{% /version %}}
+   {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
    ```yaml {paths="access-log-otlp"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -327,6 +375,37 @@ You can customize which fields are exported over OTLP independently of what is w
              - http.host
    EOF
    ```
+   {{% /version %}}
+   {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+   ```yaml {paths="access-log-otlp"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: access-logs
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     frontend:
+       accessLog:
+         otlp:
+           backendRef:
+             name: opentelemetry-collector-logs
+             namespace: telemetry
+             port: 4317
+           protocol: GRPC
+           attributes:
+             add:
+             - name: trace_id
+               expression: 'request.headers["x-trace-id"]'
+             remove:
+             - server.address
+   EOF
+   ```
+   {{% /version %}}
 
 2. Send a request through agentgateway with the `x-trace-id` header.
 
@@ -355,13 +434,34 @@ You can customize which fields are exported over OTLP independently of what is w
    http.status=200 protocol=http duration=2ms
    ```
 
-4. Check the collector logs. Verify that the `trace_id` field appears with the value from the request header and that the `http.host` field is not present because it was removed by the `otlp.attributes.remove` configuration.
+4. Check the collector logs. Verify that the `trace_id` field appears with the value from the request header and that the {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`http.host`{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}`server.address`{{< /version >}} field is not present because it was removed by the `otlp.attributes.remove` configuration.
 
    ```sh
    kubectl logs deploy/opentelemetry-collector-logs -n telemetry | grep -A 20 "LogRecord"
    ```
 
    Example output:
+   {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+   ```console {hl_lines=[16]}
+   LogRecord #0
+   ...
+   Attributes:
+     -> gateway: Str(agentgateway-system/agentgateway-proxy)
+     -> listener: Str(http)
+     -> route: Str(httpbin/httpbin)
+     -> endpoint: Str(10.244.0.7:8080)
+     -> client.address: Str(127.0.0.1)
+     -> http.request.method: Str(GET)
+     -> url.path: Str(/get)
+     -> network.protocol.version: Str(1.1)
+     -> http.response.status_code: Int(200)
+     -> protocol: Str(http)
+     -> duration: Str(0ms)
+     -> url.scheme: Str(http)
+     -> trace_id: Str(abc123)
+   ```
+   {{% /version %}}
+   {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
    ```console {hl_lines=[10]}
    LogRecord #0
    ...
@@ -374,8 +474,7 @@ You can customize which fields are exported over OTLP independently of what is w
      -> http.status: Int(200)
      -> trace_id: Str(abc123)
    ```
-
-   
+   {{% /version %}}
 
 ## Cleanup
 

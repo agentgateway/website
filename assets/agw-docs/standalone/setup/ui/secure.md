@@ -1,16 +1,16 @@
 ## About
 
-To require users to authenticate, apply a browser [OIDC]({{< link-hextra path="/configuration/security/oidc/" >}}) policy to the gateway that serves the UI. Unauthenticated requests are redirected to your identity provider (IdP) to log in, and only requests that pass the policies in `ui.policies` reach the UI.
+To require users to authenticate, apply a browser [OIDC]({{< link-hextra path="/documentation/configuration/security/oidc/" >}}) policy to the gateway that serves the UI. Unauthenticated requests are redirected to your identity provider (IdP) to log in, and only requests that pass the policies in `ui.policies` reach the UI.
 
-The `ui.policies` section takes the same policies that a route takes, so you can also use [JWT]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), [basic]({{< link-hextra path="/configuration/security/basic-authn/" >}}), or [API key]({{< link-hextra path="/configuration/security/apikey-authn/" >}}) authentication for programmatic access. To restrict which authenticated users get in, add an [authorization policy]({{< link-hextra path="/configuration/security/http-authz/" >}}) alongside the authentication policy.
+The `ui.policies` section takes the same policies that a route takes, so you can also use [JWT]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}), [basic]({{< link-hextra path="/documentation/configuration/security/basic-authn/" >}}), or [API key]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}) authentication for programmatic access. To restrict which authenticated users get in, add an [authorization policy]({{< link-hextra path="/documentation/configuration/security/http-authz/" >}}) alongside the authentication policy.
 
 > [!NOTE]
-> A policy in `ui.policies` applies only to the gateways that the `ui` section lists. It does not apply to the copy of the UI on the admin interface, which stays unauthenticated. That is safe by default, because the admin address is loopback-only, but it is a reason not to move it. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/setup/ui/#admin-interface" >}}).
+> A policy in `ui.policies` applies only to the gateways that the `ui` section lists. It does not apply to the copy of the UI on the admin interface, which stays unauthenticated. That is safe by default, because the admin address is loopback-only, but it is a reason not to move it. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/documentation/setup/ui/#admin-interface" >}}).
 
 ## Before you begin
 
-1. [Install standalone agentgateway]({{< link-hextra path="/setup/install/" >}}).
-2. [Serve the UI on its own gateway]({{< link-hextra path="/setup/ui/gateway-ui/" >}}). The examples on this page apply the OIDC policy to the `ui-gateway` on port `4001` that you created in that guide.
+1. [Install standalone agentgateway]({{< link-hextra path="/documentation/setup/install/" >}}).
+2. [Serve the UI on its own gateway]({{< link-hextra path="/documentation/setup/ui/gateway-ui/" >}}). The examples on this page apply the OIDC policy to the `ui-gateway` on port `4001` that you created in that guide.
 3. Set up an IdP, such as Keycloak or Microsoft Entra ID. Consider creating a client specifically for the UI, such as `agentgateway-ui`. For provider-specific setup instructions, see the [identity provider integrations]({{< link-hextra path="/integrations/auth/" >}}).
 
 ## Binary and Docker {#secure-binary-docker}
@@ -58,7 +58,7 @@ The `ui.policies` section takes the same policies that a route takes, so you can
    ```
 
    > [!TIP]
-   > For the full list of `oidc` policy fields and a complete runnable Keycloak setup, see [OIDC browser authentication]({{< link-hextra path="/configuration/security/oidc" >}}) and the [`traffic-unified-gateway` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-unified-gateway) in the agentgateway repository.
+   > For the full list of `oidc` policy fields and a complete runnable Keycloak setup, see [OIDC browser authentication]({{< link-hextra path="/documentation/configuration/security/oidc" >}}) and the [`traffic-unified-gateway` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-unified-gateway) in the agentgateway repository.
 
 4. Start agentgateway with the updated config.
 
@@ -95,7 +95,7 @@ The `ui.policies` section takes the same policies that a route takes, so you can
 
 ## Helm {#secure-helm}
 
-1. Save the details of the UI client that you created in your IdP as environment variables. The redirect URI must match the address that you expose the UI on, and it must be registered as a valid redirect URI in your IdP. If you plan to [expose the UI]({{< link-hextra path="/setup/ui/expose-ui/" >}}) on a hostname, use that hostname now so that you do not have to register a second redirect URI later.
+1. Save the details of the UI client that you created in your IdP as environment variables. The redirect URI must match the address that you expose the UI on, and it must be registered as a valid redirect URI in your IdP. If you plan to [expose the UI]({{< link-hextra path="/documentation/setup/ui/expose-ui/" >}}) on a hostname, use that hostname now so that you do not have to register a second redirect URI later.
 
    ```sh
    export ISSUER_URL=https://keycloak.example.com/realms/agentgateway
@@ -191,5 +191,5 @@ The `ui.policies` section takes the same policies that a route takes, so you can
 
 ## Next steps
 
-* [Expose the UI]({{< link-hextra path="/setup/ui/expose-ui/" >}}) on your own HTTPS hostname, now that a login is required.
-* [Choose where configuration is stored]({{< link-hextra path="/setup/storage/" >}}) so that the UI can save your changes.
+* [Expose the UI]({{< link-hextra path="/documentation/setup/ui/expose-ui/" >}}) on your own HTTPS hostname, now that a login is required.
+* [Choose where configuration is stored]({{< link-hextra path="/documentation/setup/storage/" >}}) so that the UI can save your changes.

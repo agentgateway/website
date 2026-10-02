@@ -4,7 +4,7 @@ Reduce cross-zone traffic latency by routing requests to nearby endpoints, with 
 
 Locality-aware routing (also called topology-aware routing) sends requests to backend endpoints that share locality with the gateway proxy, such as endpoints in the same zone, region, or node. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} groups endpoints into priority buckets based on their locality relative to the gateway, then selects the best bucket on each request.
 
-Locality applies to all backend services, not just LLM providers. The same priority-group selection that powers [LLM failover]({{< link-hextra path="/llm/failover/" >}}) handles general HTTP routing as well.
+Locality applies to all backend services, not just LLM providers. The same priority-group selection that powers [LLM failover]({{< link-hextra path="/documentation/llm/failover/" >}}) handles general HTTP routing as well.
 
 ### How locality bucketing works
 
@@ -691,5 +691,5 @@ kubectl delete namespace agentgateway-locality --ignore-not-found --wait=false
 
 ## Next steps
 
-- Combine locality-aware routing with [traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}) to weight traffic across backends within each locality bucket.
-- For LLM provider routing, see [Failover across LLM providers]({{< link-hextra path="/llm/failover/" >}}), which uses the same priority-bucket model with a CEL-based health policy.
+- Combine locality-aware routing with [traffic splitting]({{< link-hextra path="/documentation/traffic-management/traffic-split/" >}}) to weight traffic across backends within each locality bucket.
+- For LLM provider routing, see [Failover across LLM providers]({{< link-hextra path="/documentation/llm/failover/" >}}), which uses the same priority-bucket model with a CEL-based health policy.
