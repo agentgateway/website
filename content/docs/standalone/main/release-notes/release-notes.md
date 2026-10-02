@@ -191,23 +191,13 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 ## 🐛 Fixes {#v16-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3214 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3641 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3677 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3686 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3690 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
 
 **Traffic management**
 
 - Connections with `maxConnectionDuration` close with up to 10% jitter, which reduces synchronized reconnects at the configured connection age.
-
-**Operations**
-
-- ListenerSet status-only updates no longer trigger Gateway deployer recomputation.
-
-**Security**
-
-- Substrate egress accepts the new `ateom-for-actor` SPIFFE certificate identity and sends credential providers the actor SPIFFE URI that they expect.
-- Substrate egress refreshes actor resolution on long-lived tunnels after certificate rotation and traces `GetActorEgressPolicy` and `FetchSecret` calls.
+- Bare backend references in standalone HTTP routes, TCP routes, and MCP target backend hosts now resolve to top-level backends. A reference such as `backend: upstream` no longer fails at request time with `service not found` when the top-level backend is named `upstream`.
 
 **LLM**
 

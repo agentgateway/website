@@ -174,3 +174,16 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3182 -->
 
 You can now opt in to OpenTelemetry field names for stdout access logs. Set `preset: Otel` in `spec.frontend.accessLog` of an {{< reuse "agw-docs/snippets/policy.md" >}}. For more information, see [Use OpenTelemetry field names]({{< link-hextra path="/documentation/observability/access-logs/view/#preset" >}}).
+
+## 🐛 Fixes {#v16-fixes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3214 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
+
+**Traffic management**
+
+- Connections with `maxConnectionDuration` close with up to 10% jitter, which reduces synchronized reconnects at the configured connection age.
+
+**LLM**
+
+- Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
