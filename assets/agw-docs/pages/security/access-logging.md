@@ -413,6 +413,8 @@ Prompt guards record their evaluation results in the request's dynamic metadata,
 
 The variable holds entries for guardrail evaluations in either the request or the response phase. A nonempty list does not necessarily mean that a guardrail intervened: every entry might have the action `allow`.
 
+If a request guard rejects an LLM request before the provider call, the access log still receives request-side LLM metadata and the `guardrails` entry. Provider response fields are absent because the request never reaches the LLM provider.
+
 The following table describes the properties of each result in the `guardrails` list. Agentgateway populates these values when a guard runs; they are not configuration fields. The `[]` notation means "each entry in the list" and is not literal CEL syntax. For example, `guardrails[0].action` reads the first result's action.
 
 | Result property | Description |
@@ -527,4 +529,3 @@ If you set up the [OTel stack]({{< link-hextra path="/documentation/observabilit
 ```sh {paths="access-logging"}
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
-

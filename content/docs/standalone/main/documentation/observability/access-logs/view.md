@@ -135,7 +135,11 @@ frontendPolicies:
 
 ### Log guardrail results {#guardrails}
 
-Prompt guards record their evaluation results under the `guardrails` variable, including `allow` when content is accepted. Add the variable to a log field to record which guards ran and their outcomes. The following filter includes all requests with guardrail results, even when every guard allows the content.
+Prompt guards record their evaluation results under the `guardrails` variable, including `allow` when content is accepted. Add the variable to a log field to record which guards ran and their outcomes.
+
+When a request guard rejects an LLM request before the provider call, the access log still includes the request-side LLM metadata and the `guardrails` entry. Provider response fields are absent because the request never reaches the LLM provider.
+
+The following filter includes all requests with guardrail results, even when every guard allows the content.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
