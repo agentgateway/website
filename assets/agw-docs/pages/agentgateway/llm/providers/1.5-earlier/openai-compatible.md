@@ -1,66 +1,51 @@
-Configure OpenAI-compatible LLM providers with an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} or {{< reuse "agw-docs/snippets/backend.md" >}} resource.
+Configure LLM providers that expose the OpenAI Chat Completions API but do not have a first-class provider type in the {{< reuse "agw-docs/snippets/backend.md" >}} API.
 
 ## Overview
 
-Choose the resource that matches how you want to route requests. Both approaches use the provider credentials that you create on this page.
+In {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you configure an OpenAI-compatible provider by setting `ai.provider.openai` and pointing it at the provider's `host`, `port`, and `path`. Use the `path` field when the provider serves chat completions from a non-standard path.
 
-| Resource | When to use it |
-|----------|----------------|
-| `AgentgatewayModel` | Route by the model name in the request and serve standard LLM paths, such as `/v1/chat/completions`. Provider presets supply the default URL and supported request formats. |
-| `AgentgatewayBackend` with an `HTTPRoute` | Configure routing by path, header, or other HTTPRoute matches. For the providers on this page, set `spec.ai.provider.openai` and configure the upstream host and path. |
-
-The {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} API is enabled by default in agentgateway 1.6. For more information about the two approaches, see [About models]({{< link-hextra path="/documentation/llm/models/about/#model-centric-vs-route-centric-configuration" >}}).
 
 ### Built-in OpenAI-compatible providers
 
-For an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, use the case-sensitive `spec.provider` value in the table. You can omit `spec.baseURL` to use the preset's default URL. For an {{< reuse "agw-docs/snippets/backend.md" >}}, use the host and path columns with `port: 443`.
+The following providers expose an OpenAI-compatible chat completions endpoint. To configure one, use the `ai.provider.openai` shape with `port: 443` and the `host` and `path` values in the table. The example later on this page uses Groq.
 
-| Provider | Model `spec.provider` | Backend `host` | Backend `path` |
-|----------|-----------------------|----------------|----------------|
-| Baseten | `Baseten` | `inference.baseten.co` | `/v1/chat/completions` |
-| Cerebras | `Cerebras` | `api.cerebras.ai` | `/v1/chat/completions` |
-| Cohere | `Cohere` | `api.cohere.ai` | `/compatibility/v1/chat/completions` |
-| DeepInfra | `Deepinfra` | `api.deepinfra.com` | `/v1/openai/chat/completions` |
-| DeepSeek | `Deepseek` | `api.deepseek.com` | `/v1/chat/completions` |
-| Fireworks AI | `Fireworks` | `api.fireworks.ai` | `/inference/v1/chat/completions` |
-| Groq | `Groq` | `api.groq.com` | `/openai/v1/chat/completions` |
-| Hugging Face | `Huggingface` | `router.huggingface.co` | `/v1/chat/completions` |
-| Meta | `Meta` | `api.meta.ai` | `/v1/chat/completions` |
-| Mistral AI | `Mistral` | `api.mistral.ai` | `/v1/chat/completions` |
-| OpenRouter | `Openrouter` | `openrouter.ai` | `/api/v1/chat/completions` |
-| Together AI | `TogetherAI` | `api.together.xyz` | `/v1/chat/completions` |
-| xAI | `XAI` | `api.x.ai` | `/v1/chat/completions` |
+| Provider | `host` | `path` |
+|----------|--------|--------|
+| Baseten | `inference.baseten.co` | `/v1/chat/completions` |
+| Cerebras | `api.cerebras.ai` | `/v1/chat/completions` |
+| Cohere | `api.cohere.ai` | `/compatibility/v1/chat/completions` |
+| DeepInfra | `api.deepinfra.com` | `/v1/openai/chat/completions` |
+| DeepSeek | `api.deepseek.com` | `/v1/chat/completions` |
+| Fireworks AI | `api.fireworks.ai` | `/inference/v1/chat/completions` |
+| Groq | `api.groq.com` | `/openai/v1/chat/completions` |
+| Hugging Face | `router.huggingface.co` | `/v1/chat/completions` |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+| Meta | `api.meta.ai` | `/v1/chat/completions` |{{< /version >}}
+| Mistral AI | `api.mistral.ai` | `/v1/chat/completions` |
+| OpenRouter | `openrouter.ai` | `/api/v1/chat/completions` |
+| Together AI | `api.together.xyz` | `/v1/chat/completions` |
+| xAI | `api.x.ai` | `/v1/chat/completions` |
 
-If your provider is not in this list but still exposes the OpenAI Chat Completions API, use the [generic endpoint](#generic-openai-compatible-endpoint) template. If the upstream does not match the OpenAI API format, use [custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) instead.
+If your provider is not in this list but still exposes the OpenAI Chat Completions API, use the [generic endpoint](#generic-openai-compatible-endpoint) template.{{< version exclude-if="1.2.x,1.1.x" >}} If the upstream does not match the OpenAI API format, use [custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) instead.{{< /version >}}
 
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-## Set up provider credentials
+## Set up access to an OpenAI-compatible provider
 
-Create a Secret with an API key for the provider that you want to use. The model and backend examples both reference this Secret. Complete one configuration path after you create the credentials.
+The following steps create a generic secret and {{< reuse "agw-docs/snippets/backend.md" >}} that you can use for any of the providers in the table. The model names in the tabs are examples; substitute a model that your provider supports.
 
-{{< doc-test paths="openai-compatible-validate" >}}
-# Validate the visible Secret, model, backend, and HTTPRoute manifests against
-# the installed CRDs. Do not persist resources or call a provider API.
-export MY_API_KEY="test"
-kubectl() {
-  command kubectl "$@" --dry-run=server
-}
-{{< /doc-test >}}
-
-1. Get an API key for your provider. For Meta, create a key in the [Meta Model API dashboard](https://dev.meta.ai/).
+1. Get an API key for your provider. For example, get a [Groq API key](https://console.groq.com/keys) or a [Mistral API key](https://console.mistral.ai/api-keys).
 
 2. Save the API key in an environment variable.
 
    ```sh
-   export MY_API_KEY='<your-api-key>'
+   export MY_API_KEY=<insert your API key>
    ```
 
 3. Create a Kubernetes secret to store your API key.
 
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -73,82 +58,11 @@ kubectl() {
    EOF
    ```
 
-## Configure an AgentgatewayModel
-
-Use a provider preset to serve standard LLM APIs through the gateway. The following example serves `muse-spark-1.3` through Meta, using the Secret from the previous section. It uses Meta's default URL, `https://api.meta.ai/v1`, and supports Chat Completions, Messages, and Responses.
-
-1. [Enable LLM serving on a listener]({{< link-hextra path="/documentation/llm/models/serve/#enable-llm-serving-on-a-listener" >}}). The listener must allow the `AgentgatewayModel` route kind. The example below attaches to the `http` listener of the `agentgateway-proxy` Gateway.
-
-2. Create the model. For another provider, use its `spec.provider` value from the [provider table](#built-in-openai-compatible-providers). Set `spec.match.model` to a model that the provider supports. Use that provider's API key in the Secret.
-
-   ```yaml {paths="openai-compatible-validate"}
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
-   metadata:
-     name: llm-model
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     parentRefs:
-     - group: gateway.networking.k8s.io
-       kind: Gateway
-       name: agentgateway-proxy
-       sectionName: http
-     match:
-       model: muse-spark-1.3
-     provider: Meta
-     policies:
-       auth:
-         secretRef:
-           name: llm-provider-secret
-   EOF
-   ```
-
-   | Setting | Description |
-   |---------|-------------|
-   | `spec.parentRefs` | Attaches the model to the `http` listener of `agentgateway-proxy` in the same namespace. This listener serves the model without a separate backend or HTTPRoute. |
-   | `spec.match.model` | The model name that clients send in requests. This example forwards the same name to the provider. |
-   | `spec.provider` | The provider preset, such as `Meta` or `Groq`. The preset supplies the URL and request formats. |
-   | `spec.policies.auth.secretRef.name` | The Secret that contains the provider API key in its `Authorization` entry. The Secret must be in the model's namespace. |
-
-   To override a preset's URL, set `spec.baseURL`. For the URL format and examples, see [Providers]({{< link-hextra path="/documentation/llm/models/about/#providers" >}}).
-
-3. Send a request through the gateway. The model endpoint is `/v1/chat/completions`. Replace `muse-spark-1.3` if you configured another model.
-
-   {{< tabs >}}
-   {{% tab name="Cloud Provider LoadBalancer" %}}
-   ```sh
-   curl "http://$INGRESS_GW_ADDRESS/v1/chat/completions" \
-     -H 'Content-Type: application/json' \
-     -d '{
-       "model": "muse-spark-1.3",
-       "messages": [{"role": "user", "content": "Explain retrieval-augmented generation in one sentence."}]
-     }' | jq
-   ```
-   {{% /tab %}}
-   {{% tab name="Port-forward for local testing" %}}
-   Use the port-forward from the listener setup guide.
-
-   ```sh
-   curl http://localhost:8080/v1/chat/completions \
-     -H 'Content-Type: application/json' \
-     -d '{
-       "model": "muse-spark-1.3",
-       "messages": [{"role": "user", "content": "Explain retrieval-augmented generation in one sentence."}]
-     }' | jq
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-
-## Configure an AgentgatewayBackend {#set-up-access-to-an-openai-compatible-provider}
-
-Use this approach to select the backend with an HTTPRoute. The examples configure Chat Completions through `spec.ai.provider.openai` and expose the backend on `/llm`. The model names in the tabs are examples. Use a model that your provider supports.
-
-1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource that points the `openai` provider at your provider's host and path. Select the tab for your provider.
+4. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource that points the `openai` provider at your provider's host and path. Select the tab for your provider.
 
    {{< tabs >}}
    {{% tab name="Baseten" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -173,7 +87,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="Cerebras" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -198,7 +112,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="Cohere" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -223,7 +137,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="DeepInfra" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -248,7 +162,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="DeepSeek" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -273,7 +187,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="Fireworks AI" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -298,7 +212,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="Groq" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -323,7 +237,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="Hugging Face" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -347,33 +261,8 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    EOF
    ```
    {{% /tab %}}
-   {{% tab name="Meta" %}}
-   ```yaml {paths="openai-compatible-validate"}
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   metadata:
-     name: llm-backend
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     ai:
-       provider:
-         openai:
-           model: muse-spark-1.3
-         host: api.meta.ai
-         port: 443
-         path: /v1/chat/completions
-     policies:
-       auth:
-         secretRef:
-           name: llm-provider-secret
-       tls:
-         sni: api.meta.ai
-   EOF
-   ```
-   {{% /tab %}}
    {{% tab name="Mistral AI" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -398,7 +287,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="OpenRouter" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -423,7 +312,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="Together AI" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -448,7 +337,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="xAI" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -484,9 +373,9 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    | `policies.auth.secretRef` | References the secret that contains your provider API key. |
    | `policies.tls.sni` | Enables TLS and sets the SNI value to the upstream hostname. |
 
-2. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}.
+5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -510,7 +399,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    EOF
    ```
 
-3. Send a request to verify the setup. Replace the `model` value with the model that you configured on the {{< reuse "agw-docs/snippets/backend.md" >}}.
+6. Send a request to verify the setup. Replace the `model` value with the model that you configured on the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
@@ -547,7 +436,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
 
 [Perplexity](https://www.perplexity.ai/) exposes an OpenAI-compatible API for search-augmented models and uses the standard chat completions path, so you do not need to set `path`.
 
-```yaml {paths="openai-compatible-validate"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -606,10 +495,6 @@ Use the following fields to adapt the template:
 | `policies.auth` | Attach the provider API key secret to outbound requests. |
 | `policies.tls.sni` | Enable TLS and set the SNI value to the upstream hostname. |
 
-If the upstream needs mixed API formats or a cluster-local backend target, use [custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) instead. For self-hosted targets that already have guides, prefer the dedicated [Ollama]({{< link-hextra path="/integrations/llm/providers/ollama/" >}}) and [vLLM]({{< link-hextra path="/integrations/llm/providers/vllm/" >}}) pages.
-
-{{< doc-test paths="openai-compatible-validate" >}}
-unset -f kubectl
-{{< /doc-test >}}
+{{< version exclude-if="1.2.x,1.1.x" >}}If the upstream needs mixed API formats or a cluster-local backend target, use [custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) instead. {{< /version >}}For self-hosted targets that already have guides, prefer the dedicated [Ollama]({{< link-hextra path="/integrations/llm/providers/ollama/" >}}) and [vLLM]({{< link-hextra path="/integrations/llm/providers/vllm/" >}}) pages.
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
