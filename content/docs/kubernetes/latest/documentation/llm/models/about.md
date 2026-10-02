@@ -25,6 +25,7 @@ Every model that attaches to the same parent is aggregated into a single model t
 - Model discovery on `/v1/models`.
 - Per-model provider routing.
 - OpenAI-compatible error responses for unknown models.
+- Response usage fields use the API format that the client called. Messages responses use Anthropic usage conventions. Chat Completions and Responses replies use OpenAI usage conventions.
 
 The parent that you choose decides which model router a model joins, and where that router is served. For more information, see [Parent types](#parent-types).
 
