@@ -6,13 +6,25 @@ For a general overview of how policies are structured, see [Policy sections]({{<
 
 Agentgateway uses the `authorization` field inside an {{< reuse "agw-docs/snippets/policy.md" >}} to evaluate whether an incoming request should be allowed or rejected. Authorization rules are expressed as [Common Expression Language (CEL)]({{< link-hextra path="/reference/cel/" >}}) expressions, which let you match on request headers, JWT claims, source IP addresses, MCP tool names, and more.
 
-The `authorization` field can appear in three places in a Kubernetes policy:
+The following table lists the authorization fields in an {{< reuse "agw-docs/snippets/policy.md" >}}:
 
 | Policy section | Field path | Use case |
 |---|---|---|
 | `traffic` | `spec.traffic.authorization` | Control access to HTTP routes, LLM backends, or general traffic. |
-| `frontend` | `spec.frontend.networkAuthorization` | Layer 4 network-level authorization on downstream connections (such as source IP filtering). |
+| `frontend` | `spec.frontend.networkAuthorization` | Layer 4 network-level authorization on downstream connections (such as source IP filtering). |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+| `backend` | `spec.backend.authorization` | Control access after route selection, using the request for the selected destination backend. |{{< /version >}}
 | `backend.mcp` | `spec.backend.mcp.authorization` | Control access to specific MCP servers or tools. |
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+You can also configure backend authorization inline on an {{< reuse "agw-docs/snippets/backend.md" >}}:
+
+| Field path | Scope |
+|---|---|
+| `spec.policies.authorization` | The whole backend. |
+| `spec.ai.groups[].providers[].policies.authorization` | One AI provider in a backend group. |
+
+Backend authorization runs after the destination backend or AI provider is selected. Traffic authorization runs earlier, during traffic policy processing. Both inline fields use the same `action` and `policy.matchExpressions` structure as `spec.backend.authorization`. For an example, see [Authorize requests to a selected backend](#backend-authorization). For inline and attached policy precedence, see [Inline AI and authorization policies on a backend]({{< link-hextra path="/documentation/about/policies/target-merge/#backend-ai" >}}).
+{{< /version >}}
 
 > [!NOTE]
 > In standalone deployment mode, the frontend network authorization path is `frontendPolicies.networkAuthorization`.
@@ -230,6 +242,131 @@ You can optionally create other JWT tokens by using the [JWT generator tool](htt
    {{< /doc-test >}}
 
 ## More examples
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+### Authorize requests to a selected backend {#backend-authorization}
+
+Complete [Setup and test authorization](#setup-and-test-authorization) first, and keep the Gateway's JWT and traffic authorization policy in place. The following backend policy allows only `GET` requests to the httpbin Service. The Gateway's traffic policy still requires Alice's JWT. After agentgateway selects httpbin as the destination, the backend policy also checks the request method.
+
+1. Create a policy in the same namespace as the httpbin Service that it targets.
+
+   ```yaml {paths="backend-authorization"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: httpbin-backend-authz
+     namespace: httpbin
+   spec:
+     targetRefs:
+     - group: ""
+       kind: Service
+       name: httpbin
+     backend:
+       authorization:
+         action: Allow
+         policy:
+           matchExpressions:
+           - "request.method == 'GET'"
+   EOF
+   ```
+
+   | Field | Description |
+   |---|---|
+   | `spec.targetRefs` | Targets the httpbin Service in the policy's namespace. The policy applies when a route selects that Service as its backend. |
+   | `spec.backend.authorization.action` | `Allow` requires at least one expression to match. |
+   | `spec.backend.authorization.policy.matchExpressions` | Allows only requests whose HTTP method is `GET`. |
+
+   {{< doc-test paths="backend-authorization" >}}
+   YAMLTest -f - <<'EOF'
+   - name: wait for backend authorization to be accepted
+     wait:
+       target:
+         kind: AgentgatewayPolicy
+         metadata:
+           namespace: httpbin
+           name: httpbin-backend-authz
+       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+       jsonPathExpectation:
+         comparator: equals
+         value: "True"
+       polling:
+         timeoutSeconds: 60
+         intervalSeconds: 2
+   - name: wait for backend authorization to be attached
+     wait:
+       target:
+         kind: AgentgatewayPolicy
+         metadata:
+           namespace: httpbin
+           name: httpbin-backend-authz
+       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Attached')].status"
+       jsonPathExpectation:
+         comparator: equals
+         value: "True"
+       polling:
+         timeoutSeconds: 60
+         intervalSeconds: 2
+   EOF
+   {{< /doc-test >}}
+
+2. Send a `GET` and a `POST` request with Alice's JWT. The `GET` request satisfies both policies and returns `200`. The `POST` request passes the Gateway's JWT and traffic authorization checks, but the backend policy denies it with `403`.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -s -o /dev/null -w '%{http_code}\n' \
+     "http://${INGRESS_GW_ADDRESS}:80/headers" \
+     -H 'host: www.example.com' -H "Authorization: Bearer ${ALICE_JWT}"
+   curl -s -o /dev/null -w '%{http_code}\n' -X POST \
+     "http://${INGRESS_GW_ADDRESS}:80/headers" \
+     -H 'host: www.example.com' -H "Authorization: Bearer ${ALICE_JWT}"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -s -o /dev/null -w '%{http_code}\n' \
+     http://localhost:8080/headers \
+     -H 'host: www.example.com' -H "Authorization: Bearer ${ALICE_JWT}"
+   curl -s -o /dev/null -w '%{http_code}\n' -X POST \
+     http://localhost:8080/headers \
+     -H 'host: www.example.com' -H "Authorization: Bearer ${ALICE_JWT}"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+
+   ```console
+   200
+   403
+   ```
+
+   {{< doc-test paths="backend-authorization" >}}
+   for attempt in $(seq 1 30); do
+     allowed=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
+       "http://${INGRESS_GW_ADDRESS}:80/headers" \
+       -H 'host: www.example.com' -H "Authorization: Bearer ${ALICE_JWT}")
+     denied=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -X POST \
+       "http://${INGRESS_GW_ADDRESS}:80/headers" \
+       -H 'host: www.example.com' -H "Authorization: Bearer ${ALICE_JWT}")
+     if [ "$allowed" = 200 ] && [ "$denied" = 403 ]; then break; fi
+     sleep 1
+   done
+   test "$allowed" = 200 && test "$denied" = 403 || {
+     echo "expected GET=200 and POST=403, got GET=$allowed POST=$denied"
+     exit 1
+   }
+   echo 'OK: backend authorization allows GET and denies POST'
+   {{< /doc-test >}}
+
+3. Delete the backend policy when you finish testing. The Gateway's JWT and traffic authorization policy continues to apply.
+
+   ```sh {paths="backend-authorization"}
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-backend-authz -n httpbin
+   ```
+
+{{< /version >}}
 
 ### Combine Allow with Require
 
