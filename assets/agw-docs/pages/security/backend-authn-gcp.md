@@ -56,7 +56,7 @@ EOF
 | `backend.auth.gcp.type` | The type of token to generate. `AccessToken` is used for most GCP services; `IdToken` is used for Cloud Run. |
 | `backend.auth.gcp.audience` | Explicit `aud` claim for the ID token. Only valid with `IdToken` type. Derived from the backend hostname when omitted. |
 
-{{< version exclude-if="1.5.x" >}}
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 To use a service account key instead of ambient credentials, set `backend.auth.gcp.secretRef` to a Secret key that contains the Google credential JSON. If the JSON is malformed or incomplete, the controller accepts the policy with a non-fatal warning. The policy status can still report `Valid`. Requests to the backend that uses the invalid credential fail closed with `backend authentication failed: GCP credential configuration is invalid`. Routes to other backends keep serving, and warning and response messages do not include values from the credential JSON.
 {{< /version >}}
 
