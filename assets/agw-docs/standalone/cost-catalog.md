@@ -94,6 +94,10 @@ agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import \
 > The `--providers` flag takes the provider IDs of the source that you import from, and the sources name some providers differently. The `github` source uses the agentgateway provider IDs, such as `gcp.gemini` and `aws.bedrock`, while `models.dev` uses its own IDs, such as `google` and `amazon-bedrock`. An ID that the source does not recognize is handled differently too: `models.dev` fails with `no providers matched`, but `github` reports `imported 0 providers` and writes a catalog without that provider. A `--providers` list that omits Bedrock also makes `aws-bedrock-mantle` contribute nothing. Check the provider list in the generated file before you load it.
 {{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+{{< reuse "agw-docs/snippets/model-catalog-import-options.md" >}}
+{{< /version >}}
+
 For all flags, see the {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}){{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}){{< /version >}} reference.
 
 ## Import costs (UI)
