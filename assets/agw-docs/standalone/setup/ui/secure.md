@@ -151,10 +151,8 @@ The `ui.policies` section takes the same policies that a route takes, so you can
            pathPrefix: /
        backends:
        - host: httpbin.httpbin.svc.cluster.local:8000
-   oidc:
-   {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-     enabled: true
-   {{< /version >}}
+   oidc:{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+     enabled: true{{< /version >}}
      cookieSecretName: agentgateway-ui-secrets
    extraEnv:
    - name: UI_CLIENT_SECRET

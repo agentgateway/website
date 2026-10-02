@@ -139,10 +139,8 @@ For more certificate options, see [Gateways]({{< link-hextra path="/documentatio
            pathPrefix: /
        backends:
        - host: httpbin.httpbin.svc.cluster.local:8000
-   oidc:
-   {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-     enabled: true
-   {{< /version >}}
+   oidc:{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+     enabled: true{{< /version >}}
      cookieSecretName: agentgateway-ui-secrets
    extraEnv:
    - name: UI_CLIENT_SECRET
