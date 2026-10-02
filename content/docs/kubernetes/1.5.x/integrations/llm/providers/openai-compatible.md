@@ -12,4 +12,4 @@ description: Configure providers without built-in support that expose the OpenAI
 > APIs, supports multiple API shapes, or needs non-default per-format paths, use
 > a [custom provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) instead.
 
-{{< reuse "agw-docs/pages/agentgateway/llm/providers/openai-compatible.md" >}}
+{{< reuse "agw-docs/pages/agentgateway/llm/providers/1.5-earlier/openai-compatible.md" >}}

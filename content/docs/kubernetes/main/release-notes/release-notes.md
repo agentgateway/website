@@ -94,6 +94,7 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 
 ### LLM {#v16-llm}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3741 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3492 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3489 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3391 -->
@@ -113,6 +114,7 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3270 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3731 -->
 
+- **Meta provider**: Set `spec.provider: Meta` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} to use the Meta Model API preset. For the backend configuration, see [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}).
 - **`AgentgatewayModel` on by default**: The `agentgatewayModels.enabled` Helm value now defaults to `true`. For more information, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
 - **Wildcard models in `/v1/models`**: For an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} with a wildcard `spec.match.model`, `/v1/models` lists matching model IDs from the catalog. For example, `openai/*` expands to IDs such as `openai/gpt-4o`. For more information, see [Verify model discovery]({{< link-hextra path="/documentation/llm/models/serve/#verify-model-discovery" >}}).
 - **Skip broken virtual model targets**: A virtual model with one broken target skips that target instead of failing as a whole. For more information, see [Fail over when a model degrades]({{< link-hextra path="/documentation/llm/models/virtual/#fail-over-when-a-model-degrades" >}}).

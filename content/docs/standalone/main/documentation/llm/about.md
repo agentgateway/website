@@ -34,6 +34,7 @@ Many providers now have dedicated integrations with preconfigured base URLs and 
 - [Hugging Face]({{< link-hextra path="/integrations/llm/providers/huggingface/" >}})
 - [OpenRouter]({{< link-hextra path="/integrations/llm/providers/openrouter/" >}})
 - [Fireworks AI]({{< link-hextra path="/integrations/llm/providers/fireworks/" >}})
+- [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}})
 
 ### Self-hosted solutions
 
