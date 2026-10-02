@@ -6,4 +6,5 @@ url: /docs/kubernetes/main/documentation/inference/
 aliases:
   - /docs/kubernetes/main/llm/inference/
   - /docs/kubernetes/main/documentation/llm/inference/
+  - /docs/kubernetes/main/inference/
 ---

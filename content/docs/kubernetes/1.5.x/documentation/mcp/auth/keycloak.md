@@ -1,0 +1,13 @@
+---
+title: Set up Keycloak
+weight: 50
+description: Deploy and configure Keycloak as an OAuth identity provider for MCP authentication with agentgateway.
+test:
+  setup-keycloak:
+  - file: ${versionRoot}/documentation/install/helm.md
+    path: experimental
+  - file: ${versionRoot}/documentation/mcp/auth/keycloak.md
+    path: setup-keycloak
+---
+
+{{< reuse "agw-docs/pages/agentgateway/mcp/mcp-auth-keycloak.md" >}}

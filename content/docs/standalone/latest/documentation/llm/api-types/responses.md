@@ -51,9 +51,15 @@ routes:
 > [!NOTE]
 > For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/documentation/llm/about/" >}}).
 
+## Usage in converted replies
+
+Responses replies follow OpenAI usage conventions, even when agentgateway converts the upstream provider response from another format. When a provider reports prompt-cache tokens, `usage.input_tokens` includes those tokens. When they are available, cache counts are also reported separately in `usage.input_tokens_details.cached_tokens` and `usage.input_tokens_details.cache_write_tokens`.
+
 ## Using the API
 
 Using the Responses API works exactly the same as consuming OpenAI directly, with only a change to the base URL. This allows you to continue using existing code and SDKs.
+
+Use HTTP POST for Responses requests through agentgateway, because the Responses WebSocket transport is not supported. With the simplified `llm` configuration, a WebSocket upgrade request to `/v1/responses` returns a `405 Method Not Allowed` error with the `websocket_not_supported` code. With the `routes` format, when `policies.ai.routes` maps `/v1/responses` to `responses`, the upgrade request fails with a `400` error instead.
 
 {{< tabs >}}
 {{% tab name="Curl" %}}

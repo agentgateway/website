@@ -30,10 +30,10 @@ test:
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That traffic is actually split 90/10 by `weight` - external dependency;
 #     observing the split needs many live completions against OpenAI.
-#   * That failover moves to a lower `priority` target after `health.eviction`
-#     removes the primary, and that same-priority targets are load balanced by
-#     health and latency - external dependency; triggering a real upstream
-#     failure needs live providers.
+#   * That failover moves to a lower `priority` target after eviction removes
+#     the primary, and that same-priority targets are load balanced by health
+#     and latency - external dependency; triggering a real upstream failure
+#     needs live providers.
 #   * That `when` expressions select a target by request header - requires
 #     config/traffic the page omits; the page shows no request example, and
 #     confirming which internal target served a response needs a live provider
@@ -156,7 +156,7 @@ assert_models config-weighted.yaml '["gpt-4o-public","smart"]'
 
 ### Failover routing
 
-Use failover (also called automatic fallback) to keep serving when a primary model fails or becomes unavailable. Configure `routing.failover.targets` with `priority` on the virtual model, and configure `health.eviction` on the concrete target models so unhealthy backends can leave the active set.
+Use failover (also called automatic fallback) to keep serving when a primary model fails or becomes unavailable. Configure `routing.failover.targets` with `priority` on the virtual model. When a virtual model has more than one priority group, agentgateway enables default eviction for target models that do not set their own `health` policy, so unhealthy backends can leave the active set.
 
 Failover has two levels of grouping:
 
@@ -171,12 +171,11 @@ Configure health on the concrete `llm.models[]` entries that the virtual model t
 
 | Setting | What it does |
 | -- | -- |
-| No `health` policy | Unhealthy responses (by default, `5xx` or connection failures) still lower the endpoint health score used for within-group load balancing. Endpoints are never evicted, so traffic never fails over to the next priority. |
-| `health` without `eviction` | Same score-based weighting within a group. Eviction (and thus cross-priority failover) happens only when agentgateway can derive an eviction duration from elsewhere: `backoff` on a retry policy, or a `Retry-After` header on a 429 that is classified as unhealthy. |
-| `health.eviction` | Removes an unhealthy endpoint from the active set for a backoff period. When every endpoint in a priority group is evicted, later requests use the next priority. |
+| No `health` policy | The default unhealthy classifier covers `5xx` responses, non-zero gRPC statuses, and connection failures. When the virtual model has more than one priority group, these failures use default eviction: a single unhealthy response evicts the endpoint for `3s`, and each repeated eviction lasts longer. Traffic fails over to the next priority. |
+| `health` without `eviction` | Setting `health` replaces the default eviction instead of adding to it. You can use `health.unhealthyExpression` to classify additional responses, such as `429`, as unhealthy. Without an `eviction` block, the endpoint is evicted only when a retry policy's `backoff`, or a `Retry-After` header on a response that is classified as unhealthy, supplies an eviction duration. To keep the default eviction settings, add `eviction: {}`. |
+| `health.eviction` | Override how long an unhealthy endpoint leaves the active set, and which thresholds trigger eviction. When every endpoint in a priority group is evicted, later requests use the next priority. |
 
-> [!WARNING]
-> Setting `routing.failover` alone does **not** switch to a lower-priority target after errors. You must set `health.eviction` on the primary (and typically backup) concrete models. Without eviction, requests keep hitting the highest-priority group forever.
+You do not need a `health` policy for basic failover on server errors or connection failures. To classify rate-limit responses, tune eviction timing, or change eviction thresholds, add a health policy that includes an `eviction` configuration.
 
 Useful `health` fields:
 

@@ -59,6 +59,39 @@ EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
 
+## Backend connection lifetime {#connection-lifetime}
+
+Use `policies.http.maxConnectionDuration` to stop reusing a connection after a fixed age. Agentgateway opens a fresh connection for subsequent requests and lets requests already using the old connection finish. This is a connection-pool setting, separate from a request timeout.
+
+HTTP/2 PING keepalives detect upstream connections that are no longer responsive, including idle connections. Configure their interval and acknowledgment timeout globally under `config.backend`.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+config:
+  backend:
+    h2KeepaliveInterval: 30s
+    h2KeepaliveTimeout: 5s
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: api.example.com:8080
+    policies:
+      http:
+        version: HTTP/2.0
+        maxConnectionDuration: 10m
+```
+
+| Field | Description |
+| --- | --- |
+| `config.backend.h2KeepaliveInterval` | Interval between PING frames on upstream HTTP/2 connections, including idle ones. Defaults to `0s`, which disables PING keepalives. Choose an interval that the upstream server permits; some gRPC servers reject frequent PINGs. |
+| `config.backend.h2KeepaliveTimeout` | Time to wait for a PING acknowledgment before closing an unresponsive connection. Defaults to `5s` and applies only when PING keepalives are enabled. |
+| `policies.http.version` | Use HTTP/2 for this backend. PING settings do not apply to HTTP/1 connections. |
+| `policies.http.maxConnectionDuration` | Maximum age for reusing a connection for a new request. When omitted, no maximum age is configured. In-flight requests are not interrupted. |
+
+Changes to `config.backend` require a process restart. Per-backend connection policies reload with the rest of the routing configuration.
+
 ## MCP Servers
 
 The MCP backend allows you to connect to an MCP server.
@@ -398,4 +431,3 @@ Two other features choose an endpoint before affinity does, and they win when th
 
 > [!NOTE]
 > This policy is unrelated to the MCP [Session routing](#session-routing) section, which controls whether agentgateway keeps an MCP session with the upstream server. Session affinity chooses an endpoint; MCP session routing chooses how the MCP protocol session is managed.
-
