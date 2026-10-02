@@ -15,23 +15,6 @@ For logging, CEL exposes these variable groups when enabled or applicable:
 * **Auth and metadata**: `jwt`, `apiKey`, or `basicAuth`, plus `extauthz` and `extproc` metadata
 * **LLM**: model, provider, token counts, and optional prompt/completion{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x" >}}/tool calls{{< /version >}}
 * **MCP**: tool, prompt, and resource name and target
-{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-## Log the selected backend endpoint {#backend-endpoint}
-
-Use `backend.endpoint` in an access log expression to record the resolved destination of a backend call, including its port for a network endpoint. `backend.name` identifies the configured backend; `backend.endpoint` identifies the selected call target. The endpoint is available only after target resolution.
-
-Add an attribute to the `frontend.accessLog.attributes.add` list in your policy. Guard the lookup for requests rejected before a backend is resolved.
-
-```yaml
-frontend:
-  accessLog:
-    attributes:
-      add:
-      - name: backend_endpoint
-        expression: 'has(backend.endpoint) ? backend.endpoint : ""'
-```
-{{< /version >}}
-
 <!-- Gated by excluding the older versions, not by including "main", so the
      section stays put when the next release freezes this line under a number.
      Only OSS versions need listing: solo-io/docs reaches this file through
@@ -168,6 +151,23 @@ Fields that you add yourself with the `attributes` field are not renamed, so cho
 
 > [!NOTE]
 > The preset changes only the stdout access log, and only for HTTP traffic. A TCP listener has no HTTP field set to rename, so the preset has no effect there. An OTLP export already uses semantic convention attribute names, so it is unaffected. For more information, see [Export logs over OTLP]({{< link-hextra path="/documentation/observability/access-logs/export/" >}}).
+{{< /version >}}
+
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+## Log the selected backend endpoint {#backend-endpoint}
+
+Use `backend.endpoint` in an access log expression to record the resolved destination of a backend call, including its port for a network endpoint. `backend.name` identifies the configured backend; `backend.endpoint` identifies the selected call target. The endpoint is available only after target resolution.
+
+Add an attribute to the `frontend.accessLog.attributes.add` list in your policy. Guard the lookup for requests rejected before a backend is resolved.
+
+```yaml
+frontend:
+  accessLog:
+    attributes:
+      add:
+      - name: backend_endpoint
+        expression: 'has(backend.endpoint) ? backend.endpoint : ""'
+```
 {{< /version >}}
 
 ## Filter access logs
@@ -527,6 +527,5 @@ If you set up the [OTel stack]({{< link-hextra path="/documentation/observabilit
 ```sh {paths="access-logging"}
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
-
 
 
