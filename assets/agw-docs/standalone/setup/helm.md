@@ -177,6 +177,8 @@ Enable the chart's HorizontalPodAutoscaler (HPA) to adjust the number of proxy p
 
 1. Save the autoscaling settings in a values file. This example keeps two to five replicas, targets 80% CPU utilization, and disables the chart's default memory target.
 
+   For scaling policies and stabilization windows, set `autoscaling.behavior`. For custom HPA annotations, set `autoscaling.annotations`. See the [Helm reference]({{< link-hextra path="/reference/helm/" >}}) for all chart values.
+
    ```yaml
    cat <<'EOF' > autoscaling-values.yaml
    autoscaling:
@@ -219,8 +221,6 @@ Enable the chart's HorizontalPodAutoscaler (HPA) to adjust the number of proxy p
    kubectl describe hpa {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
-
-For scaling policies and stabilization windows, set `autoscaling.behavior`. For custom HPA annotations, set `autoscaling.annotations`. See the [Helm reference]({{< link-hextra path="/reference/helm/" >}}) for all chart values.
 
 {{< /version >}}
 
