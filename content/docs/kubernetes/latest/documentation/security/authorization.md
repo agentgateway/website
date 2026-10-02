@@ -12,6 +12,8 @@ test:
     path: install-httpbin
   - file: ${versionRoot}/documentation/security/authorization.md
     path: authorization
+  - file: ${versionRoot}/documentation/security/authorization.md
+    path: backend-authorization
 ---
 
 {{< reuse "agw-docs/pages/security/authorization.md" >}}
