@@ -57,7 +57,28 @@ The diagram shows content flowing through multiple guard layers. Each layer can:
 - **Mask**: Replace sensitive patterns with placeholders and continue
 - **Audit**: Record what the guard detected, and let the content continue unchanged
 
-Every action is available on the request path and the response path. A response guard can reject a response as well as mask it.
+Every action is available on the request path and the response path. A response guard can reject a response as well as mask it. The exception is streamed traffic: the `mask` action does not apply to a streamed response or to OpenAI Realtime WebSocket traffic.
+
+## Supported route types {#route-types}
+
+Request and response guards run only on route types that carry an LLM conversation. Use this table to check whether your guardrails apply before you route traffic through a route type that skips them, such as embeddings or passthrough traffic.
+
+| Route type | Request and response guards |
+| -- | -- |
+| `completions` | Yes |
+| `messages` | Yes |
+| `responses` | Yes |
+| `generateContent` | Yes |
+| `realtime` | Only when streaming guardrails are enabled. The `reject` action applies, but `mask` does not, because WebSocket frames cannot be rewritten. |
+| `embeddings` | No |
+| `rerank` | No |
+| `anthropicTokenCount` | No |
+| `geminiCountTokens` | No |
+| `models` | No |
+| `passthrough` | No |
+| `detect` | No |
+
+On the route types that run guards, a streamed response is checked only when streaming guardrails are enabled. For more information, see [Streaming guardrails](#streaming-guardrails). To configure route types, see [API types]({{< link-hextra path="/documentation/llm/api-types/" >}}).
 
 ## Possible actions {#actions}
 
@@ -103,6 +124,12 @@ llm:
       - openAIModeration:
           action: audit
 ```
+
+## Provider failures
+
+Set `failureMode` on a `webhook`, `openAIModeration`, `bedrockGuardrails`, `googleModelArmor`, or `azureContentSafety` guard to choose what happens when the provider is unreachable or returns an error. The default, `failClosed`, rejects the request or response. Set `failureMode: failOpen` to let the content continue unchanged instead.
+
+A provider error is not a verdict, so `action: audit` does not change how an error is handled. An audit guard with the default `failureMode` still rejects traffic when the provider call fails.
 
 ## Guard scope {#scope}
 
@@ -228,7 +255,7 @@ Check out the following guides to build your guardrail system.
   {{< card link="../moderation" title="OpenAI moderation" description="Use the OpenAI Moderation API to detect harmful content across categories including hate, harassment, and violence." >}}
   {{< card link="../bedrock-guardrails" title="AWS Bedrock Guardrails" description="Apply AWS Bedrock Guardrails to filter LLM requests and responses for policy-violating content." >}}
   {{< card link="../google-model-armor" title="Google Model Armor" description="Apply Google Cloud Model Armor templates to sanitize LLM requests and responses." >}}
-  {{< card path="/documentation/llm/prompt-guards/webhooks/#deepkeep-example" title="DeepKeep" description="Use DeepKeep AI Firewall as an external guardrail through the Guardrail Webhook API." >}}
+  {{< card path="/integrations/llm/guardrails/deepkeep/" title="DeepKeep" description="Use DeepKeep AI Firewall as an external guardrail through the Guardrail Webhook API." >}}
   {{< card path="/documentation/llm/prompt-guards/webhooks/" title="Custom webhooks" description="Integrate your own content safety logic by forwarding requests and responses to a custom webhook." >}}
   {{< card link="../multi-layer" title="Multi-layered guardrails" description="Run prompt guards in sequence, creating defense-in-depth protection." >}}
 {{< /cards >}}

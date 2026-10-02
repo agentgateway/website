@@ -2,7 +2,7 @@ Distribute requests across multiple LLM providers automatically (also known as P
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
 > [!NOTE]
-> **Model-centric alternative**: To split traffic across models by weight, you can also use the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.weighted`. For more information, see [Virtual models]({{< link-hextra path="/documentation/llm/models/virtual/" >}}).
+> **Model-centric alternative**: To split traffic across models by weight, you can also use the {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}experimental {{< /version >}}`{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.weighted`. For more information, see [Virtual models]({{< link-hextra path="/documentation/llm/models/virtual/" >}}).
 {{< /version >}}
 
 ## About load balancing {#about}
@@ -467,6 +467,7 @@ For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< 
 
 ## Known limitations
 
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
 > [!WARNING]
 > **Rate-limit-based eviction only**: Provider eviction and failover currently only trigger on 429 (Too Many Requests) responses with proper rate-limit headers (`Retry-After` or `x-ratelimit-reset`). Eviction does NOT trigger on:
 > - 503 Service Unavailable responses
@@ -475,6 +476,11 @@ For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< 
 > - Other error codes (404, 500, etc.)
 >
 > Providers that return non-429 errors receive degraded health scores (EWMA) and lower priority within their group, but are not evicted or failed over. This means traffic may still be routed to consistently failing providers, though at reduced rates.
+{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+> [!WARNING]
+> **Eviction within a single priority group needs a health policy**: Default eviction applies only to an {{< reuse "agw-docs/snippets/backend.md" >}} with more than one priority group. When all providers share one group and no health policy targets the {{< reuse "agw-docs/snippets/backend.md" >}}, providers that return errors receive lower health scores (EWMA) and fewer requests, but are not evicted. Traffic can still reach a provider that fails consistently, at a reduced rate. To evict failing providers, add a health policy with an `eviction` block. For more information, see [Failover]({{< link-hextra path="/documentation/llm/failover/" >}}).
+{{< /version >}}
 
 ## Monitoring load balancing
 

@@ -1,5 +1,6 @@
 ## Core HTTP attributes
 
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
 | Attribute | Description |
 |-----------|-------------|
 | `gateway` | Gateway name |
@@ -9,13 +10,39 @@
 | `protocol` | Backend protocol (for example, `llm`, `mcp`, `http`) |
 | `http.method` | HTTP request method |
 | `http.host` | Request host |
-| `http.path` | Request path |
+| `http.path` | Request path, including the query string |
 | `http.status` | Response status code |
-| `http.version` | HTTP version |
-| `src.addr` | Client source address |
+| `http.version` | HTTP version, such as `HTTP/1.1` |
+| `src.addr` | Client source address and port |
+| `url.scheme` | Request scheme, such as `http` or `https` |
+| `network.protocol.version` | HTTP protocol version, such as `1.1` or `2` |
 | `trace.id` | Trace ID of the outgoing span |
 | `span.id` | Span ID of the outgoing span |
 | `duration` | Request duration |
+{{% /version %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+The request span uses the [OpenTelemetry semantic convention names](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) for HTTP attributes. Stdout access logs keep the earlier `http.method`, `http.host`, `http.path`, `http.version`, `http.status`, and `src.addr` names, and so do the child spans for outbound calls, such as [policy call child spans](#policy-child-spans). To remove a request span attribute, use the name in this table, such as `client.address`.
+
+| Attribute | Description |
+|-----------|-------------|
+| `gateway` | Gateway name |
+| `listener` | Listener name |
+| `route` | Route name |
+| `endpoint` | Backend endpoint address |
+| `protocol` | Backend protocol (for example, `llm`, `mcp`, `http`) |
+| `http.request.method` | HTTP request method |
+| `server.address` | Request host |
+| `server.port` | Request port. Set only when the request authority includes a port. |
+| `url.scheme` | Request scheme, such as `http` or `https` |
+| `url.path` | Request path, without the query string |
+| `url.query` | Query string. Set only when the request has one. |
+| `http.response.status_code` | Response status code |
+| `network.protocol.version` | HTTP protocol version, such as `1.1` or `2` |
+| `client.address` | Client IP address |
+| `trace.id` | Trace ID of the outgoing span |
+| `span.id` | Span ID of the outgoing span |
+| `duration` | Request duration |
+{{% /version %}}
 
 ## Conditional attributes
 

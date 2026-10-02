@@ -32,6 +32,10 @@ JWT authentication requires a few parameters:
 * The **audiences** lists allowed audience values (`aud`). The token's `aud` claim must contain at least one of these values. Omit the field to accept any audience. An empty list also accepts any audience, and a non-empty list rejects a token that has no `aud` claim.
 * The **jwks** defines the list of public keys to verify against.
 
+When a `jwtAuth` policy lists more than one entry under `providers`, agentgateway tries each provider whose `issuer` matches the token's `iss` claim and whose JWKS contains the token's `kid`, in the listed order. The first provider that validates the signature and claims accepts the token. As a result, multiple issuers can publish the same `kid` value, and several providers can share one issuer, such as providers with different `audiences`.
+
+If a token includes a not-before claim (`nbf`), agentgateway rejects the token when the `nbf` value is more than 60 seconds in the future. The `nbf` claim is optional by default. To require it, add `nbf` to `requiredClaims`.
+
 > [!IMPORTANT]
 > In version 1.4 and earlier, a configured issuer matched only when the `iss` claim was present, and a non-empty `audiences` list matched only when the `aud` claim was present. A token that omitted the claim passed. From version 1.5, each claim is required, so a token that omits it is rejected. Setting `requiredClaims: []` does not restore the earlier behavior, because it removes only the claim requirements that you add yourself, not the ones that the configured `issuer` and `audiences` imply. If a client sends tokens without an `aud` claim, remove the `audiences` field instead of emptying `requiredClaims`.
 
@@ -44,7 +48,7 @@ Additionally, authentication can run in three different modes:
 
 After it validates a token, agentgateway removes the token from the location that it was read from, so that the backend never receives the client's credential. Two settings change that.
 
-* Set `preserveToken: true` on the `jwtAuth` policy to leave the validated token where it was found. Use this setting when another policy on the same route reads the token from the request, such as an [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/oauth-token-exchange/" >}}) that takes it as the subject token.
+* Set `preserveToken: true` on the `jwtAuth` policy to leave the validated token where it was found. Use this setting when another policy on the same route reads the token from the request, such as an [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/standard/" >}}) that takes it as the subject token.
 * Set the `passthrough` [backend authentication]({{< link-hextra path="/documentation/configuration/security/backend-authn/" >}}) method to forward the validated token to one backend. Prefer this form when only the backend needs the token, because it does not expose the credential to every policy that runs later.
 
 {{< tabs >}}

@@ -126,34 +126,18 @@ Alternatively, route Claude Code directly to Anthropic's API through agentgatewa
 
 If you have a Claude Teams or Pro account, you can use agentgateway for request routing without an API key. Authentication is handled by your Claude subscription via OAuth.
 
-1. Create a configuration file. Agentgateway listens on port `4001` and exposes Claude at the `/claude` path.
+1. Create a configuration file. Agentgateway listens on port `4001` and routes requests to Anthropic.
 
-   ```yaml
+   ```bash
    cat > config.yaml << 'EOF'
    gateways:
      default:
        port: 4001
        protocol: HTTP
-   routes:
-   - name: claude-agent
-     matches:
-     - path:
-         pathPrefix: /claude
-     policies:
-       urlRewrite:
-         path:
-           prefix: /
-     backends:
-     - ai:
-         name: claude-agent
-         provider:
-           anthropic: {}
-         policies:
-           ai:
-             routes:
-               /v1/messages: messages
-               /v1/messages/count_tokens: anthropicTokenCount
-               '*': passthrough
+   llm:
+     models:
+     - name: '*'
+       provider: anthropic
    EOF
    ```
 
@@ -163,10 +147,10 @@ If you have a Claude Teams or Pro account, you can use agentgateway for request 
    agentgateway -f config.yaml
    ```
 
-3. Set the `ANTHROPIC_BASE_URL` environment variable to point Claude Code at the `/claude` path.
+3. Set the `ANTHROPIC_BASE_URL` environment variable to point Claude Code at the gateway.
 
    ```bash
-   export ANTHROPIC_BASE_URL="http://localhost:4001/claude"
+   export ANTHROPIC_BASE_URL="http://localhost:4001/"
    ```
 
 4. Verify the connection.

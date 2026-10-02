@@ -349,7 +349,7 @@ Start with these baseline changes:
 
 Then apply egress workflows that are especially useful for meshed agents:
 
-1. Centralized credential injection for upstream AI providers, such as [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn-oauth/" >}}), [Cross App Access]({{< link-hextra path="/documentation/security/backend-authn-cross-app-access/" >}}), or [JWT signing]({{< link-hextra path="/documentation/security/backend-authn-jwt-sign/" >}}).
+1. Centralized credential injection for upstream AI providers, such as [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/" >}}), [Cross App Access]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/cross-app-access/" >}}), or [JWT signing]({{< link-hextra path="/documentation/security/backend-authn/jwt-sign/" >}}).
   This keeps provider credentials out of agent workloads and enforces one controlled identity path at egress.
 2. Route-level authentication and authorization, such as [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) and [authorization policies]({{< link-hextra path="/documentation/security/authorization/" >}}).
   This lets you decide which agents and users can call which external providers before traffic leaves the cluster.

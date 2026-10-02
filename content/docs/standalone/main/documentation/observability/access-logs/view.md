@@ -121,9 +121,25 @@ frontendPolicies:
 
 For the full list of available fields, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables/" >}}). 
 
-### Log guardrail interventions {#guardrails}
+### Log the selected backend endpoint {#backend-endpoint}
 
-A prompt guard that masks or rejects content records what it did under the `guardrails` variable, with one entry per intervention. Add that variable to a log field to keep an audit trail of every intervention, including which guard acted and why.
+Use `backend.endpoint` to record the resolved destination of a directly addressed backend, such as a static hostname, including its port for a network endpoint. This complements `backend.name`, which identifies the configured backend. Service backends leave `backend.endpoint` unset because their workload endpoints are selected separately. The endpoint is available only after the target is resolved, so guard the lookup for Service backends and requests rejected earlier in processing.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    add:
+      backend_endpoint: 'has(backend.endpoint) ? backend.endpoint : ""'
+```
+
+### Log guardrail results {#guardrails}
+
+Prompt guards record their evaluation results under the `guardrails` variable, including `allow` when content is accepted. Add the variable to a log field to record which guards ran and their outcomes.
+
+When a request guard rejects an LLM request before the provider call, the access log still includes the request-side LLM metadata and the `guardrails` entry. Provider response fields are absent because the request never reaches the LLM provider.
+
+The following filter includes all requests with guardrail results, even when every guard allows the content.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -135,7 +151,11 @@ frontendPolicies:
       guardrail_action: 'guardrails[0].action'
 ```
 
-Each entry carries `phase` (`request` or `response`), `guard` (the guard kind, such as `regex` or `bedrockGuardrails`), `action` (`mask`, `reject`, `audit`, or `failOpen`), `guardrailId`, `guardrailVersion`, `actionReason`, and `assessments`. The `assessments` field holds provider metadata only, so a log never records the content that the guardrail matched.
+The `frontendPolicies.accessLog.filter` field takes a boolean CEL expression that selects which requests to log. In this example, `guardrails.size() > 0` counts the results and logs requests with at least one result. The expressions under `frontendPolicies.accessLog.add` separately choose the values recorded in each log field.
+
+To log only requests with an intervention, change `frontendPolicies.accessLog.filter` to `guardrails.exists(g, g.action != "allow")`. The `exists` macro checks each result, called `g` in this expression, and returns `true` if any result has an action other than `allow`. Both `exists` and `size()` are CEL operations on the list, not properties of a result.
+
+Each entry carries `phase` (`request` or `response`), `guard` (the guard kind, such as `regex` or `bedrockGuardrails`), `action` (`allow`, `mask`, `reject`, `audit`, or `failOpen`), `guardrailId`, `guardrailVersion`, `actionReason`, and `assessments`. The `assessments` field holds provider metadata only, so a log never records the content that the guardrail matched.
 
 > [!NOTE]
 > Only CEL that runs after the request completes, such as a log field or a metric field, receives the `guardrails` variable. An authorization or transformation expression that runs mid-request never sees it.
@@ -152,4 +172,3 @@ frontendPolicies:
       - src.addr
       - http.path
 ```
-
