@@ -10,7 +10,8 @@ Combine fields in one policy when they share a target and a lifecycle. For the r
 | `backend.http` | Select the upstream HTTP version and set the backend response deadline. | [Backend timeouts]({{< link-hextra path="/documentation/resiliency/timeouts/backend/" >}}) and [HTTP connection settings]({{< link-hextra path="/documentation/resiliency/connection/#backend" >}}) |
 | `backend.tls` | Originate TLS or mutual TLS (mTLS) and configure certificate validation. | [Backend TLS]({{< link-hextra path="/documentation/security/backendtls/" >}}) |
 | `backend.tunnel` | Reach the destination through an HTTP CONNECT proxy. | [Policy API reference]({{< link-hextra path="/reference/api/" >}}) |
-| `backend.auth` | Add credentials or exchange, sign, or pass through tokens for the destination. | [Backend authentication]({{< link-hextra path="/documentation/security/backend-authn/" >}}) |
+| `backend.auth` | Add credentials or exchange, sign, or pass through tokens for the destination. | [Backend authentication]({{< link-hextra path="/documentation/security/backend-authn/" >}}) |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+| `backend.authorization` | Authorize requests after agentgateway selects the destination backend. | [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}) |{{< /version >}}
 | `backend.extAuth` | Run external authorization after agentgateway selects the destination. | [Bring your own external authorization service]({{< link-hextra path="/documentation/security/extauth/byo-ext-auth-service/" >}}) |
 | `backend.transformation` | Transform requests sent to the destination and responses returned from it. | [Transformations]({{< link-hextra path="/documentation/traffic-management/transformations/" >}}) |
 | `backend.health` | Detect unhealthy endpoints, evict them, and restore them after recovery. | [Backend health]({{< link-hextra path="/documentation/resiliency/backend-health/" >}}) |

@@ -126,6 +126,7 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 
 ### Security {#v16-security}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3713 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3611 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3381 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3486 -->
@@ -135,6 +136,7 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3540 -->
 
 - **JWT validation**: With several providers in the `spec.traffic.jwtAuthentication` field of an {{< reuse "agw-docs/snippets/policy.md" >}}, agentgateway tries each provider whose `issuer` and JWKS key ID match the token. A provider's `validation.requiredClaims` field sets the claims that a token must carry. Agentgateway also checks the `nbf` (not before) claim to reject tokens that are not yet valid. This check allows 60 seconds of leeway for clock skew. For more information, see [JWT required claims]({{< link-hextra path="/documentation/security/jwt/setup/#jwt-required-claims" >}}).
+- **Backend authorization**: Kubernetes policies can now authorize requests after the destination backend is selected. Set `spec.backend.authorization` on an {{< reuse "agw-docs/snippets/policy.md" >}}, or configure authorization inline on an {{< reuse "agw-docs/snippets/backend.md" >}} for the whole backend or an individual AI provider. For more information, see [Authorize requests to a selected backend]({{< link-hextra path="/documentation/security/authorization/#backend-authorization" >}}).
 - **Backend authentication**: In the `spec.backend.auth` field of an {{< reuse "agw-docs/snippets/policy.md" >}}, AWS `assumeRole` takes an `externalId`, and Azure authentication takes `scopes`. For more information, see [AWS]({{< link-hextra path="/documentation/security/backend-authn/providers/aws/#assume-an-iam-role" >}}) and [Azure]({{< link-hextra path="/documentation/security/backend-authn/providers/azure/#configure-token-scopes" >}}).
 - **CA certificate key**: You can now read the CA bundle from a key other than `ca.crt`, such as one that trust-manager writes. Set `key` in a `caCertificateRefs` entry under `spec.backend.tls` of an {{< reuse "agw-docs/snippets/policy.md" >}}. For more information, see [Read the certificate from another key]({{< link-hextra path="/documentation/security/backendtls/#ca-key" >}}).
 - **Network authorization by destination**: Expressions in the `spec.frontend.networkAuthorization` field of an {{< reuse "agw-docs/snippets/policy.md" >}} can match on `destination.address`, `destination.port`, and the TLS SNI hostname in `destination.hostname`. For more information, see [Restrict network access by TLS SNI]({{< link-hextra path="/documentation/security/authorization/#restrict-network-access-by-tls-sni" >}}).
@@ -180,6 +182,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3703 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3214 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3699 -->
 
 **Traffic management**
 
@@ -192,3 +195,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 **MCP**
 
 - Access-log CEL expressions can now read dynamic metadata that ExtMCP request-phase guardrails return through `mcpGuardrails`, including on resumed stateful MCP sessions. For more information, see [Log MCP guardrail metadata]({{< link-hextra path="/documentation/observability/access-logs/view/#mcp-guardrails" >}}).
+
+**Security**
+
+- The controller no longer fails on a JWT authentication policy that sets `jwks.remote.url` without a `backendRef` when the `AGW_BACKEND_REF_GRANT_MODE` environment variable is set to `route-and-policy`.

@@ -34,6 +34,10 @@ graph LR
 3. **PostRouting traffic policies:** Run after route selection. [PostRouting](#postrouting) is the default phase for traffic policies and supports all traffic filters.
 4. **Backend policies:** Run when the gateway connects to the destination backend, including backend TLS, authentication, external authorization, and health checking. Backend-level external authorization runs after backend selection, which is useful when the authorization service needs to shape the outgoing request (for example, by inserting a token) and the route has multiple backends.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+Backend authorization runs after backend selection, so the policy evaluates the request for the selected destination.
+{{< /version >}}
+
 Within each phase, agentgateway merges all applicable policies with a shallow field-level merge. If two policies configure different fields, both apply. For example, if one policy sets `transformation` and another sets `extAuth`, both filters run. If two policies configure the same field, the higher-precedence policy takes effect.
 
 ## Traffic filter execution order
