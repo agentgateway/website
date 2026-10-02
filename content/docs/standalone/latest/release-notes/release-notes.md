@@ -133,6 +133,7 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 
 ### Security {#v16-security}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3291 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3483 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3281 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3502 -->
@@ -145,6 +146,7 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3540 -->
 
 - **OIDC sign-in**: An OIDC policy can serve login and logout endpoints. The UI sets both automatically. A `fetch` request without a session now gets `401` instead of a redirect to the identity provider. Session cookies now use compression so that users with many groups can sign in. For more information, see [OIDC]({{< link-hextra path="/documentation/configuration/security/oidc/" >}}).
+- **OIDC session refresh**: Agentgateway automatically uses a refresh token from the identity provider to renew an expired browser session. The refreshed ID token must identify the same user; a missing ID token or a different `sub` requires sign-in again. Add `offline_access` when your provider requires that scope to issue refresh tokens. For more information, see [Session cookies]({{< link-hextra path="/documentation/configuration/security/oidc/#session-cookies" >}}).
 - **Hashed API keys in the UI**: The UI stores new API keys as hashes by default.
 - **JWT validation**: With several JWT providers, agentgateway tries each provider whose `issuer` and JWKS key ID match the token. Agentgateway also checks the `nbf` (not before) claim to reject tokens that are not yet valid. This check allows 60 seconds of leeway for clock skew. The `audiences` field of the `mcpAuthentication` route policy is now optional. For more information, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn/#jwt-claim-validation" >}}).
 - **Backend authentication**: In the `backendAuth` policy or the `auth` field of an `llm.models` entry, AWS `assumeRole` takes an `externalId`, and Azure authentication takes `scopes`. For more information, see [AWS]({{< link-hextra path="/documentation/configuration/security/backend-authn/providers/aws/#assume-a-role" >}}) and [Azure]({{< link-hextra path="/documentation/configuration/security/backend-authn/providers/azure/#configure-token-scopes" >}}).
