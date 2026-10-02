@@ -55,6 +55,7 @@
 | oidc.enabled | bool | Inject the OIDC cookie secret environment variable. Enable this when configuring OIDC authentication.<br/><br/>The default value is `false`. |
 | podAnnotations | object | Annotations to add to the agentgateway proxy pod. The defaults let Prometheus scrape the proxy's metrics endpoint.<br/><br/>The default value is `{"prometheus.io/path":"/metrics","prometheus.io/port":"15020","prometheus.io/scrape":"true"}`. |
 | podDisruptionBudget | object | podDisruptionBudget allows you to define minimum and maximum available pods during voluntary disruptions.<br/><br/>The default value is `{"enabled":false,"maxUnavailable":"","minAvailable":1,"unhealthyPodEvictionPolicy":""}`. |
+| podDisruptionBudget.maxUnavailable | string | Takes precedence over minAvailable when set to a non-zero number or non-empty string.<br/><br/>The default value is `""`. |
 | podDisruptionBudget.unhealthyPodEvictionPolicy | string | UnhealthyPodEvictionPolicy defines the criteria for when unhealthy pods should be considered for eviction.<br/><br/>The default value is `""`. |
 | podLabels | object | Labels to add to the agentgateway proxy pod.<br/><br/>The default value is `{}`. |
 | podSecurityContext | object | The pod-level security context for the agentgateway proxy pod.<br/><br/>The default value is `{}`. |
