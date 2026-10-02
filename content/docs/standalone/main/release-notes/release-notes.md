@@ -184,3 +184,11 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3182 -->
 
 You can now opt in to OpenTelemetry field names for stdout access logs. Set `frontendPolicies.accessLog.preset: otel`. For more information, see [Use OpenTelemetry field names]({{< link-hextra path="/documentation/observability/access-logs/view/#preset" >}}).
+
+## 🐛 Fixes {#v16-fixes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3690 -->
+
+**Traffic management**
+
+- Bare backend references in standalone HTTP routes, TCP routes, and MCP target backend hosts now resolve to top-level backends. A reference such as `backend: upstream` no longer fails at request time with `service not found` when the top-level backend is named `upstream`.
