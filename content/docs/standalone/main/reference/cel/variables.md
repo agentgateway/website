@@ -76,6 +76,8 @@ At request time, `mcp.methodName` is always set, and `mcp.sessionId` is set when
 
 MCP authorization rules differ in two ways. `mcp.sessionId` and `mcp.tool.arguments` aren't set. For list methods, the rules also run once for each listed item, and in each run the target field contains that item, such as `mcp.tool` for each tool in a `tools/list` response.
 
+Virtual MCP target conditions evaluate CEL in the scope of one target. During that target-scoped evaluation, `mcp.target.name` is set to the target under evaluation. Outside target conditions, use the method target fields in the following table, such as `mcp.tool`.
+
 Response payload fields, such as `mcp.tool.result` and `mcp.tool.error`, are available only in logging, tracing, and metrics.
 
 ## Functions {#functions-policy-all}
