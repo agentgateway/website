@@ -95,7 +95,7 @@ The Responses conversion covers a common agent subset:
 - Image inputs, supplied by URL, base64 data, or file ID
 - Function tools, tool choice, and the parallel tool-call preference. A tool that omits `strict` is sent with `strict: false`, so that the optional properties of its input schema stay optional.
 - Assistant tool-use history, and tool results that are text or images
-- Structured output JSON schemas
+- Structured output JSON schemas. The converted Responses request sets `text.format.strict` to `false`, so optional schema properties stay optional.
 - Reasoning effort, from `output_config.effort` or from a `thinking` budget
 - Prompt cache breakpoints
 - Streaming and usage reporting
@@ -116,6 +116,7 @@ The reply is converted back with these differences:
 
 - The reasoning output of the model is dropped, so the reply has no `thinking` block.
 - A buffered reply keeps each URL citation as a `web_search_result_location` citation with the source `url` and `title`. The `cited_text` and `encrypted_index` fields are empty strings, because the Responses format does not return them. File citations and `logprobs` are dropped. A streamed reply has no citations.
+- If a streaming Responses reply fails, the converted Messages stream emits the content blocks that arrived before the failure, then emits an Anthropic `error` event. After the error, the failed stream does not emit `message_delta` or `message_stop`. Later Responses events are ignored.
 
 ### Converting to the Chat Completions format
 
