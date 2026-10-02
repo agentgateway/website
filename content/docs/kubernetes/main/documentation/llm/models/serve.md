@@ -404,7 +404,9 @@ Example output:
   "data": [
     {"id": "gpt-4", "object": "model", "created": 1785166485, "owned_by": "openai"},
     {"id": "gpt-5-mini", "object": "model", "created": 1785166485, "owned_by": "openai"},
-    {"id": "openai/*", "object": "model", "created": 1785166485, "owned_by": "openai"}
+    {"id": "openai/gpt-4.1", "object": "model", "created": 1785166485, "owned_by": "openai"},
+    {"id": "openai/gpt-4o", "object": "model", "created": 1785166485, "owned_by": "openai"},
+    ...
   ],
   "object": "list"
 }
@@ -413,9 +415,9 @@ Example output:
 {{< doc-test paths="serve-model" >}}
 # YAMLTest evaluates "$.data[*].id" to the first array element only, so a
 # `contains` check can verify the first listed model (gpt-4) but cannot assert
-# membership for later entries such as the "openai/*" wildcard. The wildcard is
-# already validated by the "wildcard match" serving check above, and appears in
-# the /v1/models response shown in the example output.
+# membership for later entries such as the IDs that the "openai/*" wildcard
+# expands to. The wildcard is already validated by the "wildcard match" serving
+# check above.
 YAMLTest -f - <<'EOF'
 - name: model discovery endpoint lists public models
   http:
@@ -433,7 +435,12 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-Wildcard models are listed by their match pattern. Models with `visibility: Internal` are excluded.
+Wildcard models expand to matching IDs from the [model catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) for their `provider`. For example, `openai/*` expands to IDs such as `openai/gpt-4o`. The catalog combines the built-in catalog with any catalogs that you configure.
+
+- **Model transformations**: Agentgateway reverses transformations that strip or add a fixed string, such as `stripPrefix("openai/")`. The list then uses the model names that clients send.
+- **Unexpanded patterns**: Agentgateway lists the pattern itself if the provider has no catalog entries. It also keeps the pattern if the model overrides the upstream model or uses a transformation that cannot be reversed.
+- **Custom providers**: To expand a wildcard, set `custom.providerOverride` to a catalog provider name, such as `openai`.
+- **Internal models**: Models with `visibility: Internal` do not appear in the list.
 
 ## Troubleshooting
 
