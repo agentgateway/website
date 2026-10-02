@@ -147,7 +147,9 @@ frontendPolicies:
       guardrail_action: 'guardrails[0].action'
 ```
 
-To log only requests with an intervention, use `guardrails.exists(g, g.action != "allow")` as the access log filter.
+The `frontendPolicies.accessLog.filter` field takes a boolean CEL expression that selects which requests to log. In this example, `guardrails.size() > 0` counts the results and logs requests with at least one result. The expressions under `frontendPolicies.accessLog.add` separately choose the values recorded in each log field.
+
+To log only requests with an intervention, change `frontendPolicies.accessLog.filter` to `guardrails.exists(g, g.action != "allow")`. The `exists` macro checks each result, called `g` in this expression, and returns `true` if any result has an action other than `allow`. Both `exists` and `size()` are CEL operations on the list, not properties of a result.
 
 Each entry carries `phase` (`request` or `response`), `guard` (the guard kind, such as `regex` or `bedrockGuardrails`), `action` (`allow`, `mask`, `reject`, `audit`, or `failOpen`), `guardrailId`, `guardrailVersion`, `actionReason`, and `assessments`. The `assessments` field holds provider metadata only, so a log never records the content that the guardrail matched.
 
@@ -166,4 +168,3 @@ frontendPolicies:
       - src.addr
       - http.path
 ```
-

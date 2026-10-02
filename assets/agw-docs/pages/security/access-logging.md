@@ -39,7 +39,7 @@ frontend:
      every
      enterprise line resolves to one of the tokens above. -->
 {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-* **Guardrails**: `guardrails`, with one entry per prompt-guard intervention naming the phase, the guard, and the action
+* **Guardrails**: `guardrails`, with entries for prompt-guard evaluations naming the phase, the guard, and the action, including `allow`
 {{< /version >}}
 
 Use the `filter` field in the {{< reuse "agw-docs/snippets/policy.md" >}} to [filter which requests are logged](#filter-access-logs) by path, response code, or any other request attribute. Use the `attributes` list to [add or remove log fields](#add-and-remove-log-fields) by using CEL expressions. For the full variable table, available functions, and examples, see the [CEL expressions reference]({{< link-hextra path="/reference/cel/" >}}).
@@ -413,9 +413,9 @@ Prompt guards record their evaluation results in the request's dynamic metadata,
 
 The variable holds entries for guardrail evaluations in either the request or the response phase. A nonempty list does not necessarily mean that a guardrail intervened: every entry might have the action `allow`.
 
-To log only requests with an intervention, use `guardrails.exists(g, g.action != "allow")` as the access log filter.
+The following table describes the properties of each result in the `guardrails` list. Agentgateway populates these values when a guard runs; they are not configuration fields. The `[]` notation means "each entry in the list" and is not literal CEL syntax. For example, `guardrails[0].action` reads the first result's action.
 
-| Field | Description |
+| Result property | Description |
 | ------- | ----------- |
 | `guardrails[].phase` | The phase that the guardrail evaluated, either `request` or `response`. |
 | `guardrails[].guard` | The guard kind that was evaluated, such as `regex`, `webhook`, `openAIModeration`, `bedrockGuardrails`, `googleModelArmor`, or `azureContentSafety`. |
@@ -428,7 +428,14 @@ To log only requests with an intervention, use `guardrails.exists(g, g.action !=
 > [!NOTE]
 > Only CEL that runs after the request completes, such as an access log field or a metric field, receives the `guardrails` variable. An authorization or transformation expression that runs mid-request never sees it.
 
-The following {{< reuse "agw-docs/snippets/policy.md" >}} adds the whole list as one log field, and filters the log down to requests with guardrail evaluation results. To record a single value instead, use an expression such as `guardrails[0].action`.
+Set `spec.frontend.accessLog.filter` to a CEL expression that returns `true` for requests you want to log. The `size()` function counts list entries, and the `exists` macro checks whether any entry matches a condition. They are CEL operations on the list, rather than result properties from the table.
+
+| Value of `spec.frontend.accessLog.filter` | Requests logged |
+| --- | --- |
+| `guardrails.size() > 0` | Requests with at least one guardrail result, including requests that every guard allows. |
+| `guardrails.exists(g, g.action != "allow")` | Requests with at least one result whose action is not `allow`. The variable `g` represents each result as the condition is checked. |
+
+To choose what is recorded in a log field, set `spec.frontend.accessLog.attributes.add[].expression`. The following {{< reuse "agw-docs/snippets/policy.md" >}} uses `guardrails` to record the whole list and `guardrails.size() > 0` to select requests with results. To record just the first result's action, use `guardrails[0].action` as the attribute expression with the same nonempty-list filter.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -520,7 +527,6 @@ If you set up the [OTel stack]({{< link-hextra path="/documentation/observabilit
 ```sh {paths="access-logging"}
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
-
 
 
 
