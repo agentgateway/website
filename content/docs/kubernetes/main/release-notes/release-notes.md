@@ -172,3 +172,11 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3182 -->
 
 You can now opt in to OpenTelemetry field names for stdout access logs. Set `preset: Otel` in `spec.frontend.accessLog` of an {{< reuse "agw-docs/snippets/policy.md" >}}. For more information, see [Use OpenTelemetry field names]({{< link-hextra path="/documentation/observability/access-logs/view/#preset" >}}).
+
+## 🐛 Fixes {#v16-fixes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3699 -->
+
+**Security**
+
+- A JWT authentication policy that sets `jwks.remote.url` can fetch keys directly without configuring a `backendRef`.
