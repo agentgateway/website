@@ -14,6 +14,8 @@ The examples throughout the docs use the following schema that redirects to the 
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 ```
 
+The schema on `main` documents `ate-secret://<provider-name>/<provider-tail>` for `substrateEgress.credentialProviders` credential URIs. If your configuration still uses the former `substrate-secret://` scheme, update the stale URI before the credential provider is called.
+
 ## Version-specific schema validation
 
 Replace `$VERSION` in the following schema with the version of agentgateway that you are using, such as `{{< reuse "agw-docs/versions/n-patch.md" >}}`.
