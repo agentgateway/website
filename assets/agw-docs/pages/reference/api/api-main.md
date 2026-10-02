@@ -3681,7 +3681,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `name` _[SectionName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#sectionname)_ | Name of the MCP target. |  | Required: \{\} <br /> |
-| `selector` _[McpSelector](#mcpselector)_ | Label selector used to select `Service` resources.<br />If policies are needed on a per-service basis, `AgentgatewayPolicy` can<br />target the desired `Service`. |  | Optional: \{\} <br /> |
+| `selector` _[McpSelector](#mcpselector)_ | Label selector used to select `Service` resources.<br />Selected `Service` ports must set `appProtocol: agentgateway.dev/mcp` for<br />streamable HTTP or `appProtocol: agentgateway.dev/mcp-sse` for SSE. Ports<br />without a recognized MCP `appProtocol` value are ignored.<br />If policies are needed on a per-service basis, `AgentgatewayPolicy` can<br />target the desired `Service`. |  | Optional: \{\} <br /> |
 | `static` _[McpTarget](#mcptarget)_ | Static MCP destination. When connecting to<br />in-cluster `Service` resources, it is recommended to use `selector`<br />instead. |  | ExactlyOneOf: [host backendRef] <br />Optional: \{\} <br /> |
 
 

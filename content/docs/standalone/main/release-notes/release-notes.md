@@ -74,7 +74,7 @@ The standalone Helm chart now sets the `OIDC_COOKIE_SECRET` environment variable
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3208 -->
 
-The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is removed. In 1.5, it restored the earlier token counts that left out cache tokens. Input and total token counts now always include cache tokens.
+The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is removed. In 1.5, it restored the earlier token counts that left out cache tokens. In logs, metrics, and CEL, input and total token counts now always include cache tokens. The token usage that agentgateway returns to clients follows the API that the client calls instead. For more information, see [Other behavior changes](#v16-behavior-changes).
 
 ## 🔄 Other behavior changes {#v16-behavior-changes}
 
@@ -86,6 +86,8 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3462 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3426 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3618 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3687 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3669 -->
 
 - **YAML configuration**: Unquoted values such as `no` stay strings instead of being interpreted as booleans. Use `true` or `false` for boolean settings. YAML configuration errors now include line numbers, and the UI preserves comments and formatting where possible when it writes the configuration file.
 - **Backend authentication errors**: When agentgateway cannot get credentials from a provider, such as an OAuth token endpoint, AWS STS, or Azure, the request now fails with `502` instead of `500`. Local failures, such as a static key that cannot be set, return `500` instead of `503`.
@@ -93,7 +95,8 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 - **Access log level**: Request log records now use `error` when agentgateway records a request error, and `info` otherwise. In 1.5, all request records used `info`.
 - **Guardrail results**: The `guardrails` CEL variable now has an entry for every guard that ran, including a new `allow` action. To find interventions only, filter on `action != "allow"`.
 - **Failover eviction**: A virtual model with more than one priority group now evicts a failing target by default. A `health` policy replaces this default. To keep failover, include `health.eviction` in each `llm.models` entry where you configure a health policy. For more information, see [Health vs. eviction]({{< link-hextra path="/documentation/llm/virtual-models/#health-vs-eviction" >}}).
-- **Model catalog refresh**: The **Refresh base costs** button in the UI downloads the model catalog from the agentgateway repository's `main` branch, regardless of your installed version. A format change to the model catalog on `main` will not work with version 1.5 and earlier. Existing catalogs continue to work, but make sure not to refresh the model catalog through the UI until you upgrade to version 1.6 or later. For more information, see [Import costs (UI)]({{< link-hextra path="/documentation/llm/cost-controls/costs/#import-costs-ui" >}}).
+- **Model catalog refresh**: The **Refresh base costs** button in the UI now downloads the agentgateway model catalog, which tracks the `main` branch of the agentgateway repository, instead of the models.dev catalog. The catalog on `main` can gain fields after this release. So that a refresh keeps working, agentgateway ignores catalog fields that it does not recognize, and drops any pricing tier with a condition that it cannot apply. For more information, see [Import costs (UI)]({{< link-hextra path="/documentation/llm/cost-controls/costs/#import-costs-ui" >}}).
+- **Token usage in responses**: The `usage` that agentgateway returns to clients now follows the conventions of the API that the client calls, whichever provider serves the request. Anthropic Messages responses leave cache tokens out of `input_tokens` and report them in `cache_read_input_tokens` and `cache_creation_input_tokens`. OpenAI Chat Completions and Responses include cache tokens in the input and total token counts. For example, a Chat Completions request to an Anthropic or Amazon Bedrock model that writes to the prompt cache now reports those cache tokens in `prompt_tokens`. If a client calculates usage or cost from these fields, review its counts after you upgrade.
 - **Policy service timeouts**: Calls to external services default to a timeout of 2 seconds for gRPC external authorization and 10 seconds for rate limit and external processing services.
 - **Streaming guardrails**: Agentgateway now rejects content if a provider guard fails while checking a streamed response or realtime connection. To keep the 1.5 behavior, set `failureMode: failOpen` on the guard. For example, set it in `ai.promptGuard.response[].bedrockGuardrails`. For more information, see [Provider failures]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#provider-failures" >}}).
 
@@ -130,6 +133,7 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 
 ### Security {#v16-security}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3291 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3483 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3281 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3502 -->
@@ -142,6 +146,7 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3540 -->
 
 - **OIDC sign-in**: An OIDC policy can serve login and logout endpoints. The UI sets both automatically. A `fetch` request without a session now gets `401` instead of a redirect to the identity provider. Session cookies now use compression so that users with many groups can sign in. For more information, see [OIDC]({{< link-hextra path="/documentation/configuration/security/oidc/" >}}).
+- **OIDC session refresh**: Agentgateway automatically uses a refresh token from the identity provider to renew an expired browser session. The refreshed ID token must identify the same user; a missing ID token or a different `sub` requires sign-in again. Add `offline_access` when your provider requires that scope to issue refresh tokens. For more information, see [Session cookies]({{< link-hextra path="/documentation/configuration/security/oidc/#session-cookies" >}}).
 - **Hashed API keys in the UI**: The UI stores new API keys as hashes by default.
 - **JWT validation**: With several JWT providers, agentgateway tries each provider whose `issuer` and JWKS key ID match the token. Agentgateway also checks the `nbf` (not before) claim to reject tokens that are not yet valid. This check allows 60 seconds of leeway for clock skew. The `audiences` field of the `mcpAuthentication` route policy is now optional. For more information, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn/#jwt-claim-validation" >}}).
 - **Backend authentication**: In the `backendAuth` policy or the `auth` field of an `llm.models` entry, AWS `assumeRole` takes an `externalId`, and Azure authentication takes `scopes`. For more information, see [AWS]({{< link-hextra path="/documentation/configuration/security/backend-authn/providers/aws/#assume-a-role" >}}) and [Azure]({{< link-hextra path="/documentation/configuration/security/backend-authn/providers/azure/#configure-token-scopes" >}}).
@@ -184,3 +189,23 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3182 -->
 
 You can now opt in to OpenTelemetry field names for stdout access logs. Set `frontendPolicies.accessLog.preset: otel`. For more information, see [Use OpenTelemetry field names]({{< link-hextra path="/documentation/observability/access-logs/view/#preset" >}}).
+
+## 🐛 Fixes {#v16-fixes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3703 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3214 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3690 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
+
+**Traffic management**
+
+- Connections with `maxConnectionDuration` close with up to 10% jitter, which reduces synchronized reconnects at the configured connection age.
+- Bare backend references in standalone HTTP routes, TCP routes, and MCP target backend hosts now resolve to top-level backends. A reference such as `backend: upstream` no longer fails at request time with `service not found` when the top-level backend is named `upstream`.
+
+**LLM**
+
+- Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
+
+**MCP**
+
+- Access-log CEL expressions can now read dynamic metadata that ExtMCP request-phase guardrails return through `mcpGuardrails`, including on resumed stateful MCP sessions. For more information, see [Log MCP guardrail metadata]({{< link-hextra path="/documentation/observability/access-logs/view/#mcp-guardrails" >}}).

@@ -30,6 +30,46 @@ config:
     format: json
 ```
 
+### Use OpenTelemetry field names {#preset}
+
+The field names in the previous example are short and human-oriented. To rename the built-in HTTP fields to their [OpenTelemetry semantic convention](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) equivalents, such as `url.path` instead of `http.path`, set `preset: otel` on the access log policy.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    preset: otel
+```
+
+Use this preset when you ship stdout logs to a pipeline that already expects semantic convention attribute names, so that you do not have to rename the fields downstream.
+
+The preset renames the following built-in fields.
+
+| Default field | Field with `preset: otel` |
+| -- | -- |
+| `src.addr` | `client.address`. The value is the client IP address without the port. |
+| `http.method` | `http.request.method` |
+| `http.host` | `server.address` |
+| `http.path` | `url.path`. The value is the path only. Any query string moves to a separate `url.query` field instead of staying on the path. |
+| `http.version` | `network.protocol.version`. The value is the bare version, such as `1.1` instead of `HTTP/1.1`. |
+| `http.status` | `http.response.status_code` |
+
+The preset also adds `url.scheme`, and it adds `server.port` and `url.query` when the request supplies them. These added fields are appended to the end of the log line, after `duration`, rather than placed next to the other HTTP fields. With the preset set, the earlier example is logged as follows.
+
+```console
+2025-12-12T21:56:02.809082Z	info	request gateway=agentgateway listener=http route=openai endpoint=api.openai.com:443
+client.address=127.0.0.1 http.request.method=POST server.address=localhost url.path=/openai
+network.protocol.version=1.1 http.response.status_code=200 protocol=llm
+gen_ai.operation.name=chat gen_ai.provider.name=openai gen_ai.request.model=gpt-4o
+gen_ai.response.model=gpt-4o-2024-08-06 gen_ai.usage.input_tokens=68
+gen_ai.usage.output_tokens=298 duration=2488ms url.scheme=http
+```
+
+Only the built-in HTTP field set is renamed. The `gen_ai.*` and `mcp.*` fields already use semantic convention names, and fields that are not part of the HTTP set, such as `gateway`, `route`, and `duration`, keep their names. Fields that you [add yourself](#add-custom-fields-to-logs) are not renamed, so choose semantic convention names for them if you want the whole line to be consistent.
+
+> [!NOTE]
+> The preset changes only the stdout access log, and only for HTTP traffic. A TCP listener has no HTTP field set to rename, so the preset has no effect there. An OTLP export already uses semantic convention attribute names, so it is unaffected. For more information, see [Export logs over OTLP]({{< link-hextra path="/documentation/observability/access-logs/export/" >}}).
+
 ## View access logs in the UI
 
 The agentgateway UI includes a **Logs** page that you can use to review the access logs that were captured by your proxy. 
@@ -81,6 +121,59 @@ frontendPolicies:
 
 For the full list of available fields, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables/" >}}). 
 
+### Log the selected backend endpoint {#backend-endpoint}
+
+Use `backend.endpoint` to record the resolved destination of a directly addressed backend, such as a static hostname, including its port for a network endpoint. This complements `backend.name`, which identifies the configured backend. Service backends leave `backend.endpoint` unset because their workload endpoints are selected separately. The endpoint is available only after the target is resolved, so guard the lookup for Service backends and requests rejected earlier in processing.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    add:
+      backend_endpoint: 'has(backend.endpoint) ? backend.endpoint : ""'
+```
+
+### Log guardrail results {#guardrails}
+
+Prompt guards record their evaluation results under the `guardrails` variable, including `allow` when content is accepted. Add the variable to a log field to record which guards ran and their outcomes.
+
+When a request guard rejects an LLM request before the provider call, the access log still includes the request-side LLM metadata and the `guardrails` entry. Provider response fields are absent because the request never reaches the LLM provider.
+
+The following filter includes all requests with guardrail results, even when every guard allows the content.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    filter: guardrails.size() > 0
+    add:
+      guardrails: 'guardrails'
+      guardrail_action: 'guardrails[0].action'
+```
+
+The `frontendPolicies.accessLog.filter` field takes a boolean CEL expression that selects which requests to log. In this example, `guardrails.size() > 0` counts the results and logs requests with at least one result. The expressions under `frontendPolicies.accessLog.add` separately choose the values recorded in each log field.
+
+To log only requests with an intervention, change `frontendPolicies.accessLog.filter` to `guardrails.exists(g, g.action != "allow")`. The `exists` macro checks each result, called `g` in this expression, and returns `true` if any result has an action other than `allow`. Both `exists` and `size()` are CEL operations on the list, not properties of a result.
+
+Each entry carries `phase` (`request` or `response`), `guard` (the guard kind, such as `regex` or `bedrockGuardrails`), `action` (`allow`, `mask`, `reject`, `audit`, or `failOpen`), `guardrailId`, `guardrailVersion`, `actionReason`, and `assessments`. The `assessments` field holds provider metadata only, so a log never records the content that the guardrail matched.
+
+> [!NOTE]
+> Only CEL that runs after the request completes, such as a log field or a metric field, receives the `guardrails` variable. An authorization or transformation expression that runs mid-request never sees it.
+
+### Log MCP guardrail metadata {#mcp-guardrails}
+
+An ExtMCP request-phase guardrail can return dynamic metadata with a `Pass` or mutated result. After the MCP request completes, access-log CEL can read that metadata from the `mcpGuardrails` variable. Access-log CEL can also read the metadata for requests that resume a stateful MCP session. Use `mcpGuardrails` to record policy-server decisions that are not part of the default MCP log fields.
+
+The metadata keys depend on the ExtMCP server response. The following example records the `decision` key when the policy server returns metadata such as `{"decision":"allow"}`.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    add:
+      mcp_guardrail_decision: 'mcpGuardrails != null ? string(mcpGuardrails.decision) : ""'
+```
+
 ## Remove fields from logs
 
 Remove fields from access log lines. The following example removes the source address and HTTP path that are included by default. 
@@ -93,4 +186,3 @@ frontendPolicies:
       - src.addr
       - http.path
 ```
-
