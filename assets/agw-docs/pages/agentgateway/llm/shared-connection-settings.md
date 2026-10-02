@@ -11,6 +11,10 @@ You can still avoid duplicating the **authentication, TLS, and tunnel** settings
 > [!IMPORTANT]
 > This shares only the connection policy fields (`auth`, `tls`, `tunnel`). The `host` and `port` for the endpoint are still set separately on the provider entry and on the other {{< reuse "agw-docs/snippets/backend.md" >}}, because those fields live directly on each spec and aren't part of the shared policy. Full reuse of a backend definition inside an AI provider group isn't supported.
 
+Sharing settings between an AI provider group and a backend does not change the AI provider group itself. In the following example, the `llm-providers` backend still has the same three providers in the same priority group. The priority group behaves the same way whether or not the providers share connection settings.
+
+For example, [load balancing]({{< link-hextra path="/documentation/llm/load-balancing/" >}}) within the group still uses the Power of Two Choices algorithm. [Failover]({{< link-hextra path="/documentation/llm/failover/" >}}), retries, and eviction still follow the priority group structure, not how connection settings are attached. Each provider keeps its own name, model, and API paths, so telemetry still attributes requests to the correct provider. The dedicated backend and route for the metrics endpoint keep scraping that instance independently, because only its connection settings moved into the shared policy.
+
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
@@ -133,8 +137,8 @@ The following steps set up an AI provider group with an on-premises instance and
        provider:
          openai:
            model: custom-model
-       host: cloud-instance-1.example.com
-       port: 443
+         host: cloud-instance-1.example.com
+         port: 443
      policies:
        ai:
          routes:
@@ -210,20 +214,6 @@ The following steps set up an AI provider group with an on-premises instance and
        polling:
          timeoutSeconds: 60
          intervalSeconds: 2
-   - name: wait for cloud-instance-1-connection policy second target to be accepted
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: agentgateway-system
-           name: cloud-instance-1-connection
-       jsonPath: "$.status.ancestors[1].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 60
-         intervalSeconds: 2
    EOF
    {{< /doc-test >}}
 
@@ -236,17 +226,6 @@ The following steps set up an AI provider group with an on-premises instance and
    | `backend.tunnel.backendRef` | Routes both targets' connections through the same forward proxy {{< reuse "agw-docs/snippets/backend.md" >}}, such as for an HTTP CONNECT proxy. See [Tunnel through a proxy]({{< link-hextra path="/integrations/llm/providers/backend-tunnel-proxy/" >}}) for how to set up the proxy backend itself. |
 
    Repeat step 3 for `cloud-instance-2` and any other cloud instance that needs its own dedicated backend, each with its own policy and secret.
-
-## What this does not change {#no-change}
-
-The AI provider group itself is unchanged: `llm-providers` still has the same three providers in the same priority group. Because of that:
-
-- **Load balancing** still uses the same Power of Two Choices (P2C) algorithm across `on-prem-instance`, `cloud-instance-1`, and `cloud-instance-2`. See [Load balancing]({{< link-hextra path="/documentation/llm/load-balancing/" >}}).
-- **Failover, retries, and provider eviction** behave the same way, since they're determined by the provider group and priority group structure, not by how connection settings are attached. See [Failover]({{< link-hextra path="/documentation/llm/failover/" >}}).
-- **Provider identity in telemetry** is unaffected. Each provider keeps its own `name`, model, and API paths, so metrics, traces, and cost tracking still attribute requests to the correct provider.
-- **Metrics scraping stays independent per instance**, because the dedicated {{< reuse "agw-docs/snippets/backend.md" >}} and route for each cloud instance are untouched — only their connection settings move into the shared policy.
-
-No traffic distribution moves to weighted `HTTPRoute` `backendRefs`. The provider group remains the single mechanism that selects and balances across providers.
 
 ## Cleanup
 
