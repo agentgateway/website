@@ -122,19 +122,21 @@ Method keys can be exact (`tools/call`), a prefix wildcard (`tools/*`), a suffix
 
 The phase controls when agentgateway calls the processor for a method. Set a phase for each method that you want to send to the server.
 
-| Phase | When the server is called |
-|-------|---------------------------|
-| `Off` | Never. The method bypasses this processor. |
-| `Request` | Before the request reaches the MCP backend. Use to gate or mutate the incoming call. |
-| `Response` | After the MCP backend returns a result. Use to filter or rewrite the response. |
-| `Full` | Both the request and response phases. |
+| Phase | Kubernetes value | Standalone value | When the server is called |
+|-------|------------------|------------------|---------------------------|
+| Off | `Off` | `off` | Never. The method bypasses this processor. |
+| Request | `Request` | `request` | Before the request reaches the MCP backend. Use to gate or mutate the incoming call. |
+| Response | `Response` | `response` | After the MCP backend returns a result. Use to filter or rewrite the response. |
+| Full | `Full` | `full` | Both the request and response phases. |
 
 ### Failure modes
 
 The `failureMode` setting controls what happens when the server is unreachable or returns an error.
 
-* **failClosed** (default): Deny the request. Use when the policy server must approve every call.
-* **failOpen**: Allow the request. Use when availability matters more than strict enforcement.
+| Behavior | Kubernetes value | Standalone value | Description |
+|----------|------------------|------------------|-------------|
+| Fail closed (default) | `FailClosed` | `failClosed` | Deny the request. Use when the policy server must approve every call. |
+| Fail open | `FailOpen` | `failOpen` | Allow the request. Use when availability matters more than strict enforcement. |
 
 ### Ordering and multiplexing
 
