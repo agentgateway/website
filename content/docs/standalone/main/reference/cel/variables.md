@@ -76,6 +76,8 @@ At request time, `mcp.methodName` is always set, and `mcp.sessionId` is set when
 
 MCP authorization rules differ in two ways. `mcp.sessionId` and `mcp.tool.arguments` aren't set. For list methods, the rules also run once for each listed item, and in each run the target field contains that item, such as `mcp.tool` for each tool in a `tools/list` response.
 
+The `mcp.target.name` field identifies the MCP target for the current target-scoped operation, including [virtual MCP target conditions]({{< link-hextra path="/integrations/mcp/servers/virtual/#target-conditions" >}}) and upstream requests to an individual target. In a target condition, it names the target under evaluation. This differs from the method fields in the preceding table, such as `mcp.tool`, which describe the tool, prompt, resource, or task involved in a request.
+
 Response payload fields, such as `mcp.tool.result` and `mcp.tool.error`, are available only in logging, tracing, and metrics.
 
 ## Functions {#functions-policy-all}
