@@ -12,7 +12,7 @@ description: Integrate with OpenTelemetry to collect and analyze request traces.
 # An alias is a WHOLE URL path on this site, not a path relative to the version
 # tree it sits in. Leave the `/docs/kubernetes/latest` prefix in place. Without it,
 # the redirect builds at the site root and collides with the identical alias in
-# `main`, and whichever tree builds last wins.
+# `latest`, and whichever tree builds last wins.
 aliases:
   - /docs/kubernetes/latest/observability/tracing/
   - /docs/kubernetes/latest/documentation/observability/tracing/

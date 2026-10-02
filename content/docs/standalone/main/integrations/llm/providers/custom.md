@@ -44,6 +44,10 @@ The `formats` list controls how agentgateway converts incoming requests. Each co
 
 Declare only the formats that the upstream server supports. For example, include `responses` only if the server supports `/v1/responses`. For details about each conversion, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
 
+An error such as `failed to parse Messages request` names the route type that parsed the client request before provider conversion. Check that the request path maps to the expected route type and that the body matches that format.
+
+Converted response usage follows the API format that the client called. Messages responses use Anthropic usage conventions. In that format, `usage.input_tokens` excludes prompt-cache tokens. Chat Completions and Responses replies use OpenAI usage conventions. In those formats, the main input count includes prompt-cache tokens.
+
 The `formats` list is optional. A model without it accepts only requests on paths that are forwarded to the provider without format conversion, such as `/v1/systemone`, `/v1/ocr`, `/v1/images/generations`, and `/v1/responses/compact`. A request in an LLM API format, such as a chat completions or messages request, has no format to convert to and is rejected. For an example, see the [Jev guardrail guide]({{< link-hextra path="/integrations/llm/guardrails/jev/" >}}).
 
 Below shows an example of connecting to [Perplexity](https://www.perplexity.ai/), which exposes an OpenAI-compatible API for search-augmented models and does not currently have a first-class provider.

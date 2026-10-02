@@ -79,6 +79,10 @@ shapes, declare each supported format and optionally set a per-format path.
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
 
+An error such as `failed to parse Messages request` names the route type that
+parsed the client request before provider conversion. Check that the request
+path maps to the expected route type and that the body matches that format.
+
 When a provider declares both `Responses` and `Completions`, agentgateway prefers
 Responses for Anthropic messages requests. This order also applies to the built-in
 `openai` provider and to `azure` for models other than Claude. On an
@@ -126,6 +130,11 @@ When an Anthropic messages request is converted to the `Responses` or the
   the prompt exceeds the context window. An error that already contains
   `capability_rejected:` keeps its message. A Gemini or Vertex AI provider
   returns errors in the Google format, which does not get the marker.
+- Response usage follows the API format that the client called. Messages
+  responses use Anthropic usage conventions, so `usage.input_tokens` excludes
+  prompt-cache tokens. Chat Completions and Responses replies use OpenAI usage
+  conventions. In those replies, the main input count includes prompt-cache
+  tokens.
 - When a streamed reply in the `Responses` format fails, the converted Messages
   stream emits the content blocks that arrived before the failure, then emits
   an Anthropic `error` event. After the error, the stream does not emit

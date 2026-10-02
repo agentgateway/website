@@ -165,6 +165,8 @@ The importer currently handles the following common file-based LiteLLM settings.
 | Multiple deployments with the same `model_name` | Internal models behind a generated virtual model |
 | `credential_list` and `litellm_credential_name` | Reusable providers when the credential can be shared safely; otherwise, supported values are applied inline |
 | `api_key`, API base URLs, Azure API versions, AWS regions, and Vertex project or location settings | Corresponding provider parameters, including preserved environment references |
+| `litellm_params.organization` | `requestHeaders.set.openai-organization` for OpenAI and OpenAI-compatible models; environment references are preserved |
+| Fixed string values in `litellm_params.extra_headers` | `requestHeaders.set` on the model or reusable provider, with model-level values overriding shared credential values |
 | `rpm` | Relative weights for generated weighted routes when the routing strategy permits it |
 | Ordinary `fallbacks` | Priority-based failover targets |
 | `simple-shuffle` routing | Generated routing with an `approximate` finding because the semantics are not identical |
@@ -185,6 +187,8 @@ agentgateway import --from litellm --file - < litellm.yaml > config.yaml
 Compatibility findings are written to stderr, so they do not become part of the redirected YAML file. You can also pass `--output -` explicitly to write the generated configuration to stdout.
 
 When you write to a file, the generated SQLite database URL points to `data.db` in the same directory as the output file. When you write to stdout, the URL is `sqlite://data.db` relative to the directory where you run agentgateway. Review this path before starting the gateway.
+
+Header names are matched case-insensitively. The importer reports invalid header names or values, unsupported dynamic header values, and conflicting header settings as compatibility findings. Review these findings before using the generated configuration.
 
 ## Current limitations
 

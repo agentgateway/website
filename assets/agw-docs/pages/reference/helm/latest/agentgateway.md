@@ -4,8 +4,8 @@
 | Key | Type | Description |
 |-----|------|-------------|
 | affinity | object | Set affinity rules for pod scheduling, such as 'nodeAffinity:'.<br/><br/>The default value is `{}`. |
-| agentgatewayModels | object | Configure the experimental AgentgatewayModel API.<br/><br/>The default value is `{"enabled":false}`. |
-| agentgatewayModels.enabled | bool | Enable AgentgatewayModel support in the agentgateway controller.<br/><br/>The default value is `false`. |
+| agentgatewayModels | object | Configure the AgentgatewayModel API.<br/><br/>The default value is `{"enabled":true}`. |
+| agentgatewayModels.enabled | bool | Enable AgentgatewayModel support in the agentgateway controller.<br/><br/>The default value is `true`. |
 | commonLabels | object | Additional labels to add to all resources created by the Helm chart.<br/><br/>The default value is `{}`. |
 | controller | object | Configure the agentgateway control plane deployment.<br/><br/>The default value is `{"extraContainers":[],"extraEnv":{},"extraVolumeMounts":[],"extraVolumes":[],"horizontalPodAutoscaler":{},"image":{"pullPolicy":"","registry":"","repository":"controller","tag":""},"logLevel":"info","podDisruptionBudget":{},"priorityClassName":"","replicaCount":1,"revisionHistoryLimit":null,"service":{"allocateLoadBalancerNodePorts":null,"annotations":{},"clusterIP":"","clusterIPs":[],"enabled":true,"externalIPs":[],"externalName":"","externalTrafficPolicy":"","extraLabels":{},"healthCheckNodePort":null,"internalTrafficPolicy":"","ipFamilies":[],"ipFamilyPolicy":"","loadBalancerClass":"","loadBalancerIP":"","loadBalancerSourceRanges":[],"ports":{"agwGrpc":9978,"health":9093,"metrics":9092},"publishNotReadyAddresses":false,"sessionAffinity":"","sessionAffinityConfig":{},"trafficDistribution":"","type":"ClusterIP"},"strategy":{},"verticalPodAutoscaler":{},"xds":{"mode":"tls"}}`. |
 | controller.extraContainers | list | Add extra sidecar containers to the controller pod.<br/><br/>The default value is `[]`. |
@@ -64,20 +64,23 @@
 | imagePullSecrets | list | Set a list of image pull secrets for Kubernetes to use when pulling container images from your own private registry instead of the default agentgateway registry.<br/><br/>The default value is `[]`. |
 | inferenceExtension | object | Configure the integration with the Gateway API Inference Extension project, which lets you use agentgateway to route to AI inference workloads like LLMs that run locally in your Kubernetes cluster. Documentation for Inference Extension can be found here: https://agentgateway.dev/docs/kubernetes/latest/documentation/inference/.<br/><br/>The default value is `{"enabled":false}`. |
 | inferenceExtension.enabled | bool | Enable Inference Extension support in the agentgateway controller.<br/><br/>The default value is `false`. |
-| istio | object | Control-plane-wide Istio mesh defaults.<br/><br/>The default value is `{"autoEnabled":false,"caAddress":"","clusterId":"","namespace":"","network":"","revision":""}`. |
+| istio | object | Control-plane-wide Istio mesh defaults.<br/><br/>The default value is `{"autoEnabled":false,"caAddress":"","clusterId":"","enabled":true,"namespace":"","network":"","revision":""}`. |
 | istio.autoEnabled | bool | Enable Istio integration by default on all built-in-class gateways.    When false (default), gateways opt in via AgentgatewayParameters spec.istio;    when true, individual gateways can opt out via spec.istio.enabled=false.<br/><br/>The default value is `false`. |
 | istio.caAddress | string | Istio CA address override;    Defaults to "https://istiod.istio-system.svc:15012".<br/><br/>The default value is `""`. |
 | istio.clusterId | string | Istio cluster ID (the istiod multiCluster clusterName) for mesh-integrated gateways.<br/><br/>The default value is `""`. |
+| istio.enabled | bool | Grant the controller permission to discover Istio ServiceEntry and WorkloadEntry resources.    Set to false only when the Istio CRDs are not installed. This controls RBAC generation; it    does not disable Istio integration in the controller.<br/><br/>The default value is `true`. |
 | istio.namespace | string | Namespace where the Istio control plane the controller integrates with is installed.    Defaults to "istio-system".<br/><br/>The default value is `""`. |
 | istio.network | string | Istio network for mesh-integrated gateways.<br/><br/>The default value is `""`. |
 | istio.revision | string | Revision of the Istio control plane the controller integrates with.   If unset, the default revision is used.<br/><br/>The default value is `""`. |
-| monitoring | object | Configure Prometheus and Grafana monitoring resources.<br/><br/>The default value is `{"enabled":false,"grafanaDashboard":{"enabled":true,"labels":{"grafana_dashboard":"1"}},"proxy":{"gatewayClassNames":["agentgateway"],"namespaceSelector":{},"podMonitor":{"enabled":true}},"serviceMonitor":{"enabled":true,"extraLabels":{},"interval":"15s"}}`. |
+| monitoring | object | Configure Prometheus and Grafana monitoring resources.<br/><br/>The default value is `{"enabled":false,"grafanaDashboard":{"annotations":{},"enabled":true,"labels":{"grafana_dashboard":"1"}},"proxy":{"gatewayClassNames":["agentgateway"],"namespaceSelector":{},"podMonitor":{"enabled":true,"podTargetLabels":["gateway.networking.k8s.io/gateway-name"]}},"serviceMonitor":{"enabled":true,"extraLabels":{},"interval":"15s"}}`. |
 | monitoring.enabled | bool | Create monitoring resources (ServiceMonitors and Grafana dashboard ConfigMap). Requires the Prometheus Operator CRDs to be installed in the cluster.<br/><br/>The default value is `false`. |
+| monitoring.grafanaDashboard.annotations | object | Annotations on the dashboard ConfigMap. Provisioners that place a dashboard    by display name read the folder, and sometimes the organization, from an    annotation rather than a label, because a label value admits no spaces    (e.g. grafana_folder: "Platform gateways").<br/><br/>The default value is `{}`. |
 | monitoring.grafanaDashboard.enabled | bool | Create the Grafana dashboard ConfigMap.<br/><br/>The default value is `true`. |
 | monitoring.grafanaDashboard.labels | object | Labels that the Grafana sidecar uses to discover dashboards.<br/><br/>The default value is `{"grafana_dashboard":"1"}`. |
 | monitoring.proxy.gatewayClassNames | list | GatewayClass names whose proxy pods are selected by the proxy PodMonitor.<br/><br/>The default value is `["agentgateway"]`. |
 | monitoring.proxy.namespaceSelector | object | Namespace selector used by the proxy PodMonitor. Defaults to the release namespace only.<br/><br/>The default value is `{}`. |
 | monitoring.proxy.podMonitor.enabled | bool | Create a PodMonitor that scrapes provisioned proxy pods on the pod's    metrics port (15020) directly, without requiring a metrics port on the    provisioned Service.<br/><br/>The default value is `true`. |
+| monitoring.proxy.podMonitor.podTargetLabels | list | Pod labels copied onto scraped proxy metrics. The gateway name is required    by the bundled Grafana dashboard for gateway discovery and filtering.<br/><br/>The default value is `["gateway.networking.k8s.io/gateway-name"]`. |
 | monitoring.serviceMonitor.enabled | bool | Create the controller ServiceMonitor.<br/><br/>The default value is `true`. |
 | monitoring.serviceMonitor.extraLabels | object | Additional labels to add to the controller ServiceMonitor and the proxy PodMonitor (e.g. release: prometheus).<br/><br/>The default value is `{}`. |
 | monitoring.serviceMonitor.interval | string | Scrape interval for the controller ServiceMonitor and the proxy PodMonitor.<br/><br/>The default value is `"15s"`. |
@@ -100,3 +103,5 @@
 | serviceAccount.name | string | Set the name of the service account to use. If not set and create is true, a name is generated using the fullname template.<br/><br/>The default value is `""`. |
 | tolerations | list | Set tolerations for pod scheduling, such as 'key: "nvidia.com/gpu"'.<br/><br/>The default value is `[]`. |
 | topologySpreadConstraints | list | Configure how controller pods are spread across topology domains, such as nodes or zones.<br/><br/>The default value is `[]`. |
+| xBackend | object | Configure the experimental Gateway API XBackend resource.<br/><br/>The default value is `{"enabled":false}`. |
+| xBackend.enabled | bool | Enable XBackend support in the agentgateway controller.<br/><br/>The default value is `false`. |

@@ -25,10 +25,17 @@ LangSmith accepts OpenTelemetry traces directly. Configure agentgateway to expor
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-config:
+frontendPolicies:
   tracing:
-    otlpEndpoint: https://api.smith.langchain.com/otel
+    host: api.smith.langchain.com:443
+    protocol: http
+    path: /otel/v1/traces
     randomSampling: true
+    policies:
+      backendTLS: {}
+      requestHeaderModifier:
+        set:
+          x-api-key: "${LANGSMITH_API_KEY}"
 
 gateways:
   default:
@@ -47,14 +54,10 @@ routes:
 
 ### Authentication
 
-LangSmith requires an API key for authentication. Set the `OTEL_EXPORTER_OTLP_HEADERS` environment variable with your LangSmith API key:
+Set the API key that the tracing policy sends in the `x-api-key` header. The policy selects OTLP over HTTP, enables backend TLS, and uses the full trace ingestion path from the [LangSmith OpenTelemetry guide](https://docs.langchain.com/langsmith/trace-with-opentelemetry).
 
 ```bash
-# Set the x-api-key header for LangSmith authentication
-export OTEL_EXPORTER_OTLP_HEADERS="x-api-key=your-langsmith-api-key"
-
-# Also set the protocol to HTTP/protobuf (LangSmith requires HTTP, not gRPC)
-export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+export LANGSMITH_API_KEY="<your-langsmith-api-key>"
 ```
 
 ## Docker Compose example
@@ -72,8 +75,8 @@ services:
       - ./config.yaml:/config.yaml:ro
     command: ["-f", "/config.yaml"]
     environment:
-      - OTEL_EXPORTER_OTLP_HEADERS=x-api-key=${LANGSMITH_API_KEY}
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
 ```
 
 ## Learn more

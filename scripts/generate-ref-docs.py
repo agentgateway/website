@@ -23,8 +23,8 @@ and becomes a permanent, accurate record of that release.
 
 That is what archived docs need. Before this, the only numbered directory in the
 tree was helm/2.2.x/, produced by hand, so every version archived since had nothing
-of its own to point at and kept reusing .../helm/main/. Ten published pages are in
-that state now: content/docs/kubernetes/1.0.x through 1.4.x serve the values of a
+of its own to point at and kept reusing .../helm/main/. Eight published pages are in
+that state now: content/docs/kubernetes/1.0.x through 1.3.x serve the values of a
 release the reader did not ask for. Archiving a version now means pointing its stub
 at a numbered directory that already exists, with no regeneration and no manual
 freeze step.
@@ -35,11 +35,12 @@ for 2.2.x and 2.3.x predate this rule and were renamed into it; both are
 unreferenced leftovers of the kgateway-era layout rather than snapshots this script
 produced, so there is no matching helm/2.3.x directory.
 
-NOT BACKFILLED. Versions archived before this change (1.0.x through 1.4.x) have no
+NOT BACKFILLED. Versions archived before this change (1.0.x through 1.3.x) have no
 numbered directory, so their stubs still reuse .../helm/main/ or .../helm/latest/
 and still show the wrong values. Generating those requires running this script
 against each old tag. scripts/check_generated_asset_pins.py lists them as a known
-baseline and fails on any new one.
+baseline and fails on any new one. 1.4.x was backfilled at the 1.6 release from the
+v1.4.1 output still in git history, rather than by regenerating it.
 
 DOC LINKS ARE FIXED IN TWO PLACES AT ONCE. The chart comments carry absolute
 agentgateway.dev URLs, and a released version is generated from its TAG, so those URLs are

@@ -59,6 +59,8 @@ Each access log record captures the following data.
 | **Trace context** | OpenTelemetry trace ID and span ID, if tracing is enabled |
 | **Attributes** | All custom log attributes as a JSON blob |
 
+When a request prompt guard rejects an LLM request before the provider call, the database still stores a log record. The **Logs** page shows the rejection. The record includes request-side LLM metadata, but no provider response fields because the request never reaches the LLM provider.
+
 By default, LLM prompt and completion content is not stored. To capture it, set `llm: full` under the `frontendPolicies.accessLog.database` section.
 
 ```yaml
