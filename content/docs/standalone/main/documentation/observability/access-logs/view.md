@@ -160,6 +160,20 @@ Each entry carries `phase` (`request` or `response`), `guard` (the guard kind, s
 > [!NOTE]
 > Only CEL that runs after the request completes, such as a log field or a metric field, receives the `guardrails` variable. An authorization or transformation expression that runs mid-request never sees it.
 
+### Log MCP guardrail metadata {#mcp-guardrails}
+
+An ExtMCP request-phase guardrail can return dynamic metadata with a `Pass` or mutated result. After the MCP request completes, access-log CEL can read that metadata from the `mcpGuardrails` variable. Access-log CEL can also read the metadata for requests that resume a stateful MCP session. Use `mcpGuardrails` to record policy-server decisions that are not part of the default MCP log fields.
+
+The metadata keys depend on the ExtMCP server response. The following example records the `decision` key when the policy server returns metadata such as `{"decision":"allow"}`.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    add:
+      mcp_guardrail_decision: 'mcpGuardrails != null ? string(mcpGuardrails.decision) : ""'
+```
+
 ## Remove fields from logs
 
 Remove fields from access log lines. The following example removes the source address and HTTP path that are included by default. 
