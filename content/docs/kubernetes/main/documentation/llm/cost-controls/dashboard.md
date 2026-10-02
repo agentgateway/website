@@ -12,7 +12,7 @@ The built-in **UI** includes a cost dashboard: the same **LLM > Analytics** page
 Two pieces of configuration power the dashboard:
 
 - A request-log database (`config.database`). The Kubernetes {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource has no typed field for it, so you set it through `rawConfig`, which merges raw agentgateway configuration into the proxy's config file. Point it at a writable path in the pod, such as the `/tmp` volume.
-- A [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) (`spec.modelCatalog`) so requests are priced. Without a catalog, the dashboard still shows token and call volume, but the cost is `0`.
+- A [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) (`spec.modelCatalog`) to price models that the built-in catalog does not cover. The built-in catalog prices common public models without any configuration. Requests to models that no catalog prices still count toward token and call volume, but add no cost.
 
 > [!WARNING]
 > The `/tmp` path is an ephemeral `emptyDir`, so the request-log history is per-pod and is lost when the pod restarts or scales. For durable history, back `config.database` with a persistent volume, and note that each replica keeps its own local database.

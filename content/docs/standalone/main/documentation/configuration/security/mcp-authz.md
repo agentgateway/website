@@ -343,15 +343,15 @@ The following MCP-specific CEL variables are available in authorization rules:
 |----------|------|-------------|-------------|
 | `mcp.tool.name` | `string` | Request-time | The name of the tool being called. |
 | `mcp.tool.target` | `string` | Request-time | The target backend handling the tool call. |
-| `mcp.tool.arguments` | `map` | Post-request | The JSON arguments passed to the tool call (access logs only). |
+| `mcp.tool.arguments` | `map` | Post-request | The JSON arguments passed to the tool call (not set in `mcpAuthorization` rules). |
 | `mcp.tool.result` | `any` | Post-request | The tool call result payload (access logs only). |
 | `mcp.tool.error` | `any` | Post-request | The tool call error payload (access logs only). |
 | `mcp.prompt.name` | `string` | Request-time | The name of the prompt being accessed. |
 | `mcp.resource.name` | `string` | Request-time | The name of the resource being accessed. |
-| `mcp.methodName` | `string` | Post-request | The MCP JSON-RPC method name, such as `tools/call`. |
+| `mcp.methodName` | `string` | Request-time | The MCP JSON-RPC method name, such as `tools/call` or `tools/list`. |
 | `mcp.sessionId` | `string` | Post-request | The MCP session ID. |
 
-Request-time variables are available during authorization and can be used in `mcpAuthorization` rules. Post-request variables are available in access log CEL expressions.
+Request-time variables are available during authorization and can be used in `mcpAuthorization` rules. Post-request variables are available in access log CEL expressions. Route-level HTTP policies, such as `authorization` and `localRateLimit`, can also read `mcp.sessionId` and `mcp.tool.arguments` when the request arrives. For more information, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables" >}}).
 
 When you also configure [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}), claims from the validated JWT are available to your rules as well:
 
@@ -363,7 +363,7 @@ When you also configure [MCP authentication]({{< link-hextra path="/documentatio
 
 ### Tool arguments are not available during authorization
 
-`mcp.tool.arguments` is populated only after a tool call completes, so it cannot be referenced in `mcpAuthorization` rules. Base authorization decisions on `mcp.tool.name` and `mcp.tool.target` instead.
+`mcp.tool.arguments` isn't set when `mcpAuthorization` rules run, so the rules can't reference it. Base authorization decisions on `mcp.tool.name` and `mcp.tool.target` instead. To allow or deny a call based on its arguments, use a route-level `authorization` policy, which can read `mcp.tool.arguments`.
 
 To inspect tool arguments, use an access log policy, which evaluates post-request:
 

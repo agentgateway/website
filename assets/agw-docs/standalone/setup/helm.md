@@ -55,7 +55,8 @@ The chart creates the following resources. Each resource is named after the Helm
 | Deployment | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Runs the agentgateway proxy. |
 | ConfigMap | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-config` | Holds the rendered `config.yaml`, mounted read-only at `/config`. |
 | Service | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Exposes the gateway listener. Type `LoadBalancer` and port `80` to container port `4000` by default. |
-| ServiceAccount | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Identity for the proxy pod. |
+| ServiceAccount | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Identity for the proxy pod. |{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+| PodDisruptionBudget | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Protects multi-replica proxy Deployments during voluntary disruptions when `podDisruptionBudget.enabled` is `true` and the minimum replica count is greater than `1`. |{{< /version >}}
 
 If you installed with a different release name or namespace, such as with the **Unique name and namespace** tab, adjust the resource names and the `-n` values in the commands throughout this documentation accordingly.
 
@@ -129,6 +130,99 @@ A port-forward is a quick way to look at the UI on a cluster. To give the UI its
 ## Common Helm values
 
 {{< reuse "agw-docs/standalone/helm-standalone-values-table.md" >}}
+
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+### Create a PodDisruptionBudget {#helm-pdb}
+
+Use a PodDisruptionBudget (PDB) to keep one proxy pod available during voluntary disruptions. The chart creates the PDB only when `podDisruptionBudget.enabled` is `true` and the minimum replica count is greater than `1`. The minimum replica count is `replicaCount`, or `autoscaling.minReplicas` when `autoscaling.enabled` is `true`.
+
+1. Upgrade the Helm release with multiple replicas and enable the PDB.
+
+   ```sh
+   helm upgrade {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --reuse-values \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --set replicaCount=2 \
+     --set podDisruptionBudget.enabled=true \
+     --set podDisruptionBudget.minAvailable=1
+   ```
+
+   | Value | Description |
+   | --- | --- |
+   | `replicaCount` | Must be greater than `1`. The chart skips the PDB for one replica. If `autoscaling.enabled` is `true`, the chart checks `autoscaling.minReplicas` instead. |
+   | `podDisruptionBudget.enabled` | Set to `true` to render the PDB. |
+   | `podDisruptionBudget.minAvailable` | Sets `spec.minAvailable`. The default value is `1`. |
+   | `podDisruptionBudget.maxUnavailable` | Sets `spec.maxUnavailable`. To use this field instead of `minAvailable`, also clear the `minAvailable` default with `--set-string podDisruptionBudget.minAvailable=`. Otherwise, the PDB sets both fields, and Kubernetes rejects it. |
+   | `podDisruptionBudget.unhealthyPodEvictionPolicy` | Sets `spec.unhealthyPodEvictionPolicy` when the value is not empty. |
+
+2. Verify that Kubernetes created the PDB for the release.
+
+   ```sh
+   kubectl get poddisruptionbudget {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -o jsonpath='{.spec.minAvailable}'
+   ```
+
+   Expected output:
+
+   ```txt
+   1
+   ```
+
+### Scale the proxy automatically {#helm-autoscaling}
+
+Enable the chart's HorizontalPodAutoscaler (HPA) to adjust the number of proxy pods based on CPU or memory utilization. The cluster must provide the Kubernetes resource metrics API, typically through Metrics Server. Utilization targets are percentages of the pods' resource requests, so set requests for each resource that you use as a scaling signal.
+
+1. Save the autoscaling settings in a values file. This example keeps two to five replicas, targets 80% CPU utilization, and disables the chart's default memory target.
+
+   For scaling policies and stabilization windows, set `autoscaling.behavior`. For custom HPA annotations, set `autoscaling.annotations`. See the [Helm reference]({{< link-hextra path="/reference/helm/" >}}) for all chart values.
+
+   ```yaml
+   cat <<'EOF' > autoscaling-values.yaml
+   autoscaling:
+     enabled: true
+     minReplicas: 2
+     maxReplicas: 5
+     targetCPUUtilizationPercentage: 80
+     targetMemoryUtilizationPercentage: 0
+   resources:
+     requests:
+       cpu: 100m
+       memory: 128Mi
+   EOF
+   ```
+
+   | Value | Description |
+   | --- | --- |
+   | `autoscaling.enabled` | Creates an `autoscaling/v2` HPA for the proxy Deployment. The HPA manages replicas instead of `replicaCount`. |
+   | `autoscaling.minReplicas`, `autoscaling.maxReplicas` | Minimum and maximum replica counts. If you also enable a PDB, keep `minReplicas` greater than `1`. |
+   | `autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization as a percentage of the CPU request. Defaults to `80`. Set to `0` to omit this scaling signal. |
+   | `autoscaling.targetMemoryUtilizationPercentage` | Target memory utilization as a percentage of the memory request. Defaults to `80`. Set to `0` to omit this scaling signal. Keep at least one signal enabled. |
+   | `resources.requests` | Resource requests used to calculate utilization. |
+
+2. Upgrade the release while retaining its existing values.
+
+   ```sh
+   helm upgrade {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --reuse-values \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     -f autoscaling-values.yaml
+   ```
+
+3. Check the HPA and its metrics. If utilization is `<unknown>`, inspect the HPA events and confirm that the resource metrics API is available.
+
+   ```sh
+   kubectl get hpa {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl describe hpa {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+{{< /version >}}
 
 ## Uninstall
 
