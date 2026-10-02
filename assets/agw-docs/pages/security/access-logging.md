@@ -396,6 +396,8 @@ A prompt guard that masks or rejects content records what it did in the request'
 
 The variable holds one entry per intervention, in either the request or the response phase, so a request that both a request guard and a response guard act on produces two entries.
 
+If a request guard rejects an LLM request before the provider call, the access log still receives request-side LLM metadata and the `guardrails` entry. Provider response fields are absent because the request never reaches the LLM provider.
+
 | Field | Description |
 | ------- | ----------- |
 | `guardrails[].phase` | The phase that the guardrail intervened in, either `request` or `response`. |

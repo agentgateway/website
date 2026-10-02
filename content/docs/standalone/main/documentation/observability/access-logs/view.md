@@ -125,6 +125,8 @@ For the full list of available fields, see the [CEL variables reference]({{< lin
 
 A prompt guard that masks or rejects content records what it did under the `guardrails` variable, with one entry per intervention. Add that variable to a log field to keep an audit trail of every intervention, including which guard acted and why.
 
+When a request guard rejects an LLM request before the provider call, the access log still includes the request-side LLM metadata and the `guardrails` entry. Provider response fields are absent because the request never reaches the LLM provider.
+
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
