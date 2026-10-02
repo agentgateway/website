@@ -123,7 +123,7 @@ For the full list of available fields, see the [CEL variables reference]({{< lin
 
 ### Log the selected backend endpoint {#backend-endpoint}
 
-Use `backend.endpoint` to record the resolved destination of a backend call, including its port for a network endpoint. This complements `backend.name`, which identifies the configured backend. The endpoint is available only after the target is resolved, so guard the lookup for requests rejected earlier in processing.
+Use `backend.endpoint` to record the resolved destination of a directly addressed backend, such as a static hostname, including its port for a network endpoint. This complements `backend.name`, which identifies the configured backend. Service backends leave `backend.endpoint` unset because their workload endpoints are selected separately. The endpoint is available only after the target is resolved, so guard the lookup for Service backends and requests rejected earlier in processing.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config

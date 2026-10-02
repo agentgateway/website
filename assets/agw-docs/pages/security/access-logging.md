@@ -156,9 +156,9 @@ Fields that you add yourself with the `attributes` field are not renamed, so cho
 {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ## Log the selected backend endpoint {#backend-endpoint}
 
-Use `backend.endpoint` in an access log expression to record the resolved destination of a backend call, including its port for a network endpoint. `backend.name` identifies the configured backend; `backend.endpoint` identifies the selected call target. The endpoint is available only after target resolution.
+Use `backend.endpoint` in an access log expression to record the resolved destination of a directly addressed backend, such as a static hostname, including its port for a network endpoint. `backend.name` identifies the configured backend; `backend.endpoint` identifies the selected call target. The endpoint is available only after target resolution. Service backends leave `backend.endpoint` unset because their workload endpoints are selected separately.
 
-Add an attribute to the `frontend.accessLog.attributes.add` list in your policy. Guard the lookup for requests rejected before a backend is resolved.
+Add an attribute to the `frontend.accessLog.attributes.add` list in your policy. Guard the lookup for Service backends and requests rejected before a backend is resolved.
 
 ```yaml
 frontend:
@@ -527,5 +527,4 @@ If you set up the [OTel stack]({{< link-hextra path="/documentation/observabilit
 ```sh {paths="access-logging"}
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
-
 
