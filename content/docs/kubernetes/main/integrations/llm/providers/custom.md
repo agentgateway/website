@@ -135,6 +135,10 @@ When an Anthropic messages request is converted to the `Responses` or the
   prompt-cache tokens. Chat Completions and Responses replies use OpenAI usage
   conventions. In those replies, the main input count includes prompt-cache
   tokens.
+- When a streamed reply in the `Responses` format fails, the converted Messages
+  stream emits the content blocks that arrived before the failure, then emits
+  an Anthropic `error` event. After the error, the stream does not emit
+  `message_delta` or `message_stop`, and later Responses events are ignored.
 
 ### Anthropic messages to the Responses format
 
@@ -142,7 +146,9 @@ The Responses conversion covers text, system instructions, images, function
 tools, tool-use history, tool results that are text or images, structured
 output, prompt cache breakpoints, and streaming. A function tool that omits
 `strict` is sent with `strict: false`, so that the optional properties of its
-input schema stay optional. The reasoning effort, from `output_config.effort` or
+input schema stay optional. A structured output JSON schema is sent with
+`text.format.strict` set to `false`, so that optional schema properties stay
+optional. The reasoning effort, from `output_config.effort` or
 from a `thinking` budget, is sent as `reasoning.effort`. A request that sets
 `thinking.type` to `disabled` sends no reasoning setting.
 
