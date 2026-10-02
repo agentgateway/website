@@ -18,14 +18,22 @@ Attaches to: {{< badge content="Route" path="/documentation/configuration/routes
 
 Request {{< gloss "Timeout" >}}timeouts{{< /gloss >}} allow returning an error for requests that take too long to complete.
 
+> [!NOTE]
+> Timeouts bound how long a request might take. To stop an intermediary from closing a long-lived MCP stream that is merely idle, use `sseKeepAlive` on the MCP backend instead. For more information, see [Keep idle MCP streams alive]({{< link-hextra path="/documentation/mcp/configuration-modes#sse-keep-alive" >}}).
+
 ## Route Timeouts
 
-You can configure two types of timeouts on a route.
+You can configure these types of timeouts on a route.
 
 |Timeout|Description|
 |-|-|
-|`requestTimeout`|The time from the start of an incoming request, until the end of the response headers is received. Note if there are retries, this includes the total time across retries.|
-|`backendRequestTimeout`|The time from the start of a request to a backend, until the end of the response headers are completed. Note this is per-request, so with retries this is a per-retry timeout.|
+|`requestTimeout`|The time budget for an incoming request, including the total time across retries, before agentgateway returns response headers to the client. It does not limit the duration of a response body streamed to the client.|
+|`backendRequestTimeout`|The time budget for each request to a backend, including receiving response headers and any response body that agentgateway buffers. With retries, each attempt has its own budget. Receiving headers does not reset or end the deadline for buffered body reads. The deadline does not limit a response body that agentgateway streams without buffering.|
+|`responseIdleTimeout`|The maximum time to wait for the next frame from the upstream response body. Time spent processing the response body, buffering response guardrails, transforming the response, or waiting for the client to receive data does not count. Use this setting to terminate a backend that stalls mid-stream, without capping how long a legitimately long upstream response might run. The timeout is disabled when the field is unset or set to zero, and it never applies to responses that switch protocols, so upgraded WebSocket and CONNECT tunnels are not terminated by it.|
+
+The `backendRequestTimeout` deadline also applies when agentgateway buffers a body for processing, such as CEL body inspection, non-SSE MCP responses, A2A responses, or external authorization response processing. For example, if the timeout is `5s` and the response headers arrive after `1s`, buffered body reads have only the remaining `4s`.
+
+For streaming responses, use `responseIdleTimeout` to limit how long agentgateway waits for the next upstream body frame. This idle timeout can end a stalled stream while allowing a stream that continues to send data to run longer than `backendRequestTimeout`.
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
@@ -41,6 +49,20 @@ mcp:
     stdio:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  port: 3000
+  policies:
+    timeout:
+      requestTimeout: 30s
+      responseIdleTimeout: 5s
+  models:
+  - name: gpt-4o-mini
+    provider: openai
 ```
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
@@ -61,11 +83,18 @@ routes:
 
 {{< doc-test paths="timeouts" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The route-level timeout policy is accepted by agentgateway in both the
-#     routing-based (gateways) and simplified MCP (mcp.policies) forms.
+#   * The route-level timeout policy is accepted by agentgateway in all three
+#     forms the page shows: routing-based (gateways), simplified MCP
+#     (mcp.policies) and simplified LLM (llm.policies).
+#   * That `responseIdleTimeout` is a real field on both the routing-based and
+#     the simplified LLM forms. It is the newest of the three timeouts, so a
+#     rename upstream would otherwise reach the page as prose nobody can run.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests actually time out at runtime — requires a slow backend the
 #     page omits to exceed the configured deadline.
+#   * That the idle window counts only pending upstream body reads, not response
+#     processing time — needs a streaming backend and response processing path
+#     that this page does not provide.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -75,6 +104,7 @@ routes:
 - policies:
     timeout:
       requestTimeout: 1s
+      responseIdleTimeout: 30s
   backends:
   - host: localhost:8080
 EOF
@@ -94,6 +124,20 @@ mcp:
       args: ["@modelcontextprotocol/server-everything"]
 EOF
 agentgateway -f config-mcp.yaml --validate-only
+
+cat <<'EOF' > config-llm.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  port: 3000
+  policies:
+    timeout:
+      requestTimeout: 30s
+      responseIdleTimeout: 5s
+  models:
+  - name: gpt-4o-mini
+    provider: openai
+EOF
+agentgateway -f config-llm.yaml --validate-only
 {{< /doc-test >}}
 
 ## Backend Timeouts
@@ -102,7 +146,7 @@ In addition to route level timeouts, you can configure per-backend timeouts with
 
 | Timeout          | Description                                                                                       |
 |------------------|---------------------------------------------------------------------------------------------------|
-| `requestTimeout` | The time from the start of an HTTP request to a backend until the response headers are completed. |
+| `requestTimeout` | The time budget for an HTTP request to this backend, including receiving response headers and any response body that agentgateway buffers. Buffered reads use the remaining budget; streamed response bodies are not limited by this deadline. |
 | `connectTimeout` | The time from the start of a TCP connection to a backend until the connection is established.     |
 
 ```yaml
