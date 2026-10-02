@@ -23,6 +23,8 @@ For the full list of fields and types on every top-level object, see the [CEL re
 
 Depending on the policy, different top-level variables are bound when CEL runs. A variable is only non-null when it is populated for the current request (for example, `has(jwt.sub)` or `has(apiKey.key)`). The same name can refer to different snapshots depending on pipeline stage: early policies evaluate against the live HTTP request, while logging, tracing, and metrics run after the exchange and can include `response`, `mcp`, and full telemetry fields. Note that when using streaming responses, the evaluation of response body attributes or LLM response information can be inconsistent.
 
+An expression can read `backend.endpoint` only after target resolution. Use `has(backend.endpoint)` before you read `backend.endpoint` in a policy expression.
+
 | Policy | Available top-level variables |
 |--------|------------------------------|
 | Transformation (request) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` — not `response` or `llmRequest`. [^1] |

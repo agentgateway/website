@@ -115,6 +115,10 @@ A `caCertificateRefs` entry in the backend TLS settings of an {{< reuse "agw-doc
 
 The field does not apply to a BackendTLSPolicy or to the `frontendValidation` field of a Gateway listener, which still read `ca.crt`. For an example, see [CA certificate in a Secret]({{< link-hextra path="/documentation/security/backendtls/#secret-ca" >}}).
 
+#### Backend endpoint available in CEL {#v16-backend-endpoint-cel}
+
+Policy expressions can read `backend.endpoint` after target resolution. The field contains the selected backend call target, including the port for network endpoints. For phase guidance, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
+
 ### LLM {#v16-features-llm}
 
 #### Failure mode for provider guardrails {#v16-guardrail-failure-mode}
