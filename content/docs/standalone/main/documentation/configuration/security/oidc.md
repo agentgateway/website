@@ -63,6 +63,9 @@ Review the following details about session cookies.
 - Session cookies written before compression continue to decode.
 - A protected response can include its own cookies and the OIDC session cookie.
 - The gateway always requests the `openid` scope to obtain an ID token.
+- If the identity provider returns a refresh token, a separate encrypted cookie stores it. The browser session refreshes when the ID token expires. Add the `offline_access` scope when your provider requires that scope to issue refresh tokens.
+- The refresh response must include a new ID token for the same `sub` claim. If the provider omits the ID token, the user must sign in again. If the provider returns an ID token for a different subject, the user must sign in again.
+- With multiple gateway replicas and rotating refresh tokens, configure the provider's refresh-token reuse grace period to tolerate concurrent refreshes from different replicas.
 - The gateway uses PKCE automatically to protect against authorization code interception.
 
 ## Configuration
@@ -262,7 +265,7 @@ All `login` and `logout` endpoint and redirect values must be safe local paths. 
 | `clientId` | Yes | OAuth2 client identifier registered with your identity provider. |
 | `clientSecret` | Yes | OAuth2 client secret for token exchange. |
 | `redirectURI` | Yes | Absolute callback URI handled by the gateway, such as `http://localhost:3000/oauth/callback`. |
-| `scopes` | No | Additional OAuth2 scopes to request. `openid` is always included automatically. |
+| `scopes` | No | Additional OAuth2 scopes to request. `openid` is always included automatically. Add `offline_access` when your identity provider requires that scope to issue refresh tokens. Returned refresh tokens are used automatically. |
 | `discovery` | No | Override the OIDC discovery document location. If omitted, uses `${issuer}/.well-known/openid-configuration`. |
 | `authorizationEndpoint` | No | Explicit authorization endpoint. Overrides the value from discovery. |
 | `tokenEndpoint` | No | Explicit token endpoint. Overrides the value from discovery. |
