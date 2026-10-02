@@ -29,16 +29,16 @@ Depending on the policy, different fields are accessible based on when in the re
 
 |Policy|Available Variables|
 |------|-------------------|
-|Transformation| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm` |
-|Remote Rate Limit| `source`, `request`, `jwt`, `apiKey`, `mcp` |
-|Local Rate Limit key (`requests`)| `source`, `request`, `jwt`, `apiKey`, `mcp` — the rule is checked before the LLM request is parsed, so a key cannot read `llm`. |
-|Local Rate Limit key (`tokens`)| `source`, `request`, `jwt`, `apiKey`, `mcp`, `llm` — the rule is charged after the LLM request is parsed, so a key can read fields such as `llm.requestModel`. |
-|HTTP Authorization| `source`, `request`, `jwt`, `mcp` |
-|External Authorization| `source`, `request`, `jwt`, `mcp` |
-|MCP Authorization| `source`, `request`, `jwt`, `mcp` — `mcp.methodName` distinguishes methods such as `tools/list` and `tools/call`. For list methods, rules run once per listed item. `mcp.sessionId` and `mcp.tool.arguments` aren't set. |
-|Logging| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm`|
-|Tracing| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm`|
-|Metrics| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm`|
+|Transformation| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm` |
+|Remote Rate Limit| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend` |
+|Local Rate Limit key (`requests`)| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend` — the rule is checked before the LLM request is parsed, so a key cannot read `llm`. |
+|Local Rate Limit key (`tokens`)| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend`, `llm` — the rule is charged after the LLM request is parsed, so a key can read fields such as `llm.requestModel`. |
+|HTTP Authorization| `source`, `request`, `jwt`, `mcp`, `backend` |
+|External Authorization| `source`, `request`, `jwt`, `mcp`, `backend` |
+|MCP Authorization| `source`, `request`, `jwt`, `mcp`, `backend` — `mcp.methodName` distinguishes methods such as `tools/list` and `tools/call`. For list methods, rules run once per listed item. `mcp.sessionId` and `mcp.tool.arguments` aren't set. |
+|Logging| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`|
+|Tracing| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`|
+|Metrics| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`|
 
 ### When `mcp` is available {#mcp-availability}
 
