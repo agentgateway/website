@@ -187,3 +187,18 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3182 -->
 
 You can now opt in to OpenTelemetry field names for stdout access logs. Set `frontendPolicies.accessLog.preset: otel`. For more information, see [Use OpenTelemetry field names]({{< link-hextra path="/documentation/observability/access-logs/view/#preset" >}}).
+
+## 🐛 Fixes {#v16-fixes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3214 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3690 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
+
+**Traffic management**
+
+- Connections with `maxConnectionDuration` close with up to 10% jitter, which reduces synchronized reconnects at the configured connection age.
+- Bare backend references in standalone HTTP routes, TCP routes, and MCP target backend hosts now resolve to top-level backends. A reference such as `backend: upstream` no longer fails at request time with `service not found` when the top-level backend is named `upstream`.
+
+**LLM**
+
+- Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
