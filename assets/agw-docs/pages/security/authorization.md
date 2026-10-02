@@ -11,7 +11,8 @@ The `authorization` field can appear in three places in a Kubernetes policy:
 | Policy section | Field path | Use case |
 |---|---|---|
 | `traffic` | `spec.traffic.authorization` | Control access to HTTP routes, LLM backends, or general traffic. |
-| `frontend` | `spec.frontend.networkAuthorization` | Layer 4 network-level authorization on downstream connections (such as source IP filtering). |
+| `frontend` | `spec.frontend.networkAuthorization` | Layer 4 network-level authorization on downstream connections (such as source IP filtering). |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+| `backend` | `spec.backend.authorization` | Control access after route selection, using the request for the selected destination backend. |{{< /version >}}
 | `backend.mcp` | `spec.backend.mcp.authorization` | Control access to specific MCP servers or tools. |
 
 > [!NOTE]
