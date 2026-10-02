@@ -22,7 +22,7 @@ For logging, CEL exposes these variable groups when enabled or applicable:
      every
      enterprise line resolves to one of the tokens above. -->
 {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-* **Guardrails**: `guardrails`, with one entry per prompt-guard intervention naming the phase, the guard, and the action
+* **Guardrails**: `guardrails`, with entries for prompt-guard evaluations naming the phase, the guard, and the action, including `allow`
 {{< /version >}}
 
 Use the `filter` field in the {{< reuse "agw-docs/snippets/policy.md" >}} to [filter which requests are logged](#filter-access-logs) by path, response code, or any other request attribute. Use the `attributes` list to [add or remove log fields](#add-and-remove-log-fields) by using CEL expressions. For the full variable table, available functions, and examples, see the [CEL expressions reference]({{< link-hextra path="/reference/cel/" >}}).
@@ -151,6 +151,23 @@ Fields that you add yourself with the `attributes` field are not renamed, so cho
 
 > [!NOTE]
 > The preset changes only the stdout access log, and only for HTTP traffic. A TCP listener has no HTTP field set to rename, so the preset has no effect there. An OTLP export already uses semantic convention attribute names, so it is unaffected. For more information, see [Export logs over OTLP]({{< link-hextra path="/documentation/observability/access-logs/export/" >}}).
+{{< /version >}}
+
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+## Log the selected backend endpoint {#backend-endpoint}
+
+Use `backend.endpoint` in an access log expression to record the resolved destination of a directly addressed backend, such as a static hostname, including its port for a network endpoint. `backend.name` identifies the configured backend; `backend.endpoint` identifies the selected call target. The endpoint is available only after target resolution. Service backends leave `backend.endpoint` unset because their workload endpoints are selected separately.
+
+Add an attribute to the `frontend.accessLog.attributes.add` list in your policy. Guard the lookup for Service backends and requests rejected before a backend is resolved.
+
+```yaml
+frontend:
+  accessLog:
+    attributes:
+      add:
+      - name: backend_endpoint
+        expression: 'has(backend.endpoint) ? backend.endpoint : ""'
+```
 {{< /version >}}
 
 ## Filter access logs
@@ -390,19 +407,21 @@ You can add custom fields to every access log line by using CEL expressions that
      enterprise line resolves to one of the tokens above. -->
 {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 
-## Log guardrail interventions {#guardrails}
+## Log guardrail results {#guardrails}
 
-A prompt guard that masks or rejects content records what it did in the request's dynamic metadata, under the `guardrails` variable. Add that variable to an access log field to keep an audit trail of every intervention, including which guard acted and why.
+Prompt guards record their evaluation results in the request's dynamic metadata, under the `guardrails` variable. Results include `allow` when a guard accepts the content, as well as actions that mask, reject, audit, or fail open. Add the variable to an access log field to record which guards ran and their outcomes.
 
-The variable holds one entry per intervention, in either the request or the response phase, so a request that both a request guard and a response guard act on produces two entries.
+The variable holds entries for guardrail evaluations in either the request or the response phase. A nonempty list does not necessarily mean that a guardrail intervened: every entry might have the action `allow`.
 
 If a request guard rejects an LLM request before the provider call, the access log still receives request-side LLM metadata and the `guardrails` entry. Provider response fields are absent because the request never reaches the LLM provider.
 
-| Field | Description |
+The following table describes the properties of each result in the `guardrails` list. Agentgateway populates these values when a guard runs; they are not configuration fields. The `[]` notation means "each entry in the list" and is not literal CEL syntax. For example, `guardrails[0].action` reads the first result's action.
+
+| Result property | Description |
 | ------- | ----------- |
-| `guardrails[].phase` | The phase that the guardrail intervened in, either `request` or `response`. |
-| `guardrails[].guard` | The guard kind that intervened, such as `regex`, `webhook`, `openAIModeration`, `bedrockGuardrails`, `googleModelArmor`, or `azureContentSafety`. |
-| `guardrails[].action` | The action that the guardrail took, one of `mask`, `reject`, `audit`, or `failOpen`. |
+| `guardrails[].phase` | The phase that the guardrail evaluated, either `request` or `response`. |
+| `guardrails[].guard` | The guard kind that was evaluated, such as `regex`, `webhook`, `openAIModeration`, `bedrockGuardrails`, `googleModelArmor`, or `azureContentSafety`. |
+| `guardrails[].action` | The action that the guardrail took, one of `allow`, `mask`, `reject`, `audit`, or `failOpen`. |
 | `guardrails[].guardrailId` | The configured guardrail identifier. |
 | `guardrails[].guardrailVersion` | The configured guardrail version. |
 | `guardrails[].actionReason` | The reason that the guardrail reported for its action. |
@@ -411,7 +430,14 @@ If a request guard rejects an LLM request before the provider call, the access l
 > [!NOTE]
 > Only CEL that runs after the request completes, such as an access log field or a metric field, receives the `guardrails` variable. An authorization or transformation expression that runs mid-request never sees it.
 
-The following {{< reuse "agw-docs/snippets/policy.md" >}} adds the whole list as one log field, and filters the log down to the requests that a guardrail acted on. To record a single value instead, use an expression such as `guardrails[0].action`.
+Set `spec.frontend.accessLog.filter` to a CEL expression that returns `true` for requests you want to log. The `size()` function counts list entries, and the `exists` macro checks whether any entry matches a condition. They are CEL operations on the list, rather than result properties from the table.
+
+| Value of `spec.frontend.accessLog.filter` | Requests logged |
+| --- | --- |
+| `guardrails.size() > 0` | Requests with at least one guardrail result, including requests that every guard allows. |
+| `guardrails.exists(g, g.action != "allow")` | Requests with at least one result whose action is not `allow`. The variable `g` represents each result as the condition is checked. |
+
+To choose what is recorded in a log field, set `spec.frontend.accessLog.attributes.add[].expression`. The following {{< reuse "agw-docs/snippets/policy.md" >}} uses `guardrails` to record the whole list and `guardrails.size() > 0` to select requests with results. To record just the first result's action, use `guardrails[0].action` as the attribute expression with the same nonempty-list filter.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -503,7 +529,3 @@ If you set up the [OTel stack]({{< link-hextra path="/documentation/observabilit
 ```sh {paths="access-logging"}
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
-
-
-
-

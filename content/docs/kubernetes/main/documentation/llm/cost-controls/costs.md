@@ -101,6 +101,10 @@ Use `agctl catalog import` to generate a catalog JSON file, then load it into a 
 
 4. Reference the ConfigMap from your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, as shown in the next section, [Configure a catalog as a ConfigMap](#step-2-configure-a-catalog-as-a-configmap).
 
+### Filter providers and apply import overrides
+
+{{< reuse "agw-docs/snippets/model-catalog-import-options.md" >}}
+
 For all options, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
 
 ## Step 2: Configure a catalog as a ConfigMap
