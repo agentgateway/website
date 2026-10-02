@@ -511,7 +511,9 @@ llm:
     # ...
 ```
 
-A key with `allowedModels: ["gpt-5*"]` sees `gpt-5` and `gpt-5-mini`. A key with no `allowedModels` sees all three. A key with an empty list sees none. Agentgateway returns a model that you configure as a pattern, such as `"*"`, as that pattern rather than as expanded names.
+A key with `allowedModels: ["gpt-5*"]` sees `gpt-5` and `gpt-5-mini`. A key with no `allowedModels` sees all three. A key with an empty list sees none.
+
+For wildcard names such as `"*"`, agentgateway lists matching model IDs from the catalog. It checks each ID against `allowedModels`. With `llm.discovery: disabled`, agentgateway lists the pattern itself. For more information, see [Wildcard expansion]({{< link-hextra path="/documentation/llm/api-types/models/#wildcard-expansion" >}}).
 
 <!-- TODO troubleshooting
 
