@@ -124,6 +124,26 @@ EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
 
+### Choose a listen address {#bind-address}
+
+Set `bindAddress` to an IPv4 or IPv6 address to restrict the network interface that a gateway listens on. When omitted, the gateway listens on all interfaces. For example, bind to loopback when a sidecar should accept traffic only from processes in the same pod or host network namespace.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    bindAddress: 127.0.0.1
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8000
+```
+
+| Field | Description |
+| --- | --- |
+| `gateways.default.bindAddress` | Local IP address to listen on. Use `127.0.0.1` for IPv4 loopback or `"::1"` for IPv6 loopback. Hostnames are not accepted. A loopback listener cannot accept connections sent to the pod IP or a Kubernetes Service. Use an address reachable by those clients when you expose a gateway through a Service. |
+| `gateways.default.port` | Listening port, shared by all listeners on this gateway. |
+
 ## Attach routes to a gateway {#attach-routes}
 
 To attach a route to a specific gateway, list the gateway name in the route's `gateways` field. The following configuration serves two different sets of routes on two ports.
@@ -235,7 +255,7 @@ agentgateway -f config3.yaml --validate-only
 
 Use the `listeners` field when one port must serve multiple hostnames with different TLS certificates. Each listener takes a `name`, and routes reference it in the form `<gateway-name>/<listener-name>`.
 
-When you set `listeners`, `port` is the only other field you can set on the gateway itself. Move the protocol, hostname, and TLS settings into each listener.
+When you set `listeners`, you can also set `port` and `bindAddress` on the gateway itself. Move the protocol, hostname, and TLS settings into each listener.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -264,7 +284,7 @@ routes:
   - host: shared-backend.example.com:443
 ```
 
-All listeners under a gateway share the gateway's port, so they cannot mix encrypted and plaintext traffic. If you need both HTTP and HTTPS, define two gateways as shown in [Serve the same routes on multiple gateways](#multiple-gateways).
+All listeners under a gateway share the gateway's bind address and port, so they cannot mix encrypted and plaintext traffic. If you need both HTTP and HTTPS, define two gateways as shown in [Serve the same routes on multiple gateways](#multiple-gateways).
 
 {{< doc-test paths="gateways" >}}
 # WHAT THIS TEST VALIDATES:

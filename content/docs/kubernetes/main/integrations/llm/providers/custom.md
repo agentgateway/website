@@ -79,17 +79,28 @@ shapes, declare each supported format and optionally set a per-format path.
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
 
-Because `Responses` comes before `Completions`, an Anthropic messages request to
-a provider that declares both formats takes the Responses conversion. The same
-order applies to the built-in `openai` provider, and to the `azure` provider for
-a model that is not a Claude model, because both support the two formats. The
-Responses conversion drops extended-thinking history, which the Completions
-conversion carries. To put `Completions` first again, as in earlier versions,
-set the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable to
-`true` on the proxy, in the `spec.env` field of the
-{{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. For an example,
-see [Add environment variables]({{< link-hextra path="/documentation/setup/customize/configs/#env-vars" >}}).
-This variable is planned for removal in version 1.7.
+When a provider declares both `Responses` and `Completions`, agentgateway prefers
+Responses for Anthropic messages requests. This order also applies to the built-in
+`openai` provider and to `azure` for models other than Claude. On an
+{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, it also applies to
+`Ollama`, `Groq`, `Huggingface`, and `XAI`.
+
+The Responses conversion drops extended-thinking history. The Chat Completions
+conversion preserves it. To preserve this history, declare `Completions` and
+omit `Responses`.
+
+Use the `openai` provider only for the OpenAI API. For other OpenAI-compatible
+servers, use a custom provider with the formats that the server supports.
+If the server does not support `/v1/responses`, declare `Completions` and omit
+`Responses`.
+
+For providers that support both formats, the
+`AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable provides a
+temporary workaround for Responses conversion bugs. To prefer Chat Completions,
+set this variable to `true` in `spec.env` of the
+{{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
+The variable applies to every provider and is planned for removal in version 1.7.
+For an example, see [Add environment variables]({{< link-hextra path="/documentation/setup/customize/configs/#env-vars" >}}).
 
 ### Converted replies and errors
 
@@ -180,10 +191,10 @@ Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets b
 
 ### Anthropic messages to the Completions format
 
-An Anthropic messages request takes the Completions conversion when the provider
-declares `Completions` and not `Responses`, or when
-`AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` is set to `true`. Besides the
-reasoning carryover in the preceding section, the conversion handles these
+Agentgateway converts an Anthropic messages request to Chat Completions when the
+provider declares `Completions` and omits `Responses`. For providers that support
+both formats, you can use the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS=true`
+workaround. The conversion preserves reasoning history and handles the following
 fields.
 
 | Field | What happens |

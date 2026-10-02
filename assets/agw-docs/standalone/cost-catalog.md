@@ -30,7 +30,7 @@ The proxy combines the built-in catalog and your catalog sources into one catalo
 - **Overlays**: A catalog without `metadata` is an overlay. The proxy applies overlays on top of the base catalog in the order that you list them. A later overlay takes precedence at the model level.
 
 > [!CAUTION]
-> An imported catalog that is older than the built-in catalog of your agentgateway version is ignored, and the proxy logs no warning. After you upgrade, import the catalog again. To keep a catalog of your own rates in effect regardless of its age, leave out the `metadata` field so that the catalog is applied as an overlay.
+> The proxy ignores imported catalogs that are older than its built-in catalog, without a warning. You can remove your imported catalog if the built-in catalog has the rates that you need. To customize rates, omit `metadata` from your catalog. The proxy then applies your catalog as an overlay, regardless of its age.
 {{% /version %}}
 
 ```yaml
@@ -94,22 +94,36 @@ agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import \
 > The `--providers` flag takes the provider IDs of the source that you import from, and the sources name some providers differently. The `github` source uses the agentgateway provider IDs, such as `gcp.gemini` and `aws.bedrock`, while `models.dev` uses its own IDs, such as `google` and `amazon-bedrock`. An ID that the source does not recognize is handled differently too: `models.dev` fails with `no providers matched`, but `github` reports `imported 0 providers` and writes a catalog without that provider. A `--providers` list that omits Bedrock also makes `aws-bedrock-mantle` contribute nothing. Check the provider list in the generated file before you load it.
 {{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+{{< reuse "agw-docs/snippets/model-catalog-import-options.md" >}}
+{{< /version >}}
+
 For all flags, see the {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}){{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}[`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}){{< /version >}} reference.
 
 ## Import costs (UI)
 
 You can also manage the model cost catalog from the built-in [UI]({{< link-hextra path="/documentation/setup/ui/" >}}).
 
+{{< version include-if="1.5.x,1.4.x,1.3.x">}}
+
+> [!WARNING]
+> The **Refresh base costs** button in the UI downloads the model catalog from the agentgateway repository's `main` branch, regardless of your installed version. A planned format change to the model catalog on `main` will not work with version 1.5 and earlier.
+>
+> Existing catalogs continue to work, but make sure not to refresh the model catalog through the UI until you upgrade to version 1.6 or later.
+{{< /version >}}
+
 1. Open the [UI cost page](http://localhost:15000/ui/llm/costs) (**LLM > Costs**). The page lists your configured **Catalog sources** (files and ConfigMaps, merged in order) and any inline **Custom costs** overrides.
 
    {{< reuse-image-light src="img/ui-cost-catalog.png" alt="UI LLM Costs page showing catalog sources and custom cost overrides" >}}
    {{< reuse-image-dark srcDark="img/ui-cost-catalog-dark.png" alt="UI LLM Costs page showing catalog sources and custom cost overrides" >}}
 
-2. Press **Refresh base costs**. The UI fetches the latest base costs and configures `modelCatalog`. You can refresh again later to pull updated pricing and model data.
+2. Press **Refresh base costs**. The UI downloads the catalog from `main` and configures `modelCatalog`.
 
 3. To adjust pricing for a specific model, use **Edit** under **Custom costs** to add inline overrides without changing your catalog files.
 
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}
 When you set up a fresh configuration for the first time, the UI automatically performs the refresh step.
+{{% /version %}}
 
 After you load a catalog, the same UI visualizes your priced traffic. For more information, see [Cost dashboard]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/" >}}).
 

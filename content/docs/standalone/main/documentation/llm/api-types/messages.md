@@ -68,9 +68,15 @@ Agentgateway uses the first of these formats that the provider supports.
 | 3 | `completions` | The request is converted to the OpenAI Chat Completions format. |
 | 4 | Bedrock Converse | The request is converted to the Amazon Bedrock Converse format. |
 
-The first three rows are values that a `custom` provider declares in its `formats` list. Built-in providers advertise a fixed set. The `openAI` provider advertises both `responses` and `completions`, and so does the `azure` provider for a model that is not a Claude model. Bedrock Converse is not a `formats` value. A [`bedrock` provider]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) supports the Converse format and nothing else, so a Messages request that is routed to a Bedrock provider always takes the Converse conversion.
+The first three rows are values that a `custom` provider declares in its `formats` list. Built-in providers support a fixed set of formats. The `openAI`, `ollama`, `groq`, `huggingface`, and `xai` providers support both `responses` and `completions`. The `azure` provider also supports both formats for models other than Claude.
 
-Because `responses` comes before `completions`, a provider that advertises both takes the Responses conversion. The Responses conversion drops extended-thinking history, which the Chat Completions conversion carries. To put `completions` first again, as in earlier versions, set the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable to `true` on the agentgateway process. This variable is planned for removal in version 1.7.
+Bedrock Converse is not a `formats` value. A [`bedrock` provider]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) supports only Converse, so agentgateway always converts Messages requests to that format.
+
+When a provider supports both `responses` and `completions`, agentgateway prefers Responses. The Responses conversion drops extended-thinking history. The Chat Completions conversion preserves it.
+
+Use the `openAI` provider only for the OpenAI API. For other OpenAI-compatible servers, use a [`custom` provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with the formats that the server supports. If the server does not support `/v1/responses`, declare `completions` and omit `responses`. Use the same configuration to preserve extended-thinking history.
+
+For providers that support both formats, the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable provides a temporary workaround for Responses conversion bugs. To prefer Chat Completions, set the variable to `true` on the agentgateway process. The variable applies to every provider and is planned for removal in version 1.7.
 
 ### Converted replies and errors
 
@@ -112,7 +118,7 @@ The reply is converted back with these differences:
 
 ### Converting to the Chat Completions format
 
-A Messages request takes the Chat Completions conversion when the provider advertises `completions` and not `responses`, such as a self-hosted inference engine. A provider that advertises both formats also takes this conversion when `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` is set to `true`. To declare that an upstream speaks `completions`, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
+Agentgateway converts a Messages request to Chat Completions when the provider declares `completions` and omits `responses`. For providers that support both formats, you can use the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS=true` workaround. To configure the supported formats, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
 The Chat Completions conversion carries extended-thinking history in both directions, so a thinking session on a converted route keeps its prior reasoning from one turn to the next. Self-hosted engines that report reasoning as `reasoning_content` also accept it back on an assistant message, which is what makes the carryover possible.
 

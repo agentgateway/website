@@ -109,16 +109,21 @@ EOF
 
 Sampling controls how much trace data agentgateway generates. Tracing every request gives complete visibility but adds overhead and increases storage costs. Sampling only a fraction keeps costs low while still capturing enough data to detect issues and understand latency.
 
-Agentgateway has two independent sampling settings. Which one applies depends on whether the incoming request already carries trace context from an upstream client.
+Agentgateway selects a sampling setting based on the trace context in the incoming request.
 
 | Setting | Applies when | Default |
 | --- | --- | --- |
 | `randomSampling` | The incoming request carries no trace context, so the proxy decides whether to start a new trace. | `false` |
-| `clientSampling` | The incoming request already carries a trace from an upstream client. | `true` |
+| `clientSampling` | The incoming request has a sampled `traceparent` (the sampled flag is `01`). | `true` |{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+| `parentNotSampled` | The incoming request has an unsampled `traceparent` (the sampled flag is `00`). | `false` |{{< /version >}}
 
-Both settings accept the same value format. For example, set the field to `"true"` to sample every applicable request, `"false"` to sample none, or a decimal string such as `"0.1"` to sample that fraction (10% in this case).
+These settings accept the same value format. For example, set the field to `"true"` to sample every applicable request, `"false"` to sample none, or a decimal string such as `"0.1"` to sample that fraction (10% in this case).
 
-Because `clientSampling` defaults to `"true"`, agentgateway already follows 100% of traces that a client started, even when `randomSampling` is `"false"`. This means tracing is off by default for traffic that originates at the gateway, but on for traffic that flows through it as part of a distributed trace from an upstream service.
+Because `clientSampling` defaults to `"true"`, agentgateway already follows 100% of sampled traces that a client started, even when `randomSampling` is `"false"`. This means tracing is off by default for traffic that originates at the gateway, but on for traffic that flows through it as part of a distributed trace from an upstream service.
+
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+Only one of the three settings applies to each request. An unsampled parent is respected by default. Set `parentNotSampled: "true"` to trace those requests anyway and propagate a sampled flag (`01`) upstream.
+{{< /version >}}
 
 The following example shows a common production configuration where you follow all traces that clients already started, and sample a fraction of requests that originate at the gateway. 
 
@@ -150,7 +155,7 @@ This configuration gives you a representative sample of gateway-originated traff
 
 ## Filter spans
 
-Use the `filter` field to write a [CEL]({{< link path="/reference/cel/" >}}) expression that controls which sampled spans are exported to the OTel collector. A span is exported only when the expression evaluates to `true`. The filter runs after sampling, so it applies to all spans that are already selected by either `randomSampling` or `clientSampling`.
+Use the `filter` field to write a [CEL]({{< link path="/reference/cel/" >}}) expression that controls which sampled spans are exported to the OTel collector. A span is exported only when the expression evaluates to `true`. The filter runs after sampling, so it applies to all spans that are already selected by the applicable sampling setting.
 
 The following example exports only spans where the HTTP response code is 400 or greater.
 
@@ -191,7 +196,7 @@ For the full list of available CEL variables, see the [CEL variables reference](
 
 ## Customize span attributes
 
-Agentgateway emits standard OpenTelemetry attributes on every span. You can add custom attributes or remove default ones. Attribute customization applies to all sampled spans, regardless of whether they were selected by `randomSampling` or `clientSampling`. For the full list of default attributes, see [Span attribute reference]({{< link path="/documentation/observability/traces/attribute-reference/" >}}).
+Agentgateway emits standard OpenTelemetry attributes on every span. You can add custom attributes or remove default ones. Attribute customization applies to all sampled spans, regardless of which sampling setting selected them. For the full list of default attributes, see [Span attribute reference]({{< link path="/documentation/observability/traces/attribute-reference/" >}}).
 
 > [!NOTE]
 > Customizing span attributes does not apply to policy call child spans, such as spans for ext_authz or rate limiting calls. Those spans have a fixed attribute set.
