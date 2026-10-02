@@ -14,7 +14,7 @@ test:
 # pre-docTabs layout, then the docTabs layout before the page moved under
 # `metrics/`. Aliases are WHOLE URL paths, so keep the `/docs/kubernetes/latest`
 # prefix. Without it, both redirects build at the site root and collide with the
-# identical aliases in `main`, and whichever tree builds last wins.
+# identical aliases in `latest`, and whichever tree builds last wins.
 aliases:
   - /docs/kubernetes/latest/observability/nacks/
   - /docs/kubernetes/latest/documentation/observability/nacks/

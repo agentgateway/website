@@ -1,5 +1,5 @@
 ---
-title: Version 1.5.x
+title: Version 1.6.x
 weight: 460
 description: Use agentgateway in a Kubernetes environment. 
 test: skip
