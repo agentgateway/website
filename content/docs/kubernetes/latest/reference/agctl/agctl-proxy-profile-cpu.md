@@ -5,4 +5,4 @@ description: Reference for the `agctl proxy profile cpu` command.
 test: skip
 ---
 
-{{< reuse "agw-docs/pages/reference/agctl/main/agctl-proxy-profile-cpu.md" >}}
+{{< reuse "agw-docs/pages/reference/agctl/latest/agctl-proxy-profile-cpu.md" >}}

@@ -7,4 +7,4 @@ test: skip
 
 {{< reuse "agw-docs/standalone/reference/helm.md" >}}
 
-{{< reuse "agw-docs/pages/reference/helm/latest/agentgateway-standalone.md" >}}
+{{< reuse "agw-docs/pages/reference/helm/1.5.x/agentgateway-standalone.md" >}}
