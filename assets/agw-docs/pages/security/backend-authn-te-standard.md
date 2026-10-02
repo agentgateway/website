@@ -454,7 +454,7 @@ Unlike the subject and actor token types, `requestedTokenType` is a closed set. 
 | `IdJag` | `requestedTokenType IdJag is only supported by crossAppAccess`. The value appears in the list because the type list is shared with [Cross App Access]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/cross-app-access/" >}}). |
 | Any value, with the `JwtBearer` grant type | `requestedTokenType is only valid with TokenExchange grantType` |
 
-When you set `requestedTokenType`, the gateway sends `requested_token_type` on the token request, then compares the `issued_token_type` of the response against it. A mismatch fails the exchange with a `500`, and the request never reaches the backend.
+When you set `requestedTokenType`, the gateway sends `requested_token_type` on the token request, then compares the `issued_token_type` of the response against it. A mismatch fails the exchange with {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}`502`{{< /version >}}{{< version include-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}`500`{{< /version >}}, and the request never reaches the backend.
 
 ```
 backend authentication failed: token exchange returned issued_token_type urn:ietf:params:oauth:token-type:jwt, expected urn:ietf:params:oauth:token-type:access_token
@@ -474,6 +474,10 @@ The gateway accepts the following three settings for compatibility with provider
 | `location.queryParameter`, which carries the exchanged token in a URI query parameter | `oauth token exchange is configured to forward the exchanged bearer token in a URI query parameter` |
 
 ## Troubleshooting
+
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+Failures contacting the token endpoint or processing its response return `502`. Gateway-local configuration or credential insertion failures return `500`. Caller-caused OAuth errors retain their existing `4xx` status codes. A `502` does not automatically make the authentication flow retryable.
+{{< /version >}}
 
 ### subject_token validation failure
 

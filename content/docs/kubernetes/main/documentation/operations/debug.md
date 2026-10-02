@@ -87,7 +87,15 @@ Most routing and policy issues surface in the status of the corresponding Kubern
    * The wrong parent Gateway is referenced.
    * Multiple HTTPRoutes conflict by having identical matchers or by having no matchers (and so default to `/`).
 
-4. Check {{< reuse "agw-docs/snippets/backend.md" >}} and {{< reuse "agw-docs/snippets/policy.md" >}} resources for partial acceptance. A resource can report `Accepted=True` with `reason: PartiallyValid` when the controller keeps the usable parts of a backend or policy and reports the invalid part in the condition message.
+4. If the route sends traffic to an InferencePool, check the pool status for endpoint picker configuration errors.
+
+   ```sh
+   kubectl get inferencepool <name> -n <namespace> -o yaml
+   ```
+
+   An InferencePool that omits `spec.endpointPickerRef` reports `Accepted=False` with `reason: EndpointPickerRefMissing`. Add an endpoint picker reference before you debug route matching or proxy configuration.
+
+5. Check {{< reuse "agw-docs/snippets/backend.md" >}} and {{< reuse "agw-docs/snippets/policy.md" >}} resources for partial acceptance. A resource can report `Accepted=True` with `reason: PartiallyValid` when the controller keeps the usable parts of a backend or policy and reports the invalid part in the condition message.
 
    1. Find the backends and policies that report `PartiallyValid`. The `ACCEPTED` column of `kubectl get` shows `True` for these resources, so filter on the reason instead.
 

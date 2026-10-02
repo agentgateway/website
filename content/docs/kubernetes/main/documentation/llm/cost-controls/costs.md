@@ -14,11 +14,21 @@ test:
     path: costs
 ---
 
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} can compute the realized USD cost of each LLM request when you provide a model cost catalog. With a catalog in place, {{< reuse "agw-docs/snippets/agentgateway.md" >}} attributes cost per request in access logs, traces, and metrics, and exposes the values to CEL expressions as `llm.cost` and `llm.costRates`.
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} computes the realized USD cost of each LLM request from a model cost catalog. For each priced request, {{< reuse "agw-docs/snippets/agentgateway.md" >}} records the cost in access logs, traces, and metrics, and exposes the values to CEL expressions as `llm.cost` and `llm.costRates`.
 
-{{< reuse "agw-docs/snippets/cost-catalog-default.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} ships with a built-in catalog, so requests to common public models are priced without any configuration. The built-in catalog is fixed when your {{< reuse "agw-docs/snippets/agentgateway.md" >}} version is built. To price newer models, set contracted rates, or add your own models, add catalog sources as described in the following steps.
 
-In Kubernetes mode, you deliver the catalog as a ConfigMap and reference it from a Gateway-level {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
+In Kubernetes mode, you deliver your own catalog as a ConfigMap and reference it from a Gateway-level {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. For document and optical character recognition (OCR) models that report page usage, such as Mistral OCR on `/v1/ocr`, the catalog can price each processed page. A listener that serves {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} resources detects `/v1/ocr` requests automatically. On an HTTPRoute with an AI backend, map the path to the `Detect` route type in the `spec.backend.ai.routes` field of an {{< reuse "agw-docs/snippets/policy.md" >}}, such as `"/v1/ocr": "Detect"`. Otherwise, the request is parsed as a chat completion and fails.
+
+## How catalog sources combine {#catalog-precedence}
+
+The proxy combines the built-in catalog and your catalog sources into one catalog.
+
+- **Base catalog**: A catalog with a `metadata.generatedAt` timestamp is a complete base catalog. The built-in catalog has this timestamp, and so does every catalog that `agctl catalog import` generates. The proxy uses only the base catalog with the newest timestamp and ignores the others. A freshly imported catalog therefore replaces the built-in catalog.
+- **Overlays**: A catalog without `metadata` is an overlay. The proxy applies overlays on top of the base catalog in the order that you list them. A later overlay takes precedence at the model level.
+
+> [!CAUTION]
+> The proxy ignores imported catalogs that are older than its built-in catalog, without a warning. You can remove your imported catalog if the built-in catalog has the rates that you need. To customize rates, omit `metadata` from your catalog. The proxy then applies your catalog as an overlay, regardless of its age.
 
 ## Step 1: Prepare a catalog
 
@@ -91,6 +101,10 @@ Use `agctl catalog import` to generate a catalog JSON file, then load it into a 
 
 4. Reference the ConfigMap from your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, as shown in the next section, [Configure a catalog as a ConfigMap](#step-2-configure-a-catalog-as-a-configmap).
 
+### Filter providers and apply import overrides
+
+{{< reuse "agw-docs/snippets/model-catalog-import-options.md" >}}
+
 For all options, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
 
 ## Step 2: Configure a catalog as a ConfigMap
@@ -120,7 +134,7 @@ For all options, see the [`agctl catalog import`]({{< link-hextra path="/referen
    EOF
    ```
 
-2. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that references the ConfigMap as a catalog source. Sources are merged in order, with later sources taking precedence at the model level.
+2. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that references the ConfigMap as a catalog source. For how multiple sources combine with each other and with the built-in catalog, see [How catalog sources combine](#catalog-precedence).
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -175,10 +189,10 @@ Generate traffic through agentgateway that matches a model entry from the catalo
 
 When a request matches an entry in the catalog, {{< reuse "agw-docs/snippets/agentgateway.md" >}} populates the following CEL fields:
 
-- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-token-type components: `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, and `outputAudio`. Unset when the model cannot be priced.
-- `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied, after tier selection. Unset when the model cannot be priced.
+- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-usage-type components: `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, `outputAudio`, and `pages` for page-billed document models. Unset when the model cannot be priced.
+- `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied, after tier selection. For page-billed document models, `perPage` holds the USD-per-page rate instead. Unset when the model cannot be priced.
 
-The request access log always includes `agw.ai.usage.cost.total` for LLM requests (it is `0` when the model cannot be priced). For how to view logs and add cost fields, see [Metrics and logs]({{< link-hextra path="/documentation/llm/observability/" >}}).
+The request access log includes `agw.ai.usage.cost.total` only for priced LLM requests. When the model cannot be priced, which is a lookup status of `Unpriced` or `Missing` as described in the next step, the access log leaves out the field. For how to view logs and add cost fields, see [Metrics and logs]({{< link-hextra path="/documentation/llm/observability/" >}}).
 
 ## Step 5: Monitor catalog lookups
 
@@ -189,9 +203,9 @@ The `status` label is one of the following values:
 | Status | Meaning |
 |--------|---------|
 | `Exact` | The provider and model were found in the catalog and priced. |
-| `Unpriced` | The model was found, but the token types in the request had no matching rates. |
+| `Unpriced` | The model was found, but its catalog entry has no rates, such as an entry with only `tags`. |
 | `Missing` | The provider or model was not found in the catalog. |
-| `NoCatalog` | No catalog is configured. |
+| `NoCatalog` | No catalog was available for the lookup. Because the built-in catalog is always loaded, a running proxy does not report this status. |
 
 To view the metric, port-forward the proxy and query the metrics endpoint:
 

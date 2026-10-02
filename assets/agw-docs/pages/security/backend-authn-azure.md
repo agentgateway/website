@@ -72,7 +72,7 @@ auth:
 > [!WARNING]
 > The `managedIdentity` field requires all three of `clientId`, `objectId`, and `resourceId`, but the gateway uses only the first one that is not empty, in that order. A policy that names one identifier is rejected with `objectId: Required value`. To use a user-assigned managed identity, set `clientId` to the identifier that you want the gateway to use, and set the other two fields to a placeholder. Prefer `workloadIdentity` or the implicit form where you can, because neither has this restriction.
 
-{{< version exclude-if="1.5.x,1.4.x" >}}
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 ## Configure token scopes
 
 Set `scopes` when the backend requires a token for a resource other than Azure Cognitive Services or Azure AI Foundry. For example, the following configuration uses workload identity to request a token for Microsoft Graph.
@@ -158,7 +158,14 @@ Two behaviors of this chain are worth knowing.
 
 ## Troubleshoot
 
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+A gateway-local authentication failure, such as missing credentials or invalid configuration, returns `500`. A failure contacting an external credential provider or processing its token response returns `502`. The status code change does not automatically retry the authentication flow.
+
+For example, a missing credential source returns `500` with the following message.
+{{< /version >}}
+{{< version include-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 A request that the gateway cannot authenticate returns a `500`.
+{{< /version >}}
 
 ```
 backend authentication failed: the credential provider was not enabled

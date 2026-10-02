@@ -1,6 +1,4 @@
-Use {{< reuse "agw-docs/snippets/kgateway.md" >}} with the Kubernetes Gateway
-API Inference Extension to route requests to Large Language Model (LLM)
-workloads in your Kubernetes environment.
+Use {{< reuse "agw-docs/snippets/kgateway.md" >}} with the [Kubernetes Gateway API Inference Extension](https://gateway-api-inference-extension.sigs.k8s.io/) and [llm-d Router](https://github.com/llm-d/llm-d-router) to route inference requests to Large Language Model (LLM) workloads in your Kubernetes environment.
 
 The Gateway API Inference Extension defines the `InferencePool` API and the
 protocol between gateways and endpoint pickers. The
@@ -114,7 +112,7 @@ Inference Extension CRDs, agentgateway, and the llm-d Router in Gateway mode.
      https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
 
    kubectl apply -f \
-     https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v1.5.0/manifests.yaml
+     https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}1.6.2{{< /version >}}{{< version include-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}1.5.0{{< /version >}}/manifests.yaml
    ```
 
 3. Install agentgateway with Inference Extension support.

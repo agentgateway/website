@@ -39,10 +39,17 @@ Langfuse accepts OpenTelemetry traces directly. Configure agentgateway to export
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-config:
+frontendPolicies:
   tracing:
-    otlpEndpoint: https://cloud.langfuse.com/api/public/otel
+    host: cloud.langfuse.com:443
+    protocol: http
+    path: /api/public/otel/v1/traces
     randomSampling: true
+    policies:
+      backendTLS: {}
+      requestHeaderModifier:
+        set:
+          Authorization: "Basic ${LANGFUSE_AUTH_HEADER}"
 
 gateways:
   default:
@@ -61,25 +68,13 @@ routes:
 
 ### Authentication
 
-Langfuse Cloud requires Basic Authentication for direct OTLP export. To authenticate, set the `OTEL_EXPORTER_OTLP_HEADERS` environment variable with your Langfuse API credentials:
+Set the credentials that the tracing policy sends in its `Authorization` header. The policy selects OTLP over HTTP, enables backend TLS, and uses the full trace ingestion path from the [Langfuse OpenTelemetry guide](https://langfuse.com/integrations/native/opentelemetry).
 
 ```bash
-# Base64-encode your Langfuse public key and secret key
-export OTEL_EXPORTER_OTLP_HEADERS="Authorization=Basic $(echo -n 'your-public-key:your-secret-key' | base64)"
-
-# Also set the protocol to HTTP/protobuf (Langfuse Cloud requires HTTP, not gRPC)
-export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+export LANGFUSE_AUTH_HEADER="$(printf '%s' '<your-public-key>:<your-secret-key>' | base64 | tr -d '\n')"
 ```
 
-If you're using a self-hosted Langfuse instance that doesn't require authentication, you can omit the `OTEL_EXPORTER_OTLP_HEADERS` variable and point directly to your instance:
-
-```yaml
-# For self-hosted Langfuse
-config:
-  tracing:
-    otlpEndpoint: http://localhost:4317  # or your self-hosted instance URL
-    randomSampling: true
-```
+For a self-hosted instance, replace `host` with your Langfuse hostname and port, and keep the `/api/public/otel/v1/traces` path and authentication header. Remove `backendTLS` only if the destination serves plain HTTP.
 
 ## Docker Compose example
 
@@ -96,46 +91,11 @@ services:
       - ./config.yaml:/config.yaml:ro
     command: ["-f", "/config.yaml"]
     environment:
-      - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic ${LANGFUSE_AUTH_HEADER}
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - LANGFUSE_AUTH_HEADER=${LANGFUSE_AUTH_HEADER}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
 ```
 
-For **self-hosted Langfuse**, you can point agentgateway directly to your instance:
-
-```yaml
-version: '3'
-services:
-  agentgateway:
-    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:latest
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./config.yaml:/config.yaml:ro
-    command: ["-f", "/config.yaml"]
-
-  langfuse:
-    image: langfuse/langfuse:latest
-    ports:
-      - "3001:3000"
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/langfuse
-      - NEXTAUTH_SECRET=your-secret
-      - NEXTAUTH_URL=http://localhost:3001
-    depends_on:
-      - db
-
-  db:
-    image: postgres:15
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=langfuse
-    volumes:
-      - langfuse-db:/var/lib/postgresql/data
-
-volumes:
-  langfuse-db:
-```
+For self-hosted Langfuse, use your existing instance and ensure that the agentgateway container can reach its hostname.
 
 ## Learn more
 
