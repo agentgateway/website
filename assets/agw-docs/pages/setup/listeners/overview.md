@@ -76,6 +76,12 @@ The losing listener reports `Conflicted: True` and `Accepted: False` in its stat
 4. Within a single ListenerSet, listeners keep the order that they appear in `spec.listeners`.
 
 Precedence starts from the creation timestamp, so deleting and re-creating a ListenerSet gives that ListenerSet a later timestamp and sorts it behind every other ListenerSet on the same Gateway. Listeners that previously won a contested port then report a conflict instead.
+
+### Listener status conditions {#listener-status}
+
+The agentgateway controller manages only the standard `Accepted`, `Programmed`, `Conflicted`, and `ResolvedRefs` listener conditions. If another controller adds a listener condition, that condition stays in status. The added condition's `observedGeneration` and `lastTransitionTime` values stay unchanged during a status rebuild.
+
+When an HTTPS listener refers to a certificate Secret in another namespace, the referenced namespace must contain a ReferenceGrant. The ReferenceGrant must permit the Gateway to read the Secret. Without that ReferenceGrant, the listener reports `ResolvedRefs: False` with `RefNotPermitted`, even when the Secret is also missing.
 {{< /version >}}
 
 ### More information {#more-info}
