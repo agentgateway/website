@@ -141,10 +141,8 @@ routes:
 
 | Field | Description |
 | --- | --- |
-| `gateways.default.bindAddress` | Local IP address to listen on. Use `127.0.0.1` for IPv4 loopback or `"::1"` for IPv6 loopback. Hostnames are not accepted. |
+| `gateways.default.bindAddress` | Local IP address to listen on. Use `127.0.0.1` for IPv4 loopback or `"::1"` for IPv6 loopback. Hostnames are not accepted. A loopback listener cannot accept connections sent to the pod IP or a Kubernetes Service. Use an address reachable by those clients when you expose a gateway through a Service. |
 | `gateways.default.port` | Listening port, shared by all listeners on this gateway. |
-
-A loopback listener cannot accept connections sent to the pod IP or a Kubernetes Service. Use an address reachable by those clients when you expose a gateway through a Service.
 
 ## Attach routes to a gateway {#attach-routes}
 
