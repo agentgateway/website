@@ -86,6 +86,7 @@ Independently of the configuration mode, you choose how many endpoints your clie
 
 Multiplexing is also called federation. For a walkthrough, see [Virtual MCP]({{< link-hextra path="/integrations/mcp/servers/virtual" >}}).
 
+{{% version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 ### Select targets with conditions {#target-conditions}
 
 A virtual MCP backend can select upstream servers with a boolean CEL `condition` on each target. Agentgateway evaluates the condition with the request context before initializing or contacting that target. The `mcp.target.name` variable identifies the target being evaluated.
@@ -115,6 +116,8 @@ mcp:
 In routing-based configuration, set the same fields under `routes[].backends[].mcp.targets[]`. Conditions can also use authenticated request context, such as JWT claims populated by a [JWT policy]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}). A client-supplied selection header by itself does not establish the client's identity.
 
 If every condition is false, agentgateway presents an empty virtual MCP server. Target conditions choose which servers participate; [MCP authorization]({{< link-hextra path="/documentation/mcp/mcp-authz/" >}}) separately controls which tools and other resources a client can use after a server responds.
+
+{{% /version %}}
 
 ### When to use one endpoint {#multiplex}
 
