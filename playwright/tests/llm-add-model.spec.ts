@@ -8,7 +8,7 @@ import { test, expect, dismissWelcome } from '../fixtures/test';
  * The guide has a tab per provider and each tab embeds a filled-in screenshot of this
  * drawer. Twenty of the twenty-one were captured by hand, which produced three different
  * image geometries in one tab group and no dark variants at all. This spec replaces every
- * one of them: the harness pins the viewport, so all twenty-one come out identical in size,
+ * one of them: the harness pins the viewport, so all provider captures come out identical in size,
  * and the light/dark projects give the dark set for free.
  *
  * Reuses CAPTURE_MODE=llm rather than adding a launcher, the same way logs.spec.ts reuses
@@ -153,6 +153,12 @@ const PROVIDERS: Provider[] = [
     image: 'ui-llm-add-model-huggingface.png',
   },
   {
+    label: 'Meta',
+    modelMatch: 'muse-spark-1.3',
+    credential: { kind: 'envVar', name: 'META_API_KEY' },
+    image: 'ui-llm-add-model-meta.png',
+  },
+  {
     label: 'Mistral AI',
     modelMatch: 'mistral-small-latest',
     credential: { kind: 'envVar', name: 'MISTRAL_API_KEY' },
@@ -209,7 +215,7 @@ async function openAddModel(page: Page): Promise<void> {
  *
  * The Dropdown primitive renders a `combobox` trigger named "Provider", a "Search Provider"
  * combobox inside the open listbox, and `option` rows. Searching rather than scrolling keeps
- * this independent of where the provider sits in a list of twenty-one.
+ * this independent of where the provider sits in the provider list.
  *
  * The option name is matched on a trailing-word boundary rather than exactly, because a
  * provider with no brand icon falls back to a text badge that lands inside the option's
@@ -332,7 +338,7 @@ for (const provider of PROVIDERS) {
     }
 
     // Viewport capture, not fullPage: it pins every image to the project's 1280x720 so the
-    // twenty-one tabs no longer jump size as the reader clicks across them. No masks — the
+    // provider tabs do not jump size as the reader clicks across them. No masks — the
     // form is static, and a mask paints magenta into the published docs image.
     await expect(page).toHaveScreenshot(provider.image, { animations: 'disabled' });
   });

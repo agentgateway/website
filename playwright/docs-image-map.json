@@ -246,6 +246,11 @@
       "light": "assets/img/ui-llm-add-model-huggingface.png",
       "dark": "assets/img/ui-llm-add-model-huggingface-dark.png"
     },
+    "ui-llm-add-model-meta.png": {
+      "$note": "standalone/quickstart/llm — the Add model drawer filled in for Meta (v1.6+), captured by llm-add-model.spec.ts.",
+      "light": "assets/img/ui-llm-add-model-meta.png",
+      "dark": "assets/img/ui-llm-add-model-meta-dark.png"
+    },
     "ui-llm-add-model-mistral.png": {
       "$note": "standalone/quickstart/llm — the Add model drawer filled in for Mistral AI, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
       "light": "assets/img/ui-llm-add-model-mistral.png",
