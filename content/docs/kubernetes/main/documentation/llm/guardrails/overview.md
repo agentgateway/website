@@ -92,6 +92,29 @@ The values that `action` takes depend on the guard, because a regex guard can ma
 | `bedrockGuardrails` | `Reject`, `Audit` | `Reject` |
 | `googleModelArmor` | `Reject`, `Audit` | `Reject` |
 
+## Customize rejection responses
+
+When a guard rejects content, {{< reuse "agw-docs/snippets/agentgateway.md" >}} returns a `403` response by default. Set `response.message` to return a custom response body, `response.statusCode` to change the status code, or both. The `response` field is available on every request and response guard, regardless of the guard type.
+
+For example, the following request guard returns a custom `422` response when it detects a credit card number.
+
+```yaml
+spec:
+  backend:
+    ai:
+      promptGuard:
+        request:
+        - regex:
+            action: Reject
+            builtins:
+            - CreditCard
+          response:
+            message: "Request contains sensitive information."
+            statusCode: 422
+```
+
+The `response` settings apply only when the guard rejects content. They do not apply to a guard in `Audit` mode or to a regex guard that masks content.
+
 ## Audit mode {#audit}
 
 By default, a guard enforces the verdict that it reaches. A regex guard masks the content that matches, and an external guard rejects the request that its provider flags. Set `action: Audit` to make a guard observe instead. The guard still runs, and it still records what it detected in metrics and in the structured access log, but the content always passes through unchanged.
