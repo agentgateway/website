@@ -195,7 +195,7 @@ See [here](../anthropic/#use-claude-platform-on-aws) for connect to [Claude Plat
 
 ## Bedrock Mantle
 
-The [Bedrock Mantle](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-mantle.html) endpoint is not currently supported.
+The [Bedrock Mantle](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-responses-api.html) endpoint is not currently supported.
 Follow the [GitHub issue](https://github.com/agentgateway/agentgateway/issues/2041) if you are interested!
 
 ## Token counting
