@@ -46,6 +46,28 @@ EOF
 
 By default, agentgateway calls `POST /request` and `POST /response` on the webhook target.
 
+## Reject content from a webhook {#reject}
+
+To reject a request or a response, the webhook replies with an `action` object that sets `status_code` and `body`. Agentgateway returns that status code and body to the client instead of the request or response. The guard's `rejection` setting does not apply to a webhook guard.
+
+For example, the following webhook reply rejects the content with a `451` status code.
+
+```json
+{
+  "action": {
+    "status_code": 451,
+    "body": "Request blocked by content policy.",
+    "reason": "Prompt matched a restricted topic."
+  }
+}
+```
+
+| Field | Description |
+| -- | -- |
+| `action.status_code` | The HTTP status code that agentgateway returns to the client. |
+| `action.body` | The response body that agentgateway returns to the client, as a string. Agentgateway does not set a `content-type` header on the rejection response. |
+| `action.reason` | Optional. A human-readable explanation of the decision. Agentgateway does not return it to the client, but you can add it to the access logs. |
+
 ## Configure webhook backend policies
 
 Connect to a webhook target over TLS by authenticating or by tuning the connection with backend policies in the `target.policies` field. The following policies are supported: `backendTLS`, `backendAuth`, `backendTunnel`, `http` (such as `requestTimeout`), `tcp` (such as `connectTimeout`), `requestHeaderModifier`, and `transformations`. For every field, see the [configuration schema]({{< link-hextra path="/reference/configuration/schema/" >}}).
