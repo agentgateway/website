@@ -3883,6 +3883,7 @@ _Appears in:_
 | `XAI` |  |
 | `Fireworks` |  |
 | `Meta` |  |
+| `Perplexity` |  |
 | `Custom` |  |
 
 
