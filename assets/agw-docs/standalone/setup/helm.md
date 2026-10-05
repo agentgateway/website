@@ -153,8 +153,9 @@ Use a PodDisruptionBudget (PDB) to keep one proxy pod available during voluntary
    | --- | --- |
    | `replicaCount` | Must be greater than `1`. The chart skips the PDB for one replica. If `autoscaling.enabled` is `true`, the chart checks `autoscaling.minReplicas` instead. |
    | `podDisruptionBudget.enabled` | Set to `true` to render the PDB. |
-   | `podDisruptionBudget.minAvailable` | Sets `spec.minAvailable`. The default value is `1`. |
-   | `podDisruptionBudget.maxUnavailable` | Sets `spec.maxUnavailable`. To use this field instead of `minAvailable`, also clear the `minAvailable` default with `--set-string podDisruptionBudget.minAvailable=`. Otherwise, the PDB sets both fields, and Kubernetes rejects it. |
+   | `podDisruptionBudget.minAvailable` | Sets `spec.minAvailable`. The default value is `1`. |{{< version include-if="1.6.x" >}}
+   | `podDisruptionBudget.maxUnavailable` | Sets `spec.maxUnavailable`. To use this field instead of `minAvailable`, also clear the `minAvailable` default with `--set-string podDisruptionBudget.minAvailable=`. Otherwise, the PDB sets both fields, and Kubernetes rejects it. |{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+   | `podDisruptionBudget.maxUnavailable` | Sets `spec.maxUnavailable`. When you set `podDisruptionBudget.maxUnavailable` to a non-zero number or non-empty string, the field takes precedence over `minAvailable`. The chart renders `spec.maxUnavailable` and omits `spec.minAvailable`. |{{< /version >}}
    | `podDisruptionBudget.unhealthyPodEvictionPolicy` | Sets `spec.unhealthyPodEvictionPolicy` when the value is not empty. |
 
 2. Verify that Kubernetes created the PDB for the release.

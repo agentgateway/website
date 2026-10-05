@@ -200,6 +200,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3214 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3690 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3720 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3724 -->
 
 **Traffic management**
@@ -215,3 +216,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 **MCP**
 
 - Access-log CEL expressions can now read dynamic metadata that ExtMCP request-phase guardrails return through `mcpGuardrails`, including on resumed stateful MCP sessions. For more information, see [Log MCP guardrail metadata]({{< link-hextra path="/documentation/observability/access-logs/view/#mcp-guardrails" >}}).
+
+**Operations**
+
+- Standalone Helm installs can set `podDisruptionBudget.maxUnavailable` without also rendering the default `podDisruptionBudget.minAvailable` value.
