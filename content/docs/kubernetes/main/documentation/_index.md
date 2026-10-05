@@ -1,7 +1,7 @@
 ---
 title: Documentation
 weight: 100
-description: Step-by-step how-to guides and concepts for setting up, securing, and operating agentgateway.
+description: How-to guides and concepts for running the agentgateway controller and proxy on Kubernetes.
 test: skip
 ---
 
