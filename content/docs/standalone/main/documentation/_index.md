@@ -1,7 +1,7 @@
 ---
 title: Documentation
 weight: 10
-description: Set up, secure, and operate the standalone agentgateway binary.
+description: Step-by-step how-to guides and concepts for setting up, securing, and operating agentgateway.
 test: skip
 ---
 

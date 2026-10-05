@@ -1,7 +1,7 @@
 ---
 title: Documentation
 weight: 100
-description: Set up, secure, and operate agentgateway on Kubernetes.
+description: Step-by-step how-to guides and concepts for setting up, securing, and operating agentgateway.
 test: skip
 ---
 
