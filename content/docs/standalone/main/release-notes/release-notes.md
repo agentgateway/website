@@ -200,11 +200,13 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3214 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3690 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3724 -->
 
 **Traffic management**
 
 - Connections with `maxConnectionDuration` close with up to 10% jitter, which reduces synchronized reconnects at the configured connection age.
 - Bare backend references in standalone HTTP routes, TCP routes, and MCP target backend hosts now resolve to top-level backends. A reference such as `backend: upstream` no longer fails at request time with `service not found` when the top-level backend is named `upstream`.
+- Route path regexes now use full-path matching consistently, including patterns with alternation or lazy quantifiers.
 
 **LLM**
 
