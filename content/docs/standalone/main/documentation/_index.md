@@ -1,7 +1,7 @@
 ---
 title: Documentation
 weight: 10
-description: Step-by-step how-to guides and concepts for setting up, securing, and operating agentgateway.
+description: How-to guides and concepts for running agentgateway as a standalone binary, Docker image, or Kubernetes deployment (without a controller).
 test: skip
 ---
 
