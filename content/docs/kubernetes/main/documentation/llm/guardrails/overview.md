@@ -94,7 +94,7 @@ The values that `action` takes depend on the guard, because a regex guard can ma
 
 ## Customize rejection responses
 
-When a guard rejects content, {{< reuse "agw-docs/snippets/agentgateway.md" >}} returns a `403` response by default. Set `response.message` to return a custom response body, `response.statusCode` to change the status code, or both. The `response` field is available on every request and response guard, regardless of the guard type.
+When a guard rejects content, {{< reuse "agw-docs/snippets/agentgateway.md" >}} returns a `403` response by default. Set `response.message` to return a custom response body, `response.statusCode` to change the status code, or both. You can set the `response` field on any request or response guard except a `webhook` guard, which ignores it. A webhook sets the status code and body of its own rejections. For more information, see [Custom webhooks]({{< link-hextra path="/documentation/llm/guardrails/webhook/" >}}).
 
 For example, the following request guard returns a custom `422` response when it detects a credit card number.
 

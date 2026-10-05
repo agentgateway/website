@@ -95,7 +95,7 @@ The values that `action` takes depend on the guard, because a regex guard can ma
 
 ## Customize rejection responses
 
-When a guard rejects content, agentgateway returns a `403` response with the body `The request was rejected due to inappropriate content` by default. Set `rejection.body` to change the response body, `rejection.status` to change the status code, and `rejection.headers` to add, set, or remove response headers. The `rejection` field is available on every request and response guard, regardless of the guard type.
+When a guard rejects content, agentgateway returns a `403` response with the body `The request was rejected due to inappropriate content` by default. Set `rejection.body` to change the response body, `rejection.status` to change the status code, and `rejection.headers` to add, set, or remove response headers. You can set the `rejection` field on any request or response guard except a `webhook` guard, which ignores it. A webhook sets the status code and body of its own rejections. For more information, see [Reject content from a webhook]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/#reject" >}}).
 
 For example, the following request guard returns a JSON `422` response when it detects a credit card number.
 
