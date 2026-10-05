@@ -1,7 +1,7 @@
 ---
 title: Integrations
 weight: 650
-description: Connect agentgateway with third-party tools and platforms.
+description: Integrate and connect with third-party tools and platforms.
 test: skip
 ---
 
