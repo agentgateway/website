@@ -16,7 +16,7 @@ endpoint.
 
 For the complete example, you need:
 
-- [Docker](https://docs.docker.com/get-docker/) with
+- [Docker](https://docs.docker.com/get-started/get-docker/) with
   [Docker Compose](https://docs.docker.com/compose/install/).
 - [uv](https://docs.astral.sh/uv/) and `curl`.
 - Free loopback ports `13000`, `18080`, and `18520`.
