@@ -1,6 +1,5 @@
 ---
 title: Migrate from LiteLLM
-linkTitle: Import a configuration
 weight: 11
 description: Convert a LiteLLM proxy configuration into an agentgateway standalone configuration and review compatibility findings.
 prev: /configuration/overview
