@@ -2,7 +2,8 @@
 title: Inference routing
 weight: 50
 description: Configure Kubernetes Gateway API or standalone inference routing for AI workloads.
-url: /docs/standalone/main/documentation/inference/
+aliases:
+  - ../inference/
 test: skip
 ---
 
@@ -20,7 +21,7 @@ endpoint for each inference request.
 Use this mode when you want Gateway API integration, `InferencePool` resources,
 traffic splitting, route matching, and other Kubernetes networking features.
 
-[Set up Kubernetes inference routing](/docs/kubernetes/main/documentation/inference/).
+[Set up Kubernetes inference routing](/docs/kubernetes/main/documentation/llm/inference/).
 
 ## Standalone request scheduler mode
 

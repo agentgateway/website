@@ -99,7 +99,7 @@ For more custom provider examples, see
 [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
 To route requests to multiple InferencePools based on the request body `model`
-field, see [Multiple inference pools]({{< link-hextra path="/documentation/llm/multiple-inference-pools/" >}}).
+field, see [Multiple inference pools]({{< link-hextra path="/documentation/llm/inference/multiple-inference-pools/" >}}).
 
 > [!NOTE]
 > Most users can keep the default llm-d Router OpenAI parser and send
