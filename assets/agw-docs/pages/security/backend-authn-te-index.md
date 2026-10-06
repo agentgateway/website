@@ -46,7 +46,7 @@ Some identity providers need provider-specific settings, or have vendor-specific
 ## Configuration
 
 {{< conditional-text include-if="standalone" >}}
-The token endpoint is configured as a backend reference: a `host` in `host:port` form and, optionally, connection `policies` such as `backendTLS`. A `host` port of `443` automatically enables backend TLS.
+The token endpoint is configured as a backend reference: a `host` in `host:port` form and, optionally, connection `policies` such as `backendTLS`. A `host` port of `443` does not enable TLS by itself, so set `policies.backendTLS` for a token endpoint that serves HTTPS.
 
 {{< reuse "agw-docs/snippets/oauth-te-fields-standalone.md" >}}
 {{< /conditional-text >}}

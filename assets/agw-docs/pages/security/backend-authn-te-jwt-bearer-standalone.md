@@ -83,6 +83,8 @@ backendAuth:
   oauthTokenExchange:
     host: login.microsoftonline.com:443
     path: /<TENANT_ID>/oauth2/v2.0/token
+    policies:
+      backendTLS: {}
     grantType: jwtBearer
     clientAuth:
       clientId: $CLIENT_ID
@@ -145,6 +147,8 @@ obo_case entra-obo ok <<'EOF'
 oauthTokenExchange:
   host: login.microsoftonline.com:443
   path: /TENANT_ID/oauth2/v2.0/token
+  policies:
+    backendTLS: {}
   grantType: jwtBearer
   clientAuth:
     clientId: $CLIENT_ID
@@ -161,6 +165,8 @@ obo_case pascal-grant fail <<'EOF'
 oauthTokenExchange:
   host: login.microsoftonline.com:443
   path: /TENANT_ID/oauth2/v2.0/token
+  policies:
+    backendTLS: {}
   grantType: JwtBearer
   clientAuth:
     clientId: $CLIENT_ID
