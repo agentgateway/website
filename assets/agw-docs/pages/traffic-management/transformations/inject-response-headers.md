@@ -147,7 +147,7 @@ In this example, all three operations are applied together:
      section stays put when the next release freezes this line under a number.
      The `proxy.error` context variable is new in the version that `main`
      currently points at. -->
-{{< version exclude-if="1.5.x" >}}
+{{< version exclude-if="1.1.x,1.4.x,1.5.x" >}}
 ## Explain a gateway error response {#gateway-error}
 
 The examples so far read the request, which means they run on a response that a backend actually returned. When the gateway cannot get a response at all, it synthesizes the error itself, and the `proxy.error` context variable holds why. A response transformation can copy that onto the reply, so a client or a browser network tab shows the cause instead of a bare 503.

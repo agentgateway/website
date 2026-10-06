@@ -93,7 +93,7 @@ Key points:
 - If a rate is omitted, that token type is not priced for the model.
 - `tiers[]` is optional. Each tier selects alternate `rates` when the request context length is **over** the tier's `contextOver` value. Tiers must be ordered by strictly increasing `contextOver`.
 {{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
-- `tags[]` is optional. Tags describe a model instead of pricing it, so a model entry can carry tags with no rates at all. For more information, see [Model tags](#model-tags).
+- `tags[]` is optional. Tags describe a model instead of pricing it, so a model entry can carry tags with no rates at all.{{< version exclude-if="1.1.x,1.4.x" >}} For more information, see [Model tags](#model-tags).{{< /version >}}
 {{% /version %}}
 
 The following minimal example prices two OpenAI models and one tiered Gemini model:

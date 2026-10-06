@@ -95,5 +95,5 @@ Using a remote JWKS endpoint is the recommended approach when using JWT authenti
 
 After setting up JWT authentication, you can use the verified JWT claims in authorization policies to control which requests are allowed to reach your backends.
 
-For more information, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}).
+{{< version exclude-if="1.1.x" >}}For more information, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}).{{< /version >}}
 
