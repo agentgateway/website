@@ -56,11 +56,15 @@ When multiple policies target the same resource, agentgateway merges the policy 
 
 This field-level merge applies to all fields, including nested sub-fields. Each nested sub-field is treated as an atomic unit. For example, `backend.ai.promptGuard` and `backend.ai.routes` are separate atomic fields. If Policy A sets `backend.ai.promptGuard` and Policy B sets `backend.ai.routes`, both are included in the merged result. However, if both policies set the same nested sub-field such as `backend.ai.promptGuard`, only the higher-precedence policy's entire value for that sub-field is used—no recursive merge occurs within nested fields.
 
-### Inline AI policies on a backend {#backend-ai}
+### Inline AI and authorization policies on a backend {#backend-ai}
 
 An {{< reuse "agw-docs/snippets/backend.md" >}} can set an AI policy inline, in `spec.ai.groups[].providers[].policies.ai`. An {{< reuse "agw-docs/snippets/policy.md" >}} can set one in `spec.backend.ai` and attach it to the same backend. The two policies merge field by field, the same as any other pair of policies. For a field that both of them set, the inline value wins, because a policy inline on the backend object is more specific than an attached policy. For the full order, see [Merge precedence](#merging-precedence).
 
 The following fields of `ai` each merge separately: `defaults`, `finalTransformations`, `modelAliases`, `overrides`, `prompt`, `promptCaching`, `promptGuard`, `routes`, and `transformations`.
+
+An {{< reuse "agw-docs/snippets/backend.md" >}} can also set backend authorization inline. Use `spec.policies.authorization` to set authorization for the whole backend. Use `spec.ai.groups[].providers[].policies.authorization` to set authorization for one AI provider. An {{< reuse "agw-docs/snippets/policy.md" >}} can set backend authorization in `spec.backend.authorization`, separate from the `spec.traffic.authorization` field that runs with traffic policies.
+
+An attached {{< reuse "agw-docs/snippets/policy.md" >}} that targets a provider's `sectionName` inside an AI provider group can also target a separate {{< reuse "agw-docs/snippets/backend.md" >}} in the same `targetRefs` list, so both share the same `auth`, `tls`, and `tunnel` settings. For an example, see [Share connection settings]({{< link-hextra path="/documentation/llm/shared-connection-settings/" >}}).
 
 > [!IMPORTANT]
 > In version 1.4 and earlier, an inline `ai` block replaced an attached `ai` block in full. If the backend set even one field of `ai`, every field of the attached policy was dropped. After you upgrade to version 1.5, a field that only the {{< reuse "agw-docs/snippets/policy.md" >}} sets takes effect where it was previously ignored, which can turn on a prompt guard, a default, or a transformation that had no effect before. Review each {{< reuse "agw-docs/snippets/backend.md" >}} that sets an inline `ai` block alongside an attached policy, and remove any field from the {{< reuse "agw-docs/snippets/policy.md" >}} that you do not want the backend to inherit.
@@ -83,7 +87,11 @@ For `backend`, precedence works the same way but with more levels. For example, 
 
 ### Equal specificity {#ties}
 
-If multiple policies with the same specificity set the same field, agentgateway picks one policy's value for that field and silently drops the rest. The selection isn't based on creation time, name, or namespace, so which policy wins isn't predictable and can change between controller restarts. Every affected policy still reports `Accepted` and `Attached` status conditions as `True`, with no condition indicating that a field was dropped.
+If multiple policies with the same specificity set the same field, the oldest policy wins, based on its Kubernetes `metadata.creationTimestamp`. If the timestamps are equal, agentgateway uses lexicographic order of the policy key to break the tie. The selection is stable across controller restarts.
+
+Agentgateway uses the winning policy's entire value for the conflicting field. It does not combine the rules or list entries from the other policies, even when they run in the same traffic phase. For example, if two policies set `traffic.headerModifiers.response` at the same attachment point and phase, only the older policy's response header modifications apply. Fields that do not conflict still contribute to the effective policy.
+
+Every affected policy can still report `Accepted` and `Attached` status conditions as `True`, with no condition indicating that a field was dropped.
 
 A tie only happens when two policies share both the same specificity and the same field. You can attach multiple policies to the same target as long as each one sets a different field, or attaches at a different specificity level. For example, a `frontend` policy that sets `tls` at the Gateway level and another that sets `accessLog` using a listener `sectionName` don't tie, because they set different fields. A `frontend` policy that sets `tls` at the Gateway level and another that sets `tls` using `port` also don't tie, because `port` is more specific and wins for that field.
 

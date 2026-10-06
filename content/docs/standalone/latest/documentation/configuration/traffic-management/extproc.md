@@ -55,6 +55,12 @@ You can choose whether you want agentgateway to forward requests if the external
 * **failOpen**: Forward requests to the backend service, even if the connection to the external processing server fails. You might choose this option to ensure availability of the backend services even when the ExtProc service is down.
 * **failClosed**: Block requests if the request to the external processing server fails. This is the default behavior.
 
+By default, agentgateway waits 10 seconds for the external processing server to answer when opening a processing stream. When the wait runs out, the call counts as a failure and the `failureMode` setting decides what happens to the request. To use a different timeout, set `extProc.policies.http.requestTimeout`.
+
+For requests with a body, `failOpen` applies only while no request body bytes have been sent to the external processing server. If the server can't be reached or fails before that point, the original request, including its body, is forwarded to the backend. After the request body starts streaming to the server, a failure returns an error even with `failOpen`. In the default `fullDuplexStreamed` request body mode, the body starts streaming as soon as the processing stream is established, so `failOpen` applies only when that stream can't be established.
+
+A clean close from the external processing server is different from a failure. If the server finishes request processing and closes its gRPC stream, the gateway skips any later external processing phases for that exchange. The request continues to the backend, and the upstream response is returned to the client even when `extProc.failureMode` is `failClosed`.
+
 ## Compatibility
 
 The [External Processing gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/ext_proc/v3/external_processor.proto) was designed for Envoy,
@@ -103,7 +109,7 @@ routes:
 By default, ExtProc sends request headers, response headers, request trailers, and response trailers to the external processing service, and streams request and response bodies. To change which request or response phases are sent to the processor, configure `extProc.processingOptions`.
 
 > [!NOTE]
-> The default body mode is `fullDuplexStreamed`. If the external processor must inspect a complete body before agentgateway forwards it, use `buffered` or `bufferedPartial` and account for the gateway's body buffer limit, which defaults to 2 MiB. To change the limit, set `frontendPolicies.http.maxBufferSize`. For general request and response body buffering outside of ExtProc, see [Body buffering]({{< link-hextra path="/documentation/configuration/traffic-management/buffer/" >}}).
+> The default body mode is `fullDuplexStreamed`. If the external processor must inspect a complete body before agentgateway forwards it, use `buffered` or `bufferedPartial` and account for the gateway's body buffer limit, which defaults to 2 MiB, or 32 MiB for requests that enter LLM processing. To change the limit, set `frontendPolicies.http.maxBufferSize`. For general request and response body buffering outside of ExtProc, see [Body buffering]({{< link-hextra path="/documentation/configuration/traffic-management/buffer/" >}}).
 
 | Field | Default | Values | Description |
 | --- | --- | --- | --- |

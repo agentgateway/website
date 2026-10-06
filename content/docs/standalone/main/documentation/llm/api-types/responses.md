@@ -13,6 +13,12 @@ The [OpenAI Responses API](https://platform.openai.com/docs/api-reference/respon
 
 A provider that advertises the `responses` format also serves clients that send the [Anthropic Messages]({{< link-hextra path="/documentation/llm/api-types/messages/" >}}) format. Agentgateway converts a Messages request into a Responses request, and converts the buffered or streamed reply back. For the conversion order and its limits, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
 
+## Namespaced tools {#responses-namespaced-tools}
+
+Responses requests can include namespace tools. When the selected provider takes Chat Completions or Bedrock Converse requests, the conversion flattens each namespace member into a function name in the `namespace__function` format. The conversion restores buffered and streamed replies to the Responses shape. Function calls keep the original `namespace` and `name` fields.
+
+A function tool choice can use the bare member name only when that name is unique across the namespace tools. When more than one namespace has a function with the same name, set the tool choice function name to `namespace__function`. Chat Completions and Bedrock conversions cannot enforce `allowed_tools` choices or convert custom namespace members. Requests that use those features fail before they reach the provider.
+
 ## Route type configuration
 
 In the simplified `llm` configuration, agentgateway automatically maps `/v1/responses` requests to the `responses` route type, so no explicit route configuration is required.
@@ -50,6 +56,10 @@ routes:
 
 > [!NOTE]
 > For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/documentation/llm/about/" >}}).
+
+## Usage in converted replies
+
+Responses replies follow OpenAI usage conventions, even when agentgateway converts the upstream provider response from another format. When a provider reports prompt-cache tokens, `usage.input_tokens` includes those tokens. When they are available, cache counts are also reported separately in `usage.input_tokens_details.cached_tokens` and `usage.input_tokens_details.cache_write_tokens`.
 
 ## Using the API
 

@@ -39,9 +39,10 @@ Configure agentgateway to send traces directly to Phoenix:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-config:
+frontendPolicies:
   tracing:
-    otlpEndpoint: http://localhost:4317
+    host: localhost:4317
+    protocol: grpc
     randomSampling: true
 
 gateways:
@@ -84,9 +85,10 @@ services:
 When using Docker Compose, update your config.yaml to use the Phoenix service name:
 
 ```yaml
-config:
+frontendPolicies:
   tracing:
-    otlpEndpoint: http://phoenix:4317
+    host: phoenix:4317
+    protocol: grpc
     randomSampling: true
 ```
 

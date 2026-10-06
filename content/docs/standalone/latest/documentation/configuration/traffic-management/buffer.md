@@ -48,7 +48,7 @@ You can configure request buffering, response buffering, or both.
 
 | Field | Description | Default |
 | -- | -- | -- |
-| `policies.buffer.request.maxBytes` | Maximum number of request body bytes to buffer. | Uses the global proxy buffer setting, which defaults to 2 MiB. |
+| `policies.buffer.request.maxBytes` | Maximum number of request body bytes to buffer. | Uses the global proxy buffer setting, which defaults to 2 MiB. For requests that enter LLM processing, the default is 32 MiB. |
 | `policies.buffer.request.failureMode` | Behavior when the request body exceeds `maxBytes`: `failClosed` to reject the request, or `failOpen` to continue. | `failClosed` |
 | `policies.buffer.response.maxBytes` | Maximum number of response body bytes to buffer. | Uses the global proxy buffer setting, which defaults to 2 MiB. |
 | `policies.buffer.response.failureMode` | Behavior when the response body exceeds `maxBytes`: `failClosed` to reject the response, or `failOpen` to continue. | `failClosed` |

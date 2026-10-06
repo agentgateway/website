@@ -82,6 +82,19 @@ def extract_validation_annotations(lines: list[str], end_line: int) -> list[str]
     return validations
 
 
+def format_validation_rule(rule: str) -> str:
+    """Wrap a validation rule in a Markdown codespan.
+
+    Uses a fence one backtick longer than the longest backtick run in the
+    rule, padded with spaces, so a rule that contains backticks still renders.
+    """
+    longest = max((len(run) for run in re.findall(r"`+", rule)), default=0)
+    fence = "`" * (longest + 1)
+    if longest:
+        return f"{fence} {rule} {fence}"
+    return f"{fence}{rule}{fence}"
+
+
 def parse_struct_fields(content: str, struct_start: int, struct_end: int, lines: list[str]) -> list[FieldInfo]:
     """Parse fields from a struct definition."""
     fields = []
@@ -324,7 +337,10 @@ def generate_markdown(types: list[TypeInfo], referenced_types: set[str]) -> str:
         if type_info.validation:
             output.append("**Validation:**")
             for v in type_info.validation:
-                output.append(f"- {v}")
+                # Render each rule as a codespan so Markdown extensions leave
+                # it alone. Otherwise CEL regexes like '^https?://[^/?#]+$'
+                # turn into superscript and quotes become typographic.
+                output.append(f"- {format_validation_rule(v)}")
             output.append("")
         
         if type_info.fields:

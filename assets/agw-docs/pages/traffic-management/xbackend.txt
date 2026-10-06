@@ -1,13 +1,16 @@
-<!-- PARKED as .txt, not built. Reason: the controller panics on startup when
-     xBackend.enabled=true and the XBackend CRD is present, so the guide's own
-     enable step puts the control plane into CrashLoopBackOff.
-     panic: Unknown type gateway.networking.x-k8s.io/v1alpha1, Resource=xbackends
-     Cause: controller/pkg/agentgateway/plugins/collection.go builds the informer
-     with kubetypes.StandardInformer, and Istio's generated kubeclient registry
-     has a case for XBackendTrafficPolicy but not for XBackend, so it hits the
-     default panic branch. Reproduced on nightly b0778552 with Gateway API 1.6.0.
-     Every XBackend test uses krttest.GetMockCollection, which bypasses the real
-     informer, which is why this shipped.
+<!-- PARKED as .txt, not built. Retested 2026-10-01 on kind-agw-review with
+     controller v0.0.0-alpha.d078aa12 and experimental Gateway API 1.6 CRDs.
+     The Istio update in agentgateway/agentgateway#3678 fixes the original
+     informer-registration panic, but creating the guide's XBackend and
+     HTTPRoute triggers a different controller crash when status is published:
+     panic: interface conversion: interface {} is v1alpha1.BackendStatus,
+            not *v1alpha1.BackendStatus
+     Stack: controller/pkg/syncer/status_syncer.go:360, StatusSyncer.ApplyStatus.
+     Also, the AgentgatewayPolicy CRD rejects XBackend in targetRefs and
+     targetSelectors. The same restriction remains in source at 9f6c6229.
+     The policy attachment section below cannot be published as written.
+     Keep this guide parked until both issues are resolved or the unsupported
+     policy attachment section is removed and the remaining steps pass.
      To restore: rename this file back to xbackend.md, recreate the content stub
      at content/docs/kubernetes/main/traffic-management/xbackend.md with exactly
      the front matter below, restore the release-note section and highlights

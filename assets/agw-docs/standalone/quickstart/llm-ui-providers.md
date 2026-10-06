@@ -92,6 +92,13 @@ export GROQ_API_KEY='<your-api-key>'
 export HUGGINGFACE_API_KEY='<your-api-key>'
 ```
 {{% /tab %}}
+{{% tab name="Meta" %}}
+Create a key in the [Meta Model API dashboard](https://dev.meta.ai/).
+
+```sh
+export META_API_KEY='<your-api-key>'
+```
+{{% /tab %}}
 {{% tab name="Mistral AI" %}}
 ```sh
 export MISTRAL_API_KEY='<your-api-key>'
@@ -303,6 +310,14 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 4. Click **Save model**.
 
 {{< reuse-image src="img/ui-llm-add-model-huggingface.png" >}}
+{{% /tab %}}
+{{% tab name="Meta" %}}
+1. For **Incoming model match**, enter `muse-spark-1.3`, or a model that your Meta account can access.
+2. From **Provider**, select **Meta**.
+3. For **Provider API key**, select **Env var** and enter `META_API_KEY`.
+4. Click **Save model**.
+
+{{< reuse-image src="img/ui-llm-add-model-meta.png" srcDark="img/ui-llm-add-model-meta-dark.png" alt="Add model form with Meta selected, muse-spark-1.3 as the incoming model match, and META_API_KEY as the credential environment variable" >}}
 {{% /tab %}}
 {{% tab name="Mistral AI" %}}
 1. For **Incoming model match**, enter `mistral-small-latest`.
@@ -592,6 +607,21 @@ curl http://localhost:4000/v1/chat/completions \
   }'
 ```
 {{% /tab %}}
+{{% tab name="Meta" %}}
+```sh
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
+  -d '{
+    "model": "muse-spark-1.3",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Reply with exactly: Meta through agentgateway works"
+      }
+    ]
+  }'
+```
+{{% /tab %}}
 {{% tab name="Mistral AI" %}}
 ```sh
 curl http://localhost:4000/v1/chat/completions \
@@ -797,6 +827,12 @@ You can send the same request from the built-in playground.
 1. Open the [LLM playground](http://localhost:4000/ui/llm/playground/).
 2. From **Model**, select `Qwen/Qwen3-32B`.
 3. In **User message**, enter `Reply with exactly: Hugging Face through agentgateway works`.
+4. Click **Send**.
+{{% /tab %}}
+{{% tab name="Meta" %}}
+1. Open the [LLM playground](http://localhost:4000/ui/llm/playground/).
+2. From **Model**, select `muse-spark-1.3`, or the model that you configured.
+3. In **User message**, enter `Reply with exactly: Meta through agentgateway works`.
 4. Click **Send**.
 {{% /tab %}}
 {{% tab name="Mistral AI" %}}

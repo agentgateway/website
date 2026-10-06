@@ -62,6 +62,8 @@ By default, agentgateway waits 10 seconds for the ExtProc server to answer when 
 
 For requests with a body, `FailOpen` applies only while no request body bytes have been sent to the ExtProc server. If the server can't be reached or fails before that point, the original request, including its body, is forwarded to the upstream application. After the request body starts streaming to the server, a failure returns an error even with `FailOpen`. In the default `FullDuplexStreamed` request body mode (`traffic.extProc.processingOptions.requestBodyMode`), the body starts streaming as soon as the processing stream is established, so `FailOpen` applies only when that stream can't be established.
 
+A clean close from the ExtProc server is different from a failure. If the server finishes request processing and closes its gRPC stream, the gateway skips later ExtProc phases for that exchange. The request continues to the upstream application, and the upstream response is returned to the client even when `traffic.extProc.failureMode` is `FailClosed`.
+
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up an ExtProc server

@@ -77,6 +77,10 @@ For more information, see [Inject response headers]({{< link-hextra path="/docum
 
 Use body transformations to replace the entire body of a request or response with a new value. The `body` field takes a single CEL expression that must evaluate to a string. You can build the new body from static values, CEL functions such as `json()` and `toJson()`, or context variables such as `request.body` or `response.body`.
 
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+For body transformations, `null` has a special meaning: the original body is left unchanged. To send JSON `null`, return the string `"null"`. To clear the body, return an empty string. If the expression fails, the transformation returns an error before the body is replaced.
+{{< /version >}}
+
 Response body example to construct a JSON response body from request context variables:
 
 ```yaml

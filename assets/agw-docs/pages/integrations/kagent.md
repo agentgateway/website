@@ -52,7 +52,7 @@ flowchart LR
 
 ## Install kagent
 
-Install kagent in your cluster. For more information, see the [kagent docs](https://kagent.dev/docs/kagent/introduction/installation).
+Install kagent in your cluster. For more information, see the [kagent docs](https://kagent.dev/docs/kagent/0.x/introduction/installation/).
 1. Install kagent CRDs.
    ```shell
    helm install kagent-crds oci://ghcr.io/kagent-dev/kagent/helm/kagent-crds \

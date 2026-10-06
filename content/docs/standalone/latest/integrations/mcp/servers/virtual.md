@@ -189,7 +189,7 @@ routes:
    * **Listener**: An HTTP listener is configured and bound on port 3000. It includes a basic route that matches all traffic to an MCP backend.
    * **Backend**: The MCP backend defines two **targets**: `time` and `everything`. Note that the target names cannot include underscores (`_`). These targets are multiplexed together and exposed as a single unified MCP server to clients. All tools from both targets are available, prefixed with their target name.
 
-3. Optional: To use the agentgateway UI playground later, add a `cors` policy to the route. Replace the contents of your `config.yaml` file with the following example, which keeps both targets and adds the policy. The configuration reloads automatically when you save the file.
+3. Optional: To use the agentgateway UI playground later, add a `cors` policy to the route. Replace the contents of your `config.yaml` file with the following complete example, which keeps both targets and adds the policy. The config automatically reloads when you save the file.
 
       ```yaml
       # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -282,6 +282,70 @@ mcp:
 
 > [!NOTE]
 > The `time` target pins the MCP Python SDK with `--with mcp<2` because `mcp-server-time` does not yet support version 2.x of the SDK. Without the constraint, the target fails to start. Drop the constraint after `mcp-server-time` adds support.
+
+## Target conditions {#target-conditions}
+
+Use `condition` on an MCP target to include that target only when a CEL expression returns `true` for the current request. The expression can read request attributes, such as headers, and `mcp.target.name`. When authentication is configured, it can also read the authenticated identity. In a target condition, `mcp.target.name` is set to the target under evaluation. Omit `condition` to include the target for every request.
+
+Target conditions run before agentgateway initializes or contacts a target. Target conditions choose which upstream MCP servers participate in the virtual MCP request. By contrast, `mcpAuthorization` filters tools, prompts, and resources after an upstream server responds. A condition requires at least two configured targets. If every target condition returns `false`, clients see an empty virtual MCP server.
+
+The following example always includes the `everything` target and includes the `time` target only when the request has the header `x-include-time: true`.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+  - name: time
+    condition: '"x-include-time" in request.headers && request.headers["x-include-time"] == "true"'
+    stdio:
+      cmd: uvx
+      args: ["--with", "mcp<2", "mcp-server-time"]
+```
+
+Configure your MCP client to send `x-include-time: true` on its requests, including initialization, to expose tools such as `time_get_current_time` alongside `everything_echo`. Without that header, or with a different value, only the `everything` target participates.
+
+| Field | Description |
+| ----- | ----------- |
+| `mcp.targets[].condition` | Optional CEL expression that controls whether the target participates in the virtual MCP request. The expression must return a boolean value. |
+| `mcp.target.name` | Name of the MCP target for the current target-scoped operation, including condition evaluation. |
+
+## Server information overrides {#server-information-overrides}
+
+When you multiplex multiple targets, the client receives the gateway MCP `serverInfo` values and instructions. To customize that metadata, set the `server` block on the MCP configuration. The override applies only to multiplexed targets. A backend with one target keeps the target server's normal metadata.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  server:
+    name: company-mcp-gateway
+    version: "2026.09"
+    title: Company MCP Gateway
+    instructions: "Use this gateway to access approved internal MCP tools."
+  targets:
+  - name: time
+    stdio:
+      cmd: uvx
+      args: ["--with", "mcp<2", "mcp-server-time"]
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+
+| Field | Description |
+| ----- | ----------- |
+| `mcp.server` | Optional overrides for the MCP `serverInfo` response and gateway instructions in `initialize` and `server/discover` responses. Omit this block to keep the default values. |
+| `mcp.server.name` | Value to report in `serverInfo.name`. Set this field together with `mcp.server.version`. The configuration is invalid when only one of the two fields is set. |
+| `mcp.server.version` | Value to report in `serverInfo.version`. Set this field together with `mcp.server.name`. The configuration is invalid when only one of the two fields is set. |
+| `mcp.server.title` | Optional value to report in `serverInfo.title`. You can set this field without `mcp.server.name` or `mcp.server.version`. |
+| `mcp.server.instructions` | Gateway instructions preamble to report to clients. When upstream targets also return instructions, the merged target instructions start with this value. |
+
 
 ## Next steps
 

@@ -706,7 +706,9 @@ Configures CEL-based authorization.
 
 
 _Appears in:_
+- [BackendFull](#backendfull)
 - [BackendMCP](#backendmcp)
+- [BackendWithAI](#backendwithai)
 - [Frontend](#frontend)
 - [ModelPolicies](#modelpolicies)
 - [Traffic](#traffic)
@@ -1253,6 +1255,7 @@ _Appears in:_
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
 | `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | AtMostOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange crossAppAccess jwtSign] <br />Optional: \{\} <br /> |
+| `authorization` _[Authorization](#authorization)_ | Authorization rules that clients must satisfy after this backend is selected.<br />Unlike traffic authorization, this policy is evaluated against the request<br />associated with the selected destination backend. |  | Optional: \{\} <br /> |
 | `sessionAffinity` _[SessionAffinity](#sessionaffinity)_ | Configures best-effort session affinity using an existing request attribute.<br />For AI backends, this applies across the backend's provider groups and must not<br />be configured on an individual provider. |  | Optional: \{\} <br /> |
 | `ai` _[BackendAI](#backendai)_ | Settings for AI workloads. This is only applicable when<br />connecting to a `Backend` of type `ai`. |  | Optional: \{\} <br /> |
 | `mcp` _[BackendMCP](#backendmcp)_ | Settings for MCP workloads. This is only applicable when<br />connecting to a `Backend` of type `mcp`. |  | Optional: \{\} <br /> |
@@ -1457,6 +1460,7 @@ _Appears in:_
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
 | `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | AtMostOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange crossAppAccess jwtSign] <br />Optional: \{\} <br /> |
+| `authorization` _[Authorization](#authorization)_ | Authorization rules that clients must satisfy after this AI provider is selected. |  | Optional: \{\} <br /> |
 | `ai` _[BackendAI](#backendai)_ | Settings for AI workloads. This is only applicable when<br />connecting to a `Backend` of type `ai`. |  | Optional: \{\} <br /> |
 | `transformation` _[Transformation](#transformation)_ | Mutates and transforms requests and responses sent to and from the backend. |  | Optional: \{\} <br /> |
 | `health` _[Health](#health)_ | Settings for passive and active health checking. |  | Optional: \{\} <br /> |
@@ -3677,7 +3681,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `name` _[SectionName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#sectionname)_ | Name of the MCP target. |  | Required: \{\} <br /> |
-| `selector` _[McpSelector](#mcpselector)_ | Label selector used to select `Service` resources.<br />If policies are needed on a per-service basis, `AgentgatewayPolicy` can<br />target the desired `Service`. |  | Optional: \{\} <br /> |
+| `selector` _[McpSelector](#mcpselector)_ | Label selector used to select `Service` resources.<br />Selected `Service` ports must set `appProtocol: agentgateway.dev/mcp` for<br />streamable HTTP or `appProtocol: agentgateway.dev/mcp-sse` for SSE. Ports<br />without a recognized MCP `appProtocol` value are ignored.<br />If policies are needed on a per-service basis, `AgentgatewayPolicy` can<br />target the desired `Service`. |  | Optional: \{\} <br /> |
 | `static` _[McpTarget](#mcptarget)_ | Static MCP destination. When connecting to<br />in-cluster `Service` resources, it is recommended to use `selector`<br />instead. |  | ExactlyOneOf: [host backendRef] <br />Optional: \{\} <br /> |
 
 
@@ -3878,6 +3882,8 @@ _Appears in:_
 | `TogetherAI` |  |
 | `XAI` |  |
 | `Fireworks` |  |
+| `Meta` |  |
+| `Perplexity` |  |
 | `Custom` |  |
 
 
@@ -5433,8 +5439,8 @@ The following types are defined in the shared package and used across multiple A
 _Underlying type:_ _string_
 
 **Validation:**
-- MinLength=1
-- MaxLength=1024
+- `MinLength=1`
+- `MaxLength=1024`
 
 #### PolicyAncestorStatus
 
@@ -5456,22 +5462,22 @@ _Underlying type:_ _string_
 _Underlying type:_ _string_
 
 **Validation:**
-- MinLength=1
-- MaxLength=253
-- Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`
+- `MinLength=1`
+- `MaxLength=253`
+- `` Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` ``
 
 #### ShortString
 
 _Underlying type:_ _string_
 
 **Validation:**
-- MinLength=1
-- MaxLength=256
+- `MinLength=1`
+- `MaxLength=256`
 
 #### TinyString
 
 _Underlying type:_ _string_
 
 **Validation:**
-- MinLength=1
-- MaxLength=64
+- `MinLength=1`
+- `MaxLength=64`

@@ -79,17 +79,32 @@ shapes, declare each supported format and optionally set a per-format path.
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
 
-Because `Responses` comes before `Completions`, an Anthropic messages request to
-a provider that declares both formats takes the Responses conversion. The same
-order applies to the built-in `openai` provider, and to the `azure` provider for
-a model that is not a Claude model, because both support the two formats. The
-Responses conversion drops extended-thinking history, which the Completions
-conversion carries. To put `Completions` first again, as in earlier versions,
-set the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable to
-`true` on the proxy, in the `spec.env` field of the
-{{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. For an example,
-see [Add environment variables]({{< link-hextra path="/documentation/setup/customize/configs/#env-vars" >}}).
-This variable is planned for removal in version 1.7.
+An error such as `failed to parse Messages request` names the route type that
+parsed the client request before provider conversion. Check that the request
+path maps to the expected route type and that the body matches that format.
+
+When a provider declares both `Responses` and `Completions`, agentgateway prefers
+Responses for Anthropic messages requests. This order also applies to the built-in
+`openai` provider and to `azure` for models other than Claude. On an
+{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, it also applies to
+`Ollama`, `Groq`, `Huggingface`, and `XAI`.
+
+The Responses conversion drops extended-thinking history. The Chat Completions
+conversion preserves it. To preserve this history, declare `Completions` and
+omit `Responses`.
+
+Use the `openai` provider only for the OpenAI API. For other OpenAI-compatible
+servers, use a custom provider with the formats that the server supports.
+If the server does not support `/v1/responses`, declare `Completions` and omit
+`Responses`.
+
+For providers that support both formats, the
+`AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable provides a
+temporary workaround for Responses conversion bugs. To prefer Chat Completions,
+set this variable to `true` in `spec.env` of the
+{{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
+The variable applies to every provider and is planned for removal in version 1.7.
+For an example, see [Add environment variables]({{< link-hextra path="/documentation/setup/customize/configs/#env-vars" >}}).
 
 ### Converted replies and errors
 
@@ -115,6 +130,15 @@ When an Anthropic messages request is converted to the `Responses` or the
   the prompt exceeds the context window. An error that already contains
   `capability_rejected:` keeps its message. A Gemini or Vertex AI provider
   returns errors in the Google format, which does not get the marker.
+- Response usage follows the API format that the client called. Messages
+  responses use Anthropic usage conventions, so `usage.input_tokens` excludes
+  prompt-cache tokens. Chat Completions and Responses replies use OpenAI usage
+  conventions. In those replies, the main input count includes prompt-cache
+  tokens.
+- When a streamed reply in the `Responses` format fails, the converted Messages
+  stream emits the content blocks that arrived before the failure, then emits
+  an Anthropic `error` event. After the error, the stream does not emit
+  `message_delta` or `message_stop`, and later Responses events are ignored.
 
 ### Anthropic messages to the Responses format
 
@@ -122,7 +146,9 @@ The Responses conversion covers text, system instructions, images, function
 tools, tool-use history, tool results that are text or images, structured
 output, prompt cache breakpoints, and streaming. A function tool that omits
 `strict` is sent with `strict: false`, so that the optional properties of its
-input schema stay optional. The reasoning effort, from `output_config.effort` or
+input schema stay optional. A structured output JSON schema is sent with
+`text.format.strict` set to `false`, so that optional schema properties stay
+optional. The reasoning effort, from `output_config.effort` or
 from a `thinking` budget, is sent as `reasoning.effort`. A request that sets
 `thinking.type` to `disabled` sends no reasoning setting.
 
@@ -180,10 +206,10 @@ Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets b
 
 ### Anthropic messages to the Completions format
 
-An Anthropic messages request takes the Completions conversion when the provider
-declares `Completions` and not `Responses`, or when
-`AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` is set to `true`. Besides the
-reasoning carryover in the preceding section, the conversion handles these
+Agentgateway converts an Anthropic messages request to Chat Completions when the
+provider declares `Completions` and omits `Responses`. For providers that support
+both formats, you can use the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS=true`
+workaround. The conversion preserves reasoning history and handles the following
 fields.
 
 | Field | What happens |

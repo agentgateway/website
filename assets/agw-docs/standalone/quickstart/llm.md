@@ -100,7 +100,13 @@ Example output (abbreviated):
 {{% /steps %}}
 {{< /version >}}
 
-{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
+<!-- Keep whole tab groups together: Hextra tabs must be direct children of
+     their tabs shortcode, so a version gate cannot wrap an individual tab. -->
+{{< version include-if="1.3.x,1.4.x,1.5.x,2.2.x" >}}
+{{< reuse "agw-docs/standalone/quickstart/1.5-earlier/llm-ui-providers.md" >}}
+{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
 {{< reuse "agw-docs/standalone/quickstart/llm-ui-providers.md" >}}
 {{< /version >}}
 
