@@ -9,11 +9,11 @@ description: Integrate with OpenTelemetry to collect and analyze request traces.
 # `/documentation/observability/tracing/`, so the second alias is what keeps those
 # links resolving here.
 #
-# An alias is a WHOLE URL path on this site, not a path relative to the version
-# tree it sits in. Leave the `/docs/kubernetes/main` prefix in place. Without it,
-# the redirect builds at the site root and collides with the identical alias in
-# `latest`, and whichever tree builds last wins.
+# Aliases are relative to the parent of this page's URL, so a copied version tree
+# redirects inside itself. Do not write `/docs/<section>/<version>/...`: that prefix
+# goes stale when the tree is copied for a release. A bare `/...` alias builds at
+# the site root, where every version tree collides.
 aliases:
-  - /docs/kubernetes/main/observability/tracing/
-  - /docs/kubernetes/main/documentation/observability/tracing/
+  - ../../observability/tracing/
+  - tracing/
 ---

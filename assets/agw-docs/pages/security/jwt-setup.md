@@ -304,7 +304,7 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-For more authorization rules, such as combining `Allow` with `Require` or restricting access by source address, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}). For the claims and functions that you can use in an expression, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}For more authorization rules, such as combining `Allow` with `Require` or restricting access by source address, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}). {{< /version >}}For the claims and functions that you can use in an expression, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
 
 ## Other JWT auth examples
 

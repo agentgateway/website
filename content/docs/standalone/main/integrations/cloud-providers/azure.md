@@ -7,7 +7,7 @@ test:
   - file: ${versionRoot}/integrations/cloud-providers/azure.md
     path: azure-cloud
 aliases:
-  - /docs/standalone/main/integrations/platforms/azure/
+  - ../platforms/azure/
 ---
 
 Run agentgateway on Azure Container Apps or AKS, and reach [Azure OpenAI]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the managed identity that Azure already attaches to the workload. No API key goes into your configuration file.
