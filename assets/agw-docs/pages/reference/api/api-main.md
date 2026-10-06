@@ -5439,8 +5439,8 @@ The following types are defined in the shared package and used across multiple A
 _Underlying type:_ _string_
 
 **Validation:**
-- MinLength=1
-- MaxLength=1024
+- `MinLength=1`
+- `MaxLength=1024`
 
 #### PolicyAncestorStatus
 
@@ -5462,22 +5462,22 @@ _Underlying type:_ _string_
 _Underlying type:_ _string_
 
 **Validation:**
-- MinLength=1
-- MaxLength=253
-- Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`
+- `MinLength=1`
+- `MaxLength=253`
+- `` Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` ``
 
 #### ShortString
 
 _Underlying type:_ _string_
 
 **Validation:**
-- MinLength=1
-- MaxLength=256
+- `MinLength=1`
+- `MaxLength=256`
 
 #### TinyString
 
 _Underlying type:_ _string_
 
 **Validation:**
-- MinLength=1
-- MaxLength=64
+- `MinLength=1`
+- `MaxLength=64`
