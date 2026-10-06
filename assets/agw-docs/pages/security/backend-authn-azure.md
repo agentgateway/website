@@ -1,6 +1,6 @@
 ## About
 
-The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that the gateway forwards to the backend. The gateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.{{< version exclude-if="1.1.x,1.4.x,1.5.x" >}} To authenticate to Microsoft Graph or another Microsoft Entra-protected backend, configure the token scopes.{{< /version >}}
+The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that the gateway forwards to the backend. The gateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} To authenticate to Microsoft Graph or another Microsoft Entra-protected backend, configure the token scopes.{{< /version >}}
 
 The method has two forms.
 
