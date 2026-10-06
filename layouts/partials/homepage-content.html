@@ -665,8 +665,9 @@
 
 /* ===== GETTING STARTED ===== */
 .hp-gs-side {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px;
 }
+@media (max-width: 1100px) { .hp-gs-side { grid-template-columns: repeat(2, 1fr); } }  
 @media (max-width: 860px) { .hp-gs-side { grid-template-columns: 1fr; } }
 .hp-gs-item {
   display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 12px;
@@ -1547,10 +1548,30 @@
             <div class="hp-gs-links"><a href="/docs/standalone/latest/deployment/" class="hp-feat-link">Standalone &rarr;</a><a href="/docs/kubernetes/latest/documentation/install/" class="hp-feat-link">Kubernetes &rarr;</a></div>
           </div>
         </div>
+        <div class="hp-gs-item">
+          <div class="hp-gs-ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+                 stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 3h6"/>
+              <path d="M10 3v6.5L4.6 18.4A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.4-2.6L14 9.5V3"/>
+              <path d="M7.5 15h9"/>
+            </svg>
+          </div>
+          <div>
+            <h4>Hands-on lab: LLM cost management</h4>
+            <p>Free, on-demand lab — monitor LLM usage, apply consumption
+              controls, and optimize costs with agentgateway.</p>
+            <div class="hp-gs-links">
+              <a class="hp-feat-link" target="_blank" rel="noopener"
+                 href="https://www.solo.io/resources/lab/llm-consumption-cost-management-with-agentgateway?utm_source=agentgateway.io&amp;utm_medium=lab%20offer&amp;utm_campaign=homepage-lab">Start the lab &rarr;</a>
+            </div>
+          </div>
+        </div>
       </div>
   </div>
 </section>
-
+  
 <!-- ============ INTEGRATIONS ============ -->
 <section class="hp-section" id="integrations">
   <div class="hp-wrap">
