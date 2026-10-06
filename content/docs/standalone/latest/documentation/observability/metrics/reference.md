@@ -4,7 +4,7 @@ weight: 50
 description: Review the metrics that are available in agentgateway.
 test: skip
 aliases:
-  - /docs/standalone/latest/reference/observability/metrics/
+  - ../../../reference/observability/metrics/
 ---
 
 > [!NOTE]

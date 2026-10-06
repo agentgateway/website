@@ -7,7 +7,7 @@ test:
   - file: ${versionRoot}/integrations/cloud-providers/aws.md
     path: aws
 aliases:
-  - /docs/standalone/latest/integrations/platforms/aws/
+  - ../platforms/aws/
 ---
 
 Run agentgateway on Amazon ECS or Amazon EKS, and reach [Amazon Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) with the IAM role that AWS already gives the container. No API key goes into your configuration file.
