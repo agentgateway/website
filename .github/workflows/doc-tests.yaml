@@ -28,6 +28,11 @@ on:
 jobs:
   discover:
     name: Discover test cases
+    # The nightly run belongs to the upstream repo only. Forks that keep `main`
+    # in sync inherit the `schedule:` trigger and would run the whole suite and
+    # post a second copy of the results to Slack. PR and manual runs still work
+    # in forks. Skipping this job skips `run-test` and `report` with it.
+    if: github.event_name != 'schedule' || github.repository == 'agentgateway/website'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.list.outputs.matrix }}
