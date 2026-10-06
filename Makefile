@@ -67,19 +67,37 @@ test-status: deps
 #----------------------------------------------------------------------------------
 
 # Build the static site into public/ (production: GC, minify)
+# The site's CSS goes through PostCSS + Tailwind from node_modules. Without them
+# Hugo fails deep in a template with "Cannot find module 'tailwindcss/nesting'",
+# which does not say what to do. A fresh clone or git worktree has no
+# node_modules, so check first and say so plainly.
+.PHONY: check-node-deps
+check-node-deps:
+	@test -d node_modules/tailwindcss || { echo "node_modules is missing. Run 'npm install' in $(CURDIR) first."; exit 1; }
+
 .PHONY: build
-build:
+build: check-node-deps
 	hugo --gc --minify
+
+# The local servers build only the versions listed in hugo.yaml's
+# `params.versions`. content/docs/ also holds every older version tree, which
+# production still publishes. scripts/local-version-config.py derives the skip list from hugo.yaml and
+# writes hugo-local-versions.yaml (gitignored). FULL=1 builds everything.
+LOCAL_VERSIONS_CONFIG = $(if $(FULL),,--config hugo.yaml,hugo-local-versions.yaml)
+
+.PHONY: local-version-config
+local-version-config:
+	@$(if $(FULL),:,python3 scripts/local-version-config.py)
 
 # Start local dev server (drafts and future-dated content shown)
 .PHONY: serve
-serve:
-	hugo server --buildDrafts --buildFuture
+serve: check-node-deps local-version-config
+	hugo server --buildDrafts --buildFuture $(LOCAL_VERSIONS_CONFIG)
 
 # Start local server with production-like build (GC, minify, no drafts)
 .PHONY: serve-prod
-serve-prod:
-	hugo server --gc --minify
+serve-prod: check-node-deps local-version-config
+	hugo server --gc --minify $(LOCAL_VERSIONS_CONFIG)
 
 # Alias for serve (drafts and future-dated content shown)
 .PHONY: server
