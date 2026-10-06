@@ -160,6 +160,12 @@ Build the Docker image from the source code. The example builds the image for an
 
 Agentgateway generates one MCP tool for each operation in your OpenAPI spec. Each tool is named after the operation's `operationId` field. For example, an operation with `operationId: addPet` becomes an MCP tool named `addPet`. Make sure each operation in your spec defines a unique `operationId` so that the generated tool names are predictable and do not collide.
 
+## Tool response content
+
+For non-5xx OpenAPI responses, the response body and the `Content-Type` header determine the MCP tool result. A JSON object or JSON `null` response produces structured content. Other non-image, non-JSON responses also produce structured content. In that content, `code` contains the HTTP status code, and `message` contains the UTF-8-decoded body.
+
+When the `Content-Type` header is an `image/*` media type, the tool result contains an MCP image content block instead. The image block uses the response media type, such as `image/png`, and base64-encoded body bytes.
+
 ## Path parameters {#path-parameters}
 
 OpenAPI path parameters are always required. In the MCP tool schema, each OpenAPI path parameter is required, even when the OpenAPI document omits `required` or sets it to `false`.
