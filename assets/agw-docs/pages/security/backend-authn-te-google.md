@@ -390,7 +390,15 @@ The exchange does not validate the incoming token itself; Google does. To reject
 
 ## Troubleshooting {#troubleshooting}
 
-When the exchange fails, the gateway returns `400` with the body `invalid request`. The response from the STS is logged at debug level. To see it, set the proxy log level with an `AgentgatewayParameters` resource that the Gateway references, for example `spec.logging.level: info,agentgateway::http::auth::oauth=debug`. Then check the proxy logs for `oauth token exchange rejected by authorization server`.
+When the exchange fails, the gateway returns `400` with the body `invalid request`. The response from the STS is logged at debug level. To see it, raise the log level of the token exchange module on the proxy, send the request again, and check the proxy logs.
+
+```sh
+kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000 &
+curl -X POST "http://localhost:15000/logging?level=info,agentgateway::http::auth::oauth=debug"
+kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} | grep "oauth token exchange"
+```
+
+The change lasts until the proxy restarts. Look for a message such as `oauth token exchange rejected by authorization server`, which includes the error from the STS.
 
 | Error from the STS | Cause |
 | -- | -- |
