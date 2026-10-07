@@ -4,10 +4,8 @@ weight: 14
 description: Serve a fixed status code and response body directly from agentgateway instead of forwarding to a backend.
 test:
   direct-response:
-    type: [schema, functional]
-    steps:
-    - file: ${versionRoot}/documentation/configuration/traffic-management/direct-response.md
-      path: direct-response
+  - file: ${versionRoot}/documentation/configuration/traffic-management/direct-response.md
+    path: direct-response
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}}

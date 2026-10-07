@@ -5,10 +5,11 @@ on:
     paths:
       - 'assets/**'
       - 'content/docs/**'
-      # The selector and this file. Without them a PR that changes only
-      # `reuse_consumers.py` does not trigger this workflow at all, so the
-      # "test the resolver before trusting it" step below had a hole exactly
-      # where the selector lives.
+      # This repo's own scripts, and this file. NOTE: `reuse_consumers.py` now
+      # lives in solo-io/docs-tests, so a change to the SELECTOR no longer
+      # triggers this workflow at all -- a path filter cannot watch another
+      # repository. The daily schedule below is what catches a selector
+      # regression now, rather than the PR that introduced it.
       - 'scripts/**'
       - '.github/workflows/doc-tests.yaml'
   schedule:
@@ -72,7 +73,16 @@ jobs:
           # the one it checked out, which is one less difference to rule out
           # when the resolver and a local run disagree.
           PYTHONDONTWRITEBYTECODE: '1'
-        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+          # The selector moved to docs-tests, so its tests moved with it and need
+          # to be told which consumer repo to walk; unset, they raise rather than
+          # silently examining nothing. The second line keeps this repo's own
+          # scripts/ tests (test_normalize_doc_links.py) running -- they were only
+          # ever covered here incidentally, and repointing the gate would have
+          # dropped them without saying so.
+          DOCS_REPO_ROOT: ${{ github.workspace }}
+        run: |
+          python3 -m unittest discover -s docs-tests/scripts -p 'test_*.py'
+          python3 -m unittest discover -s scripts -p 'test_*.py'
 
       - name: Get changed markdown files
         id: changed-files
@@ -150,7 +160,7 @@ jobs:
 
           if [ -n "$CHANGED_MD" ]; then
             FILES=$(printf '%s\n' "$CHANGED_MD" \
-              | python3 scripts/reuse_consumers.py --repo-root . --stdin 2>"$UNRESOLVED_LOG" \
+              | python3 docs-tests/scripts/reuse_consumers.py --repo-root . --stdin 2>"$UNRESOLVED_LOG" \
               | tr '\n' ' ')
           fi
 
