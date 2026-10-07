@@ -83,21 +83,27 @@ build: check-node-deps
 # `params.versions`. content/docs/ also holds every older version tree, which
 # production still publishes. scripts/local-version-config.py derives the skip list from hugo.yaml and
 # writes hugo-local-versions.yaml (gitignored). FULL=1 builds everything.
+# VERSION=<linkVersion> builds only that listed version (VERSION=latest for the
+# `latest` entry), for a faster preview.
 LOCAL_VERSIONS_CONFIG = $(if $(FULL),,--config hugo.yaml,hugo-local-versions.yaml)
+
+# NO_SEARCH=1 builds without the search index (the search box does nothing),
+# for a faster preview.
+NO_SEARCH_ENV = $(if $(NO_SEARCH),HUGO_PARAMS_SEARCH_ENABLE=false )
 
 .PHONY: local-version-config
 local-version-config:
-	@$(if $(FULL),:,python3 scripts/local-version-config.py)
+	@$(if $(FULL),:,python3 scripts/local-version-config.py $(if $(VERSION),--version $(VERSION)))
 
 # Start local dev server (drafts and future-dated content shown)
 .PHONY: serve
 serve: check-node-deps local-version-config
-	hugo server --buildDrafts --buildFuture $(LOCAL_VERSIONS_CONFIG)
+	$(NO_SEARCH_ENV)hugo server --buildDrafts --buildFuture $(LOCAL_VERSIONS_CONFIG)
 
 # Start local server with production-like build (GC, minify, no drafts)
 .PHONY: serve-prod
 serve-prod: check-node-deps local-version-config
-	hugo server --gc --minify $(LOCAL_VERSIONS_CONFIG)
+	$(NO_SEARCH_ENV)hugo server --gc --minify $(LOCAL_VERSIONS_CONFIG)
 
 # Alias for serve (drafts and future-dated content shown)
 .PHONY: server

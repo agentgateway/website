@@ -14,9 +14,14 @@ Nothing is maintained by hand. For each section, the kept versions are the
 `sections` applies to all), and every other version-shaped directory is added to
 `ignoreFiles`. Add a version to the list and it builds locally again.
 
+--version narrows that to one listed version, for a faster preview: a
+linkVersion, or `latest` for the entry whose linkVersion is "latest" (the first
+entry if there is none). `make serve VERSION=main` passes it.
+
 If PyYAML is missing, the overlay is written empty and everything builds.
 """
 
+import argparse
 import re
 import sys
 from pathlib import Path
@@ -37,15 +42,34 @@ HEADER = (
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser.add_argument("--version", default="", help="build only this listed linkVersion, or `latest`")
+    args = parser.parse_args()
+
     try:
         import yaml
     except ImportError:
+        if args.version:
+            sys.exit("ERROR: VERSION needs PyYAML to read hugo.yaml. Run `make deps`.")
         OUT.write_text(HEADER + "# PyYAML not installed: building every version.\n")
         print("PyYAML not installed (run `make deps`); building every version.")
         return 0
 
     config = yaml.safe_load(CONFIG.read_text(encoding="utf-8")) or {}
     entries = (config.get("params") or {}).get("versions") or []
+
+    keep = ""
+    if args.version:
+        all_listed = [str(e.get("linkVersion") or e.get("version")) for e in entries]
+        if args.version in all_listed:
+            keep = args.version
+        elif args.version == "latest" and all_listed:
+            keep = all_listed[0]
+        else:
+            sys.exit(
+                f"ERROR: VERSION={args.version} is not a linkVersion in hugo.yaml "
+                f"(have: {', '.join(all_listed)})"
+            )
 
     patterns, skipped = [], []
     for section_dir in sorted(p for p in DOCS.iterdir() if p.is_dir()):
@@ -55,6 +79,8 @@ def main() -> int:
             for e in entries
             if not e.get("sections") or section in e["sections"]
         }
+        if keep:
+            listed &= {keep}
         for version_dir in sorted(p for p in section_dir.iterdir() if p.is_dir()):
             name = version_dir.name
             if VERSION_DIR.match(name) and name not in listed:
@@ -62,9 +88,16 @@ def main() -> int:
                 skipped.append(f"{section}/{name}")
 
     body = "".join(f"  - '{p}'\n" for p in patterns)
-    OUT.write_text(HEADER + ("ignoreFiles:\n" + body if body else "ignoreFiles: []\n"), encoding="utf-8")
+    text = HEADER + ("ignoreFiles:\n" + body if body else "ignoreFiles: []\n")
+    if keep:
+        # Pages outside the docs (blog posts, for example) `ref` pages in the
+        # skipped version. Missing refs fail the build by default; warn instead.
+        text += "refLinksErrorLevel: warning\n"
+    OUT.write_text(text, encoding="utf-8")
 
-    if skipped:
+    if keep:
+        print(f"Building version {keep} only; skipping {', '.join(skipped) or 'nothing'}.")
+    elif skipped:
         print(
             f"Skipping versions not in hugo.yaml: {', '.join(skipped)}. "
             "Run with FULL=1 to build them."
