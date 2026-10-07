@@ -4,9 +4,7 @@ weight: 20
 description: Gate and mutate MCP method calls with an external ExtMCP policy server.
 test:
   mcp-guardrails:
-    type: [schema, functional]
-    steps:
-    - path: mcp-guardrails
+  - path: mcp-guardrails
 ---
 
 Gate and mutate Model Context Protocol (MCP) method calls with an external policy server. For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).

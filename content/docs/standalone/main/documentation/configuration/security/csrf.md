@@ -4,10 +4,8 @@ weight: 11
 description: Protect against cross-site request forgery attacks with origin validation.
 test:
   csrf:
-    type: [schema, functional]
-    steps:
-    - file: ${versionRoot}/documentation/configuration/security/csrf.md
-      path: csrf
+  - file: ${versionRoot}/documentation/configuration/security/csrf.md
+    path: csrf
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}}

@@ -5,10 +5,8 @@ icon: /integrations/providers/bw/openai.svg
 description: Route agentgateway LLM traffic to OpenAI's GPT models.
 test:
   openai:
-    type: [schema, functional]
-    steps:
-    - file: ${versionRoot}/integrations/llm/providers/openai.md
-      path: openai
+  - file: ${versionRoot}/integrations/llm/providers/openai.md
+    path: openai
 ---
 
 Configure OpenAI as an LLM provider in agentgateway.
