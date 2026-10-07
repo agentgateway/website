@@ -1,7 +1,7 @@
 Control access or route traffic based on verified claims in a JSON web token (JWT).
 
 > [!NOTE]
-> This guide shows how to enforce a standard JWT authentication policy on MCP servers. This policy is not specific to MCP, but can be used for basic service-to-service scenarios involving MCPs. However, for most MCP-specific authentication scenarios, see the MCP-native [MCP authentication guide]({{< link-hextra path="/documentation/mcp/auth/" >}}). For general authorization concepts, see the [Authorization guide]({{< link-hextra path="/documentation/security/authorization/" >}}).
+> This guide shows how to enforce a standard JWT authentication policy on MCP servers. This policy is not specific to MCP, but can be used for basic service-to-service scenarios involving MCPs. However, for most MCP-specific authentication scenarios, see the MCP-native [MCP authentication guide]({{< link-hextra path="/documentation/mcp/auth/" >}}).{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}} For general authorization concepts, see the [Authorization guide]({{< link-hextra path="/documentation/security/authorization/" >}}).{{< /version >}}
 
 ## About JWT auth
 

@@ -124,6 +124,8 @@ This benchmark intentionally isolates proxy performance by using a mock backend,
 
 Based on these results, I'm going to switch my local setup to agentgateway and use it to manage all of my LLM traffic.
 
+Ready to switch? To convert an existing LiteLLM proxy configuration into an agentgateway configuration, see [Migrate from LiteLLM](/docs/standalone/latest/documentation/configuration/import/).
+
 Because each gateway handled a different workload in this test, I followed up with [Part 2](/blog/2026-06-26-benchmarking-agentgateway-vs-litellm-part-2/) using a fixed 3,000 QPS target for both gateways to make the comparison more apples-to-apples.
 
 I later revisited this comparison with [LiteLLM's Rust mode](/blog/2026-08-13-benchmarking-agentgateway-vs-litellm-rust-mode/).

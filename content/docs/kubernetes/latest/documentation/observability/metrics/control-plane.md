@@ -10,13 +10,14 @@ test:
     path: control-plane-metrics
 # This page used to be `observability/control-plane-metrics.md`. One alias per old
 # URL shape: the pre-docTabs layout, then the docTabs layout before the page moved
-# under `metrics/`. Aliases are WHOLE URL paths, so keep the
-# `/docs/kubernetes/latest` prefix. Without it, both redirects build at the site root
-# and collide with the identical aliases in `latest`, and whichever tree builds
-# last wins.
+# under `metrics/`. Aliases are relative to the parent of this page's URL, so a
+# copied version tree redirects inside itself. Do not write
+# `/docs/<section>/<version>/...`: that prefix goes stale when the tree is copied
+# for a release. A bare `/...` alias builds at the site root, where every version
+# tree collides.
 aliases:
-  - /docs/kubernetes/latest/observability/control-plane-metrics/
-  - /docs/kubernetes/latest/documentation/observability/control-plane-metrics/
+  - ../../../observability/control-plane-metrics/
+  - ../control-plane-metrics/
 ---
 
 {{< reuse "agw-docs/pages/observability/metrics/control-plane.md" >}}

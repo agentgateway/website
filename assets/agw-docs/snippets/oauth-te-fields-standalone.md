@@ -1,4 +1,4 @@
-The following table describes the most common `oauthTokenExchange` fields. For the full set of fields, see `oauthTokenExchange` in the API reference for [Kubernetes](/docs/kubernetes/latest/reference/api/#oauthtokenexchange). The two modes take the same fields; standalone spells the enum values in camelCase, such as `jwtBearer` rather than `JwtBearer`.
+The following table describes the most common `oauthTokenExchange` fields.{{% upstream %}} For the full set of fields, see `oauthTokenExchange` in the API reference for [Kubernetes](/docs/kubernetes/latest/reference/api/#oauthtokenexchange).{{% /upstream %}} The two modes take the same fields; standalone spells the enum values in camelCase, such as `jwtBearer` rather than `JwtBearer`.
 
 | Field | Description |
 | -- | -- |

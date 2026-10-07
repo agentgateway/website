@@ -15,8 +15,8 @@ test:
     - file: ${versionRoot}/documentation/security/backend-authn/jwt-sign.md
       path: jwt-sign
 aliases:
-  - /docs/kubernetes/latest/security/backend-authn-jwt-sign/
-  - /docs/kubernetes/latest/documentation/security/backend-authn-jwt-sign/
+  - ../../../security/backend-authn-jwt-sign/
+  - ../backend-authn-jwt-sign/
 ---
 
 {{< reuse "agw-docs/pages/security/backend-authn-jwt-sign.md" >}}

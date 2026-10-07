@@ -4,7 +4,7 @@ weight: 70
 description: Install agentgateway and related components.
 test: skip
 aliases:
-  - /docs/kubernetes/main/install/advanced/
+  - ../../install/advanced/
 ---
 
 {{< reuse "agw-docs/pages/install/advanced.md" >}}

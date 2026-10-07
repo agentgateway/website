@@ -4,7 +4,7 @@ weight: 10
 description: Run agentgateway on AWS, Google Cloud, or Azure, and authenticate to each provider's managed model services.
 test: skip
 aliases:
-  - /docs/standalone/main/integrations/platforms/
+  - platforms/
 ---
 
 Agentgateway runs the same proxy and reads the same configuration file on every cloud provider, so none of the [installation methods]({{< link-hextra path="/documentation/setup/install/" >}}) change when you move to a cloud. What changes is the surrounding environment: which container runtime starts the process, how the process gets an identity, and where its configuration file comes from.

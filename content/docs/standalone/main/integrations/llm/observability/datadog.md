@@ -2,7 +2,7 @@
 title: Datadog
 weight: 30
 aliases:
-  - /docs/standalone/main/documentation/observability/traces/configs/datadog/
+  - ../../../documentation/observability/traces/configs/datadog/
 description: Export agentgateway metrics and LLM traces to Datadog.
 test: skip
 ---

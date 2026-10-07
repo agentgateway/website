@@ -6,9 +6,9 @@ test:
   client-auth:
   - path: client-auth
 aliases:
-  - /docs/standalone/main/security/backend-authn-oauth/
-  - /docs/standalone/main/documentation/configuration/security/backend-authn-oauth/
-  - /docs/standalone/main/documentation/configuration/security/backend-authn/oauth-token-exchange/
+  - ../../../../../security/backend-authn-oauth/
+  - ../../backend-authn-oauth/
+  - ../oauth-token-exchange/
 ---
 
 Attaches to: {{< badge content="Backend" path="/documentation/configuration/backends/" >}}

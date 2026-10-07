@@ -3,8 +3,8 @@ title: Custom
 weight: 99
 description: Configure agentgateway for providers without built-in support that implement the OpenAI API format.
 aliases:
-  - /docs/standalone/latest/llm/providers/openai-compatible
-  - /docs/standalone/latest/documentation/llm/providers/openai-compatible
+  - ../../../llm/providers/openai-compatible
+  - ../../../documentation/llm/providers/openai-compatible
 test:
   openai-compatible-validate:
   - file: ${versionRoot}/integrations/llm/providers/custom.md
