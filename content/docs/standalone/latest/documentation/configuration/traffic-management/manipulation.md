@@ -2,10 +2,6 @@
 title: Header manipulation
 weight: 10
 description: Add, set, or remove HTTP request and response headers.
-test:
-  manipulation:
-  - file: ${versionRoot}/documentation/configuration/traffic-management/manipulation.md
-    path: manipulation
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}} {{< badge content="Backend" path="/documentation/configuration/backends/">}}

@@ -41,29 +41,36 @@ deps:
 # status into the markdown for the "Verified" badge.
 #
 # The scripts themselves live in the docs-tests repo, not here -- override
-# DOCS_TESTS_DIR if you haven't cloned it as a sibling of this repo.
+# DOCS_TESTS_DIR if you haven't cloned it as a sibling of this repo. If the
+# directory doesn't exist, the targets below clone it, which is how Cloudflare
+# Pages gets the scripts: its build checks out only this repo.
 #----------------------------------------------------------------------------------
 
 DOCS_TESTS_DIR ?= ../docs-tests
+DOCS_TESTS_REPO ?= https://github.com/solo-io/docs-tests.git
+
+# Clone docs-tests if it's missing. An existing checkout is left alone.
+$(DOCS_TESTS_DIR):
+	git clone --depth 1 $(DOCS_TESTS_REPO) $(DOCS_TESTS_DIR)
 
 # Generate doc test scripts from markdown (no cluster needed)
 .PHONY: test-generate
-test-generate: deps
+test-generate: deps | $(DOCS_TESTS_DIR)
 	python3 $(DOCS_TESTS_DIR)/scripts/doc_test_run.py --repo-root . --generate-only
 
 # Run all doc tests (requires kubeconfig / cluster access)
 .PHONY: test-run
-test-run: deps
+test-run: deps | $(DOCS_TESTS_DIR)
 	python3 $(DOCS_TESTS_DIR)/scripts/doc_test_run.py --repo-root .
 
 # Download latest doc test results from GitHub Actions (main)
 .PHONY: test-artifacts-fetch
-test-artifacts-fetch:
+test-artifacts-fetch: | $(DOCS_TESTS_DIR)
 	bash $(DOCS_TESTS_DIR)/scripts/doc_test_fetch_artifacts.sh
 
 # Write test pass/fail status into markdown front matter (for Verified badge)
 .PHONY: test-status
-test-status: deps
+test-status: deps | $(DOCS_TESTS_DIR)
 	python3 $(DOCS_TESTS_DIR)/scripts/doc_test_inject_status.py --repo-root .
 
 

@@ -2,10 +2,6 @@
 title: Transformations
 weight: 12
 description: Modify header and body information for requests and responses. 
-test:
-  transformations:
-  - file: ${versionRoot}/documentation/configuration/traffic-management/transformations.md
-    path: transformations
 ---
 
 Attaches to: {{< badge content="Listener" path="/documentation/configuration/listeners/">}} {{< badge content="Route" path="/documentation/configuration/routes/">}}
