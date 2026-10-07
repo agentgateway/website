@@ -27,7 +27,7 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
 1. Create a Backend for the Dynamic Forward Proxy.
    ```yaml {paths="dfp"}
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: dfp-backend

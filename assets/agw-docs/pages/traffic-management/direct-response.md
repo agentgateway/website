@@ -46,7 +46,7 @@ The following rule is applied during schema validation:
 2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with a `directResponse` configuration. The policy is applied on the HTTPRoute that you created earlier and returns a 200 HTTP response code with a custom message body.
    ```yaml {paths="direct-response"}
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: direct-response

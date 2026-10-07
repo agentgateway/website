@@ -93,7 +93,7 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
 
    ```yaml {paths="ollama-provider-setup"}
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: ollama
