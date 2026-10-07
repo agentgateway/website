@@ -13,27 +13,23 @@ test:
   - file: content/docs/kubernetes/latest/documentation/resiliency/retry/retry.md
     path: retry-in-httproute
   retry-in-agentgateway:
-    type: [schema, functional]
-    steps:
-    - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
-      path: experimental
-    - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
-      path: all
-    - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
-      path: install-httpbin
-    - file: content/docs/kubernetes/latest/documentation/resiliency/retry/retry.md
-      path: retry-in-agentgateway
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/latest/documentation/resiliency/retry/retry.md
+    path: retry-in-agentgateway
   retry-in-gatewaylistener:
-    type: [schema, functional]
-    steps:
-    - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
-      path: experimental
-    - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
-      path: all
-    - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
-      path: install-httpbin
-    - file: content/docs/kubernetes/latest/documentation/resiliency/retry/retry.md
-      path: retry-in-gatewaylistener
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/latest/documentation/resiliency/retry/retry.md
+    path: retry-in-gatewaylistener
 ---
 
 {{< reuse "agw-docs/pages/resiliency/retry/retry.md" >}}

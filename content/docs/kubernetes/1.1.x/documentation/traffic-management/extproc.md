@@ -4,16 +4,14 @@ weight: 10
 description:
 test:
   extproc:
-    type: [schema, functional]
-    steps:
-    - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
-      path: experimental
-    - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
-      path: all
-    - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
-      path: install-httpbin
-    - file: content/docs/kubernetes/latest/documentation/traffic-management/extproc.md
-      path: extproc
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/latest/documentation/traffic-management/extproc.md
+    path: extproc
 ---
 
 Modify aspects of an HTTP request or response with an external processing server. 

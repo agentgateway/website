@@ -3,16 +3,14 @@ title: Tracing
 weight: 90
 test:
   tracing:
-    type: [schema, functional]
-    steps:
-    - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
-      path: standard
-    - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
-      path: all
-    - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
-      path: install-httpbin
-    - file: content/docs/kubernetes/latest/documentation/observability/tracing.md
-      path: tracing
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
+    path: standard
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/latest/documentation/observability/tracing.md
+    path: tracing
 ---
 
 Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and configure custom metadata for your traces with an {{< reuse "agw-docs/snippets/policy.md" >}}.

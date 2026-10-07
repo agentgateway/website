@@ -13,27 +13,23 @@ test:
   - file: content/docs/kubernetes/latest/documentation/resiliency/retry/per-try-timeout.md
     path: per-try-timeout-in-httproute
   per-try-timeout-in-agentgateway:
-    type: [schema, functional]
-    steps:
-    - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
-      path: experimental
-    - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
-      path: all
-    - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
-      path: install-httpbin
-    - file: content/docs/kubernetes/latest/documentation/resiliency/retry/per-try-timeout.md
-      path: per-try-timeout-in-agentgateway
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/latest/documentation/resiliency/retry/per-try-timeout.md
+    path: per-try-timeout-in-agentgateway
   per-try-timeout-in-gatewaylistener:
-    type: [schema, functional]
-    steps:
-    - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
-      path: experimental
-    - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
-      path: all
-    - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
-      path: install-httpbin
-    - file: content/docs/kubernetes/latest/documentation/resiliency/retry/per-try-timeout.md
-      path: per-try-timeout-in-gatewaylistener
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/latest/documentation/resiliency/retry/per-try-timeout.md
+    path: per-try-timeout-in-gatewaylistener
 ---
 
 {{< reuse "agw-docs/pages/resiliency/retry/per-try-timeout.md" >}}

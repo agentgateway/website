@@ -12,28 +12,26 @@ test:
     path: install-httpbin
   - file: content/docs/kubernetes/latest/documentation/resiliency/connection.md
     path: connection-general
+
   connection-http1:
-    type: [schema, functional]
-    steps:
-    - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
-      path: experimental
-    - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
-      path: all
-    - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
-      path: install-httpbin
-    - file: content/docs/kubernetes/latest/documentation/resiliency/connection.md
-      path: connection-http1
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/latest/documentation/resiliency/connection.md
+    path: connection-http1
+
   connection-http2-flow:
-    type: [schema, functional]
-    steps:
-    - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
-      path: experimental
-    - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
-      path: all
-    - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
-      path: install-httpbin
-    - file: content/docs/kubernetes/latest/documentation/resiliency/connection.md
-      path: connection-http2-flow
+  - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/latest/documentation/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/latest/documentation/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/latest/documentation/resiliency/connection.md
+    path: connection-http2-flow
 ---
 
 {{< reuse "agw-docs/pages/resiliency/connection.md" >}}
