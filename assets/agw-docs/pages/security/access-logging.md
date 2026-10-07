@@ -67,7 +67,7 @@ Access logs are written to `stdout` automatically for every request that passes 
    protocol=http duration=0ms
    ```
 
-To filter which requests are logged or customize log fields, see [Filter access logs](#filter-access-logs) and [Add and remove log fields](#add-and-remove-log-fields). To export access logs to an external backend over OTLP, see [Export logs over OTLP]({{< link-hextra path="/documentation/observability/access-logs/export/" >}}).
+To filter which requests are logged or customize log fields, see [Filter access logs](#filter-access-logs) and [Add and remove log fields](#add-and-remove-log-fields).{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,2.2.x" >}} To export access logs to an external backend over OTLP, see [Export logs over OTLP]({{< link-hextra path="/documentation/observability/access-logs/export/" >}}).{{< /version >}}
 
   {{< doc-test paths="access-logging" >}}
   YAMLTest -f - <<'EOF'
@@ -98,7 +98,7 @@ To filter which requests are logged or customize log fields, see [Filter access 
      section stays put when the next release freezes this line under a number.
      The `preset` field is new to the frontend access log policy in the version
      that `main` currently points at. -->
-{{< version exclude-if="1.5.x" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
 ## Use OpenTelemetry field names {#preset}
 
 By default, the stdout access log uses short, human-oriented field names, such as `http.path`. To rename the built-in HTTP fields to their [OpenTelemetry semantic convention](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) equivalents, such as `url.path`, set `preset: Otel` in the access log policy.
@@ -496,8 +496,10 @@ If you set up the [OTel stack]({{< link-hextra path="/documentation/observabilit
    EOF
    ```
 
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,2.2.x" >}}
    > [!TIP]
    > To filter which logs are exported, add custom fields, or send logs to a different backend, see [Export logs over OTLP]({{< link-hextra path="/documentation/observability/access-logs/export/" >}}).
+   {{< /version >}}
 
 2. Open Grafana.  
 

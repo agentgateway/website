@@ -49,7 +49,7 @@ Endpoints that consistently fail are moved to a rejected set and are considered 
      section stays put when the next release freezes this line under a number.
      The `sessionAffinity` backend policy is new to the Kubernetes API in the
      version that `main` currently points at. -->
-{{< version exclude-if="1.5.x" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
 ## Session affinity {#session-affinity}
 
 P2C selects an endpoint independently for each request, so two requests from the same client can land on different endpoints. To send every request that carries the same value to the same endpoint, set the `sessionAffinity` backend policy.
@@ -159,7 +159,7 @@ For more information about these commands, including how to show services that h
 
 ## Next steps
 
-{{< version exclude-if="1.5.x" >}}- Pin the requests that share a value to one endpoint with [session affinity](#session-affinity). {{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}- Pin the requests that share a value to one endpoint with [session affinity](#session-affinity). {{< /version >}}
 - Reduce cross-zone traffic with [locality-aware routing]({{< link-hextra path="/documentation/traffic-management/locality-aware-routing/" >}}).
 - Remove failing endpoints from the pool with [backend health checking]({{< link-hextra path="/documentation/resiliency/backend-health/" >}}).
 - Distribute requests across LLM providers with [LLM load balancing]({{< link-hextra path="/documentation/llm/load-balancing/" >}}).

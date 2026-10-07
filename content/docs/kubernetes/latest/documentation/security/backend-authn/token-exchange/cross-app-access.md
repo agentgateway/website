@@ -13,9 +13,9 @@ test:
   - file: ${versionRoot}/documentation/security/backend-authn/token-exchange/cross-app-access.md
     path: cross-app-access
 aliases:
-  - /docs/kubernetes/latest/security/backend-authn-cross-app-access/
-  - /docs/kubernetes/latest/documentation/security/backend-authn-cross-app-access/
-  - /docs/kubernetes/latest/documentation/security/backend-authn/cross-app-access/
+  - ../../../../security/backend-authn-cross-app-access/
+  - ../../backend-authn-cross-app-access/
+  - ../cross-app-access/
 ---
 
 {{< reuse "agw-docs/pages/security/backend-authn-cross-app-access.md" >}}

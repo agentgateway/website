@@ -246,7 +246,7 @@ ports:
 - port: 3090
   protocol: TCP
 ---
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: vllm
@@ -349,7 +349,7 @@ These steps are the same for both external and in-cluster vLLM.
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: vllm

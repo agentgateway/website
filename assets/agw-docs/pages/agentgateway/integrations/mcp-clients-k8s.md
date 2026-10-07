@@ -70,6 +70,7 @@ Use the MCP endpoint URL from the previous step to configure your IDE. Replace `
 > [!NOTE]
 > **Multiplexed tool names**: If your agentgateway backend routes to more than one [Virtual MCP]({{< link-hextra path="/documentation/mcp/virtual" >}}) target, agentgateway namespaces each tool and prompt name with its target name by default, for example `mcp-server-everything_echo`. When you add a second target, tools in your client's tool list might get new names because of this prefixing. Control it with the `prefixMode` field on the MCP backend; see [Virtual MCP]({{< link-hextra path="/documentation/mcp/virtual" >}}) for the available modes.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,2.2.x" >}}
 {{< cards >}}
   {{< card link="claude-desktop/" title="Claude Desktop" subtitle="Connect Claude Desktop" >}}
   {{< card link="claude-code/" title="Claude Code" subtitle="Connect the Claude Code CLI" >}}
@@ -77,6 +78,7 @@ Use the MCP endpoint URL from the previous step to configure your IDE. Replace `
   {{< card link="vscode/" title="VS Code (GitHub Copilot)" subtitle="Connect VS Code and GitHub Copilot" >}}
   {{< card link="devin/" title="Devin Desktop" subtitle="Connect Devin Desktop (formerly Windsurf)" >}}
 {{< /cards >}}
+{{< /version >}}
 
 ## Authentication
 

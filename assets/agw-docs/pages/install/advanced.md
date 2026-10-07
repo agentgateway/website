@@ -225,7 +225,9 @@ Keep the following behavior in mind:
 
 <!-- TODO conditional-text oss-only -->
 {{< conditional-text include-if="kubernetes" >}}
+{{< version exclude-if="1.1.x" >}}
 ## TLS encryption {#tls-encryption}
 
 You can enable TLS encryption for the xDS gRPC server in the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane. For more information, see the [TLS encryption]({{< link-hextra path="/documentation/install/tls" >}}) docs.
+{{< /version >}}
 {{< /conditional-text >}}

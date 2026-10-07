@@ -64,7 +64,7 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 
    ```bash
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: anthropic-desktop

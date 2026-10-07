@@ -192,7 +192,7 @@ Create a backend with multiple providers in the same priority group to enable lo
 
    ```yaml,paths="load-balancing"
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: loadbalanced-backend
@@ -226,7 +226,7 @@ Create a backend with multiple providers in the same priority group to enable lo
 # what the P2C behavior on this page depends on.
 {{< reuse "agw-docs/snippets/deploy-mock-llm.md" >}}
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: loadbalanced-backend
@@ -395,7 +395,7 @@ For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< 
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: stable-backend
@@ -412,7 +412,7 @@ For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< 
                    secretRef:
                      name: openai-secret
    ---
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: canary-backend
@@ -504,6 +504,6 @@ kubectl delete httproute loadbalanced-route -n {{< reuse "agw-docs/snippets/name
 ## Next steps
 
 - Configure [failover]({{< link-hextra path="/documentation/llm/failover/" >}}) with priority groups for high availability
-- [Share connection settings]({{< link-hextra path="/documentation/llm/shared-connection-settings/" >}}) between a provider in this group and a separate backend, without changing the load balancing behavior
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,2.2.x" >}}- [Share connection settings]({{< link-hextra path="/documentation/llm/shared-connection-settings/" >}}) between a provider in this group and a separate backend, without changing the load balancing behavior {{< /version >}}
 - Set up [cost tracking]({{< link-hextra path="/documentation/llm/cost-controls/cost-tracking/" >}}) to monitor spending across providers
 - Use [budget limits]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}) to control costs per provider or user

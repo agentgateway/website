@@ -1,5 +1,5 @@
 ---
-title: Import a configuration
+title: Migrate from LiteLLM
 weight: 11
 description: Convert a LiteLLM proxy configuration into an agentgateway standalone configuration and review compatibility findings.
 prev: /configuration/overview
@@ -7,9 +7,9 @@ next: /configuration/gateways
 test: skip
 ---
 
-Use the agentgateway configuration importer to migrate a file-based configuration from another standalone AI gateway. The importer converts supported settings into a valid agentgateway YAML configuration and reports how each source field was handled.
+Migrate from LiteLLM to agentgateway by importing your existing LiteLLM proxy configuration file. The agentgateway configuration importer converts supported settings into a valid agentgateway YAML configuration and reports how each source field was handled.
 
-Currently, the importer supports LiteLLM proxy configuration files. Support for additional source gateways can be added to the same import command in future releases.
+The importer currently supports LiteLLM proxy configuration files. Support for additional source gateways can be added to the same import command in future releases.
 
 > [!WARNING]
 > An imported configuration can be valid without being behaviorally identical to the source configuration. Review every compatibility finding and test the generated configuration before using it in production.

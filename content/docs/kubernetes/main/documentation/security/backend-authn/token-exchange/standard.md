@@ -13,9 +13,9 @@ test:
   - file: ${versionRoot}/documentation/security/backend-authn/token-exchange/standard.md
     path: te-standard
 aliases:
-  - /docs/kubernetes/main/security/backend-authn-oauth/
-  - /docs/kubernetes/main/documentation/security/backend-authn-oauth/
-  - /docs/kubernetes/main/documentation/security/backend-authn/oauth-token-exchange/
+  - ../../../../security/backend-authn-oauth/
+  - ../../backend-authn-oauth/
+  - ../oauth-token-exchange/
 ---
 
 {{< reuse "agw-docs/pages/security/backend-authn-te-standard.md" >}}

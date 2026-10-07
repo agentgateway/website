@@ -6,12 +6,13 @@ test:
   costs:
   - file: ${versionRoot}/documentation/llm/cost-controls/costs.md
     path: costs
-# This page absorbed the old `llm/spending.md`. Aliases are WHOLE URL paths, so
-# keep the `/docs/standalone/latest` prefix. Without it, the redirect builds at the
-# site root and collides with the identical alias in `latest`, and whichever tree
-# builds last wins.
+# This page absorbed the old `llm/spending.md`. Aliases are relative to the parent
+# of this page's URL, so a copied version tree redirects inside itself. Do not write
+# `/docs/<section>/<version>/...`: that prefix goes stale when the tree is copied
+# for a release. A bare `/...` alias builds at the site root, where every version
+# tree collides.
 aliases:
-  - /docs/standalone/latest/llm/spending/
+  - ../../../llm/spending/
 ---
 
 {{< reuse "agw-docs/standalone/cost-catalog.md" >}}

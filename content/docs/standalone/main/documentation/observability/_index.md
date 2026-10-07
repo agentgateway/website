@@ -7,8 +7,8 @@ next: /docs/operations
 test: skip
 disableCards: true
 aliases:
-  - /docs/standalone/main/integrations/observability/
-  - /docs/standalone/main/reference/observability/
+  - ../integrations/observability/
+  - ../reference/observability/
 ---
 
 Agentgateway exposes three observability signals out of the box: **metrics**, **distributed traces**, and **access logs**. You can use these signals individually or together with tools like Prometheus and Grafana to monitor traffic health, LLM performance, and MCP tool usage.

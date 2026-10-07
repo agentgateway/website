@@ -252,6 +252,8 @@ The key point is that the difference isn't simply about maximum throughput. Even
 
 This benchmark intentionally isolates proxy performance by using a mock backend, so it doesn't measure real LLM inference latency or feature completeness. If your workload is dominated by model inference, the differences will be less noticeable. However, if you're building high-throughput AI services or running a local gateway that handles many concurrent requests, proxy overhead becomes much more important.
 
+Ready to switch? To convert an existing LiteLLM proxy configuration into an agentgateway configuration, see [Migrate from LiteLLM](/docs/standalone/latest/documentation/configuration/import/).
+
 The complete benchmark scripts, configurations, and raw results are available in the GitHub [repository](https://github.com/linsun/litellm-agw-perf).
 
 If you'd like to reproduce the numbers yourself, follow the instructions in the repository to run both the maximum-throughput and fixed-throughput benchmarks.
