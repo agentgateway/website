@@ -143,7 +143,7 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
 
    ```yaml,paths="traffic-split-llm"
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: openai-mini-backend
@@ -158,7 +158,7 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
          secretRef:
            name: openai-secret
    ---
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: openai-premium-backend
