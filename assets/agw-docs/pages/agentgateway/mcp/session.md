@@ -14,7 +14,7 @@ To ensure that subsequent requests are routed to the same agentgateway proxy ins
 The following configuration disables stateful session routing for a streamable HTTP endpoint. You typically use this configuration if you have stateless agents that connect to your MCP server or where the state is handled in the client directly. The MCP server treats every request as a new request and therefore requires the entire context to be sent as part of the request.
 
 ```yaml
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   namespace: default
@@ -38,7 +38,7 @@ The following configuration enables stateful session routing for a streamable HT
 > Stateful session routing and session affinity require the use of non-static, `selector`-based targets. If you use a `static` target with `sessionRouting: Stateful`, requests are not guaranteed to be routed to the same proxy instance.
 
 ```yaml
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   namespace: default
