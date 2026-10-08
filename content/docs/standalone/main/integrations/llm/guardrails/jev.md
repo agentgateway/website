@@ -228,7 +228,7 @@ The webhook server turns each guardrail check into a Jev evaluation. Agentgatewa
            body: `Rejected by JEV: ${rejected.join(", ")}`,
            reason: `Score >= ${threshold}`,
          }
-       : { reason: "JEV scores below threshold" },
+       : { reason: "Jev scores below threshold" },
    };
    ```
 
