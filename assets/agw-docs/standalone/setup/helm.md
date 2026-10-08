@@ -127,9 +127,45 @@ For quick access to the UI, port-forward the `{{< reuse "agw-docs/standalone/hel
 
 A port-forward is a quick way to look at the UI on a cluster. To give the UI its own gateway so that you can reach it without one, secure it with OIDC, and expose it on your own hostname, see [UI]({{< link-hextra path="/documentation/setup/ui/" >}}).
 
-## Common Helm values
+## Common Helm values {#helm-monitoring-values}
 
 {{< reuse "agw-docs/standalone/helm-standalone-values-table.md" >}}
+
+{{< version exclude-if="1.5.x,1.6.x" >}}
+When `monitoring.enabled` is `true`, the standalone chart creates a PodMonitor for proxy metrics. Use the PodMonitor values to request native histogram scraping or to pass Prometheus Operator relabeling rules to the generated PodMonitor. Native histogram scraping requires Prometheus v3.8.0 or later. These Helm values control the PodMonitor only. The metrics endpoint must also emit native histograms before Prometheus can collect native buckets.
+
+1. Save the monitoring settings in a values file.
+
+   ```yaml
+   cat <<'EOF' > monitoring-values.yaml
+   monitoring:
+     enabled: true
+     podMonitor:
+       scrapeNativeHistograms: true
+       scrapeClassicHistograms: true
+       relabelings: []
+       metricRelabelings: []
+   EOF
+   ```
+
+   | Value | Description |
+   | --- | --- |
+   | `monitoring.podMonitor.scrapeNativeHistograms` | Requests native histogram scraping. When set to `true`, the chart adds `PrometheusProto` to the PodMonitor scrape protocols. |
+   | `monitoring.podMonitor.scrapeClassicHistograms` | Requests classic bucket histogram scraping. The default value is `true`. |
+   | `monitoring.podMonitor.relabelings` | Adds Prometheus Operator relabeling rules before the proxy target is scraped. |
+   | `monitoring.podMonitor.metricRelabelings` | Adds Prometheus Operator metric relabeling rules before scraped proxy metrics are ingested. |
+
+2. Upgrade the Helm release with the monitoring values.
+
+   ```sh
+   helm upgrade {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --reuse-values \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     -f monitoring-values.yaml
+   ```
+{{< /version >}}
 
 {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ### Create a PodDisruptionBudget {#helm-pdb}

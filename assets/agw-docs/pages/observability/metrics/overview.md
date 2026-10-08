@@ -63,6 +63,52 @@ Follow the [OTel stack guide]({{< link path="/documentation/observability/otel-s
 The PodMonitor also copies the `gateway.networking.k8s.io/gateway-name` pod label onto the metrics that it scrapes, which is how the built-in Grafana dashboard discovers gateways and filters panels by gateway. If you set your own `monitoring.proxy.podMonitor.podTargetLabels` list, include that label, or the dashboard's gateway selector stays empty.
 {{< /version >}}
 
+{{< version exclude-if="1.5.x,1.6.x" >}}
+To tune histogram scraping and relabeling, pass histogram and relabeling settings to the ServiceMonitor and PodMonitor that the Helm chart creates. Native histogram scraping requires Prometheus v3.8.0 or later. Native histogram scraping is off by default, and classic histogram scraping is on by default. These Helm values control the Prometheus scrape resources only. The metrics endpoint must also emit native histograms before Prometheus can collect native buckets.
+
+1. Save the monitoring settings in a values file.
+
+   ```yaml
+   cat <<'EOF' > monitoring-values.yaml
+   monitoring:
+     enabled: true
+     serviceMonitor:
+       scrapeNativeHistograms: true
+       scrapeClassicHistograms: true
+       relabelings: []
+       metricRelabelings: []
+     proxy:
+       podMonitor:
+         scrapeNativeHistograms: true
+         scrapeClassicHistograms: true
+         relabelings: []
+         metricRelabelings: []
+   EOF
+   ```
+
+   | Value | Description |
+   | --- | --- |
+   | `monitoring.serviceMonitor.scrapeNativeHistograms` | Requests native histogram scraping for control plane metrics. When set to `true`, the chart adds `PrometheusProto` to the ServiceMonitor scrape protocols. |
+   | `monitoring.serviceMonitor.scrapeClassicHistograms` | Requests classic bucket histogram scraping for control plane metrics. The default value is `true`. |
+   | `monitoring.serviceMonitor.relabelings` | Adds Prometheus Operator relabeling rules before the control plane target is scraped. |
+   | `monitoring.serviceMonitor.metricRelabelings` | Adds Prometheus Operator metric relabeling rules before scraped control plane metrics are ingested. |
+   | `monitoring.proxy.podMonitor.scrapeNativeHistograms` | Requests native histogram scraping for proxy metrics. When set to `true`, the chart adds `PrometheusProto` to the PodMonitor scrape protocols. |
+   | `monitoring.proxy.podMonitor.scrapeClassicHistograms` | Requests classic bucket histogram scraping for proxy metrics. The default value is `true`. |
+   | `monitoring.proxy.podMonitor.relabelings` | Adds Prometheus Operator relabeling rules before proxy targets are scraped. |
+   | `monitoring.proxy.podMonitor.metricRelabelings` | Adds Prometheus Operator metric relabeling rules before scraped proxy metrics are ingested. |
+
+2. Upgrade the Helm release with the monitoring values.
+
+   ```sh
+   helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} \
+     {{< reuse "agw-docs/snippets/helm-path.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --reuse-values \
+     -f monitoring-values.yaml
+   ```
+{{< /version >}}
+
 ### Scrape additional proxy pods {#other-proxies}
 
 The {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm chart creates a single PodMonitor resource in the release namespace when `monitoring.enabled` is set to `true`. By default, the PodMonitor resource only finds proxy pods that are deployed to the same release namespace. Because gateway proxies run in the namespace of the Gateway resource that provisions them, proxies in other namespaces are not scraped automatically. To scape proxy pods in other namespaces, you must use the `namespaceSelector` field. 
