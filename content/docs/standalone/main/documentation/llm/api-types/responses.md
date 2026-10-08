@@ -61,6 +61,8 @@ routes:
 
 Responses replies follow OpenAI usage conventions, even when agentgateway converts the upstream provider response from another format. When a provider reports prompt-cache tokens, `usage.input_tokens` includes those tokens. When they are available, cache counts are also reported separately in `usage.input_tokens_details.cached_tokens` and `usage.input_tokens_details.cache_write_tokens`.
 
+When a Gemini OpenAI-compatible response reports reasoning tokens separately from `usage.completion_tokens`, converted Responses replies include both visible output and reasoning tokens in `usage.output_tokens`.
+
 ## Using the API
 
 Using the Responses API works exactly the same as consuming OpenAI directly, with only a change to the base URL. This allows you to continue using existing code and SDKs.
