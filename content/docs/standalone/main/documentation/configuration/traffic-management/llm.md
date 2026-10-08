@@ -23,6 +23,8 @@ For more information on connecting to LLM providers, see [LLM consumption]({{< l
 
 The model that reaches the provider is resolved before provider-specific routes, request formats, token-count behavior, and response conversion are selected. Resolution starts with the client request model. If you set the provider `model` field, such as `provider.openAI.model`, that value replaces it. Then the `defaults`, `overrides`, and `transformations` policies apply, followed by `modelAliases`. The final resolved model is used for provider-specific behavior, such as Azure Foundry Claude routing, Bedrock endpoint selection, and Vertex Gemini path selection.
 
+Access logs and traces can show both sides of model resolution. The `gen_ai.request.model` attribute records the resolved model that reaches the provider. When the client request model differs, the `agw.ai.original_model` attribute records the original model name that the client sent.
+
 A request must have a model after resolution. If the client request omits `model`, set the provider `model` field, or supply one with a `defaults`, `overrides`, or `transformations` policy.
 
 > [!NOTE]
