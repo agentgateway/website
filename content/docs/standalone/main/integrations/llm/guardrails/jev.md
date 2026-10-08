@@ -7,7 +7,7 @@ test:
   - path: jev
 ---
 
-[Jev](https://docs.typesafe.ai/introduction) is a "System One" or decision model from TypeSafe AI. Like other LLMs, Jev accepts text-based input. You send it the content to check (the "state"), along with the questions that you want answered about that content. But instead of returning a text-based answer, Jev returns structured output.
+[Jev](https://docs.typesafe.ai/introduction) is a "System One" or decision model from TypeSafe AI. Like other LLMs, Jev accepts text-based input. You send Jev the content to check (the "state"), along with the questions that you want answered about that content. But instead of returning a text-based answer, Jev returns structured output.
 
 Consider the following types of questions and responses that you can get.
 
@@ -21,7 +21,7 @@ In this guide, you run a webhook server that checks each prompt and each respons
 
 ## About this integration {#about}
 
-Agentgateway sits on both sides of the guardrail. It calls your webhook server through the [Guardrail Webhook API]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/" >}}), and your webhook server calls back into agentgateway to evaluate the content.
+Agentgateway sits on both sides of the guardrail. Agentgateway calls your webhook server through the [Guardrail Webhook API]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/" >}}), and your webhook server calls back into agentgateway to evaluate the content.
 
 The following diagram shows the path of one prompt. A single client request produces one evaluation call before the prompt reaches the LLM, and a second one before the completion returns to the client. The steps after the diagram walk through the same flow.
 
@@ -57,7 +57,7 @@ sequenceDiagram
 1. The client sends a chat completion request to agentgateway.
 2. Agentgateway calls `POST /request` on the guardrail webhook with the prompt messages.
 3. The guardrail webhook sends the newest message as an OpenAI Decisions API request (`POST /v1/decisions`) for the `guardrail` model, addressed to agentgateway rather than to a provider directly.
-4. Agentgateway matches the `guardrail` virtual model, picks one of its two targets by weight, and attaches that provider's API key. For the `jev-latest` target, agentgateway translates the request to Jev's native `/v1/systemone` API and forwards it to `api.typesafe.ai`. For the `gpt-6-luna` target, agentgateway forwards the request to OpenAI.
+4. Agentgateway matches the `guardrail` virtual model, picks one of its two targets by weight, and attaches that provider's API key. For the `jev-latest` target, agentgateway translates the request to Jev's native `/v1/systemone` API and forwards the translated request to `api.typesafe.ai`. For the `gpt-6-luna` target, agentgateway forwards the request to OpenAI.
 5. The evaluating model returns a probability for each question that the webhook asked, and agentgateway returns the probabilities in the Decisions API format.
 6. If every probability is below the threshold, the webhook returns a pass action, and agentgateway forwards the prompt to the LLM. Agentgateway then repeats the check against the completion by calling `POST /response`.
 7. If any probability reaches the threshold, the webhook returns a reject action with status code `403`, and agentgateway returns that status to the client without calling the LLM.
@@ -110,7 +110,7 @@ export TYPESAFE_API_KEY="${TYPESAFE_API_KEY:-test}"
 
 ## Configure agentgateway {#configure}
 
-The agentgateway repository ships this integration as a runnable example, so you download its configuration rather than write one. It defines three models and one virtual model. `gpt-5.6-luna` is the model that the guardrail protects. `gpt-6-luna` and `jev-latest` are the two evaluation models, and the `guardrail` virtual model splits the webhook's evaluation calls evenly between them.
+The agentgateway repository ships this integration as a runnable example, so you download the example's configuration rather than write one. The configuration defines three models and one virtual model. `gpt-5.6-luna` is the model that the guardrail protects. `gpt-6-luna` and `jev-latest` are the two evaluation models, and the `guardrail` virtual model splits the webhook's evaluation calls evenly between them.
 
 1. Download the example configuration.
 
@@ -131,16 +131,16 @@ The agentgateway repository ships this integration as a runnable example, so you
    | Setting | Description |
    |---------|-------------|
    | `gateways.default.port` | The port that agentgateway serves proxy traffic on. The webhook server sends its evaluation calls to this port. |
-   | `llm.models[].guardrails.request` | The guards that agentgateway runs on the prompt before it calls the LLM. The webhook target is the address of your guardrail webhook server, and it must include a port. Agentgateway calls `POST /request` on this target. |
-   | `llm.models[].guardrails.response` | The guards that agentgateway runs on the completion before it returns it to the client. Agentgateway calls `POST /response` on this target. Omit this field to check prompts only. |
+   | `llm.models[].guardrails.request` | The guards that agentgateway runs on the prompt before agentgateway calls the LLM. The webhook target is the address of your guardrail webhook server, and the address must include a port. Agentgateway calls `POST /request` on this target. |
+   | `llm.models[].guardrails.response` | The guards that agentgateway runs on the completion before agentgateway returns the completion to the client. Agentgateway calls `POST /response` on this target. Omit this field to check prompts only. |
    | `llm.models[].visibility` | Set to `internal` on the two evaluation models, so that clients can't request them directly and agentgateway uses them only as virtual model targets. For more information, see [Public and internal models]({{< link-hextra path="/documentation/llm/virtual-models/#public-and-internal-models" >}}). |
-   | `provider: typesafe` | The built-in TypeSafe provider, which sets the API host to `https://api.typesafe.ai/v1` and reports the provider as `typesafe` in logs, traces, and cost data, which matches the `config.modelCatalog` entry that holds the rates. |
-   | `params.apiKey` | The provider API key for each model. Agentgateway attaches it to each call, so the webhook server never holds the keys. |
+   | `provider: typesafe` | The built-in TypeSafe provider. The provider sets the API host to `https://api.typesafe.ai/v1` and reports the provider as `typesafe` in logs, traces, and cost data, which matches the `config.modelCatalog` entry that holds the rates. |
+   | `params.apiKey` | The provider API key for each model. Agentgateway attaches the key to each call, so the webhook server never holds the keys. |
    | `llm.virtualModels` | The `guardrail` virtual model that the webhook server sends its evaluation calls to. The `weighted` routing sends half of the calls to `gpt-6-luna` and half to `jev-latest`. Change the weights to shift traffic, or remove a target to use one evaluation model only. For more information, see [Virtual models]({{< link-hextra path="/documentation/llm/virtual-models/" >}}). |
    | `config.modelCatalog` | The rates that agentgateway uses to price each Jev call. Jev bills input tokens only, so the output rate is `0`. The example prices all three model names, because `jev-latest` and `jev-preview` are aliases that TypeSafe can repoint to a different version. |
    | `config.database` | Where agentgateway records an entry for each request. The example uses an in-memory SQLite database, which is cleared on restart. Use a PostgreSQL URL to keep the records. For more information, see [Set up a database]({{< link-hextra path="/documentation/setup/database/" >}}). |
    | `frontendPolicies.accessLog.database.llm` | How much of each LLM request to store. `full` stores the prompt and the completion, which is what makes a rejected prompt readable after the fact. Prompts can contain sensitive data, so keep this value only when your data handling policy allows it. |
-   | `frontendPolicies.tracing` | Where agentgateway exports traces. The example sends them to an OTLP collector on `localhost:4317`. Agentgateway starts and serves traffic normally when no collector listens there, so you can leave this section in place while you work through this guide. |
+   | `frontendPolicies.tracing` | Where agentgateway exports traces. The example sends the traces to an OTLP collector on `localhost:4317`. Agentgateway starts and serves traffic normally when no collector listens there, so you can leave this section in place while you work through this guide. |
    | `ui` | Serves the agentgateway UI on the `default` gateway in addition to the admin interface, so the UI answers on both `localhost:4000/ui/` and `localhost:15000/ui/`. |
 
 3. Start agentgateway. Requests to `gpt-5.6-luna` fail with a `503` until the webhook server runs, because the guardrail fails closed by default.
@@ -157,7 +157,7 @@ agentgateway -f config.yaml --validate-only
 
 ## Run the guardrail webhook server {#webhook}
 
-The webhook server turns each guardrail check into an evaluation call. Agentgateway sends it the messages to check, and it answers with a pass action or a reject action.
+The webhook server turns each guardrail check into an evaluation call. Agentgateway sends the webhook server the messages to check, and the webhook server answers with a pass action or a reject action.
 
 1. Download the example server from the agentgateway repository. The [`guardrail.ts`](https://github.com/agentgateway/agentgateway/blob/main/examples/llm-guardrail-jev-openai/guardrail.ts) file listens on port `8000` and serves the `/request` and `/response` paths that agentgateway calls.
 
@@ -208,9 +208,9 @@ The webhook server turns each guardrail check into an evaluation call. Agentgate
 
    | Setting | Description |
    |---------|-------------|
-   | `baseURL` | The agentgateway listener, so that the evaluation call is proxied. Point it at `/v1` on the port that the `gateways` section defines. |
-   | `apiKey` | A placeholder. Agentgateway replaces it with the `params.apiKey` value of the model that it routes the call to. |
-   | `model` | The model name to send. It must match a `name` in the `llm.virtualModels` or `llm.models` list, otherwise agentgateway has no model to route the call to. The example sends `guardrail`, so that agentgateway picks the evaluation model. |
+   | `baseURL` | The agentgateway listener, so that the evaluation call is proxied. Point `baseURL` at `/v1` on the port that the `gateways` section defines. |
+   | `apiKey` | A placeholder. Agentgateway replaces the placeholder with the `params.apiKey` value of the model that agentgateway routes the call to. |
+   | `model` | The model name to send. The name must match a `name` in the `llm.virtualModels` or `llm.models` list, otherwise agentgateway has no model to route the call to. The example sends `guardrail`, so that agentgateway picks the evaluation model. |
    | `questions` | The typed questions to answer. A `predicate` question returns the probability from `0` to `1` that its `instructions` statement is true for the `input`. |
    | `threshold` | The lowest probability that the server treats as a rejection. Raise it to allow more content, or lower it to reject more. |
    | `headers` | The trace context headers that agentgateway sent, so that the evaluation call joins the same trace as the client request. |
@@ -249,7 +249,7 @@ The webhook server turns each guardrail check into an evaluation call. Agentgate
 
 Send one prompt that is safe and one that is an attack. Both requests go to the protected `gpt-5.6-luna` model, so both trigger an evaluation before the prompt reaches OpenAI.
 
-1. Send a benign prompt. Agentgateway forwards it to the LLM and returns the completion.
+1. Send a benign prompt. Agentgateway forwards the prompt to the LLM and returns the completion.
 
    ```sh
    curl http://localhost:4000/v1/chat/completions \
@@ -297,7 +297,7 @@ Send one prompt that is safe and one that is an attack. Both requests go to the 
    /request jev-latest 175ms jailbreak=0.99 harmful=0.12 secrets=0.98
    ```
 
-   The first two lines are the benign prompt and the completion that came back for it. The third line is the attack prompt. It has no `/response` line, because agentgateway never called the LLM. The model name changes from line to line, because the `guardrail` virtual model sends each evaluation to either `jev-latest` or `gpt-6-luna`.
+   The first two lines are the benign prompt and the completion that came back for that prompt. The third line is the attack prompt. The attack prompt has no `/response` line, because agentgateway never called the LLM. The model name changes from line to line, because the `guardrail` virtual model sends each evaluation to either `jev-latest` or `gpt-6-luna`.
 
    The server rejects the content when any probability reaches the threshold of `0.5` and returns a `403` status code. Both `jailbreak` and `secrets` reached the threshold, so the server rejected the prompt.
 
@@ -309,7 +309,7 @@ Review the telemetry data for the evaluation calls through agentgateway. For mor
 
 2. Compare the rows for the two requests that you sent. Each evaluation appears as a `jev-latest` or a `gpt-6-luna` row, depending on the target that the virtual model picked. Agentgateway prices each `jev-latest` row from the `config.modelCatalog` rates. The rejected prompt has no `gpt-5.6-luna` row, because agentgateway never called the LLM.
 
-3. Send more traffic and reload the page to see the numbers change. The example stores records in memory, so restarting agentgateway clears them.
+3. Send more traffic and reload the page to see the numbers change. The example stores records in memory, so restarting agentgateway clears the records.
 
 ## More information {#more-information}
 
