@@ -18,9 +18,7 @@ The Google STS uses the standard RFC 8693 grant, so you configure it with the ge
 | `scopes` | Required by Google. Use `https://www.googleapis.com/auth/cloud-platform`, or a narrower OAuth scope for the API that you call. |
 | `clientAuth` | Omit. The STS does not authenticate the client. |
 
-{{% downstream %}}
-You can also use the `entTokenExchange.google` preset, which sets these values for you. For an example, see [Optional: Use the Google preset](#google-preset).
-{{% /downstream %}}
+{{< reuse "agw-docs/snippets/te-google-preset-intro.md" >}}
 
 ## Before you begin
 
@@ -243,6 +241,26 @@ Google requires the issuer to be an `https://` URL. Keycloak in this example run
      -H "authorization: Bearer $INBOUND_TOKEN"
    ```
 
+   Example output:
+
+   ```json
+   {
+     "error": {
+       "code": 401,
+       "message": "Invalid Credentials",
+       "errors": [
+         {
+           "message": "Invalid Credentials",
+           "domain": "global",
+           "reason": "authError",
+           "locationType": "header",
+           "location": "Authorization"
+         }
+       ]
+     }
+   }
+   ```
+
 ## Step 4: Configure token exchange {#token-exchange}
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that exchanges the incoming token at the Google STS for every request to the Cloud Storage backend.
@@ -290,62 +308,7 @@ Google requires the issuer to be an `https://` URL. Keycloak in this example run
    Attached=True
    ```
 
-{{% downstream %}}
-### Optional: Use the Google preset {#google-preset}
-
-Instead of the generic `oauthTokenExchange` method, you can configure the exchange with the `entTokenExchange.google` preset. The preset sets the token endpoint path to `/v1/token`, the grant to `TokenExchange`, the subject token type to `Jwt`, the requested token type to `AccessToken`, and the scope to `https://www.googleapis.com/auth/cloud-platform`, so you set only the provider and the token endpoint backend.
-
-1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for the STS token endpoint. Unlike the generic method, the preset does not take a `url`, so it references the STS through a backend.
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   metadata:
-     name: google-sts
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     static:
-       host: sts.googleapis.com
-       port: 443
-     policies:
-       tls:
-         sni: sts.googleapis.com
-   EOF
-   ```
-
-2. Replace the policy with one that uses the preset.
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-   metadata:
-     name: google-token-exchange
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     targetRefs:
-     - group: {{< reuse "agw-docs/snippets/group.md" >}}
-       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-       name: google-storage
-     backend:
-       entTokenExchange:
-         google:
-           audience: //iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/$POOL_ID/providers/$PROVIDER_ID
-           backendRef:
-             group: {{< reuse "agw-docs/snippets/group.md" >}}
-             kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-             name: google-sts
-   EOF
-   ```
-
-   | Setting | Description |
-   | -- | -- |
-   | `audience` | The full resource name of the workload identity pool provider. |
-   | `backendRef` | The backend for the STS token endpoint. |
-   | `scopes` | Optional. Defaults to `https://www.googleapis.com/auth/cloud-platform`. |
-   | `subjectTokenType` | Optional. Defaults to `Jwt`. Set `IdToken` if your IdP issues ID tokens. |
-{{% /downstream %}}
+{{< reuse "agw-docs/snippets/te-google-preset.md" >}}
 
 ## Step 5: Verify the exchange {#verify}
 
@@ -425,13 +388,7 @@ If the exchange succeeds but Cloud Storage returns `403`, the federated identity
    kubectl delete configmap keycloak-realm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
-{{% downstream %}}
-   If you used the Google preset, also delete the STS backend.
-
-   ```sh
-   kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} google-sts -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   ```
-{{% /downstream %}}
+   {{< reuse "agw-docs/snippets/te-google-preset-cleanup.md" >}}
 
 2. Delete the Google Cloud resources.
 
