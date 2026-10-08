@@ -16,6 +16,8 @@ Connect to an MCP server via streamable HTTP.
 
 Agentgateway automatically manages stateful MCP sessions when using HTTP-based transports. The session state (including backend pinning) is encoded in the session ID and persisted across requests, ensuring that subsequent tool calls in the same session are routed to the same backend server.
 
+Downstream streamable HTTP requests must include `application/json` and `text/event-stream` in the `Accept` header. Clients can send those media types in one comma-separated header, or in separate `Accept` header lines. If either media type is missing, the MCP endpoint returns HTTP 406.
+
 ```mermaid
 sequenceDiagram
     participant Client
