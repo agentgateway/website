@@ -56,6 +56,8 @@ Configure Amazon Bedrock as an LLM provider in agentgateway.
 > Agentgateway translates between these formats and Bedrock formats internally using Bedrock's [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-call.html).
 > Directly sending `Converse` or `Invoke` request shapes are not directly supported; see [passthrough](#passthrough) for more information if you need these APIs.
 
+Bedrock conversion preserves prompt-cache markers in `/v1/messages` and `/v1/chat/completions` requests when the converted request has retained prompt content. Bedrock conversion sends Anthropic Messages `cache_control.ttl` values as Bedrock cache-point TTLs.
+
 ## Authentication
 
 Before you can use Bedrock as an LLM provider, you must authenticate by using the standard [AWS authentication sources](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html).
