@@ -55,6 +55,8 @@ The `provider` field takes a map with a single provider key, such as `provider: 
 
 Other identity providers that fully comply with the OAuth 2.0 specifications might also work, but are not tested. For an end-to-end setup guide for each tested provider, see the [Authentication & Identity]({{< link-hextra path="/integrations/auth/" >}}) section.
 
+For derived JWKS URLs, normalization removes trailing slashes from `issuer` before appending the provider-specific path. This normalization keeps issuer values that must end in `/`, such as Auth0 and authentik, from producing URLs with `//` before `.well-known` or `jwks`.
+
 | `provider` | Derived JWKS URL | Metadata source | Notable behavior |
 |------------|------------------|-----------------|------------------|
 | [`auth0`]({{< link-hextra path="/integrations/auth/auth0" >}})  | {issuer}/.well-known/jwks.json | RFC 8414 | Appends the first audience to the authorization endpoint, because Auth0 does not support RFC 8707. |
