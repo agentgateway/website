@@ -100,7 +100,7 @@ The Responses conversion covers a common agent subset:
 - Prompt cache breakpoints
 - Streaming and usage reporting
 
-The reasoning effort is sent as the Responses `reasoning.effort` field. A request that sets `thinking.type` to `disabled` sends no reasoning setting, even when `output_config.effort` is set. The tools exception for models such as `gpt-5.3`, which the [Chat Completions conversion](#converting-to-the-chat-completions-format) applies, does not apply here.
+The reasoning effort is sent as the Responses `reasoning.effort` field. A request that sets `thinking.type` to `disabled` sends no reasoning setting, even when `output_config.effort` is set. Older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o` also receive no reasoning setting, because those models reject reasoning parameters.
 
 > [!WARNING]
 > The Responses format has no equivalent for `stop_sequences` or `top_k`. Agentgateway accepts both fields and drops them, with no error and no warning to the client. A request that relies on a stop sequence to end generation behaves differently against a provider that takes the Responses conversion.
@@ -142,7 +142,7 @@ The `stop_sequences` field is sent to the provider as `stop`. The reply reports 
 
 The reasoning effort comes from `output_config.effort`, or from the `thinking` budget when `output_config.effort` is not set, and is sent as `reasoning_effort`. The effort applies even when the request omits `thinking`. A request that sets `thinking.type` to `disabled` sends no `reasoning_effort`, even when `output_config.effort` is set. An adaptive `thinking` request without an effort is sent with `reasoning_effort: "high"`.
 
-Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. In the Chat Completions conversion, a request with tools to one of these models is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped. Every other model receives the reasoning effort that the client asked for, if any.
+Older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o` reject reasoning effort. In the Chat Completions conversion, requests to those models are sent without `reasoning_effort`. Any thinking that the client asked for through `thinking` or `output_config.effort` is dropped. Every other model receives the reasoning effort that the client asked for, if any.
 
 ### Converting to the Bedrock Converse format
 

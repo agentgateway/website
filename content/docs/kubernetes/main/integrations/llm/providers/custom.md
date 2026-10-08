@@ -150,7 +150,9 @@ input schema stay optional. A structured output JSON schema is sent with
 `text.format.strict` set to `false`, so that optional schema properties stay
 optional. The reasoning effort, from `output_config.effort` or
 from a `thinking` budget, is sent as `reasoning.effort`. A request that sets
-`thinking.type` to `disabled` sends no reasoning setting.
+`thinking.type` to `disabled` sends no reasoning setting. Older OpenAI chat
+models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o` also receive no
+reasoning setting, because those models reject reasoning parameters.
 
 The following Messages features are dropped from the converted request, with no
 error and no warning to the client.
@@ -202,7 +204,12 @@ The following cases do not round-trip.
 | A `redacted_thinking` block, sent to a `Completions` provider | Dropped, because it holds nothing that an OpenAI-compatible engine can replay. |
 | An Anthropic messages request that takes the Responses conversion instead | The thinking history is dropped from the converted request, with no error and no warning, so the model loses its prior reasoning. See [Anthropic messages to the Responses format](#anthropic-messages-to-the-responses-format). |
 
-Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. When an Anthropic messages client sends a request with tools to one of these models through a `Completions` provider, the request is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped. Every other model receives the reasoning effort that the client asked for, if any.
+Older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or
+`chatgpt-4o` reject reasoning effort. When an Anthropic messages client sends a
+request to one of those models through a `Completions` provider, the request is
+sent without `reasoning_effort`. Any thinking that the client asked for through
+`thinking` or `output_config.effort` is dropped. Every other model receives the
+reasoning effort that the client asked for, if any.
 
 ### Anthropic messages to the Completions format
 
