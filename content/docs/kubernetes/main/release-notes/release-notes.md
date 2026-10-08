@@ -186,6 +186,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3699 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3759 -->
 
 **Traffic management**
 
@@ -194,6 +195,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 **LLM**
 
 - Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
+- Bedrock Messages conversion keeps prompt-cache markers from dropped unsupported content blocks by moving the cache point to supported content.
 
 **MCP**
 
