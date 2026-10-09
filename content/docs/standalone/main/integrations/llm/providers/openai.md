@@ -74,6 +74,8 @@ agentgateway -f config.yaml --validate-only
 | `params.model` | The specific OpenAI model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.apiKey` | The OpenAI API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
 
+With the OpenAI provider, you can send OpenAI Decisions API requests to `/v1/decisions`. When the response includes OpenAI usage fields, LLM telemetry records the model and token usage.
+
 > [!NOTE]
 > For advanced routing scenarios that require path-based routing or custom endpoints, use the `gateways` and `routes` configuration format. See the [Routing-based configuration guide]({{< link-hextra path="/documentation/llm/configuration-modes/" >}}) for more information.
 

@@ -1,5 +1,9 @@
 Configure [OpenAI](https://openai.com/) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+With the OpenAI provider, you can send OpenAI Decisions API requests to `/v1/decisions`. When the response includes OpenAI usage fields, LLM telemetry records the model and token usage.
+{{< /version >}}
+
 > [!NOTE]
 > Don't have an API key to an LLM provider? You can still try out how LLM traffic works in agentgateway by following the [httpbun guide]({{< link-hextra path="/integrations/llm/providers/httpbun">}}). Httpbun provides a mock LLM API endpoint that is compatible with the OpenAI API for chat completions.
 
