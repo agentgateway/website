@@ -203,6 +203,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3720 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3724 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3786 -->
 
 **Traffic management**
 
@@ -222,3 +223,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 **Operations**
 
 - Standalone Helm installs can set `podDisruptionBudget.maxUnavailable` without also rendering the default `podDisruptionBudget.minAvailable` value.
+
+**MCP and A2A**
+
+- MCP streamable HTTP requests that send `application/json` and `text/event-stream` in separate `Accept` header lines are accepted.
