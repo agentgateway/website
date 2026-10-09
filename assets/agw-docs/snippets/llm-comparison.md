@@ -18,7 +18,8 @@ Review the following table to compare agentgateway's support of different LLM pr
 | <img src="/integrations/providers/groq.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> Groq | ✅ | ✅ | ✅¹ | - | - | ✅² | - |
 | <img src="/integrations/providers/huggingface.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> Hugging Face | ✅ | ✅ | ✅¹ | - | - | ✅² | - |
 | <img src="/integrations/providers/mistral.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> Mistral | ✅ | ✅¹ | ✅¹ | ✅ | - | ✅² | - |
-| <img class="provider-icon-invert-dark" src="/integrations/providers/openrouter.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> OpenRouter | ✅ | ✅ | ✅ | ✅ | - | ✅² | ✅ |
+| <img class="provider-icon-invert-dark" src="/integrations/providers/openrouter.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> OpenRouter | ✅ | ✅ | ✅ | ✅ | - | ✅² | ✅ |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+| Perplexity | ◇ | ✅ | ✅¹ | - | - | ✅² | - |{{< /version >}}
 | <img class="provider-icon-invert-dark" src="/integrations/providers/togetherai.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> Together AI | ✅ | ✅¹ | ✅¹ | ✅ | - | ✅² | ✅ |
 | <img class="provider-icon-invert-dark" src="/integrations/providers/xai.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> xAI | ✅ | ✅ | ✅¹ | - | ✅ | ✅² | - |
 | <img src="/integrations/providers/fireworks.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> Fireworks | ✅ | ✅ | ✅ | ✅ | - | ✅² | ✅ |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}

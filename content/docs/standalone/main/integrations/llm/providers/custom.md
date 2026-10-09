@@ -1,7 +1,7 @@
 ---
 title: Custom
 weight: 99
-description: Configure agentgateway for providers without built-in support that implement the OpenAI API format.
+description: Configure agentgateway for providers without built-in support that implement an LLM API format.
 aliases:
   - ../../../llm/providers/openai-compatible
   - ../../../documentation/llm/providers/openai-compatible
@@ -11,7 +11,7 @@ test:
     path: openai-compat-validate
 ---
 
-Use this page for providers that implement the OpenAI API format but do not have a first-class `provider:` support yet. For built-in providers such as [Baseten]({{< link-hextra path="/integrations/llm/providers/baseten/" >}}), [Cerebras]({{< link-hextra path="/integrations/llm/providers/cerebras/" >}}), [Cohere]({{< link-hextra path="/integrations/llm/providers/cohere/" >}}), [DeepInfra]({{< link-hextra path="/integrations/llm/providers/deepinfra/" >}}), [DeepSeek]({{< link-hextra path="/integrations/llm/providers/deepseek/" >}}), [Fireworks AI]({{< link-hextra path="/integrations/llm/providers/fireworks/" >}}), [Groq]({{< link-hextra path="/integrations/llm/providers/groq/" >}}), [Hugging Face]({{< link-hextra path="/integrations/llm/providers/huggingface/" >}}), [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}}), [Mistral]({{< link-hextra path="/integrations/llm/providers/mistral/" >}}), [OpenRouter]({{< link-hextra path="/integrations/llm/providers/openrouter/" >}}), [Together AI]({{< link-hextra path="/integrations/llm/providers/togetherai/" >}}), [xAI]({{< link-hextra path="/integrations/llm/providers/xai/" >}}), and [Ollama]({{< link-hextra path="/integrations/llm/providers/ollama/" >}}), use the dedicated provider pages instead.
+Use this page for providers that implement an LLM API format but do not have first-class `provider:` support yet. For built-in providers such as [Baseten]({{< link-hextra path="/integrations/llm/providers/baseten/" >}}), [Cerebras]({{< link-hextra path="/integrations/llm/providers/cerebras/" >}}), [Cohere]({{< link-hextra path="/integrations/llm/providers/cohere/" >}}), [DeepInfra]({{< link-hextra path="/integrations/llm/providers/deepinfra/" >}}), [DeepSeek]({{< link-hextra path="/integrations/llm/providers/deepseek/" >}}), [Fireworks AI]({{< link-hextra path="/integrations/llm/providers/fireworks/" >}}), [Groq]({{< link-hextra path="/integrations/llm/providers/groq/" >}}), [Hugging Face]({{< link-hextra path="/integrations/llm/providers/huggingface/" >}}), [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}}), [Mistral]({{< link-hextra path="/integrations/llm/providers/mistral/" >}}), [OpenRouter]({{< link-hextra path="/integrations/llm/providers/openrouter/" >}}), [Perplexity]({{< link-hextra path="/integrations/llm/providers/perplexity/" >}}), [Together AI]({{< link-hextra path="/integrations/llm/providers/togetherai/" >}}), [xAI]({{< link-hextra path="/integrations/llm/providers/xai/" >}}), and [Ollama]({{< link-hextra path="/integrations/llm/providers/ollama/" >}}), use the dedicated provider pages instead.
 
 > [!NOTE]
 > Many providers provide "OpenAI compatible" or "Anthropic compatible" endpoints.
@@ -32,7 +32,7 @@ You also need the following prerequisites.
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 
 # Set placeholder API keys for validation (--validate-only still resolves env vars)
-export PERPLEXITY_API_KEY="${PERPLEXITY_API_KEY:-test}"
+export CUSTOM_PROVIDER_API_KEY="${CUSTOM_PROVIDER_API_KEY:-test}"
 {{< /doc-test >}}
 
 ## Configuring a custom provider
@@ -50,10 +50,10 @@ Converted response usage follows the API format that the client called. Messages
 
 The `formats` list is optional. A model without it accepts only requests on paths that are forwarded to the provider without format conversion, such as `/v1/systemone`, `/v1/ocr`, `/v1/images/generations`, and `/v1/responses/compact`. A request in an LLM API format, such as a chat completions or messages request, has no format to convert to and is rejected. For an example, see the [Jev guardrail guide]({{< link-hextra path="/integrations/llm/guardrails/jev/" >}}).
 
-Below shows an example of connecting to [Perplexity](https://www.perplexity.ai/), which exposes an OpenAI-compatible API for search-augmented models and does not currently have a first-class provider.
+The following example connects to a provider that exposes a Chat Completions API at the standard path.
 
 ```yaml {paths="openai-compat-validate"}
-cat > /tmp/test-perplexity.yaml << 'EOF'
+cat > /tmp/test-custom-provider.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
   models:
@@ -75,8 +75,8 @@ llm:
           # - type: geminiCountTokens
           # - type: rerank
     params:
-      apiKey: "$PERPLEXITY_API_KEY"
-      model: llama-3.1-sonar-large-128k-online
-      baseUrl: "https://api.perplexity.ai"
+      apiKey: "$CUSTOM_PROVIDER_API_KEY"
+      model: example-chat-model
+      baseUrl: "https://api.example.com"
 EOF
 ```

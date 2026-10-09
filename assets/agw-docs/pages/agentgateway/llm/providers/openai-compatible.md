@@ -27,7 +27,8 @@ For an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, use the case-sens
 | Hugging Face | `Huggingface` | `router.huggingface.co` | `/v1/chat/completions` |
 | Meta | `Meta` | `api.meta.ai` | `/v1/chat/completions` |
 | Mistral AI | `Mistral` | `api.mistral.ai` | `/v1/chat/completions` |
-| OpenRouter | `Openrouter` | `openrouter.ai` | `/api/v1/chat/completions` |
+| OpenRouter | `Openrouter` | `openrouter.ai` | `/api/v1/chat/completions` |{{< version exclude-if="1.6.x" >}}
+| Perplexity | `Perplexity` | `api.perplexity.ai` | `/v1/chat/completions` |{{< /version >}}
 | Together AI | `TogetherAI` | `api.together.xyz` | `/v1/chat/completions` |
 | xAI | `XAI` | `api.x.ai` | `/v1/chat/completions` |
 
