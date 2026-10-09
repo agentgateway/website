@@ -42,7 +42,7 @@ Agentgateway will automatically handle mapping between the incoming format and t
 
 The `formats` list controls how agentgateway converts incoming requests. Each conversion supports different features. For Messages requests, agentgateway prefers `responses` over `completions`. The Responses conversion drops extended-thinking history without an error. To preserve thinking history across turns, declare `completions` and omit `responses`.
 
-Declare only the formats that the upstream server supports. For example, include `responses` only if the server supports `/v1/responses`. For details about each conversion, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
+Declare only the formats that the upstream server supports. For example, include `responses` only if the server supports `/v1/responses`. Include `decisions` only if the server supports `/v1/decisions`. For details about each conversion, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
 
 An error such as `failed to parse Messages request` names the route type that parsed the client request before provider conversion. Check that the request path maps to the expected route type and that the body matches that format.
 
@@ -74,6 +74,7 @@ llm:
           # - type: generateContent
           # - type: geminiCountTokens
           # - type: rerank
+          # - type: decisions
     params:
       apiKey: "$PERPLEXITY_API_KEY"
       model: llama-3.1-sonar-large-128k-online

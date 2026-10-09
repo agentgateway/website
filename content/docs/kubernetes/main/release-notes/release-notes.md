@@ -10,6 +10,14 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v17-new-features}
+
+### LLM {#v17-llm}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3832 -->
+
+- **OpenAI Decisions API**: Requests to the OpenAI Decisions API at `/v1/decisions` have their own `Decisions` route type and provider format. Add `"/v1/decisions": "Decisions"` to the `routes` of an OpenAI backend, or declare the `Decisions` format on a custom provider, so that LLM telemetry records the model and token usage. For more information, see [Send OpenAI Decisions API requests]({{< link-hextra path="/integrations/llm/providers/openai/#decisions" >}}).
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
