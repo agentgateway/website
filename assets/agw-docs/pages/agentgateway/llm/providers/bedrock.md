@@ -280,9 +280,16 @@ Whether the preference changes the request format that a model accepts depends o
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 ## Tool choice
 
-When a chat request reaches Bedrock Runtime, the conversion sends the tool choice from the client request as the Bedrock Converse `toolChoice` field. OpenAI Chat Completions and Responses requests can use `tool_choice` values such as `auto`, `required`, or a named function. Anthropic Messages requests can use `tool_choice` values such as `auto`, `none`, `any`, or a named tool.
+When a chat request goes to Bedrock Runtime, the `tool_choice` value from the client request is converted to the Bedrock Converse `toolChoice` field.
 
-The selected Bedrock model decides which tool-choice values are supported. If a model rejects forced tool use, the client receives the Bedrock error instead of a request that silently ignores the field. With extended thinking, the conversion keeps the `tool_choice` value from the client request. The `auto` value stays `auto`, and `none` or an omitted field is omitted. Forced choices go to Bedrock for the model to accept or reject.
+| Client `tool_choice` | Bedrock `toolChoice` |
+|---|---|
+| `auto` | `auto` |
+| `required` (Chat Completions, Responses) or `any` (Messages) | `any` |
+| A named function or tool | `tool`, with that name |
+| `none`, or omitted | Omitted. Bedrock Converse has no `none` option. The tools are still sent, so the model can still call them. |
+
+The Bedrock model decides which values it accepts. If the model rejects forced tool use, such as `any` or a named tool, the client receives the Bedrock error. For example, Anthropic models reject forced tool use when [extended thinking](https://platform.claude.com/docs/en/build-with-claude/thinking#thinking-with-tool-use) is enabled. The tool choice is not changed for requests that use extended thinking.
 {{% /version %}}
 
 ## Prompt caching

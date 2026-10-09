@@ -148,7 +148,7 @@ Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets b
 
 The Bedrock Converse conversion carries extended-thinking history in both directions, including encrypted reasoning.
 
-The Bedrock Converse conversion preserves tool choice for Messages requests. The `auto` value becomes the Bedrock `toolChoice.auto` value, and `any` becomes `toolChoice.any`. A `tool` choice becomes `toolChoice.tool`. The `none` value or an omitted tool choice is omitted. Extended thinking does not rewrite the choice. A model that rejects forced tool use with thinking returns a provider error.
+The Bedrock Converse conversion preserves tool choice for Messages requests. The `auto` value becomes the Bedrock `toolChoice.auto` value, and `any` becomes `toolChoice.any`. A `tool` choice becomes `toolChoice.tool`. The `none` value or an omitted tool choice is omitted, and the tools are still sent, so the model can still call them. Extended thinking does not rewrite the choice. A model that rejects forced tool use with thinking returns a provider error.
 
 On the way out, a `thinking` block in the message history becomes a Bedrock `reasoningContent.reasoningText` block, with its signature. A `redacted_thinking` block becomes a Bedrock `reasoningContent.redactedContent` block, so that a client can replay encrypted reasoning that Bedrock returned on an earlier turn. Document, search-result, and server-tool content blocks are dropped.
 
