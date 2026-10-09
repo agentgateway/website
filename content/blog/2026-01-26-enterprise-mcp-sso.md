@@ -24,7 +24,7 @@ SSO has been around for a long time, so what's the big difference here? They mai
 
 OIDC is based on OAuth, and we can perform OIDC logins by leveraging the MCP Authorization spec. And we can do this consistently for all agents/MCP clients regardless of what the backend MCP server is (ie, running within enterprise, hosted by a vendor, SaaS, etc). By tying to enterprise SSO we can apply policy to the MCP usage before it reaches the MCP server. Is this client allowed to access this MCP server? What tools are they allowed to see? 
 
-[Agentgateway](https://agentgateway.dev) is a powerful opensource (Linux Foundation) MCP gateway that implements the MCP Authorization spec. That means we don't have to try and re-write all MCP servers to use Entra. We can do it automatically from an MCP gateway. 
+[Agentgateway](https://agentgateway.dev) is a powerful open source (Linux Foundation) MCP gateway that implements the MCP Authorization spec. That means we don't have to try and re-write all MCP servers to use Entra. We can do it automatically from an MCP gateway. 
 
 Let's look at an example configuration for Agentgateway:
 

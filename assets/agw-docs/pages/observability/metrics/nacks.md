@@ -11,7 +11,7 @@ Common causes of rejections:
 ## View the rejection metric
 
 > [!NOTE]
-> `agentgateway_xds_rejects_total` only appears after at least one rejection has occurred. If no rejections were recoreded, the metric is not present.
+> `agentgateway_xds_rejects_total` only appears after at least one rejection has occurred. If no rejections were recorded, the metric is not present.
 
 1. Port-forward the control plane deployment.
 

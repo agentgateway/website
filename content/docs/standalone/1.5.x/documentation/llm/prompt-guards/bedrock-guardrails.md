@@ -4,7 +4,7 @@ weight: 20
 description: Apply AWS Bedrock Guardrails to filter LLM requests and responses for policy-violating content.
 ---
 
-[AWS Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html) let you define content policies in the AWS console and apply them to LLM traffic passing through the agentgateway prxoy. When a request or response violates a guardrail policy, agentgateway blocks the interaction and returns an error.
+[AWS Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html) let you define content policies in the AWS console and apply them to LLM traffic passing through the agentgateway proxy. When a request or response violates a guardrail policy, agentgateway blocks the interaction and returns an error.
 
 AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Language Model (LLM), whether it is hosted on AWS Bedrock, another cloud provider (like Google or Azure), or on-premises.
 
