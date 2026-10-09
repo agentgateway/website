@@ -1,4 +1,8 @@
 
+## Source Code
+
+* <https://github.com/agentgateway/agentgateway>
+
 ## Values
 
 | Key | Type | Description |
@@ -70,5 +74,6 @@
 | serviceAccount.annotations | object | Annotations to add to the service account. Use these annotations to bind a cloud IAM role to the pod, such as 'eks.amazonaws.com/role-arn' for IAM roles for service accounts (IRSA) on Amazon EKS, or 'iam.gke.io/gcp-service-account' for Workload Identity on Google GKE.<br/><br/>The default value is `{}`. |
 | serviceAccount.create | bool | Create a service account for the agentgateway proxy pod. The proxy needs no Kubernetes API permissions, so this service account is only a pod identity, such as for binding a cloud IAM role or attaching image pull secrets. Set to false to use a service account that you manage outside the chart, such as when your cluster policy does not allow Helm releases to create identities, and set 'name' to that service account.<br/><br/>The default value is `true`. |
 | serviceAccount.name | string | The name of the service account. If 'create' is true, this value names the service account that the chart creates, and defaults to the name of the Helm release. If 'create' is false, this value must name a service account that already exists in the release namespace, because the chart does not create one. Note that if 'create' is false and you leave this value unset, the pod runs with the namespace's 'default' service account.<br/><br/>The default value is `""`. |
+| session.secretName | string | The name of an existing secret that has the 'key' entry used for the session key.<br/><br/>The default value is `""`. |
 | strategy | object | Override the Kubernetes Deployment strategy for the agentgateway proxy.<br/><br/>The default value is `{}`. |
 | tolerations | list | The tolerations to apply to the agentgateway proxy pod.<br/><br/>The default value is `[]`. |
