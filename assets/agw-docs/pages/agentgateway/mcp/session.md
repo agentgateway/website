@@ -8,6 +8,12 @@ If you run multiple agentgateway proxy instances without stateful sessions, the 
 
 To ensure that subsequent requests are routed to the same agentgateway proxy instance, the proxy exposes streamable HTTP endpoints as stateful endpoints by default and sends back the session ID in the `Mcp-Session-Id` header. You can disable this setting and instead use stateless MCP servers by using the `sessionRouting: Stateless` setting in the {{< reuse "agw-docs/snippets/backend.md" >}} resource. 
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+If a client sends a session ID that the proxy cannot decode, the proxy returns `HTTP 404`, and the [MCP specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#session-management) requires the client to start a new session. A session ID cannot be decoded after the session key changes.
+
+The proxy encrypts each session ID with a session key. The controller stores the key in a Secret named `<gateway-name>-session-key` in the namespace of the Gateway. The controller creates the Secret only if it does not exist, and never changes the key in it. The Gateway owns the Secret, so deleting the Gateway deletes the key. To use your own key, set the `SESSION_KEY` environment variable in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. The controller then does not manage a Secret. If the controller cannot create the Secret, or another resource controls it, the Gateway reports `Programmed: False` with the reason `DeploymentFailed`.
+{{< /version >}}
+
 
 ## Stateless
 
