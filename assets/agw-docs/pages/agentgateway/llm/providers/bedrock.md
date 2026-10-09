@@ -360,6 +360,14 @@ If you omit `promptCaching`, prompt caching is disabled. If you set `promptCachi
    }
    ```
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+### Cache markers in Messages requests {#cache-markers-in-messages-requests}
+
+A client that sends Anthropic Messages API requests to `/v1/messages` can set `cache_control` on individual content blocks. When agentgateway converts the request to the Bedrock Converse format, each `cache_control` marker becomes a Bedrock cache point after its content.
+
+Bedrock Converse has no equivalent for the `document`, `search_result`, `server_tool_use`, and `web_search_tool_result` block types, so the conversion drops these blocks. If a dropped block has `cache_control`, the cache point moves to the content before the dropped block. When the dropped block is the first block of its message, the cache point goes at the end of the previous message. No cache point is added when nothing precedes the dropped block, or when the content before it already ends with a cache point. The conversion adds at most four cache points to a request, so a moved marker is dropped when four are already set.
+{{% /version %}}
+
 ## Extended thinking and reasoning
 
 Extended thinking and reasoning lets models reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding the OpenAI `reasoning_effort` field to your request. Agentgateway translates this setting to Bedrock's native thinking budget automatically.

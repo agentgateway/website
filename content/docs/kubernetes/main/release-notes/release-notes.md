@@ -10,6 +10,14 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🐛 Fixes {#v17-fixes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3759 -->
+
+**LLM**
+
+- When a Messages API request goes to Bedrock Converse, a `cache_control` marker on a content block that Bedrock cannot represent is no longer lost. The cache point moves to the content before the dropped block.
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
