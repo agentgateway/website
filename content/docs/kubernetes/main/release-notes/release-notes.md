@@ -186,6 +186,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3699 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
 
 **Traffic management**
 
@@ -203,3 +204,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 **Security**
 
 - The controller no longer fails on a JWT authentication policy that sets `jwks.remote.url` without a `backendRef` when the `AGW_BACKEND_REF_GRANT_MODE` environment variable is set to `route-and-policy`.
+
+**Operations**
+
+- Metrics requests use the OpenMetrics content type by default, while browser requests use `text/plain` so browsers display metrics instead of downloading them.
