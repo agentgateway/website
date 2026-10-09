@@ -150,6 +150,8 @@ The Bedrock Converse conversion carries extended-thinking history in both direct
 
 On the way out, a `thinking` block in the message history becomes a Bedrock `reasoningContent.reasoningText` block, with its signature. A `redacted_thinking` block becomes a Bedrock `reasoningContent.redactedContent` block, so that a client can replay encrypted reasoning that Bedrock returned on an earlier turn. Document, search-result, and server-tool content blocks are dropped.
 
+Bedrock conversion preserves prompt-cache metadata when Bedrock has retained content that can carry the metadata. Anthropic `cache_control.ttl` values become Bedrock cache-point TTLs. If conversion drops a top-level `document`, `search_result`, `server_tool_use`, or `web_search_tool_result` block, the dropped block's cache marker moves to retained content instead of being discarded. The same behavior applies to dropped server-tool definitions. Bedrock conversion does not send messages to Bedrock when unsupported blocks leave those messages empty.
+
 On the way back, Bedrock reasoning text becomes a `thinking` block. In a buffered reply, Bedrock encrypted reasoning becomes a `redacted_thinking` block that keeps the encrypted payload for the next turn. A streamed reply does not keep the payload. The encrypted reasoning arrives as a `thinking` block with the text `[REDACTED]`, which cannot be replayed. For the same behavior on other Bedrock endpoints, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}).
 
 ## Using the API

@@ -289,6 +289,10 @@ Prompt caching is configured by using the `backend.ai.promptCaching` fields in t
 If you omit `promptCaching`, prompt caching is disabled. If you set `promptCaching: {}`, the controller enables prompt caching with the following defaults: `cacheSystem: true`, `cacheMessages: true`, `cacheTools: false`, and `minTokens: 1024`. To override a default, set that field explicitly.
 {{% /version %}}
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+When a client sends prompt-cache markers, Bedrock conversion keeps those markers when the converted request has retained prompt content. For `/v1/messages`, Anthropic `cache_control.ttl` values become Bedrock cache-point TTLs. When Bedrock conversion drops a top-level `document`, `search_result`, `server_tool_use`, or `web_search_tool_result` block, the dropped block's cache marker moves to retained content instead of being discarded. The same behavior applies to dropped server-tool definitions. Bedrock conversion does not send messages to Bedrock when unsupported blocks leave those messages empty.
+{{% /version %}}
+
 > [!NOTE]
 > Prompt caching is supported for Bedrock Claude 3+ and Nova models. 
 
