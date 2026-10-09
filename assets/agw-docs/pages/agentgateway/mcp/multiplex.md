@@ -189,6 +189,41 @@ EOF
    >       ...
    > ```
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+### Select targets with conditions {#target-conditions}
+
+Use `spec.mcp.targets[].condition` to include a target only when a CEL expression evaluates to `true` for the request. If the expression evaluates to `false`, the proxy excludes that target from the virtual MCP backend and does not initialize or contact the target. The expression can use the `mcp.target.name` variable.
+
+The following example exposes a public MCP server to every client. The example exposes the internal MCP servers only when the request's validated JSON Web Token (JWT) includes the `internal` group. If the request has no `jwt.groups` value, the condition does not select the internal target.
+
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+metadata:
+  name: mcp
+spec:
+  mcp:
+    targets:
+      - name: internal
+        selector:
+          services:
+            matchLabels:
+              app: internal-mcp
+        condition: 'has(jwt.groups) && jwt.groups.exists(g, g == "internal")'
+      - name: public
+        static:
+          host: public-mcp.default.svc.cluster.local
+          port: 80
+```
+
+| Setting | Description |
+|---|---|
+| `spec.mcp.targets[].condition` | Optional CEL expression that selects the target for a request. Omit the field to always include the target. |
+| `spec.mcp.targets[].selector` | Selects one or more Services. When a target uses `selector`, the same condition applies to each selected Service. |
+| `spec.mcp.targets[].static` | Configures one static target. The API server rejects a backend with one static target that sets `condition`. Add another target, or use `selector` for the conditional target. |
+
+{{% /version %}}
+
 ## Step 2: Route with agentgateway {#agentgateway}
 
 Route to the federated MCP servers with agentgateway.
