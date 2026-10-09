@@ -376,75 +376,9 @@ config:
 
 ### Deploy PostgreSQL {#deploy-postgresql}
 
-For a production deployment, use a managed PostgreSQL instance or an operator that handles backups and failover. The following example deploys a single instance for testing.
+Deploy PostgreSQL in the namespace of your agentgateway release. For production, use a managed PostgreSQL service or an operator that handles backups and failover. The following steps deploy one PostgreSQL instance for testing.
 
-> [!WARNING]
-> This example stores the database on an `emptyDir` volume, so the data exists only for the lifetime of the PostgreSQL pod. If that pod restarts or is rescheduled, the configuration that you saved in the UI is lost, and agentgateway falls back to the ConfigMap baseline. For anything beyond testing, back the database with a PersistentVolumeClaim, or use a managed PostgreSQL instance.
-
-1. Create a Secret for the database credentials. The following example creates the `agw` user with a `password` password.
-
-   ```sh
-   kubectl create secret generic agentgateway-postgres \
-     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --from-literal=POSTGRES_USER=agw \
-     --from-literal=POSTGRES_PASSWORD='password' \
-     --from-literal=POSTGRES_DB=agw
-   ```
-
-2. Deploy PostgreSQL.
-
-   ```sh
-   kubectl apply -n {{< reuse "agw-docs/snippets/namespace.md" >}} -f - <<'EOF'
-   apiVersion: apps/v1
-   kind: Deployment
-   metadata:
-     name: postgres
-   spec:
-     replicas: 1
-     selector:
-       matchLabels:
-         app: postgres
-     template:
-       metadata:
-         labels:
-           app: postgres
-       spec:
-         containers:
-         - name: postgres
-           image: postgres:{{< reuse "agw-docs/versions/postgres.md" >}}
-           envFrom:
-           - secretRef:
-               name: agentgateway-postgres
-           env:
-           - name: PGDATA
-             value: /var/lib/postgresql/data/pgdata
-           ports:
-           - containerPort: 5432
-           volumeMounts:
-           - name: data
-             mountPath: /var/lib/postgresql/data
-         volumes:
-         - name: data
-           emptyDir: {}
-   ---
-   apiVersion: v1
-   kind: Service
-   metadata:
-     name: postgres
-   spec:
-     selector:
-       app: postgres
-     ports:
-     - port: 5432
-       targetPort: 5432
-   EOF
-   ```
-
-3. Verify that PostgreSQL is running.
-
-   ```sh
-   kubectl rollout status deploy/postgres -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   ```
+{{< reuse "agw-docs/standalone/helm-postgres-deploy.md" >}}
 
 ### Switch to database mode
 
@@ -459,7 +393,13 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
    mode: database
    database:
      postgres:
-       url: postgres://agw:password@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+       url: postgres://agw:${POSTGRES_PASSWORD}@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+   extraEnv:
+   - name: POSTGRES_PASSWORD
+     valueFrom:
+       secretKeyRef:
+         name: agentgateway-postgres
+         key: POSTGRES_PASSWORD
    EOF
    ```
    {{% /tab %}}
@@ -471,7 +411,13 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
    mode: database
    database:
      postgres:
-       url: postgres://agw:password@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+       url: postgres://agw:${POSTGRES_PASSWORD}@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+   extraEnv:
+   - name: POSTGRES_PASSWORD
+     valueFrom:
+       secretKeyRef:
+         name: agentgateway-postgres
+         key: POSTGRES_PASSWORD
    config:
      gateways:
        default:
@@ -495,8 +441,11 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
    {{% /tab %}}
    {{< /tabs >}}
 
-   > [!NOTE]
-   > The chart rejects a `database.postgres.url` value that does not begin with `postgres://` or `postgresql://`, and rejects the value entirely when `mode` is `readonly`. The URL is rendered into the ConfigMap, so use a database user with only the privileges that agentgateway needs.
+   | Setting | Description |
+   | --- | --- |
+   | `mode` | Set to `database`. The chart rejects `database.postgres.url` in `readonly` mode. |
+   | `database.postgres.url` | Must start with `postgres://` or `postgresql://`. The `${POSTGRES_PASSWORD}` reference keeps the password out of the ConfigMap. Startup logs contain the resolved URL, including the password. Limit access to proxy logs and use a database user with only the required privileges. |
+   | `extraEnv` | Loads `POSTGRES_PASSWORD` from the PostgreSQL Secret. The proxy resolves the password reference at startup. |
 
 2. Upgrade the release with your values file.
 
@@ -616,7 +565,13 @@ Both storage modes support running more than one agentgateway proxy pod. In `rea
    mode: database
    database:
      postgres:
-       url: postgres://agw:password@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+       url: postgres://agw:${POSTGRES_PASSWORD}@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+   extraEnv:
+   - name: POSTGRES_PASSWORD
+     valueFrom:
+       secretKeyRef:
+         name: agentgateway-postgres
+         key: POSTGRES_PASSWORD
    config:
      gateways:
        default:
@@ -682,10 +637,10 @@ Both storage modes support running more than one agentgateway proxy pod. In `rea
      --set mode=readonly
    ```
 
-3. Delete PostgreSQL and its Secret.
+3. Delete PostgreSQL, its data, and its Secret.
 
    ```sh
-   kubectl delete deploy/postgres svc/postgres secret/agentgateway-postgres \
+   kubectl delete deploy/postgres svc/postgres pvc/postgres-data secret/agentgateway-postgres \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 {{% /tab %}}
