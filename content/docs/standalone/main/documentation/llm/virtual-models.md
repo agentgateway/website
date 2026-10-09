@@ -1,7 +1,7 @@
 ---
 title: Virtual models
 weight: 47
-description: Configure virtual models with weighted, failover, and conditional routing in simplified LLM mode.
+description: Configure virtual models with weighted, failover, conditional, and callout routing in simplified LLM mode.
 test:
   virtual-models:
   - file: ${versionRoot}/documentation/llm/virtual-models.md
@@ -13,7 +13,7 @@ test:
 # Doc test coverage for this guide (these comments are not rendered on the page)
 # ============================================================================
 # WHAT THIS TEST VALIDATES:
-#   * All three example configs are accepted by agentgateway (--validate-only),
+#   * The weighted, failover, and conditional example configs are accepted by agentgateway (--validate-only),
 #     covering `llm.virtualModels[].routing.weighted.targets[].weight`,
 #     `routing.failover.targets[].priority`, `llm.models[].health.eviction`,
 #     and `routing.conditional.targets[].when`.
@@ -39,6 +39,9 @@ test:
 #     confirming which internal target served a response needs a live provider
 #     call.
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+#   * That callout routing selects a target model: external dependency. The
+#     callout example needs a running HTTP router service and live provider
+#     calls.
 
 # The example configs read API keys from the environment. --validate-only and the
 # model listing still resolve env vars, so placeholders are enough here.
@@ -368,3 +371,53 @@ assert_models config-conditional.yaml '["adaptive","openai-public"]'
 
 > [!NOTE]
 > For reusable provider defaults in simplified mode, see [Multiple LLM providers]({{< link-hextra path="/integrations/llm/providers/multiple-llms/" >}}).
+
+### Callout routing
+
+Use `routing.callout` to ask an external HTTP service which model to use for each request. Use this routing mode when routing depends on logic outside the gateway. For example, a model-selection service can score the prompt and return the best target.
+
+The callout service returns a JSON response. The `transformation` expressions read the response from the `callout` CEL variable. The `model` expression must set `model` to one of the `llm.models[]` entries. Other transformation keys override fields in the request payload before the selected model receives the request.
+
+```yaml
+llm:
+  models:
+  - name: gpt-5.6-luna
+    visibility: internal
+    provider: openai
+    params:
+      apiKey: "$OPENAI_API_KEY"
+  - name: gpt-5.6-terra
+    visibility: internal
+    provider: openai
+    params:
+      apiKey: "$OPENAI_API_KEY"
+
+  virtualModels:
+  - name: auto
+    routing:
+      callout:
+        host: http://127.0.0.1:8000/route
+        body: '{"messages": llmRequest.messages}'
+        transformation:
+          model: callout.body.model
+          reasoning_effort: callout.body.reasoning_effort
+        failureMode:
+          fallback: gpt-5.6-luna
+        cache:
+          key:
+          - request.headers["x-session-id"]
+          ttl: 10m
+```
+
+In this example, the client requests the `auto` virtual model. The gateway sends the request messages to the callout service. The gateway reads the selected model from `callout.body.model` and forwards the request to that model. The request falls back to `gpt-5.6-luna` if the callout fails, returns a non-2xx or non-JSON response, or selects an unknown model.
+
+Use the following fields to configure callout routing:
+
+| Field | Description |
+| -- | -- |
+| `routing.callout.host` | The HTTP service URL. The URL can include the path that receives the callout request. |
+| `routing.callout.body` | Optional CEL expression that builds the callout request body. Strings and bytes are used directly. Other values are JSON-encoded. If you omit this field, the original request body is forwarded. |
+| `routing.callout.headers` | Optional map of request headers to add to the callout request. Each value is a CEL expression. |
+| `routing.callout.transformation` | CEL expressions that update fields in the LLM request after the callout returns. The `model` expression is required and selects the target from `llm.models[]`. |
+| `routing.callout.failureMode.fallback` | Optional fallback model to use when the callout fails. If you omit `failureMode`, callout failures return `503` with the `virtual_model_callout_failed` error code. |
+| `routing.callout.cache` | Optional cache for callout responses. On a cache hit, `transformation` is evaluated against the cached response. The cache `ttl` expression can read `callout` and is evaluated before `transformation` is applied. |
