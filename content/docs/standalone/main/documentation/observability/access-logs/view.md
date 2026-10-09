@@ -19,7 +19,7 @@ gen_ai.request.model=gpt-4o gen_ai.response.model=gpt-4o-2024-08-06
 gen_ai.usage.input_tokens=68 gen_ai.usage.output_tokens=298 duration=2488ms
 ```
 
-For LLM traffic, the log line automatically includes `gen_ai.*` fields. When agentgateway cannot infer the LLM request format, such as for passthrough traffic, the `gen_ai.operation.name` value is `unknown`. For MCP traffic, the log line includes `mcp.*` fields.
+For LLM traffic, the log line automatically includes `gen_ai.*` fields. When the LLM request format cannot be inferred, such as for passthrough traffic, the `gen_ai.operation.name` value is `unknown`. For MCP traffic, the log line includes `mcp.*` fields.
 
 You can change the default log format to JSON by setting the `config.logging.format` field. 
 
