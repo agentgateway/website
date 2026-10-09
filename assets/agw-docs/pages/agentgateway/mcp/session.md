@@ -8,6 +8,10 @@ If you run multiple agentgateway proxy instances without stateful sessions, the 
 
 To ensure that subsequent requests are routed to the same agentgateway proxy instance, the proxy exposes streamable HTTP endpoints as stateful endpoints by default and sends back the session ID in the `Mcp-Session-Id` header. You can disable this setting and instead use stateless MCP servers by using the `sessionRouting: Stateless` setting in the {{< reuse "agw-docs/snippets/backend.md" >}} resource. 
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+If a client sends a session ID that the proxy cannot decode, the proxy returns `HTTP 404`. MCP clients use this response to start a new session instead of retrying the stale session ID.
+{{< /version >}}
+
 
 ## Stateless
 

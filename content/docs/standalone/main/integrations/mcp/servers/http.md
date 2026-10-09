@@ -40,6 +40,8 @@ sequenceDiagram
 3. **State encoding**: The session state is encoded into the session ID using AES-256-GCM encryption
 4. **Session resumption**: Subsequent requests with the same session ID are automatically routed to the same backend
 
+If a client sends a session ID that the proxy cannot decode, the proxy returns `HTTP 404`. MCP clients use this response to start a new session instead of retrying the stale session ID.
+
 ## Stateless sessions {#stateless-sessions}
 
 By default, agentgateway proxies streamable HTTP in **stateful** mode, as described in the previous section. You can instead run in **stateless** mode with the `statefulMode` field, so that agentgateway does not create a session or return an `Mcp-Session-Id` header. Each request is treated independently, and the client must send the full context that the request needs. This mode suits stateless agents, or MCP servers where the client handles state directly.
