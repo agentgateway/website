@@ -386,6 +386,51 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
 
    The `completion_tokens` value reflects a completion capped at 10 tokens, which confirms that the transformation reached the converted request.
 
+## Modify provider HTTP requests {#llm-request-transformation}
+
+Use `requestTransformation` to change the HTTP request to an LLM provider. Unlike `transformation` and `finalTransformation`, `requestTransformation` does not set fields in the LLM request payload. `requestTransformation` uses HTTP transformation fields such as `set`, `add`, `remove`, `replace`, `body`, and `metadata`.
+
+Configure `requestTransformation` on an `llm.models[]` entry to change one model. To share the same HTTP request transformation across models that reference a named provider, set `llm.providers[].defaults.requestTransformation`. If both fields are set, the model-level `requestTransformation` replaces the provider default for that model.
+
+```yaml
+llm:
+  providers:
+  - name: openai-prod
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    defaults:
+      requestTransformation:
+        set:
+          openai-organization: '"org-prod"'
+        remove:
+        - x-debug
+
+  models:
+  - name: gpt-4o
+    provider:
+      reference: openai-prod
+    params:
+      model: gpt-4o
+  - name: gpt-4o-dev
+    provider:
+      reference: openai-prod
+    params:
+      model: gpt-4o-mini
+    requestTransformation:
+      set:
+        openai-organization: '"org-dev"'
+```
+
+| Setting | Description |
+| -- | -- |
+| `llm.providers[].defaults.requestTransformation` | Applies a shared HTTP request transformation to models that reference the provider and do not set their own `requestTransformation`. |
+| `llm.models[].requestTransformation` | Applies an HTTP request transformation to one model. A model-level value replaces the provider default for that model. |
+| `set` | Sets provider request headers from CEL expressions. For a literal string, wrap the string as a CEL string expression, such as `'"org-prod"'`. |
+| `remove` | Removes the listed provider request headers. |
+
+`requestTransformation` uses the HTTP transformation CEL context. You can read `request.headers`. The `llmRequest` variable is not available in this context. Use `transformation` or `finalTransformation` when you need to read or set fields in the LLM request payload.
+
 ## Available CEL variables
 
 You can use these variables in your CEL transformation expressions.
