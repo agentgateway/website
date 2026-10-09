@@ -37,10 +37,10 @@ sequenceDiagram
 
 1. **Session initialization**: When a client sends an `initialize` request, agentgateway creates a session and returns a session ID
 2. **Backend pinning**: The session is pinned to a specific backend server (important when using multiple targets)
-3. **State encoding**: The session state is encoded into the session ID using AES-256-GCM encryption
+3. **State encoding**: The session state is encoded into the session ID. When a session key is set, the state is encrypted with AES-256-GCM. Without a key, the state is only base64-encoded
 4. **Session resumption**: Subsequent requests with the same session ID are automatically routed to the same backend
 
-If a client sends a session ID that the proxy cannot decode, the proxy returns `HTTP 404`. MCP clients use this response to start a new session instead of retrying the stale session ID.
+If a client sends a session ID that the proxy cannot decode, the proxy returns `HTTP 404`, and the [MCP specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#session-management) requires the client to start a new session. A session ID cannot be decoded after the session key changes. The key comes from the `SESSION_KEY` environment variable, or from `session.key` in the configuration file when the variable is not set. For example, a session ID fails to decode after you restart the proxy with a different key, or when proxy instances behind one load balancer use different keys.
 
 ## Stateless sessions {#stateless-sessions}
 
