@@ -67,6 +67,10 @@ Review the following details about session cookies.
 - The refresh response must include a new ID token for the same `sub` claim. If the provider omits the ID token, the user must sign in again. If the provider returns an ID token for a different subject, the user must sign in again.
 - The gateway uses PKCE automatically to protect against authorization code interception.
 
+### FIPS JWT validation
+
+In FIPS builds, the gateway uses a restricted JWT provider for OIDC ID token validation. RSA keys that do not meet the FIPS policy are rejected. Rejected RSA keys include 1024-bit keys, moduli with an odd number of bits, and public exponents that are not greater than `2^16`. HMAC JWT keys must be at least 112 bits.
+
 ## Configuration
 
 Add the `oidc` policy to a route to protect it with browser-based OIDC authentication.
