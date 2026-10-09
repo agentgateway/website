@@ -26,6 +26,13 @@ on:
         type: string
         default: 'product-excellence-test-notifications'
 
+# READ-ONLY, BECAUSE THIS WORKFLOW RUNS THE PAGES.
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+
 jobs:
   discover:
     name: Discover test cases
@@ -436,8 +443,13 @@ jobs:
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
       fail-fast: false
     steps:
+      # persist-credentials: false, so the token is not left in .git/config for
+      # the commands this job runs out of the changed pages. Nothing here
+      # pushes or fetches after the checkout.
       - name: Checkout website repo
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Checkout docs-tests
         uses: actions/checkout@v6
