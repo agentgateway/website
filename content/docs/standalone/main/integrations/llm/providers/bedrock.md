@@ -268,6 +268,12 @@ Whether the preference changes the request format that a model accepts depends o
 > [!NOTE]
 > Requests to the Mantle endpoint are signed for the `bedrock-mantle` service rather than `bedrock`. If you scope an IAM policy by service name, grant both before you switch a route to Mantle.
 
+## Tool choice
+
+When a chat request reaches Bedrock Runtime, the conversion sends the tool choice from the client request as the Bedrock Converse `toolChoice` field. OpenAI Chat Completions and Responses requests can use `tool_choice` values such as `auto`, `required`, or a named function. Anthropic Messages requests can use `tool_choice` values such as `auto`, `none`, `any`, or a named tool.
+
+The selected Bedrock model decides which tool-choice values are supported. If a model rejects forced tool use, the client receives the Bedrock error instead of a request that silently ignores the field. With extended thinking, the conversion keeps the `tool_choice` value from the client request. The `auto` value stays `auto`, and `none` or an omitted field is omitted. Forced choices go to Bedrock for the model to accept or reject.
+
 ## Token counting
 
 Bedrock supports token counting for Anthropic models via the `count_tokens` endpoint.

@@ -277,6 +277,14 @@ Whether the preference changes the request format that a model accepts depends o
 > Requests to the Mantle endpoint are signed for the `bedrock-mantle` service rather than `bedrock`. If you scope an IAM policy by service name, grant both before you switch a route to Mantle.
 {{% /version %}}
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+## Tool choice
+
+When a chat request reaches Bedrock Runtime, the conversion sends the tool choice from the client request as the Bedrock Converse `toolChoice` field. OpenAI Chat Completions and Responses requests can use `tool_choice` values such as `auto`, `required`, or a named function. Anthropic Messages requests can use `tool_choice` values such as `auto`, `none`, `any`, or a named tool.
+
+The selected Bedrock model decides which tool-choice values are supported. If a model rejects forced tool use, the client receives the Bedrock error instead of a request that silently ignores the field. With extended thinking, the conversion keeps the `tool_choice` value from the client request. The `auto` value stays `auto`, and `none` or an omitted field is omitted. Forced choices go to Bedrock for the model to accept or reject.
+{{% /version %}}
+
 ## Prompt caching
 
 Prompt Caching is a performance, cost-optimization, and cost-reduction feature that allows the model to "remember" frequently used parts of your prompt, including long system instructions, reference documents, or tool definitions. This way, the model does not need to reprocess these parts every time you send a new prompt. 
