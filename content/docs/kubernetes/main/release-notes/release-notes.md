@@ -173,6 +173,10 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 - **Istio permissions**: Set the `istio.enabled=false` Helm value to drop the Istio permissions from the controller ClusterRole. For more information, see [Istio resource discovery]({{< link-hextra path="/documentation/install/advanced/#istio-discovery" >}}).
 - **Gateway name in proxy metrics**: When `monitoring.enabled` is `true`, the Helm chart creates a PodMonitor. The PodMonitor now copies the `gateway.networking.k8s.io/gateway-name` pod label onto proxy metrics. This label lets the Grafana dashboard filter by Gateway. To change the copied labels, set the `monitoring.proxy.podMonitor.podTargetLabels` Helm value.
 
+#### Helm monitoring resources expose native histogram and relabeling controls {#helm-monitoring-native-histograms}
+
+The Kubernetes and standalone Helm charts can now pass `scrapeNativeHistograms`, `scrapeClassicHistograms`, `relabelings`, and `metricRelabelings` to generated Prometheus Operator monitoring resources. Native histogram scraping is off by default and requires Prometheus v3.8.0 or later, and classic histogram scraping stays on by default. The scrape values do not change which histogram representation the metrics endpoint emits. For Kubernetes, see [Metrics overview]({{< link-hextra path="/documentation/observability/metrics/overview/" >}}). For standalone Helm, see [Common Helm values]({{< link-hextra path="/documentation/setup/install/helm/#helm-monitoring-values" >}}).
+
 ### OpenTelemetry field names {#v16-otel-attributes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3182 -->
