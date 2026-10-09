@@ -368,6 +368,53 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
    * **Test the `mcp-website-fetcher_fetch` tool**: Click **List Tools** and select the `fetch` tool. In the **url** field, enter a website URL, such as `https://lipsum.com/`, and click **Run Tool**.
    
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+## Select targets with conditions {#target-conditions}
+
+Use target conditions to choose which MCP servers take part in each request. A condition is a CEL expression on an entry in `spec.mcp.targets`. For every request, including the initialization request, agentgateway evaluates the expression before it initializes or contacts the target. The target is included only when the expression returns `true`. Omit `condition` to include the target in every request.
+
+Target conditions differ from [tool access]({{< link-hextra path="/documentation/mcp/tool-access/" >}}) rules. A condition chooses which upstream MCP servers take part in the request. Tool access rules filter the tools that a server returns.
+
+1. Update the {{< reuse "agw-docs/snippets/backend.md" >}} that you created earlier. The following example adds a condition to the `mcp-website-fetcher` target, so that the target is included only when the request has the `x-include-fetch: true` header.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: mcp
+   spec:
+     mcp:
+       targets:
+         - name: mcp-server-everything
+           selector:
+             services:
+               matchLabels:
+                 app: mcp-server-everything
+         - name: mcp-website-fetcher
+           static:
+             host: mcp-website-fetcher.default.svc.cluster.local
+             port: 80
+             protocol: SSE
+           condition: '"x-include-fetch" in request.headers && request.headers["x-include-fetch"] == "true"'
+   EOF
+   ```
+
+   | Setting | Description |
+   | ------- | ----------- |
+   | `spec.mcp.targets[].condition` | Optional CEL expression that must return a boolean value. The expression can read request attributes, such as headers. When authentication is configured, the expression can also read the authenticated identity, such as `jwt` claims. The `mcp.target.name` variable holds the name of the target under evaluation. For a target that uses `selector`, the condition applies to each selected Service, and `mcp.target.name` holds the generated `<service>-<port>` name, such as `mcp-server-everything-3001`, instead of the `name` that you set. |
+
+   The API server rejects an {{< reuse "agw-docs/snippets/backend.md" >}} whose only target is a `static` target with a condition. Add another target, or use `selector` for the conditional target.
+
+2. In the MCP Inspector, reconnect to agentgateway and list the tools. Only the `mcp-server-everything-3001_*` tools are listed, because the request does not have the `x-include-fetch` header.
+
+3. Configure the MCP Inspector to send the `x-include-fetch` header with the value `true`. Then, reconnect and list the tools again. The `mcp-website-fetcher_fetch` tool is listed again.
+
+   > [!NOTE]
+   > If the condition of every target returns `false`, clients see a virtual MCP server with no tools, prompts, or resources.
+
+{{% /version %}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
