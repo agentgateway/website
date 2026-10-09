@@ -203,6 +203,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3720 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3724 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3774 -->
 
 **Traffic management**
 
@@ -222,3 +223,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 **Operations**
 
 - Standalone Helm installs can set `podDisruptionBudget.maxUnavailable` without also rendering the default `podDisruptionBudget.minAvailable` value.
+
+**MCP and A2A**
+
+- MCP authentication derives JWKS URLs without a double slash when an issuer value ends with `/`.

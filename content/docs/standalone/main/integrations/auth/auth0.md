@@ -18,7 +18,7 @@ MCP clients follow the [MCP authorization specification](https://modelcontextpro
 When you set `provider.auth0`, agentgateway bridges this gap as follows:
 
 - Appends your first configured audience to Auth0's authorization endpoint as an `audience` query parameter, so that Auth0 issues a JWT for your API rather than an opaque token. You verify this in [Step 3](#verify).
-- Fetches keys from `{issuer}/.well-known/jwks.json`, which is where Auth0 publishes them.
+- Fetches keys from `{issuer}/.well-known/jwks.json` after removing the trailing slash from the issuer value.
 
 For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}).
 
@@ -149,7 +149,7 @@ export MOCK_IDP_CLAIMS='{"permissions":["read:tools"]}'
    | `audiences` | The **Identifier** of your Auth0 API. The first entry is the value that agentgateway sends to Auth0 as the `audience` query parameter, so list your API identifier first. |
    | `provider.auth0` | Enables the Auth0-specific behavior described in [Why the Auth0 provider is needed](#why). Takes no fields. |
    | `resourceMetadata` | The protected resource metadata that agentgateway serves to MCP clients, which you inspect in [Step 3](#verify). |
-   | `jwks` | Optional. Because `provider.auth0` is set, agentgateway derives the JWKS URL from the issuer. To fetch keys from somewhere else, such as a local file or an internal mirror, set `jwks` explicitly to override the derived URL. |
+   | `jwks` | Optional. Because `provider.auth0` is set, the derived JWKS URL uses the issuer value without its trailing slash. To fetch keys from somewhere else, such as a local file or an internal mirror, set `jwks` explicitly to override the derived URL. |
 
    {{< doc-test paths="auth0-mcp-authn" >}}
    cat <<'EOF' > config.yaml
