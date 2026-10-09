@@ -216,6 +216,10 @@ EOF
    {{% /tab %}}
    {{< /tabs >}}
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+For LLM traffic that uses a model alias or virtual model, OTLP logs and traces include `agw.ai.original_model`. This attribute records the model name from the client request before model resolution changes the name. The resolved provider model is still recorded in the `gen_ai.request.model` attribute.
+{{% /version %}}
+
 ## Filter logs before export
 
 You can filter which access logs are exported to the OTLP backend independently of what is written to stdout by using the `otlp.filter` field. When `otlp.filter` is not set, the [top-level `accessLog.filter`]({{< link path="/documentation/observability/access-logs/view/#filter-access-logs" >}}) setting is used as a fallback for the OTLP export as well. When `otlp.filter` is set, it takes precedence over the top-level filter for OTLP export only, so stdout and OTLP can each receive a different subset of logs.
