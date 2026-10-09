@@ -3,7 +3,7 @@ Deploy agentgateway as a standalone Kubernetes workload by using the standalone 
 Use this chart when you want the standalone agentgateway binary model, but you want Kubernetes to run and expose the process for you. The chart runs the same binary and reads the same configuration file that the binary and Docker deployments use. You supply that file through Helm values, and the chart renders it into a ConfigMap that the proxy reads at startup.
 
 > [!TIP]
-> This chart installs agentgateway as a single, unmanaged Kubernetes deployment. You manage agentgateway config by upgrading the Helm values, and optionally adding a PostgreSQL database for editting the agentgateway config through the UI. If you want a managed Kubernetes solution that includes a control plane and Gateway API resources, see the [Kubernetes mode documentation](https://agentgateway.dev/docs/kubernetes/).
+> This chart installs agentgateway as a single, unmanaged Kubernetes deployment. You manage agentgateway config by upgrading the Helm values, and optionally adding a PostgreSQL database for editing the agentgateway config through the UI. If you want a managed Kubernetes solution that includes a control plane and Gateway API resources, see the [Kubernetes mode documentation](https://agentgateway.dev/docs/kubernetes/).
 
 ## Before you begin
 

@@ -175,7 +175,7 @@ Traces always include the full breakdown:
 * `agw.ai.usage.cost.output_audio`
 {{< version exclude-if="1.5.x" >}}* `agw.ai.usage.cost.pages`{{< /version >}}
 
-As these are loaded into the CEL context, they can be explicitly emited as well.
+As these are loaded into the CEL context, they can be explicitly emitted as well.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
