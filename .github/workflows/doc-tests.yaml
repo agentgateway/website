@@ -62,6 +62,18 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
+      # Test markup is moving out of these pages into docs-tests, as test
+      # annotations. Attach them before anything reads the pages. A page that
+      # still carries inline markup has it removed first, so the run tests
+      # exactly what the annotations say; pages without annotations are left
+      # alone. The report lists markup that did not attach, so the runner can
+      # skip those scenarios with a warning instead of running them short.
+      - name: Attach test annotations
+        run: |
+          python3 docs-tests/scripts/annotations.py attach --repo . \
+            --annotations docs-tests/products/agentgateway/annotations \
+            --report out/annotations/attach-report.json --summary
+
       # The step below decides WHICH tests run, so a fault in it does not fail
       # the build, it empties it. That is the failure mode this whole job just
       # had, and it went unnoticed for as long as it existed, so the selector
@@ -379,6 +391,18 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml jsonschema
 
+      # Test markup is moving out of these pages into docs-tests, as test
+      # annotations. Attach them before anything reads the pages. A page that
+      # still carries inline markup has it removed first, so the run tests
+      # exactly what the annotations say; pages without annotations are left
+      # alone. The report lists markup that did not attach, so the runner can
+      # skip those scenarios with a warning instead of running them short.
+      - name: Attach test annotations
+        run: |
+          python3 docs-tests/scripts/annotations.py attach --repo . \
+            --annotations docs-tests/products/agentgateway/annotations \
+            --report out/annotations/attach-report.json
+
       - name: Run schema checks
         run: |
           mkdir -p out/tests/generated
@@ -386,6 +410,7 @@ jobs:
             --repo-root . \
             --crd-dir agentgateway-product/controller/install/helm/agentgateway-crds/templates \
             --docs-tests-root docs-tests \
+            --annotation-report out/annotations/attach-report.json \
             --report-file out/tests/generated/test-results.yaml \
             --verbose
 
@@ -439,6 +464,18 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
+      # Test markup is moving out of these pages into docs-tests, as test
+      # annotations. Attach them before anything reads the pages. A page that
+      # still carries inline markup has it removed first, so the run tests
+      # exactly what the annotations say; pages without annotations are left
+      # alone. The report lists markup that did not attach, so the runner can
+      # skip those scenarios with a warning instead of running them short.
+      - name: Attach test annotations
+        run: |
+          python3 docs-tests/scripts/annotations.py attach --repo . \
+            --annotations docs-tests/products/agentgateway/annotations \
+            --report out/annotations/attach-report.json
+
       - name: Install cloud-provider-kind
         run: go install sigs.k8s.io/cloud-provider-kind@latest
 
@@ -479,6 +516,7 @@ jobs:
           # and silently skip its remaining tests while still exiting 0.
           while IFS=$'\t' read -r -u 3 file test; do
             python3 docs-tests/scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
+              --annotation-report out/annotations/attach-report.json \
               --report-file "out/tests/generated/shard/${TEST_INDEX}/test-results.yaml" \
               < /dev/null || FAILED=1
             TEST_INDEX=$((TEST_INDEX + 1))
@@ -566,6 +604,18 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
+      # Test markup is moving out of these pages into docs-tests, as test
+      # annotations. Attach them before anything reads the pages. A page that
+      # still carries inline markup has it removed first, so the run tests
+      # exactly what the annotations say; pages without annotations are left
+      # alone. The report lists markup that did not attach, so the runner can
+      # skip those scenarios with a warning instead of running them short.
+      - name: Attach test annotations
+        run: |
+          python3 docs-tests/scripts/annotations.py attach --repo . \
+            --annotations docs-tests/products/agentgateway/annotations \
+            --report out/annotations/attach-report.json
+
       - name: Install cloud-provider-kind
         run: go install sigs.k8s.io/cloud-provider-kind@latest
 
@@ -588,6 +638,7 @@ jobs:
           # shard's remaining tests while still exiting 0.
           while IFS=$'\t' read -r -u 3 file test; do
             python3 docs-tests/scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
+              --annotation-report out/annotations/attach-report.json \
               --report-file "out/tests/generated/shard/${TEST_INDEX}/test-results.yaml" \
               < /dev/null || FAILED=1
             TEST_INDEX=$((TEST_INDEX + 1))
