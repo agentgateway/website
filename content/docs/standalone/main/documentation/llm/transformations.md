@@ -10,6 +10,16 @@ test:
 
 Use LLM request transformations to dynamically compute and set fields in LLM requests using {{< gloss "CEL (Common Expression Language)" >}}Common Expression Language (CEL){{< /gloss >}} expressions. Transformations let you enforce policies such as capping token usage or conditionally modifying request parameters, without changing client code.
 
+Use the following table to choose the field for what you want to change.
+
+| To change | Use | Guide |
+| -- | -- | -- |
+| Fields in the LLM request body, by the names that the client sent | `transformation` | [Configure LLM request transformations](#configure-llm-request-transformations) |
+| Fields in the LLM request body, by the names that the provider receives after agentgateway converts the request | `finalTransformation` | [Transform requests after provider conversion](#transform-requests-after-provider-conversion) |
+| A header to a fixed value | `requestHeaders`, which needs no CEL | [Example: Set the Anthropic workspace header]({{< link-hextra path="/integrations/llm/providers/anthropic/#use-claude-platform-on-aws" >}}) |
+| A header to a value that is computed from the incoming request | `requestTransformation` | [Modify the HTTP request to the provider](#llm-request-transformation) |
+| The complete set of headers, the whole request body, or request metadata | `requestTransformation`, with `replace`, `body`, or `metadata` | [Modify the HTTP request to the provider](#llm-request-transformation) |
+
 To learn more about CEL, see the following resources:
 
 - [CEL expression reference]({{< link-hextra path="/reference/cel/" >}})
@@ -75,7 +85,7 @@ To learn more about CEL, see the following resources:
    > [!NOTE]
    > Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.
 
-2. Run the agentgateway.
+2. Start agentgateway.
    ```sh
    agentgateway -f config.yaml
    ```
@@ -188,6 +198,12 @@ AGW_PID=$!
 trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
 sleep 3
 {{< /doc-test >}}
+
+If agentgateway is still running from the previous section, it reloads `config.yaml` automatically when you save the file. Otherwise, start agentgateway.
+
+```sh
+agentgateway -f config.yaml
+```
 
 Send a request as an admin user and verify the response uses the higher token limit.
 
@@ -305,7 +321,7 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
    > [!WARNING]
    > In a `finalTransformation` expression, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that reads a field which the converted body does not have, such as `llmRequest.max_tokens` for an OpenAI provider, fails to evaluate. A failed expression removes the target field, so a mistyped field name silently deletes the field that you meant to set. For more information about the expression language, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
 
-2. Run the agentgateway.
+2. If agentgateway is still running from a previous section, it reloads `config.yaml` automatically when you save the file. Otherwise, start agentgateway.
 
    ```sh
    agentgateway -f config.yaml
@@ -386,50 +402,71 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
 
    The `completion_tokens` value reflects a completion capped at 10 tokens, which confirms that the transformation reached the converted request.
 
-## Modify provider HTTP requests {#llm-request-transformation}
+## Modify the HTTP request to the provider {#llm-request-transformation}
 
-Use `requestTransformation` to change the HTTP request to an LLM provider. Unlike `transformation` and `finalTransformation`, `requestTransformation` does not set fields in the LLM request payload. `requestTransformation` uses HTTP transformation fields such as `set`, `add`, `remove`, `replace`, `body`, and `metadata`.
+Use `requestTransformation` to change the HTTP request that agentgateway sends to the provider, such as its headers or metadata. For a header with a fixed value, use `requestHeaders` instead, which needs no CEL.
 
-Configure `requestTransformation` on an `llm.models[]` entry to change one model. To share the same HTTP request transformation across models that reference a named provider, set `llm.providers[].defaults.requestTransformation`. If both fields are set, the model-level `requestTransformation` replaces the provider default for that model.
+1. Create a configuration file that selects an OpenAI project from a client header. The provider default sets the `openai-project` header based on the `x-team` request header, and removes `x-team` so that it is not sent to OpenAI. The `gpt-4o-batch` model sets its own `requestTransformation`, which replaces the provider default for that model.
 
-```yaml
-llm:
-  providers:
-  - name: openai-prod
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-    defaults:
-      requestTransformation:
-        set:
-          openai-organization: '"org-prod"'
-        remove:
-        - x-debug
+   > [!WARNING]
+   > Because a model-level `requestTransformation` replaces the provider default completely, the model loses every setting in the default, not only the ones it overrides. In the following example, `gpt-4o-batch` repeats `remove: [x-team]`. Without that line, requests to `gpt-4o-batch` would send the `x-team` header to OpenAI.
 
-  models:
-  - name: gpt-4o
-    provider:
-      reference: openai-prod
-    params:
-      model: gpt-4o
-  - name: gpt-4o-dev
-    provider:
-      reference: openai-prod
-    params:
-      model: gpt-4o-mini
-    requestTransformation:
-      set:
-        openai-organization: '"org-dev"'
-```
+   ```yaml
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     providers:
+     - name: openai-prod
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+       defaults:
+         requestTransformation:
+           set:
+             openai-project: '"x-team" in request.headers && request.headers["x-team"] == "research" ? "proj_research" : "proj_default"'
+           remove:
+           - x-team
+     models:
+     - name: gpt-4o
+       provider:
+         reference: openai-prod
+       params:
+         model: gpt-4o
+     - name: gpt-4o-batch
+       provider:
+         reference: openai-prod
+       params:
+         model: gpt-4o-mini
+       requestTransformation:
+         set:
+           openai-project: '"proj_batch"'
+         remove:
+         - x-team
+   EOF
+   ```
 
-| Setting | Description |
-| -- | -- |
-| `llm.providers[].defaults.requestTransformation` | Applies a shared HTTP request transformation to models that reference the provider and do not set their own `requestTransformation`. |
-| `llm.models[].requestTransformation` | Applies an HTTP request transformation to one model. A model-level value replaces the provider default for that model. |
-| `set` | Sets provider request headers from CEL expressions. For a literal string, wrap the string as a CEL string expression, such as `'"org-prod"'`. |
-| `remove` | Removes the listed provider request headers. |
+   | Setting | Description |
+   | -- | -- |
+   | `llm.providers[].defaults.requestTransformation` | The HTTP request transformation for every model that references the provider and does not set its own `requestTransformation`. |
+   | `llm.models[].requestTransformation` | The HTTP request transformation for one model. If set, it replaces the provider default completely. The two are not merged. |
+   | `set` | Headers to set. Each value is a CEL expression. To set a fixed string, quote the string inside the expression, such as `'"proj_batch"'`. |
+   | `add` | Headers to append. Each value is a CEL expression. |
+   | `remove` | Header names to remove. |
+   | `replace` | A CEL expression that returns the complete set of headers. It is applied before `add`, `set`, and `remove`. |
+   | `body` | A CEL expression that returns a replacement request body. |
+   | `metadata` | Metadata values to add. Each value is a CEL expression. |
 
-`requestTransformation` uses the HTTP transformation CEL context. You can read `request.headers`. The `llmRequest` variable is not available in this context. Use `transformation` or `finalTransformation` when you need to read or set fields in the LLM request payload.
+2. If agentgateway is still running from a previous section, it reloads `config.yaml` automatically when you save the file. Otherwise, start agentgateway.
+
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+### How `requestTransformation` interacts with other settings
+
+* **When it runs**: `requestTransformation` runs before agentgateway converts the request to the provider format, and before `transformation` and `finalTransformation`. A replacement `body` therefore replaces the request that the client sent, and must still be a valid request for the client API. Agentgateway converts it afterward, as it does any other request.
+* **CEL variables**: The expressions can read the HTTP request, such as `request.headers`. The `llmRequest` variable is not available. To read or set fields in the LLM request body, use `transformation` or `finalTransformation` instead.
+* **`requestHeaders`**: `requestHeaders` runs after `requestTransformation`. If both set the same header, the `requestHeaders` value is sent.
 
 ## Available CEL variables
 
