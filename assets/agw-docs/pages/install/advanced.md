@@ -231,3 +231,22 @@ Keep the following behavior in mind:
 You can enable TLS encryption for the xDS gRPC server in the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane. For more information, see the [TLS encryption]({{< link-hextra path="/documentation/install/tls" >}}) docs.
 {{< /version >}}
 {{< /conditional-text >}}
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+## Controller RBAC resources {#controller-rbac}
+
+By default, the Helm chart creates the ClusterRole, Role, ClusterRoleBinding, and RoleBinding resources that the {{< reuse "agw-docs/snippets/agentgateway.md" >}} control plane uses.
+
+To run the chart in a cluster where role-based access control (RBAC) resources are managed separately, set `rbac.create` to `false`.
+
+```yaml
+rbac:
+  create: false
+```
+
+Keep the following behavior in mind:
+
+* The value controls RBAC roles and bindings only. The Helm chart still creates a ServiceAccount when `serviceAccount.create` is `true`.
+* If you set `rbac.create` to `false`, provide the required controller permissions through resources that you manage outside the chart.
+
+{{< /version >}}
