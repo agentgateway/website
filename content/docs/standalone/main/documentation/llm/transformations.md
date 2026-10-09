@@ -404,7 +404,9 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
 
 ## Modify the HTTP request to the provider {#llm-request-transformation}
 
-Use `requestTransformation` to change the HTTP request that agentgateway sends to the provider, such as its headers or metadata. For a header with a fixed value, use `requestHeaders` instead, which needs no CEL.
+Use `requestTransformation` to change the HTTP request that agentgateway sends to the provider, such as its headers or metadata. For a header with a fixed value, use `requestHeaders` instead, which needs no CEL. If both set the same header, the `requestHeaders` value is sent, because `requestHeaders` runs after `requestTransformation`.
+
+The expressions can read the HTTP request, such as `request.headers`. The `llmRequest` variable is not available, so to read or set fields in the LLM request body, use `transformation` or `finalTransformation` instead.
 
 1. Create a configuration file that selects an OpenAI project from a client header. The provider default sets the `openai-project` header based on the `x-team` request header, and removes `x-team` so that it is not sent to OpenAI. The `gpt-4o-batch` model sets its own `requestTransformation`, which replaces the provider default for that model.
 
@@ -453,7 +455,7 @@ Use `requestTransformation` to change the HTTP request that agentgateway sends t
    | `add` | Headers to append. Each value is a CEL expression. |
    | `remove` | Header names to remove. |
    | `replace` | A CEL expression that returns the complete set of headers. It is applied before `add`, `set`, and `remove`. |
-   | `body` | A CEL expression that returns a replacement request body. |
+   | `body` | A CEL expression that returns a replacement request body. The replacement happens before agentgateway converts the request to the provider format, and before `transformation` and `finalTransformation` run, so the new body must be a valid request for the API that the client called. |
    | `metadata` | Metadata values to add. Each value is a CEL expression. |
 
 2. If agentgateway is still running from a previous section, it reloads `config.yaml` automatically when you save the file. Otherwise, start agentgateway.
@@ -461,12 +463,6 @@ Use `requestTransformation` to change the HTTP request that agentgateway sends t
    ```sh
    agentgateway -f config.yaml
    ```
-
-### How `requestTransformation` interacts with other settings
-
-* **When it runs**: `requestTransformation` runs before agentgateway converts the request to the provider format, and before `transformation` and `finalTransformation`. A replacement `body` therefore replaces the request that the client sent, and must still be a valid request for the client API. Agentgateway converts it afterward, as it does any other request.
-* **CEL variables**: The expressions can read the HTTP request, such as `request.headers`. The `llmRequest` variable is not available. To read or set fields in the LLM request body, use `transformation` or `finalTransformation` instead.
-* **`requestHeaders`**: `requestHeaders` runs after `requestTransformation`. If both set the same header, the `requestHeaders` value is sent.
 
 ## Available CEL variables
 
