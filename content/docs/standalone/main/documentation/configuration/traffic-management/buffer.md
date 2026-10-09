@@ -2,10 +2,6 @@
 title: Body buffering
 weight: 17
 description: Buffer request and response bodies before forwarding them.
-test:
-  buffer:
-  - file: ${versionRoot}/documentation/configuration/traffic-management/buffer.md
-    path: buffer
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/" >}}

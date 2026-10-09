@@ -4,12 +4,14 @@ description: Configure advanced TLS settings such as cipher suites and protocol 
 weight: 20
 test:
   tls-settings:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: standard
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/setup/listeners/tls-settings.md
-    path: tls-settings
+    type: [schema, functional]
+    steps:
+    - file: ${versionRoot}/documentation/quickstart/install.md
+      path: standard
+    - file: ${versionRoot}/documentation/setup/gateway.md
+      path: all
+    - file: ${versionRoot}/documentation/setup/listeners/tls-settings.md
+      path: tls-settings
 ---
 
 {{< reuse "agw-docs/pages/setup/listeners/tls-settings.md" >}}

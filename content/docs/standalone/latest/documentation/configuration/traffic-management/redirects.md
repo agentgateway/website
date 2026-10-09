@@ -2,10 +2,6 @@
 title: Redirects
 weight: 11
 description: Return a redirect response that rewrites the scheme, host, path, or status code before a request reaches any backend.
-test:
-  redirects:
-  - file: ${versionRoot}/documentation/configuration/traffic-management/redirects.md
-    path: redirects
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}} {{< badge content="Backend" path="/documentation/configuration/backends/">}}

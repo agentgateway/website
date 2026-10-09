@@ -2,10 +2,6 @@
 title: Route delegation
 weight: 15
 description: Delegate routing decisions to route groups for independent team management.
-test:
-  route-delegation:
-  - file: ${versionRoot}/documentation/configuration/traffic-management/route-delegation.md
-    path: route-delegation
 ---
 
 {{< doc-test paths="route-delegation" >}}

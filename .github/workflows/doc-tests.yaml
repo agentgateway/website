@@ -5,10 +5,11 @@ on:
     paths:
       - 'assets/**'
       - 'content/docs/**'
-      # The selector and this file. Without them a PR that changes only
-      # `reuse_consumers.py` does not trigger this workflow at all, so the
-      # "test the resolver before trusting it" step below had a hole exactly
-      # where the selector lives.
+      # This repo's own scripts, and this file. NOTE: `reuse_consumers.py` now
+      # lives in solo-io/docs-tests, so a change to the SELECTOR no longer
+      # triggers this workflow at all -- a path filter cannot watch another
+      # repository. The daily schedule below is what catches a selector
+      # regression now, rather than the PR that introduced it.
       - 'scripts/**'
       - '.github/workflows/doc-tests.yaml'
   schedule:
@@ -25,6 +26,13 @@ on:
         type: string
         default: 'product-excellence-test-notifications'
 
+# READ-ONLY, BECAUSE THIS WORKFLOW RUNS THE PAGES.
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+
 jobs:
   discover:
     name: Discover test cases
@@ -38,10 +46,20 @@ jobs:
       matrix: ${{ steps.list.outputs.matrix }}
       has_tests: ${{ steps.list.outputs.has_tests }}
       test_count: ${{ steps.list.outputs.test_count }}
+      matrix_credentialed: ${{ steps.list.outputs.matrix_credentialed }}
+      has_credentialed_tests: ${{ steps.list.outputs.has_credentialed_tests }}
       dev_version: ${{ steps.dev-version.outputs.dev_version }}
     steps:
       - name: Checkout website repo
         uses: actions/checkout@v6
+
+      # Public repo, no token needed. The doc-test scripts live here now, not in this
+      # repo's own scripts/ dir -- see docs-tests/scripts/doc_test_run.py etc. below.
+      - name: Checkout docs-tests
+        uses: actions/checkout@v6
+        with:
+          repository: solo-io/docs-tests
+          path: docs-tests
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -50,6 +68,18 @@ jobs:
 
       - name: Install Python dependencies
         run: pip install pyyaml
+
+      # Test markup is moving out of these pages into docs-tests, as test
+      # annotations. Attach them before anything reads the pages. A page that
+      # still carries inline markup has it removed first, so the run tests
+      # exactly what the annotations say; pages without annotations are left
+      # alone. The report lists markup that did not attach, so the runner can
+      # skip those scenarios with a warning instead of running them short.
+      - name: Attach test annotations
+        run: |
+          python3 docs-tests/scripts/annotations.py attach --repo . \
+            --annotations docs-tests/products/agentgateway/annotations \
+            --report out/annotations/attach-report.json --summary
 
       # The step below decides WHICH tests run, so a fault in it does not fail
       # the build, it empties it. That is the failure mode this whole job just
@@ -62,7 +92,16 @@ jobs:
           # the one it checked out, which is one less difference to rule out
           # when the resolver and a local run disagree.
           PYTHONDONTWRITEBYTECODE: '1'
-        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+          # The selector moved to docs-tests, so its tests moved with it and need
+          # to be told which consumer repo to walk; unset, they raise rather than
+          # silently examining nothing. The second line keeps this repo's own
+          # scripts/ tests (test_normalize_doc_links.py) running -- they were only
+          # ever covered here incidentally, and repointing the gate would have
+          # dropped them without saying so.
+          DOCS_REPO_ROOT: ${{ github.workspace }}
+        run: |
+          python3 -m unittest discover -s docs-tests/scripts -p 'test_*.py'
+          python3 -m unittest discover -s scripts -p 'test_*.py'
 
       - name: Get changed markdown files
         id: changed-files
@@ -140,7 +179,7 @@ jobs:
 
           if [ -n "$CHANGED_MD" ]; then
             FILES=$(printf '%s\n' "$CHANGED_MD" \
-              | python3 scripts/reuse_consumers.py --repo-root . --stdin 2>"$UNRESOLVED_LOG" \
+              | python3 docs-tests/scripts/reuse_consumers.py --repo-root . --stdin 2>"$UNRESOLVED_LOG" \
               | tr '\n' ' ')
           fi
 
@@ -209,6 +248,12 @@ jobs:
       - name: List test cases
         id: list
         run: |
+          # 'functional' and 'live' run here and block the PR ('functional' = static
+          # validation against a real cluster, 'live' = unauthenticated check against a
+          # real external endpoint). 'schema' (config-vs-schema, no cluster) has its own
+          # job below. 'credentialed' is discovered separately and only run on the daily
+          # schedule, non-blocking.
+          #
           # Read the changed-file list from disk rather than an env var; see the note in
           # "Get changed markdown files". Each path becomes its own short argv entry, so
           # only the total (well under ARG_MAX) matters, not any single string's length.
@@ -220,9 +265,9 @@ jobs:
             while IFS= read -r line; do
               [ -n "$line" ] && FILE_ARGS+=("$line")
             done < "$CHANGED_FILES_LIST"
-            TESTS=$(python3 scripts/doc_test_run.py --repo-root . --list-tests --file "${FILE_ARGS[@]}")
+            TESTS=$(python3 docs-tests/scripts/doc_test_run.py --repo-root . --list-tests --types functional,live --file "${FILE_ARGS[@]}")
           else
-            TESTS=$(python3 scripts/doc_test_run.py --repo-root . --list-tests)
+            TESTS=$(python3 docs-tests/scripts/doc_test_run.py --repo-root . --list-tests --types functional,live)
           fi
           COUNT=$(echo "$TESTS" | jq 'length')
           echo "test_count=${COUNT}" >> $GITHUB_OUTPUT
@@ -233,7 +278,21 @@ jobs:
           fi
           MATRIX=$(echo "$TESTS" | jq -c '(length | [., 40] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | [.[].test] | join(", ") | if length > 80 then .[:77] + "..." else . end)})]}')
           echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
-          echo "Discovered $COUNT test case(s)"
+          echo "Discovered $COUNT functional/live test case(s)"
+
+          # 'credentialed' is not filtered by changed files -- it only ever runs on the
+          # schedule trigger (see run-test-credentialed's `if:`), never on a PR, so
+          # there's no "changed" set to narrow it against.
+          TESTS_CREDENTIALED=$(python3 docs-tests/scripts/doc_test_run.py --repo-root . --list-tests --types credentialed)
+          COUNT_CREDENTIALED=$(echo "$TESTS_CREDENTIALED" | jq 'length')
+          if [ "$COUNT_CREDENTIALED" -gt 0 ]; then
+            echo "has_credentialed_tests=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_credentialed_tests=false" >> $GITHUB_OUTPUT
+          fi
+          MATRIX_CREDENTIALED=$(echo "$TESTS_CREDENTIALED" | jq -c '(length | [., 40] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | [.[].test] | join(", ") | if length > 80 then .[:77] + "..." else . end)})]}')
+          echo "matrix_credentialed=${MATRIX_CREDENTIALED}" >> $GITHUB_OUTPUT
+          echo "Discovered $COUNT_CREDENTIALED credentialed test case(s)"
 
       # Resolve an installable version for the development ("main"/experimental) install
       # snippets. Those pages install the nightly chart pinned in
@@ -312,6 +371,67 @@ jobs:
           echo "dev_version=$RESOLVED" >> "$GITHUB_OUTPUT"
           echo "Resolved dev build version: $RESOLVED"
 
+  schema-check:
+    name: Schema validation (no cluster)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout website repo
+        uses: actions/checkout@v6
+
+      - name: Checkout docs-tests
+        uses: actions/checkout@v6
+        with:
+          repository: solo-io/docs-tests
+          path: docs-tests
+
+      - name: Checkout agentgateway (for CRD schemas)
+        uses: actions/checkout@v6
+        with:
+          repository: agentgateway/agentgateway
+          path: agentgateway-product
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install Python dependencies
+        run: pip install pyyaml jsonschema
+
+      # Test markup is moving out of these pages into docs-tests, as test
+      # annotations. Attach them before anything reads the pages. A page that
+      # still carries inline markup has it removed first, so the run tests
+      # exactly what the annotations say; pages without annotations are left
+      # alone. The report lists markup that did not attach, so the runner can
+      # skip those scenarios with a warning instead of running them short.
+      - name: Attach test annotations
+        run: |
+          python3 docs-tests/scripts/annotations.py attach --repo . \
+            --annotations docs-tests/products/agentgateway/annotations \
+            --report out/annotations/attach-report.json
+
+      - name: Run schema checks
+        run: |
+          mkdir -p out/tests/generated
+          python3 docs-tests/scripts/doc_test_schema_check.py \
+            --repo-root . \
+            --crd-dir agentgateway-product/controller/install/helm/agentgateway-crds/templates \
+            --docs-tests-root docs-tests \
+            --annotation-report out/annotations/attach-report.json \
+            --report-file out/tests/generated/test-results.yaml \
+            --verbose
+
+      # Named test-result-schema so it's picked up by the same test-result-* pattern the
+      # report job already downloads and merges -- no changes needed there. Writes a
+      # test-results.yaml in the exact shape doc_test_run.py writes (see write_report()).
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-result-schema
+          path: out/tests/generated/test-results.yaml
+          retention-days: 1
+
   run-test:
     name: "${{ matrix.shard_name }}"
     needs: discover
@@ -323,8 +443,20 @@ jobs:
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
       fail-fast: false
     steps:
+      # persist-credentials: false on both checkouts, so the token is not left
+      # in .git/config for the commands this job runs out of the changed pages.
+      # Nothing here pushes or fetches after the checkouts.
       - name: Checkout website repo
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Checkout docs-tests
+        uses: actions/checkout@v6
+        with:
+          repository: solo-io/docs-tests
+          path: docs-tests
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -344,6 +476,18 @@ jobs:
 
       - name: Install Python dependencies
         run: pip install pyyaml
+
+      # Test markup is moving out of these pages into docs-tests, as test
+      # annotations. Attach them before anything reads the pages. A page that
+      # still carries inline markup has it removed first, so the run tests
+      # exactly what the annotations say; pages without annotations are left
+      # alone. The report lists markup that did not attach, so the runner can
+      # skip those scenarios with a warning instead of running them short.
+      - name: Attach test annotations
+        run: |
+          python3 docs-tests/scripts/annotations.py attach --repo . \
+            --annotations docs-tests/products/agentgateway/annotations \
+            --report out/annotations/attach-report.json
 
       - name: Install cloud-provider-kind
         run: go install sigs.k8s.io/cloud-provider-kind@latest
@@ -374,6 +518,7 @@ jobs:
           # Used by the install-agentgateway-binary snippet's `gh run download` of the
           # nightly release-binary-linux artifact from agentgateway/agentgateway.
           GH_TOKEN: ${{ github.token }}
+          DOCS_TESTS_ROOT: ${{ github.workspace }}/docs-tests
         run: |
           FAILED=0
           TEST_INDEX=0
@@ -383,12 +528,13 @@ jobs:
           # remaining lines of this loop's input, so the shard would stop early
           # and silently skip its remaining tests while still exiting 0.
           while IFS=$'\t' read -r -u 3 file test; do
-            python3 scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
+            python3 docs-tests/scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
+              --annotation-report out/annotations/attach-report.json \
               --report-file "out/tests/generated/shard/${TEST_INDEX}/test-results.yaml" \
               < /dev/null || FAILED=1
             TEST_INDEX=$((TEST_INDEX + 1))
           done 3< <(echo "$SHARD_TESTS" | jq -r '.[] | "\(.file)\t\(.test)"')
-          python3 scripts/merge_test_results.py out/tests/generated/shard/ out/tests/generated/test-results.yaml
+          python3 docs-tests/scripts/merge_test_results.py out/tests/generated/shard/ out/tests/generated/test-results.yaml
 
           # Every assigned test must have produced a report. A missing report
           # means the loop above did not run it, which must fail the shard
@@ -417,14 +563,146 @@ jobs:
           retention-days: 1
           if-no-files-found: ignore
 
+  # 'credentialed' = checks against a real vendor (e.g. a real OpenAI key, a real Entra
+  # tenant). These never block a doc PR: they only run on the daily schedule, and
+  # continue-on-error means a credentialed failure never fails this workflow. Results
+  # are uploaded under a name that does NOT match report's `test-result-*` download
+  # pattern, so they never enter the blocking pass/fail gate.
+  #
+  # No credentialed scenario exists in this repo yet (matrix_credentialed is currently
+  # always empty -- every OSS traffic-management test that reaches 'live' or beyond
+  # needs a vendor this repo doesn't have; see the plan's Phase B/F notes on the Entra
+  # tenant gap), so this job is a structural no-op today: `has_credentialed_tests` stays
+  # 'false' and it skips. It starts doing real work the moment a page declares
+  # `type: credentialed` in its front matter. A dedicated summary/Slack step for this
+  # type is deliberately not built yet -- there's nothing to exercise it against; add
+  # one alongside the first real credentialed test.
+  run-test-credentialed:
+    name: "[credentialed, non-blocking] ${{ matrix.shard_name }}"
+    needs: discover
+    if: github.event_name == 'schedule' && needs.discover.outputs.has_credentialed_tests == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    continue-on-error: true
+
+    strategy:
+      matrix: ${{ fromJson(needs.discover.outputs.matrix_credentialed) }}
+      fail-fast: false
+    steps:
+      # Same as run-test: keep the token out of .git/config, since this job also
+      # runs commands out of the pages.
+      - name: Checkout website repo
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Checkout docs-tests
+        uses: actions/checkout@v6
+        with:
+          repository: solo-io/docs-tests
+          path: docs-tests
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 'stable'
+          cache: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+
+      - name: Install Python dependencies
+        run: pip install pyyaml
+
+      # Test markup is moving out of these pages into docs-tests, as test
+      # annotations. Attach them before anything reads the pages. A page that
+      # still carries inline markup has it removed first, so the run tests
+      # exactly what the annotations say; pages without annotations are left
+      # alone. The report lists markup that did not attach, so the runner can
+      # skip those scenarios with a warning instead of running them short.
+      - name: Attach test annotations
+        run: |
+          python3 docs-tests/scripts/annotations.py attach --repo . \
+            --annotations docs-tests/products/agentgateway/annotations \
+            --report out/annotations/attach-report.json
+
+      - name: Install cloud-provider-kind
+        run: go install sigs.k8s.io/cloud-provider-kind@latest
+
+      - name: Install yamltest
+        run: npm install -g yamltest@latest
+
+      - name: Run doc tests
+        env:
+          SHARD_TESTS: ${{ matrix.tests }}
+          DEBUG_MODE: true
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PYTHONUNBUFFERED: '1'
+          GH_TOKEN: ${{ github.token }}
+          DOCS_TESTS_ROOT: ${{ github.workspace }}/docs-tests
+        run: |
+          FAILED=0
+          TEST_INDEX=0
+          # Same fd-3 / </dev/null handling as run-test above: a guide that reads
+          # stdin would otherwise drain this loop's input and silently skip the
+          # shard's remaining tests while still exiting 0.
+          while IFS=$'\t' read -r -u 3 file test; do
+            python3 docs-tests/scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
+              --annotation-report out/annotations/attach-report.json \
+              --report-file "out/tests/generated/shard/${TEST_INDEX}/test-results.yaml" \
+              < /dev/null || FAILED=1
+            TEST_INDEX=$((TEST_INDEX + 1))
+          done 3< <(echo "$SHARD_TESTS" | jq -r '.[] | "\(.file)\t\(.test)"')
+          python3 docs-tests/scripts/merge_test_results.py out/tests/generated/shard/ out/tests/generated/test-results.yaml
+
+          EXPECTED=$(echo "$SHARD_TESTS" | jq 'length')
+          if [ "$TEST_INDEX" -ne "$EXPECTED" ]; then
+            echo "::error::Shard ran $TEST_INDEX of $EXPECTED assigned test(s)."
+            FAILED=1
+          fi
+          exit $FAILED
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: credentialed-test-result-${{ strategy.job-index }}
+          path: out/tests/generated/test-results.yaml
+          retention-days: 1
+
+      - name: Upload test context (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: credentialed-test-context-${{ strategy.job-index }}
+          path: out/tests/generated/context/
+          retention-days: 1
+          if-no-files-found: ignore
+
   report:
     name: Aggregate results and report
-    needs: [discover, run-test]
+    needs: [discover, run-test, schema-check]
     if: always() && needs.discover.outputs.has_tests == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout website repo
         uses: actions/checkout@v6
+
+      # Public repo, no token needed. The doc-test scripts live here now, not in this
+      # repo's own scripts/ dir -- see docs-tests/scripts/merge_test_results.py etc. below.
+      - name: Checkout docs-tests
+        uses: actions/checkout@v6
+        with:
+          repository: solo-io/docs-tests
+          path: docs-tests
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -441,7 +719,7 @@ jobs:
           path: collected-results/
 
       - name: Merge test results
-        run: python3 scripts/merge_test_results.py collected-results/ out/tests/generated/test-results.yaml
+        run: python3 docs-tests/scripts/merge_test_results.py collected-results/ out/tests/generated/test-results.yaml
 
       - name: Generate job summary
         id: summary
@@ -449,11 +727,11 @@ jobs:
           RESULTS_FILE=out/tests/generated/test-results.yaml
 
           # GitHub Step Summary (Markdown)
-          python3 scripts/report_summary.py "$RESULTS_FILE" >> "$GITHUB_STEP_SUMMARY"
+          python3 docs-tests/scripts/report_summary.py "$RESULTS_FILE" >> "$GITHUB_STEP_SUMMARY"
 
           # Slack Block Kit payload
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          SLACK_PAYLOAD=$(python3 scripts/report_summary.py --slack --run-url "$RUN_URL" "$RESULTS_FILE")
+          SLACK_PAYLOAD=$(python3 docs-tests/scripts/report_summary.py --slack --run-url "$RUN_URL" "$RESULTS_FILE")
           echo "slack_blocks<<EOF" >> "$GITHUB_OUTPUT"
           echo "$SLACK_PAYLOAD" | jq '.main' >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
@@ -474,7 +752,7 @@ jobs:
       - name: List untested docs
         if: always()
         run: |
-          python3 scripts/list_untested_docs.py \
+          python3 docs-tests/scripts/list_untested_docs.py \
             --docs-dir content/docs \
             --output out/tests/generated/untested-docs.txt
 
@@ -488,9 +766,18 @@ jobs:
 
       - name: Fail if any test failed
         env:
-          # Number of test cases the discover job found. The merged report must
-          # account for all of them, otherwise a test that never ran would be
-          # indistinguishable from one that passed.
+          # Number of functional/live test cases the discover job found. The merged
+          # report must account for all of them, otherwise a test that never ran
+          # would be indistinguishable from one that passed.
+          #
+          # Counted per type, not against the whole report: the merged results also
+          # contain the schema-check job's cases, which are discovered repo-wide and
+          # are not narrowed by changed files the way functional/live are. Comparing
+          # test_count against len(tests) would make `missing` negative on every PR
+          # and silently defeat the check the moment schema results outnumber the
+          # shortfall. schema-check needs no equivalent guard: it is a single job that
+          # reports every case it discovers, and it fails the workflow on its own if
+          # it does not run.
           EXPECTED_TESTS: ${{ needs.discover.outputs.test_count }}
         run: |
           python3 -c "
@@ -499,15 +786,16 @@ jobs:
               report = yaml.safe_load(f) or {}
           tests = report.get('tests', {})
           failed = [k for k, v in tests.items() if v.get('status') != 'passed']
+          sharded = {k: v for k, v in tests.items() if v.get('type') != 'schema'}
           expected = int(os.environ.get('EXPECTED_TESTS') or 0)
-          missing = expected - len(tests)
+          missing = expected - len(sharded)
           if failed:
               print(f'{len(failed)} test(s) failed:', file=sys.stderr)
               for name in failed:
                   print(f'  - {name}', file=sys.stderr)
           if missing > 0:
-              print(f'{missing} discovered test(s) produced no result:', file=sys.stderr)
-              print(f'  discovered {expected}, reported {len(tests)}', file=sys.stderr)
+              print(f'{missing} discovered functional/live test(s) produced no result:', file=sys.stderr)
+              print(f'  discovered {expected}, reported {len(sharded)}', file=sys.stderr)
           if failed or missing > 0:
               sys.exit(1)
           print(f'All {len(tests)} test(s) passed')

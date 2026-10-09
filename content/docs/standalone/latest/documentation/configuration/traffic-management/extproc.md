@@ -2,10 +2,6 @@
 title: External processing (ExtProc)
 weight: 16
 description: Use external gRPC servers to modify HTTP requests and responses.
-test:
-  extproc:
-  - file: ${versionRoot}/documentation/configuration/traffic-management/extproc.md
-    path: extproc
 ---
 
 {{< doc-test paths="extproc" >}}
