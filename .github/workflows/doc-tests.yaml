@@ -443,9 +443,9 @@ jobs:
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
       fail-fast: false
     steps:
-      # persist-credentials: false, so the token is not left in .git/config for
-      # the commands this job runs out of the changed pages. Nothing here
-      # pushes or fetches after the checkout.
+      # persist-credentials: false on both checkouts, so the token is not left
+      # in .git/config for the commands this job runs out of the changed pages.
+      # Nothing here pushes or fetches after the checkouts.
       - name: Checkout website repo
         uses: actions/checkout@v6
         with:
@@ -456,6 +456,7 @@ jobs:
         with:
           repository: solo-io/docs-tests
           path: docs-tests
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -588,14 +589,19 @@ jobs:
       matrix: ${{ fromJson(needs.discover.outputs.matrix_credentialed) }}
       fail-fast: false
     steps:
+      # Same as run-test: keep the token out of .git/config, since this job also
+      # runs commands out of the pages.
       - name: Checkout website repo
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Checkout docs-tests
         uses: actions/checkout@v6
         with:
           repository: solo-io/docs-tests
           path: docs-tests
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v6
