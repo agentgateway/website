@@ -110,6 +110,12 @@ Use the UI to review what agentgateway loaded and to manage the resources that y
 
 Whether the UI can save the changes that you make depends on your storage mode. In the binary and Docker installations, the UI writes to your configuration file by default. In the Helm installation, the ConfigMap is read-only and a save fails unless you switch the chart to database mode. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+The UI shows the running agentgateway version in the sidebar. When you change the gateway that serves the UI from **Settings** > **UI**, the UI asks you to confirm before saving. Removing the current gateway can disconnect the page that you are using.
+
+When a save or file reload fails validation, the UI shows a **Configuration reload failed** banner. The banner means that agentgateway is still running the previous valid configuration. The UI and `/api/config/effective` show the saved file that needs to be fixed.
+{{< /version >}}
+
 ## Generate LLM client settings {#client-setup}
 
 For an example of using the UI to set something up, use the **LLM > Client Setup** page. It generates connection settings and snippets for curl, Claude Code, Claude Desktop, Codex CLI, OpenCode, Cursor, GitHub Copilot, Windsurf, and the OpenAI JavaScript and Python SDKs{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}. The page also includes a Pi recipe that writes `baseUrl` and `apiKey` values into `~/.pi/agent/models.json`{{< /version >}}.
@@ -118,6 +124,12 @@ For an example of using the UI to set something up, use the **LLM > Client Setup
 2. Open the **LLM** > **Client Setup** page in the UI, such as [http://localhost:15000/ui/llm/client-setup](http://localhost:15000/ui/llm/client-setup).
 3. Review the **Gateway base URL**, and select a model and virtual API key.
 4. Select the client from the **Integration** dropdown, and copy the generated settings or snippet.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+In file-backed mode, Client Setup pre-populates **Gateway base URL** from the configured LLM gateway. If the same gateway serves the UI, Client Setup uses the browser origin. The browser origin preserves the external host, scheme, and port. In XDS mode, the URL starts empty because the external address is not available to agentgateway. Enter the URL that clients use, including any route prefix, before you copy a snippet.
+
+In XDS mode, Client Setup lists public concrete models and virtual models from the active config dump. Client Setup excludes internal models because only virtual models can target them. If the dump is missing the model or lists a wildcard model, type the model name that the client must request.
+{{< /version >}}
 
 Client Setup does not create a route, model, authentication policy, or provider credential. It generates client-side values from the configuration that already exists. For client-specific prerequisites, see [LLM clients]({{< link-hextra path="/integrations/llm/clients/" >}}).
 
