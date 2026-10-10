@@ -211,6 +211,42 @@ EOF
    }   
    ```
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+{{< conditional-text include-if="kubernetes" >}}
+## Backend-specific host rewrites
+
+To apply a host rewrite to only one backend in a route rule, put the `URLRewrite` filter under that `backendRef`. The rewrite applies only to requests that are forwarded to that backend.
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: backend-host-rewrite
+  namespace: httpbin
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  hostnames:
+    - external-rewrite.example
+  rules:
+    - backendRefs:
+        - name: httpbin
+          kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
+          group: agentgateway.dev
+          filters:
+            - type: URLRewrite
+              urlRewrite:
+                hostname: httpbin.org
+```
+
+| Setting | Description |
+| -- | -- |
+| `spec.rules.backendRefs.filters.type` | The filter that applies to this backendRef. Use `URLRewrite` to rewrite the request URL before the request reaches the selected backend. |
+| `spec.rules.backendRefs.filters.urlRewrite.hostname` | The host value to send to the selected backend. |
+{{< /conditional-text >}}
+{{< /version >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
