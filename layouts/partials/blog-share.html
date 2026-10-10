@@ -1,0 +1,69 @@
+{{ $title := .Title }}
+{{ $url := .Permalink }}
+
+<div class="flex items-center justify-center my-6 text-gray-500 dark:text-gray-400">
+    <span class="font-bold text-gray-500 dark:text-gray-400 mr-2">Share:</span>
+    <div class="flex items-center gap-4">
+        <!-- Twitter/X -->
+        <a href="https://twitter.com/intent/tweet?text={{ $title | urlquery }}&url={{ $url | urlquery }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           title="Share on Twitter"
+           class="text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-200 transition-colors">
+            <svg viewBox="0 0 24 24" class="w-6 h-6">
+                <path d="m4 4l11.733 16H20L8.267 4zm0 16l6.768-6.768m2.46-2.46L20 4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" fill="none" stroke="currentColor"></path>
+            </svg>
+        </a>
+
+        <!-- Facebook -->
+        <a href="https://www.facebook.com/sharer/sharer.php?u={{ $url | urlquery }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           title="Share on Facebook"
+           class="text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-200 transition-colors">
+            <svg viewBox="0 0 24 24" class="w-6 h-6">
+                <path d="M7 10v4h3v7h4v-7h3l1-4h-4V8a1 1 0 0 1 1-1h3V3h-3a5 5 0 0 0-5 5v2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" fill="none" stroke="currentColor"></path>
+            </svg>
+        </a>
+
+        <!-- LinkedIn -->
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ $url | urlquery }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           title="Share on LinkedIn"
+           class="text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-200 transition-colors">
+            <svg viewBox="0 0 24 24" class="w-6 h-6">
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                    <path d="M8 11v5m0-8v.01M12 16v-5m4 5v-3a2 2 0 1 0-4 0"></path>
+                    <path d="M3 7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"></path>
+                </g>
+            </svg>
+        </a>
+
+        <!-- WhatsApp -->
+        <a href="https://wa.me/?text={{ $title | urlquery }}%20{{ $url | urlquery }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           title="Share on WhatsApp"
+           class="text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-200 transition-colors">
+            <svg viewBox="0 0 24 24" class="w-6 h-6">
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                    <path d="m3 21l1.65-3.8a9 9 0 1 1 3.4 2.9z"></path>
+                    <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0za5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"></path>
+                </g>
+            </svg>
+        </a>
+
+        <!-- Email -->
+        <a href="mailto:?subject={{ printf "Check out: %s" $title | urlquery }}&body={{ printf "%s\n\n%s" .Description $url | urlquery }}"
+           title="Share via Email"
+           class="text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-200 transition-colors">
+            <svg viewBox="0 0 24 24" class="w-6 h-6">
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                    <path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <path d="m3 7l9 6l9-6"></path>
+                </g>
+            </svg>
+        </a>
+    </div>
+</div>
