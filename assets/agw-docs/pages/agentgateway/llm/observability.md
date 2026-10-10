@@ -49,7 +49,8 @@ LLM providers disagree about whether the input token count in a response include
 
 | Field | What it reports |
 |-------|-----------------|
-| `llm.inputTokens` | The total input count, including cache-read and cache-creation tokens. |
+| `llm.inputTokens` | The total input count, including cache-read and cache-creation tokens. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+| `llm.outputTokens` | The normalized output count, including reasoning tokens when the provider reports them separately. |{{< /version >}}
 | `llm.totalTokens` | The normalized input count plus the output count. |
 | `llm.providerInputTokens` | The input count exactly as the provider sent it. |
 | `llm.providerTotalTokens` | The total count exactly as the provider sent it. |
@@ -58,7 +59,15 @@ LLM providers disagree about whether the input token count in a response include
 
 The `gen_ai.usage.input_tokens` log and span field and the `input` series of the `agentgateway_gen_ai_client_token_usage` metric both report the normalized count.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+The `gen_ai.usage.output_tokens` log and span field and the `output` series of the `agentgateway_gen_ai_client_token_usage` metric report the normalized output count.
+{{< /version >}}
+
 Anthropic and Amazon Bedrock exclude cached tokens from the input count that they report. OpenAI, Azure OpenAI, and Google Gemini include them. For the providers that exclude them, `llm.inputTokens` is therefore larger than `llm.providerInputTokens` whenever prompt caching is active. To report exactly what the provider billed, read `llm.providerInputTokens` or `llm.providerTotalTokens` instead.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+Google Gemini can report reasoning tokens separately from completion tokens. For Gemini responses, `llm.outputTokens` includes visible output and reasoning tokens. As a result, the output count matches the output side of the provider's total token count.
+{{< /version >}}
 
 > [!WARNING]
 > Do not add `llm.cachedInputTokens` or `llm.cacheCreationInputTokens` to `llm.inputTokens`. The cache counts are a subset of the normalized input count, so adding them double counts the cached tokens.
