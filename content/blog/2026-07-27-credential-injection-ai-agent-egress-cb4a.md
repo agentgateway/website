@@ -46,7 +46,7 @@ The draft's recommended primary is Model B, with Model A as the selective fallba
 
 {{< reuse-image src="img/blog/cb4a/flow.png" alt="CB4A flow" >}}
 
-Take a look at these [interactive protocol flow diagrams](https://protocol-explorer.dev/cb4a/happy-path) for CB4A if you want to see how it worksit step by step.
+Take a look at these [interactive protocol flow diagrams](https://protocol-explorer.dev/cb4a/happy-path) for CB4A if you want to see how it works step by step.
 
 Basically: based on the agent's identity (SPIFFE) plus whatever auth context is available, the PDP decides whether this agent should get a credential for the action it's attempting, and the CDP issues a short-lived, sender-constrained one. If that credential leaks, it's useless to whoever picked it up, because they don't hold the key it's bound to.
 
