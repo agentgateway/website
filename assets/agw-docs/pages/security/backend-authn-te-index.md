@@ -41,12 +41,12 @@ The `oauthTokenExchange` method supports two grants, and you choose between them
 | JWT bearer | `JwtBearer` | [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) | `assertion` |
 {{< /conditional-text >}}
 
-Some identity providers have vendor-specific variants of a grant. Microsoft Entra's on-behalf-of flow is a variant of the JWT bearer grant, and the JWT bearer guide covers it.
+Some identity providers need provider-specific settings, or have vendor-specific variants of a grant. For example, the Google Cloud Security Token Service requires specific token types and scopes, and Microsoft Entra's on-behalf-of flow is a variant of the JWT bearer grant. For provider-specific guides, see {{% conditional-text exclude-if="standalone" %}}[Identity providers]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/idps/" >}}){{% /conditional-text %}}{{% conditional-text include-if="standalone" %}}[Identity providers]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/idps/" >}}){{% /conditional-text %}}.
 
 ## Configuration
 
 {{< conditional-text include-if="standalone" >}}
-The token endpoint is configured as a backend reference: a `host` in `host:port` form and, optionally, connection `policies` such as `backendTLS`. A `host` port of `443` automatically enables backend TLS.
+The token endpoint is configured as a backend reference: a `host` in `host:port` form and, optionally, connection `policies` such as `backendTLS`. A `host` port of `443` does not enable TLS by itself, so set `policies.backendTLS` for a token endpoint that serves HTTPS.
 
 {{< reuse "agw-docs/snippets/oauth-te-fields-standalone.md" >}}
 {{< /conditional-text >}}

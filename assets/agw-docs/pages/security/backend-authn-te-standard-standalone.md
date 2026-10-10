@@ -96,6 +96,8 @@ backendAuth:
   oauthTokenExchange:
     host: idp.example.com:443
     path: /token
+    policies:
+      backendTLS: {}
     # Read the incoming token from a custom header and declare its token type.
     subjectToken:
       tokenType: urn:ietf:params:oauth:token-type:jwt
@@ -119,6 +121,8 @@ backendAuth:
   oauthTokenExchange:
     host: idp.example.com:443
     path: /token
+    policies:
+      backendTLS: {}
     actorToken:
       tokenType: urn:ietf:params:oauth:token-type:access_token
       source:
