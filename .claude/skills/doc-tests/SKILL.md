@@ -1,12 +1,23 @@
 ---
 name: doc-test-guides
 description: Add executable doc tests to agentgateway documentation guides using the doc test framework. Use when the user asks to "add doc tests", "add tests to a guide", "add tests to a topic", mentions "YAMLTest", or is working on quickstart guides, standalone binary guides, or Kubernetes doc pages that should generate runnable scripts from code blocks.
-version: 1.2.0
+version: 1.3.0
 ---
 
 # Doc test guides skill
 
 Use this skill when adding tests to documentation guides in the `agentgateway/website` repo so that code blocks and hidden steps are assembled into runnable scripts. The canonical reference is [scripts/TEST_FRAMEWORK.md](../../../scripts/TEST_FRAMEWORK.md). This skill summarizes the workflow and gotchas for **guides** (especially standalone/quickstart).
+
+---
+
+## Where tests live
+
+Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/docs-tests), not in these pages. CI removes the test markup from a copy of the site and attaches the copy kept in docs-tests. The markup syntax in this skill is the same in both places; only where you write it changes. See "Where tests live" in TEST_FRAMEWORK.md for details.
+
+- **New or changed scenarios** (what front matter `test:` declares): edit `products/agentgateway/<kubernetes or standalone>/tests.yaml` in docs-tests. A front matter `test:` edit on a page here is not reliably run.
+- **Code-block tags and hidden checks:** in docs-tests, run `make annotate PAGE=<page> CONTENT_REPO=<path to this repo>`, edit the markup in the copy it writes to `out/annotate/`, then run `make save` with the same arguments.
+- Until the markup is removed from this repo, tags and hidden checks edited on a page here are copied into docs-tests by a daily refresh. They are first tested after merge, not in the PR's own run.
+- Merge the content PR here first, then the docs-tests PR.
 
 ---
 
@@ -20,7 +31,7 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
 
 ## Core concepts
 
-1. **Test metadata** lives on the **content** page (e.g. `content/docs/standalone/main/quickstart/llm.md`) in YAML front matter under `test:`.
+1. **Test scenarios** live in docs-tests `tests.yaml` (see [Where tests live](#where-tests-live)). Pages that `tests.yaml` does not cover can still declare them in YAML front matter under `test:` on the **content** page (e.g. `content/docs/standalone/main/quickstart/llm.md`).
 2. **Path tags and hidden blocks** live in the **content that gets inlined**. If the content page only has `{{< reuse "agw-docs/..." >}}`, the real body is in **assets** — add `paths="..."` and `{{< doc-test >}}` in the **asset** file, not the content wrapper.
    > **Critical**: Most Kubernetes topic pages (e.g. `content/docs/kubernetes/latest/resiliency/timeouts/request.md`) are thin wrappers that only contain `{{< reuse "agw-docs/pages/..." >}}`. **Always place doc-test blocks in the reuse file** (`assets/agw-docs/pages/...`), never in the content wrapper. This way both `latest` and `main` versions automatically inherit the tests — you only need to add them once.
 3. **Extractor** resolves `{{< reuse "..." >}}` from `assets/`, so the script is built from the expanded content. Reference the **content file** in `test:` sources; the extractor will follow reuse.
@@ -164,7 +175,9 @@ Redirect the process's output to a file as well, so nothing can leak into a capt
 - **Shell-safe placeholders**: Unquoted `<placeholder>` can be interpreted as redirection. Use quotes or a default, e.g. `export OPENAI_API_KEY='<your-api-key>'` or `export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"`.
 - **Optional real value**: Use `"${VAR:-placeholder}"` so the test can pass when the var is set (e.g. in CI or user's shell) and still run with a placeholder when not set.
 
-### 6. Add test front matter on the content page
+### 6. Add the test scenario
+
+> **Scenarios now go in docs-tests `tests.yaml`, not in front matter** (see [Where tests live](#where-tests-live)). The example below shows the front matter form, which the runner still reads for pages that `tests.yaml` does not cover; the `file`/`path` steps translate directly to a `tests.yaml` entry's `needs:`, `source:` or `page:`, and `path:`.
 
 ```yaml
 ---
@@ -185,14 +198,15 @@ test:
 
 Token resolution covers the `kubernetes` and `standalone` sections; a `file:` that doesn't match the `content/docs/<section>/<version>/` layout is left as-is.
 
-**Pages with no testable content** (no code blocks, landing pages, concept pages, `_index.md` files without ordered steps, etc.) should be marked with `test: skip` instead of a scenario dict. This counts the page as covered in the test coverage report without generating any test cases:
+**Pages with no testable content** (no code blocks, landing pages, concept pages, `_index.md` files without ordered steps, etc.) are listed under the `skip:` key of docs-tests `tests.yaml` instead of getting a scenario. This counts the page as covered in the test coverage report without generating any test cases. A `dir:` entry covers every page under a folder, for generated pages such as the agctl reference:
 
 ```yaml
----
-title: About
-test: skip
----
+skip:
+- page: documentation/about/_index.md
+- dir: reference/agctl/
 ```
+
+This replaces front matter `test: skip`, which the runner still reads on pages that `tests.yaml` does not cover.
 
 **Before marking a page `test: skip`, consider whether the content could become testable.** The table below summarizes what it would take for each category of "non-runnable" content. If the effort is low (content-only changes), prefer making the page testable over skipping it.
 
@@ -407,7 +421,7 @@ When in doubt, flag the failure to the user rather than silently adjusting the t
 - [ ] No helper **starts a background process inside `$( )`** — the PID is set in the subshell and lost, so the process is never killed and later configs run against the stale one; and its output gets captured into the returned value. Start with `start_gateway` in the parent shell, keep only pure-curl code inside the substitution. See "Never start a background process inside `$( )`" under step 4.
 - [ ] If the guide has a long-running server, a **hidden** doc-test block starts it in the background (and optional trap/sleep); visible "start server" block has **no** path.
 - [ ] Placeholders in shell blocks are quoted or use `${VAR:-default}` so the script has no syntax errors.
-- [ ] `test:` front matter on the **content** page lists the right `file` and `path`; file path is the content path (extractor follows reuse). For pages with no testable content (index pages, no code blocks), use `test: skip` instead — counts toward coverage without generating test cases.
+- [ ] The scenario in docs-tests `tests.yaml` lists the right prerequisites and `path`. For pages with no testable content (index pages, no code blocks), add the page under the manifest's `skip:` key instead — it counts toward coverage without generating test cases.
 - [ ] `file:` values are **version-relative** (`${versionRoot}/...`, or omitted for the declaring page) so copying a page between `main` and `latest` needs **no** front-matter edits. Use a literal path only to point at a different version on purpose.
 - [ ] Prerequisite `file:` paths come from the guide's actual **Before you begin** links — don't guess; check the links to confirm exact paths.
 - [ ] No `kubectl port-forward` in any visible block — replace with YAMLTest HTTP assertions using `${INGRESS_GW_ADDRESS}`.

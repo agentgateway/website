@@ -14,12 +14,28 @@ go install sigs.k8s.io/cloud-provider-kind@latest
 
 ---
 
+## Where tests live
+
+Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/docs-tests). CI no longer reads the test markup on these pages: before each run, it removes the markup from a copy of the site and attaches the copy kept in docs-tests. The markup syntax in this guide is the same in both places.
+
+| What | Where it lives | How to change it |
+|---|---|---|
+| Scenario definitions (what front matter `test:` declares) | `products/agentgateway/<kubernetes or standalone>/tests.yaml` in docs-tests | Edit `tests.yaml`. The format is described in the docs-tests README. |
+| Code-block tags (`paths="..."`) and hidden `{{< doc-test >}}` checks | One annotation file per page under `products/agentgateway/annotations/` in docs-tests | In docs-tests, run `make annotate PAGE=<page> CONTENT_REPO=<path to this repo>`, edit the markup in the copy it writes to `out/annotate/`, then run `make save` with the same arguments. |
+
+Until the markup is removed from this repo:
+
+- Tags and hidden checks that you add or change on a page here still count, but not right away. Your PR's own doc-test run uses the docs-tests copy, so the change is first tested after merge, once the daily refresh in docs-tests copies it into the annotation files (within a day). To test a change in the PR itself, make it in docs-tests instead.
+- A front matter `test:` edit here is not reliably run, because `tests.yaml` owns the scenarios. The daily refresh reports the edit (in its commit message and in Slack) so that `tests.yaml` gets the matching change. Make scenario changes in `tests.yaml`.
+- When a content change needs a test change in docs-tests, merge the content PR here first, then the docs-tests PR.
+
+---
+
 ## How it works
 
-1. A doc page declares a `test:` block in its YAML front matter, listing one or more named test scenarios.
-2. Each scenario lists source files and path selectors — the pieces of shell/YAML to include.
-3. `doc_test_run.py` reads this metadata, chains the sources together, and produces a standalone bash script.
-4. The script is run inside a fresh `kind` cluster (with `cloud-provider-kind` for load balancer support).
+1. A scenario in docs-tests `tests.yaml` (or, on pages that are not covered there, a `test:` block in a page's front matter) names a test and lists source files and path selectors — the pieces of shell and YAML to include.
+2. `doc_test_run.py` attaches the docs-tests annotations, reads the scenarios, chains the sources together, and produces a standalone bash script.
+3. The script is run inside a fresh `kind` cluster (with `cloud-provider-kind` for load balancer support).
 
 ---
 
@@ -77,41 +93,11 @@ shortcode tags:
 ```
 
 - `doc_test_extract.py` and `doc_test_run.py` both accept `--docs-tests-root <path>`,
-  or the `DOCS_TESTS_ROOT` environment variable. If neither is set, it defaults to a
-  sibling `docs-tests` directory next to this repo's own root.
+  or the `DOCS_TESTS_ROOT` environment variable. If neither is set, they use the
+  docs-tests checkout that the script itself runs from.
 - A missing or misspelled `file=` path fails immediately with a `FileNotFoundError`
   naming the source doc, line number, and the resolved path — it never silently
   drops the block.
-
-A step in front matter's `test:` metadata can name the same kind of external content
-directly instead, via an `assert:` list, leaving nothing but the real content and the
-`paths="X"` tag in the page body — no shortcode line at all:
-
-```yaml
-test:
-  host-rewrite:
-    type: functional
-    steps:
-    - file: ${versionRoot}/traffic-management/rewrite/host.md
-      path: host-rewrite
-      assert:
-      - products/agentgateway/main/traffic-management/rewrite/host-rewrite-wait.sh
-      - products/agentgateway/main/traffic-management/rewrite/host-rewrite-warmup.sh
-      - products/agentgateway/main/traffic-management/rewrite/host-rewrite-assert.sh
-```
-
-Each entry is a `docs-tests`-relative path, run in list order, anchored to the first
-block in that file sharing the step's `paths=` selector — the same position a reader
-would expect from where an inline shortcode would otherwise sit. Anchoring to the
-*first* matching block (not appending at the end of the file) matters because a page
-often reuses the same `paths=` value later for something unrelated, like a `Cleanup`
-section's `kubectl delete`; the assertion needs to run before that, not after it. Only
-scenarios that actually execute something need `assert:` — `type: schema` never runs
-anything, so it has no equivalent.
-
-Both mechanisms are supported and can coexist across different pages. `assert:` is the
-newer, cleaner form for any new page; the inline `file="..."` shortcode still works for
-pages that haven't been converted.
 
 This is unrelated to the `<!-- doc-test-include file="..." -->` HTML comment some of
 the extractor's code still supports — that mechanism runs an external `bun test <file>`
@@ -120,6 +106,8 @@ as a separate subprocess and is not used for this external-content use case.
 ---
 
 ## Front matter test metadata
+
+> Scenarios for this site now live in docs-tests `tests.yaml` (see [Where tests live](#where-tests-live)). This section describes the front matter form, which the runner still reads for pages that `tests.yaml` does not cover. The `file`/`path` steps work the same way in both.
 
 On the page being tested, add a `test:` key to the YAML front matter. Each child key is a named test scenario. Each entry in the list is a `file`+`path` pair — a source file and the path selector to pull from it.
 
@@ -174,19 +162,16 @@ Multiple scenarios on the same page each get their own kind cluster and generate
 
 ### Typing scenarios
 
-A scenario can declare a `type:` alongside its `file`/`path` entries, renamed `steps:` under it:
+A scenario in `tests.yaml` declares a `type:`. A scenario without one is `functional`.
 
 ```yaml
-test:
+scenarios:
   rewrite:
     type: functional
-    steps:
-    - file: ${versionRoot}/quickstart/install.md
-      path: experimental
-    - path: rewrite
+    needs: [install-experimental, gateway, httpbin]
+    source: agw-docs/pages/traffic-management/transformations/rewrite.md
+    path: rewrite
 ```
-
-A bare list (no `type:`/`steps:` wrapper) still works and is treated as `functional` — this is every test written before this typing existed, and `functional` (real cluster, real assertions, no vendor dependency) is what all of them already do. You only need the `type:`/`steps:` form to declare something other than `functional`.
 
 | Type | What it checks | Needs | Blocks the PR? |
 |---|---|---|---|
@@ -195,50 +180,9 @@ A bare list (no `type:`/`steps:` wrapper) still works and is treated as `functio
 | `live` | Same as functional, but a real external endpoint is reachable and returns the documented unauthenticated response (e.g. a JWKS discovery endpoint rejecting an unauthenticated request) | A real public endpoint, no credentials | Yes — runs in the same job as `functional` |
 | `credentialed` | Full behavior against a real vendor with real credentials (e.g. a real OpenAI key) | Named secrets, provisioned out of band | No — runs on its own daily schedule via `--types credentialed`, `continue-on-error: true`, never on a PR |
 
-`schema` has no `steps:` prerequisite chain to trace — since nothing executes, it only needs the one step that shows the CR itself (the declaring page, or wherever the example lives):
+`type:` also accepts a list, such as `type: [schema, functional]`. This produces two independent test cases, `rewrite::schema` and `rewrite::functional`, that share the same steps. `--test rewrite` selects both; `--test rewrite::schema` selects only the schema one. Add `schema` only when the scenario's final step is a custom resource with a local CRD schema (currently `AgentgatewayPolicy` and `AgentgatewayBackend`; see `doc_test_schema_check.py`). A plain Gateway API resource such as `HTTPRoute` has nothing to validate against, so it would only ever pass vacuously.
 
-```yaml
-test:
-  rewrite-schema:
-    type: schema
-    steps:
-    - path: rewrite   # file: omitted -> the declaring page
-```
-
-`doc_test_run.py --list-tests` and every generated report include each case's `type`. Filter what runs with `--types schema,functional,live` (comma-separated); omit it to run everything, which is what a plain local run still does.
-
-**A known gap, not a limitation of the typing mechanism itself:** some enterprise-only pages (Entra token exchange, for one) can't reach `live` today because there's no shared dev tenant to test against — registering a real Entra app/tenant is manual, human, one-time setup with no vendor-provided sandbox. That test stays tagged at whatever type it can actually reach, with the gap noted in its front matter or the tracking issue, rather than silently passing at a narrower type than the page's own content would suggest.
-
-#### Declaring more than one type on the same scenario
-
-`type:` also accepts a list, so one `steps:` chain gets validated more than one way without
-copy-pasting the whole scenario into a second one just to change its type:
-
-```yaml
-test:
-  rewrite:
-    type: [schema, functional]
-    steps:
-    - file: ${versionRoot}/quickstart/install.md
-      path: experimental
-    - path: rewrite
-```
-
-This produces two independent test cases — `rewrite::schema` and `rewrite::functional` —
-sharing the same `steps:`, each flowing into the pipeline exactly as if you'd hand-written
-two separate scenarios (`rewrite-schema` and `rewrite`). `--test rewrite` selects both;
-`--test rewrite::schema` selects only the schema one. A single-type scenario is unaffected
-— its name, generated filenames, and report key stay exactly as before; the `name::type`
-suffix only appears once a scenario declares more than one type.
-
-This is the recommended way to add schema coverage to an existing `functional` scenario,
-rather than duplicating it into a same-named `-schema` sibling — **but only when the
-scenario's final step is a recognized custom-resource kind with a local CRD schema**
-(currently `AgentgatewayPolicy`/`AgentgatewayBackend` — see `doc_test_schema_check.py`).
-A scenario whose example is a plain Gateway API resource (`HTTPRoute`, `Gateway`) has
-nothing to validate against and would only ever pass vacuously, so `schema` isn't added
-automatically to every scenario — it has to be requested per scenario, once its CR kind
-is confirmed to have a schema to check.
+`doc_test_run.py --list-tests` and every generated report include each case's `type`. Filter what runs with `--types schema,functional,live` (comma-separated); omit it to run everything.
 
 ---
 
@@ -420,11 +364,13 @@ EOF
 
 ## Running the tests
 
-The scripts themselves live in the `docs-tests` repo, not here (see [External test
-content in docs-tests](#external-test-content-in-docs-tests)) — the commands below
-assume it's cloned as a sibling directory (`../docs-tests`), same as the
-`DOCS_TESTS_ROOT` default. `make test-generate` / `make test-run` wrap these same
-commands and respect a `DOCS_TESTS_DIR` override if you've cloned it elsewhere.
+The scripts, scenarios, and annotations live in the `docs-tests` repo, not here (see
+[Where tests live](#where-tests-live)). The commands below assume it's cloned as a
+sibling directory (`../docs-tests`). `make test-generate` / `make test-run` wrap these
+same commands and respect a `DOCS_TESTS_DIR` override if you've cloned it elsewhere.
+To test against the docs-tests copy of the markup, as CI does, first attach it:
+`python3 ../docs-tests/scripts/annotations.py attach --repo . --annotations ../docs-tests/products/agentgateway/annotations`.
+This rewrites the pages in place, so run it on a scratch checkout or discard the changes afterward.
 
 ### Generate scripts only (no cluster)
 
@@ -495,7 +441,7 @@ bash ../../generated/<script-name>.sh
 | `--docs-glob` | `content/docs/**/*.md` | Glob to discover pages with `test:` metadata (ignored when `--file` is set) |
 | `--product` | `kubernetes` | Context product used for `conditional-text` resolution |
 | `--types` | all types | Comma-separated test types to run, e.g. `schema,functional,live`. See [Typing scenarios](#typing-scenarios) |
-| `--docs-tests-root` | sibling `docs-tests` dir | Checkout root for `{{< doc-test file="..." >}}` external content (or `DOCS_TESTS_ROOT` env var). See [External test content in docs-tests](#external-test-content-in-docs-tests) |
+| `--docs-tests-root` | the docs-tests checkout the script runs from | Checkout root for `{{< doc-test file="..." >}}` external content (or `DOCS_TESTS_ROOT` env var). See [External test content in docs-tests](#external-test-content-in-docs-tests) |
 | `--generated-dir` | `out/tests/generated` | Output directory for scripts and manifests |
 | `--generate-only` | false | Skip cluster creation and execution |
 | `--verbose` | true | Stream all command output |
@@ -515,7 +461,6 @@ The `version` context (used to resolve `{{< version include-if="..." >}}` blocks
 - **Duplicate blocks** (same content) are emitted only once.
 - Blocks without a `paths=` attribute are skipped.
 - **`{{< doc-test file="..." >}}`** — content is read from the `docs-tests` checkout instead of the shortcode body (see [External test content in docs-tests](#external-test-content-in-docs-tests)).
-- **A step's `assert:` list** — synthesizes the same kind of hidden block directly from front matter, anchored to the first block in that file sharing the step's `paths=` selector (see above).
 
 ---
 
@@ -526,7 +471,7 @@ The `version` context (used to resolve `{{< version include-if="..." >}}` blocks
 3. **Add wait blocks** after each `kubectl apply` that creates something tests depend on.
 4. **Export `INGRESS_GW_ADDRESS`** — it flows from `gateway.md` via `setVars`.
 5. **Add the feature assertion** as a `{{< doc-test >}}` shortcode block on the feature page.
-6. **Write the `test:` front matter** on the feature page, listing sources in dependency order (install → setup → prereqs → feature).
+6. **Add the scenario to docs-tests `tests.yaml`**, listing its prerequisites under `needs:` and the feature page's selector (see [Where tests live](#where-tests-live)).
 7. **Regenerate** with `--generate-only` and inspect the script for unresolved shortcodes or missing commands.
 8. **Run locally** with `bash out/tests/generated/<script>.sh` against an existing cluster to verify before committing.
 

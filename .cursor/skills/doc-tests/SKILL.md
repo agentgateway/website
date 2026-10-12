@@ -9,6 +9,17 @@ Use this skill when adding tests to documentation guides in the `website` repo s
 
 ---
 
+## Where tests live
+
+Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/docs-tests), not in these pages. CI removes the test markup from a copy of the site and attaches the copy kept in docs-tests. The markup syntax in this skill is the same in both places; only where you write it changes. See "Where tests live" in TEST_FRAMEWORK.md for details.
+
+- **New or changed scenarios** (what front matter `test:` declares): edit `products/agentgateway/<kubernetes or standalone>/tests.yaml` in docs-tests. A front matter `test:` edit on a page here is not reliably run.
+- **Code-block tags and hidden checks:** in docs-tests, run `make annotate PAGE=<page> CONTENT_REPO=<path to this repo>`, edit the markup in the copy it writes to `out/annotate/`, then run `make save` with the same arguments.
+- Until the markup is removed from this repo, tags and hidden checks edited on a page here are copied into docs-tests by a daily refresh. They are first tested after merge, not in the PR's own run.
+- Merge the content PR here first, then the docs-tests PR.
+
+---
+
 ## When to use
 
 - Adding a new test scenario to a guide for the agentgateway standalone or Kubernetes docs.
@@ -19,7 +30,7 @@ Use this skill when adding tests to documentation guides in the `website` repo s
 
 ## Core concepts
 
-1. **Test metadata** lives on the **content** page (e.g. [`content/docs/standalone/main/quickstart/llm.md`](https://github.com/agentgateway/website/blob/main/content/docs/standalone/main/quickstart/llm.md?plain=1)) in YAML front matter under `test:`.
+1. **Test scenarios** live in docs-tests `tests.yaml` (see [Where tests live](#where-tests-live)). Pages that `tests.yaml` does not cover can still declare them in YAML front matter under `test:` on the **content** page (e.g. [`content/docs/standalone/main/quickstart/llm.md`](https://github.com/agentgateway/website/blob/main/content/docs/standalone/main/quickstart/llm.md?plain=1)).
 2. **Path tags and hidden blocks** live in the **content that gets inlined**. If the content page only has `{{< reuse "agw-docs/..." >}}`, the real body is in **assets** — add `paths="..."` and `{{< doc-test >}}` in the **asset** file, not the content wrapper.
 3. **Extractor** resolves `{{< reuse "..." >}}` from `assets/`, so the script is built from the expanded content. Reference the **content file** in `test:` sources; the extractor will follow reuse.
 4. **Block order**: Selected blocks are emitted in document order (by file and `start_line`). Hidden blocks (e.g. “start server in background”) must appear *before* any visible block that depends on them (e.g. curl). The extractor sorts selected blocks by `(file_path, start_line)` so hidden blocks are not deferred to the end.
@@ -61,7 +72,9 @@ Use this skill when adding tests to documentation guides in the `website` repo s
 - **Shell-safe placeholders**: Unquoted `<placeholder>` can be interpreted as redirection. Use quotes or a default, e.g. `export OPENAI_API_KEY='<your-api-key>'` or `export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"`.
 - **Optional real value**: Use `"${VAR:-placeholder}"` so the test can pass when the var is set (e.g. in CI or user’s shell) and still run with a placeholder when not set.
 
-### 6. Add test front matter on the content page
+### 6. Add the test scenario
+
+> **Scenarios now go in docs-tests `tests.yaml`, not in front matter** (see [Where tests live](#where-tests-live)). The example below shows the front matter form, which the runner still reads for pages that `tests.yaml` does not cover; the `file`/`path` steps translate directly to a `tests.yaml` entry's `needs:`, `source:` or `page:`, and `path:`.
 
 ```yaml
 ---
@@ -104,7 +117,7 @@ Write `file:` values **version-relative** so a page can be copied between `main`
 - [ ] Path tags added in the **asset** file(s) for every runnable block needed in the scenario.
 - [ ] If the guide has a long-running server, a **hidden** doc-test block starts it in the background (and optional trap/sleep); visible “start server” block has **no** path.
 - [ ] Placeholders in shell blocks are quoted or use `${VAR:-default}` so the script has no syntax errors.
-- [ ] `test:` front matter on the **content** page lists the right `file` and `path`; file path is the content path (extractor follows reuse).
+- [ ] The scenario in docs-tests `tests.yaml` lists the right prerequisites and `path` (or, for a page `tests.yaml` does not cover, `test:` front matter on the **content** page lists the right `file` and `path`).
 - [ ] Generated script order makes sense (server before curl/YAMLTest); regenerate after extractor changes if needed.
 - [ ] Optional YAMLTest in a hidden block for HTTP or other assertions.
 
