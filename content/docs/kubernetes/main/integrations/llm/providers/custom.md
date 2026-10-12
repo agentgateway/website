@@ -60,6 +60,8 @@ non-default path for that format.
 | `AnthropicTokenCount` | `/v1/messages/count_tokens` |
 | `Realtime` | `/v1/realtime` |
 | `Rerank` | `/v1/rerank` |
+| `Decisions` | `/v1/decisions` |
+| `SystemOne` | `/v1/systemone` |
 
 Agentgateway chooses from the provider-native formats that you declare. For
 example, if a custom provider supports OpenAI chat completions but not OpenAI
@@ -75,9 +77,14 @@ shapes, declare each supported format and optionally set a per-format path.
 | Anthropic token count | `AnthropicTokenCount` |
 | OpenAI realtime | `Realtime` |
 | Rerank | `Rerank` |
+| OpenAI decisions | `Decisions`, then `SystemOne` |
 
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
+
+Use `SystemOne` for a TypeSafe SystemOne upstream. With `SystemOne`, OpenAI
+Decisions requests from `/v1/decisions` go to `/v1/systemone` on the upstream.
+The conversion returns the upstream response in the Decisions format.
 
 An error such as `failed to parse Messages request` names the route type that
 parsed the client request before provider conversion. Check that the request

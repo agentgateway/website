@@ -44,6 +44,8 @@ The `formats` list controls how agentgateway converts incoming requests. Each co
 
 Declare only the formats that the upstream server supports. For example, include `responses` only if the server supports `/v1/responses`. For details about each conversion, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
 
+Use `systemOne` for a TypeSafe SystemOne upstream that serves `/v1/systemone`. With `systemOne`, OpenAI Decisions requests from `/v1/decisions` go to `/v1/systemone` on the upstream. The conversion returns the upstream response in the Decisions format.
+
 An error such as `failed to parse Messages request` names the route type that parsed the client request before provider conversion. Check that the request path maps to the expected route type and that the body matches that format.
 
 Converted response usage follows the API format that the client called. Messages responses use Anthropic usage conventions. In that format, `usage.input_tokens` excludes prompt-cache tokens. Chat Completions and Responses replies use OpenAI usage conventions. In those formats, the main input count includes prompt-cache tokens. When a Gemini OpenAI-compatible response reports reasoning tokens separately from `usage.completion_tokens`, converted Messages and Responses replies include visible output and reasoning tokens in `usage.output_tokens`.
@@ -74,6 +76,8 @@ llm:
           # - type: generateContent
           # - type: geminiCountTokens
           # - type: rerank
+          # - type: decisions
+          # - type: systemOne
     params:
       apiKey: "$PERPLEXITY_API_KEY"
       model: llama-3.1-sonar-large-128k-online
