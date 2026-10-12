@@ -188,6 +188,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3893 -->
 
 **Traffic management**
 
@@ -202,6 +203,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 
 - Access-log CEL expressions can now read dynamic metadata that ExtMCP request-phase guardrails return through `mcpGuardrails`, including on resumed stateful MCP sessions. For more information, see [Log MCP guardrail metadata]({{< link-hextra path="/documentation/observability/access-logs/view/#mcp-guardrails" >}}).
 - OpenAPI MCP tools return `image/*` responses as MCP image content instead of UTF-8-decoded text.
+- Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
 
 **Security**
 
