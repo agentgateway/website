@@ -28,10 +28,10 @@ cat <<'EOF' > config.yaml
 llm:
   models:
   - name: "*"
-    provider: openAI
+    provider: bedrock
     params:
-      model: amazon.titan-text-express-v1
-      apiKey: "$BEDROCK_API_KEY"
+      model: amazon.nova-lite-v1:0
+      awsRegion: us-west-2
     guardrails:
       request:
       - bedrockGuardrails:

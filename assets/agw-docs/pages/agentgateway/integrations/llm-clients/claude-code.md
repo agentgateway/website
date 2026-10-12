@@ -18,7 +18,7 @@ The primary use case is routing Claude Code to non-Anthropic LLM backends (such 
 
 Route Claude Code to any OpenAI-compatible LLM provider (such as vLLM, Ollama, or local language models). This is the recommended approach for cost-effective and flexible deployment.
 
-1. Create a configuration file with an OpenAI-compatible provider. The wildcard `*` model name accepts any model. Claude Code sends the model in each request, so you do not need to pin a specific model.
+1. Create a configuration file with an OpenAI-compatible provider. Claude Code requests Claude model names, such as `claude-sonnet-4-5`, which your backend does not serve. The wildcard `*` model name accepts every model name that Claude Code sends, and `params.model` replaces it with the model that your backend serves.
 
    ```yaml {paths="claude-code-openai-validate"}
    cat > config.yaml << 'EOF'
@@ -28,12 +28,13 @@ Route Claude Code to any OpenAI-compatible LLM provider (such as vLLM, Ollama, o
      - name: "*"
        provider: openAI
        params:
+         model: "Qwen/Qwen3-32B"  # The model that your backend serves
          baseUrl: "http://localhost:8000/v1"  # vLLM or similar OpenAI-compatible endpoint
          apiKey: "mock-key"  # Not used for local providers, but required by config
    EOF
    ```
 
-   Replace `http://localhost:8000/v1` with your OpenAI-compatible provider's endpoint.
+   Replace `Qwen/Qwen3-32B` with a model that your backend serves, and `http://localhost:8000/v1` with your OpenAI-compatible provider's endpoint.
 
    {{< doc-test paths="claude-code-openai-validate" >}}
    agentgateway -f config.yaml --validate-only

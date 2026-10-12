@@ -73,23 +73,39 @@ llm:
 
 These are the default auth mechanisms for the corresponding built-in providers, so you usually only need to override them when you need custom credential handling.
 
+The following example sets the auth for each cloud provider explicitly. Each provider is exposed under its own [provider prefix](#provider-prefix), such as `bedrock/*`, so that every model name selects exactly one provider.
+
 ```yaml
 llm:
   models:
-  - name: "*"
+  - name: "vertex/*"
     provider: vertex
+    params:
+      vertexProject: my-project-id
+      vertexRegion: us-central1
     auth:
       gcp:
         type: accessToken
-  - name: "*"
+    transformation:
+      model: llmRequest.model.stripPrefix("vertex/")
+  - name: "bedrock/*"
     provider: bedrock
+    params:
+      awsRegion: us-west-2
     auth:
       aws: {}
-  - name: "*"
+    transformation:
+      model: llmRequest.model.stripPrefix("bedrock/")
+  - name: "azure/*"
     provider: azure
+    params:
+      azureResourceName: my-resource-name
+      azureResourceType: openAI
     auth:
       azure:
         implicit: {}
+    transformation:
+      model: llmRequest.model.stripPrefix("azure/")
 ```
 
 ## Standalone upstream TLS
