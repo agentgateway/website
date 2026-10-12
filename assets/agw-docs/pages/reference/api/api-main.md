@@ -415,7 +415,7 @@ _Appears in:_
 | `custom` _[CustomProviderSettings](#customprovidersettings)_ | Provider-specific settings for a custom provider. |  | Optional: \{\} <br /> |
 | `baseURL` _[LongString](#longstring)_ | BaseURL overrides the provider address and base path prefix. It must use the<br />http or https scheme. Backend policies may override the default TLS<br />configuration. Query parameters, fragments, and user info are not supported.<br />The URL path is the upstream base path and defaults to / when omitted.<br />Provider-specific endpoint paths are appended to this base path.<br />For example, `https://api.openai.com/v1` sends completions to `/v1/chat/completions`,<br />while `https://api.openai.com` sends them to `/chat/completions`. |  | Format: uri <br />MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `policies` _[ModelPolicies](#modelpolicies)_ | Policies applied to this concrete model. |  | Optional: \{\} <br /> |
-| `virtualModel` _[VirtualModel](#virtualmodel)_ | Request-time routing among concrete AgentgatewayModel resources. |  | ExactlyOneOf: [weighted failover conditional] <br />Optional: \{\} <br /> |
+| `virtualModel` _[VirtualModel](#virtualmodel)_ | Request-time routing among concrete AgentgatewayModel resources. |  | ExactlyOneOf: [weighted failover conditional callout] <br />Optional: \{\} <br /> |
 
 
 #### AgentgatewayModelStatus
@@ -1156,8 +1156,8 @@ _Appears in:_
 | `aws` _[AwsAuth](#awsauth)_ | Explicit AWS authentication method for the backend.<br />When omitted, default AWS SDK credential discovery is used. |  | Optional: \{\} <br /> |
 | `azure` _[AzureAuth](#azureauth)_ | Azure authentication method for the backend. |  | AtMostOneOf: [secretRef managedIdentity workloadIdentity] <br />Optional: \{\} <br /> |
 | `gcp` _[GcpAuth](#gcpauth)_ | Google authentication method for the backend.<br />When omitted, default Google credential discovery is used. |  | Optional: \{\} <br /> |
-| `oauthTokenExchange` _[OAuthTokenExchange](#oauthtokenexchange)_ | OAuth 2.0 token exchange (RFC 8693) / jwt-bearer (RFC 7523) authentication. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
-| `crossAppAccess` _[CrossAppAccessAuth](#crossappaccessauth)_ | Cross App Access (Identity Assertion / ID-JAG) authentication. |  | Optional: \{\} <br /> |
+| `oauthTokenExchange` _[OAuthTokenExchange](#oauthtokenexchange)_ | OAuth 2.0 token exchange (RFC 8693) / jwt-bearer (RFC 7523) authentication.<br />If this configuration is invalid, requests using it are rejected. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
+| `crossAppAccess` _[CrossAppAccessAuth](#crossappaccessauth)_ | Cross App Access (Identity Assertion / ID-JAG) authentication.<br />If this configuration is invalid, requests using it are rejected. |  | Optional: \{\} <br /> |
 | `jwtSign` _[JwtSignAuth](#jwtsignauth)_ | Signs a short-lived JWT with a private key on each request and sends it<br />to the backend, for upstreams that require per-request keypair JWTs<br />(e.g. the Snowflake SQL API) rather than a static credential. |  | Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where backend credentials are inserted.<br />If omitted, credentials are written to the `Authorization` header with the `Bearer ` prefix.<br />This applies to `key`, `secretRef`, and `passthrough`. Entries in `credentials` carry their own location. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
 | `credentials` _[BackendAuthCredential](#backendauthcredential) array_ | Credentials is a list of additional credentials to inject on the<br />backend request. Each entry resolves a Secret key and writes its value<br />to the entry's location. `credentials` is independent of the primary<br />`key`/`secretRef`/`passthrough` mechanism and may be set on its own or<br />alongside it. |  | MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
@@ -1302,7 +1302,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `authorization` _[Authorization](#authorization)_ | MCP backend authorization. Unlike authorization at the HTTP level, which rejects<br />unauthorized requests with a `403` error, this policy works at the<br />`MCPBackend` level.<br />List operations, such as `list_tools`, will have each item evaluated.<br />Items that do not meet the rule will be filtered.<br />Get or call operations, such as `call_tool`, will evaluate the specific<br />item and reject requests that do not meet the rule. |  | Optional: \{\} <br /> |
 | `authentication` _[MCPAuthentication](#mcpauthentication)_ | MCP backend-specific authentication rules.<br />This field is deprecated; prefer to use traffic policy `jwtAuthentication.mcp`, which ensures authentication runs before<br />other policies such as transformation and rate limiting. |  | Optional: \{\} <br /> |
-| `guardrails` _[MCPGuardrails](#mcpguardrails)_ | `guardrails` routes selected JSON-RPC methods through a remote policy server. |  | Optional: \{\} <br /> |
+| `guardrails` _[MCPGuardrails](#mcpguardrails)_ | Remote and in-process CEL policy processors for MCP requests and responses. |  | Optional: \{\} <br /> |
 
 
 #### BackendSimple
@@ -1738,6 +1738,8 @@ _Appears in:_
 - [AuthorizationPolicy](#authorizationpolicy)
 - [AwsAssumeRole](#awsassumerole)
 - [AwsSessionTag](#awssessiontag)
+- [CalloutCache](#calloutcache)
+- [CalloutModelRouting](#calloutmodelrouting)
 - [ConditionalModelTarget](#conditionalmodeltarget)
 - [Delay](#delay)
 - [DirectResponse](#directresponse)
@@ -1753,7 +1755,9 @@ _Appears in:_
 - [HeaderTransformation](#headertransformation)
 - [Health](#health)
 - [LocalRateLimit](#localratelimit)
+- [MCPGuardrailsExpression](#mcpguardrailsexpression)
 - [MCPGuardrailsRemote](#mcpguardrailsremote)
+- [McpTargetSelector](#mcptargetselector)
 - [NamespacedMetadataContext](#namespacedmetadatacontext)
 - [OAuthTokenExchange](#oauthtokenexchange)
 - [OtlpAccessLog](#otlpaccesslog)
@@ -1797,6 +1801,47 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `additionalOrigins` _[ShortString](#shortstring) array_ | Additional source origins that will be<br />allowed in addition to the destination origin. The `Origin` consists of<br />a scheme and a host, with an optional port, and takes the form<br />`<scheme>://<host>(:<port>)`. |  | MaxItems: 16 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+
+
+#### CalloutCache
+
+
+
+
+
+
+
+_Appears in:_
+- [CalloutModelRouting](#calloutmodelrouting)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `key` _[CELExpression](#celexpression) array_ | Ordered list of CEL expressions evaluated against the request to<br />construct the cache key. |  | MaxItems: 16 <br />MaxLength: 16384 <br />MinItems: 1 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `ttl` _[CELExpression](#celexpression)_ | Duration string, such as `5m`, or a CEL expression that returns the<br />duration that a cached callout response may be reused, or a timestamp<br />when it expires. The expression is evaluated with `callout` available,<br />before `transformation` is applied. |  | MaxLength: 16384 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `maxEntries` _integer_ | Maximum number of callout responses to keep in the cache. If unset, this<br />defaults to 10000. |  | Minimum: 1 <br />Optional: \{\} <br /> |
+
+
+#### CalloutModelRouting
+
+
+
+
+
+_Validation:_
+- ExactlyOneOf: [backendRef url]
+
+_Appears in:_
+- [VirtualModel](#virtualmodel)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
+| `headers` _object (keys:string, values:[CELExpression](#celexpression))_ | Headers to set on the callout request, computed from CEL expressions.<br />Keys may be header names or the `:path`, `:method`, and `:authority`<br />pseudo-headers. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
+| `body` _[CELExpression](#celexpression)_ | CEL expression that computes the callout request body. Strings and bytes<br />are used directly; other values are JSON-encoded. If unset, the original<br />request body is forwarded. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `transformation` _object (keys:string, values:[CELExpression](#celexpression))_ | CEL expressions that compute request payload fields from the callout<br />response, overriding existing values. `callout.headers` holds the response<br />headers and `callout.body` the decoded JSON response body. `model` is<br />required and selects the concrete model name, which is matched against the<br />effective match.model of models attached to the same listener. |  | MaxProperties: 64 <br />MinProperties: 1 <br />Required: \{\} <br /> |
+| `fallback` _[ModelTargetReference](#modeltargetreference)_ | Model used when the callout fails, returns a non-2xx or non-JSON<br />response, or selects an unknown model. `transformation` is not applied to<br />the fallback. If unset, the request is rejected. |  | Optional: \{\} <br /> |
+| `cache` _[CalloutCache](#calloutcache)_ | Reuse callout responses using CEL expressions as the cache key. On a cache<br />hit, `transformation` is evaluated against the cached response. Keying on<br />a session identifier makes routing sticky for that session. |  | Optional: \{\} <br /> |
 
 
 #### CipherSuite
@@ -1881,18 +1926,21 @@ _Appears in:_
 
 _Underlying type:_ _string_
 
-Which category of request content a prompt guard inspects.
+Which category of request or response content a prompt guard inspects.
+Encrypted payloads are excluded. Signed response payloads are scanned but
+a mask that would change them rejects the response instead.
 
 
 
 _Appears in:_
 - [PromptguardRequest](#promptguardrequest)
+- [PromptguardResponse](#promptguardresponse)
 
 | Field | Description |
 | --- | --- |
 | `SystemPrompt` | The system/developer prompt.<br /> |
-| `Messages` | Regular user/assistant message text.<br /> |
-| `ToolOutput` | Tool call results fed back to the model.<br /> |
+| `Messages` | Regular user/assistant message text, including plaintext reasoning.<br /> |
+| `ToolOutput` | Tool call results, including results from serverside tools.<br /> |
 | `ToolInput` | Tool call arguments, usually produced by the model.<br /> |
 
 
@@ -2015,6 +2063,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `message` _string_ | Custom response message to return to the client. If not specified, defaults to<br />`The request was rejected due to inappropriate content`. |  | Optional: \{\} <br /> |
 | `statusCode` _integer_ | Status code to return to the client. Defaults to 403. |  | Maximum: 599 <br />Minimum: 200 <br />Optional: \{\} <br /> |
+| `headers` _HTTPHeader array_ | Headers to include in the rejection response. |  | Optional: \{\} <br /> |
 
 
 #### Delay
@@ -3526,7 +3575,26 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `processors` _[MCPGuardrailsProcessor](#mcpguardrailsprocessor) array_ | `processors` is the ordered list of policy processors applied to matched<br />methods. Processors run in the order listed; the first to reject a request<br />short-circuits the chain. |  | ExactlyOneOf: [remote] <br />MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
+| `processors` _[MCPGuardrailsProcessor](#mcpguardrailsprocessor) array_ | `processors` is the ordered list of policy processors applied to matched<br />methods. Processors run in the order listed; the first to reject a request<br />short-circuits the chain. |  | ExactlyOneOf: [remote expression] <br />MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
+
+
+#### MCPGuardrailsExpression
+
+
+
+In-process guardrail driven by CEL expressions.
+
+_Validation:_
+- ExactlyOneOf: [reject transform]
+
+_Appears in:_
+- [MCPGuardrailsProcessor](#mcpguardrailsprocessor)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `condition` _[CELExpression](#celexpression)_ | Condition gating the action; absent means always. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `reject` _string_ | Reject with this message. |  | MaxLength: 4096 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `transform` _[CELExpression](#celexpression)_ | Returns a replacement body (`mcp.params` on requests or `mcp.result` on responses).<br />Use `merge` to preserve fields you do not wish to mutate; `null` leaves the body unchanged. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### MCPGuardrailsProcessor
@@ -3536,7 +3604,7 @@ _Appears in:_
 MCPGuardrailsProcessor selects a single policy processor. Exactly one variant must be set.
 
 _Validation:_
-- ExactlyOneOf: [remote]
+- ExactlyOneOf: [remote expression]
 
 _Appears in:_
 - [MCPGuardrails](#mcpguardrails)
@@ -3544,6 +3612,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `remote` _[MCPGuardrailsRemote](#mcpguardrailsremote)_ | `remote` configures a gRPC policy server. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
+| `expression` _[MCPGuardrailsExpression](#mcpguardrailsexpression)_ | In-process guardrail driven by CEL expressions. |  | ExactlyOneOf: [reject transform] <br />Optional: \{\} <br /> |
 | `methods` _object (keys:string, values:[MCPMethodPhase](#mcpmethodphase))_ | `methods` is the allowlist of JSON-RPC methods (e.g. `tools/call`,<br />`tools/list`) routed through this processor, keyed by method name with the<br />phase it runs in. Keys may be exact, a prefix wildcard (`tools/*`), a suffix<br />wildcard (`*/list`), or `*` for all methods; the most specific match wins.<br />Methods matching no key, including unknown ones, bypass this processor. |  | MaxProperties: 64 <br />MinProperties: 1 <br />Required: \{\} <br /> |
 
 
@@ -3683,6 +3752,7 @@ _Appears in:_
 | `name` _[SectionName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#sectionname)_ | Name of the MCP target. |  | Required: \{\} <br /> |
 | `selector` _[McpSelector](#mcpselector)_ | Label selector used to select `Service` resources.<br />Selected `Service` ports must set `appProtocol: agentgateway.dev/mcp` for<br />streamable HTTP or `appProtocol: agentgateway.dev/mcp-sse` for SSE. Ports<br />without a recognized MCP `appProtocol` value are ignored.<br />If policies are needed on a per-service basis, `AgentgatewayPolicy` can<br />target the desired `Service`. |  | Optional: \{\} <br /> |
 | `static` _[McpTarget](#mcptarget)_ | Static MCP destination. When connecting to<br />in-cluster `Service` resources, it is recommended to use `selector`<br />instead. |  | ExactlyOneOf: [host backendRef] <br />Optional: \{\} <br /> |
+| `condition` _[CELExpression](#celexpression)_ | CEL expression evaluated per request; when it evaluates to false, the<br />target is excluded from the virtual MCP. `mcp.target.name` is available.<br />With `selector`, the condition applies to each selected target. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### Message
@@ -3884,6 +3954,7 @@ _Appears in:_
 | `Fireworks` |  |
 | `Meta` |  |
 | `Perplexity` |  |
+| `Typesafe` |  |
 | `Custom` |  |
 
 
@@ -3896,6 +3967,7 @@ _Appears in:_
 
 
 _Appears in:_
+- [CalloutModelRouting](#calloutmodelrouting)
 - [ConditionalModelTarget](#conditionalmodeltarget)
 - [FailoverModelTarget](#failovermodeltarget)
 - [WeightedModelTarget](#weightedmodeltarget)
@@ -4432,6 +4504,7 @@ PolicyBackendEndpoint identifies a backend used by policy features.
 
 _Appears in:_
 - [BackendTunnel](#backendtunnel)
+- [CalloutModelRouting](#calloutmodelrouting)
 - [CrossAppAccessEndpoint](#crossappaccessendpoint)
 - [ExtAuth](#extauth)
 - [ExtAuthOrConditional](#extauthorconditional)
@@ -4653,6 +4726,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `response` _[CustomResponse](#customresponse)_ | Custom response message to return to the client. If not specified, defaults to<br />`The response was rejected due to inappropriate content`. |  | Optional: \{\} <br /> |
+| `scope` _[ContentScope](#contentscope) array_ | Which parts of the response this guard inspects. When unset, defaults to<br />`Messages`. Tool calls generated by the model are not inspected unless<br />`ToolInput` is listed explicitly; `ToolOutput` covers results of<br />serverside tools.<br />In APIs that send tool arguments as opaque JSON, such as Completions, the<br />arguments are masked as a single string, meaning a prompt guard has the<br />potential to rewrite the arguments into invalid JSON. |  | MaxItems: 4 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `regex` _[Regex](#regex)_ | Regular expression (regex) matching for prompt guards and data masking. |  | Optional: \{\} <br /> |
 | `webhook` _[Webhook](#webhook)_ | Webhook that receives responses for prompt guarding. |  | Optional: \{\} <br /> |
 | `bedrockGuardrails` _[BedrockGuardrails](#bedrockguardrails)_ | AWS Bedrock Guardrails settings for prompt<br />guarding. |  | Optional: \{\} <br /> |
@@ -4679,6 +4753,8 @@ _Appears in:_
 | `AnthropicTokenCount` | ProviderFormatAnthropicTokenCount is the Anthropic token-count API.<br /> |
 | `Realtime` | ProviderFormatRealtime is the OpenAI-compatible realtime API.<br /> |
 | `Rerank` | ProviderFormatRerank is the Cohere-compatible rerank API.<br /> |
+| `Decisions` | ProviderFormatDecisions is the OpenAI decisions API.<br /> |
+| `SystemOne` | ProviderFormatSystemOne is the TypeSafe SystemOne API.<br /> |
 
 
 #### ProviderFormatConfig
@@ -4961,6 +5037,7 @@ _Appears in:_
 | `Rerank` | RouteTypeRerank processes Cohere `/v2/rerank` format requests.<br /> |
 | `GenerateContent` | RouteTypeGenerateContent processes Gemini `models/\{model\}:generateContent`<br />and `models/\{model\}:streamGenerateContent` format requests.<br /> |
 | `GeminiCountTokens` | RouteTypeGeminiCountTokens processes Gemini `models/\{model\}:countTokens`<br />format requests.<br /> |
+| `Decisions` | RouteTypeDecisions processes OpenAI `/v1/decisions` format requests.<br /> |
 
 
 
@@ -5362,7 +5439,7 @@ _Appears in:_
 
 
 _Validation:_
-- ExactlyOneOf: [weighted failover conditional]
+- ExactlyOneOf: [weighted failover conditional callout]
 
 _Appears in:_
 - [AgentgatewayModelSpec](#agentgatewaymodelspec)
@@ -5372,6 +5449,7 @@ _Appears in:_
 | `weighted` _[WeightedModelRouting](#weightedmodelrouting)_ | Weight-based model selection. |  | Optional: \{\} <br /> |
 | `failover` _[FailoverModelRouting](#failovermodelrouting)_ | Priority-based model selection with failover between priority groups. |  | Optional: \{\} <br /> |
 | `conditional` _[ConditionalModelRouting](#conditionalmodelrouting)_ | Ordered condition-based model selection. |  | Optional: \{\} <br /> |
+| `callout` _[CalloutModelRouting](#calloutmodelrouting)_ | Model selection by calling an external HTTP service. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 
 
 #### Webhook

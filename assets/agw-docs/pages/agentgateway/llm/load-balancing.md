@@ -192,7 +192,7 @@ Create a backend with multiple providers in the same priority group to enable lo
 
    ```yaml,paths="load-balancing"
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: loadbalanced-backend
@@ -226,7 +226,7 @@ Create a backend with multiple providers in the same priority group to enable lo
 # what the P2C behavior on this page depends on.
 {{< reuse "agw-docs/snippets/deploy-mock-llm.md" >}}
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: loadbalanced-backend
@@ -395,7 +395,7 @@ For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< 
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: stable-backend
@@ -412,7 +412,7 @@ For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< 
                    secretRef:
                      name: openai-secret
    ---
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: canary-backend

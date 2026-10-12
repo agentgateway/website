@@ -67,19 +67,43 @@ test-status: deps
 #----------------------------------------------------------------------------------
 
 # Build the static site into public/ (production: GC, minify)
+# The site's CSS goes through PostCSS + Tailwind from node_modules. Without them
+# Hugo fails deep in a template with "Cannot find module 'tailwindcss/nesting'",
+# which does not say what to do. A fresh clone or git worktree has no
+# node_modules, so check first and say so plainly.
+.PHONY: check-node-deps
+check-node-deps:
+	@test -d node_modules/tailwindcss || { echo "node_modules is missing. Run 'npm install' in $(CURDIR) first."; exit 1; }
+
 .PHONY: build
-build:
+build: check-node-deps
 	hugo --gc --minify
+
+# The local servers build only the versions listed in hugo.yaml's
+# `params.versions`. content/docs/ also holds every older version tree, which
+# production still publishes. scripts/local-version-config.py derives the skip list from hugo.yaml and
+# writes hugo-local-versions.yaml (gitignored). FULL=1 builds everything.
+# VERSION=<linkVersion> builds only that listed version (VERSION=latest for the
+# `latest` entry), for a faster preview.
+LOCAL_VERSIONS_CONFIG = $(if $(FULL),,--config hugo.yaml,hugo-local-versions.yaml)
+
+# NO_SEARCH=1 builds without the search index (the search box does nothing),
+# for a faster preview.
+NO_SEARCH_ENV = $(if $(NO_SEARCH),HUGO_PARAMS_SEARCH_ENABLE=false )
+
+.PHONY: local-version-config
+local-version-config:
+	@$(if $(FULL),:,python3 scripts/local-version-config.py $(if $(VERSION),--version $(VERSION)))
 
 # Start local dev server (drafts and future-dated content shown)
 .PHONY: serve
-serve:
-	hugo server --buildDrafts --buildFuture
+serve: check-node-deps local-version-config
+	$(NO_SEARCH_ENV)hugo server --buildDrafts --buildFuture $(LOCAL_VERSIONS_CONFIG)
 
 # Start local server with production-like build (GC, minify, no drafts)
 .PHONY: serve-prod
-serve-prod:
-	hugo server --gc --minify
+serve-prod: check-node-deps local-version-config
+	$(NO_SEARCH_ENV)hugo server --gc --minify $(LOCAL_VERSIONS_CONFIG)
 
 # Alias for serve (drafts and future-dated content shown)
 .PHONY: server

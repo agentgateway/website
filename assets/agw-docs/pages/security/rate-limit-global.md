@@ -484,6 +484,15 @@ Limit requests based on the client's source IP address (10 requests per minute p
    ```
 
    {{< doc-test paths="global-rate-limit-by-ip" >}}
+   # Wait until the proxy enforces the policy. Accepted status can land before
+   # the data plane picks up the policy, and unlimited requests don't count.
+   for attempt in $(seq 1 30); do
+     if curl -s -D - -o /dev/null http://${INGRESS_GW_ADDRESS}:80/get -H "host: www.example.com" | grep -qi '^x-ratelimit-limit:'; then
+       break
+     fi
+     sleep 2
+   done
+
    # Send 15 requests rapidly to exceed the 10 req/min limit
    for i in $(seq 1 15); do
      curl -s -o /dev/null http://${INGRESS_GW_ADDRESS}:80/get -H "host: www.example.com" &

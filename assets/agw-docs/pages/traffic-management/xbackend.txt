@@ -230,7 +230,7 @@ An {{< reuse "agw-docs/snippets/policy.md" >}} resource can target an `XBackend`
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: httpbin-org-timeout

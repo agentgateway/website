@@ -15,7 +15,14 @@ To run a local preview:
 
 3. `npm install`
 
-4. `hugo server`
+4. Start the server with one of these commands:
+
+   | Command | Builds |
+   |---|---|
+   | `make serve` | Only the doc versions listed in `hugo.yaml` under `params.versions`, which is about three times faster. Use this for most local work. |
+   | `make serve VERSION=<linkVersion>` | Only one listed version, such as `VERSION=main` or `VERSION=latest`, for a faster preview. Links into other versions do not resolve locally. |
+   | `make serve NO_SEARCH=1` | Same as `make serve`, without the search index. The search box does nothing, but the build is faster. Combine with `VERSION=`. |
+   | `make serve FULL=1` or `hugo server` | Every version directory in `content/docs/`, including older versions that are still published but not in the version list. |
 
 5. [`http://localhost:1313`](http://localhost:1313)
 

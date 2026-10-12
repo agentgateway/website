@@ -27,7 +27,7 @@ This example demonstrates A/B testing and canary deployments by distributing tra
    kubectl create namespace helloworld
    ```
 
-2. Deploy the Hellworld sample apps. 
+2. Deploy the Helloworld sample apps. 
    ```sh
    kubectl -n helloworld apply -f https://raw.githubusercontent.com/solo-io/gloo-edge-use-cases/main/docs/sample-apps/helloworld.yaml
    ```
@@ -143,7 +143,7 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
 
    ```yaml,paths="traffic-split-llm"
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: openai-mini-backend
@@ -158,7 +158,7 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
          secretRef:
            name: openai-secret
    ---
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: openai-premium-backend

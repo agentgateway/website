@@ -305,7 +305,7 @@ Set up an {{< reuse "agw-docs/snippets/backend.md" >}} resource that represents 
 1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource that represents your external service. In this example, you use a static backend that routes traffic to the `httpbin.org` site. Make sure to include the HTTPS port 443 so that traffic is routed to this port. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: httpbin-org

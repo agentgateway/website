@@ -16,7 +16,7 @@ Configure global or provider-specific aliases for your models to refer to your m
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}} 
    metadata:
      name: openai

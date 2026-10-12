@@ -29,7 +29,7 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
 2. Provide the token inline in the {{< reuse "agw-docs/snippets/backend.md" >}} configuration.
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: openai
@@ -195,7 +195,7 @@ Store the API key in a Kubernetes secret. Then, refer to the secret in the {{< r
 4. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure an LLM provider that references the AI API key secret.
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: openai
@@ -334,7 +334,7 @@ Pass through an existing token directly from the client or a successful OpenID C
 2. Configure the {{< reuse "agw-docs/snippets/backend.md" >}} to use passthrough auth.
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: openai
