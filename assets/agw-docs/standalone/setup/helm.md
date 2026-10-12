@@ -225,6 +225,50 @@ Enable the chart's HorizontalPodAutoscaler (HPA) to adjust the number of proxy p
 
 {{< /version >}}
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+### Use an existing session key Secret {#helm-session-secret}
+
+Set `session.secretName` to use a proxy session key from an existing Kubernetes Secret. The Secret's `key` entry becomes the `SESSION_KEY` environment variable on the proxy container.
+
+1. Create a Secret that has a `key` entry.
+
+   ```sh
+   kubectl create secret generic agentgateway-session-key \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --from-literal=key='<session-key>'
+   ```
+
+2. Upgrade the Helm release and set `session.secretName` to the Secret name.
+
+   ```sh
+   helm upgrade {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --reuse-values \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --set session.secretName=agentgateway-session-key
+   ```
+
+   | Value | Description |
+   | --- | --- |
+   | `session.secretName` | Existing Secret name. The Secret must contain a `key` entry. Omit this value to leave `SESSION_KEY` unset. |
+
+3. Verify that the Deployment reads the Secret.
+
+   ```sh
+   kubectl get deployment {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -o jsonpath='{.spec.template.spec.containers[*].env[?(@.name=="SESSION_KEY")].valueFrom.secretKeyRef.name}'
+   ```
+
+   Expected output:
+
+   ```txt
+   agentgateway-session-key
+   ```
+
+{{< /version >}}
+
 ## Uninstall
 
 1. Uninstall the Helm release.
