@@ -188,6 +188,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3869 -->
 
 **Traffic management**
 
@@ -197,6 +198,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 
 - Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
 - Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
+- {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} resources can use ReferenceGrant permissions for cross-namespace Service backendRefs in model callouts and prompt guard webhooks.
 
 **MCP**
 
