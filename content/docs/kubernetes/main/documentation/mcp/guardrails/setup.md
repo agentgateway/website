@@ -242,6 +242,33 @@ Review the following table to understand the policy.
 | `failureMode: FailClosed` | Deny requests if the policy server is unreachable or returns an error. To allow requests instead, set `FailOpen`. |
 | `methods` | The MCP methods to route through the policy server, and the phase for each. `tools/call: Request` sends each tool call to the server *before* it reaches the MCP backend, so the server can allow, mutate, or deny the call. `tools/list: Response` sends the tool listing to the server *after* the backend returns it, so the server can filter or annotate the list. For the full list of phases and method matching, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}). |
 
+For simple checks and mutations that can run in the proxy, replace the `remote` processor in `spec.backend.mcp.guardrails.processors[]` with an `expression` processor. The Kubernetes API server rejects a processor that sets both `remote` and `expression`.
+
+```yaml
+processors:
+- expression:
+    condition: mcp.params.name == 'restricted_tool'
+    reject: This tool is unavailable
+  methods:
+    tools/call: Request
+- expression:
+    transform: >-
+      mcp.result.merge({
+        'content': mcp.result.content.map(c,
+          c.type == 'text'
+            ? c.merge({'text': c.text.regexReplaceAll('secret-[A-Za-z0-9]+', '[REDACTED]')})
+            : c)
+      })
+  methods:
+    tools/call: Response
+```
+
+| Setting | Description |
+|---------|-------------|
+| `expression.condition` | Optional CEL expression that controls whether the processor runs. If you omit `condition`, the action runs for every matching method. |
+| `expression.reject` | Message to return when the processor rejects the matching MCP call. Set exactly one of `reject` or `transform`. |
+| `expression.transform` | CEL expression that returns a replacement body. In the request phase, return `mcp.params`. In the response phase, return `mcp.result`. Use `merge` to keep fields that you do not want to change. Return `null` to leave the body unchanged. |
+
 {{< doc-test paths="mcp-guardrails" >}}
 YAMLTest -f - <<'EOF'
 - name: wait for mcp-guardrails policy to be accepted
