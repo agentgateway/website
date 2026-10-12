@@ -31,6 +31,10 @@ format or backend target control. For providers that expose the standard OpenAI
 API shape without a first-class type, such as Cohere, DeepSeek, Groq, Mistral,
 Together AI, and xAI, use [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}) before using a custom provider.
 
+For TypeSafe Jev with an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}},
+set `spec.provider: Typesafe` unless you need custom target control. Use
+`SystemOne` only when you declare a custom provider format.
+
 ## Supported targets
 
 A custom provider must specify exactly one upstream target.
@@ -56,11 +60,11 @@ non-default path for that format.
 | `Completions` | `/v1/chat/completions` |
 | `Messages` | `/v1/messages` |
 | `Responses` | `/v1/responses` |
+| `Decisions` | `/v1/decisions` |
 | `Embeddings` | `/v1/embeddings` |
 | `AnthropicTokenCount` | `/v1/messages/count_tokens` |
 | `Realtime` | `/v1/realtime` |
 | `Rerank` | `/v1/rerank` |
-| `Decisions` | `/v1/decisions` |
 | `SystemOne` | `/v1/systemone` |
 
 Agentgateway chooses from the provider-native formats that you declare. For
@@ -73,11 +77,11 @@ shapes, declare each supported format and optionally set a per-format path.
 | OpenAI chat completions | `Completions`, then `Messages` |
 | Anthropic messages | `Messages`, then `Responses`, then `Completions` |
 | OpenAI responses | `Responses`, then `Completions` |
+| OpenAI decisions | `Decisions`, then `SystemOne` |
 | OpenAI embeddings | `Embeddings` |
 | Anthropic token count | `AnthropicTokenCount` |
 | OpenAI realtime | `Realtime` |
 | Rerank | `Rerank` |
-| OpenAI decisions | `Decisions`, then `SystemOne` |
 
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
