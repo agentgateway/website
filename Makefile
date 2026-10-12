@@ -53,15 +53,37 @@ DOCS_TESTS_REPO ?= https://github.com/solo-io/docs-tests.git
 $(DOCS_TESTS_DIR):
 	git clone --depth 1 $(DOCS_TESTS_REPO) $(DOCS_TESTS_DIR)
 
+# Test markup lives in docs-tests as annotations, not in these pages. The test
+# targets copy this working tree (uncommitted edits included) to
+# DOC_TESTS_TREE, attach the annotations to the copy, and run against it, so
+# your own pages are never rewritten. The runner writes inside the copy, so
+# its out/tests/ is copied back to ./out/tests/ afterwards, even when a test
+# fails. Scenarios whose markup did not attach are skipped with a warning;
+# out/annotations/attach-report.json lists them.
+DOC_TESTS_TREE ?= out/doc-tests-tree
+DOC_TESTS_ANNOTATIONS ?= $(DOCS_TESTS_DIR)/products/agentgateway/annotations
+DOC_TESTS_RUN = python3 $(DOCS_TESTS_DIR)/scripts/doc_test_run.py --repo-root $(DOC_TESTS_TREE) \
+	--docs-tests-root $(DOCS_TESTS_DIR) \
+	--annotation-report $(CURDIR)/out/annotations/attach-report.json
+DOC_TESTS_COPY_BACK = mkdir -p out/tests && rsync -a $(DOC_TESTS_TREE)/out/tests/ out/tests/
+
+# Copy the working tree and attach the test annotations to the copy
+.PHONY: test-attach
+test-attach: deps | $(DOCS_TESTS_DIR)
+	rsync -a --delete --exclude .git --exclude node_modules --exclude public \
+		--exclude resources --exclude out ./ $(DOC_TESTS_TREE)/
+	python3 $(DOCS_TESTS_DIR)/scripts/annotations.py attach --repo $(DOC_TESTS_TREE) \
+		--annotations $(DOC_TESTS_ANNOTATIONS) --report $(CURDIR)/out/annotations/attach-report.json
+
 # Generate doc test scripts from markdown (no cluster needed)
 .PHONY: test-generate
-test-generate: deps | $(DOCS_TESTS_DIR)
-	python3 $(DOCS_TESTS_DIR)/scripts/doc_test_run.py --repo-root . --generate-only
+test-generate: test-attach
+	$(DOC_TESTS_RUN) --generate-only; status=$$?; $(DOC_TESTS_COPY_BACK); exit $$status
 
 # Run all doc tests (requires kubeconfig / cluster access)
 .PHONY: test-run
-test-run: deps | $(DOCS_TESTS_DIR)
-	python3 $(DOCS_TESTS_DIR)/scripts/doc_test_run.py --repo-root .
+test-run: test-attach
+	$(DOC_TESTS_RUN); status=$$?; $(DOC_TESTS_COPY_BACK); exit $$status
 
 # Download latest doc test results from GitHub Actions (main)
 .PHONY: test-artifacts-fetch

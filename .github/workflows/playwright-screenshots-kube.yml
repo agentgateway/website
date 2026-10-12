@@ -45,6 +45,15 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
+      # Test markup lives in docs-tests as annotations, not in these pages, so
+      # attach it before the runner reads them. In place is safe here: the PR
+      # step below commits only assets/img and playwright/__screenshots__.
+      - name: Attach test annotations
+        run: |
+          python3 docs-tests/scripts/annotations.py attach --repo . \
+            --annotations docs-tests/products/agentgateway/annotations \
+            --report out/annotations/attach-report.json --summary
+
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
@@ -100,6 +109,7 @@ jobs:
             echo "::group::kube capture — $v"
             group_open=1
             python3 docs-tests/scripts/doc_test_run.py --repo-root . \
+              --annotation-report out/annotations/attach-report.json \
               --file "$page" --test capture \
               --keep-cluster --keep-cluster-file "out/tests/kept-$v.txt"
 

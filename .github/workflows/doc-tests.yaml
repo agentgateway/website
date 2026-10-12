@@ -25,6 +25,10 @@ on:
         description: 'Slack channel to notify'
         type: string
         default: 'product-excellence-test-notifications'
+      docs_tests_ref:
+        description: 'docs-tests branch or commit SHA to test with (default: main)'
+        type: string
+        default: ''
 
 # READ-ONLY, BECAUSE THIS WORKFLOW RUNS THE PAGES.
 
@@ -64,12 +68,29 @@ jobs:
         id: docs-tests-ref
         env:
           HEAD_REF: ${{ github.head_ref }}
+          REQUESTED_REF: ${{ inputs.docs_tests_ref }}
         run: |
           set -o pipefail
           REPO=https://github.com/solo-io/docs-tests.git
           resolve() { git ls-remote --heads "$REPO" | awk -v r="refs/heads/$1" '$2 == r { print $1 }'; }
           SHA=""
-          if [ -n "$HEAD_REF" ] && [ "$HEAD_REF" != "main" ]; then
+          # A manual run can name a docs-tests branch or SHA, so a candidate test
+          # fix can be run against real content before its PR opens. Unlike the
+          # PR branch match below, a ref asked for by name must exist: falling
+          # back to main would report main's result as the candidate's.
+          if [ -n "$REQUESTED_REF" ]; then
+            if [[ "$REQUESTED_REF" =~ ^[0-9a-f]{40}$ ]]; then
+              SHA="$REQUESTED_REF"
+            else
+              SHA=$(resolve "$REQUESTED_REF")
+            fi
+            if [ -z "$SHA" ]; then
+              echo "::error::docs-tests ref '$REQUESTED_REF' not found. Pass a branch name or a full 40-character SHA."
+              exit 1
+            fi
+            echo "::notice::Using requested docs-tests ref '$REQUESTED_REF' ($SHA)."
+            echo "Doc tests ran against docs-tests ref \`$REQUESTED_REF\` (\`${SHA:0:8}\`), not main." >> "$GITHUB_STEP_SUMMARY"
+          elif [ -n "$HEAD_REF" ] && [ "$HEAD_REF" != "main" ]; then
             SHA=$(resolve "$HEAD_REF")
           fi
           if [ -n "$SHA" ]; then
