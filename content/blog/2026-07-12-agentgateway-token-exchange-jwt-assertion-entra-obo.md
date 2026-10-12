@@ -11,7 +11,7 @@ Shielding AI agents from sensitive MCP / API credentials (secrets, API keys, tok
 
 The right way in an enterprise environment: user identity + agent identity tied to an authorization grant, which determines what is allowed to be done. Any calls to MCP servers or APIs have their credentials injected transparently by the infrastructure. The cornerstone of this injection is exchanging an agent or user's identity for the correct secrets/API keys/tokens.
 
-In the upcoming agentgateway release, we have opensourced two new exchange capabilities, including a bonus third exchange opportunity with Microsoft Entra — all under `backendAuth.oauthTokenExchange`:
+In the upcoming agentgateway release, we have open-sourced two new exchange capabilities, including a bonus third exchange opportunity with Microsoft Entra — all under `backendAuth.oauthTokenExchange`:
 
 | Grant | Spec | Subject sent as | Typical IdP |
 |---|---|---|---|
