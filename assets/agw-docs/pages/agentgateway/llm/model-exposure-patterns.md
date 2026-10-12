@@ -1,20 +1,26 @@
 ## Choose how to expose models
 
-Clients choose a model by setting the `model` field in each request. The model names that you match decide which models clients can reach, how many entries you maintain, and whether clients can tell which provider serves a request. {{% conditional-text include-if="standalone" %}}Each pattern sets the `name` field of an `llm.models` entry.{{% /conditional-text %}}{{% conditional-text include-if="kubernetes" %}}Each pattern sets the `spec.match.model` field of an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`. When you omit `spec.match`, the model matches its `metadata.name` exactly. For more information about the API, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}). If you configure LLMs with an {{< reuse "agw-docs/snippets/backend.md" >}} and an `HTTPRoute` instead, see [Model aliasing]({{< link-hextra path="/documentation/llm/alias/" >}}).{{% /conditional-text %}}
+Clients select a model with the request's `model` field. Your matching pattern controls model access, the number of configuration entries, and whether names identify the provider.
 
-| Pattern | Example | Entries to maintain | Use it when |
+{{% conditional-text include-if="standalone" %}}Each pattern sets the `name` field of an `llm.models` entry.{{% /conditional-text %}}{{% conditional-text include-if="kubernetes" %}}Each pattern sets `spec.match.model` in an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`. Omit `spec.match` to match `metadata.name` exactly.
+
+For API details, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}). For configurations that use an {{< reuse "agw-docs/snippets/backend.md" >}} and an `HTTPRoute`, see [Model aliasing]({{< link-hextra path="/documentation/llm/alias/" >}}).{{% /conditional-text %}}
+
+| Pattern | Example | Entries to maintain | Use it to |
 |---------|---------|---------------------|-------------|
-| [Provider prefix](#provider-prefix) (recommended) | `openai/*` | One per provider | You want a good general default. Clients can request any model from each provider, and the model name shows which provider serves it. |
-| [Exact model name](#exact-model-name) | `gpt-5.6-luna` | One per model | You want an explicit list of the models that clients can use. |
-| [Prefix without a provider](#prefix-without-a-provider) | `gpt-*`, `claude-*` | One per model family | You want plain model names from several providers without listing each model, and each model family comes from only one provider. |
-| [Catch-all](#catch-all) | `*` | One | You use one provider and want to expose all of its models{{% conditional-text include-if="standalone" %}}, or you want one fallback provider for every model that no other entry matches{{% /conditional-text %}}. |
-| [Custom model name](#custom-model-name) | `fast`, `support-bot` | One per name | You want to hide the underlying model from clients, so that you can change it without updating clients. |
+| [Provider prefix](#provider-prefix) (recommended) | `openai/*` | One per provider | Expose all models from each provider and identify the provider in each name. |
+| [Exact model name](#exact-model-name) | `gpt-5.6-luna` | One per model | Allow only explicitly listed models. |
+| [Prefix without a provider](#prefix-without-a-provider) | `gpt-*`, `claude-*` | One per model family | Keep plain model names, with one provider per model family. |
+| [Catch-all](#catch-all) | `*` | One | Expose all models from one provider{{% conditional-text include-if="standalone" %}}, or use it as a fallback for unmatched names{{% /conditional-text %}}. |
+| [Custom model name](#custom-model-name) | `fast`, `support-bot` | One per name | Change the underlying model without updating clients. |
 
-{{% conditional-text include-if="standalone" %}}You can combine these patterns in one configuration. For how agentgateway picks an entry when more than one matches, see [Combine patterns](#combine-patterns).{{% /conditional-text %}}
+{{% conditional-text include-if="standalone" %}}For matching priority when you mix patterns, see [Combine patterns](#combine-patterns).{{% /conditional-text %}}
 
 ### Provider prefix
 
-Match every model name that starts with a provider prefix, such as `openai/`, and remove the prefix before the request goes to the provider. One entry exposes every model from that provider, including models that the provider releases later. Clients send names such as `openai/gpt-5-mini` or `anthropic/claude-sonnet-4-5`, so every request shows which provider serves it.
+Match names with a provider prefix, such as `openai/`, and remove the prefix before forwarding the request. One entry exposes all of the provider's models, including new releases.
+
+Clients request names such as `openai/gpt-5-mini` or `anthropic/claude-sonnet-4-5`. The prefix identifies the provider.
 
 {{% conditional-text include-if="standalone" %}}
 ```yaml
@@ -62,11 +68,13 @@ spec:
 Create one resource like this for each provider, such as `anthropic/*` with `provider: Anthropic`.
 {{% /conditional-text %}}
 
-The `/v1/models` endpoint lists each model from the [model catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) with the prefix, such as `openai/gpt-5-mini`, so that clients can discover what they can request. To limit clients to some of the provider's models, list [exact model names](#exact-model-name) instead{{% conditional-text include-if="standalone" %}}, or restrict each API key to model patterns such as `openai/gpt-5*` with [`allowedModels`]({{< link-hextra path="/documentation/configuration/security/apikey-authn/#llm-budgets-and-model-access" >}}){{% /conditional-text %}}.
+The `/v1/models` endpoint lists prefixed names from the [model catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}), such as `openai/gpt-5-mini`.
+
+To restrict access, list [exact model names](#exact-model-name){{% conditional-text include-if="standalone" %}}, or set per-key patterns such as `openai/gpt-5*` with [`allowedModels`]({{< link-hextra path="/documentation/configuration/security/apikey-authn/#llm-budgets-and-model-access" >}}){{% /conditional-text %}}.
 
 ### Exact model name
 
-Match one model name, and send it to the provider unchanged. Clients can reach only the models that you list, so you need a new entry before clients can use a new model. That makes this pattern a good fit when you approve models one at a time.
+Match a single model name and forward it unchanged. Clients can use only listed models. Add an entry for each model you approve.
 
 {{% conditional-text include-if="standalone" %}}
 ```yaml
@@ -108,11 +116,11 @@ Set `spec.match.model` when the model name is not a valid Kubernetes resource na
 
 ### Prefix without a provider
 
-Match a model family by the start of its name, such as `gpt-*` or `claude-*`, and send the name to the provider unchanged. Clients use the plain model names that they already know, even when the models come from different providers, and you do not list each model. This pattern is useful in fewer setups than a provider prefix, because of the following limits.
+Match a model family, such as `gpt-*` or `claude-*`, and forward the name unchanged. Clients keep using plain model names, and you maintain one entry per family. This pattern has these limits:
 
-- Each model family maps to one provider, so you cannot offer the same model from two providers, such as `claude-haiku-4-5` from both Anthropic and Amazon Bedrock. Use a [provider prefix](#provider-prefix) for that case.
+- Each family maps to one provider. To offer the same model through Anthropic and Amazon Bedrock, for example, use a [provider prefix](#provider-prefix).
 - A prefix matches only the names that start with it. For example, `gpt-*` does not match the OpenAI models `o3` or `text-embedding-3-small`.
-{{% conditional-text include-if="standalone" %}}- Patterns can overlap. For example, `claude-*` and `*-latest` both match `claude-sonnet-latest`. When two patterns have the same number of characters other than `*`, the entry that is listed first wins.{{% /conditional-text %}}
+{{% conditional-text include-if="standalone" %}}- Patterns can overlap. For example, `claude-*` and `*-latest` both match `claude-sonnet-latest`. If they have the same number of characters other than `*`, the first listed entry wins.{{% /conditional-text %}}
 
 {{% conditional-text include-if="standalone" %}}
 ```yaml
@@ -153,9 +161,9 @@ spec:
 
 ### Catch-all
 
-Match any model name with `*`, and send it to the provider unchanged. This pattern is the simplest way to expose every model when you use one provider. Clients can request any model name, so a name that the provider does not serve fails at the provider instead of at the gateway.
+Match any model name with `*` and forward it unchanged. Use this pattern to expose all models from one provider. Unsupported model names fail at the provider rather than the gateway.
 
-{{% conditional-text include-if="standalone" %}}Because `*` is the least specific match, it also works as a fallback next to other entries. Requests for models that no other entry matches go to the catch-all provider. For an example, see [Combine patterns](#combine-patterns).
+{{% conditional-text include-if="standalone" %}}The `*` pattern has the lowest priority, so it can serve as a fallback for unmatched names. See [Combine patterns](#combine-patterns).
 
 ```yaml
 llm:
@@ -191,7 +199,7 @@ spec:
 
 ### Custom model name
 
-Publish a name of your own, such as `fast` or `support-bot`, and set the provider model that it maps to. Clients never depend on a provider model name, so you can switch the model behind a name in one place, without updating clients.
+Publish a custom name, such as `fast` or `support-bot`, and map it to a provider model. Change that mapping to switch models without updating clients.
 
 {{% conditional-text include-if="standalone" %}}
 ```yaml
@@ -237,12 +245,12 @@ spec:
 The `model` transformation sets the model that the provider receives.
 {{% /conditional-text %}}
 
-To serve one custom name from several models, such as to split traffic during a migration or to fail over when a provider degrades, use a {{% conditional-text include-if="standalone" %}}[virtual model]({{< link-hextra path="/documentation/llm/virtual-models/" >}}){{% /conditional-text %}}{{% conditional-text include-if="kubernetes" %}}[virtual model]({{< link-hextra path="/documentation/llm/models/virtual/" >}}){{% /conditional-text %}}.
+To split traffic or fail over between models behind one custom name, use a {{% conditional-text include-if="standalone" %}}[virtual model]({{< link-hextra path="/documentation/llm/virtual-models/" >}}){{% /conditional-text %}}{{% conditional-text include-if="kubernetes" %}}[virtual model]({{< link-hextra path="/documentation/llm/models/virtual/" >}}){{% /conditional-text %}}.
 
 {{% conditional-text include-if="standalone" %}}
 ### Combine patterns
 
-You can mix the patterns in one configuration. The following example exposes all OpenAI and Anthropic models with provider prefixes, publishes a `support-bot` model, and sends every other model name to OpenRouter as a fallback.
+This example combines provider prefixes, a custom name, and a catch-all. It exposes OpenAI and Anthropic models, maps `support-bot` to a specific model, and uses OpenRouter for unmatched names.
 
 ```yaml
 llm:
@@ -273,8 +281,10 @@ llm:
 When more than one entry matches a request, agentgateway selects one in the following order.
 
 1. A [virtual model]({{< link-hextra path="/documentation/llm/virtual-models/" >}}) with the exact requested name.
-2. The most specific matching entry, which is the entry with the most characters other than `*`. An exact name beats a wildcard that matches the same request, and `openai/*` beats `*`, no matter where each entry is listed.
-3. The entry that is listed first, when two matching entries are equally specific.
+2. The entry with the most characters other than `*`. Exact names beat matching wildcards, and `openai/*` beats `*`, regardless of list order.
+3. The first listed entry when specificity is equal.
 
-An entry is skipped when its `matches` headers do not match the request, or when its `authorization` rules deny the request. Agentgateway then tries the next matching entry, and returns an error only when no matching entry allows the request. So a broader entry, such as a catch-all, serves requests that a more specific entry denies. If you restrict a model with `authorization`, apply the same rules to every broader entry that also matches it, or leave out the catch-all.
+Agentgateway skips entries whose `matches` headers do not match or whose `authorization` rules deny the request. It tries the next matching entry and returns an error only if none allows the request.
+
+A broader entry can therefore serve a request denied by a more specific entry. Apply the same authorization rules to every broader match, or omit those broader entries, including the catch-all.
 {{% /conditional-text %}}

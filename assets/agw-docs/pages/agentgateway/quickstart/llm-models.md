@@ -1,7 +1,7 @@
-Route chat completion requests to [OpenAI](https://openai.com/) by declaring the models that clients can request through {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
+Expose [OpenAI](https://openai.com/) models through {{< reuse "agw-docs/snippets/agentgateway.md" >}} and send a chat completion request.
 
 > [!NOTE]
-> Don't have an API key to an LLM provider? You can still try out how LLM traffic works in agentgateway by following the [httpbun guide]({{< link-hextra path="/integrations/llm/providers/httpbun">}}). Httpbun provides a mock LLM API endpoint that is compatible with the OpenAI API for chat completions.
+> To try this without a provider API key, follow the [httpbun guide]({{< link-hextra path="/integrations/llm/providers/httpbun">}}). Httpbun provides a mock API compatible with OpenAI chat completions.
 
 ## Before you begin
 
@@ -41,7 +41,7 @@ Complete the [Install agentgateway]({{< link-hextra path="/documentation/quickst
 
 ### Step 2: Allow models on the Gateway
 
-A Gateway listener serves LLM traffic only when it allows the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind. Update the `http` listener so that it accepts both models and ordinary `HTTPRoute` resources.
+Allow the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind on the Gateway's `http` listener. Keep `HTTPRoute` enabled for the other quick starts.
 
 ```yaml {paths="quickstart-llm"}
 kubectl apply -f- <<EOF
@@ -67,11 +67,11 @@ spec:
 EOF
 ```
 
-When you list `allowedRoutes.kinds`, the listener accepts only the kinds that you list. Keep `HTTPRoute` so that the other quick starts still work on the same listener.
+When you set `allowedRoutes.kinds`, the listener accepts only the listed kinds.
 
 ### Step 3: Expose the OpenAI models
 
-Create an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that matches any model name that starts with `openai/`. Clients request a model such as `openai/gpt-5-mini`, and agentgateway removes the `openai/` prefix before it forwards the request, because OpenAI expects its own model name.
+Create an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that matches `openai/*`. Clients request names such as `openai/gpt-5-mini`. Agentgateway strips the prefix so OpenAI receives `gpt-5-mini`.
 
 ```yaml {paths="quickstart-llm"}
 kubectl apply -f- <<EOF
@@ -104,12 +104,12 @@ EOF
 | Field | Description |
 |-------|-------------|
 | `parentRefs` | Attaches the model to the `http` listener of the `agentgateway-proxy` Gateway. |
-| `match.model` | The model names that clients can request. `openai/*` matches every model name that starts with `openai/`, so one resource exposes all OpenAI models. |
+| `match.model` | Matches model names that start with `openai/`. |
 | `provider` | The provider that serves the requests. |
 | `policies.auth` | The Secret that holds the credential for the provider. |
-| `policies.transformations` | Rewrites the `model` field before the request leaves the gateway, so OpenAI receives `gpt-5-mini` instead of `openai/gpt-5-mini`. |
+| `policies.transformations` | Removes the `openai/` prefix before forwarding the request. |
 
-The `openai/*` match is the recommended starting point, because one resource serves every model from the provider, and the model name tells you which provider serves a request. For other ways to name models, such as exact model names or your own names like `fast`, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
+Provider prefixes are the recommended starting point: one resource exposes all of a provider's models. For exact names and custom names such as `fast`, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
 
 {{< doc-test paths="quickstart-llm" >}}
 # Route the model to the httpbun mock LLM instead of OpenAI, so the test needs no API
@@ -134,7 +134,7 @@ kubectl patch agentgatewaymodel openai -n {{< reuse "agw-docs/snippets/namespace
    ```
    {{% /tab %}}
    {{% tab name="Port-forward for local testing" %}}
-   Use this option if your cluster does not assign an external IP to `LoadBalancer` services, such as a default Kind cluster.
+   Use port-forwarding if your cluster does not assign an external IP to `LoadBalancer` services, as in a default Kind cluster.
 
    ```sh
    kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
@@ -159,7 +159,7 @@ kubectl patch agentgatewaymodel openai -n {{< reuse "agw-docs/snippets/namespace
      }' | jq
    ```
 
-   Example output (abbreviated). The `model` field shows the name that OpenAI received, without the `openai/` prefix.
+   Example output (abbreviated). The `model` field contains the provider's model name without the `openai/` prefix.
 
    ```json
    {

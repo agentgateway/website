@@ -18,7 +18,7 @@ The primary use case is routing Claude Code to non-Anthropic LLM backends (such 
 
 Route Claude Code to any OpenAI-compatible LLM provider (such as vLLM, Ollama, or local language models). This is the recommended approach for cost-effective and flexible deployment.
 
-1. Create a configuration file with an OpenAI-compatible provider. Claude Code requests Claude model names, such as `claude-sonnet-4-5`, which your backend does not serve. The wildcard `*` model name accepts every model name that Claude Code sends, and `params.model` replaces it with the model that your backend serves.
+1. Create a configuration file with an OpenAI-compatible provider. Use `name: "*"` to accept the model names Claude Code sends. Set `params.model` to replace those names with a model your backend serves.
 
    ```yaml {paths="claude-code-openai-validate"}
    cat > config.yaml << 'EOF'

@@ -73,7 +73,7 @@ llm:
 
 These are the default auth mechanisms for the corresponding built-in providers, so you usually only need to override them when you need custom credential handling.
 
-The following example sets the auth for each cloud provider explicitly. Each provider is exposed under its own [provider prefix](#provider-prefix), such as `bedrock/*`, so that every model name selects exactly one provider.
+This example sets authentication explicitly for each cloud provider. Distinct [provider prefixes](#provider-prefix), such as `bedrock/*`, route each model name to one provider.
 
 ```yaml
 llm:

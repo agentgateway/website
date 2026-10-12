@@ -66,7 +66,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
    {{% /tab %}}
 
    {{% tab name="Fixed model" %}}
-   Pin the backend to a specific model. Agentgateway replaces the model name that Claude Code sends with the pinned model, so every request uses the pinned model, no matter which model Claude Code is configured to use.
+   Pin the backend to a specific model. Agentgateway replaces Claude Code's requested model with the pinned model on every request.
 
    ```bash
    kubectl apply -f- <<EOF

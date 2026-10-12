@@ -132,13 +132,13 @@ The model configurations shown in this section live under the `llm.models` key.
 Agentgateway routes requests by matching an incoming model name, and then sending it to the configured model.
 The outgoing model can be passed through from the incoming model, be transformed, or be a static model.
 
-For the patterns that you can match, such as `openai/*`, `gpt-5-mini`, or `*`, and when to use each one, see [Choose how to expose models](#choose-how-to-expose-models).
+To compare matching patterns, see [Choose how to expose models](#choose-how-to-expose-models).
 
 | Field | Purpose |
 |-------|---------|
 | `models.name` | The model name to match in incoming client requests. Agentgateway compares this value against the `model` field in the request body. Use a wildcard `*` to match any model name. |
 | `params.model` | The model name sent to the upstream provider. If set, this overrides the model from the request. If not set, the model from the request is passed through. |
-| `transformation.model` | A CEL expression that computes the model name sent to the upstream provider, such as `llmRequest.model.stripPrefix("openai/")`. It is evaluated after `params.model`, and its result takes precedence. |
+| `transformation.model` | CEL expression for the upstream model name, such as `llmRequest.model.stripPrefix("openai/")`. Runs after `params.model` and overrides its value. |
 
 Agentgateway recognizes the standard LLM serving paths, such as `/v1/chat/completions`, `/v1/messages`, `/v1/responses`, `/v1/audio/transcriptions`, and `/v1/models`, only when the request path matches exactly. Provider-specific paths that carry the model in the path, such as the Gemini and Vertex AI `:generateContent` paths, match by their pattern instead. A request to any other path, such as `/other/v1/messages` or `/v1/messages/extra`, is not rejected. Agentgateway still selects the model from the request body, but forwards the request to the provider as passthrough, without format conversion and without the `params.model` override.
 

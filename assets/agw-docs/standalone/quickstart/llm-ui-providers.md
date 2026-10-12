@@ -363,7 +363,9 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 {{< /tabs >}}
 
 > [!NOTE]
-> The **Incoming model match** is the model name that clients send in the `model` field of a request. This quick start matches one exact model name to keep the example short. If you leave the field empty when you select a provider, the form fills in a provider prefix instead, such as `openai/*`, and sets the outgoing model to strip that prefix before it forwards the request. That way, one entry exposes every model from the provider. To choose a pattern for your own setup, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
+> **Incoming model match** matches the request's `model` field. This quick start uses an exact name.
+>
+> If you leave the field empty when selecting a provider, the form adds a prefix such as `openai/*` and an outgoing transformation to strip it. One entry then exposes all of the provider's models. See [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}) to compare patterns.
 
 ### Step 5: Send a chat completion request
 
