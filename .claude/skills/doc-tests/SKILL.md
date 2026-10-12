@@ -17,6 +17,7 @@ Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/
 - **New or changed scenarios** (what front matter `test:` declares): edit `products/agentgateway/<kubernetes or standalone>/tests.yaml` in docs-tests. A front matter `test:` edit on a page here is not reliably run.
 - **Code-block tags and hidden checks:** in docs-tests, run `make annotate PAGE=<page> CONTENT_REPO=<path to this repo>`, edit the markup in the copy it writes to `out/annotate/`, then run `make save` with the same arguments.
 - Until the markup is removed from this repo, tags and hidden checks edited on a page here are copied into docs-tests by a daily refresh. They are first tested after merge, not in the PR's own run.
+- To test the docs-tests change in the content PR's own run, push it to a docs-tests branch with the **same name** as the content PR's branch. The PR's doc-tests workflow checks out that branch instead of docs-tests `main`, and says so in the job summary. Without a matching branch, the PR runs against `main`.
 - Merge the content PR here first, then the docs-tests PR.
 
 ---

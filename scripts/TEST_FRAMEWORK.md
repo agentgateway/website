@@ -27,7 +27,7 @@ Until the markup is removed from this repo:
 
 - Tags and hidden checks that you add or change on a page here still count, but not right away. Your PR's own doc-test run uses the docs-tests copy, so the change is first tested after merge, once the daily refresh in docs-tests copies it into the annotation files (within a day). To test a change in the PR itself, make it in docs-tests instead.
 - A front matter `test:` edit here is not reliably run, because `tests.yaml` owns the scenarios. The daily refresh reports the edit (in its commit message and in Slack) so that `tests.yaml` gets the matching change. Make scenario changes in `tests.yaml`.
-- When a content change needs a test change in docs-tests, merge the content PR here first, then the docs-tests PR.
+- When a content change needs a test change in docs-tests, push the test change to a docs-tests branch with the same name as the content PR's branch. The content PR's doc-tests run then uses that branch instead of docs-tests `main`, and the job summary says so. Merge the content PR here first, then the docs-tests PR.
 
 ---
 
