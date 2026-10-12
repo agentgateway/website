@@ -115,7 +115,7 @@ mcp:
 
 In routing-based configuration, set the same fields under `routes[].backends[].mcp.targets[]`. Conditions can also use authenticated request context, such as JWT claims populated by a [JWT policy]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}). A client-supplied selection header by itself does not establish the client's identity.
 
-If every condition is false, agentgateway presents an empty virtual MCP server. Target conditions choose which servers participate; [MCP authorization]({{< link-hextra path="/documentation/mcp/mcp-authz/" >}}) separately controls which tools and other resources a client can use after a server responds.
+If every condition is false, agentgateway presents an empty virtual MCP server. Target conditions choose which servers participate; [MCP authorization]({{< link-hextra path="/documentation/mcp/mcp-authz/" >}}) separately controls which tools and other resources a client can use after a server responds. For a comparison of the ways to filter MCP traffic, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
 
 {{% /version %}}
 

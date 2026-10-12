@@ -2,7 +2,7 @@
 
 Use the `condition` field on an MCP target to include that target only when a Common Expression Language (CEL) expression returns `true`. The expression can read request attributes, such as headers, and the `mcp.target.name` variable, which is set to the target under evaluation. When authentication is configured, it can also read the authenticated identity, such as JWT claims. Omit `condition` to include the target for every request.
 
-Agentgateway evaluates the condition before it initializes or contacts the target. An excluded target does not receive the `initialize`, `tools/list`, or any other request from that client. By contrast, [MCP authorization]({{< link-hextra path="/documentation/mcp/tool-access/" >}}) filters tools after every target responds, so agentgateway still initializes the target and fans out list requests to it.
+Agentgateway evaluates the condition before it initializes or contacts the target. An excluded target does not receive the `initialize`, `tools/list`, or any other request from that client. By contrast, [MCP authorization]({{< link-hextra path="/documentation/mcp/tool-access/" >}}) filters tools after every target responds, so agentgateway still initializes the target and fans out list requests to it. For a comparison of the ways to filter MCP traffic, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
 
 1. Update the {{< reuse "agw-docs/snippets/backend.md" >}} to include the `mcp-website-fetcher` target only when the request has the `x-include-fetcher: true` header.
 

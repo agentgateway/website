@@ -12,7 +12,7 @@ test:
     path: mcp-guardrails-cel
 ---
 
-Reject and mask Model Context Protocol (MCP) tool calls with Common Expression Language (CEL) expressions that run inside the agentgateway proxy. Unlike [remote guardrails]({{< link-hextra path="/documentation/mcp/guardrails/setup" >}}), CEL guardrails do not require you to deploy or operate an external policy server. For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
+Reject and mask Model Context Protocol (MCP) tool calls with Common Expression Language (CEL) expressions that run inside the agentgateway proxy. Unlike [remote guardrails]({{< link-hextra path="/documentation/mcp/guardrails/setup" >}}), CEL guardrails do not require you to deploy or operate an external policy server. For more information about how guardrail processors work, see [Guardrail processors]({{< link-hextra path="/documentation/mcp/guardrails/processors" >}}).
 
 In this guide, you configure three CEL guardrails for the `echo` tool of a sample MCP server:
 

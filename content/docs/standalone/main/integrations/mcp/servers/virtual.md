@@ -287,7 +287,7 @@ mcp:
 
 Use `condition` on an MCP target to include that target only when a CEL expression returns `true` for the current request. The expression can read request attributes, such as headers, and `mcp.target.name`. When authentication is configured, it can also read the authenticated identity. In a target condition, `mcp.target.name` is set to the target under evaluation. Omit `condition` to include the target for every request.
 
-Target conditions run before agentgateway initializes or contacts a target. Target conditions choose which upstream MCP servers participate in the virtual MCP request. By contrast, `mcpAuthorization` filters tools, prompts, and resources after an upstream server responds. A condition requires at least two configured targets. If every target condition returns `false`, clients see an empty virtual MCP server.
+Target conditions run before agentgateway initializes or contacts a target. Target conditions choose which upstream MCP servers participate in the virtual MCP request. By contrast, `mcpAuthorization` filters tools, prompts, and resources after an upstream server responds. For a comparison of the ways to filter MCP traffic, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}). A condition requires at least two configured targets. If every target condition returns `false`, clients see an empty virtual MCP server.
 
 The following example always includes the `everything` target and includes the `time` target only when the request has the header `x-include-time: true`.
 

@@ -1,21 +1,23 @@
-Use MCP guardrails to inspect, mutate, or reject individual Model Context Protocol (MCP) requests and responses, such as `tools/call` and `tools/list`. Guardrails act on the MCP request context instead of generic HTTP metadata. You can write a guardrail as an in-process Common Expression Language (CEL) expression, or call out to an external gRPC policy server that implements the ExtMCP protocol.
+Use guardrail processors (`mcpGuardrails`) to inspect, mutate, or reject individual Model Context Protocol (MCP) requests and responses, such as `tools/call` and `tools/list`. Processors act on the MCP request context instead of generic HTTP metadata. You can write a processor as an in-process Common Expression Language (CEL) expression, or call out to an external gRPC policy server that implements the ExtMCP protocol.
 
-## About MCP guardrails
+Guardrail processors are one of three ways to filter MCP traffic. To compare them with target conditions and MCP authorization, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
+
+## About guardrail processors
 
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} already supports {{< conditional-text include-if="kubernetes" >}}[external authorization]({{< link-hextra path="/documentation/security/extauth/basic" >}}){{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}[external authorization]({{< link-hextra path="/documentation/configuration/security/basic-authn" >}}){{< /conditional-text >}} and {{< conditional-text include-if="kubernetes" >}}[external processing (ExtProc)]({{< link-hextra path="/documentation/traffic-management/extproc" >}}){{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}[external processing (ExtProc)]({{< link-hextra path="/documentation/configuration/traffic-management/extproc" >}}){{< /conditional-text >}} for HTTP traffic. However, these integrations operate on raw HTTP. To make a decision about an MCP tool call, the external server must reassemble the HTTP body, parse the JSON-RPC envelope, and handle MCP framing itself.
 
-MCP guardrails solve this challenge by running at the MCP method layer instead of the HTTP layer. Each guardrail receives a structured, MCP-native view of the call, including the JSON-RPC method name, the target, and the request parameters or response result. The guardrail can then make a decision based on the actual tool, prompt, or resource that is being accessed, without re-implementing MCP semantics.
+Guardrail processors solve this challenge by running at the MCP method layer instead of the HTTP layer. Each processor receives a structured, MCP-native view of the call, including the JSON-RPC method name, the target, and the request parameters or response result. The processor can then make a decision based on the actual tool, prompt, or resource that is being accessed, without re-implementing MCP semantics.
 
 Common use cases include the following:
 
 * Reject `tools/call` requests based on the tool name, its arguments, or the caller's identity.
 * Mask sensitive data, such as email addresses or secrets, in tool arguments before they reach the MCP server, or in tool results before they reach the client.
-* Filter `tools/list` responses so that clients see only the tools that they are allowed to use.
+* Rewrite `tools/list` responses, such as to annotate tool descriptions.
 * Centralize MCP policy logic in an external service that you already operate.
 
 ## Processor types {#processor-types}
 
-You configure MCP guardrails as an ordered list of *processors*. Each processor handles a set of MCP methods and is one of the following types.
+You configure guardrails as an ordered list of *processors*. Each processor handles a set of MCP methods and is one of the following types.
 
 | Processor | {{< conditional-text include-if="kubernetes" >}}Field{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}`kind`{{< /conditional-text >}} | Where it runs | Use it to |
 |-----------|------|---------------|-----------|

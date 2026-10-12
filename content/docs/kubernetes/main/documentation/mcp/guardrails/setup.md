@@ -12,7 +12,7 @@ test:
     path: mcp-guardrails
 ---
 
-Gate and mutate Model Context Protocol (MCP) method calls with an external ExtMCP policy server. To reject or mask calls with in-process CEL expressions instead, without deploying a policy server, see [Set up CEL guardrails]({{< link-hextra path="/documentation/mcp/guardrails/cel" >}}). For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
+Gate and mutate Model Context Protocol (MCP) method calls with an external ExtMCP policy server. To reject or mask calls with in-process CEL expressions instead, without deploying a policy server, see [Set up CEL guardrails]({{< link-hextra path="/documentation/mcp/guardrails/cel" >}}). For more information about how guardrail processors work, see [Guardrail processors]({{< link-hextra path="/documentation/mcp/guardrails/processors" >}}).
 
 In this guide, you route `tools/call` and `tools/list` requests through a sample ExtMCP server that denies any tool whose name contains `forbidden` and annotates each tool description in `tools/list` responses.
 
@@ -76,7 +76,7 @@ The Service uses `appProtocol: kubernetes.io/h2c` so that agentgateway connects 
 > * `CheckRequest`: Called in the request phase, before the call reaches the MCP backend. Return the request unchanged, return mutated `params`, or return an `AuthorizationError` to deny the call.
 > * `CheckResponse`: Called in the response phase, after the MCP backend returns a result. Return the response unchanged, return a mutated `result`, or return an `AuthorizationError` to deny the call.
 >
-> Generate gRPC bindings from the proto file in your language, implement the two methods, and serve them over cleartext HTTP/2 (h2c) on the port that your Service targets. For more information about the request and response messages, outcomes, and error codes, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
+> Generate gRPC bindings from the proto file in your language, implement the two methods, and serve them over cleartext HTTP/2 (h2c) on the port that your Service targets. For more information about the request and response messages, outcomes, and error codes, see [Guardrail processors]({{< link-hextra path="/documentation/mcp/guardrails/processors" >}}).
 
 ```yaml {paths="mcp-guardrails"}
 kubectl apply -f- <<EOF
@@ -240,7 +240,7 @@ Review the following table to understand the policy.
 |---------|-------------|
 | `remote.backendRef` | The ExtMCP policy server that agentgateway calls. This example points to the `ext-mcp` Service from Step 2. |
 | `failureMode: FailClosed` | Deny requests if the policy server is unreachable or returns an error. To allow requests instead, set `FailOpen`. |
-| `methods` | The MCP methods to route through the policy server, and the phase for each. `tools/call: Request` sends each tool call to the server *before* it reaches the MCP backend, so the server can allow, mutate, or deny the call. `tools/list: Response` sends the tool listing to the server *after* the backend returns it, so the server can filter or annotate the list. For the full list of phases and method matching, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}). |
+| `methods` | The MCP methods to route through the policy server, and the phase for each. `tools/call: Request` sends each tool call to the server *before* it reaches the MCP backend, so the server can allow, mutate, or deny the call. `tools/list: Response` sends the tool listing to the server *after* the backend returns it, so the server can filter or annotate the list. For the full list of phases and method matching, see [Guardrail processors]({{< link-hextra path="/documentation/mcp/guardrails/processors" >}}). |
 
 {{< doc-test paths="mcp-guardrails" >}}
 YAMLTest -f - <<'EOF'

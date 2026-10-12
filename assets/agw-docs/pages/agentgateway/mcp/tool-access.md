@@ -27,6 +27,11 @@ sequenceDiagram
    * `'jwt.sub == "alice" && mcp.tool.name == "add_issue_comment"'`: JWT tokens with the `sub=alice` claim can access the `add_issue_comment` tool. Access to all other tools is denied. 
 6. The MCP server returns the tools that were authorized to access. 
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+> [!NOTE]
+> MCP authorization filters tools after the MCP server responds, so agentgateway still contacts every target of a virtual MCP server, even when a rule such as `mcp.tool.target != "admin-tools"` hides all of a target's tools. To keep agentgateway from contacting a target for some clients, use a [target condition]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}) instead. For a comparison of the ways to filter MCP traffic, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
+{{< /version >}}
+
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup" >}}).

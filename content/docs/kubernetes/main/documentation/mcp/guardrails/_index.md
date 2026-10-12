@@ -4,4 +4,4 @@ weight: 45
 test: skip
 ---
 
-Inspect, mutate, or reject MCP requests and responses with in-process CEL expressions or a remote ExtMCP policy server.
+Control what MCP clients can reach through agentgateway. Filter entire requests and responses with guardrail processors, entire MCP servers with target conditions, and individual tools, prompts, and resources with MCP authorization.
