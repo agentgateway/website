@@ -4,16 +4,14 @@ weight: 20
 description: Learn how policies in `AgentgatewayPolicy` resources are inherited and overridden along the route delegation chain.
 test:
   trafficpolicies:
-    type: [schema, functional]
-    steps:
-    - file: ${versionRoot}/documentation/quickstart/install.md
-      path: experimental
-    - file: ${versionRoot}/documentation/setup/gateway.md
-      path: all
-    - file: ${versionRoot}/documentation/traffic-management/route-delegation/inheritance/trafficpolicies.md
-      path: route-delegation-prereq
-    - file: ${versionRoot}/documentation/traffic-management/route-delegation/inheritance/trafficpolicies.md
-      path: trafficpolicies
+  - file: ${versionRoot}/documentation/quickstart/install.md
+    path: experimental
+  - file: ${versionRoot}/documentation/setup/gateway.md
+    path: all
+  - file: ${versionRoot}/documentation/traffic-management/route-delegation/inheritance/trafficpolicies.md
+    path: route-delegation-prereq
+  - file: ${versionRoot}/documentation/traffic-management/route-delegation/inheritance/trafficpolicies.md
+    path: trafficpolicies
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/route-delegation/inheritance/trafficpolicies.md" >}}

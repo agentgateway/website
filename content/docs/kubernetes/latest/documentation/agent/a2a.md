@@ -4,12 +4,10 @@ weight: 40
 description: Route to A2A servers and securely expose their skills through agentgateway.
 test:
   a2a:
-    type: [schema, functional]
-    steps:
-    - file: ${versionRoot}/documentation/quickstart/install.md
-      path: standard
-    - file: ${versionRoot}/documentation/agent/a2a.md
-      path: a2a
+  - file: ${versionRoot}/documentation/quickstart/install.md
+    path: standard
+  - file: ${versionRoot}/documentation/agent/a2a.md
+    path: a2a
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/agent/a2a.md" >}}
