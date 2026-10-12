@@ -15,6 +15,8 @@ Use the dedicated provider pages when agentgateway already knows the upstream ba
 
 Use [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) only for providers that do not have a first-class shortcut, such as Perplexity, vLLM, LM Studio, or another service that exposes a compatible [API format]({{< link-hextra path="/documentation/llm/api-types/" >}}).
 
+{{< reuse "agw-docs/pages/agentgateway/llm/model-exposure-patterns.md" >}}
+
 ## Authentication
 
 For simplified `llm` configuration, upstream provider authentication is configured per model via `llm.models[]` (typically `params.apiKey` for API-key providers, and `auth` for cloud-native flows). In routing-based configurations, use `policies.backendAuth` on a route instead.
