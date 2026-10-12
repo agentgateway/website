@@ -353,8 +353,6 @@ The following MCP-specific CEL variables are available in authorization rules:
 
 Request-time variables are available during authorization and can be used in `mcpAuthorization` rules. Post-request variables are available in access log CEL expressions. Route-level HTTP policies, such as `authorization` and `localRateLimit`, can also read `mcp.sessionId` and `mcp.tool.arguments` when the request arrives. For more information, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables" >}}).
 
-Backend-level `mcpAuthorization` reads request-time variables from the current request body after route-level transformations run. If a transformation changes a `tools/call` request to a different tool, an expression such as `mcp.tool.name == "increment"` evaluates the transformed tool name.
-
 When you also configure [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}), claims from the validated JWT are available to your rules as well:
 
 | Variable | Type | Availability | Description |

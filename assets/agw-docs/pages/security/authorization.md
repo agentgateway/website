@@ -248,10 +248,6 @@ You can optionally create other JWT tokens by using the [JWT generator tool](htt
 
 Complete [Setup and test authorization](#setup-and-test-authorization) first, and keep the Gateway's JWT and traffic authorization policy in place. The following backend policy allows only `GET` requests to the httpbin Service. The Gateway's traffic policy still requires Alice's JWT. After agentgateway selects httpbin as the destination, the backend policy also checks the request method.
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
-For MCP traffic, backend authorization reads MCP CEL variables from the current request body after route-level transformations run. If a transformation changes a `tools/call` request to a different tool, an expression such as `mcp.tool.name == "increment"` evaluates the transformed tool name.
-{{< /version >}}
-
 1. Create a policy in the same namespace as the httpbin Service that it targets.
 
    ```yaml {paths="backend-authorization"}
