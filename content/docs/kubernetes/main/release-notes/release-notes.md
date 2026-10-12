@@ -122,6 +122,7 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3270 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3731 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3839 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3852 -->
 
 - **Meta provider**: Set `spec.provider: Meta` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} to use the Meta Model API preset. For the backend configuration, see [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}).
 - **`AgentgatewayModel` on by default**: The `agentgatewayModels.enabled` Helm value now defaults to `true`. For more information, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
@@ -135,6 +136,7 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 - **More accurate Messages conversion**: Conversion between the Messages and OpenAI formats now carries citations, refusals, the `strict` setting of tool schemas, reasoning effort, and images in tool results. A context overflow error from the provider is translated so that Claude Code can compact and retry. For more information, see [Converted replies and errors]({{< link-hextra path="/integrations/llm/providers/custom/#converted-replies-and-errors" >}}).
 - **Guardrails**: The `openAIModeration`, `bedrockGuardrails`, and `googleModelArmor` guards now support `failureMode`. Set this field on a guard in `spec.backend.ai.promptGuard` of an {{< reuse "agw-docs/snippets/policy.md" >}}. The built-in credit card pattern now checks the Luhn checksum. For more information, see [Provider failures]({{< link-hextra path="/documentation/llm/guardrails/overview/#provider-failures" >}}).
 - **TypeSafe SystemOne format for OpenAI Decisions**: Custom providers can declare `systemOne` in standalone mode or `SystemOne` in Kubernetes mode to send OpenAI Decisions requests to TypeSafe's `/v1/systemone` API. For more information, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/#supported-formats" >}}).
+- **TypeSafe provider preset**: Use `provider: typesafe` to connect to TypeSafe Jev with built-in defaults for the TypeSafe API host and SystemOne request format. For more information, see [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}).
 
 ### Security {#v16-security}
 

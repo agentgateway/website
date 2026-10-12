@@ -132,6 +132,7 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3646 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3649 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3839 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3852 -->
 
 - **Meta provider**: Use `provider: meta` to connect to the Meta Model API with built-in defaults for Chat Completions, Messages, and Responses. For more information, see [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}}).
 - **Wildcard models in `/v1/models`**: For wildcard names in `llm.models`, `/v1/models` lists matching model IDs from the catalog. For example, `*` for the OpenAI provider expands to IDs such as `gpt-4o`. To list the pattern as in 1.5, set `llm.discovery: disabled`. For more information, see [Wildcard expansion]({{< link-hextra path="/documentation/llm/api-types/models/#wildcard-expansion" >}}).
@@ -142,6 +143,7 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 - **More accurate Messages conversion**: Conversion between the Messages and OpenAI formats now carries citations, refusals, the `strict` setting of tool schemas, reasoning effort, and images in tool results. A context overflow error from the provider is translated so that Claude Code can compact and retry. For more information, see [Converted replies and errors]({{< link-hextra path="/documentation/llm/api-types/messages/#converted-replies-and-errors" >}}).
 - **Guardrails**: Provider guards in `ai.promptGuard` or `llm.policies.guardrails` now support `failureMode`. Webhook guards support `target.policies` to configure the webhook connection. The built-in credit card pattern now checks the Luhn checksum. For more information, see [Provider failures]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#provider-failures" >}}) and the [JEV integration]({{< link-hextra path="/integrations/llm/guardrails/jev/" >}}).
 - **TypeSafe SystemOne format for OpenAI Decisions**: Custom providers can declare `systemOne` in standalone mode or `SystemOne` in Kubernetes mode to send OpenAI Decisions requests to TypeSafe's `/v1/systemone` API. For more information, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/#supported-formats" >}}).
+- **TypeSafe provider preset**: Use `provider: typesafe` to connect to TypeSafe Jev with built-in defaults for the TypeSafe API host and SystemOne request format. For more information, see [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}).
 
 ### Security {#v16-security}
 
