@@ -1,8 +1,8 @@
 ---
 title: MCP guardrails
 weight: 45
-description: Filter and mutate MCP method calls with MCP-aware external authorization and processing (ExtMCP guardrails).
+description: Inspect, mutate, or reject MCP requests and responses with in-process CEL expressions or a remote ExtMCP policy server.
 test: skip
 ---
 
-Apply MCP-aware external authorization and external processing to MCP requests with ExtMCP guardrails.
+Inspect, mutate, or reject MCP requests and responses with in-process CEL expressions or a remote ExtMCP policy server.

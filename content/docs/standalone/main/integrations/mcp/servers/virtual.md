@@ -309,6 +309,13 @@ mcp:
 
 Configure your MCP client to send `x-include-time: true` on its requests, including initialization, to expose tools such as `time_get_current_time` alongside `everything_echo`. Without that header, or with a different value, only the `everything` target participates.
 
+Keep the following behaviors in mind when you write target conditions:
+
+* **When conditions are evaluated**: In a stateful session, which is the default, agentgateway evaluates the conditions when the client initializes the session. The selected targets apply to every later request in that session. In stateless mode, agentgateway evaluates the conditions for every request.
+* **Names stay prefixed**: Tool and prompt names keep their target-name prefix even when only one target remains, so that names stay stable across requests.
+* **Calls to excluded targets fail**: The tools of an excluded target are not listed. If a client calls one anyway, such as `time_get_current_time` in a session without the header, agentgateway returns an error because the target is not part of the session.
+* **Errors exclude the target**: If a condition fails to evaluate, such as when it reads a JWT claim and the request has no JWT, agentgateway excludes the target.
+
 | Field | Description |
 | ----- | ----------- |
 | `mcp.targets[].condition` | Optional CEL expression that controls whether the target participates in the virtual MCP request. The expression must return a boolean value. |

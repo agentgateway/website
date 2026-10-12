@@ -1,6 +1,6 @@
 ---
-title: Set up MCP guardrails
-weight: 20
+title: Set up remote guardrails
+weight: 30
 description: Gate and mutate MCP method calls with an external ExtMCP policy server.
 test:
   mcp-guardrails:
@@ -12,7 +12,7 @@ test:
     path: mcp-guardrails
 ---
 
-Gate and mutate Model Context Protocol (MCP) method calls with an external policy server. For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
+Gate and mutate Model Context Protocol (MCP) method calls with an external ExtMCP policy server. To reject or mask calls with in-process CEL expressions instead, without deploying a policy server, see [Set up CEL guardrails]({{< link-hextra path="/documentation/mcp/guardrails/cel" >}}). For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
 
 In this guide, you route `tools/call` and `tools/list` requests through a sample ExtMCP server that denies any tool whose name contains `forbidden` and annotates each tool description in `tools/list` responses.
 
@@ -20,7 +20,7 @@ In this guide, you route `tools/call` and `tools/list` requests through a sample
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-## Set up MCP guardrails
+## Set up remote guardrails
 
 {{% steps %}}
 

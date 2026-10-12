@@ -4,4 +4,4 @@ weight: 45
 test: skip
 ---
 
-Apply MCP-aware external authorization and external processing to MCP requests with ExtMCP guardrails.
+Inspect, mutate, or reject MCP requests and responses with in-process CEL expressions or a remote ExtMCP policy server.
