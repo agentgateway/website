@@ -1,7 +1,7 @@
 ---
 title: Virtual models
 weight: 30
-description: Publish one client-facing model name and route requests across several models with weighted, failover, or conditional routing.
+description: Publish one client-facing model name and route requests across several models with weighted, failover, conditional, or callout routing.
 test:
   virtual-models:
   - file: ${versionRoot}/documentation/quickstart/install.md
@@ -21,21 +21,22 @@ Publish one client-facing model name and route requests across several models.
 
 A virtual model is an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that sets `spec.virtualModel` instead of `spec.provider`. A virtual model has no provider of its own. Instead, it selects a concrete `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` at request time.
 
-Virtual models let you change which model serves a request without asking clients to change the model name they send. Use them to split traffic during a migration, fail over when a provider degrades, or pick a model based on request context.
+Virtual models let you change which model serves a request without asking clients to change the model name they send. Use them to split traffic during a migration, fail over when a provider degrades, or pick a model based on request context. You can also delegate model selection to an HTTP service.
 
-Three routing strategies are available, and each virtual model uses exactly one of them.
+Four routing strategies are available, and each virtual model uses exactly one of them.
 
 | Strategy | Selects a target by | Use it for |
 |----------|---------------------|------------|
 | `weighted` | Relative weight. | Traffic splitting, canary rollouts, and A/B tests. |
 | `failover` | Priority group, then health and latency. | Resiliency when a provider degrades. |
 | `conditional` | The first CEL expression that evaluates to `true`. | Tiering by header, body, or other request context. |
+| `callout` | The model name returned by an HTTP service. | Centralized routing logic, tenant-aware model selection, and sticky routing decisions. |
 
 After a virtual model selects a target, the gateway rewrites the request so that the provider receives the selected model. This rewrite applies to JSON request bodies and multipart form data, such as `/v1/audio/transcriptions`. For multipart requests, file fields and non-model fields are preserved while each `model` form field is rewritten.
 
 Targets are usually `Internal` models, so clients cannot request them directly and they stay out of `/v1/models`. For more on visibility, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
 
-If a target does not resolve, the control plane still generates the virtual model with the targets that do. The virtual model's status reports the `ResolvedRefs` condition as `False` with the `Invalid` reason, and valid targets keep serving requests. If weighted routing selects an invalid target, the request fails with a `404` and the `virtual_model_target_not_found` error code. If conditional routing matches an invalid target, the request fails the same way instead of falling through to the next target. Failover leaves invalid targets out of its priority groups. If every failover target is invalid, the control plane does not generate the virtual model, and requests for it return `404` with the `model_not_found` error code.
+If a target does not resolve, the control plane still generates the virtual model with the targets that do. The virtual model's status reports the `ResolvedRefs` condition as `False` with the `Invalid` reason, and valid targets keep serving requests. If weighted routing selects an invalid target, the request fails with a `404` and the `virtual_model_target_not_found` error code. If conditional routing matches an invalid target, the request fails the same way instead of falling through to the next target. Failover leaves invalid targets out of its priority groups. If every failover target is invalid, the control plane does not generate the virtual model, and requests for it return `404` with the `model_not_found` error code. If a callout service selects an unknown model, the fallback model serves the request when you configure one. Otherwise, the request is rejected.
 
 > [!NOTE]
 > Virtual models must be `Public`, and they cannot set `spec.policies`. Configure policies on the concrete target models instead.
@@ -502,6 +503,45 @@ Failover depends on eviction. A virtual model with more than one priority group 
 
 > [!NOTE]
 > A failover target can be a concrete model that points to an InferencePool, by setting `spec.provider: Custom` and `spec.custom.backendRef`. In that case, the controller records the virtual model's Gateway as a parent of the InferencePool, in addition to the concrete model's Gateway. The InferencePool status lists both Gateways as parents, and the inference-routing and Endpoint Picker Extension (EPP) policies are generated for both Gateways.
+
+## Choose a model with an HTTP callout {#callout-routing}
+
+Use `virtualModel.callout` to send each request to an HTTP service that selects the target model. The callout request uses the `POST` method. The service response must be JSON. The `transformation.model` expression must compute the concrete model name from the response.
+
+The following fragment shows the `virtualModel` section for a callout router. Replace the `virtualModel` strategy in your virtual model with this block.
+
+```yaml
+virtualModel:
+  callout:
+    url: https://router.example.com/v1/route
+    headers:
+      x-tenant: request.headers["x-tenant"]
+    body: 'json({"messages": llm.messages})'
+    transformation:
+      model: callout.body.model
+      reasoning_effort: callout.body.effort
+    fallback:
+      modelRef:
+        name: internal-fast
+    cache:
+      key:
+      - request.headers["x-session-id"]
+      ttl: 5m
+      maxEntries: 10000
+```
+
+{{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#agentgatewaymodelspec" >}}).
+
+| Field | Value | Description |
+|-------|-------|-------------|
+| `url` | `https://router.example.com/v1/route` | The HTTP endpoint for the callout service. Set exactly one of `url` or `backendRef`. |
+| `headers.x-tenant` | `request.headers["x-tenant"]` | A CEL expression that sets a request header on the callout. Header keys can also use the `:path`, `:method`, and `:authority` pseudo-headers. |
+| `body` | `json({"messages": llm.messages})` | A CEL expression that sets the callout request body. When you omit `body`, the callout receives the original request body. |
+| `transformation.model` | `callout.body.model` | A required CEL expression that selects the concrete model name from the decoded JSON response body. The selected model must be available in the same model router. |
+| `fallback.modelRef.name` | `internal-fast` | The same-namespace concrete model to use when the callout fails, selects an unknown model, or returns a response that is not 2xx or JSON. When you omit `fallback`, the request is rejected. |
+| `cache.key` | `request.headers["x-session-id"]` | One or more CEL expressions that build the cache key. Keying on a session identifier keeps routing decisions sticky for that session. |
+| `cache.ttl` | `5m` | The duration that the cached response can be reused. You can set a duration string, a CEL expression that returns a duration, or a CEL expression that returns an expiration timestamp. |
+| `cache.maxEntries` | `10000` | The maximum number of callout responses to keep in the cache. When you omit `maxEntries`, the default is `10000`. The minimum value is `1`. |
 
 ## Verify model discovery
 
