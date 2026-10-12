@@ -487,6 +487,7 @@ Doc pages with passing tests display a "Verified" badge below the page title.
 2. **`doc_test_inject_status.py`** reads the results and adds a `test_status` field to each tested document's front matter:
    - `test_status: passed` — all tests for the page passed
    - `test_status: failed` — one or more tests failed (no badge displayed)
+   - `test_status: partial` — no tests failed, but a scenario was skipped because its test annotations did not attach (no badge displayed)
 3. **Hugo templates** check for `test_status: passed` and render a green "Verified" badge.
 
 ### Makefile targets
