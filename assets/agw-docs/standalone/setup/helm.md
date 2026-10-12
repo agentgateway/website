@@ -3,6 +3,32 @@ Use the standalone Helm chart when you want the standalone agentgateway model, b
 > [!TIP]
 > This chart installs agentgateway as a single, unmanaged Kubernetes Deployment. You manage agentgateway config by upgrading the Helm values, and optionally by adding a PostgreSQL database so that you can edit the config in the UI. If you want a managed Kubernetes solution that includes a control plane and Gateway API resources, see [Kubernetes control plane]({{< link-hextra path="/documentation/setup/install/kubernetes/" >}}).
 
+{{< tabs >}}
+{{% tab name="What the chart installs" %}}
+The chart creates the following resources. Each resource is named after the Helm release, which is `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` in these examples.
+
+| Resource | Name | Purpose |
+| --- | --- | --- |
+| Deployment | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Runs the agentgateway proxy. |
+| ConfigMap | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-config` | Holds the rendered `config.yaml`, mounted read-only at `/config`. |
+| Service | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Exposes the gateway listener. Type `LoadBalancer` and port `80` to container port `4000` by default. |
+| ServiceAccount | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Identity for the proxy pod. |{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+| PodDisruptionBudget | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Protects multi-replica proxy Deployments during voluntary disruptions when `podDisruptionBudget.enabled` is `true` and the minimum replica count is greater than `1`. |{{< /version >}}
+
+If you installed with a different release name or namespace, adjust the resource names and the `-n` values in the commands throughout this documentation accordingly.
+{{% /tab %}}
+{{% tab name="What the chart does not install" %}}
+Keep in mind that the Helm chart installation does not include the following features:
+
+* No database. The steps in this guide have you [Set up a database](#database) for a new installation. Or, you can install the Helm chart without a database for quick testing, and later add a [Database]({{< link-hextra path="/documentation/setup/database/#helm" >}}) to an existing release.
+* No writable UI unless you install in `database` mode. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
+* No PersistentVolumeClaim for persistent storage.
+* No Service for the admin port. Instead, you can reach the admin interface by port-forwarding the `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` Deployment.
+
+Also keep in mind that this standalone Kubernetes Deployment via Helm does not include the features of [{{< reuse "agw-docs/snippets/agentgateway.md" >}} for Kubernetes](https://docs.solo.io/agentgateway/kubernetes/latest/), such as a control plane, agentgateway custom resources, or additional services such as rate limiting, external auth, and WAF.
+{{% /tab %}}
+{{< /tabs >}}
+
 ## Before you begin
 
 {{< reuse "agw-docs/standalone/helm-standalone-prereqs.md" >}}
@@ -13,17 +39,19 @@ Install agentgateway with the database and Helm values that you want to use.
 
 {{% steps %}}
 
+### Create a namespace {#namespace}
+
+Create the namespace that agentgateway and PostgreSQL share. The following example uses the default {{< reuse "agw-docs/snippets/namespace.md" >}} namespace. You can use a different namespace name, but make sure to update the namespace and any override fields throughout the rest of this guide.
+
+```sh
+kubectl create namespace {{< reuse "agw-docs/snippets/namespace.md" >}}
+```
+
 ### Set up a database {#database}
 
 The chart does not install a database. The default `readonly` mode prevents UI saves. Database features, including LLM analytics, logs, and API key budgets, require a separate database. For the full list, see [Features that need a database]({{< link-hextra path="/documentation/setup/database/#features-that-need-a-database" >}}).
 
 For production, use a managed PostgreSQL service or an operator that handles backups and failover. The following steps deploy a single instance for testing. To install without a database, continue to [Create your Helm values](#values).
-
-Create the namespace that agentgateway and PostgreSQL share.
-
-```sh
-kubectl create namespace {{< reuse "agw-docs/snippets/namespace.md" >}}
-```
 
 {{< reuse "agw-docs/standalone/helm-postgres-deploy.md" >}}
 
@@ -131,31 +159,6 @@ If the pod logs show `failed to connect postgres database`, the proxy cannot rea
 Check that the PostgreSQL pod is ready. The hostname in `database.postgres.url` must match the namespace of the `postgres` Service.
 
 {{% /steps %}}
-
-### What the chart installs {#install-included}
-
-The chart creates the following resources. Each resource is named after the Helm release, which is `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` in these examples.
-
-| Resource | Name | Purpose |
-| --- | --- | --- |
-| Deployment | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Runs the agentgateway proxy. |
-| ConfigMap | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-config` | Holds the rendered `config.yaml`, mounted read-only at `/config`. |
-| Service | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Exposes the gateway listener. Type `LoadBalancer` and port `80` to container port `4000` by default. |
-| ServiceAccount | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Identity for the proxy pod. |{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-| PodDisruptionBudget | `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` | Protects multi-replica proxy Deployments during voluntary disruptions when `podDisruptionBudget.enabled` is `true` and the minimum replica count is greater than `1`. |{{< /version >}}
-
-If you installed with a different release name or namespace, such as with the **Unique name and namespace** tab, adjust the resource names and the `-n` values in the commands throughout this documentation accordingly.
-
-### What the chart does not install
-
-Keep in mind that the Helm chart installation does not include the following features:
-
-* No database. Follow [Set up a database](#database) for a new installation, or [Database]({{< link-hextra path="/documentation/setup/database/#helm" >}}) for an existing release.
-* No writable UI unless you install in `database` mode. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
-* No PersistentVolumeClaim for persistent storage.
-* No Service for the admin port. Instead, you can reach the admin interface by port-forwarding the `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` Deployment.
-
-Also keep in mind that this standalone Kubernetes Deployment via Helm does not include the features of [{{< reuse "agw-docs/snippets/agentgateway.md" >}} for Kubernetes](https://docs.solo.io/agentgateway/kubernetes/latest/), such as a control plane, agentgateway custom resources, or additional services such as rate limiting, external auth, and WAF.
 
 ## Verify the installation
 
