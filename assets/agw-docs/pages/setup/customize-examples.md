@@ -489,6 +489,10 @@ Configure graceful shutdown timeouts using the `shutdown` config.
 During the `min` window, the proxy keeps accepting new connections and asks clients on existing connections to close them after the current request. After `min`, the proxy closes the listener, refuses new connections, and lets existing connections finish until all tracked connections close or `max` passes.
 {{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+For HTTP/1 requests, the proxy adds the `Connection: close` response header so that clients close the connection after the current request.
+{{< /version >}}
+
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
