@@ -12,7 +12,6 @@ INFO state_manager  loaded config from File("/config/config.yaml")
 Two things are worth knowing before you edit.
 
 * **Not every field reloads.** The top-level `config` section holds startup settings, such as `adminAddr`, `storage`, `database`, `logging`, and `tracing`. Agentgateway applies those only when the process starts, with the exception of `config.modelCatalog`{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} and `config.standardAttributes`{{< /version >}}, which reload dynamically. Everything else, including `gateways`, `routes`, `llm`, `mcp`, and `ui`, reloads in place. For more information, see [Fields that require a restart](#restart-required).
-{{< version exclude-if="1.6.x,1.5.x" >}}* **Files that the configuration reads are watched.** If agentgateway reads another file while parsing a reloaded configuration, such as a certificate file in `backendTLS.root`, it watches that file and publishes later changes without a process restart.{{< /version >}}
 * **The UI might write to this file.** In the default storage mode in binary and Docker deployments, agentgateway writes the resources that you manage in the UI back to the same file. Your file is an output as well as an input. To keep the file read-only, or to send UI edits to a database instead, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
 ### Fields that require a restart {#restart-required}
