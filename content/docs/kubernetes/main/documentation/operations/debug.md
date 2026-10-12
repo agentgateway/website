@@ -138,6 +138,8 @@ Most routing and policy issues surface in the status of the corresponding Kubern
 
    6. Check the condition again. The controller recomputes it on its own when the missing Secret, Service, or key set appears, so you do not need to reapply the resource.
 
+   When more than one controller writes status for the same resource, keep each controller's entries in their current order while you debug. The agentgateway controller refreshes matching entries in place. For entries that it owns, the controller removes stale entries and appends only new entries. Other controllers' entries keep their existing positions. A different order by itself does not mean that the resource behavior changed.
+
 ## Inspect the loaded configuration
 
 Sometimes a route is `Accepted` but the proxy still does not behave as expected. To see what the proxy actually loaded, dump its runtime configuration.

@@ -188,6 +188,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3883 -->
 
 **Traffic management**
 
@@ -210,3 +211,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 **Operations**
 
 - Metrics requests use the OpenMetrics content type by default, while browser requests use `text/plain` so browsers display metrics instead of downloading them.
+
+**Status and resource reporting**
+
+- Status entries that agentgateway owns keep their position when more than one controller reports on the same resource, which prevents unchanged status merges from changing `resourceVersion`.
