@@ -80,7 +80,7 @@ MCP authorization rules differ in two ways. `mcp.sessionId` and `mcp.tool.argume
 
 The `mcp.target.name` field identifies the MCP target for the current target-scoped operation, including [virtual MCP target conditions]({{< link-hextra path="/integrations/mcp/servers/virtual/#target-conditions" >}}) and upstream requests to an individual target. In a target condition, it names the target under evaluation. This differs from the method fields in the preceding table, such as `mcp.tool`, which describe the tool, prompt, resource, or task involved in a request.
 
-In [CEL expression guardrails]({{< link-hextra path="/documentation/mcp/guardrails/processors/#expression" >}}), `mcp.params` holds the current request parameters, with the same structure as the `params` object of the MCP request. In the response phase, `mcp.result` holds the current response result, with the same structure as the `result` object of the MCP response. Each processor sees the changes from earlier processors.
+In [CEL expression guardrails]({{< link-hextra path="/documentation/mcp/guardrails/processors/#expression" >}}), `mcp.params` holds the request's `params` object, and `mcp.result` holds the response's `result` object. Each processor sees changes from earlier processors.
 
 Response payload fields, such as `mcp.tool.result` and `mcp.tool.error`, are available only in logging, tracing, and metrics.
 

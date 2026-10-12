@@ -1,8 +1,10 @@
 ## Include targets conditionally {#target-conditions}
 
-Use the `condition` field on an MCP target to include that target only when a Common Expression Language (CEL) expression returns `true`. The expression can read request attributes, such as headers, and the `mcp.target.name` variable, which is set to the target under evaluation. When authentication is configured, it can also read the authenticated identity, such as JWT claims. Omit `condition` to include the target for every request.
+Set `condition` on an MCP target to include it only when a Common Expression Language (CEL) expression returns `true`. Omit `condition` to always include the target.
 
-Agentgateway evaluates the condition before it initializes or contacts the target. An excluded target does not receive the `initialize`, `tools/list`, or any other request from that client. By contrast, [MCP authorization]({{< link-hextra path="/documentation/mcp/tool-access/" >}}) filters tools after every target responds, so agentgateway still initializes the target and fans out list requests to it. For a comparison of the ways to filter MCP traffic, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
+The expression can read request attributes, such as headers, and `mcp.target.name`, the target under evaluation. With authentication configured, it can also read identity attributes, such as JWT claims.
+
+Agentgateway evaluates conditions before contacting targets. Excluded targets receive no requests from the client. [MCP authorization]({{< link-hextra path="/documentation/mcp/tool-access/" >}}) filters list responses after agentgateway contacts the targets. See [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}) to compare the filtering options.
 
 1. Update the {{< reuse "agw-docs/snippets/backend.md" >}} to include the `mcp-website-fetcher` target only when the request has the `x-include-fetcher: true` header.
 
@@ -29,7 +31,7 @@ Agentgateway evaluates the condition before it initializes or contacts the targe
    EOF
    ```
 
-2. Save the MCP endpoint of your agentgateway proxy in an environment variable. Use the address from [Step 3](#verify), such as `http://${INGRESS_GW_ADDRESS}/mcp` for a load balancer address or `http://localhost:8080/mcp` for a port-forward.
+2. Save the MCP endpoint of your agentgateway proxy in an environment variable. Use the address from [Step 3](#verify): `http://${INGRESS_GW_ADDRESS}/mcp` for a load balancer, or `http://localhost:8080/mcp` for a port-forward.
 
    ```sh
    export MCP_URL=http://localhost:8080/mcp
@@ -64,12 +66,12 @@ Agentgateway evaluates the condition before it initializes or contacts the targe
 
 Keep the following behaviors in mind when you write target conditions:
 
-* **When conditions are evaluated**: With the default `Stateful` session routing, agentgateway evaluates the conditions when the client initializes the session. The selected targets apply to every later request in that session, whether or not those requests send the header. With `sessionRouting: Stateless`, agentgateway evaluates the conditions for every request.
-* **Names stay prefixed**: Tool and prompt names keep their target-name prefix even when only one target remains, so that names stay stable across requests.
-* **Calls to excluded targets fail**: The tools of an excluded target are not listed. If a client calls one anyway, agentgateway returns an error because the target is not part of the session.
-* **Errors exclude the target**: If a condition fails to evaluate, such as when it reads a JWT claim and the request has no JWT, agentgateway excludes the target.
+* **Evaluation timing**: With `Stateful` routing (the default), conditions run at session initialization. The selected targets apply to all later requests in that session, even without the header. With `sessionRouting: Stateless`, conditions run on every request.
+* **Stable names**: Tool and prompt names keep their target-name prefix even when only one target remains.
+* **Excluded targets**: Their tools are absent from lists. Calls to those tools fail because the target is not part of the session.
+* **Evaluation errors**: Agentgateway excludes the target if its condition fails to evaluate, such as when it reads a missing JWT claim.
 * **No targets**: If every condition returns `false`, clients see a virtual MCP server with no tools, prompts, or resources.
-* **Selector targets**: A condition on a `selector` target applies to each selected Service. In the condition, `mcp.target.name` is the generated name of the selected Service, not the `name` of the target. The generated name is the value of the Service's `agentgateway.dev/mcp-target-name` annotation. If the annotation is not set, the name is `<service>-<port name>`, or `<service>-<port>` when the port has no name, such as `mcp-server-everything-3001`.
+* **Selector targets**: Conditions apply to each selected Service. The `mcp.target.name` variable holds that Service's generated name. Set the name with the `agentgateway.dev/mcp-target-name` annotation. Otherwise, it defaults to `<service>-<port name>`, or `<service>-<port>` for an unnamed port, such as `mcp-server-everything-3001`.
 * **Validation**: A condition requires at least two targets in the {{< reuse "agw-docs/snippets/backend.md" >}}, unless the target uses a `selector`.
 
 | Field | Description |

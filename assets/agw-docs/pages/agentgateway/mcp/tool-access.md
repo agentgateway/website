@@ -29,7 +29,7 @@ sequenceDiagram
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 > [!NOTE]
-> MCP authorization filters tools after the MCP server responds, so agentgateway still contacts every target of a virtual MCP server, even when a rule such as `mcp.tool.target != "admin-tools"` hides all of a target's tools. To keep agentgateway from contacting a target for some clients, use a [target condition]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}) instead. For a comparison of the ways to filter MCP traffic, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
+> MCP authorization filters tool lists after each target responds. Agentgateway still contacts targets whose tools are all hidden. Use a [target condition]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}) to exclude a target before contacting it. See [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}) to compare the options.
 {{< /version >}}
 
 ## Before you begin

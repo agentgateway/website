@@ -285,9 +285,13 @@ mcp:
 
 ## Target conditions {#target-conditions}
 
-Use `condition` on an MCP target to include that target only when a CEL expression returns `true` for the current request. The expression can read request attributes, such as headers, and `mcp.target.name`. When authentication is configured, it can also read the authenticated identity. In a target condition, `mcp.target.name` is set to the target under evaluation. Omit `condition` to include the target for every request.
+Set `condition` on an MCP target to include it only when a CEL expression returns `true`. Omit `condition` to always include the target. A condition requires at least two configured targets.
 
-Target conditions run before agentgateway initializes or contacts a target. Target conditions choose which upstream MCP servers participate in the virtual MCP request. By contrast, `mcpAuthorization` filters tools, prompts, and resources after an upstream server responds. For a comparison of the ways to filter MCP traffic, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}). A condition requires at least two configured targets. If every target condition returns `false`, clients see an empty virtual MCP server.
+The expression can read request attributes, such as headers, and `mcp.target.name`, the target under evaluation. With authentication configured, it can also read the authenticated identity.
+
+Agentgateway evaluates conditions before contacting targets. The `mcpAuthorization` policy filters list responses after agentgateway contacts the targets. See [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}) to compare the filtering options.
+
+If every condition returns `false`, clients see an empty virtual MCP server.
 
 The following example always includes the `everything` target and includes the `time` target only when the request has the header `x-include-time: true`.
 
@@ -311,10 +315,10 @@ Configure your MCP client to send `x-include-time: true` on its requests, includ
 
 Keep the following behaviors in mind when you write target conditions:
 
-* **When conditions are evaluated**: In a stateful session, which is the default, agentgateway evaluates the conditions when the client initializes the session. The selected targets apply to every later request in that session. In stateless mode, agentgateway evaluates the conditions for every request.
-* **Names stay prefixed**: Tool and prompt names keep their target-name prefix even when only one target remains, so that names stay stable across requests.
-* **Calls to excluded targets fail**: The tools of an excluded target are not listed. If a client calls one anyway, such as `time_get_current_time` in a session without the header, agentgateway returns an error because the target is not part of the session.
-* **Errors exclude the target**: If a condition fails to evaluate, such as when it reads a JWT claim and the request has no JWT, agentgateway excludes the target.
+* **Evaluation timing**: In stateful mode (the default), conditions run at session initialization. The selected targets apply to all later requests in that session. In stateless mode, conditions run on every request.
+* **Stable names**: Tool and prompt names keep their target-name prefix even when only one target remains.
+* **Excluded targets**: Their tools are absent from lists. Calls to those tools fail because the target is not part of the session.
+* **Evaluation errors**: Agentgateway excludes the target if its condition fails to evaluate, such as when it reads a missing JWT claim.
 
 | Field | Description |
 | ----- | ----------- |

@@ -7,13 +7,15 @@ test:
   - path: mcp-guardrails-cel
 ---
 
-Reject and mask Model Context Protocol (MCP) tool calls with Common Expression Language (CEL) expressions that run inside agentgateway. Unlike [remote guardrails]({{< link-hextra path="/documentation/mcp/guardrails/setup" >}}), CEL guardrails do not require you to deploy or operate an external policy server. For more information about how guardrail processors work, see [Guardrail processors]({{< link-hextra path="/documentation/mcp/guardrails/processors" >}}).
+Reject and mask Model Context Protocol (MCP) tool calls with Common Expression Language (CEL) expressions inside agentgateway. CEL guardrails require no external policy server.
+
+For an overview, see [Guardrail processors]({{< link-hextra path="/documentation/mcp/guardrails/processors" >}}). To use an external policy server, see [Set up remote guardrails]({{< link-hextra path="/documentation/mcp/guardrails/setup" >}}).
 
 In this guide, you configure three CEL guardrails for the `echo` tool of a sample MCP server:
 
-* A request-phase guardrail that rejects messages that contain `DO_NOT_SEND`.
-* A request-phase guardrail that masks email addresses before the message reaches the MCP server.
-* A response-phase guardrail that masks demo secrets in the tool result before it reaches the client.
+* Reject messages containing `DO_NOT_SEND` in the request phase.
+* Mask email addresses before sending the request to the MCP server.
+* Mask demo secrets in the response before returning it to the client.
 
 ## Before you begin
 
@@ -26,7 +28,7 @@ In this guide, you configure three CEL guardrails for the `echo` tool of a sampl
 
 ## Set up CEL guardrails
 
-1. Create a `config.yaml` file. The MCP backend exposes a local stdio MCP server, and the `mcpGuardrails` policy on the route runs three CEL expression processors.
+1. Create a `config.yaml` file with a local stdio MCP server and three CEL processors in the route's `mcpGuardrails` policy.
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    gateways:
@@ -162,8 +164,8 @@ In this guide, you configure three CEL guardrails for the `echo` tool of a sampl
    | `kind: expression` | Run the processor in-process as a CEL expression. |
    | `methods` | The MCP methods that run through the processor, and the phase for each. `tools/call: request` runs the processor before the call reaches the MCP server. `tools/call: response` runs the processor after the MCP server returns a result. |
    | `condition` | Optional CEL expression that must be `true` for the processor to act. When the condition is `false`, the processor passes the message through unchanged. |
-   | `reject` | The message to return to the client when the condition matches. The first processor rejects any `echo` call whose message contains `DO_NOT_SEND`. Because it is listed first, it sees the original message before any masking. |
-   | `transform` | A CEL expression that returns the replacement body. In the request phase, `mcp.params` holds the parameters of the `tools/call` request, such as the tool `name` and its `arguments`. In the response phase, `mcp.result` holds the tool result. The `merge` function keeps every field that you do not change, and `regexReplaceAll` replaces every match of a regular expression. To replace only the first match, use `regexReplace`. |
+   | `reject` | Rejection message for the client. The first processor checks for `DO_NOT_SEND` before masking changes the message. |
+   | `transform` | CEL expression that replaces `mcp.params` (request) or `mcp.result` (response). The `merge` function preserves other fields. Use `regexReplaceAll` to mask every match, or `regexReplace` to mask only the first. |
 
 2. Run agentgateway with the configuration file.
    ```sh
@@ -189,8 +191,6 @@ In this guide, you configure three CEL guardrails for the `echo` tool of a sampl
 
 ## Verify the guardrails
 
-Verify that the guardrails mask the request and response, and reject messages that contain `DO_NOT_SEND`.
-
 1. Initialize an MCP session and save the session ID.
    ```sh
    export MCP_SESSION_ID=$(curl -s -D - http://localhost:3000/mcp \
@@ -202,7 +202,7 @@ Verify that the guardrails mask the request and response, and reject messages th
    echo $MCP_SESSION_ID
    ```
 
-2. Send the `notifications/initialized` notification to complete the MCP handshake. The MCP server does not answer other requests, such as `tools/call`, until initialization is complete.
+2. Send `notifications/initialized` to complete the MCP handshake before calling tools.
    ```sh
    curl -s http://localhost:3000/mcp \
      -H "Content-Type: application/json" \
@@ -222,7 +222,7 @@ Verify that the guardrails mask the request and response, and reject messages th
      -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"echo","arguments":{"message":"Contact alice@example.com and bob@example.org; tokens demo-secret-abc and demo-secret-xyz"}}}'
    ```
 
-   Verify that the echoed text masks both email addresses and both secrets. The request guardrail replaced the email addresses before the call reached the MCP server, and the response guardrail replaced the secrets in the tool result.
+   Verify that the result masks both email addresses and both secrets. The request guardrail masks the addresses; the response guardrail masks the secrets.
    ```console
    data: {"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"Echo: Contact [EMAIL] and [EMAIL]; tokens [SECRET] and [SECRET]"}]}}
    ```
@@ -237,7 +237,7 @@ Verify that the guardrails mask the request and response, and reject messages th
      -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"echo","arguments":{"message":"DO_NOT_SEND alice@example.com"}}}'
    ```
 
-   Verify that the guardrail rejects the call and that the MCP server is not called. Because the method is `tools/call`, the client receives a tool result with `isError: true` and the `reject` message.
+   Verify that the call is rejected before it reaches the MCP server. The tool result contains `isError: true` and the configured rejection message.
    ```console
    {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"Messages containing DO_NOT_SEND may not be sent upstream"}],"isError":true}}
    ```
