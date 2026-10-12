@@ -62,9 +62,12 @@ $(DOCS_TESTS_DIR):
 # out/annotations/attach-report.json lists them.
 DOC_TESTS_TREE ?= out/doc-tests-tree
 DOC_TESTS_ANNOTATIONS ?= $(DOCS_TESTS_DIR)/products/agentgateway/annotations
+# DOC_TESTS_ARGS passes extra runner options, for example to run one page or
+# one scenario: DOC_TESTS_ARGS='--file content/docs/<page>.md --test <name>'.
+DOC_TESTS_ARGS ?=
 DOC_TESTS_RUN = python3 $(DOCS_TESTS_DIR)/scripts/doc_test_run.py --repo-root $(DOC_TESTS_TREE) \
 	--docs-tests-root $(DOCS_TESTS_DIR) \
-	--annotation-report $(CURDIR)/out/annotations/attach-report.json
+	--annotation-report $(CURDIR)/out/annotations/attach-report.json $(DOC_TESTS_ARGS)
 DOC_TESTS_COPY_BACK = mkdir -p out/tests && rsync -a $(DOC_TESTS_TREE)/out/tests/ out/tests/
 
 # Copy the working tree and attach the test annotations to the copy

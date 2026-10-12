@@ -1,7 +1,7 @@
 ---
 name: doc-test-guides
 description: Add executable doc tests to agentgateway documentation guides using the doc test framework. Use when the user asks to "add doc tests", "add tests to a guide", "add tests to a topic", mentions "YAMLTest", or is working on quickstart guides, standalone binary guides, or Kubernetes doc pages that should generate runnable scripts from code blocks.
-version: 1.3.0
+version: 2.0.0
 ---
 
 # Doc test guides skill
@@ -12,13 +12,14 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
 
 ## Where tests live
 
-Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/docs-tests), not in these pages. CI removes the test markup from a copy of the site and attaches the copy kept in docs-tests. The markup syntax in this skill is the same in both places; only where you write it changes. See "Where tests live" in TEST_FRAMEWORK.md for details.
+Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/docs-tests), not in these pages. **Never add `paths=` tags, `{{< doc-test >}}` blocks, or front matter `test:` to a page in this repo.** CI removes any markup it finds on a page and attaches the copy kept in docs-tests. The markup syntax in this skill is unchanged; only where you write it changed. See "Where tests live" in TEST_FRAMEWORK.md for details.
 
-- **New or changed scenarios** (what front matter `test:` declares): edit `products/agentgateway/<kubernetes or standalone>/tests.yaml` in docs-tests. A front matter `test:` edit on a page here is not reliably run.
-- **Code-block tags and hidden checks:** in docs-tests, run `make annotate PAGE=<page> CONTENT_REPO=<path to this repo>`, edit the markup in the copy it writes to `out/annotate/`, then run `make save` with the same arguments.
-- Until the markup is removed from this repo, tags and hidden checks edited on a page here are copied into docs-tests by a daily refresh. They are first tested after merge, not in the PR's own run.
-- To test the docs-tests change in the content PR's own run, push it to a docs-tests branch with the **same name** as the content PR's branch. The PR's doc-tests workflow checks out that branch instead of docs-tests `main`, and says so in the job summary. Without a matching branch, the PR runs against `main`.
+- **Scenarios** (name, prerequisites, path label): edit `products/agentgateway/<kubernetes or standalone>/tests.yaml` in docs-tests.
+- **Code-block tags and hidden checks:** in docs-tests, run `make annotate PRODUCT=agentgateway PAGE=<page>`, edit the markup in the copy it writes to `out/annotate/<page>`, then run `make save` with the same arguments. Every markup example in this skill is written in that copy. Set `CONTENT_REPO=<path to this repo>` if this repo is not a sibling clone named `agentgateway-oss-website`.
+- **Run** from this repo with `make test-generate` and `make test-run`, which attach your docs-tests annotations to a copy of the site first (see step 9).
+- To test the docs-tests change in a content PR's own run, push it to a docs-tests branch with the **same name** as the content PR's branch. The PR's doc-tests workflow checks out that branch instead of docs-tests `main`, and says so in the job summary. Without a matching branch, the PR runs against `main`.
 - Merge the content PR here first, then the docs-tests PR.
+- Until the old markup is removed from this repo, edits to markup that is still on a page are copied into docs-tests by the daily refresh, after merge. Do not rely on this: it is untested in the PR, and it stops when the markup is removed.
 
 ---
 
@@ -32,10 +33,10 @@ Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/
 
 ## Core concepts
 
-1. **Test scenarios** live in docs-tests `tests.yaml` (see [Where tests live](#where-tests-live)). Pages that `tests.yaml` does not cover can still declare them in YAML front matter under `test:` on the **content** page (e.g. `content/docs/standalone/main/quickstart/llm.md`).
-2. **Path tags and hidden blocks** live in the **content that gets inlined**. If the content page only has `{{< reuse "agw-docs/..." >}}`, the real body is in **assets** — add `paths="..."` and `{{< doc-test >}}` in the **asset** file, not the content wrapper.
-   > **Critical**: Most Kubernetes topic pages (e.g. `content/docs/kubernetes/latest/resiliency/timeouts/request.md`) are thin wrappers that only contain `{{< reuse "agw-docs/pages/..." >}}`. **Always place doc-test blocks in the reuse file** (`assets/agw-docs/pages/...`), never in the content wrapper. This way both `latest` and `main` versions automatically inherit the tests — you only need to add them once.
-3. **Extractor** resolves `{{< reuse "..." >}}` from `assets/`, so the script is built from the expanded content. Reference the **content file** in `test:` sources; the extractor will follow reuse.
+1. **Test scenarios** live in docs-tests `tests.yaml` (see [Where tests live](#where-tests-live)). The runner still reads front matter `test:` on pages that `tests.yaml` does not cover, but do not add new front matter scenarios.
+2. **Path tags and hidden blocks** belong to the file that holds the code blocks, and are kept in that file's annotation in docs-tests. If the content page only has `{{< reuse "agw-docs/..." >}}`, the real body is in **assets**, so annotate the **asset** file (`make annotate PAGE=assets/agw-docs/...`), not the content wrapper.
+   > **Critical**: Most Kubernetes topic pages (e.g. `content/docs/kubernetes/latest/resiliency/timeouts/request.md`) are thin wrappers that only contain `{{< reuse "agw-docs/pages/..." >}}`. **Always annotate the reuse file** (`assets/agw-docs/pages/...`), never the content wrapper. This way both `latest` and `main` versions automatically inherit the tests — you only need to add them once.
+3. **Extractor** resolves `{{< reuse "..." >}}` from `assets/`, so the script is built from the expanded content. A `tests.yaml` scenario names the asset with `source:`, which covers every version that reuses it; `page:` is the fallback for a page with its own body.
 4. **Block order**: Selected blocks are emitted in document order (by file and `start_line`). Hidden blocks (e.g. "start server in background") must appear *before* any visible block that depends on them (e.g. curl). The extractor sorts selected blocks by `(file_path, start_line)` so hidden blocks are not deferred to the end.
 5. **Byte-identical blocks are silently dropped**: `build_script()` in `docs-tests/scripts/doc_test_extract.py` keeps a `seen` set of block contents and skips any block whose content (after stripping leading and trailing newlines) exactly matches an earlier selected block. Only the **first** copy reaches the generated script — there is no warning. See "Repeated commands across sections" under step 3 for what this breaks and how to avoid it.
 
@@ -45,8 +46,10 @@ Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/
 
 ### 1. Identify content and asset files
 
-- **Content file**: The doc page that will have `test:` in front matter (e.g. `content/docs/standalone/main/quickstart/llm.md`).
-- **Asset file(s)**: Where the guide body lives. If the content page is only `{{< reuse "agw-docs/standalone/quickstart/llm.md" >}}`, the asset is `assets/agw-docs/standalone/quickstart/llm.md`. Add path tags and doc-test blocks in the asset. **Never add `{{< doc-test >}}` blocks to the thin content wrapper** — they will only apply to that one version and won't be visible to the extractor that processes the reuse expansion.
+- **Content file**: The doc page readers see (e.g. `content/docs/standalone/main/quickstart/llm.md`). Use it for `--file` when you run one page's tests.
+- **Asset file(s)**: Where the guide body lives. If the content page is only `{{< reuse "agw-docs/standalone/quickstart/llm.md" >}}`, the asset is `assets/agw-docs/standalone/quickstart/llm.md`. This is the `PAGE` to annotate, and the `source:` of the scenario. **Never annotate the thin content wrapper** — the markup would only apply to that one version.
+
+All markup in steps 3 to 8 goes in the `out/annotate/<page>` copy in docs-tests, never in this repo.
 
 > **Note**: The `main` directory contains docs for the development version, while `latest` contains the current stable release. Tests can be added to either or both, depending on which version the feature is available in.
 
@@ -61,7 +64,7 @@ Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/
 - Only `sh`/`bash`/`shell`/`yaml`/`yml` are extracted. Blocks without `paths=` are skipped when `skip_tabs_without_paths` is true.
 - **Tabbed content**: Use different paths per tab (e.g. `{paths="httpbin,httpbin-linux"}` and `{paths="httpbin-macos"}`) so the scenario can pick one.
 - **Multiple paths must be comma-separated** — both in fenced block info strings (`{paths="a,b"}`) and in `{{< doc-test paths="a,b" >}}` shortcodes. The extractor splits on `,`, so space-separated values (e.g. `paths="a b"`) are treated as a single path name and will never match — causing the block to be silently excluded from the generated script. This is especially dangerous for shared setup blocks (e.g. "install binary") that need to run for multiple scenarios.
-- **Display-only YAML blocks**: Some pages show YAML configs as plain display blocks (no `cat <<'EOF'` shell wrapper), unlike LLM guides that wrap configs in shell commands. You can't tag a display-only YAML block with `paths=` because it isn't a runnable shell command. Instead, add a **hidden** `{{< doc-test >}}` block that writes the config with `cat <<'EOF' > config.yaml`. See `content/docs/standalone/main/mcp/mcp-authz.md` for an example.
+- **Display-only YAML blocks**: Some pages show YAML configs as plain display blocks (no `cat <<'EOF'` shell wrapper), unlike LLM guides that wrap configs in shell commands. You can't tag a display-only YAML block with `paths=` because it isn't a runnable shell command. Instead, add a **hidden** `{{< doc-test >}}` block that writes the config with `cat <<'EOF' > config.yaml`. For an example, run `make annotate` on `content/docs/standalone/main/documentation/configuration/security/mcp-authz.md`.
 - **External service dependencies**: When a config example depends on an external service that can't be trivially stood up in the test (e.g. Keycloak on port 9000, a custom OIDC provider), skip that example and only test self-contained ones. It's better to test one example well than to skip the entire page.
 
 #### Repeated commands across sections
@@ -90,7 +93,7 @@ agentgateway -f config.yaml --validate-only
 To confirm nothing was dropped, count the commands in the generated script and compare against the source:
 
 ```sh
-grep -c "validate-only" content/docs/standalone/main/<page>.md
+grep -c "validate-only" <docs-tests>/out/annotate/<page>.md   # the annotated copy
 grep -c "validate-only" out/tests/generated/<script-name>.sh
 ```
 
@@ -178,26 +181,22 @@ Redirect the process's output to a file as well, so nothing can leak into a capt
 
 ### 6. Add the test scenario
 
-> **Scenarios now go in docs-tests `tests.yaml`, not in front matter** (see [Where tests live](#where-tests-live)). The example below shows the front matter form, which the runner still reads for pages that `tests.yaml` does not cover; the `file`/`path` steps translate directly to a `tests.yaml` entry's `needs:`, `source:` or `page:`, and `path:`.
+Add the scenario to docs-tests `products/agentgateway/<kubernetes or standalone>/tests.yaml`, under `scenarios:`:
 
 ```yaml
----
-title: ...
-test:
+scenarios:
   <scenario-name>:
-  - file: ${versionRoot}/quickstart/<page>.md   # same-version prereq
+    type: functional
+    needs: [install-standard, gateway, httpbin]   # prerequisites defined at the top of the file
+    source: agw-docs/pages/<path>.md              # the asset file; covers latest and main
     path: <path-name>
-  - path: <path-name>                           # file: omitted -> this page itself
----
 ```
 
-**Write `file:` values version-relative so a page can be copied between `main` and `latest` with no front-matter edits:**
-
-- **Omit `file:`** when the source is the page that declares the test — it defaults to the declaring page.
-- **Use `${versionRoot}/...`** for prerequisites in the **same version** (e.g. `${versionRoot}/quickstart/install.md`). `${versionRoot}` expands to the version dir of the page declaring the test (`content/docs/kubernetes/main`, `.../latest`, etc.); `${version}` expands to just the segment (`main`/`latest`).
-- Use a **literal path** only when an entry must point at a *different* version on purpose.
-
-Token resolution covers the `kubernetes` and `standalone` sections; a `file:` that doesn't match the `content/docs/<section>/<version>/` layout is left as-is.
+- `needs:` names prerequisites defined once under `prerequisites:` at the top of the file. Take them from the guide's actual **Before you begin** links, in dependency order. Add a new prerequisite only when no existing one fits.
+- Use `page:` (a version-root-relative content path) instead of `source:` only for a page that has its own body and no single reuse source.
+- `before:` lists extra steps from other pages that run after `needs:` and before this page, for example a sample app the page assumes.
+- One scenario can list only the page itself if the guide is self-contained.
+- Set `name:` when two pages in one mode declare the same scenario name. Scenario keys must be unique per mode.
 
 **Pages with no testable content** (no code blocks, landing pages, concept pages, `_index.md` files without ordered steps, etc.) are listed under the `skip:` key of docs-tests `tests.yaml` instead of getting a scenario. This counts the page as covered in the test coverage report without generating any test cases. A `dir:` entry covers every page under a folder, for generated pages such as the agctl reference:
 
@@ -207,34 +206,18 @@ skip:
 - dir: reference/agctl/
 ```
 
-This replaces front matter `test: skip`, which the runner still reads on pages that `tests.yaml` does not cover.
+This replaces front matter `test: skip`. Do not add `test: skip` to pages.
 
-**Before marking a page `test: skip`, consider whether the content could become testable.** The table below summarizes what it would take for each category of "non-runnable" content. If the effort is low (content-only changes), prefer making the page testable over skipping it.
+**Before adding a page to `skip:`, consider whether the content could become testable.** The table below summarizes what it would take for each category of "non-runnable" content. If the effort is low (content-only changes), prefer making the page testable over skipping it.
 
 | Content type | Why it seems non-runnable | Path to testable | Change needed |
 |---|---|---|---|
 | Display-only YAML configs with placeholders (e.g. Auth0, provider configs) | YAML blocks aren't shell commands, placeholders reference external services | Add hidden `{{< doc-test >}}` blocks that write self-contained configs via `cat <<'EOF' > config.yaml`, start the server, and validate with `agentgateway --validate` or a YAMLTest health check. Skip examples that require real external services (IdPs, cloud APIs) and test only the self-contained subset | Content only |
 | Client config snippets (e.g. Claude Desktop JSON, VS Code settings) | Can't run the client in CI | Add hidden blocks that write the JSON to a file and validate syntax with `jq . config.json`. Catches typos and structural errors without proving the integration works end-to-end | Content only |
-| Conceptual/about pages (pure prose, no code) | No code to run | Add a minimal "try it" example at the bottom that demonstrates the concept with a working config + assertion. This is a content strategy decision — if the page's purpose is purely explanatory, `test: skip` is appropriate | Content decision |
-| Index/hub pages (`_index.md` with card links) | No code, only navigation | These are legitimately `test: skip`. The only possible validation is confirming card link targets exist, which would be a separate link-checking CI job (not a doc test) | Script change (separate job) |
+| Conceptual/about pages (pure prose, no code) | No code to run | Add a minimal "try it" example at the bottom that demonstrates the concept with a working config + assertion. This is a content strategy decision — if the page's purpose is purely explanatory, a `skip:` entry is appropriate | Content decision |
+| Index/hub pages (`_index.md` with card links) | No code, only navigation | These legitimately belong under `skip:`. The only possible validation is confirming card link targets exist, which would be a separate link-checking CI job (not a doc test) | Script change (separate job) |
 
 **Key principle:** The existing framework already supports every content type except pure link validation. Most "non-runnable" pages can become testable through content changes alone — adding hidden `{{< doc-test >}}` blocks that write configs, start services in the background, and run lightweight assertions. 
-
-Because the example above uses `${versionRoot}` and omits `file:` for the declaring page, the **same** front matter works under `latest/` without changes. Only when you deliberately mix versions do you write a literal path:
-
-```yaml
----
-title: ...
-test:
-  <scenario-name>:
-  - file: content/docs/standalone/latest/quickstart/<page>.md   # literal: pin a specific version
-    path: <path-name>
----
-```
-
-- Prefer version-relative `file:` values (see above). List sources in dependency order if chaining (install → … → feature).
-- One scenario can list only the current page with one path if the guide is self-contained.
-- For Kubernetes docs, prerequisite files often come from `latest` (e.g. `content/docs/kubernetes/latest/quickstart/install.md`) while the feature page may be in `main` or `latest`.
 
 ### 7. Optional: YAMLTest assertions
 
@@ -350,7 +333,11 @@ Before generating, review any `yaml`/`yml` fenced blocks tagged with `paths=` to
 
 ### 9. Generate and verify
 
-- From the repo root directory: `python3 ../docs-tests/scripts/doc_test_run.py --repo-root . --generate-only`
+Run from this repo. The targets copy the working tree to `out/doc-tests-tree`, attach the annotations from your docs-tests clone to the copy, and run against it, so your pages are never rewritten. `DOCS_TESTS_DIR` defaults to `../docs-tests`.
+
+- Generate: `make test-generate DOCS_TESTS_DIR=<path to docs-tests>`. Add `DOC_TESTS_ARGS='--file <content page>'` for one page, plus `--test <scenario>` for one scenario.
+- Check `out/annotations/attach-report.json`, or the attach summary line: every piece of your markup must attach. Markup that does not attach makes its scenarios skip with a warning.
+- Do **not** call `doc_test_run.py --repo-root .` directly. Without the attach step it reads only markup that is still on the pages.
 - Inspect `out/tests/generated/*.sh`: order of steps, no unresolved shortcodes, env vars and backgrounding correct.
 - Run a script manually, e.g. `bash out/tests/generated/<script-name>.sh` (standalone tests do not use a kind cluster; use `--generate-only` and run the script in an env that has the binary/Docker/etc.).
 
@@ -360,7 +347,7 @@ Every time you add or update a doc test, produce a **coverage summary** for the 
 
 Do this in **two places**:
 
-1. **In the test**, as a `{{< doc-test >}}` comment block at the top of the test's hidden setup (the comment is not rendered on the page). Keep it current when you change assertions. Example shape:
+1. **In the test**, as a `{{< doc-test >}}` comment block at the top of the test's hidden setup, in the annotation (it is never rendered on the page). Keep it current when you change assertions. Example shape:
    ```
    {{< doc-test paths="<scenario>" >}}
    # WHAT THIS TEST VALIDATES:
@@ -387,7 +374,7 @@ When a test fails, determine **where the bug lives** before changing anything. T
 
 #### Case 1: Test bug, content is correct
 
-The hidden `{{< doc-test >}}` block has a mistake — wrong assertion, missing retry, bad YAMLTest schema property, missing env var setup — but the visible documentation accurately describes what the product does. **Fix only the test.** The customer-facing content stays as-is.
+The hidden `{{< doc-test >}}` block has a mistake — wrong assertion, missing retry, bad YAMLTest schema property, missing env var setup — but the visible documentation accurately describes what the product does. **Fix only the test**, in docs-tests. The customer-facing content stays as-is.
 
 Examples:
 - YAMLTest `wait.target` includes an unsupported property like `apiVersion` → remove the invalid property from the hidden block.
@@ -396,7 +383,7 @@ Examples:
 
 #### Case 2: Content bug, test is revealing it
 
-The visible documentation — `kubectl apply` blocks, example output, curl commands, or explanatory text — shows something that **does not actually work** as described. The test is correctly catching a real problem. **Fix the content first, then update the test to match the corrected content.** Do not silently weaken or remove test assertions to hide content bugs.
+The visible documentation — `kubectl apply` blocks, example output, curl commands, or explanatory text — shows something that **does not actually work** as described. The test is correctly catching a real problem. **Fix the content first, in this repo, then update the test in docs-tests to match the corrected content** (on a same-named docs-tests branch, so the content PR tests both). Do not silently weaken or remove test assertions to hide content bugs.
 
 Examples:
 - A documented CEL expression (e.g. `json(response.body).model`) silently fails, so a response header the docs promise never appears → the visible `kubectl apply` block and example output are misleading readers. Flag this for a content fix. Don't just remove the assertion.
@@ -411,11 +398,16 @@ Ask: **"If a customer follows the visible instructions exactly, will they get th
 
 When in doubt, flag the failure to the user rather than silently adjusting the test. A weakened assertion that hides a content bug is worse than a failing test.
 
+#### Not a failure: needs update
+
+If a tested block changed too much for its annotation to attach, the scenario is **skipped** with a warning, not run. The attach report and the PR's job summary list it. Re-attach the markup with `make annotate` and `make save`. The docs-tests README section "Telling what is broken" covers this case and the failure cases.
+
 ---
 
 ## Checklist (quick)
 
-- [ ] Path tags and `{{< doc-test >}}` blocks added in the **asset** file(s) (`assets/agw-docs/...`), **not** in the content wrapper files — even if multiple content files (e.g. `latest/` and `main/`) reuse the same asset.
+- [ ] All markup is in docs-tests (`make annotate` / `make save`), and **no** `paths=`, `{{< doc-test >}}`, or `test:` was added to any page in this repo.
+- [ ] The **asset** file (`assets/agw-docs/...`) was annotated, **not** the content wrapper — even if multiple content files (e.g. `latest/` and `main/`) reuse the same asset.
 - [ ] Multiple paths in `paths="..."` are **comma-separated**, not space-separated — `paths="a,b"` ✓, `paths="a b"` ✗ (spaces make the whole string a single path, silently excluding the block).
 - [ ] No two selected blocks are **byte-identical** — the extractor keeps only the first and silently drops the rest, so a repeated `--validate-only` (or `start_gateway`, or warmup loop) across sections leaves later sections untested. Add a comment naming the section, then verify with `grep -c` on the source vs. the generated script. See "Repeated commands across sections" under step 3.
 - [ ] A helper backend the test invents uses a port **no documented config uses** (avoid `8080`), its readiness check probes for a response only that backend produces, and cleanup is guarded with `|| true` so a failing `kill` in an `EXIT` trap does not fail the script under `set -e`.
@@ -423,8 +415,8 @@ When in doubt, flag the failure to the user rather than silently adjusting the t
 - [ ] If the guide has a long-running server, a **hidden** doc-test block starts it in the background (and optional trap/sleep); visible "start server" block has **no** path.
 - [ ] Placeholders in shell blocks are quoted or use `${VAR:-default}` so the script has no syntax errors.
 - [ ] The scenario in docs-tests `tests.yaml` lists the right prerequisites and `path`. For pages with no testable content (index pages, no code blocks), add the page under the manifest's `skip:` key instead — it counts toward coverage without generating test cases.
-- [ ] `file:` values are **version-relative** (`${versionRoot}/...`, or omitted for the declaring page) so copying a page between `main` and `latest` needs **no** front-matter edits. Use a literal path only to point at a different version on purpose.
-- [ ] Prerequisite `file:` paths come from the guide's actual **Before you begin** links — don't guess; check the links to confirm exact paths.
+- [ ] The scenario uses `source:` (the asset file) so it covers every version, and `page:` only for a page with its own body.
+- [ ] `needs:` prerequisites come from the guide's actual **Before you begin** links — don't guess; check the links.
 - [ ] No `kubectl port-forward` in any visible block — replace with YAMLTest HTTP assertions using `${INGRESS_GW_ADDRESS}`.
 - [ ] Host headers in YAMLTest `http.headers` use bare hostnames — no port suffix (e.g. `host: "example.com"`, not `host: "example.com:80"`). Including a port causes ECONNRESET, not an HTTP error.
 - [ ] If the test creates an HTTPRoute with a hostname **not already in the prereq chain**, use the two-phase warmup fix: (1) add a curl warmup loop `{{< doc-test >}}` block before the YAMLTest block (`for i in $(seq 1 60); do curl -s --max-time 5 ... && break; sleep 2; done`) to cover Phase 1 (~120s of immediate resets), AND (2) add `retries: 1` to the **first** HTTP assertion in YAMLTest to absorb Phase 2 (4–26s hold then reset). Do **not** use `retries: 3` or higher without the warmup loop — it multiplies the total wait time.
@@ -434,7 +426,8 @@ When in doubt, flag the failure to the user rather than silently adjusting the t
 - [ ] Display-only YAML blocks (no shell wrapper) are **not** tagged with `paths=` — use a hidden `{{< doc-test >}}` block with `cat <<'EOF' > config.yaml` instead.
 - [ ] For MCP endpoint tests, use a JSON-RPC `initialize` request (not a simple GET) — see the MCP endpoint testing section above.
 - [ ] Examples that depend on external services (auth servers, rate limit services) that can't be stood up in the test are skipped — only self-contained examples are tested.
-- [ ] Generated script order makes sense (server before curl/YAMLTest); regenerate after extractor changes if needed.
+- [ ] `make test-generate` attached all of the markup, and the generated script order makes sense (server before curl/YAMLTest).
+- [ ] If the test goes with a content PR, the docs-tests change is on a branch with the same name as the content PR's branch.
 - [ ] Optional YAMLTest in a hidden block for HTTP or other assertions.
 - [ ] When fixing a failing test, verified whether the bug is in the test or in the customer-facing content. If the content is wrong, fix the content first — don't silently weaken assertions.
 - [ ] Produced a coverage summary (what is tested / what is not, with a reason for each gap) — both as a `{{< doc-test >}}` comment block in the test and in the reply to the user. See step 10.
@@ -445,7 +438,7 @@ When in doubt, flag the failure to the user rather than silently adjusting the t
 
 | Aspect | Kubernetes | Standalone (binary) |
 |--------|------------|---------------------|
-| Runner | Creates kind cluster, runs script, deletes cluster | Use `--generate-only`; run script manually or in CI with binary/Docker |
+| Runner | `make test-run`: creates a kind cluster, runs the script, deletes the cluster | `make test-generate`, then run the script manually or in CI with binary/Docker |
 | Prereqs | Chain install → gateway → sample-app → feature | Often self-contained (install + config on same page) |
 | Server process | Not needed in script (resources in cluster) | Must start binary in background in a hidden block |
 | Env vars | Often `INGRESS_GW_ADDRESS` from gateway | Use `${VAR:-placeholder}` if test should pass when var is set |
@@ -456,5 +449,8 @@ When in doubt, flag the failure to the user rather than silently adjusting the t
 ## Reference
 
 - Full framework: [scripts/TEST_FRAMEWORK.md](../../../scripts/TEST_FRAMEWORK.md)
+- Scenarios: docs-tests `products/agentgateway/<kubernetes or standalone>/tests.yaml`
+- Annotations: docs-tests `products/agentgateway/annotations/`, one file per page; `docs-tests/scripts/annotations.py` attaches them
 - Extractor: `docs-tests/scripts/doc_test_extract.py` (block selection, reuse resolution, block order sort)
-- Runner: `docs-tests/scripts/doc_test_run.py` (discovers `test:` pages, generates scripts, optional kind run)
+- Runner: `docs-tests/scripts/doc_test_run.py` (reads `tests.yaml` scenarios, generates scripts, optional kind run)
+- How docs-tests works, including "Telling what is broken": the docs-tests README
