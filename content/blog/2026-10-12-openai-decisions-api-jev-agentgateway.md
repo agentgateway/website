@@ -5,7 +5,7 @@ publishDate: 2026-10-12
 author: "Christian Posta"
 description: ""
 toc: true
-draft: true
+draft: false
 ---
 
 AI models exist for voice, images, and text generation (LLM, for example), but some times, applications need judgements. Let's say a customer sends this to your support application:
