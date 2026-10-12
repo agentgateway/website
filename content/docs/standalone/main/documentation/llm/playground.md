@@ -38,6 +38,10 @@ Use the built-in LLM playground in the agentgateway UI to send a chat completion
    {{< reuse-image-light src="img/ui-llm-playground.png" >}}
    {{< reuse-image-dark srcDark="img/ui-llm-playground-dark.png" >}}
 
+## Authentication behavior
+
+The playground sends the request from your browser, but it does not forward browser credentials such as cookies or HTTP basic authentication to the LLM gateway. If the gateway requires a bearer token, enter the token in the playground's API key field so the request uses an `Authorization` header.
+
 ## Next steps
 
 - [Observe LLM traffic]({{< link-hextra path="/documentation/llm/observability/" >}}) with metrics, logs, and traces.

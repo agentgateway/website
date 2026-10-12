@@ -119,6 +119,16 @@ frontendPolicies:
       cost: 'string(llm.cost)'
 ```
 
+For requests from agent harnesses, you can also log the detected agent session. The `request.agent.session` value comes from common agent headers such as `x-claude-code-session-id` and `x-session-id`, unless you override that value with `config.standardAttributes.session`.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    add:
+      agent_session: 'request.agent.session'
+```
+
 For the full list of available fields, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables/" >}}). 
 
 ### Log the selected backend endpoint {#backend-endpoint}

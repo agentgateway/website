@@ -1,13 +1,13 @@
 ---
 title: Set up MCP guardrails
 weight: 20
-description: Gate and mutate MCP method calls with an external ExtMCP policy server.
+description: Gate and mutate MCP method calls with an external ExtMCP policy server or in-process CEL expressions.
 test:
   mcp-guardrails:
   - path: mcp-guardrails
 ---
 
-Gate and mutate Model Context Protocol (MCP) method calls with an external policy server. For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
+Gate and mutate Model Context Protocol (MCP) method calls with an external policy server or in-process Common Expression Language (CEL) expressions. For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
 
 In this guide, you route `tools/call` and `tools/list` requests through a sample ExtMCP server that denies any tool whose name contains `forbidden` and annotates each tool description in `tools/list` responses.
 
@@ -117,6 +117,65 @@ In this guide, you route `tools/call` and `tools/list` requests through a sample
    | `host` | The address of the ExtMCP policy server. This example points to the sample server from the previous step. |
    | `failureMode: failClosed` | Deny requests if the policy server is unreachable or returns an error. To allow requests instead, set `failOpen`. |
    | `methods` | The MCP methods to route through the policy server, and the phase for each. `tools/call: request` sends each tool call to the server *before* it reaches the MCP backend, so the server can allow, mutate, or deny the call. `tools/list: response` sends the tool listing to the server *after* the backend returns it, so the server can filter or annotate the list. For the full list of phases and method matching, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}). |
+
+   To enforce guardrails without a remote ExtMCP server, use `kind: expression`. A CEL processor can reject a matching MCP operation or return a transformed request or response body.
+
+   ```yaml
+   mcpGuardrails:
+     processors:
+     # Deny before masking, so this rule sees the original message.
+     - kind: expression
+       methods: {"tools/call": request}
+       condition: >-
+         mcp.params.name == 'echo' &&
+         has(mcp.params.arguments) &&
+         has(mcp.params.arguments.message) &&
+         mcp.params.arguments.message.contains('DO_NOT_SEND')
+       reject: "Messages containing DO_NOT_SEND may not be sent upstream"
+
+     # Mask every email-like match in echo's message before sending it upstream.
+     - kind: expression
+       methods: {"tools/call": request}
+       condition: >-
+         mcp.params.name == 'echo' &&
+         has(mcp.params.arguments) &&
+         has(mcp.params.arguments.message)
+       transform: >-
+         mcp.params.with(p, p.merge({
+           'arguments': p.arguments.merge({
+             'message': p.arguments.message.regexReplaceAll(
+               '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+[.][A-Za-z]{2,}',
+               '[EMAIL]'
+             )
+           })
+         }))
+
+     # Mask demo secrets in all text blocks returned by tools.
+     - kind: expression
+       methods: {"tools/call": response}
+       condition: has(mcp.result.content)
+       transform: >-
+         mcp.result.with(r, r.merge({
+           'content': r.content.map(item,
+             item.type == 'text'
+               ? item.merge({'text': item.text.regexReplaceAll(
+                   'demo-secret-[A-Za-z0-9]+', '[SECRET]'
+                 )})
+               : item
+           )
+         }))
+   ```
+
+   The following table describes the CEL processor settings.
+
+   | Setting | Description |
+   |---------|-------------|
+   | `kind: expression` | Use an in-process CEL guardrail instead of a remote ExtMCP server. |
+   | `condition` | Run the action only when the CEL expression returns `true`. If you omit `condition`, the action always runs for matched methods. |
+   | `reject` | Reject the MCP operation with this message. Each processor must set exactly one of `reject` or `transform`. |
+   | `transform` | Return a replacement body for the current phase. Use `mcp.params` for request-phase processors and `mcp.result` for response-phase processors. Return `null` to leave the body unchanged, and use `merge` to preserve fields that the transform does not change. |
+
+   Processors run in list order within their phase. Each processor sees mutations from previous processors. The first rejection stops the chain. Expression errors and invalid transformed MCP bodies reject the operation.
 
 3. Run agentgateway with the configuration file.
    ```sh

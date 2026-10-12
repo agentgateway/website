@@ -110,6 +110,10 @@ Use the UI to review what agentgateway loaded and to manage the resources that y
 
 Whether the UI can save the changes that you make depends on your storage mode. In the binary and Docker installations, the UI writes to your configuration file by default. In the Helm installation, the ConfigMap is read-only and a save fails unless you switch the chart to database mode. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+In **Settings > UI**, choose the public gateway that serves the UI and configure policies that protect the UI. In **Settings > Observability**, configure tracing and access logs for all traffic.
+{{< /version >}}
+
 ## Generate LLM client settings {#client-setup}
 
 For an example of using the UI to set something up, use the **LLM > Client Setup** page. It generates connection settings and snippets for curl, Claude Code, Claude Desktop, Codex CLI, OpenCode, Cursor, GitHub Copilot, Windsurf, and the OpenAI JavaScript and Python SDKs{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}. The page also includes a Pi recipe that writes `baseUrl` and `apiKey` values into `~/.pi/agent/models.json`{{< /version >}}.
@@ -120,6 +124,10 @@ For an example of using the UI to set something up, use the **LLM > Client Setup
 4. Select the client from the **Integration** dropdown, and copy the generated settings or snippet.
 
 Client Setup does not create a route, model, authentication policy, or provider credential. It generates client-side values from the configuration that already exists. For client-specific prerequisites, see [LLM clients]({{< link-hextra path="/integrations/llm/clients/" >}}).
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+When the UI and the selected LLM gateway are served by the same gateway, **Gateway base URL** uses the browser origin. Using the browser origin keeps generated client settings correct when a reverse proxy changes the public scheme, hostname, or port.
+{{< /version >}}
 
 The selected model appears only in recipes that accept a model setting. For example, the Claude Desktop recipe outputs a gateway URL and API key, but does not configure a model name in Claude Desktop.
 

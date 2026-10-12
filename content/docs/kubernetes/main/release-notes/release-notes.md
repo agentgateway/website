@@ -148,10 +148,12 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3544 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3593 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3197 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3711 -->
 
 - **List pagination**: List responses for tools, prompts, and resources carry a `nextCursor`. When an endpoint federates several targets, the client gets one combined cursor that tracks every target. For more information, see [List pagination]({{< link-hextra path="/documentation/mcp/spec-compatibility/#list-pagination" >}}).
 - **Request size limit**: An MCP request body that is larger than the buffer limit returns `413`. For more information, see [Buffer limits]({{< link-hextra path="/documentation/traffic-management/buffering/#about-buffer-limits" >}}).
 - **Method names in policies**: Agentgateway automatically sets `mcp.methodName` from the request's JSON-RPC method, such as `tools/call`. Route and backend policies can use this CEL variable for rate limits and authorization. For more information, see [MCP rate limits]({{< link-hextra path="/documentation/mcp/rate-limit/#how-tool-calls-map-to-http-requests" >}}).
+- **CEL MCP guardrails**: MCP guardrail processors can now use `kind: expression` to reject matching MCP operations or transform request `mcp.params` and response `mcp.result` bodies without a remote ExtMCP server. Agent sessions are also available to CEL as `request.agent.session`, from common agent session headers or `config.standardAttributes.session`.
 
 ### Traffic management and operations {#v16-traffic}
 
