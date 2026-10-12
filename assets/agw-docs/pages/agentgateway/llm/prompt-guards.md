@@ -11,7 +11,7 @@ Regex-based prompt guards let you inspect LLM requests and responses against cus
 | Pattern | Description |
 | -- | -- |
 | `Email` | Email addresses |
-| `PhoneNumber` | Phone numbers |
+| `PhoneNumber` | Phone numbers{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} with 7 to 15 digits. Longer digit runs are not treated as phone numbers.{{< /version >}} |
 | `Ssn` | Social Security Numbers |
 | `CreditCard` | Credit card numbers{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} that pass the Luhn checksum. Digit groups can be separated by spaces or hyphens. The checksum runs before the guard action, so a number that fails it is not masked, rejected, or audited.{{< /version >}} |
 | `CaSin` | Canadian Social Insurance Numbers |
