@@ -312,7 +312,15 @@ Google requires the issuer to be an `https://` URL. Keycloak in this example run
 
 ## Step 5: Verify the exchange {#verify}
 
-1. Send the same request again. The gateway exchanges the Keycloak token at the Google STS, and forwards the request to Cloud Storage with the Google access token.
+1. Mint a new token for `testuser`. The token from Step 1 has likely expired, because Keycloak tokens expire after 5 minutes. The `sub` claim of the new token is the same, so the IAM binding from Step 2 still applies. The Keycloak port-forward from Step 1 must still be running.
+
+   ```sh
+   export INBOUND_TOKEN=$(curl -s http://localhost:8081/realms/agentgateway/protocol/openid-connect/token \
+     -u agent:agent-secret -d grant_type=password \
+     -d username=testuser -d password=testpass | jq -r .access_token)
+   ```
+
+2. Send the same request again. The gateway exchanges the Keycloak token at the Google STS, and forwards the request to Cloud Storage with the Google access token.
 
    ```sh
    curl -s http://$INGRESS_GW_ADDRESS/storage/v1/b/$BUCKET/o \
@@ -336,7 +344,7 @@ Google requires the issuer to be an `https://` URL. Keycloak in this example run
    }
    ```
 
-2. Send a request without a token. The gateway has no subject token to exchange, so it rejects the request with a `400` response and does not call the STS.
+3. Send a request without a token. The gateway has no subject token to exchange, so it rejects the request with a `400` response and does not call the STS.
 
    ```sh
    curl -s -w " %{http_code}\n" http://$INGRESS_GW_ADDRESS/storage/v1/b/$BUCKET/o \
@@ -390,7 +398,13 @@ If the exchange succeeds but Cloud Storage returns `403`, the federated identity
 
    {{< reuse "agw-docs/snippets/te-google-preset-cleanup.md" >}}
 
-2. Delete the Google Cloud resources.
+2. Stop the port-forwards. Press `Ctrl+C` in the terminal that runs the Keycloak port-forward from Step 1. If you ran the admin port-forward in the troubleshooting section, stop it too.
+
+   ```sh
+   pkill -f "port-forward deployment/agentgateway-proxy" || true
+   ```
+
+3. Delete the Google Cloud resources.
 
    ```sh
    gcloud storage rm --recursive gs://$BUCKET

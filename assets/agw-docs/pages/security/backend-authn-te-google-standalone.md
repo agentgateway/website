@@ -164,7 +164,7 @@ Google requires the issuer to be an `https://` URL. Keycloak in this example run
 
    For a description of each setting, see [Google STS settings](#settings).
 
-2. Run agentgateway with the configuration.
+2. In a second terminal, change to the directory that has the `config.yaml` file, and run agentgateway with the configuration. Keep the first terminal for the `curl` commands, so that the `INBOUND_TOKEN`, `USER_SUB`, and `BUCKET` variables stay available there.
 
    ```sh
    agentgateway -f config.yaml
@@ -172,7 +172,15 @@ Google requires the issuer to be an `https://` URL. Keycloak in this example run
 
 ## Step 4: Verify the exchange {#verify}
 
-1. In another terminal, list the objects in the bucket through the gateway, with the Keycloak token. Make sure that the `INBOUND_TOKEN` and `BUCKET` variables are set in this terminal. The gateway exchanges the Keycloak token at the Google STS, and forwards the request to Cloud Storage with the Google access token.
+1. In the first terminal, mint a new token for `testuser`. The token from Step 1 has likely expired, because Keycloak tokens expire after 5 minutes. The `sub` claim of the new token is the same, so the IAM binding from Step 2 still applies.
+
+   ```sh
+   export INBOUND_TOKEN=$(curl -s http://localhost:7080/realms/agentgateway/protocol/openid-connect/token \
+     -u agent:agent-secret -d grant_type=password \
+     -d username=testuser -d password=testpass | jq -r .access_token)
+   ```
+
+2. List the objects in the bucket through the gateway, with the Keycloak token. The gateway exchanges the Keycloak token at the Google STS, and forwards the request to Cloud Storage with the Google access token.
 
    ```sh
    curl -s http://localhost:3000/storage/v1/b/$BUCKET/o \
@@ -195,7 +203,7 @@ Google requires the issuer to be an `https://` URL. Keycloak in this example run
    }
    ```
 
-2. Send a request without a token. The gateway has no subject token to exchange, so it rejects the request with a `400` response and does not call the STS.
+3. Send a request without a token. The gateway has no subject token to exchange, so it rejects the request with a `400` response and does not call the STS.
 
    ```sh
    curl -s -w " %{http_code}\n" http://localhost:3000/storage/v1/b/$BUCKET/o
@@ -226,7 +234,7 @@ If the exchange succeeds but Cloud Storage returns `403`, the federated identity
 
 ## Cleanup
 
-1. Stop agentgateway with `Ctrl+C`, and remove the Keycloak container.
+1. Stop agentgateway with `Ctrl+C` in its terminal, and remove the Keycloak container.
 
    ```sh
    docker rm -f keycloak
