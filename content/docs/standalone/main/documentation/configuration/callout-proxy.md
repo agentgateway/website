@@ -4,15 +4,17 @@ weight: 38
 description: Send the requests that agentgateway makes on its own behalf, such as JWKS fetches and external authorization calls, through an HTTP proxy.
 ---
 
-In networks where outbound traffic must leave through a corporate HTTP proxy, you can send the requests that agentgateway makes on its own behalf through that proxy. These requests are called callouts, and they go through the proxy in an HTTP CONNECT tunnel.
+In networks where outbound traffic must leave through a corporate HTTP proxy, you can send the requests that agentgateway makes on its own behalf through that proxy. These requests are called callouts. Callouts that use TLS go through the proxy in an HTTP CONNECT tunnel, and plaintext callouts go to the proxy as standard forward-proxy requests.
 
 ## About callouts
 
 A callout is any request that agentgateway sends for itself rather than for a client. Callouts include the following requests.
 
 * Remote JSON Web Key Set (JWKS) fetches for JSON Web Token (JWT) authentication.
-* OpenID Connect (OIDC) discovery.
-* [External authorization]({{< link-hextra path="/documentation/configuration/security/external-authz" >}}) requests.
+* OpenID Connect (OIDC) discovery, including for MCP authentication.
+* [External authorization]({{< link-hextra path="/documentation/configuration/security/external-authz" >}}), external processing, and remote rate limit requests.
+* Guardrail requests, such as webhooks, OpenAI moderation, AWS Bedrock Guardrails, Google Model Armor, and Azure AI Content Safety.
+* Virtual model callout routing requests.
 * Cloud provider credential fetches, such as AWS and Azure credentials.
 
 Client traffic to your primary backends is not a callout, so the callout proxy does not apply to it. To send backend traffic through a proxy, set the `backendTunnel` policy on the backend instead. To proxy CONNECT requests from your clients instead, see [Egress proxy]({{< link-hextra path="/documentation/configuration/egress-proxy/" >}}).
@@ -60,7 +62,7 @@ If you omit `config.callouts.tunnel`, agentgateway reads the following environme
 The following callouts go directly to their destination, even when you configure a proxy.
 
 * Destinations that match `noProxy` or `NO_PROXY`.
-* Loopback and link-local addresses, such as `127.0.0.1` and the cloud metadata server at `169.254.169.254`. A remote proxy cannot reach these addresses.
+* Loopback and link-local IP addresses, such as `127.0.0.1` and the cloud metadata server at `169.254.169.254`. A remote proxy cannot reach these addresses. This rule applies to IP addresses only. A callout to the hostname `localhost` goes through the proxy, so add `localhost` to `noProxy` or `NO_PROXY` if your callout targets use it.
 * Callouts to a backend that has its own `backendTunnel` policy. These callouts use that tunnel instead.
 * Callouts to a service from the top-level `services` list, and to Unix domain sockets.
 * Google Cloud Platform (GCP) credential fetches, when you configure the proxy with `config.callouts.tunnel`. To send these fetches through a proxy, use the environment variables instead.
