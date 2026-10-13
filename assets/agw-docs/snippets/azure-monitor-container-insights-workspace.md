@@ -26,5 +26,12 @@ CONTAINER_INSIGHTS_WORKSPACE_ID="$(az resource show \
 export CONTAINER_INSIGHTS_WORKSPACE_RESOURCE_ID CONTAINER_INSIGHTS_WORKSPACE_ID &&
 kubectl rollout status daemonset/ama-logs \
   --namespace kube-system \
-  --timeout=5m
+  --timeout=5m &&
+printf '%s\n' 'Container Insights workspace and agent verified.'
+```
+
+Expected final output after the checks pass:
+
+```text
+Container Insights workspace and agent verified.
 ```

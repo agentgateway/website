@@ -18,18 +18,18 @@ Check that you have these resources and permissions before changing the cluster.
 - A working model or provider route through your existing Gateway, plus a representative request for that route. Follow the [OpenAI setup guide]({{< link-hextra path="/integrations/llm/providers/openai/" >}}) for an example that creates a provider and an HTTPRoute, or choose another [LLM provider]({{< link-hextra path="/integrations/llm/providers/" >}}).
 - Azure CLI (tested with version 2.85.0), `kubectl`, `jq`, `curl`, and OpenSSL installed locally. Sign in to Azure and configure `kubectl` for the target cluster.
 - `Contributor` on the resource group, or an equivalent custom role that grants create and read access to `Microsoft.OperationalInsights/workspaces`, `Microsoft.Insights/dataCollectionEndpoints`, `Microsoft.Insights/dataCollectionRules`, `Microsoft.ManagedIdentity/userAssignedIdentities`, and `Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`.
-- `Role Based Access Control Administrator`, `User Access Administrator`, or equivalent `Microsoft.Authorization/roleAssignments/read` and `Microsoft.Authorization/roleAssignments/write` permissions at the DCR scope. These permissions let you inspect and assign `Monitoring Metrics Publisher` for the Collector identity.
+- `Role Based Access Control Administrator`, `User Access Administrator`, or equivalent `Microsoft.Authorization/roleAssignments/read` and `Microsoft.Authorization/roleAssignments/write` permissions at the Data Collection Rule (DCR) scope. These permissions let you inspect and assign `Monitoring Metrics Publisher` for the Collector identity.
 - Kubernetes create and get access for the named `ServiceMonitor`, `PodMonitor`, `AgentgatewayPolicy`, `ServiceAccount`, `ConfigMap`, `Deployment`, `Service`, `NetworkPolicy`, and `ReferenceGrant` resources used by this guide.
 - You need get access for the cluster-scoped `Namespace` resource named `otel-system`. If the namespace is absent, you also need create access for that resource.
 - Verification requires get and list access to the relevant Custom Resource Definitions (CRDs), each named resource, the agentgateway controller, Collector and Gateway proxy pods, and pod logs. Deployment rollout status also requires watch access to the Collector `Deployment`.
 - `Log Analytics Reader` or equivalent query permission on the Log Analytics workspace for trace verification.
 
 > [!IMPORTANT]
-> Choose unused names for the Azure resources and Kubernetes objects created below. The setup checks stop if those names already exist.
+> Choose unused names for the Azure resources and Kubernetes objects created in this guide. The setup checks stop if those names already exist.
 
 ## Set environment variables
 
-Set your subscription, resource group, and cluster names. Choose unused names for the Log Analytics workspace, DCE, DCR, and Collector identity. The `otel-system` namespace and `otel-collector` service account must match the Workload Identity subject used later.
+Set your subscription, resource group, and cluster names. Choose unused names for the Log Analytics workspace, Data Collection Endpoint (DCE), DCR, and Collector identity. Descriptions in this guide use the default `otel-system` namespace and `otel-collector` names. The commands use your values, including for the Workload Identity subject.
 
 ```sh
 export SUBSCRIPTION_ID="<subscription-id>"
@@ -67,11 +67,13 @@ if ! jq -en \
   --arg identity "$COLLECTOR_IDENTITY" \
   --arg controller_namespace "$CONTROLLER_NAMESPACE" \
   --arg gateway_namespace "$GATEWAY_NAMESPACE" \
-  --arg gateway "$GATEWAY_NAME" '
+  --arg gateway "$GATEWAY_NAME" \
+  --arg otel_namespace "$OTEL_NAMESPACE" \
+  --arg service_account "$OTEL_SERVICE_ACCOUNT" '
     all([$subscription, $resource_group, $location, $cluster, $workspace, $dce, $dcr, $identity][];
       (length > 0) and (startswith("<") | not)) and
-    all([$controller_namespace, $gateway_namespace, $gateway][];
-      test("^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$"))'; then
+    all([$controller_namespace, $gateway_namespace, $gateway, $otel_namespace, $service_account][];
+      test("^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$"))' >/dev/null; then
   printf 'Replace every placeholder and use valid Kubernetes resource names.\n' >&2
   false
 fi &&
@@ -81,7 +83,14 @@ az group show \
   --name "$RESOURCE_GROUP" \
   --output none \
   --only-show-errors &&
-kubectl config current-context
+kubectl config current-context &&
+printf '%s\n' 'Environment checks passed.'
+```
+
+Expected final output after the checks pass:
+
+```text
+Environment checks passed.
 ```
 
 Run the command blocks in order in a Bash or Zsh session. Stop if a block returns a nonzero status and resolve the error before continuing.
@@ -96,17 +105,30 @@ Managed Prometheus uses Azure Monitor's versions of the Prometheus Operator moni
    controller_monitor="$(kubectl get servicemonitors.azmonitoring.coreos.com \
      "$CONTROLLER_SERVICE_MONITOR" --namespace "$CONTROLLER_NAMESPACE" \
      --ignore-not-found --output name)" &&
-   [ -z "$controller_monitor" ] &&
+   if [ -n "$controller_monitor" ]; then
+     printf 'Refusing to overwrite existing object: %s.\n' "$controller_monitor" >&2
+     false
+   fi &&
    gateway_monitor="$(kubectl get podmonitors.azmonitoring.coreos.com \
      "$GATEWAY_POD_MONITOR" --namespace "$GATEWAY_NAMESPACE" \
      --ignore-not-found --output name)" &&
-   [ -z "$gateway_monitor" ]
+   if [ -n "$gateway_monitor" ]; then
+     printf 'Refusing to overwrite existing object: %s.\n' "$gateway_monitor" >&2
+     false
+   fi &&
+   printf '%s\n' 'Monitor names are available.'
+   ```
+
+   Expected final output after the checks pass:
+
+   ```text
+   Monitor names are available.
    ```
 
 2. Create a `ServiceMonitor` for the controller and a `PodMonitor` for the Gateway proxy.
 
    ```sh
-   kubectl create -f- <<EOF
+   kubectl create -f- <<EOF &&
    apiVersion: azmonitoring.coreos.com/v1
    kind: ServiceMonitor
    metadata:
@@ -137,6 +159,13 @@ Managed Prometheus uses Azure Monitor's versions of the Prometheus Operator moni
          path: /metrics
          interval: 15s
    EOF
+   printf '%s\n' 'Controller and Gateway monitors created.'
+   ```
+
+   Expected final output after the checks pass:
+
+   ```text
+   Controller and Gateway monitors created.
    ```
 
    | Field | Description |
@@ -160,7 +189,14 @@ Managed Prometheus uses Azure Monitor's versions of the Prometheus Operator moni
      --output name &&
    kubectl get podmonitors.azmonitoring.coreos.com "$GATEWAY_POD_MONITOR" \
      --namespace "$GATEWAY_NAMESPACE" \
-     --output name
+     --output name &&
+   printf '%s\n' 'Controller and Gateway monitors verified.'
+   ```
+
+   Expected final output after the checks pass:
+
+   ```text
+   Controller and Gateway monitors verified.
    ```
 
 ## Verify managed Prometheus metrics
@@ -191,350 +227,11 @@ Use the Prometheus query interface for the Azure Monitor workspace linked to you
 
 ## Create the native OTLP trace resources
 
-Trace ingestion uses a public Data Collection Endpoint (DCE) and a Data Collection Rule (DCR). The DCR sends only the three native OpenTelemetry trace streams to Log Analytics.
-
-1. Run the read-only checks below for conflicts with existing Azure resources and recoverable Log Analytics workspaces. Resolve any API or permission error before continuing.
-
-   ```sh
-   unset AZURE_NAME_PREFLIGHT_PASSED
-   azure_resources="$(az resource list \
-     --subscription "$SUBSCRIPTION_ID" \
-     --resource-group "$RESOURCE_GROUP" \
-     --output json --only-show-errors)" &&
-   jq -e \
-     --arg workspace "$LOG_ANALYTICS_WORKSPACE" \
-     --arg dce "$DATA_COLLECTION_ENDPOINT" \
-     --arg dcr "$DATA_COLLECTION_RULE" \
-     --arg identity "$COLLECTOR_IDENTITY" '
-       type == "array" and
-       all(.[];
-         ((.type | ascii_downcase) != "microsoft.operationalinsights/workspaces" or
-           (.name | ascii_downcase) != ($workspace | ascii_downcase)) and
-         ((.type | ascii_downcase) != "microsoft.insights/datacollectionendpoints" or
-           (.name | ascii_downcase) != ($dce | ascii_downcase)) and
-         ((.type | ascii_downcase) != "microsoft.insights/datacollectionrules" or
-           (.name | ascii_downcase) != ($dcr | ascii_downcase)) and
-         ((.type | ascii_downcase) != "microsoft.managedidentity/userassignedidentities" or
-           (.name | ascii_downcase) != ($identity | ascii_downcase)))' \
-     <<<"$azure_resources" &&
-   deleted_workspaces="$(az monitor log-analytics workspace list-deleted-workspaces \
-     --subscription "$SUBSCRIPTION_ID" \
-     --resource-group "$RESOURCE_GROUP" \
-     --output json --only-show-errors)" &&
-   jq -e --arg name "$LOG_ANALYTICS_WORKSPACE" --arg location "$LOCATION" '
-     type == "array" and
-     all(.[];
-       ((.name // "") | ascii_downcase) != ($name | ascii_downcase) or
-       ((.location // "") | ascii_downcase) != ($location | ascii_downcase))' \
-     <<<"$deleted_workspaces" &&
-   export AZURE_NAME_PREFLIGHT_PASSED=true
-   ```
-
-2. Create and validate the Log Analytics workspace, then retrieve its resource ID and workspace ID.
-
-   ```sh
-   [ "${AZURE_NAME_PREFLIGHT_PASSED:-false}" = "true" ] &&
-   az monitor log-analytics workspace create \
-     --subscription "$SUBSCRIPTION_ID" \
-     --resource-group "$RESOURCE_GROUP" \
-     --workspace-name "$LOG_ANALYTICS_WORKSPACE" \
-     --location "$LOCATION" \
-     --sku PerGB2018 \
-     --retention-time 30 \
-     --output none \
-     --only-show-errors &&
-   workspace_json="$(az monitor log-analytics workspace show \
-     --subscription "$SUBSCRIPTION_ID" \
-     --resource-group "$RESOURCE_GROUP" \
-     --workspace-name "$LOG_ANALYTICS_WORKSPACE" \
-     --output json \
-     --only-show-errors)" &&
-   if ! jq -e \
-     --arg location "$LOCATION" '
-       (.location | ascii_downcase) == ($location | ascii_downcase) and
-       .provisioningState == "Succeeded" and
-       .sku.name == "PerGB2018" and
-       (.customerId // "") != ""' \
-     <<<"$workspace_json" >/dev/null; then
-     printf 'The new Log Analytics workspace failed validation.\n' >&2
-     false
-   fi &&
-   LOG_ANALYTICS_RESOURCE_ID="$(jq -er '.id | select(length > 0)' \
-     <<<"$workspace_json")" &&
-   LOG_ANALYTICS_WORKSPACE_ID="$(jq -er '.customerId | select(length > 0)' \
-     <<<"$workspace_json")" &&
-   export LOG_ANALYTICS_RESOURCE_ID LOG_ANALYTICS_WORKSPACE_ID
-   ```
-
-3. Create the public DCE with Azure Monitor API version `2024-03-11`, then retrieve and validate the resource.
-
-   ```sh
-   export DATA_COLLECTION_ENDPOINT_ID="/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Insights/dataCollectionEndpoints/${DATA_COLLECTION_ENDPOINT}" &&
-   DCE_BODY="$(jq -n \
-     --arg location "$LOCATION" '{
-       location: $location,
-       properties: {
-         description: "agentgateway native OTLP endpoint",
-         networkAcls: {publicNetworkAccess: "Enabled"}
-       }
-     }')" &&
-   export DCE_BODY &&
-   az rest \
-     --method put \
-     --url "${DATA_COLLECTION_ENDPOINT_ID}?api-version=2024-03-11" \
-     --body "$DCE_BODY" \
-     --output none \
-     --only-show-errors &&
-   DCE_JSON="$(az rest \
-     --method get \
-     --url "${DATA_COLLECTION_ENDPOINT_ID}?api-version=2024-03-11" \
-     --output json \
-     --only-show-errors)" &&
-   export DCE_JSON &&
-   if ! jq -e \
-     --arg name "$DATA_COLLECTION_ENDPOINT" \
-     --arg location "$LOCATION" '
-       .name == $name and
-       (.location | ascii_downcase) == ($location | ascii_downcase) and
-       .properties.provisioningState == "Succeeded" and
-       .properties.networkAcls.publicNetworkAccess == "Enabled" and
-       (.properties.logsIngestion.endpoint | test("^https://"))' \
-     <<<"$DCE_JSON" >/dev/null; then
-     printf 'The new Data Collection Endpoint failed validation.\n' >&2
-     false
-   fi
-   ```
-
-   | Field | Description |
-   | --- | --- |
-   | `location` | Places the DCE in the selected Azure region. |
-   | `properties.provisioningState` | Must report `Succeeded` before the ingestion endpoint is used. |
-   | `properties.networkAcls.publicNetworkAccess` | Enables the Collector to reach the DCE through its public endpoint. Use a private connectivity design instead if your cluster blocks public egress. |
-   | `properties.logsIngestion.endpoint` | Supplies the endpoint prefix returned by Azure. The command removes any trailing slash before adding the immutable DCR path. |
-
-4. Create the trace-only DCR with Azure Monitor API version `2024-03-11`, then retrieve and validate the resource.
-
-   ```sh
-   export DATA_COLLECTION_RULE_ID="/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Insights/dataCollectionRules/${DATA_COLLECTION_RULE}" &&
-   DCR_BODY="$(jq -n \
-     --arg location "$LOCATION" \
-     --arg dce "$DATA_COLLECTION_ENDPOINT_ID" \
-     --arg workspace "$LOG_ANALYTICS_RESOURCE_ID" '
-     def trace_streams: [
-       "Microsoft-OTel-Traces-Spans",
-       "Microsoft-OTel-Traces-Events",
-       "Microsoft-OTel-Traces-Resources"
-     ];
-     {
-       location: $location,
-       properties: {
-         description: "agentgateway native OTLP traces",
-         dataCollectionEndpointId: $dce,
-         directDataSources: {
-           otelTraces: [{
-             streams: trace_streams,
-             enrichWithResourceAttributes: ["*"],
-             name: "otelTracesDataSourceDirect"
-           }]
-         },
-         destinations: {
-           logAnalytics: [{
-             workspaceResourceId: $workspace,
-             name: "otelLaw"
-           }]
-         },
-         dataFlows: [{
-           streams: trace_streams,
-           destinations: ["otelLaw"]
-         }]
-       }
-     }')" &&
-   export DCR_BODY &&
-   az rest \
-     --method put \
-     --url "${DATA_COLLECTION_RULE_ID}?api-version=2024-03-11" \
-     --body "$DCR_BODY" \
-     --output none \
-     --only-show-errors &&
-   DCR_JSON="$(az rest \
-     --method get \
-     --url "${DATA_COLLECTION_RULE_ID}?api-version=2024-03-11" \
-     --output json \
-     --only-show-errors)" &&
-   export DCR_JSON &&
-   if ! jq -e \
-     --arg name "$DATA_COLLECTION_RULE" \
-     --arg location "$LOCATION" \
-     --arg dce "$DATA_COLLECTION_ENDPOINT_ID" \
-     --arg workspace "$LOG_ANALYTICS_RESOURCE_ID" '
-       def expected: [
-         "Microsoft-OTel-Traces-Events",
-         "Microsoft-OTel-Traces-Resources",
-         "Microsoft-OTel-Traces-Spans"
-       ];
-       .name == $name and
-       (.location | ascii_downcase) == ($location | ascii_downcase) and
-       .properties.provisioningState == "Succeeded" and
-       (.properties.dataCollectionEndpointId | ascii_downcase) == ($dce | ascii_downcase) and
-       (.properties.dataSources // {}) == {} and
-       (.properties.references // {}) == {} and
-       (.properties.directDataSources | keys) == ["otelTraces"] and
-       (.properties.directDataSources.otelTraces | length) == 1 and
-       (.properties.directDataSources.otelTraces[0].streams | sort) == expected and
-       .properties.directDataSources.otelTraces[0].enrichWithResourceAttributes == ["*"] and
-       (.properties.destinations | keys) == ["logAnalytics"] and
-       (.properties.destinations.logAnalytics | length) == 1 and
-       (.properties.destinations.logAnalytics[0] | {workspaceResourceId, name}) == {
-         workspaceResourceId: $workspace, name: "otelLaw"
-       } and
-       (.properties.dataFlows | length) == 1 and
-       (.properties.dataFlows[0].streams | sort) == expected and
-       .properties.dataFlows[0].destinations == ["otelLaw"] and
-       (.properties.immutableId // "") != ""' \
-     <<<"$DCR_JSON" >/dev/null; then
-     printf 'The new Data Collection Rule failed trace-only validation.\n' >&2
-     false
-   fi
-   ```
-
-   | Field | Description |
-   | --- | --- |
-   | `properties.dataCollectionEndpointId` | Connects this DCR to the DCE created in the previous step. |
-   | `properties.directDataSources.otelTraces[].streams` | Accepts native span, event, and resource streams. The rule contains no metric or log data source. |
-   | `properties.directDataSources.otelTraces[].enrichWithResourceAttributes` | Copies OpenTelemetry resource attributes, including the service identity, into the native tables. |
-   | `properties.destinations.logAnalytics` | Selects the Log Analytics workspace that stores the trace records. |
-   | `properties.dataFlows` | Sends all three trace streams to the `otelLaw` destination. |
-   | `properties.immutableId` | Forms the immutable rule segment of the native ingestion URL. |
-
-5. Construct and validate the Collector's native traces endpoint from the DCE logs ingestion endpoint and immutable DCR ID.
-
-   ```sh
-   DCE_LOGS_INGESTION_ENDPOINT="$(jq -er \
-     '.properties.logsIngestion.endpoint | select(length > 0)' \
-     <<<"$DCE_JSON")" &&
-   DCR_IMMUTABLE_ID="$(jq -er \
-     '.properties.immutableId | select(length > 0)' \
-     <<<"$DCR_JSON")" &&
-   AZURE_MONITOR_OTLP_TRACES_ENDPOINT="${DCE_LOGS_INGESTION_ENDPOINT%/}/dataCollectionRules/${DCR_IMMUTABLE_ID}/streams/Microsoft-OTLP-Traces/otlp/v1/traces" &&
-   if ! jq -en --arg endpoint "$AZURE_MONITOR_OTLP_TRACES_ENDPOINT" '$endpoint | test("^https://[^|&\\\\[:space:]]+$")'; then
-     false
-   fi &&
-   export DCE_LOGS_INGESTION_ENDPOINT DCR_IMMUTABLE_ID &&
-   export AZURE_MONITOR_OTLP_TRACES_ENDPOINT
-   ```
+{{< reuse "agw-docs/snippets/azure-monitor-trace-resources.md" >}}
 
 ## Configure Workload Identity for the Collector
 
-The Collector authenticates as a user-assigned managed identity. AKS projects a signed service account token into the Collector pod, so this path needs no client secret, connection string, instrumentation key, or Application Insights resource.
-
-1. Create and validate the Collector identity, then record its client and principal IDs.
-
-   ```sh
-   [ "${AZURE_NAME_PREFLIGHT_PASSED:-false}" = "true" ] &&
-   az identity create \
-     --subscription "$SUBSCRIPTION_ID" \
-     --resource-group "$RESOURCE_GROUP" \
-     --name "$COLLECTOR_IDENTITY" \
-     --location "$LOCATION" \
-     --output none \
-     --only-show-errors &&
-   identity_json="$(az identity show \
-     --subscription "$SUBSCRIPTION_ID" \
-     --resource-group "$RESOURCE_GROUP" \
-     --name "$COLLECTOR_IDENTITY" \
-     --output json \
-     --only-show-errors)" &&
-   if ! jq -e \
-     '
-       ((.id // "") | length > 0) and
-       (.clientId | test("^[0-9A-Fa-f-]{36}$")) and
-       (.principalId | test("^[0-9A-Fa-f-]{36}$"))' \
-     <<<"$identity_json" >/dev/null; then
-     printf 'The new Collector identity failed validation.\n' >&2
-     false
-   fi &&
-   COLLECTOR_CLIENT_ID="$(jq -er '.clientId | select(length > 0)' \
-     <<<"$identity_json")" &&
-   COLLECTOR_PRINCIPAL_ID="$(jq -er '.principalId | select(length > 0)' \
-     <<<"$identity_json")" &&
-   export COLLECTOR_CLIENT_ID COLLECTOR_PRINCIPAL_ID
-   ```
-
-2. Retrieve the AKS OIDC issuer and create the federated identity credential for the exact Collector service account subject.
-
-   ```sh
-   aks_json="$(az aks show \
-     --subscription "$SUBSCRIPTION_ID" \
-     --resource-group "$RESOURCE_GROUP" \
-     --name "$AKS_CLUSTER" \
-     --output json \
-     --only-show-errors)" &&
-   if ! jq -e '
-     .oidcIssuerProfile.enabled == true and
-     .securityProfile.workloadIdentity.enabled == true and
-     (.oidcIssuerProfile.issuerUrl // "") != ""' \
-     <<<"$aks_json" >/dev/null; then
-     printf 'AKS OIDC or Workload Identity is not enabled.\n' >&2
-     false
-   fi &&
-   AKS_OIDC_ISSUER="$(jq -er '.oidcIssuerProfile.issuerUrl' \
-     <<<"$aks_json")" &&
-   export AKS_OIDC_ISSUER &&
-   export COLLECTOR_SUBJECT="system:serviceaccount:otel-system:otel-collector" &&
-   credentials="$(az identity federated-credential list \
-     --subscription "$SUBSCRIPTION_ID" \
-     --resource-group "$RESOURCE_GROUP" \
-     --identity-name "$COLLECTOR_IDENTITY" \
-     --output json \
-     --only-show-errors)" &&
-   if ! jq -e --arg name "$FEDERATED_CREDENTIAL_NAME" '[.[] | select(.name == $name)] | length == 0' \
-     <<<"$credentials" >/dev/null; then
-     printf 'Refusing an existing federated credential named %s.\n' \
-       "$FEDERATED_CREDENTIAL_NAME" >&2
-     false
-   fi &&
-   az identity federated-credential create \
-     --subscription "$SUBSCRIPTION_ID" \
-     --resource-group "$RESOURCE_GROUP" \
-     --identity-name "$COLLECTOR_IDENTITY" \
-     --name "$FEDERATED_CREDENTIAL_NAME" \
-     --issuer "$AKS_OIDC_ISSUER" \
-     --subject "$COLLECTOR_SUBJECT" \
-     --audiences api://AzureADTokenExchange \
-     --output none \
-     --only-show-errors
-   ```
-
-3. Assign `Monitoring Metrics Publisher` at the DCR scope. Despite its name, this role also authorizes native OTLP trace writes to the DCR.
-
-   ```sh
-   MONITORING_METRICS_PUBLISHER_ROLE_ID="3913510d-42f4-4e42-8a64-420c390055eb" &&
-   assignments="$(az role assignment list \
-     --subscription "$SUBSCRIPTION_ID" \
-     --assignee-object-id "$COLLECTOR_PRINCIPAL_ID" \
-     --role "$MONITORING_METRICS_PUBLISHER_ROLE_ID" \
-     --scope "$DATA_COLLECTION_RULE_ID" \
-     --output json --only-show-errors)" &&
-   jq -e \
-     --arg principal "$COLLECTOR_PRINCIPAL_ID" \
-     --arg scope "$DATA_COLLECTION_RULE_ID" \
-     --arg role "$MONITORING_METRICS_PUBLISHER_ROLE_ID" '
-       type == "array" and length <= 1 and
-       all(.[];
-         (.principalId | ascii_downcase) == ($principal | ascii_downcase) and
-         (.scope | ascii_downcase) == ($scope | ascii_downcase) and
-         (.roleDefinitionId | ascii_downcase | endswith("/" + ($role | ascii_downcase))))' \
-     <<<"$assignments" &&
-   if [ "$(jq 'length' <<<"$assignments")" -eq 0 ]; then
-     az role assignment create \
-       --subscription "$SUBSCRIPTION_ID" \
-       --assignee-object-id "$COLLECTOR_PRINCIPAL_ID" \
-       --assignee-principal-type ServicePrincipal \
-       --role "$MONITORING_METRICS_PUBLISHER_ROLE_ID" \
-       --scope "$DATA_COLLECTION_RULE_ID" \
-       --output none --only-show-errors
-   fi
-   ```
+{{< reuse "agw-docs/snippets/azure-monitor-workload-identity.md" >}}
 
 ## Deploy the OpenTelemetry Collector
 
@@ -547,10 +244,17 @@ The Collector receives trace data inside the cluster and exports only traces to 
      --ignore-not-found --output name)" &&
    if [ -z "$namespace_state" ]; then
      kubectl create namespace "$OTEL_NAMESPACE"
-   fi
+   fi &&
+   printf '%s\n' 'Collector namespace is ready.'
    ```
 
-2. Check that the Collector object names in `otel-system` are available. The commands stop if an object already exists or an API or RBAC error prevents the check.
+   Expected final output after the checks pass:
+
+   ```text
+   Collector namespace is ready.
+   ```
+
+2. Check that the Collector object names in `OTEL_NAMESPACE` are available. The commands stop if an object already exists or an API or RBAC error prevents the check.
 
    ```sh
    (
@@ -569,178 +273,35 @@ The Collector receives trace data inside the cluster and exports only traces to 
    networkpolicies.networking.k8s.io ${OTEL_NETWORK_POLICY}
    referencegrants.gateway.networking.k8s.io ${OTEL_REFERENCE_GRANT}
    EOF
-   )
+   ) &&
+   printf '%s\n' 'Collector object names are available.'
    ```
 
-3. Apply the Collector manifest. Your shell fills in the setup variables, while escaped expressions such as `\${env:AZURE_CLIENT_ID}` remain literal for the Collector to resolve.
+   Expected final output after the checks pass:
+
+   ```text
+   Collector object names are available.
+   ```
+
+3. Restrict Collector ingress to pods for your named Gateway, and let the {{< reuse "agw-docs/snippets/policy.md" >}} in the Gateway namespace reference the Collector Service. Create these objects before the Collector so that ingress is restricted when the Collector pod starts.
 
    ```sh
-   jq -en \
-   --arg client_id "$COLLECTOR_CLIENT_ID" \
-   --arg endpoint "$AZURE_MONITOR_OTLP_TRACES_ENDPOINT" \
-   --arg namespace "$GATEWAY_NAMESPACE" \
-   --arg gateway "$GATEWAY_NAME" \
-   --arg otel_namespace "$OTEL_NAMESPACE" \
-   --arg collector "$OTEL_COLLECTOR_NAME" \
-   --arg service_account "$OTEL_SERVICE_ACCOUNT" \
-   --arg network_policy "$OTEL_NETWORK_POLICY" \
-   --arg reference_grant "$OTEL_REFERENCE_GRANT" \
-   --arg image "$OTEL_COLLECTOR_IMAGE" '
-     ($client_id | test("^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$")) and
-     ($endpoint | test("^https://[^|&\\\\[:space:]]+$")) and
-     ($namespace | test("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$")) and
-     ($gateway | test("^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$")) and
-     ($otel_namespace == "otel-system") and
-     ($service_account == "otel-collector") and
-     ([$collector, $network_policy, $reference_grant] |
-       all(.[]; test("^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$"))) and
-     ($image == "otel/opentelemetry-collector-contrib:0.148.0")' &&
-   kubectl create -f- <<EOF
-   apiVersion: v1
-   kind: ServiceAccount
-   metadata:
-     name: ${OTEL_SERVICE_ACCOUNT}
-     namespace: ${OTEL_NAMESPACE}
-     annotations:
-       azure.workload.identity/client-id: "${COLLECTOR_CLIENT_ID}"
-   ---
-   apiVersion: v1
-   kind: ConfigMap
-   metadata:
-     name: ${OTEL_COLLECTOR_NAME}
-     namespace: ${OTEL_NAMESPACE}
-   data:
-     collector.yaml: |
-       receivers:
-         otlp:
-           protocols:
-             grpc:
-               endpoint: 0.0.0.0:4317
-       processors:
-         memory_limiter:
-           check_interval: 1s
-           limit_mib: 256
-           spike_limit_mib: 64
-         batch:
-           send_batch_size: 512
-           timeout: 5s
-       extensions:
-         health_check:
-           endpoint: 0.0.0.0:13133
-         azure_auth:
-           workload_identity:
-             client_id: \${env:AZURE_CLIENT_ID}
-             federated_token_file: \${env:AZURE_FEDERATED_TOKEN_FILE}
-             tenant_id: \${env:AZURE_TENANT_ID}
-           scopes:
-             - https://monitor.azure.com/.default
-       exporters:
-         otlphttp/azuremonitor:
-           traces_endpoint: \${env:AZURE_MONITOR_OTLP_TRACES_ENDPOINT}
-           auth:
-             authenticator: azure_auth
-           sending_queue:
-             enabled: true
-             queue_size: 1000
-           retry_on_failure:
-             enabled: true
-             initial_interval: 5s
-             max_interval: 30s
-             max_elapsed_time: 300s
-       service:
-         extensions: [health_check, azure_auth]
-         pipelines:
-           traces:
-             receivers: [otlp]
-             processors: [memory_limiter, batch]
-             exporters: [otlphttp/azuremonitor]
-   ---
-   apiVersion: apps/v1
-   kind: Deployment
-   metadata:
-     name: ${OTEL_COLLECTOR_NAME}
-     namespace: ${OTEL_NAMESPACE}
-     labels:
-       app.kubernetes.io/name: ${OTEL_COLLECTOR_NAME}
-   spec:
-     replicas: 1
-     selector:
-       matchLabels:
-         app.kubernetes.io/name: ${OTEL_COLLECTOR_NAME}
-     template:
-       metadata:
-         labels:
-           app.kubernetes.io/name: ${OTEL_COLLECTOR_NAME}
-           azure.workload.identity/use: "true"
-       spec:
-         serviceAccountName: ${OTEL_SERVICE_ACCOUNT}
-         securityContext:
-           runAsNonRoot: true
-           seccompProfile:
-             type: RuntimeDefault
-         containers:
-           - name: collector
-             image: ${OTEL_COLLECTOR_IMAGE}
-             imagePullPolicy: IfNotPresent
-             args: ["--config=/conf/collector.yaml"]
-             env:
-               - name: AZURE_MONITOR_OTLP_TRACES_ENDPOINT
-                 value: "${AZURE_MONITOR_OTLP_TRACES_ENDPOINT}"
-             ports:
-               - name: otlp-grpc
-                 containerPort: 4317
-                 protocol: TCP
-               - name: health
-                 containerPort: 13133
-                 protocol: TCP
-             readinessProbe:
-               httpGet:
-                 path: /
-                 port: health
-               initialDelaySeconds: 2
-               periodSeconds: 5
-             livenessProbe:
-               httpGet:
-                 path: /
-                 port: health
-               initialDelaySeconds: 10
-               periodSeconds: 10
-             resources:
-               requests:
-                 cpu: 50m
-                 memory: 128Mi
-               limits:
-                 cpu: 500m
-                 memory: 384Mi
-             securityContext:
-               allowPrivilegeEscalation: false
-               capabilities:
-                 drop: ["ALL"]
-               readOnlyRootFilesystem: true
-             volumeMounts:
-               - name: config
-                 mountPath: /conf
-                 readOnly: true
-         volumes:
-         - name: config
-           configMap:
-             name: ${OTEL_COLLECTOR_NAME}
-   ---
-   apiVersion: v1
-   kind: Service
-   metadata:
-     name: ${OTEL_COLLECTOR_NAME}
-     namespace: ${OTEL_NAMESPACE}
-   spec:
-     type: ClusterIP
-     selector:
-       app.kubernetes.io/name: ${OTEL_COLLECTOR_NAME}
-     ports:
-       - name: otlp-grpc
-         port: 4317
-         targetPort: otlp-grpc
-         protocol: TCP
-   ---
+   if ! jq -en \
+     --arg namespace "$GATEWAY_NAMESPACE" \
+     --arg gateway "$GATEWAY_NAME" \
+     --arg otel_namespace "$OTEL_NAMESPACE" \
+     --arg collector "$OTEL_COLLECTOR_NAME" \
+     --arg network_policy "$OTEL_NETWORK_POLICY" \
+     --arg reference_grant "$OTEL_REFERENCE_GRANT" '
+       ($namespace | test("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$")) and
+       ($gateway | test("^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$")) and
+       ($otel_namespace | test("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$")) and
+       ([$collector, $network_policy, $reference_grant] |
+         all(.[]; test("^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$")))' >/dev/null; then
+     printf 'A NetworkPolicy or ReferenceGrant substitution value is invalid.\n' >&2
+     false
+   fi &&
+   kubectl create -f- <<EOF &&
    apiVersion: networking.k8s.io/v1
    kind: NetworkPolicy
    metadata:
@@ -778,33 +339,23 @@ The Collector receives trace data inside the cluster and exports only traces to 
          kind: Service
          name: ${OTEL_COLLECTOR_NAME}
    EOF
+   printf '%s\n' 'Collector network policy and reference grant created.'
+   ```
+
+   Expected final output after the checks pass:
+
+   ```text
+   Collector network policy and reference grant created.
    ```
 
    | Field | Description |
    | --- | --- |
-   | `ServiceAccount.metadata.name` and `metadata.namespace` | Produce the exact subject `system:serviceaccount:otel-system:otel-collector`. |
-   | `ServiceAccount.metadata.annotations.azure.workload.identity/client-id` | Connects the Kubernetes service account to the user-assigned identity. The AKS Workload Identity webhook injects `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_FEDERATED_TOKEN_FILE`. |
-   | `ConfigMap.data.collector.yaml.receivers.otlp.protocols.grpc` | Listens for OTLP over gRPC on port 4317. |
-   | `ConfigMap.data.collector.yaml.processors.memory_limiter` | Limits Collector memory pressure before batching spans. |
-   | `ConfigMap.data.collector.yaml.processors.batch` | Sends batches of up to 512 items or after five seconds. |
-   | `ConfigMap.data.collector.yaml.extensions.health_check` | Exposes Collector health on port 13133 for the pod probes. |
-   | `ConfigMap.data.collector.yaml.extensions.azure_auth.workload_identity` | Reads the environment variables injected by AKS Workload Identity. It does not contain a secret. |
-   | `ConfigMap.data.collector.yaml.extensions.azure_auth.scopes` | Requests a token for the `https://monitor.azure.com/.default` scope. |
-   | `ConfigMap.data.collector.yaml.exporters.otlphttp/azuremonitor.traces_endpoint` | Sends only traces to the native DCR endpoint constructed earlier. |
-   | `ConfigMap.data.collector.yaml.exporters.otlphttp/azuremonitor.sending_queue` | Queues up to 1,000 pending batches when export slows down. |
-   | `ConfigMap.data.collector.yaml.exporters.otlphttp/azuremonitor.retry_on_failure` | Retries temporary export failures for up to five minutes. |
-   | `ConfigMap.data.collector.yaml.service.pipelines.traces` | Connects the OTLP receiver to the memory and batch processors, then to the Azure Monitor exporter. There are no metric or log pipelines. |
-   | `Deployment.spec.template.metadata.labels.azure.workload.identity/use` | Activates the AKS Workload Identity mutating webhook for the Collector pod. |
-   | `Deployment.spec.template.spec.serviceAccountName` | Runs the pod as the `otel-collector` service account that the federated credential trusts. |
-   | `Deployment.spec.template.spec.containers[].image` | Uses the public `otel/opentelemetry-collector-contrib:0.148.0` image. Pin it to an immutable digest in production. |
-   | `Deployment.spec.template.spec.containers[].env` | Supplies the native OTLP traces endpoint. The webhook adds the three Workload Identity environment variables. |
-   | `Deployment.spec.template.spec.containers[].readinessProbe` and `livenessProbe` | Check the Collector health extension on port 13133. |
-   | `Deployment.spec.template.spec.securityContext` | Runs the pod as non-root with the runtime default seccomp profile. |
-   | `Deployment.spec.template.spec.containers[].securityContext` | Prevents privilege escalation, drops Linux capabilities, and uses a read-only root filesystem. |
-   | `Deployment.spec.template.spec.containers[].resources` | Requests 50 millicores and 128 MiB, with a memory limit of 384 MiB. Adjust these values after measuring your trace volume. |
-   | `Service.spec.selector` and `spec.ports[].port` | Select the Collector pod and expose its OTLP gRPC receiver as `otel-collector.otel-system.svc.cluster.local:4317`. |
    | `NetworkPolicy.spec.ingress` | Permits port 4317 only from Gateway pods with the selected Gateway label in the selected namespace. Your network plugin must enforce Kubernetes NetworkPolicy. |
    | `ReferenceGrant.spec` | Lets an {{< reuse "agw-docs/snippets/policy.md" >}} in the Gateway namespace reference the cross-namespace Collector Service. |
+
+4. Apply the Collector manifest. Your shell fills in the setup variables, while escaped expressions such as `\${env:AZURE_CLIENT_ID}` remain literal for the Collector to resolve.
+
+   {{< reuse "agw-docs/snippets/azure-monitor-collector-manifest.md" >}}
 
 ## Configure agentgateway tracing
 
@@ -868,7 +419,7 @@ Check that the tracing policy name is available and no other tracing policy targ
        "$conflicting_policies" >&2
      false
    fi &&
-   kubectl create -f- <<EOF
+   kubectl create -f- <<EOF &&
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
@@ -896,12 +447,19 @@ Check that the tracing policy name is available and no other tracing policy targ
            - name: service.namespace
              expression: '"${GATEWAY_NAMESPACE}"'
    EOF
+   printf '%s\n' 'Gateway tracing policy created.'
+   ```
+
+   Expected final output after the checks pass:
+
+   ```text
+   Gateway tracing policy created.
    ```
 
    | Field | Description |
    | --- | --- |
    | `spec.targetRefs` | Attaches the policy to the named Gateway in the same namespace. |
-   | `spec.frontend.tracing.backendRef` | Sends traces to the `otel-collector` Service in `otel-system` on port 4317. The `ReferenceGrant` authorizes this cross-namespace reference. |
+   | `spec.frontend.tracing.backendRef` | Sends traces to `OTEL_COLLECTOR_NAME` in `OTEL_NAMESPACE` on port 4317. The `ReferenceGrant` authorizes this cross-namespace reference. |
    | `spec.frontend.tracing.protocol` | Uses OTLP over gRPC between the Gateway proxy and Collector. |
    | `spec.frontend.tracing.randomSampling` | Enables random sampling for requests that do not arrive with a client sampling decision. |
    | `spec.frontend.tracing.clientSampling` | Honors the sampled flag in an incoming W3C `traceparent` header. |
@@ -921,7 +479,7 @@ Check the Collector and policy before you send a known trace ID. Azure Monitor i
      --namespace "$OTEL_NAMESPACE" \
      --selector "app.kubernetes.io/name=${OTEL_COLLECTOR_NAME}" \
      --output json)" &&
-   jq -e '
+   if ! jq -e '
      (.items | length) == 1 and
      ([.items[0].spec.containers[] |
        select(.name == "collector") |
@@ -933,7 +491,17 @@ Check the Collector and policy before you send a known trace ID. Azure Monitor i
        "AZURE_FEDERATED_TOKEN_FILE"
      ] as $required |
      all($required[]; . as $name | $names | index($name) != null))' \
-     <<<"$collector_pods" >/dev/null
+     <<<"$collector_pods" >/dev/null; then
+     printf 'The Collector pod is missing Workload Identity or trace endpoint settings.\n' >&2
+     false
+   fi &&
+   printf '%s\n' 'Collector Workload Identity injection verified.'
+   ```
+
+   Expected final output after the checks pass:
+
+   ```text
+   Collector Workload Identity injection verified.
    ```
 
 2. Confirm that the policy reports current `Accepted` and `Attached` conditions.
@@ -943,7 +511,7 @@ Check the Collector and policy before you send a known trace ID. Azure Monitor i
      "$TRACE_POLICY_NAME" \
      --namespace "$GATEWAY_NAMESPACE" \
      --output json)" &&
-   jq -e '
+   if ! jq -e '
      .metadata.generation as $generation |
      any(.status.ancestors[]?.conditions[]?;
        .type == "Accepted" and .status == "True" and
@@ -951,7 +519,17 @@ Check the Collector and policy before you send a known trace ID. Azure Monitor i
      any(.status.ancestors[]?.conditions[]?;
        .type == "Attached" and .status == "True" and
        .observedGeneration == $generation)' \
-     <<<"$policy_json" >/dev/null
+     <<<"$policy_json" >/dev/null; then
+     printf 'The gateway tracing policy is not accepted and attached.\n' >&2
+     false
+   fi &&
+   printf '%s\n' 'Gateway tracing policy is accepted and attached.'
+   ```
+
+   Expected final output after the checks pass:
+
+   ```text
+   Gateway tracing policy is accepted and attached.
    ```
 
 3. Set the URL and request file for a representative call through your existing Gateway route.
@@ -976,7 +554,8 @@ Check the Collector and policy before you send a known trace ID. Azure Monitor i
      --arg url "$GATEWAY_REQUEST_URL" '
        ($trace | test("^[0-9a-f]{32}$")) and
        ($parent | test("^[0-9a-f]{16}$")) and
-       ($url | test("^https?://"))'; then
+       ($url | test("^https?://"))' >/dev/null; then
+     printf 'The generated trace ID, span ID, or request URL is invalid.\n' >&2
      false
    fi &&
    if [ ! -f "$GATEWAY_REQUEST_FILE" ]; then
@@ -1005,6 +584,12 @@ Check the Collector and policy before you send a known trace ID. Azure Monitor i
    export HTTP_STATUS
    ```
 
+   Expected final output after the checks pass:
+
+   ```text
+   Representative request returned HTTP 200.
+   ```
+
 5. Query `OTelSpans` for the trace ID you sent. Rerun the complete command block until it succeeds or 15 minutes have elapsed. After the privacy checks pass, the command prints only the trace ID and verified span count. Raw attributes stay in a shell variable.
 
    ```sh
@@ -1019,15 +604,13 @@ Check the Collector and policy before you send a known trace ID. Azure Monitor i
        "| where ServiceNamespace == \"" + $service_namespace + "\"\n" +
        "| project TraceId=tolower(TraceId), SpanId, DurationMs, ServiceName, ServiceNamespace, Attributes, TimeGenerated"
      ')" &&
-   export TRACE_QUERY &&
    TRACE_ROWS="$(az monitor log-analytics query \
      --workspace "$LOG_ANALYTICS_WORKSPACE_ID" \
      --analytics-query "$TRACE_QUERY" \
      --timespan PT30M \
      --output json \
      --only-show-errors)" &&
-   export TRACE_ROWS &&
-   jq -e \
+   if ! jq -e \
      --arg trace "$TRACE_ID" \
      --arg service_name "$GATEWAY_NAME" \
      --arg service_namespace "$GATEWAY_NAMESPACE" '
@@ -1059,8 +642,17 @@ Check the Collector and policy before you send a known trace ID. Azure Monitor i
        all(.[];
          attrs as $attributes |
          all($forbidden[]; . as $key | $attributes | has($key) | not))' \
-     <<<"$TRACE_ROWS" >/dev/null &&
+     <<<"$TRACE_ROWS" >/dev/null; then
+     printf 'The trace rows did not pass verification.\n' >&2
+     false
+   fi &&
    jq --arg trace_id "$TRACE_ID" '{trace_id: $trace_id, verified_span_count: length}' <<<"$TRACE_ROWS"
+   ```
+
+   Expected output shape (identifiers and counts vary):
+
+   ```text
+   {"trace_id":"<trace-id>","verified_span_count":2}
    ```
 
 ## Verify access logs in Container Insights
@@ -1096,15 +688,13 @@ By default, agentgateway writes one structured access log per request to stdout.
        "| project TimeGenerated, PodName, ContainerName, LogMessage\n" +
        "| take 20"
      ')" &&
-   export ACCESS_LOG_QUERY &&
    ACCESS_LOG_ROWS="$(az monitor log-analytics query \
      --workspace "$CONTAINER_INSIGHTS_WORKSPACE_ID" \
      --analytics-query "$ACCESS_LOG_QUERY" \
      --timespan PT30M \
      --output json \
      --only-show-errors)" &&
-   export ACCESS_LOG_ROWS &&
-   jq -e \
+   if ! jq -e \
      --arg pod_prefix "${GATEWAY_NAME}-" \
      --arg status_code "$HTTP_STATUS" \
      --arg trace_id "$TRACE_ID" \
@@ -1126,11 +716,46 @@ By default, agentgateway writes one structured access log per request to stdout.
          (.PodName | startswith($pod_prefix)) and
          .ContainerName == "agentgateway" and
          matches_request)' \
-     <<<"$ACCESS_LOG_ROWS" >/dev/null &&
+     <<<"$ACCESS_LOG_ROWS" >/dev/null; then
+     printf 'The access log rows did not pass verification.\n' >&2
+     false
+   fi &&
    jq '{verified_access_log_rows: length}' <<<"$ACCESS_LOG_ROWS"
    ```
 
+   Expected output shape (identifiers and counts vary):
+
+   ```text
+   {"verified_access_log_rows":1}
+   ```
+
    The query prints only the verified row count and keeps log bodies in `ACCESS_LOG_ROWS`. Inspect that variable only if your logging policy allows access to the request metadata recorded by agentgateway.
+
+## Clean up the integration
+
+Remove only the tracing policy and monitors created by this guide. Keep the Gateway, controller, provider routes, model access, and their namespaces. Do not remove a shared Collector until every workload using it has stopped exporting traces.
+
+```sh
+kubectl delete agentgatewaypolicies.agentgateway.dev "$TRACE_POLICY_NAME" \
+  --namespace "$GATEWAY_NAMESPACE" --ignore-not-found --wait=true &&
+kubectl delete podmonitors.azmonitoring.coreos.com "$GATEWAY_POD_MONITOR" \
+  --namespace "$GATEWAY_NAMESPACE" --ignore-not-found --wait=true &&
+kubectl delete servicemonitors.azmonitoring.coreos.com "$CONTROLLER_SERVICE_MONITOR" \
+  --namespace "$CONTROLLER_NAMESPACE" --ignore-not-found --wait=true &&
+kubectl delete referencegrants.gateway.networking.k8s.io "$OTEL_REFERENCE_GRANT" \
+  --namespace "$OTEL_NAMESPACE" --ignore-not-found --wait=true &&
+printf '%s\n' 'Guide tracing policy and monitors removed.'
+```
+
+Expected final output after the checks pass:
+
+```text
+Guide tracing policy and monitors removed.
+```
+
+Repeat the representative model request and confirm it still succeeds before removing the Collector.
+
+{{< reuse "agw-docs/snippets/azure-monitor-cleanup.md" >}}
 
 ## Troubleshoot the integration
 
@@ -1145,7 +770,7 @@ Start with the symptom for the metrics, access logs, or traces you are checking.
 | The `ama-logs` DaemonSet is absent or unavailable | Confirm that Container Insights is enabled on the AKS cluster and that its managed identity can write to the linked Log Analytics workspace. |
 | `ContainerLogV2` has no access-log row | Confirm that the Container Insights DCR includes `Microsoft-ContainerLogV2`, stdout collection is enabled, and the query uses the Gateway namespace. Allow up to 15 minutes for ingestion. |
 | The {{< reuse "agw-docs/snippets/policy.md" >}} is rejected | Inspect `status.ancestors[].conditions` and controller events. Confirm the Gateway target, Collector Service name, port 4317, and cross-namespace `ReferenceGrant`. |
-| Workload Identity variables are absent | Confirm that OIDC and Workload Identity are enabled on AKS. Check the pod label `azure.workload.identity/use: "true"`, the service account annotation, federated credential issuer, audience, and exact subject `system:serviceaccount:otel-system:otel-collector`. Restart the Deployment after fixing identity metadata. |
+| Workload Identity variables are absent | Confirm that OIDC and Workload Identity are enabled on AKS. Check the pod label `azure.workload.identity/use: "true"`, the service account annotation, federated credential issuer, audience, and exact subject in `COLLECTOR_SUBJECT`. Restart the Deployment after fixing identity metadata. |
 | Collector logs report `401`, `403`, authentication, or export errors | Confirm the Collector identity has `Monitoring Metrics Publisher` at the exact DCR scope. Check the `https://monitor.azure.com/.default` scope, native traces endpoint, DCE public access, and DCR immutable ID. Role assignments can take several minutes to propagate. |
 | The Gateway cannot reach the Collector | Check the Collector Service endpoints and port 4317. The NetworkPolicy selectors must match the Gateway namespace and `gateway.networking.k8s.io/gateway-name` pod label, and your cluster network plugin must enforce the policy. |
 | The Collector exports successfully but `OTelSpans` is empty | Confirm that the DCR data flow includes all three `Microsoft-OTel-Traces-*` streams and targets the intended Log Analytics workspace. Query the known trace ID over a 30-minute window. Native ingestion can take up to 15 minutes. |
