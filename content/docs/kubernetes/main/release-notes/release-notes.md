@@ -64,6 +64,7 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 
 ## 🔄 Other behavior changes {#v16-behavior-changes}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3864 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3294 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3253 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3539 -->
@@ -89,6 +90,7 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 - **Streaming guardrails**: Agentgateway now rejects content if a provider guard fails while checking a streamed response or realtime connection. To keep the 1.5 behavior, set `failureMode: FailOpen` on the guard. For example, set it in `spec.backend.ai.promptGuard.response[].bedrockGuardrails` of an {{< reuse "agw-docs/snippets/policy.md" >}}. For more information, see [Provider failures]({{< link-hextra path="/documentation/llm/guardrails/overview/#provider-failures" >}}).
 - **Token usage in responses**: The `usage` that agentgateway returns to clients now follows the conventions of the API that the client calls, whichever provider serves the request. Anthropic Messages responses leave cache tokens out of `input_tokens` and report them in `cache_read_input_tokens` and `cache_creation_input_tokens`. OpenAI Chat Completions and Responses include cache tokens in the input and total token counts. For example, a Chat Completions request to an Anthropic or Amazon Bedrock model that writes to the prompt cache now reports those cache tokens in `prompt_tokens`. If a client calculates usage or cost from these fields, review its counts after you upgrade.
 - **Deployer ownership**: The controller no longer overwrites an existing resource of the same name that it does not own. It reports an error instead.
+- **Proxy environment variables**: Callouts, such as JWKS fetches, external authorization requests, and AWS and Azure credential fetches, now use the `HTTPS_PROXY`, `HTTP_PROXY`, `ALL_PROXY`, and `NO_PROXY` environment variables. If you set these variables in `spec.env` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource for another purpose, callouts go through that proxy after you upgrade. Callouts to a Kubernetes Service go directly to the Service. To keep all callouts direct, set `NO_PROXY` to `*`. In 1.6, only Google Cloud Platform (GCP) credential fetches used these variables.
 
 ## 🌟 New features {#v16-new-features}
 
