@@ -10,6 +10,14 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🐛 Fixes {#v17-fixes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3774 -->
+
+**MCP**
+
+- MCP authentication derives JWKS URLs without a double slash when an issuer value ends with `/`.
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
@@ -203,7 +211,6 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3720 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3724 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3774 -->
 
 **Traffic management**
 
@@ -223,7 +230,3 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 **Operations**
 
 - Standalone Helm installs can set `podDisruptionBudget.maxUnavailable` without also rendering the default `podDisruptionBudget.minAvailable` value.
-
-**MCP and A2A**
-
-- MCP authentication derives JWKS URLs without a double slash when an issuer value ends with `/`.
