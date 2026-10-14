@@ -23,8 +23,8 @@ Client traffic to your primary backends is not a callout, so the callout proxy d
 
 You can configure the callout proxy in either of the following ways. If you use both, `config.callouts.tunnel` takes precedence, and agentgateway ignores the proxy environment variables for callouts.
 
-* **[In the configuration file](#configuration-file)**: Set `config.callouts.tunnel`. Use this way to keep the proxy settings with the rest of your configuration.
-* **[With environment variables](#environment-variables)**: Set the standard proxy environment variables, such as `HTTPS_PROXY`. Use this way to send GCP credential fetches through the proxy, or to reuse variables that your environment already sets.
+* **[In the configuration file](#configuration-file)**: Set `config.callouts.tunnel`. Use this method to keep the proxy settings with the rest of your configuration.
+* **[With environment variables](#environment-variables)**: Set the standard proxy environment variables, such as `HTTPS_PROXY`. Use this method to send GCP credential fetches through the proxy, or to reuse variables that your environment already sets.
 
 ### Option 1: Configuration file
 
@@ -77,7 +77,7 @@ You also need an HTTP proxy that supports the CONNECT method and logs the reques
 
 ## Send a JWKS fetch through the proxy
 
-Configure JWT authentication with a remote JWKS, and confirm in the proxy log that the JWKS fetch goes through the proxy. A JWKS fetch is a good test because agentgateway makes it at startup, before any client traffic arrives.
+Configure JWT authentication with a remote JWKS, and send callouts through the proxy with `config.callouts.tunnel`. Then confirm in the proxy log that the JWKS fetch goes through the proxy. The last step shows the same test with environment variables instead. A JWKS fetch is a good test because agentgateway makes it at startup, before any client traffic arrives.
 
 1. Create a configuration file that fetches a remote JWKS and sends callouts through the proxy.
    ```yaml

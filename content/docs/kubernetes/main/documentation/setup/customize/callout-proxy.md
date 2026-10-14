@@ -84,7 +84,7 @@ The following callouts go directly to their destination, even when you configure
 
 ## Send an external authorization callout through the forward proxy
 
-Deploy a test forward proxy, point the agentgateway proxy at it, and confirm that an external authorization callout goes through the forward proxy. The example uses `httpbin.org` as a stand-in authorization server, because the server returns any status code that you ask for.
+Deploy a test forward proxy, point the agentgateway proxy at it with the `HTTPS_PROXY` environment variable, and confirm that an external authorization callout goes through the forward proxy. To use `rawConfig` instead, change step 2 as that step describes. The example uses `httpbin.org` as a stand-in authorization server, because the server returns any status code that you ask for.
 
 1. Deploy Squid as a test forward proxy. If you already have a forward proxy that the cluster can reach, skip this step and use its URL in the next step.
    ```yaml
