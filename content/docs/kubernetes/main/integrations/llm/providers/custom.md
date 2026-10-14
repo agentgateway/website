@@ -83,11 +83,10 @@ An error such as `failed to parse Messages request` names the route type that
 parsed the client request before provider conversion. Check that the request
 path maps to the expected route type and that the body matches that format.
 
-When a client request includes a query string, the provider request keeps the
-query string only if the selected provider receives the same API format that the
-client sent. If the request is converted to another provider format, the
-upstream request drops the client query string. Those parameters belong to the
-inbound API format.
+A client query string is kept only when the custom provider receives the same
+API format that the client sent. When the request is converted to another
+format, the client query string is dropped. For details, see
+[Query strings on converted requests]({{< link-hextra path="/documentation/llm/about/#query-strings-on-converted-requests" >}}).
 
 When a provider declares both `Responses` and `Completions`, agentgateway prefers
 Responses for Anthropic messages requests. This order also applies to the built-in

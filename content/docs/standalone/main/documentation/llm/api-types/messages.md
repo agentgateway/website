@@ -59,7 +59,7 @@ routes:
 
 A Messages request does not need a provider that speaks the Anthropic Messages format. When the selected provider advertises a different format, agentgateway converts the request on the way out and converts the reply back into the Messages shape, so the client receives Anthropic responses either way.
 
-When a client request includes a query string, the provider request keeps the query string only if the selected provider receives the Messages format. If the request is converted to Responses, Chat Completions, or Bedrock Converse, the provider request drops the client query string. Those parameters belong to the inbound Messages API.
+A client query string, such as the `?beta=true` that Claude Code sends, is kept only when the provider receives the Messages format. When the request is converted to Responses, Chat Completions, or Bedrock Converse, the client query string is dropped, because its parameters belong to the Messages API. One exception applies: a built-in provider that sets `hostOverride` without `pathPrefix` receives the client path and query string unchanged.
 
 Agentgateway uses the first of these formats that the provider supports.
 
