@@ -275,7 +275,7 @@ Agentgateway encrypts the MCP session IDs that it issues to clients with an AES-
    ```
 
 > [!NOTE]
-> Every proxy replica reads the same Secret, so any replica can decrypt a session ID that another replica issued. When you change the key, agentgateway returns `404 Not Found` for session IDs that were encrypted with the old key, and MCP clients must start a new session.
+> Every proxy replica reads the same Secret, so any replica can decrypt a session ID that another replica issued. When you change the key, agentgateway returns `404 Not Found` for session IDs that were encrypted with the old key and MCP clients must start a new session.
 
 {{< /version >}}
 
