@@ -25,7 +25,7 @@ Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/
 
 **Do not add `paths=` tags, `{{< doc-test >}}` blocks, or front matter `test:` to pages in this repo.** Every markup example in this guide is written in the `make annotate` copy in docs-tests.
 
-- Until the old markup is removed from this repo, edits to markup that is still on a page are copied into docs-tests by the daily refresh, after merge. They are not tested in the PR, and a front matter `test:` edit is only reported, not applied. Do not rely on this path.
+- Markup that is still on a page in this repo is ignored. Tests run only from docs-tests, and the daily refresh in docs-tests never copies a page's markup into the annotations, so an edit to that markup does nothing. A front matter `test:` edit is reported by the refresh so that `tests.yaml` can be updated, but it is not applied.
 - When a content change needs a test change in docs-tests, push the test change to a docs-tests branch with the same name as the content PR's branch. The content PR's doc-tests run then uses that branch instead of docs-tests `main`, and the job summary says so. Merge the content PR here first, then the docs-tests PR.
 
 ---

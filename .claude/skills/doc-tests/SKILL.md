@@ -19,7 +19,7 @@ Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/
 - **Run** from this repo with `make test-generate` and `make test-run`, which attach your docs-tests annotations to a copy of the site first (see step 9).
 - To test the docs-tests change in a content PR's own run, push it to a docs-tests branch with the **same name** as the content PR's branch. The PR's doc-tests workflow checks out that branch instead of docs-tests `main`, and says so in the job summary. Without a matching branch, the PR runs against `main`.
 - Merge the content PR here first, then the docs-tests PR.
-- Until the old markup is removed from this repo, edits to markup that is still on a page are copied into docs-tests by the daily refresh, after merge. Do not rely on this: it is untested in the PR, and it stops when the markup is removed.
+- Markup that is still on a page in this repo is ignored. Tests run only from docs-tests, and the daily refresh in docs-tests never copies a page's markup into the annotations. An edit to that markup does nothing; make the change in docs-tests instead.
 
 ---
 
