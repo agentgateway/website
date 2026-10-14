@@ -10,6 +10,14 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v17-new-features}
+
+### Traffic management and operations {#v17-operations}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3864 -->
+
+- **Callout requests can use an HTTP proxy**: Set `config.callouts.tunnel` to send gateway-originated callouts, such as JWKS fetches, OIDC discovery, external authorization, and cloud credential requests, through an HTTP proxy. If the field is omitted, callouts use the standard proxy environment variables. For more information, see [Callout proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/" >}}).
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
@@ -181,14 +189,12 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3430 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3319 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3259 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3864 -->
 
 - **Per-key local rate limits**: A `localRateLimit` entry takes a CEL `key` that gives each value, such as a user or API key, its own bucket. For more information, see [Per-key limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/#per-key" >}}).
 - **External processing**: Set `extProc.failureMode: failOpen` in a route's `policies` section to forward requests when the processing server fails. Agentgateway now also forwards the request body if the processing server fails before agentgateway sends any body bytes to it. For more information, see [Failure modes]({{< link-hextra path="/documentation/configuration/traffic-management/extproc/#failure-modes" >}}).
 - **Graceful drain**: During shutdown, agentgateway stops accepting new connections after `config.connectionMinTerminationDeadline`. It continues to serve open connections until `config.connectionTerminationDeadline`. For more information, see [Shutdown and drain]({{< link-hextra path="/documentation/configuration/static-configuration/#shutdown-drain" >}}).
 - **Helm chart scaling**: The standalone chart can create a PodDisruptionBudget and a HorizontalPodAutoscaler. For more information, see [Create a PodDisruptionBudget]({{< link-hextra path="/documentation/setup/install/helm/#helm-pdb" >}}).
 - **Telemetry**: OTLP access logs use the `agentgateway.access` instrumentation scope. The request duration metric records failed requests with an `error_type` label. For the metrics, see the [metrics reference]({{< link-hextra path="/documentation/observability/metrics/reference/#llm" >}}).
-- **Callout requests can use an HTTP proxy**: Set `config.callouts.tunnel` to send gateway-originated callouts, such as JWKS fetches, OIDC discovery, external authorization, and cloud credential requests, through an HTTP proxy. If the field is omitted, callouts use the standard proxy environment variables. For more information, see [Callout proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/" >}}).
 
 ### OpenTelemetry field names {#v16-otel-attributes}
 
