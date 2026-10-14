@@ -547,7 +547,24 @@ jobs:
             --report out/annotations/attach-report.json
 
       - name: Install cloud-provider-kind
-        run: go install sigs.k8s.io/cloud-provider-kind@latest
+        # A release binary, not `go install ...@latest`. Building it pulls a few
+        # hundred modules through proxy.golang.org, and on 2026-10-14 dropped
+        # proxy streams failed shards before any test ran (website#920, #1250,
+        # #1265). Pinned and checksum-verified; bump CPK_VERSION to upgrade.
+        env:
+          CPK_VERSION: v0.12.0
+        run: |
+          set -euo pipefail
+          v="${CPK_VERSION#v}"
+          base="https://github.com/kubernetes-sigs/cloud-provider-kind/releases/download/${CPK_VERSION}"
+          tarball="cloud-provider-kind_${v}_linux_amd64.tar.gz"
+          cd "$RUNNER_TEMP"
+          curl -fsSL --retry 5 --retry-all-errors -o "$tarball" "$base/$tarball"
+          curl -fsSL --retry 5 --retry-all-errors -o cpk-checksums.txt "$base/cloud-provider-kind_${v}_checksums.txt"
+          grep " ${tarball}\$" cpk-checksums.txt | sha256sum -c -
+          mkdir -p "$HOME/.local/bin"
+          tar -xzf "$tarball" -C "$HOME/.local/bin" cloud-provider-kind
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Install yamltest
         run: npm install -g yamltest@latest
@@ -696,7 +713,24 @@ jobs:
             --report out/annotations/attach-report.json
 
       - name: Install cloud-provider-kind
-        run: go install sigs.k8s.io/cloud-provider-kind@latest
+        # A release binary, not `go install ...@latest`. Building it pulls a few
+        # hundred modules through proxy.golang.org, and on 2026-10-14 dropped
+        # proxy streams failed shards before any test ran (website#920, #1250,
+        # #1265). Pinned and checksum-verified; bump CPK_VERSION to upgrade.
+        env:
+          CPK_VERSION: v0.12.0
+        run: |
+          set -euo pipefail
+          v="${CPK_VERSION#v}"
+          base="https://github.com/kubernetes-sigs/cloud-provider-kind/releases/download/${CPK_VERSION}"
+          tarball="cloud-provider-kind_${v}_linux_amd64.tar.gz"
+          cd "$RUNNER_TEMP"
+          curl -fsSL --retry 5 --retry-all-errors -o "$tarball" "$base/$tarball"
+          curl -fsSL --retry 5 --retry-all-errors -o cpk-checksums.txt "$base/cloud-provider-kind_${v}_checksums.txt"
+          grep " ${tarball}\$" cpk-checksums.txt | sha256sum -c -
+          mkdir -p "$HOME/.local/bin"
+          tar -xzf "$tarball" -C "$HOME/.local/bin" cloud-provider-kind
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Install yamltest
         run: npm install -g yamltest@latest
