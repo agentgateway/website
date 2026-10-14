@@ -111,7 +111,7 @@ Use the UI to review what agentgateway loaded and to manage the resources that y
 Whether the UI can save the changes that you make depends on your storage mode. In the binary and Docker installations, the UI writes to your configuration file by default. In the Helm installation, the ConfigMap is read-only and a save fails unless you switch the chart to database mode. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
-The UI shows the running agentgateway version in the sidebar. When you change the gateway that serves the UI from **Settings** > **UI**, the UI asks you to confirm before saving. Removing the current gateway can disconnect the page that you are using.
+The UI shows the running agentgateway version in the sidebar. In **Settings** > **UI**, choose the public gateway that serves the UI and configure policies that protect the UI. When you change that gateway, the UI asks you to confirm before saving. Removing the current gateway can disconnect the page that you are using. In **Settings** > **Observability**, configure tracing and access logs for all traffic.
 
 When a save or file reload fails validation, the UI shows a **Configuration reload failed** banner. The banner means that agentgateway is still running the previous valid configuration. The UI and `/api/config/effective` show the saved file that needs to be fixed.
 {{< /version >}}
