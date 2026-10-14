@@ -2,7 +2,7 @@ The following table describes the most common `oauthTokenExchange` fields.{{% up
 
 | Field | Description |
 | -- | -- |
-| `host`, `policies` | The token endpoint, referenced as a backend. A `host` port of `443` automatically enables backend TLS. |
+| `host`, `policies` | The token endpoint, referenced as a backend. A `host` port of `443` does not enable TLS by itself, so set `policies.backendTLS` for a token endpoint that serves HTTPS. |
 | `path` | Path of the token endpoint on the backend. Must start with `/`. Defaults to `/`. |
 | `grantType` | `tokenExchange` (default, RFC 8693) or `jwtBearer` (RFC 7523). |
 | `clientAuth` | Client authentication for the token endpoint: `clientSecretBasic` (default), `clientSecretPost`, or `privateKeyJwt`. Omit the field and agentgateway sends no client authentication. See [Authenticate the gateway to the token endpoint]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/standard/#authenticate-the-gateway-to-the-token-endpoint" >}}). |
