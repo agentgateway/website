@@ -150,7 +150,19 @@ The Bedrock Converse conversion carries extended-thinking history in both direct
 
 On the way out, a `thinking` block in the message history becomes a Bedrock `reasoningContent.reasoningText` block, with its signature. A `redacted_thinking` block becomes a Bedrock `reasoningContent.redactedContent` block, so that a client can replay encrypted reasoning that Bedrock returned on an earlier turn. `document`, `search_result`, `server_tool_use`, and `web_search_tool_result` blocks are dropped because Bedrock Converse has no equivalent block types.
 
-Bedrock conversion preserves prompt-cache metadata when Bedrock has retained content that can carry the metadata. Anthropic `cache_control.ttl` values become Bedrock cache-point TTLs. If a dropped block has `cache_control`, the conversion keeps the marker by placing a Bedrock cache point on the content before the dropped block, or at the end of the previous message when the dropped block is the first block of its message. No cache point is added when nothing precedes the dropped block. A marker on a `document` or `search_result` part inside a tool result moves to after the whole tool result. The same behavior applies to dropped server-tool definitions. Messages that are left empty after the conversion drops unsupported blocks are not sent to Bedrock.
+Each `cache_control` marker becomes a Bedrock cache point after the content that the marker is on, and the `cache_control.ttl` value becomes the TTL of the cache point. The conversion drops some content before sending the request to Bedrock. When dropped content has a cache marker, the marker moves to nearby content that the conversion keeps:
+
+- **Dropped blocks:** A marker on a dropped block moves to the nearest earlier content that the conversion keeps:
+
+  - When content comes before the dropped block in the same message, the marker moves to the end of that content.
+  - When the dropped block is the first block of the message, the marker moves to the end of the closest earlier message that has content.
+  - When no earlier message has content, the marker moves to the end of the system prompt.
+
+  If that content already ends with a cache point, no cache point is added.
+- **Dropped server tools:** Server tools, such as web search, are dropped from the `tools` list. A marker on a dropped server tool moves to the closest earlier tool definition that the conversion keeps, unless that tool definition already has a marker. When no kept tool definition comes before the server tool, the marker is dropped.
+- **Tool results:** Bedrock accepts cache points only between top-level content blocks. A marker on any part inside a tool result moves to after the whole tool result.
+
+Messages that are left empty after the conversion drops unsupported blocks are not sent to Bedrock. The conversion adds at most four cache points to a request, so a marker is dropped when four cache points are already set.
 
 On the way back, Bedrock reasoning text becomes a `thinking` block. In a buffered reply, Bedrock encrypted reasoning becomes a `redacted_thinking` block that keeps the encrypted payload for the next turn. A streamed reply does not keep the payload. The encrypted reasoning arrives as a `thinking` block with the text `[REDACTED]`, which cannot be replayed. For the same behavior on other Bedrock endpoints, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}).
 

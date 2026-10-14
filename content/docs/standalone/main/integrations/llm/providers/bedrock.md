@@ -56,7 +56,7 @@ Configure Amazon Bedrock as an LLM provider in agentgateway.
 > Agentgateway translates between these formats and Bedrock formats internally using Bedrock's [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-call.html).
 > Directly sending `Converse` or `Invoke` request shapes are not directly supported; see [passthrough](#passthrough) for more information if you need these APIs.
 
-Bedrock conversion preserves prompt-cache markers in `/v1/messages` and `/v1/chat/completions` requests when the converted request has retained prompt content. Bedrock conversion sends Anthropic Messages `cache_control.ttl` values as Bedrock cache-point TTLs.
+Bedrock conversion turns the prompt-cache markers in `/v1/messages` and `/v1/chat/completions` requests into Bedrock cache points, including markers on content that the conversion does not send. In `/v1/messages` requests, the Anthropic `cache_control.ttl` value becomes the TTL of the cache point. For where a marker on dropped content goes, see [Converting to the Bedrock Converse format]({{< link-hextra path="/documentation/llm/api-types/messages/#converting-to-the-bedrock-converse-format" >}}). In `/v1/chat/completions` requests, a text part that contains only whitespace is not sent, and the marker on that text part moves to the end of the content before the text part in the same message.
 
 ## Authentication
 
