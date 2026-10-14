@@ -10,6 +10,14 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🐛 Fixes {#v17-fixes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3809 -->
+
+**Security**
+
+- Invalid OAuth token exchange and Cross App Access configuration now produces a fail-closed policy instead of rejecting the xDS update. Affected requests fail with `oauthTokenExchange configuration is invalid` or `crossAppAccess configuration is invalid`, while unrelated configuration can still be accepted.
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
@@ -188,7 +196,6 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3809 -->
 
 **Traffic management**
 
@@ -207,7 +214,6 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 **Security**
 
 - The controller no longer fails on a JWT authentication policy that sets `jwks.remote.url` without a `backendRef` when the `AGW_BACKEND_REF_GRANT_MODE` environment variable is set to `route-and-policy`.
-- Invalid OAuth token exchange and Cross App Access configuration now produces a fail-closed policy instead of rejecting the xDS update. Affected requests fail with `oauthTokenExchange configuration is invalid` or `crossAppAccess configuration is invalid`, while unrelated configuration can still be accepted.
 
 **Operations**
 
