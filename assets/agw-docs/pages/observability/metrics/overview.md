@@ -64,40 +64,35 @@ The PodMonitor also copies the `gateway.networking.k8s.io/gateway-name` pod labe
 {{< /version >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
-To tune histogram scraping and relabeling, pass histogram and relabeling settings to the ServiceMonitor and PodMonitor that the Helm chart creates. Native histogram scraping requires Prometheus v3.8.0 or later. Native histogram scraping is off by default, and classic histogram scraping is on by default. These Helm values control the Prometheus scrape resources only. The metrics endpoint must also emit native histograms before Prometheus can collect native buckets.
+### Relabel scraped metrics {#relabel-metrics}
 
-1. Save the monitoring settings in a values file.
+Add Prometheus Operator relabeling rules to the ServiceMonitor and PodMonitor that the Helm chart creates. The chart supports two kinds of rules:
+* `relabelings` apply to the scrape target before Prometheus scrapes it, such as to change the labels that come from the pod or service.
+* `metricRelabelings` apply to each scraped metric before Prometheus stores it, such as to drop a metric or a label.
+
+1. Save the relabeling rules in a values file. The following example drops the `agentgateway_upstream_call_duration_seconds` histogram from the proxy metrics before Prometheus stores it.
 
    ```yaml
-   cat <<'EOF' > monitoring-values.yaml
+   cat <<'EOF' > relabel-values.yaml
    monitoring:
      enabled: true
-     serviceMonitor:
-       scrapeNativeHistograms: true
-       scrapeClassicHistograms: true
-       relabelings: []
-       metricRelabelings: []
      proxy:
        podMonitor:
-         scrapeNativeHistograms: true
-         scrapeClassicHistograms: true
-         relabelings: []
-         metricRelabelings: []
+         metricRelabelings:
+         - sourceLabels: [__name__]
+           regex: agentgateway_upstream_call_duration_seconds.*
+           action: drop
    EOF
    ```
 
    | Value | Description |
    | --- | --- |
-   | `monitoring.serviceMonitor.scrapeNativeHistograms` | Requests native histogram scraping for control plane metrics. When set to `true`, the chart adds `PrometheusProto` to the ServiceMonitor scrape protocols. |
-   | `monitoring.serviceMonitor.scrapeClassicHistograms` | Requests classic bucket histogram scraping for control plane metrics. The default value is `true`. |
-   | `monitoring.serviceMonitor.relabelings` | Adds Prometheus Operator relabeling rules before the control plane target is scraped. |
-   | `monitoring.serviceMonitor.metricRelabelings` | Adds Prometheus Operator metric relabeling rules before scraped control plane metrics are ingested. |
-   | `monitoring.proxy.podMonitor.scrapeNativeHistograms` | Requests native histogram scraping for proxy metrics. When set to `true`, the chart adds `PrometheusProto` to the PodMonitor scrape protocols. |
-   | `monitoring.proxy.podMonitor.scrapeClassicHistograms` | Requests classic bucket histogram scraping for proxy metrics. The default value is `true`. |
-   | `monitoring.proxy.podMonitor.relabelings` | Adds Prometheus Operator relabeling rules before proxy targets are scraped. |
-   | `monitoring.proxy.podMonitor.metricRelabelings` | Adds Prometheus Operator metric relabeling rules before scraped proxy metrics are ingested. |
+   | `monitoring.serviceMonitor.relabelings` | A list of Prometheus Operator relabeling rules that apply to the control plane target before it is scraped. |
+   | `monitoring.serviceMonitor.metricRelabelings` | A list of Prometheus Operator relabeling rules that apply to the scraped control plane metrics before they are stored. |
+   | `monitoring.proxy.podMonitor.relabelings` | A list of Prometheus Operator relabeling rules that apply to the proxy targets before they are scraped. |
+   | `monitoring.proxy.podMonitor.metricRelabelings` | A list of Prometheus Operator relabeling rules that apply to the scraped proxy metrics before they are stored. |
 
-2. Upgrade the Helm release with the monitoring values.
+2. Upgrade the Helm release with the relabeling values.
 
    ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} \
@@ -105,8 +100,91 @@ To tune histogram scraping and relabeling, pass histogram and relabeling setting
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
      --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
      --reuse-values \
-     -f monitoring-values.yaml
+     -f relabel-values.yaml
    ```
+
+3. After the next scrape, verify in the Prometheus UI that the following query returns no new data.
+
+   ```promql
+   agentgateway_upstream_call_duration_seconds_count
+   ```
+
+### Native and classic histograms {#histogram-types}
+
+Duration and size metrics, such as `agentgateway_request_duration_seconds` and `agentgateway_gen_ai_client_token_usage`, are Prometheus histograms, which count observations in buckets. Prometheus supports two kinds of histograms:
+* **Classic histograms** use a fixed set of bucket boundaries. Each bucket is its own time series with a `_bucket` suffix and an `le` label, next to `_sum` and `_count` series.
+* **[Native histograms](https://prometheus.io/docs/specs/native_histograms/)** choose exponential bucket boundaries automatically and store all buckets in one time series. They give higher-resolution percentiles, usually at a lower storage cost. They are exposed only through the Prometheus protobuf format.
+
+The control plane emits both kinds. The proxies emit classic histograms by default, and can emit native histograms or both. Emitting both lets you move dashboards and alerts to native histograms gradually. The built-in Grafana dashboard calculates percentiles from the classic `_bucket` series, so keep classic histograms while you use it.
+
+#### Scrape native histograms {#native-histograms}
+
+To get higher-resolution percentiles in Prometheus, make the proxies emit native histograms, and make the ServiceMonitor and PodMonitor that the Helm chart creates scrape them. Both settings are off by default.
+
+Before you begin, make sure that you have the following:
+* Scraping enabled as described in [Enable control and data plane scraping](#enable-control-and-data-plane-scraping).
+* Prometheus v3.8.0 or later.
+* Prometheus Operator v0.88.0 or later, which adds the `scrapeNativeHistograms` field to the ServiceMonitor and PodMonitor CRDs.
+
+1. Make the proxies emit native and classic histograms. Add the following setting to the `rawConfig` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that your Gateway uses. For how to create and attach the resource, see [`rawConfig`]({{< link path="/documentation/setup/customize/customize/#rawconfig" >}}). The proxy reads this setting only at startup, so the proxy pods restart.
+
+   ```yaml
+   spec:
+     rawConfig:
+       config:
+         histograms: both
+   ```
+
+   | Setting | Description |
+   | --- | --- |
+   | `config.histograms` | The histograms that the proxy emits: `classic`, `native`, or `both`. The default value is `classic`. The example uses `both` so that the built-in Grafana dashboard keeps working. |
+
+2. Save the scrape settings in a values file.
+
+   ```yaml
+   cat <<'EOF' > histogram-values.yaml
+   monitoring:
+     enabled: true
+     serviceMonitor:
+       scrapeNativeHistograms: true
+       scrapeClassicHistograms: true
+     proxy:
+       podMonitor:
+         scrapeNativeHistograms: true
+         scrapeClassicHistograms: true
+   EOF
+   ```
+
+   | Value | Description |
+   | --- | --- |
+   | `monitoring.serviceMonitor.scrapeNativeHistograms` | Scrapes native histograms from the control plane. When set to `true`, the chart adds `PrometheusProto` to the ServiceMonitor scrape protocols. The default value is `false`. |
+   | `monitoring.serviceMonitor.scrapeClassicHistograms` | Scrapes classic histograms from the control plane. The default value is `true`. |
+   | `monitoring.proxy.podMonitor.scrapeNativeHistograms` | Scrapes native histograms from the proxies. When set to `true`, the chart adds `PrometheusProto` to the PodMonitor scrape protocols. The default value is `false`. |
+   | `monitoring.proxy.podMonitor.scrapeClassicHistograms` | Scrapes classic histograms from the proxies. The default value is `true`. |
+
+3. Upgrade the Helm release with the scrape values.
+
+   ```sh
+   helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} \
+     {{< reuse "agw-docs/snippets/helm-path.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --reuse-values \
+     -f histogram-values.yaml
+   ```
+
+4. Verify that the ServiceMonitor and PodMonitor scrape native histograms. In the output, each resource sets `scrapeNativeHistograms` to `true`, and its `scrapeProtocols` list starts with `PrometheusProto`.
+
+   ```sh
+   kubectl get servicemonitor,podmonitor -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
+   ```
+
+5. Send a few requests through your gateway. Then, in the Prometheus UI, run the following query. The query uses the metric name without the `_bucket` suffix, so it returns a result only when Prometheus stores a native histogram.
+
+   ```promql
+   histogram_quantile(0.95, sum(rate(agentgateway_request_duration_seconds[5m])))
+   ```
+
 {{< /version >}}
 
 ### Scrape additional proxy pods {#other-proxies}

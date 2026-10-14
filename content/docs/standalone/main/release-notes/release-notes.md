@@ -16,7 +16,7 @@ Review the release notes for agentgateway standalone.
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3797 -->
 
-- **Helm monitoring controls**: The Kubernetes and standalone Helm charts can now pass `scrapeNativeHistograms`, `scrapeClassicHistograms`, `relabelings`, and `metricRelabelings` to generated Prometheus Operator monitoring resources. Native histogram scraping is off by default and requires Prometheus v3.8.0 or later, and classic histogram scraping stays on by default. The scrape values do not change which histogram representation the metrics endpoint emits. For Kubernetes, see [Metrics overview]({{< link-hextra path="/documentation/observability/metrics/overview/" >}}). For standalone Helm, see [Common Helm values]({{< link-hextra path="/documentation/setup/install/helm/#helm-monitoring-values" >}}).
+- **Helm monitoring controls**: The `monitoring.podMonitor` Helm values now include `scrapeNativeHistograms`, `scrapeClassicHistograms`, `relabelings`, and `metricRelabelings`, which the chart passes to the PodMonitor that it creates. Native histogram scraping is off by default and requires Prometheus v3.8.0 or later and Prometheus Operator v0.88.0 or later. Classic histogram scraping stays on by default. The chart now sets `scrapeProtocols` on the PodMonitor, even with the default values. For more information, see [Scrape native histograms]({{< link-hextra path="/documentation/observability/metrics/prometheus/#native-histograms" >}}) and [Relabel scraped metrics]({{< link-hextra path="/documentation/observability/metrics/prometheus/#relabel-metrics" >}}).
 
 ## ✨ Highlights {#v16-highlights}
 
