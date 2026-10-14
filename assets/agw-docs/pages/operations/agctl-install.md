@@ -37,7 +37,7 @@ Download the `agctl` binary for your platform from the [releases page](https://g
 Download the pre-compiled binary:
 
 ```sh
-curl -sL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-linux-amd64 -o agctl
+curl -fsSL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-linux-amd64 -o agctl
 chmod +x agctl
 sudo mv agctl /usr/local/bin/agctl
 ```
@@ -49,10 +49,10 @@ Download the pre-compiled binary:
 
 ```sh
 # Intel
-curl -sL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-darwin-amd64 -o agctl
+curl -fsSL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-darwin-amd64 -o agctl
 
 # Apple Silicon
-curl -sL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-darwin-arm64 -o agctl
+curl -fsSL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-darwin-arm64 -o agctl
 
 chmod +x agctl
 sudo mv agctl /usr/local/bin/agctl
