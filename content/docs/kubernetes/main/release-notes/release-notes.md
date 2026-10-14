@@ -10,6 +10,15 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🐛 Fixes {#v17-fixes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3759 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3721 -->
+
+**LLM**
+
+- Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
@@ -186,7 +195,6 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3699 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3721 -->
 
 **Traffic management**
 
@@ -195,7 +203,6 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 **LLM**
 
 - Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
-- Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 
 **MCP**
 

@@ -290,7 +290,9 @@ If you omit `promptCaching`, prompt caching is disabled. If you set `promptCachi
 {{% /version %}}
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
-When a client sends prompt-cache markers, Bedrock conversion keeps those markers when the converted request has retained prompt content. For `/v1/messages`, Anthropic `cache_control.ttl` values become Bedrock cache-point TTLs. When Bedrock conversion drops a top-level `document`, `search_result`, `server_tool_use`, or `web_search_tool_result` block, the dropped block's cache marker moves to retained content instead of being discarded. The same behavior applies to dropped server-tool definitions. Bedrock conversion does not send messages to Bedrock when unsupported blocks leave those messages empty.
+When a client sends prompt-cache markers, Bedrock conversion keeps those markers when the converted request has retained prompt content. For `/v1/messages`, each `cache_control` marker becomes a Bedrock cache point after its content, and Anthropic `cache_control.ttl` values become Bedrock cache-point TTLs.
+
+Bedrock Converse has no equivalent for the `document`, `search_result`, `server_tool_use`, and `web_search_tool_result` block types, so the conversion drops these blocks. If a dropped block has `cache_control`, the cache point moves to the content before the dropped block. When the dropped block is the first block of its message, the cache point goes at the end of the previous message. No cache point is added when nothing precedes the dropped block, or when the content before it already ends with a cache point. A marker on a `document` or `search_result` part inside a tool result moves to after the whole tool result. The same behavior applies to dropped server-tool definitions. Messages that are left empty after the conversion drops unsupported blocks are not sent to Bedrock. The conversion adds at most four cache points to a request, so a moved marker is dropped when four are already set.
 {{% /version %}}
 
 > [!NOTE]
