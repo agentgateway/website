@@ -146,6 +146,8 @@ Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets b
 
 Older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o` reject reasoning effort. In the Chat Completions conversion, requests to those models are sent without `reasoning_effort`, and any thinking that the client asked for is dropped. Every other model receives the reasoning effort that the client asked for, if any.
 
+In both conversions, these prefixes are matched against the model name that is sent to the provider. A model name with a vendor prefix, such as `openai/gpt-4o`, does not match, so the reasoning effort is still sent.
+
 ### Converting to the Bedrock Converse format
 
 The Bedrock Converse conversion carries extended-thinking history in both directions, including encrypted reasoning.
