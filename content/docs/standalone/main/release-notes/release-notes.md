@@ -10,6 +10,14 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v17-new-features}
+
+### MCP {#v17-mcp}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3711 -->
+
+- **CEL MCP guardrails**: MCP guardrail processors can now use `kind: expression` to reject matching MCP operations or transform request `mcp.params` and response `mcp.result` bodies without a remote ExtMCP server. Agent sessions are also available to CEL as `request.agent.session`, from common agent session headers or `config.standardAttributes.session`.
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
@@ -163,7 +171,6 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3425 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3393 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3593 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3711 -->
 
 - **Conditional virtual MCP targets**: Set `mcp.targets[].condition` to a CEL expression to select which targets participate in a request before agentgateway initializes or contacts them. Conditions require at least two configured targets. For more information, see [Target conditions]({{< link-hextra path="/integrations/mcp/servers/virtual/#target-conditions" >}}).
 - **List pagination**: List responses for tools, prompts, and resources carry a `nextCursor`. When an endpoint federates several targets, the client gets one combined cursor that tracks every target. For more information, see [List pagination]({{< link-hextra path="/documentation/mcp/spec-compatibility/#list-pagination" >}}).
@@ -171,7 +178,6 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 - **Server information overrides**: An `mcp.server` block replaces the `serverInfo` and instructions that a multiplexed gateway reports. For more information, see [Server information overrides]({{< link-hextra path="/integrations/mcp/servers/virtual/#server-information-overrides" >}}).
 - **SSE keep-alive**: `mcp.sseKeepAlive` sends periodic comments on long-lived MCP streams so that idle proxies do not close them. For more information, see [SSE keep-alive]({{< link-hextra path="/documentation/mcp/configuration-modes/#sse-keep-alive" >}}).
 - **Request size limit**: An MCP request body that is larger than the buffer limit returns `413`. For more information, see [MCP request body limits]({{< link-hextra path="/integrations/mcp/servers/http/#mcp-request-body-limits" >}}).
-- **CEL MCP guardrails**: MCP guardrail processors can now use `kind: expression` to reject matching MCP operations or transform request `mcp.params` and response `mcp.result` bodies without a remote ExtMCP server. Agent sessions are also available to CEL as `request.agent.session`, from common agent session headers or `config.standardAttributes.session`.
 
 ### Traffic management and operations {#v16-operations}
 
