@@ -54,6 +54,24 @@ The gateway reads the `Sec-Fetch-Mode` request header that browsers send to tell
 - If you set `login.redirect`, the `401` response also includes a `Location` header with that page, so that your application can send the user there. For more information, see [Custom login page and logout](#custom-login-page-and-logout).
 - Requests without a `Sec-Fetch-Mode` header, such as `curl` requests, are treated as navigation requests and redirected.
 
+### Bearer ID tokens
+
+Set `credentials` to `sessionOrBearer` when the same OIDC policy must accept browser sessions and bearer tokens from non-browser clients. Non-browser clients can send an ID token for the policy's client in the `Authorization: Bearer <token>` header.
+
+```yaml
+policies:
+  oidc:
+    issuer: http://localhost:7080/realms/agentgateway
+    clientId: agentgateway-browser
+    clientSecret: agentgateway-secret
+    redirectURI: http://localhost:3000/oauth/callback
+    credentials: sessionOrBearer
+```
+
+With `sessionOrBearer`, a valid bearer ID token authenticates the request and makes the token claims available to policies and access logs. The gateway removes the `Authorization` header before forwarding the request. An invalid bearer token is rejected. A request without a bearer token can still use the browser session flow.
+
+The default `session` value accepts only browser sessions established through the OIDC login flow. The built-in UI uses `sessionOrBearer` by default so that browser users and CLI clients can use the same UI policy.
+
 ### Session cookies {#session-cookies}
 
 Review the following details about session cookies.
@@ -270,6 +288,7 @@ All `login` and `logout` endpoint and redirect values must be safe local paths. 
 | `tokenEndpoint` | No | Explicit token endpoint. Overrides the value from discovery. |
 | `tokenEndpointAuth` | No | Client authentication method for the token endpoint. Discovery mode derives this from provider metadata. Explicit mode defaults to `clientSecretBasic`. |
 | `jwks` | No | JWKS source for ID token validation. If omitted, uses the `jwks_uri` from discovery. |
+| `credentials` | No | Credentials that the policy accepts. `session` accepts only browser sessions. `sessionOrBearer` accepts browser sessions and valid ID tokens in the `Authorization: Bearer <token>` header. Omit to use `session`. For `ui.policies.oidc`, omit to use `sessionOrBearer`. |
 | `login` | No | Optional explicit login endpoint and pre-login redirect block. Omit to keep automatic redirects to the identity provider. |
 | `login.path` | Yes, when `login` is set | Endpoint that starts the OIDC flow, handled by the policy without forwarding to your application. The configured path must have no query string and differ from `logout.path` and the callback path. Requests can include `returnTo` to select the destination after login; missing or unsafe values default to `/`. |
 | `login.redirect` | No | Application page shown before authentication, separate from the callback and the destination after login. Serve it and its assets on public routes; this setting does not make them public. Must differ from the login, logout, and callback paths. The gateway appends `returnTo` with the original path and query. Omit to start the identity provider flow directly. For fetch behavior, see [Navigation and fetch requests](#navigation-and-fetch-requests). |
