@@ -1,7 +1,7 @@
 ---
 title: Set up MCP guardrails
 weight: 20
-description: Gate and mutate MCP method calls with an external ExtMCP policy server.
+description: Gate and mutate MCP method calls with an external ExtMCP policy server or in-process CEL expressions.
 test:
   mcp-guardrails:
   - file: ${versionRoot}/documentation/quickstart/install.md
@@ -12,7 +12,7 @@ test:
     path: mcp-guardrails
 ---
 
-Gate and mutate Model Context Protocol (MCP) method calls with an external policy server. For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
+Gate and mutate Model Context Protocol (MCP) method calls with an external policy server or in-process Common Expression Language (CEL) expressions. For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
 
 In this guide, you route `tools/call` and `tools/list` requests through a sample ExtMCP server that denies any tool whose name contains `forbidden` and annotates each tool description in `tools/list` responses.
 
@@ -204,7 +204,7 @@ spec:
 EOF
 ```
 
-### Step 5: Apply the guardrails policy
+### Step 5: Apply the guardrails policy {#apply-policy}
 
 Create an {{< reuse "agw-docs/snippets/policy.md" >}} that attaches MCP guardrails to the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
@@ -241,33 +241,6 @@ Review the following table to understand the policy.
 | `remote.backendRef` | The ExtMCP policy server that agentgateway calls. This example points to the `ext-mcp` Service from Step 2. |
 | `failureMode: FailClosed` | Deny requests if the policy server is unreachable or returns an error. To allow requests instead, set `FailOpen`. |
 | `methods` | The MCP methods to route through the policy server, and the phase for each. `tools/call: Request` sends each tool call to the server *before* it reaches the MCP backend, so the server can allow, mutate, or deny the call. `tools/list: Response` sends the tool listing to the server *after* the backend returns it, so the server can filter or annotate the list. For the full list of phases and method matching, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}). |
-
-For simple checks and mutations that can run in the proxy, replace the `remote` processor in `spec.backend.mcp.guardrails.processors[]` with an `expression` processor. The Kubernetes API server rejects a processor that sets both `remote` and `expression`.
-
-```yaml
-processors:
-- expression:
-    condition: mcp.params.name == 'restricted_tool'
-    reject: This tool is unavailable
-  methods:
-    tools/call: Request
-- expression:
-    transform: >-
-      mcp.result.merge({
-        'content': mcp.result.content.map(c,
-          c.type == 'text'
-            ? c.merge({'text': c.text.regexReplaceAll('secret-[A-Za-z0-9]+', '[REDACTED]')})
-            : c)
-      })
-  methods:
-    tools/call: Response
-```
-
-| Setting | Description |
-|---------|-------------|
-| `expression.condition` | Optional CEL expression that controls whether the processor runs. If you omit `condition`, the action runs for every matching method. |
-| `expression.reject` | Message to return when the processor rejects the matching MCP call. Set exactly one of `reject` or `transform`. |
-| `expression.transform` | CEL expression that returns a replacement body. In the request phase, return `mcp.params`. In the response phase, return `mcp.result`. Use `merge` to keep fields that you do not want to change. Return `null` to leave the body unchanged. |
 
 {{< doc-test paths="mcp-guardrails" >}}
 YAMLTest -f - <<'EOF'
@@ -439,6 +412,69 @@ echo "$ALLOW" | grep -q '"result"' || { echo "FAIL: allowed tool did not return 
 
 echo "PASS: MCP guardrails mutate, deny, and allow behaviors verified"
 {{< /doc-test >}}
+
+## Add CEL expression processors {#expression-processors}
+
+You can also run a processor as a CEL expression inside agentgateway, without a policy server. Each entry in `processors` sets exactly one of `remote` or `expression`, and the API server rejects an entry that sets both. One policy can mix both kinds. Processors run in list order, each processor sees the changes from earlier processors and the first rejection stops the chain.
+
+Update the `mcp-guardrails` policy to add two `expression` processors around the `remote` processor that you created in [Step 5: Apply the guardrails policy](#apply-policy). The first processor rejects `fetch` calls to the cloud metadata address before they reach the policy server. The last processor masks `secret-` tokens in the text content of tool results.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: mcp-guardrails
+spec:
+  targetRefs:
+    - group: {{< reuse "agw-docs/snippets/group.md" >}}
+      kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+      name: mcp-backend
+  backend:
+    mcp:
+      guardrails:
+        processors:
+        - expression:
+            condition: >-
+              mcp.params.name == 'fetch' &&
+              has(mcp.params.arguments) &&
+              has(mcp.params.arguments.url) &&
+              mcp.params.arguments.url.contains('169.254.169.254')
+            reject: Fetching the cloud metadata address is not allowed
+          methods:
+            tools/call: Request
+        - remote:
+            backendRef:
+              name: ext-mcp
+              port: 4445
+            failureMode: FailClosed
+          methods:
+            tools/call: Request
+            tools/list: Response
+        - expression:
+            condition: has(mcp.result.content)
+            transform: >-
+              mcp.result.merge({
+                'content': mcp.result.content.map(c,
+                  c.type == 'text'
+                    ? c.merge({'text': c.text.regexReplaceAll('secret-[A-Za-z0-9]+', '[REDACTED]')})
+                    : c)
+              })
+          methods:
+            tools/call: Response
+EOF
+```
+
+Review the following table to understand the `expression` settings. For the variables that an expression can read, see [CEL variables]({{< link-hextra path="/reference/cel/variables" >}}).
+
+| Setting | Description |
+|---------|-------------|
+| `expression.condition` | Optional. A CEL expression that must return `true` for the action to run. If you omit `condition`, the action runs for every method that the processor matches. Check optional fields with `has()` first, because an expression that fails to evaluate rejects the call. |
+| `expression.reject` | The message to return when the processor rejects a call, 1 to 4096 characters. When the processor rejects a `tools/call` request in the request phase, the client receives a tool result with `isError: true` and this message as its text. Other methods return a JSON-RPC error with code `-32001`. Set exactly one of `reject` or `transform`. |
+| `expression.transform` | A CEL expression that returns the replacement body: `mcp.params` in the request phase, or `mcp.result` in the response phase. Use `merge` to keep the fields that you do not change. Return `null` to leave the body unchanged. If the returned body is not valid for the method, agentgateway rejects the call. |
+| `methods` | The MCP methods and phases that the processor runs for, the same as for a `remote` processor. |
+
+Expression processors have no `failureMode`. If a condition or transform fails to evaluate, agentgateway rejects the call with a JSON-RPC internal error. If an expression is not valid CEL, the policy still reports `Accepted`, but with the reason `PartiallyValid` and a message that names the expression. Agentgateway then rejects every call that the processor matches.
 
 ## Troubleshooting
 
