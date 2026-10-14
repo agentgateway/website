@@ -12,11 +12,31 @@ Review the release notes for agentgateway on Kubernetes.
 
 ## 🐛 Fixes {#v17-fixes}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3793 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3833 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3893 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3809 -->
+
+**Traffic management**
+
+- Local gRPC policy call failures, such as DNS errors, unavailable endpoints, refused connections, and timeouts, are reported with the mapped gRPC status instead of `UNKNOWN`.
+
+**LLM**
+
+- Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
+
+**MCP**
+
+- Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
 
 **Security**
 
-- Invalid OAuth token exchange and Cross App Access configuration now produces a fail-closed policy instead of rejecting the xDS update. Affected requests fail with `oauthTokenExchange configuration is invalid` or `crossAppAccess configuration is invalid`, while unrelated configuration can still be accepted.
+- Invalid `oauthTokenExchange` or `crossAppAccess` backend authentication no longer blocks the rest of your configuration from reaching the proxy. Only requests that use the invalid block fail, with HTTP `500` and the message `oauthTokenExchange configuration is invalid` or `crossAppAccess configuration is invalid`. The policy reports `Accepted: True` with the reason `PartiallyValid`. For more information, see [Debug your setup]({{< link-hextra path="/documentation/operations/debug/" >}}).
+
+**Operations**
+
+- HTTP/1 clients receive `Connection: close` on the next response when a proxy drains or reaches its maximum connection duration.
 
 ## ✨ Highlights {#v16-highlights}
 
@@ -194,7 +214,6 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3699 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
 
 **Traffic management**
@@ -204,7 +223,6 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 **LLM**
 
 - Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
-- Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
 
 **MCP**
 
