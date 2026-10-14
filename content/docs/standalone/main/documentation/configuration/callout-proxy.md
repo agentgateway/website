@@ -15,18 +15,20 @@ A callout is any request that agentgateway sends for itself rather than for a cl
 * [External authorization]({{< link-hextra path="/documentation/configuration/security/external-authz" >}}), external processing, and remote rate limit requests.
 * Guardrail requests, such as webhooks, OpenAI moderation, AWS Bedrock Guardrails, Google Model Armor, and Azure AI Content Safety.
 * Virtual model callout routing requests.
-* Cloud provider credential fetches, such as AWS and Azure credentials.
+* Credential fetches from cloud providers, such as AWS, Azure, and Google Cloud Platform (GCP).
 
 Client traffic to your primary backends is not a callout, so the callout proxy does not apply to it. To send backend traffic through a proxy, set the `backendTunnel` policy on the backend instead. To proxy CONNECT requests from your clients instead, see [Egress proxy]({{< link-hextra path="/documentation/configuration/egress-proxy/" >}}).
 
-## Configure the proxy
+## Configure the callout proxy
 
-You can configure the callout proxy in either of the following ways.
+You can configure the callout proxy in either of the following ways. If you use both, `config.callouts.tunnel` takes precedence, and agentgateway ignores the proxy environment variables for callouts.
 
-* **In the configuration file**: Set `config.callouts.tunnel`. Settings in the `config` section take effect at startup, so restart agentgateway after you change this setting. For more information, see [Static configuration]({{< link-hextra path="/documentation/configuration/static-configuration/" >}}).
-* **With environment variables**: Omit `config.callouts.tunnel` and set the standard proxy environment variables in the environment that runs agentgateway. When you set `config.callouts.tunnel`, the proxy environment variables have no effect on callouts.
+* **[In the configuration file](#configuration-file)**: Set `config.callouts.tunnel`. Use this way to keep the proxy settings with the rest of your configuration.
+* **[With environment variables](#environment-variables)**: Set the standard proxy environment variables, such as `HTTPS_PROXY`. Use this way to send GCP credential fetches through the proxy, or to reuse variables that your environment already sets.
 
-### Configuration file
+### Option 1: Configuration file
+
+Set `config.callouts.tunnel` in your configuration file. Settings in the `config` section take effect at startup, so restart agentgateway after you change this setting. For more information, see [Static configuration]({{< link-hextra path="/documentation/configuration/static-configuration/" >}}).
 
 ```yaml
 config:
@@ -41,17 +43,17 @@ config:
 | Setting | Description |
 | -- | -- |
 | `config.callouts.tunnel.url` | The URL of the proxy. This proxy handles every callout, whether the callout uses Transport Layer Security (TLS) or plaintext. The scheme must be `http` or `https`. With `https`, the connection to the proxy uses TLS, and the proxy certificate is verified against the system trust bundle. If you omit the port, the default is `80` for `http` and `443` for `https`. To authenticate to the proxy with basic authentication, include the credentials in the URL, such as `http://user:password@proxy.example.com:3128`. The `--validate-only` flag does not check the scheme. A URL with an unsupported scheme, such as `socks5://`, passes validation, and then agentgateway fails to start with an `invalid callouts config` error. |
-| `config.callouts.tunnel.noProxy` | Optional. Destinations that bypass the proxy. Entries use the `NO_PROXY` syntax: a hostname, which also matches its subdomains, an IP address, a Classless Inter-Domain Routing (CIDR) range, or `*` to bypass the proxy for every destination. |
+| `config.callouts.tunnel.noProxy` | Optional. Destinations that bypass the proxy. Each entry is a hostname, an IP address, a Classless Inter-Domain Routing (CIDR) range, or `*` for every destination. A hostname also matches its subdomains. |
 
-### Environment variables
+### Option 2: Environment variables
 
-If you omit `config.callouts.tunnel`, agentgateway reads the following environment variables at startup. Uppercase names take precedence over lowercase names, such as `HTTPS_PROXY` over `https_proxy`.
+Set the following variables in the environment that runs agentgateway. Agentgateway reads them at startup. Uppercase names take precedence over lowercase names, such as `HTTPS_PROXY` over `https_proxy`.
 
 | Variable | Description |
 | -- | -- |
 | `HTTPS_PROXY` | The proxy for callouts that use TLS. |
 | `HTTP_PROXY` | The proxy for plaintext callouts. |
-| `ALL_PROXY` | The proxy for callouts whose scheme-specific variable is unset. |
+| `ALL_PROXY` | The proxy for callouts when you omit `HTTPS_PROXY` or `HTTP_PROXY`. |
 | `NO_PROXY` | A comma-separated list of destinations that bypass the proxy, in the same syntax as `noProxy`. |
 
 > [!IMPORTANT]
@@ -65,7 +67,7 @@ The following callouts go directly to their destination, even when you configure
 * Loopback and link-local IP addresses, such as `127.0.0.1` and the cloud metadata server at `169.254.169.254`. A remote proxy cannot reach these addresses. This rule applies to IP addresses only. A callout to the hostname `localhost` goes through the proxy, so add `localhost` to `noProxy` or `NO_PROXY` if your callout targets use it.
 * Callouts to a backend that has its own `backendTunnel` policy. These callouts use that tunnel instead.
 * Callouts to a service from the top-level `services` list, and to Unix domain sockets.
-* Google Cloud Platform (GCP) credential fetches, when you configure the proxy with `config.callouts.tunnel`. To send these fetches through a proxy, use the environment variables instead.
+* GCP credential fetches, when you configure the proxy with `config.callouts.tunnel`. To send these fetches through a proxy, use the environment variables instead.
 
 ## Before you begin
 
