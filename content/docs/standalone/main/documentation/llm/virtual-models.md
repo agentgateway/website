@@ -38,10 +38,10 @@ test:
 #     config/traffic the page omits; the page shows no request example, and
 #     confirming which internal target served a response needs a live provider
 #     call.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 #   * That callout routing selects a target model: external dependency. The
 #     callout example needs a running HTTP router service and live provider
 #     calls.
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 
 # The example configs read API keys from the environment. --validate-only and the
 # model listing still resolve env vars, so placeholders are enough here.
@@ -369,26 +369,23 @@ agentgateway -f config-conditional.yaml --validate-only
 assert_models config-conditional.yaml '["adaptive","openai-public"]'
 {{< /doc-test >}}
 
-> [!NOTE]
-> For reusable provider defaults in simplified mode, see [Multiple LLM providers]({{< link-hextra path="/integrations/llm/providers/multiple-llms/" >}}).
+### Callout routing {#callout-routing}
 
-### Callout routing
+Use `routing.callout` to send each request to an external HTTP service that selects the target model. Use callout routing when the routing decision depends on logic outside the configuration, such as a service that scores the complexity of the prompt or tracks the state of an agent session.
 
-Use `routing.callout` to ask an external HTTP service which model to use for each request. Use this routing mode when routing depends on logic outside the gateway. For example, a model-selection service can score the prompt and return the best target.
-
-The callout service returns a JSON response. The `transformation` expressions read the response from the `callout` CEL variable. The `model` expression must set `model` to one of the `llm.models[]` entries. Other transformation keys override fields in the request payload before the selected model receives the request.
+Each request to the virtual model triggers a `POST` request to the callout service, which must return a `2xx` response with a JSON body. The `transformation` expressions read that response from the `callout` CEL variable. `callout.body` is the decoded JSON body and `callout.headers` holds the response headers. The `model` expression selects the target. The other `transformation` keys set fields in the request body before the request goes to the selected model.
 
 ```yaml
 llm:
   models:
   - name: gpt-5.6-luna
     visibility: internal
-    provider: openai
+    provider: openAI
     params:
       apiKey: "$OPENAI_API_KEY"
   - name: gpt-5.6-terra
     visibility: internal
-    provider: openai
+    provider: openAI
     params:
       apiKey: "$OPENAI_API_KEY"
 
@@ -409,15 +406,30 @@ llm:
           ttl: 10m
 ```
 
-In this example, the client requests the `auto` virtual model. The gateway sends the request messages to the callout service. The gateway reads the selected model from `callout.body.model` and forwards the request to that model. The request falls back to `gpt-5.6-luna` if the callout fails, returns a non-2xx or non-JSON response, or selects an unknown model.
+In this example, a client requests the `auto` virtual model. The callout service at `http://127.0.0.1:8000/route` receives the request messages and returns a body such as `{"model": "gpt-5.6-terra", "reasoning_effort": "medium"}`. The request goes to `gpt-5.6-terra` with `reasoning_effort` set to `medium`. Requests with the same `x-session-id` header reuse the first response for 10 minutes, so the session stays on one model.
+
+The request goes to the fallback model `gpt-5.6-luna` when one of the following happens:
+
+- The callout service cannot be reached, or does not respond within the timeout.
+- The response status is not `2xx`, or the response body is not JSON.
+- The `model` expression fails or does not return a string.
+- The selected model does not match an entry in `llm.models[]`.
+
+The fallback model gets the request without the `transformation` changes.
 
 Use the following fields to configure callout routing:
 
 | Field | Description |
 | -- | -- |
-| `routing.callout.host` | The HTTP service URL. The URL can include the path that receives the callout request. |
-| `routing.callout.body` | Optional CEL expression that builds the callout request body. Strings and bytes are used directly. Other values are JSON-encoded. If you omit this field, the original request body is forwarded. |
-| `routing.callout.headers` | Optional map of request headers to add to the callout request. Each value is a CEL expression. |
-| `routing.callout.transformation` | CEL expressions that update fields in the LLM request after the callout returns. The `model` expression is required and selects the target from `llm.models[]`. |
-| `routing.callout.failureMode.fallback` | Optional fallback model to use when the callout fails. If you omit `failureMode`, callout failures return `503` with the `virtual_model_callout_failed` error code. |
-| `routing.callout.cache` | Optional cache for callout responses. On a cache hit, `transformation` is evaluated against the cached response. The cache `ttl` expression can read `callout` and is evaluated before `transformation` is applied. |
+| `host` | The callout service, as a URL that can include the request path, such as `https://router.example.com/v1/route`. Without a path, the request goes to `/`. Instead of `host`, you can set `backend` to a backend in the top-level `backends` list, or `service` to a service in the top-level `services` list. |
+| `policies` | Optional backend policies for the connection to the callout service, such as TLS, authentication, and timeouts. The default request timeout is 10 seconds. |
+| `body` | Optional CEL expression that builds the callout request body. A string or bytes value is sent as is, and any other value is sent as JSON. If you omit `body`, the callout service receives the original request body. |
+| `headers` | Optional map of headers to set on the callout request. Each value is a CEL expression. Keys can also be the `:path`, `:method`, and `:authority` pseudo-headers. |
+| `transformation` | Required map of request body fields to CEL expressions that read `callout`. The `model` key is required. The other keys override fields in the request body. If a key's expression fails, such as when the response does not contain the field, that field is removed from the request. The keys apply only to requests that carry the model in a JSON body. |
+| `failureMode` | Optional. The default, `failClosed`, rejects the request with a `503` response and the `virtual_model_callout_failed` error code. Set `fallback` to the name of an `llm.models[]` entry to route to that model instead. The configuration is rejected if the fallback model does not exist. |
+| `cache` | Optional cache for callout responses. `key` is a list of CEL expressions that make up the cache key. If a key expression fails, such as when the header is missing, the response is not cached. `ttl` is a duration such as `10m`, or a CEL expression that can read `callout` and returns a duration or a timestamp. `maxEntries` sets the maximum number of cached responses. On a cache hit, `transformation` runs against the cached response. |
+
+For complete examples that include a callout service, see [`llm-callout-jev`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-jev) and [`llm-callout-switchyard`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-switchyard) in the agentgateway repository.
+
+> [!NOTE]
+> For reusable provider defaults in simplified mode, see [Multiple LLM providers]({{< link-hextra path="/integrations/llm/providers/multiple-llms/" >}}).
