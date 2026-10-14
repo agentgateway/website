@@ -10,13 +10,43 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🔄 Other behavior changes {#v17-behavior-changes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3826 -->
+
+- **UI sign-in**: An `oidc` policy in `ui.policies` now also accepts an ID token from the same identity provider and client in the `Authorization: Bearer <token>` header, so that CLI clients can call the UI's API. To accept only browser sessions, as in 1.6, set `credentials: session` on the policy. For more information, see [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).
+
 ## 🌟 New features {#v17-new-features}
 
 ### Security {#v17-security}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3826 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3903 -->
 
-- **Use one OIDC policy for browser sessions and bearer ID tokens**: An OIDC policy can now set `credentials: sessionOrBearer` to accept browser sessions and direct ID tokens from `Authorization: Bearer <token>`. The built-in UI uses this mode by default so browser users and CLI clients can share the same UI policy. For more information, see [Bearer ID tokens]({{< link-hextra path="/documentation/configuration/security/oidc/#bearer-id-tokens" >}}).
+- **Use one OIDC policy for browsers and API clients**: The new `credentials` field of an OIDC policy controls which credentials the policy accepts. Set `credentials: sessionOrBearer` to accept browser sessions and ID tokens from the same identity provider in the `Authorization: Bearer <token>` header. Set `credentials: permissive` to keep the browser login flow, and let other requests continue to policies such as `jwtAuth` or `mcpAuthentication`. Pair `permissive` with an `authorization` policy, because it does not reject unauthenticated requests by itself. For more information, see [Bearer tokens for API clients]({{< link-hextra path="/documentation/configuration/security/oidc/#bearer-id-tokens" >}}).
+
+## 🐛 Fixes {#v17-fixes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3793 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3863 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3893 -->
+
+**Traffic management**
+
+- Local gRPC policy call failures, such as DNS errors, unavailable endpoints, refused connections, and timeouts, are reported with the mapped gRPC status instead of `UNKNOWN`.
+
+**LLM**
+
+- Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
+
+**MCP**
+
+- Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+
+**Operations**
+
+- Standalone configuration reloads now track files that agentgateway reads during parsing, such as `backendTLS.root` certificate files, so later file changes are picked up without a process restart.
 
 ## ✨ Highlights {#v16-highlights}
 
@@ -211,7 +241,6 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3720 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3724 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
 
 **Traffic management**
@@ -223,7 +252,6 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 **LLM**
 
 - Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
-- Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
 
 **MCP**
 

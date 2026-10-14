@@ -8,7 +8,7 @@ Attaches to: {{< badge content="Route" path="/documentation/configuration/routes
 
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
-OIDC browser authentication provides built-in OpenID Connect login for browser-based clients. By default, unauthenticated browser navigation requests are redirected to the identity provider's login page, and unauthenticated fetch requests receive a `401 Unauthorized` response. Additionally, you can send browser navigation requests to a local login page before the identity provider flow starts, and add a local logout endpoint that clears the gateway session. After successful authentication, the user's session is maintained with encrypted cookies.
+OIDC browser authentication provides built-in OpenID Connect login for browser-based clients. By default, unauthenticated browser navigation requests are redirected to the identity provider's login page, and unauthenticated fetch requests receive a `401 Unauthorized` response. Additionally, you can send browser navigation requests to a local login page before the identity provider flow starts, and add a local logout endpoint that clears the gateway session. After successful authentication, the user's session is maintained with encrypted cookies. To let non-browser clients call the same routes, the policy can also accept bearer tokens.
 
 The OIDC policy uses the OAuth 2.0 Authorization Code Flow with PKCE (Proof Key for Code Exchange) for secure browser-based authentication without requiring a separate proxy like oauth2-proxy.
 
@@ -54,23 +54,7 @@ The gateway reads the `Sec-Fetch-Mode` request header that browsers send to tell
 - If you set `login.redirect`, the `401` response also includes a `Location` header with that page, so that your application can send the user there. For more information, see [Custom login page and logout](#custom-login-page-and-logout).
 - Requests without a `Sec-Fetch-Mode` header, such as `curl` requests, are treated as navigation requests and redirected.
 
-### Bearer ID tokens
-
-Set `credentials` to `sessionOrBearer` when the same OIDC policy must accept browser sessions and bearer tokens from non-browser clients. Non-browser clients can send an ID token for the policy's client in the `Authorization: Bearer <token>` header.
-
-```yaml
-policies:
-  oidc:
-    issuer: http://localhost:7080/realms/agentgateway
-    clientId: agentgateway-browser
-    clientSecret: agentgateway-secret
-    redirectURI: http://localhost:3000/oauth/callback
-    credentials: sessionOrBearer
-```
-
-With `sessionOrBearer`, a valid bearer ID token authenticates the request and makes the token claims available to policies and access logs. The gateway removes the `Authorization` header before forwarding the request. An invalid bearer token is rejected. A request without a bearer token can still use the browser session flow.
-
-The default `session` value accepts only browser sessions established through the OIDC login flow. The built-in UI uses `sessionOrBearer` by default so that browser users and CLI clients can use the same UI policy.
+The `permissive` value of the `credentials` field changes these rules. Unauthenticated requests that are not navigations continue to the next policies instead of receiving a `401` response. A request without a `Sec-Fetch-Mode` header counts as a navigation only when its `Accept` header includes `text/html`. For more information, see [Bearer tokens for API clients](#bearer-id-tokens).
 
 ### Session cookies {#session-cookies}
 
@@ -270,6 +254,78 @@ Use a same-origin `POST` form for logout, such as the following example.
 > [!IMPORTANT]
 > Make the logout destination public through a route or a policy that bypasses OIDC. If the destination is protected, the next request starts a new login. The user's identity provider session is still active, so the user can be signed back in without a prompt and logout appears to do nothing.
 
+## Bearer tokens for API clients {#bearer-id-tokens}
+
+By default, an OIDC policy accepts only the browser session that its login flow creates. To let non-browser clients, such as a CLI or a script, call the same routes, set the `credentials` field to one of the following values.
+
+| Value | Behavior |
+|-------|----------|
+| `session` | Default, except for `ui.policies.oidc`. The policy accepts only browser sessions. An `Authorization` header is ignored. |
+| `sessionOrBearer` | Default for `ui.policies.oidc`. The policy also accepts an ID token from its own identity provider in the `Authorization: Bearer <token>` header. An invalid bearer token is rejected with `401 Unauthorized`. |
+| `permissive` | Like `sessionOrBearer`, but requests that the OIDC policy cannot authenticate continue to the next policies, unless they are browser navigations. Use this value when API clients authenticate with another policy, such as `jwtAuth` or `mcpAuthentication`. |
+
+### Accept ID tokens from the OIDC provider {#accept-id-tokens}
+
+Use `sessionOrBearer` when your API clients can get an ID token from the same identity provider and client as your browser users.
+
+1. Add `credentials: sessionOrBearer` to the `oidc` policy.
+
+   ```yaml
+   policies:
+     oidc:
+       issuer: http://localhost:7080/realms/agentgateway
+       clientId: agentgateway-browser
+       clientSecret: agentgateway-secret
+       redirectURI: http://localhost:3000/oauth/callback
+       credentials: sessionOrBearer
+   ```
+
+2. Get an ID token for the `clientId` from your identity provider, and send the token in the `Authorization` header. The policy checks the token signature against its JWKS, and checks that the token is not expired. The `iss` claim must match `issuer`, and the `aud` claim must include `clientId`. An access token is rejected unless its `aud` claim also includes `clientId`, so send the ID token.
+
+   ```sh
+   curl -i http://localhost:3000/ -H "Authorization: Bearer $ID_TOKEN"
+   ```
+
+Review the following behavior.
+
+- A valid token authenticates the request without the browser login flow. The token claims are available as `jwt` in authorization rules and access logs, as they are for a browser session.
+- The gateway removes the `Authorization` header before it forwards the request.
+- An invalid token gets a `401 Unauthorized` response, even if the request also carries a valid session cookie. The gateway does not redirect the request to log in.
+- A request without an `Authorization` header uses the browser session flow.
+- On the `login.path` endpoint, the policy ignores the `Authorization` header.
+
+### Pass API clients to other authentication policies {#permissive-credentials}
+
+Use `permissive` when browsers log in with OIDC, but API clients use other credentials. Examples are tokens from another issuer, API keys, and MCP authentication. In `permissive` mode, the OIDC policy handles requests as follows.
+
+- A browser session or a valid ID token authenticates the request, as with `sessionOrBearer`.
+- An invalid or unrecognized bearer token is not rejected. The policy leaves the `Authorization` header in place for a later policy to validate.
+- A browser navigation without a session starts the login flow, as with the other values. A request is a navigation when its `Sec-Fetch-Mode` header is `navigate`. If the request has no `Sec-Fetch-Mode` header, the `Accept` header decides: a request that accepts `text/html` is a navigation.
+- Any other request without a session continues to the next policies unauthenticated. The OIDC policy does not send a `401` response, so `curl` requests without an `Accept: text/html` header are not redirected to log in.
+
+> [!WARNING]
+> The `permissive` value does not reject unauthenticated requests by itself. Add an `authorization` policy or another policy that rejects them. Otherwise, a request without credentials reaches your backend.
+
+The following example accepts browser sessions through OIDC and CLI tokens from a second issuer through `jwtAuth`. The `jwtAuth` policy uses its default `optional` mode, which validates a token when one is present. The `authorization` rule rejects requests that neither policy authenticated with a `403 Forbidden` response.
+
+```yaml
+policies:
+  oidc:
+    issuer: http://localhost:7080/realms/agentgateway
+    clientId: agentgateway-browser
+    clientSecret: agentgateway-secret
+    redirectURI: http://localhost:3000/oauth/callback
+    credentials: permissive
+  jwtAuth:
+    issuer: https://cli.example.com
+    audiences: [my-app-cli]
+    jwks:
+      url: https://cli.example.com/.well-known/jwks.json
+  authorization:
+    rules:
+    - allow: has(jwt.sub)
+```
+
 ## Fields
 
 {{< reuse "agw-docs/snippets/review-table.md" >}}
@@ -288,7 +344,7 @@ All `login` and `logout` endpoint and redirect values must be safe local paths. 
 | `tokenEndpoint` | No | Explicit token endpoint. Overrides the value from discovery. |
 | `tokenEndpointAuth` | No | Client authentication method for the token endpoint. Discovery mode derives this from provider metadata. Explicit mode defaults to `clientSecretBasic`. |
 | `jwks` | No | JWKS source for ID token validation. If omitted, uses the `jwks_uri` from discovery. |
-| `credentials` | No | Credentials that the policy accepts. `session` accepts only browser sessions. `sessionOrBearer` accepts browser sessions and valid ID tokens in the `Authorization: Bearer <token>` header. Omit to use `session`. For `ui.policies.oidc`, omit to use `sessionOrBearer`. |
+| `credentials` | No | Credentials that the policy accepts: `session`, `sessionOrBearer`, or `permissive`. Defaults to `session`, or to `sessionOrBearer` for `ui.policies.oidc`. For the behavior of each value, see [Bearer tokens for API clients](#bearer-id-tokens). |
 | `login` | No | Optional explicit login endpoint and pre-login redirect block. Omit to keep automatic redirects to the identity provider. |
 | `login.path` | Yes, when `login` is set | Endpoint that starts the OIDC flow, handled by the policy without forwarding to your application. The configured path must have no query string and differ from `logout.path` and the callback path. Requests can include `returnTo` to select the destination after login; missing or unsafe values default to `/`. |
 | `login.redirect` | No | Application page shown before authentication, separate from the callback and the destination after login. Serve it and its assets on public routes; this setting does not make them public. Must differ from the login, logout, and callback paths. The gateway appends `returnTo` with the original path and query. Omit to start the identity provider flow directly. For fetch behavior, see [Navigation and fetch requests](#navigation-and-fetch-requests). |
