@@ -204,12 +204,14 @@ The following cases do not round-trip.
 | A `redacted_thinking` block, sent to a `Completions` provider | Dropped, because it holds nothing that an OpenAI-compatible engine can replay. |
 | An Anthropic messages request that takes the Responses conversion instead | The thinking history is dropped from the converted request, with no error and no warning, so the model loses its prior reasoning. See [Anthropic messages to the Responses format](#anthropic-messages-to-the-responses-format). |
 
+Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. When an Anthropic messages client sends a request with tools to one of these models through a `Completions` provider, the request is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped.
+
 Older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or
 `chatgpt-4o` reject reasoning effort. When an Anthropic messages client sends a
 request to one of those models through a `Completions` provider, the request is
-sent without `reasoning_effort`. Any thinking that the client asked for through
-`thinking` or `output_config.effort` is dropped. Every other model receives the
-reasoning effort that the client asked for, if any.
+sent without `reasoning_effort`, and any thinking that the client asked for is
+dropped. Every other model receives the reasoning effort that the client asked
+for, if any.
 
 ### Anthropic messages to the Completions format
 
