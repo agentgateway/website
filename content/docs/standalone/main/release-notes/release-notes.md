@@ -10,6 +10,14 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v17-new-features}
+
+### Security {#v17-security}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3826 -->
+
+- **Use one OIDC policy for browser sessions and bearer ID tokens**: An OIDC policy can now set `credentials: sessionOrBearer` to accept browser sessions and direct ID tokens from `Authorization: Bearer <token>`. The built-in UI uses this mode by default so browser users and CLI clients can share the same UI policy. For more information, see [Bearer ID tokens]({{< link-hextra path="/documentation/configuration/security/oidc/#bearer-id-tokens" >}}).
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
@@ -146,7 +154,6 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3449 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3317 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3540 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3826 -->
 
 - **OIDC sign-in**: An OIDC policy can serve login and logout endpoints. The UI sets both automatically. A `fetch` request without a session now gets `401` instead of a redirect to the identity provider. Session cookies now use compression so that users with many groups can sign in. For more information, see [OIDC]({{< link-hextra path="/documentation/configuration/security/oidc/" >}}).
 - **OIDC session refresh**: Agentgateway automatically uses a refresh token from the identity provider to renew an expired browser session. The refreshed ID token must identify the same user; a missing ID token or a different `sub` requires sign-in again. Add `offline_access` when your provider requires that scope to issue refresh tokens. For more information, see [Session cookies]({{< link-hextra path="/documentation/configuration/security/oidc/#session-cookies" >}}).
@@ -154,7 +161,6 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 - **JWT validation**: With several JWT providers, agentgateway tries each provider whose `issuer` and JWKS key ID match the token. Agentgateway also checks the `nbf` (not before) claim to reject tokens that are not yet valid. This check allows 60 seconds of leeway for clock skew. The `audiences` field of the `mcpAuthentication` route policy is now optional. For more information, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn/#jwt-claim-validation" >}}).
 - **Backend authentication**: In the `backendAuth` policy or the `auth` field of an `llm.models` entry, AWS `assumeRole` takes an `externalId`, and Azure authentication takes `scopes`. For more information, see [AWS]({{< link-hextra path="/documentation/configuration/security/backend-authn/providers/aws/#assume-a-role" >}}) and [Azure]({{< link-hextra path="/documentation/configuration/security/backend-authn/providers/azure/#configure-token-scopes" >}}).
 - **Network authorization by destination**: Rules in `frontendPolicies.networkAuthorization` can match on `destination.address`, `destination.port`, and the TLS SNI hostname in `destination.hostname`. For more information, see [Require TLS SNI]({{< link-hextra path="/documentation/configuration/security/network-authz/#require-tls-sni" >}}).
-- **Use one OIDC policy for browser sessions and bearer ID tokens**: An OIDC policy can now set `credentials: sessionOrBearer` to accept browser sessions and direct ID tokens from `Authorization: Bearer <token>`. The built-in UI uses this mode by default so browser users and CLI clients can share the same UI policy. For more information, see [Bearer ID tokens]({{< link-hextra path="/documentation/configuration/security/oidc/#bearer-id-tokens" >}}).
 
 ### MCP {#v16-mcp}
 
