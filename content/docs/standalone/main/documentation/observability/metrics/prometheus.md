@@ -184,7 +184,7 @@ Duration and size metrics, such as `agentgateway_request_duration_seconds` and `
 * **Classic histograms** use a fixed set of bucket boundaries. Each bucket is its own time series with a `_bucket` suffix and an `le` label, next to `_sum` and `_count` series. The proxy emits classic histograms by default.
 * **[Native histograms](https://prometheus.io/docs/specs/native_histograms/)** choose exponential bucket boundaries automatically and store all buckets in one time series. They give higher-resolution percentiles, usually at a lower storage cost. They are exposed only through the Prometheus protobuf format.
 
-The proxy can emit classic histograms, native histograms, or both. Emitting both lets you move dashboards and alerts to native histograms gradually. The built-in Grafana dashboard calculates percentiles from the classic `_bucket` series, so keep classic histograms while you use it.
+The proxy can emit classic histograms, native histograms, or both. Emitting both lets you move dashboards and alerts to native histograms gradually. The [pre-built Grafana dashboard]({{< link-hextra path="/documentation/observability/metrics/grafana/" >}}) calculates percentiles from the classic `_bucket` series, so keep classic histograms while you use it.
 
 ### Scrape native histograms {#native-histograms}
 
@@ -212,7 +212,7 @@ Before you begin, make sure that you have the following:
 
    | Value | Description |
    | --- | --- |
-   | `config.config.histograms` | The histograms that the proxy emits: `classic`, `native`, or `both`. The default value is `classic`. The example uses `both` so that the built-in Grafana dashboard keeps working. |
+   | `config.config.histograms` | The histograms that the proxy emits: `classic`, `native`, or `both`. The default value is `classic`. The example uses `both` so that the pre-built Grafana dashboard keeps working. |
    | `monitoring.podMonitor.scrapeNativeHistograms` | Scrapes native histograms. When set to `true`, the chart adds `PrometheusProto` to the PodMonitor scrape protocols. The default value is `false`. |
    | `monitoring.podMonitor.scrapeClassicHistograms` | Scrapes classic histograms. The default value is `true`. |
 

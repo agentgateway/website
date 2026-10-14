@@ -115,7 +115,7 @@ Duration and size metrics, such as `agentgateway_request_duration_seconds` and `
 * **Classic histograms** use a fixed set of bucket boundaries. Each bucket is its own time series with a `_bucket` suffix and an `le` label, next to `_sum` and `_count` series.
 * **[Native histograms](https://prometheus.io/docs/specs/native_histograms/)** choose exponential bucket boundaries automatically and store all buckets in one time series. They give higher-resolution percentiles, usually at a lower storage cost. They are exposed only through the Prometheus protobuf format.
 
-The control plane emits both kinds. The proxies emit classic histograms by default, and can emit native histograms or both. Emitting both lets you move dashboards and alerts to native histograms gradually. The built-in Grafana dashboard calculates percentiles from the classic `_bucket` series, so keep classic histograms while you use it.
+The control plane emits its `agentgateway_controller_reconcile_duration_seconds` histogram in both kinds. The proxies emit classic histograms by default, and can emit native histograms or both. Emitting both lets you move dashboards and alerts to native histograms gradually. The built-in Grafana dashboard calculates percentiles from the classic `_bucket` series, so keep classic histograms while you use it.
 
 #### Scrape native histograms {#native-histograms}
 
@@ -125,6 +125,9 @@ Before you begin, make sure that you have the following:
 * Scraping enabled as described in [Enable control and data plane scraping](#enable-control-and-data-plane-scraping).
 * Prometheus v3.8.0 or later.
 * Prometheus Operator v0.88.0 or later, which adds the `scrapeNativeHistograms` field to the ServiceMonitor and PodMonitor CRDs.
+
+> [!NOTE]
+> The [OTel stack guide]({{< link path="/documentation/observability/otel-stack/" >}}) installs `kube-prometheus-stack` version {{< reuse "agw-docs/versions/otel-stack-prometheus.md" >}}, which might include an older Prometheus Operator. Check the version of your Prometheus Operator before you continue. `kube-prometheus-stack` version 81.0.0 and later include Prometheus Operator v0.88.0 or later. With an older Prometheus Operator, the Kubernetes API server drops the `scrapeNativeHistograms` field from the ServiceMonitor and PodMonitor and Prometheus does not scrape native histograms.
 
 1. Make the proxies emit native and classic histograms. Add the following setting to the `rawConfig` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that your Gateway uses. For how to create and attach the resource, see [`rawConfig`]({{< link path="/documentation/setup/customize/customize/#rawconfig" >}}). The proxy reads this setting only at startup, so the proxy pods restart.
 
