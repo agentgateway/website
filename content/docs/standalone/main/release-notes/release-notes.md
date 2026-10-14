@@ -10,6 +10,14 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v17-new-features}
+
+### Traffic management and operations {#v17-traffic}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3797 -->
+
+- **Helm monitoring controls**: The Kubernetes and standalone Helm charts can now pass `scrapeNativeHistograms`, `scrapeClassicHistograms`, `relabelings`, and `metricRelabelings` to generated Prometheus Operator monitoring resources. Native histogram scraping is off by default and requires Prometheus v3.8.0 or later, and classic histogram scraping stays on by default. The scrape values do not change which histogram representation the metrics endpoint emits. For Kubernetes, see [Metrics overview]({{< link-hextra path="/documentation/observability/metrics/overview/" >}}). For standalone Helm, see [Common Helm values]({{< link-hextra path="/documentation/setup/install/helm/#helm-monitoring-values" >}}).
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
@@ -187,10 +195,6 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 - **Graceful drain**: During shutdown, agentgateway stops accepting new connections after `config.connectionMinTerminationDeadline`. It continues to serve open connections until `config.connectionTerminationDeadline`. For more information, see [Shutdown and drain]({{< link-hextra path="/documentation/configuration/static-configuration/#shutdown-drain" >}}).
 - **Helm chart scaling**: The standalone chart can create a PodDisruptionBudget and a HorizontalPodAutoscaler. For more information, see [Create a PodDisruptionBudget]({{< link-hextra path="/documentation/setup/install/helm/#helm-pdb" >}}).
 - **Telemetry**: OTLP access logs use the `agentgateway.access` instrumentation scope. The request duration metric records failed requests with an `error_type` label. For the metrics, see the [metrics reference]({{< link-hextra path="/documentation/observability/metrics/reference/#llm" >}}).
-
-#### Helm monitoring resources expose native histogram and relabeling controls {#helm-monitoring-native-histograms}
-
-The Kubernetes and standalone Helm charts can now pass `scrapeNativeHistograms`, `scrapeClassicHistograms`, `relabelings`, and `metricRelabelings` to generated Prometheus Operator monitoring resources. Native histogram scraping is off by default and requires Prometheus v3.8.0 or later, and classic histogram scraping stays on by default. The scrape values do not change which histogram representation the metrics endpoint emits. For Kubernetes, see [Metrics overview]({{< link-hextra path="/documentation/observability/metrics/overview/" >}}). For standalone Helm, see [Common Helm values]({{< link-hextra path="/documentation/setup/install/helm/#helm-monitoring-values" >}}).
 
 ### OpenTelemetry field names {#v16-otel-attributes}
 

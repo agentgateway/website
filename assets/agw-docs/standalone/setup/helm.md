@@ -131,7 +131,7 @@ A port-forward is a quick way to look at the UI on a cluster. To give the UI its
 
 {{< reuse "agw-docs/standalone/helm-standalone-values-table.md" >}}
 
-{{< version exclude-if="1.5.x,1.6.x" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 When `monitoring.enabled` is `true`, the standalone chart creates a PodMonitor for proxy metrics. Use the PodMonitor values to request native histogram scraping or to pass Prometheus Operator relabeling rules to the generated PodMonitor. Native histogram scraping requires Prometheus v3.8.0 or later. These Helm values control the PodMonitor only. The metrics endpoint must also emit native histograms before Prometheus can collect native buckets.
 
 1. Save the monitoring settings in a values file.

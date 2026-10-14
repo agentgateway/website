@@ -63,7 +63,7 @@ Follow the [OTel stack guide]({{< link path="/documentation/observability/otel-s
 The PodMonitor also copies the `gateway.networking.k8s.io/gateway-name` pod label onto the metrics that it scrapes, which is how the built-in Grafana dashboard discovers gateways and filters panels by gateway. If you set your own `monitoring.proxy.podMonitor.podTargetLabels` list, include that label, or the dashboard's gateway selector stays empty.
 {{< /version >}}
 
-{{< version exclude-if="1.5.x,1.6.x" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 To tune histogram scraping and relabeling, pass histogram and relabeling settings to the ServiceMonitor and PodMonitor that the Helm chart creates. Native histogram scraping requires Prometheus v3.8.0 or later. Native histogram scraping is off by default, and classic histogram scraping is on by default. These Helm values control the Prometheus scrape resources only. The metrics endpoint must also emit native histograms before Prometheus can collect native buckets.
 
 1. Save the monitoring settings in a values file.
