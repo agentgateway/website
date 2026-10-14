@@ -10,6 +10,14 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v17-new-features}
+
+### LLM {#v17-llm}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3769 -->
+
+- **Callout routing for virtual models**: A virtual model can set `routing.callout` to ask an external HTTP service which model serves each request, with an optional fallback model and response cache. For more information, see [Callout routing]({{< link-hextra path="/documentation/llm/virtual-models/#callout-routing" >}}).
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
