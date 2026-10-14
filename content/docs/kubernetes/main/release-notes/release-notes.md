@@ -18,6 +18,29 @@ Review the release notes for agentgateway on Kubernetes.
 
 - **In-process MCP guardrails with CEL expressions**: You can now set `spec.backend.mcp.guardrails.processors[].expression` on an AgentgatewayPolicy to reject or transform MCP calls with CEL, without running a separate ExtMCP policy server. For more information, see [Set up MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/setup/" >}}).
 
+## 🐛 Fixes {#v17-fixes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3793 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3833 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3893 -->
+
+**Traffic management**
+
+- Local gRPC policy call failures, such as DNS errors, unavailable endpoints, refused connections, and timeouts, are reported with the mapped gRPC status instead of `UNKNOWN`.
+
+**LLM**
+
+- Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
+
+**MCP**
+
+- Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+
+**Operations**
+
+- HTTP/1 clients receive `Connection: close` on the next response when a proxy drains or reaches its maximum connection duration.
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
@@ -194,7 +217,6 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3699 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
 
 **Traffic management**
@@ -204,7 +226,6 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 **LLM**
 
 - Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
-- Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
 
 **MCP**
 
