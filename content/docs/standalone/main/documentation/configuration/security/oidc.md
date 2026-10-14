@@ -256,7 +256,7 @@ Use a same-origin `POST` form for logout, such as the following example.
 
 ## Bearer tokens for API clients {#bearer-id-tokens}
 
-By default, an OIDC policy accepts only the browser session that its login flow creates. To let non-browser clients, such as a CLI or a script, call the same routes, set the `credentials` field to one of the following values.
+By default, an OIDC policy accepts only the browser session that its login flow creates. Set the `credentials` field to let non-browser clients, such as a CLI or a script, call the same routes. Use one of the following values.
 
 | Value | Behavior |
 |-------|----------|
@@ -280,7 +280,7 @@ Use `sessionOrBearer` when your API clients can get an ID token from the same id
        credentials: sessionOrBearer
    ```
 
-2. Get an ID token for the `clientId` from your identity provider, and send the token in the `Authorization` header. The policy checks the token signature against its JWKS, and checks that the token is not expired. The `iss` claim must match `issuer`, and the `aud` claim must include `clientId`. An access token is rejected unless its `aud` claim also includes `clientId`, so send the ID token.
+2. Get an ID token for the `clientId` from your identity provider, and send the token in the `Authorization` header. The policy checks the token signature against its JWKS, and checks that the token is not expired. The `iss` claim must match `issuer` and the `aud` claim must include `clientId`. An access token is rejected unless its `aud` claim also includes `clientId`, so send the ID token.
 
    ```sh
    curl -i http://localhost:3000/ -H "Authorization: Bearer $ID_TOKEN"
