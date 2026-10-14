@@ -16,7 +16,7 @@ Review the release notes for agentgateway on Kubernetes.
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3843 -->
 
-- **Kubernetes virtual models can use HTTP callouts**: Kubernetes `AgentgatewayModel` virtual models can use `spec.virtualModel.callout` to delegate model selection to an HTTP service, with optional fallback and cache settings. For more information, see [Choose a model with an HTTP callout]({{< link-hextra path="/documentation/llm/models/virtual/#callout-routing" >}}).
+- **Callout routing for virtual models**: An `AgentgatewayModel` virtual model can set `spec.virtualModel.callout` to ask an HTTP service which model serves each request, with an optional fallback model and response cache. For more information, see [Choose a model with an HTTP callout]({{< link-hextra path="/documentation/llm/models/virtual/#callout-routing" >}}).
 
 ## 🐛 Fixes {#v17-fixes}
 

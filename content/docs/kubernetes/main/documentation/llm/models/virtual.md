@@ -36,7 +36,7 @@ After a virtual model selects a target, the gateway rewrites the request so that
 
 Targets are usually `Internal` models, so clients cannot request them directly and they stay out of `/v1/models`. For more on visibility, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
 
-If a target does not resolve, the control plane still generates the virtual model with the targets that do. The virtual model's status reports the `ResolvedRefs` condition as `False` with the `Invalid` reason, and valid targets keep serving requests. If weighted routing selects an invalid target, the request fails with a `404` and the `virtual_model_target_not_found` error code. If conditional routing matches an invalid target, the request fails the same way instead of falling through to the next target. Failover leaves invalid targets out of its priority groups. If every failover target is invalid, the control plane does not generate the virtual model, and requests for it return `404` with the `model_not_found` error code. If a callout service selects an unknown model, the fallback model serves the request when you configure one. Otherwise, the request is rejected.
+If a target does not resolve, the control plane still generates the virtual model with the targets that do. The virtual model's status reports the `ResolvedRefs` condition as `False` with the `Invalid` reason, and valid targets keep serving requests. If weighted routing selects an invalid target, the request fails with a `404` and the `virtual_model_target_not_found` error code. If conditional routing matches an invalid target, the request fails the same way instead of falling through to the next target. Failover leaves invalid targets out of its priority groups. If every failover target is invalid, the control plane does not generate the virtual model, and requests for it return `404` with the `model_not_found` error code. Callout routing treats a selected model that does not exist as a failed callout. The fallback model serves the request, or, without a fallback, the request fails with a `503` and the `virtual_model_callout_failed` error code.
 
 > [!NOTE]
 > Virtual models must be `Public`, and they cannot set `spec.policies`. Configure policies on the concrete target models instead.
@@ -506,42 +506,107 @@ Failover depends on eviction. A virtual model with more than one priority group 
 
 ## Choose a model with an HTTP callout {#callout-routing}
 
-Use `virtualModel.callout` to send each request to an HTTP service that selects the target model. The callout request uses the `POST` method. The service response must be JSON. The `transformation.model` expression must compute the concrete model name from the response.
+Use `virtualModel.callout` to let an HTTP service select the target model for each request. Use callout routing when the decision depends on logic outside the configuration. For example, a service can score the complexity of the prompt or track the state of an agent session.
 
-The following fragment shows the `virtualModel` section for a callout router. Replace the `virtualModel` strategy in your virtual model with this block.
+For each request to the virtual model, the gateway sends a `POST` request to the routing service. The service must return a `2xx` response with a JSON body. The `transformation` expressions read that response from the `callout` CEL variable, and the `model` expression selects the target.
 
-```yaml
-virtualModel:
-  callout:
-    url: https://router.example.com/v1/route
-    headers:
-      x-tenant: request.headers["x-tenant"]
-    body: 'json({"messages": llm.messages})'
-    transformation:
-      model: callout.body.model
-      reasoning_effort: callout.body.effort
-    fallback:
-      modelRef:
-        name: internal-fast
-    cache:
-      key:
-      - request.headers["x-session-id"]
-      ttl: 5m
-      maxEntries: 10000
-```
+This guide has no routing service. Instead, the example points the callout at the `unreachable-llm` Service from the failover example, which has no backing workload. Every callout fails, so you can see the fallback model serve the request. In a real deployment, point the callout at your routing service. For routing services that you can run, see the [`llm-callout-jev`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-jev) and [`llm-callout-switchyard`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-switchyard) examples.
 
-{{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#agentgatewaymodelspec" >}}).
+1. Create a virtual model that asks the routing service which model to use and falls back to `internal-fast`.
 
-| Field | Value | Description |
-|-------|-------|-------------|
-| `url` | `https://router.example.com/v1/route` | The HTTP endpoint for the callout service. Set exactly one of `url` or `backendRef`. |
-| `headers.x-tenant` | `request.headers["x-tenant"]` | A CEL expression that sets a request header on the callout. Header keys can also use the `:path`, `:method`, and `:authority` pseudo-headers. |
-| `body` | `json({"messages": llm.messages})` | A CEL expression that sets the callout request body. When you omit `body`, the callout receives the original request body. |
-| `transformation.model` | `callout.body.model` | A required CEL expression that selects the concrete model name from the decoded JSON response body. The selected model must be available in the same model router. |
-| `fallback.modelRef.name` | `internal-fast` | The same-namespace concrete model to use when the callout fails, selects an unknown model, or returns a response that is not 2xx or JSON. When you omit `fallback`, the request is rejected. |
-| `cache.key` | `request.headers["x-session-id"]` | One or more CEL expressions that build the cache key. Keying on a session identifier keeps routing decisions sticky for that session. |
-| `cache.ttl` | `5m` | The duration that the cached response can be reused. You can set a duration string, a CEL expression that returns a duration, or a CEL expression that returns an expiration timestamp. |
-| `cache.maxEntries` | `10000` | The maximum number of callout responses to keep in the cache. When you omit `maxEntries`, the default is `10000`. The minimum value is `1`. |
+   ```yaml {paths="virtual-models"}
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: routed
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     virtualModel:
+       callout:
+         backendRef:
+           name: unreachable-llm
+           port: 9235
+         headers:
+           ":path": '"/v1/route"'
+         body: '{"messages": llmRequest.messages}'
+         transformation:
+           model: callout.body.model
+           reasoning_effort: callout.body.reasoning_effort
+         fallback:
+           modelRef:
+             name: internal-fast
+         cache:
+           key:
+           - request.headers["x-session-id"]
+           ttl: 10m
+   EOF
+   ```
+
+   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#agentgatewaymodelspec" >}}).
+
+   | Field | Value | Description |
+   |-------|-------|-------------|
+   | `backendRef` | `unreachable-llm`, port `9235` | The `Service` or `Backend` that runs the routing service. Set exactly one of `backendRef` or `url`. A `url` such as `https://router.example.com/v1/route` can include the path, and an `https` URL turns on TLS. A `url` that names a cluster hostname does not get the `Service` policies or load balancing, so prefer `backendRef` for in-cluster services. A `backendRef` in another namespace needs a ReferenceGrant. Without one, the model status reports the error, and every callout fails. |
+   | `headers` | `":path": '"/v1/route"'` | Headers to set on the callout request. Each value is a CEL expression, so quote a literal string twice. Keys can be header names or the `:path`, `:method`, and `:authority` pseudo-headers. A `backendRef` has no path, so set `:path` to send the request to a path other than `/`. |
+   | `body` | `{"messages": llmRequest.messages}` | A CEL expression that builds the callout request body. `llmRequest` is the client's JSON request body. A string or bytes value is sent as is, and any other value is sent as JSON. If you omit `body`, the routing service receives the original request body. |
+   | `transformation.model` | `callout.body.model` | Required. A CEL expression that returns the target model name as a string. `callout.body` is the decoded JSON response body and `callout.headers` holds the response headers. The routing service must return the model name that the target matches. That name is the target's `match.model` value or the target's resource name when `match.model` is not set. In this guide, the names are `internal-fast` and `internal-premium`. The target must be attached to the same parent as the virtual model. |
+   | `transformation.reasoning_effort` | `callout.body.reasoning_effort` | Optional. Each key other than `model` sets that field in the request body and overrides the client's value. If the expression fails, such as when the response does not contain the field, the field is removed from the request. These keys apply only to requests that carry the model in a JSON body. |
+   | `fallback.modelRef.name` | `internal-fast` | Optional. A model in the same namespace that serves the request when the callout fails. A callout fails when the service cannot be reached or does not respond within 10 seconds, when the response is not `2xx` or not JSON, when the `model` expression fails, or when the selected model does not exist. The fallback model gets the request without the `transformation` changes. If you omit `fallback`, a failed callout returns a `503` response with the `virtual_model_callout_failed` error code. |
+   | `cache.key` | `request.headers["x-session-id"]` | One or more CEL expressions that make up the cache key. Requests with the same key reuse the first response, so a session identifier keeps a session on one model. If a key expression fails, such as when the header is missing, the response is not cached. On a cache hit, `transformation` runs against the cached response. To limit the cache size, set `cache.maxEntries`, which defaults to `10000`. |
+   | `cache.ttl` | `10m` | How long a cached response is reused. Set a duration string, or a CEL expression that can read `callout` and returns a duration or the time at which the response expires. |
+
+2. Send a request with a session header. The routing service cannot be reached, so the fallback model serves the request.
+
+   ```sh
+   curl -s -X POST http://$INGRESS_GW_ADDRESS/v1/chat/completions \
+     -H "Content-Type: application/json" \
+     -H "x-session-id: session-1" \
+     -d '{"model": "routed", "messages": [], "httpbun": {"content": "hi"}}'
+   ```
+
+   Example output:
+
+   ```json
+   {"model":"resolved-internal-fast","usage":{"prompt_tokens":0,"completion_tokens":1,"total_tokens":1},"choices":[{"message":{"content":"hi","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
+   ```
+
+   With a running routing service that returns a body such as `{"model": "internal-premium", "reasoning_effort": "medium"}`, the request goes to `internal-premium` with `reasoning_effort` set to `medium`. Later requests with the same `x-session-id` header reuse that response for 10 minutes.
+
+   {{< doc-test paths="virtual-models" >}}
+   for i in $(seq 1 60); do
+     curl -s --max-time 15 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
+       -H "Content-Type: application/json" \
+       -d '{"model":"routed","messages":[],"httpbun":{"content":"warmup"}}' && break
+     sleep 2
+   done
+
+   YAMLTest -f - <<'EOF'
+   - name: callout routing falls back when the routing service cannot be reached
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+       method: POST
+       headers:
+         Content-Type: application/json
+         x-session-id: session-1
+       body: |
+         {"model": "routed", "messages": [], "httpbun": {"content": "hi"}}
+     source:
+       type: local
+     retries: 3
+     expect:
+       statusCode: 200
+       bodyJsonPath:
+         - path: "$.model"
+           comparator: equals
+           value: "resolved-internal-fast"
+   EOF
+   {{< /doc-test >}}
 
 ## Verify model discovery
 
@@ -558,6 +623,7 @@ Example output:
   "data": [
     {"id": "balanced", "object": "model", "created": 1785166485, "owned_by": "openai"},
     {"id": "resilient", "object": "model", "created": 1785166485, "owned_by": "openai"},
+    {"id": "routed", "object": "model", "created": 1785166485, "owned_by": "openai"},
     {"id": "smart", "object": "model", "created": 1785166485, "owned_by": "openai"}
   ],
   "object": "list"
@@ -572,12 +638,13 @@ Example output:
 # model is listed and that the Internal targets stay hidden.
 for i in $(seq 1 30); do
   models=$(curl -s "http://${INGRESS_GW_ADDRESS}/v1/models")
-  if echo "$models" | grep -q '"balanced"' && echo "$models" | grep -q '"resilient"' && echo "$models" | grep -q '"smart"'; then break; fi
+  if echo "$models" | grep -q '"balanced"' && echo "$models" | grep -q '"resilient"' && echo "$models" | grep -q '"routed"' && echo "$models" | grep -q '"smart"'; then break; fi
   sleep 2
 done
 echo "$models"
 echo "$models" | grep -q '"balanced"'
 echo "$models" | grep -q '"resilient"'
+echo "$models" | grep -q '"routed"'
 echo "$models" | grep -q '"smart"'
 if echo "$models" | grep -qE '"(internal-fast|internal-premium|primary-down|unreachable-llm)"'; then
   echo "ERROR: an Internal model target appeared in /v1/models"; exit 1
@@ -587,6 +654,6 @@ fi
 ## Cleanup
 
 ```sh
-kubectl delete agentgatewaymodel balanced smart resilient internal-fast internal-premium primary-down -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete agentgatewaymodel balanced smart resilient routed internal-fast internal-premium primary-down -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete service unreachable-llm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
