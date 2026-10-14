@@ -10,6 +10,14 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v17-new-features}
+
+### LLM {#v17-llm}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3843 -->
+
+- **Kubernetes virtual models can use HTTP callouts**: Kubernetes `AgentgatewayModel` virtual models can use `spec.virtualModel.callout` to delegate model selection to an HTTP service, with optional fallback and cache settings. For more information, see [Choose a model with an HTTP callout]({{< link-hextra path="/documentation/llm/models/virtual/#callout-routing" >}}).
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
@@ -113,7 +121,6 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3618 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3270 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3731 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3843 -->
 
 - **Meta provider**: Set `spec.provider: Meta` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} to use the Meta Model API preset. For the backend configuration, see [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}).
 - **`AgentgatewayModel` on by default**: The `agentgatewayModels.enabled` Helm value now defaults to `true`. For more information, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
@@ -126,7 +133,6 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 - **Bedrock Mantle routing**: The Bedrock provider chooses the Runtime or Mantle endpoint for each model. To set the preference, use `spec.bedrock.endpointPreference` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} or `spec.ai.provider.bedrock.endpointPreference` on an {{< reuse "agw-docs/snippets/backend.md" >}}. For more information, see [Bedrock Mantle]({{< link-hextra path="/integrations/llm/providers/bedrock/#bedrock-mantle" >}}).
 - **More accurate Messages conversion**: Conversion between the Messages and OpenAI formats now carries citations, refusals, the `strict` setting of tool schemas, reasoning effort, and images in tool results. A context overflow error from the provider is translated so that Claude Code can compact and retry. For more information, see [Converted replies and errors]({{< link-hextra path="/integrations/llm/providers/custom/#converted-replies-and-errors" >}}).
 - **Guardrails**: The `openAIModeration`, `bedrockGuardrails`, and `googleModelArmor` guards now support `failureMode`. Set this field on a guard in `spec.backend.ai.promptGuard` of an {{< reuse "agw-docs/snippets/policy.md" >}}. The built-in credit card pattern now checks the Luhn checksum. For more information, see [Provider failures]({{< link-hextra path="/documentation/llm/guardrails/overview/#provider-failures" >}}).
-- **Kubernetes virtual models can use HTTP callouts**: Kubernetes `AgentgatewayModel` virtual models can use `spec.virtualModel.callout` to delegate model selection to an HTTP service, with optional fallback and cache settings. For more information, see [Choose a model with an HTTP callout]({{< link-hextra path="/documentation/llm/models/virtual/#callout-routing" >}}).
 
 ### Security {#v16-security}
 
