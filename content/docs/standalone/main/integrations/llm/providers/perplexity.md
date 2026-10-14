@@ -1,6 +1,7 @@
 ---
 title: Perplexity
 weight: 20
+icon: /integrations/providers/bw/perplexity.svg
 description: Route agentgateway LLM traffic to models available through Perplexity.
 test:
   perplexity:
@@ -9,6 +10,9 @@ test:
 ---
 
 Configure Perplexity as an LLM provider in agentgateway.
+
+> [!NOTE]
+> Send requests to `/v1/responses` or `/v1/messages`. Messages requests are converted to the OpenAI Responses format, which is the only format that the `perplexity` provider sends to Perplexity. Requests to `/v1/chat/completions` fail. To send Chat Completions requests to Perplexity, use a [custom provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with the `completions` format and `baseUrl: https://api.perplexity.ai/v1`.
 
 {{< doc-test paths="perplexity" >}}
 # ============================================================================
@@ -65,7 +69,7 @@ EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
 
-{{< reuse "agw-docs/snippets/review-configuration.md" >}}
+{{% reuse "agw-docs/snippets/review-table.md" %}}
 
 | Setting | Description |
 |---------|-------------|
@@ -77,7 +81,7 @@ agentgateway -f config.yaml --validate-only
 
 ## Example request
 
-After you run agentgateway with the Perplexity configuration, send an OpenAI Responses request to the `v1/responses` endpoint:
+After you run agentgateway with the Perplexity configuration, send an OpenAI Responses request to the `/v1/responses` endpoint:
 
 ```bash
 curl -X POST http://localhost:4000/v1/responses \
