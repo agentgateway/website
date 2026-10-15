@@ -12,7 +12,11 @@ Review the release notes for agentgateway on Kubernetes.
 
 ## 🐛 Fixes {#v17-fixes}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3721 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3759 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3786 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3793 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3833 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3893 -->
@@ -24,10 +28,13 @@ Review the release notes for agentgateway on Kubernetes.
 **LLM**
 
 - Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
+- Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
+- Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 
 **MCP**
 
 - Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+- MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 
 **Operations**
 
@@ -210,6 +217,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3699 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3743 -->
 
 **Traffic management**
 
@@ -218,6 +226,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 **LLM**
 
 - Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
+- A client query string, such as the `?beta=true` that Claude Code sends, is no longer forwarded when an LLM request is converted to another provider format. Before, strict providers such as Gemini rejected these requests with a `400` error.
 
 **MCP**
 
