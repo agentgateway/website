@@ -12,7 +12,10 @@ Review the release notes for agentgateway on Kubernetes.
 
 ## 🐛 Fixes {#v17-fixes}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3721 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3759 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3786 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3793 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3833 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3893 -->
@@ -24,10 +27,12 @@ Review the release notes for agentgateway on Kubernetes.
 **LLM**
 
 - Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
+- Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 
 **MCP**
 
 - Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+- MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 
 **Operations**
 
