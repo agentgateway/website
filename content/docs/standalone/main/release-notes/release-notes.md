@@ -27,6 +27,7 @@ Review the release notes for agentgateway standalone.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3793 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3863 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3893 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3774 -->
 
 **Traffic management**
 
@@ -40,6 +41,7 @@ Review the release notes for agentgateway standalone.
 **MCP**
 
 - Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+- MCP authentication derives JWKS URLs without a double slash when an issuer value ends with `/`.
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 
 **Operations**
