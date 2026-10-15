@@ -10,13 +10,31 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v17-new-features}
+
+### Security {#v17-security}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3763 -->
+
+- **Optional chart-created RBAC**: Set `rbac.create` to `false` in the controller Helm chart to skip the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the chart creates, for clusters that manage role-based access control (RBAC) outside of Helm. For more information, see [Chart-created RBAC resources]({{< link-hextra path="/documentation/install/advanced/#rbac-create" >}}).
+### MCP {#v17-mcp}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3824 -->
+
+- **Conditional virtual MCP targets**: Set `spec.mcp.targets[].condition` on an {{< reuse "agw-docs/snippets/backend.md" >}} to a CEL expression to select which targets take part in a request before agentgateway initializes or contacts them. A backend whose only target is a `static` target cannot set a condition. For more information, see [Select targets with conditions]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
+
 ## 🐛 Fixes {#v17-fixes}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3721 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3759 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3786 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3793 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3833 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3893 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3809 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3802 -->
 
 **Traffic management**
 
@@ -25,10 +43,15 @@ Review the release notes for agentgateway on Kubernetes.
 **LLM**
 
 - Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
+- Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
+- Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 
 **MCP**
 
 - Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+- The controller creates the session key Secret of each Gateway only when the Secret is missing, and no longer overwrites the key on reconcile, which could invalidate stateful MCP sessions. If the Secret cannot be created, the Gateway reports `Programmed: False` with the reason `DeploymentFailed`.
+- Stateful MCP requests with a session ID that the proxy cannot decode, such as after the session key changes, now return `404` instead of `400`, so clients start a new session.
+- MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 
 **Security**
 
@@ -215,6 +238,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3699 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3743 -->
 
 **Traffic management**
 
@@ -223,6 +247,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 **LLM**
 
 - Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
+- A client query string, such as the `?beta=true` that Claude Code sends, is no longer forwarded when an LLM request is converted to another provider format. Before, strict providers such as Gemini rejected these requests with a `400` error.
 
 **MCP**
 
