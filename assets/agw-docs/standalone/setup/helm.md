@@ -225,6 +225,60 @@ Enable the chart's HorizontalPodAutoscaler (HPA) to adjust the number of proxy p
 
 {{< /version >}}
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+### Use an existing session key Secret {#helm-session-secret}
+
+Agentgateway encrypts the MCP session IDs that it issues to clients with an AES-256-GCM session key. Without a key, session IDs are encoded but not encrypted. Set `session.secretName` to read the key from an existing Kubernetes Secret instead of writing it into `config.session.key`, which the chart stores in a ConfigMap. The chart passes the Secret's `key` entry to the proxy container as the `SESSION_KEY` environment variable. `SESSION_KEY` takes precedence over `config.session.key`.
+
+> [!NOTE]
+> Every proxy replica reads the same Secret, so any replica can decrypt a session ID that another replica issued. When you change the key, agentgateway returns `404 Not Found` for session IDs that were encrypted with the old key and MCP clients must start a new session.
+
+1. Create a Secret with a `key` entry. The key must be 32 random bytes encoded as 64 hexadecimal characters. If the value has any other length or format, the proxy fails to start.
+
+   ```sh
+   kubectl create secret generic agentgateway-session-key \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --from-literal=key="$(openssl rand -hex 32)"
+   ```
+
+2. Upgrade the Helm release and set `session.secretName` to the Secret name.
+
+   ```sh
+   helm upgrade {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --reuse-values \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --set session.secretName=agentgateway-session-key
+   ```
+
+   | Value | Description |
+   | --- | --- |
+   | `session.secretName` | Name of an existing Secret in the same namespace as the proxy Deployment. The Secret must contain a `key` entry. Omit this value to leave `SESSION_KEY` unset. |
+
+3. Wait for the rollout to finish. If the rollout does not finish, check the proxy logs for `invalid session persistence key SESSION_KEY`, which means the key is not 64 hexadecimal characters.
+
+   ```sh
+   kubectl rollout status deployment/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+4. Verify that the Deployment reads the Secret.
+
+   ```sh
+   kubectl get deployment {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -o jsonpath='{.spec.template.spec.containers[*].env[?(@.name=="SESSION_KEY")].valueFrom.secretKeyRef.name}'
+   ```
+
+   Expected output:
+
+   ```txt
+   agentgateway-session-key
+   ```
+
+{{< /version >}}
+
 ## Uninstall
 
 1. Uninstall the Helm release.
