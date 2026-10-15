@@ -12,7 +12,7 @@ Use LLM request transformations to dynamically compute and set fields in LLM req
 
 Use the following table to choose the field for what you want to change.
 
-| To change | Use | Guide |
+| What you want to change | Setting to use | Guide |
 | -- | -- | -- |
 | Fields in the LLM request body, by the names that the client sent | `transformation` | [Configure LLM request transformations](#configure-llm-request-transformations) |
 | Fields in the LLM request body, by the names that the provider receives after agentgateway converts the request | `finalTransformation` | [Transform requests after provider conversion](#transform-requests-after-provider-conversion) |
@@ -406,7 +406,7 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
 
 Use `requestTransformation` to change the HTTP request that agentgateway sends to the provider, such as its headers or metadata. For a header with a fixed value, use `requestHeaders` instead, which needs no CEL. If both set the same header, the `requestHeaders` value is sent, because `requestHeaders` runs after `requestTransformation`.
 
-The expressions can read the HTTP request, such as `request.headers`. The `llmRequest` variable is not available, so to read or set fields in the LLM request body, use `transformation` or `finalTransformation` instead.
+The `requestTransformation` expressions can read the HTTP request, such as `request.headers`. They cannot read the LLM request body, because the `llmRequest` CEL variable is not set for them. To read or change fields in the LLM request body, use `transformation` or `finalTransformation`. You can set either one together with `requestTransformation` on the same provider or model.
 
 1. Create a configuration file that selects an OpenAI project from a client header. The provider default sets the `openai-project` header based on the `x-team` request header, and removes `x-team` so that it is not sent to OpenAI. The `gpt-4o-batch` model sets its own `requestTransformation`, which replaces the provider default for that model.
 
