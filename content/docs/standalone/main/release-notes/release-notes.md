@@ -25,12 +25,24 @@ Review the release notes for agentgateway standalone.
 
 - **Use one OIDC policy for browsers and API clients**: The new `credentials` field of an OIDC policy controls which credentials the policy accepts. Set `credentials: sessionOrBearer` to accept browser sessions and ID tokens from the same identity provider in the `Authorization: Bearer <token>` header. Set `credentials: permissive` to keep the browser login flow, and let other requests continue to policies such as `jwtAuth` or `mcpAuthentication`. Pair `permissive` with an `authorization` policy, because it does not reject unauthenticated requests by itself. For more information, see [Bearer tokens for API clients]({{< link-hextra path="/documentation/configuration/security/oidc/#bearer-id-tokens" >}}).
 
+### Traffic management and operations {#v17-operations}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3842 -->
+
+- **Standalone Helm session key Secret**: Set `session.secretName` to load the AES-256-GCM session key from an existing Kubernetes Secret. The chart passes the Secret's `key` entry to the proxy as the `SESSION_KEY` environment variable, which takes precedence over `config.session.key`. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
+
 ## 🐛 Fixes {#v17-fixes}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3721 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3759 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3786 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3793 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3863 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3893 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3802 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3774 -->
 
 **Traffic management**
 
@@ -39,10 +51,15 @@ Review the release notes for agentgateway standalone.
 **LLM**
 
 - Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
+- Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
+- Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 
 **MCP**
 
 - Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+- Stateful MCP requests with a session ID that the proxy cannot decode, such as after the session key changes, now return `404` instead of `400`, so clients start a new session.
+- MCP authentication derives JWKS URLs without a double slash when an issuer value ends with `/`.
+- MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 
 **Operations**
 
@@ -242,6 +259,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3720 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3724 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3743 -->
 
 **Traffic management**
 
@@ -252,6 +270,7 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 **LLM**
 
 - Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
+- A client query string, such as the `?beta=true` that Claude Code sends, is no longer forwarded when an LLM request is converted to another provider format. Before, strict providers such as Gemini rejected these requests with a `400` error.
 
 **MCP**
 
