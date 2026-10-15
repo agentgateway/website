@@ -10,6 +10,14 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v17-new-features}
+
+### Traffic management and operations {#v17-operations}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3842 -->
+
+- **Standalone Helm session key Secret**: Set `session.secretName` to load the AES-256-GCM session key from an existing Kubernetes Secret. The chart passes the Secret's `key` entry to the proxy as the `SESSION_KEY` environment variable, which takes precedence over `config.session.key`. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
+
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
