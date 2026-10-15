@@ -40,6 +40,8 @@ sequenceDiagram
 3. **State encoding**: The session state is encoded into the session ID using AES-256-GCM encryption
 4. **Session resumption**: Subsequent requests with the same session ID are automatically routed to the same backend
 
+Client `POST` requests to the MCP endpoint must list both `application/json` and `text/event-stream` in the `Accept` header. Clients can send the two media types as one comma-separated value or as separate `Accept` header lines. If either media type is missing, the request fails with HTTP 406.
+
 ## Stateless sessions {#stateless-sessions}
 
 By default, agentgateway proxies streamable HTTP in **stateful** mode, as described in the previous section. You can instead run in **stateless** mode with the `statefulMode` field, so that agentgateway does not create a session or return an `Mcp-Session-Id` header. Each request is treated independently, and the client must send the full context that the request needs. This mode suits stateless agents, or MCP servers where the client handles state directly.
