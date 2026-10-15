@@ -230,6 +230,9 @@ Enable the chart's HorizontalPodAutoscaler (HPA) to adjust the number of proxy p
 
 Agentgateway encrypts the MCP session IDs that it issues to clients with an AES-256-GCM session key. Without a key, session IDs are encoded but not encrypted. Set `session.secretName` to read the key from an existing Kubernetes Secret instead of writing it into `config.session.key`, which the chart stores in a ConfigMap. The chart passes the Secret's `key` entry to the proxy container as the `SESSION_KEY` environment variable. `SESSION_KEY` takes precedence over `config.session.key`.
 
+> [!NOTE]
+> Every proxy replica reads the same Secret, so any replica can decrypt a session ID that another replica issued. When you change the key, agentgateway returns `404 Not Found` for session IDs that were encrypted with the old key and MCP clients must start a new session.
+
 1. Create a Secret with a `key` entry. The key must be 32 random bytes encoded as 64 hexadecimal characters. If the value has any other length or format, the proxy fails to start.
 
    ```sh
@@ -273,9 +276,6 @@ Agentgateway encrypts the MCP session IDs that it issues to clients with an AES-
    ```txt
    agentgateway-session-key
    ```
-
-> [!NOTE]
-> Every proxy replica reads the same Secret, so any replica can decrypt a session ID that another replica issued. When you change the key, agentgateway returns `404 Not Found` for session IDs that were encrypted with the old key and MCP clients must start a new session.
 
 {{< /version >}}
 
