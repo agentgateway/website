@@ -10,11 +10,20 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v17-new-features}
+
+### Traffic management and operations {#v17-operations}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3842 -->
+
+- **Standalone Helm session key Secret**: Set `session.secretName` to load the AES-256-GCM session key from an existing Kubernetes Secret. The chart passes the Secret's `key` entry to the proxy as the `SESSION_KEY` environment variable, which takes precedence over `config.session.key`. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
+
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3721 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3759 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3786 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3793 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3863 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3893 -->
@@ -31,6 +40,7 @@ Review the release notes for agentgateway standalone.
 **MCP**
 
 - Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+- MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 
 **Operations**
 

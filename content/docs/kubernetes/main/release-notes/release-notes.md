@@ -15,6 +15,7 @@ Review the release notes for agentgateway on Kubernetes.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3721 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3759 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3786 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3793 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3833 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3893 -->
@@ -31,6 +32,7 @@ Review the release notes for agentgateway on Kubernetes.
 **MCP**
 
 - Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+- MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 
 **Operations**
 
