@@ -12,6 +12,11 @@ Review the release notes for agentgateway on Kubernetes.
 
 ## 🌟 New features {#v17-new-features}
 
+### Security {#v17-security}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3763 -->
+
+- **Optional chart-created RBAC**: Set `rbac.create` to `false` in the controller Helm chart to skip the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the chart creates, for clusters that manage role-based access control (RBAC) outside of Helm. For more information, see [Chart-created RBAC resources]({{< link-hextra path="/documentation/install/advanced/#rbac-create" >}}).
 ### MCP {#v17-mcp}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3824 -->
