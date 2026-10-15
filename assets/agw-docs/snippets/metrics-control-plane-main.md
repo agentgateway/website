@@ -10,3 +10,4 @@ agentgateway_xds_auth_rq_failure_total|counter||Total number of failed xDS auth 
 agentgateway_xds_auth_rq_success_total|counter||Total number of successful xDS auth requests
 agentgateway_xds_auth_rq_total|counter||Total number of xDS auth requests
 agentgateway_xds_rejects_total|counter||Total number of xDS responses rejected by agentgateway proxy
+agentgateway_xds_warnings_total|counter||Total number of xDS responses with configuration warnings from agentgateway proxy
