@@ -94,6 +94,11 @@ An error such as `failed to parse Messages request` names the route type that
 parsed the client request before provider conversion. Check that the request
 path maps to the expected route type and that the body matches that format.
 
+A client query string is kept only when the custom provider receives the same
+API format that the client sent. When the request is converted to another
+format, the client query string is dropped. For details, see
+[Query strings on converted requests]({{< link-hextra path="/documentation/llm/about/#query-strings-on-converted-requests" >}}).
+
 When a provider declares both `Responses` and `Completions`, agentgateway prefers
 Responses for Anthropic messages requests. This order also applies to the built-in
 `openai` provider and to `azure` for models other than Claude. On an
@@ -163,7 +168,9 @@ input schema stay optional. A structured output JSON schema is sent with
 `text.format.strict` set to `false`, so that optional schema properties stay
 optional. The reasoning effort, from `output_config.effort` or
 from a `thinking` budget, is sent as `reasoning.effort`. A request that sets
-`thinking.type` to `disabled` sends no reasoning setting.
+`thinking.type` to `disabled` sends no reasoning setting. Older OpenAI chat
+models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o` also receive no
+reasoning setting, because those models reject reasoning parameters.
 
 The following Messages features are dropped from the converted request, with no
 error and no warning to the client.
@@ -215,8 +222,6 @@ The following cases do not round-trip.
 | A `redacted_thinking` block, sent to a `Completions` provider | Dropped, because it holds nothing that an OpenAI-compatible engine can replay. |
 | An Anthropic messages request that takes the Responses conversion instead | The thinking history is dropped from the converted request, with no error and no warning, so the model loses its prior reasoning. See [Anthropic messages to the Responses format](#anthropic-messages-to-the-responses-format). |
 
-Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. When an Anthropic messages client sends a request with tools to one of these models through a `Completions` provider, the request is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped. Every other model receives the reasoning effort that the client asked for, if any.
-
 ### Anthropic messages to the Completions format
 
 Agentgateway converts an Anthropic messages request to Chat Completions when the
@@ -227,9 +232,22 @@ fields.
 
 | Field | What happens |
 |-------|--------------|
-| `output_config.effort` | Sent as `reasoning_effort`, even when the request omits `thinking`. Without `output_config.effort`, the effort comes from the `thinking` budget. A request that sets `thinking.type` to `disabled` sends no `reasoning_effort`. |
+| `output_config.effort` | Sent as `reasoning_effort`, even when the request omits `thinking`. Without `output_config.effort`, the effort comes from the `thinking` budget. A request that sets `thinking.type` to `disabled` sends no `reasoning_effort`. Some models get a different reasoning effort, as described after this table. |
 | `tools[].strict` | Kept as set. A tool that omits `strict` is sent without it. |
 | `stop_sequences` | Sent as `stop`. When the reply has `finish_reason: "stop"` and a string in the vLLM `stop_reason` field or the SGLang `matched_stop` field, the Messages reply has `stop_reason: "stop_sequence"` and that string in `stop_sequence`. A numeric stop-token ID is ignored, so a natural end of turn still returns `stop_reason: "end_turn"`. |
+
+Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. When an Anthropic messages client sends a request with tools to one of these models through a `Completions` provider, the request is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped.
+
+Older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or
+`chatgpt-4o` reject reasoning effort. When an Anthropic messages client sends a
+request to one of those models through a `Completions` provider, the request is
+sent without `reasoning_effort`, and any thinking that the client asked for is
+dropped. Every other model receives the reasoning effort that the client asked
+for, if any.
+
+In both conversions, these prefixes are matched against the model name that is
+sent to the provider. A model name with a vendor prefix, such as `openai/gpt-4o`,
+does not match, so the reasoning effort is still sent.
 
 ## Set the provider identity {#provider-override}
 
