@@ -125,7 +125,7 @@ backendAuth:
 Review the following behavior before you use an expression:
 
 * Set exactly one of `value` or `expression`. Configuration validation fails if you set both or neither.
-* The expression must return a string. If the expression fails or returns another type, the backend request carries no credential in the target location. With the default location, the `Authorization` header that the client sent does not reach the backend either.
+* The expression must return a string. If the expression fails or returns another type, agentgateway sends no credential and removes any existing value from the target location. For example, with the default location, the `Authorization` header, agentgateway removes the `Authorization` header that the client sent. The client's header is not used as a fallback. To learn about the default location, see [Change the credential location](#change-the-credential-location).
 * The `location` field works the same way as it does for a static value.
 * A backend that agentgateway reaches through a tunnel does not support `expression`. Requests to that backend fail.
 {{% /version %}}
