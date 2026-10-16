@@ -696,11 +696,12 @@ echo "✓ The wildcard model is served and resolves to the azure provider"
 
 ## Use Microsoft Decision Models on Azure AI Foundry
 
-Use an agentgateway build that includes Azure Foundry Decisions support. Deploy
-Microsoft-Decision-1 in your Foundry resource and set `params.model` to its
-deployment name.
+Use an agentgateway build that includes Azure Foundry Decisions and native
+SystemOne support. Deploy Microsoft-Decision-1 in your Foundry resource and set
+`params.model` to its deployment name.
 
-Agentgateway converts `/v1/decisions` requests to Foundry's SystemOne API at
+Agentgateway converts `/v1/decisions` requests and responses, and forwards
+`/v1/systemone` in its native format. Both APIs use Foundry's endpoint at
 `https://{resourceName}.cognitiveservices.azure.com/providers/microsoft/v1/systemone`.
 The deployment name goes in the upstream request body.
 
@@ -752,4 +753,28 @@ curl --fail-with-body --max-time 120 http://localhost:3000/v1/decisions \
 ```
 
 The response includes a `department` choice with probabilities and token usage.
-The API also supports `predicate` and `score` questions.
+The Decisions API also supports `predicate` and `score` questions.
+
+To send a native SystemOne request through the same configuration:
+
+```sh
+curl --fail-with-body --max-time 120 http://localhost:3000/v1/systemone \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "foundry-decision",
+    "questions": {
+      "department": {
+        "criteria": {
+          "billing": "Payments and invoices",
+          "technical": "Software problems"
+        },
+        "instructions": "Which team should handle this support ticket?",
+        "type": "choice"
+      }
+    },
+    "state": "I was charged twice for my subscription."
+  }'
+```
+
+SystemOne uses `state` and a question map, and returns an `answers` map. Its question
+types are `noul` (predicate), `choice`, and `score`.

@@ -521,17 +521,18 @@ To authenticate with Microsoft Entra Workload ID, prepare the AKS cluster and th
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}
 ## Use Microsoft Decision Models on Azure AI Foundry
 
-Use a controller and proxy build that includes Azure Foundry Decisions support.
+Use controller, proxy, and CRD builds that include Azure Foundry Decisions and
+native SystemOne support.
 Deploy Microsoft-Decision-1 in your Foundry resource, then complete the
 [AKS Workload Identity setup](#use-microsoft-entra-workload-id-on-aks) for
 `agentgateway-proxy`.
 
 Replace the resource, project, and deployment placeholders below. Kubernetes
-requires `projectName`, although Decisions requests use the resource endpoint at
+requires `projectName`, although both APIs use the resource endpoint at
 `https://{resourceName}.cognitiveservices.azure.com/providers/microsoft/v1/systemone`.
 The configured deployment name goes in the upstream request body.
 
-Create a dedicated backend and HTTPRoute for Decisions traffic:
+Create a dedicated backend and HTTPRoute for Decisions and SystemOne traffic:
 
 ```yaml
 kubectl apply --server-side -f- <<EOF
@@ -552,6 +553,7 @@ spec:
     ai:
       routes:
         /v1/decisions: Decisions
+        /v1/systemone: SystemOne
     auth:
       azure:
         workloadIdentity: {}
@@ -574,10 +576,14 @@ spec:
       path:
         type: Exact
         value: /v1/decisions
+    - method: POST
+      path:
+        type: Exact
+        value: /v1/systemone
 EOF
 ```
 
-The `policies.ai.routes` entry selects the Decisions request format.
+The `policies.ai.routes` entries select the request format for each path.
 
 Forward the existing gateway Service in one terminal:
 
@@ -607,8 +613,33 @@ curl --fail-with-body --max-time 120 http://localhost:8080/v1/decisions \
 ```
 
 The response includes a `department` choice with probabilities and token usage.
-The API also supports `predicate` and `score` questions. Stop the port-forward
-with Ctrl+C when finished.
+The Decisions API also supports `predicate` and `score` questions.
+
+To send a native SystemOne request through the same backend:
+
+```sh
+curl --fail-with-body --max-time 120 http://localhost:8080/v1/systemone \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "my-decision-deployment",
+    "questions": {
+      "department": {
+        "criteria": {
+          "billing": "Payments and invoices",
+          "technical": "Software problems"
+        },
+        "instructions": "Which team should handle this support ticket?",
+        "type": "choice"
+      }
+    },
+    "state": "I was charged twice for my subscription."
+  }'
+```
+
+SystemOne uses `state` and a question map, and returns an `answers` map. Its question
+types are `noul` (predicate), `choice`, and `score`.
+
+Stop the port-forward with Ctrl+C when finished.
 {{< /version >}}
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
