@@ -438,11 +438,17 @@ subjectToken:
 
 The gateway sends that value verbatim as the `subject_token_type` form parameter. An `actorToken.tokenType` value travels the same way, as `actor_token_type`.
 
-An invalid value is rejected after you apply the policy, not by the API server. The policy reports `Accepted: True` with the reason `PartiallyValid` and the following message, and the data plane refuses it, so every request on the route fails with a `400` and the message `invalid request`.
+An invalid value is rejected after you apply the policy, not by the API server. The policy reports `Accepted: True` with the reason `PartiallyValid` and the following message.
 
 ```
 oauth subjectToken tokenType "not a uri" must be a built-in token type or an absolute URI without a fragment
 ```
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+Every request that uses the policy fails with a `500` and the message `oauthTokenExchange configuration is invalid`. The gateway does not call the token endpoint for these requests. Requests that do not use the policy are not affected.
+{{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+The data plane refuses the policy, so every request on the route fails with a `400` and the message `invalid request`.
+{{< /version >}}
 
 ### Request a token type {#requested-token-type}
 

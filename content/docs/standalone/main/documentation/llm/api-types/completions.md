@@ -66,6 +66,8 @@ For the same behavior in the other direction, where a Messages client reaches a 
 
 Chat Completions replies follow OpenAI usage conventions, even when agentgateway converts the upstream provider response from another format. When a provider reports prompt-cache tokens, `usage.prompt_tokens` includes those tokens. When they are available, cache counts are also reported separately in fields such as `usage.prompt_tokens_details.cached_tokens`, `usage.prompt_tokens_details.cache_write_tokens`, `usage.cache_read_input_tokens`, and `usage.cache_creation_input_tokens`.
 
+When a Gemini OpenAI-compatible response reports reasoning tokens separately from `usage.completion_tokens`, the normalized output count includes visible output and reasoning tokens. The converted Messages and Responses replies use this normalized output count in `usage.output_tokens`.
+
 ## Using the API
 
 Using the Chat Completions API works exactly the same as consuming OpenAI directly, with only a change to the base URL. This allows you to continue using existing code and SDKs.

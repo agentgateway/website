@@ -44,7 +44,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `provider` _[LLMProvider](#llmprovider)_ | Configuration for how to reach the configured LLM<br />provider. |  | ExactlyOneOf: [openai azureopenai azure anthropic gemini vertexai bedrock custom] <br />Optional: \{\} <br /> |
+| `provider` _[LLMProvider](#llmprovider)_ | Configuration for how to reach the configured LLM<br />provider. |  | ExactlyOneOf: [openai azureopenai azure anthropic gemini vertexai bedrock custom copilot] <br />Optional: \{\} <br /> |
 | `groups` _[PriorityGroup](#prioritygroup) array_ | Groups in priority order, where each group<br />defines a set of LLM providers. The priority determines the priority of<br />the backend endpoints chosen.<br />Note: provider names must be unique across all providers in all priority<br />groups. Backend policies may target a specific provider by name using<br />`targetRefs[].sectionName`.<br />Example configuration with two priority groups:<br />	groups:<br />	- providers:<br />	  - azureopenai:<br />	      deploymentName: gpt-4o-mini<br />	      apiVersion: 2024-02-15-preview<br />	      endpoint: ai-gateway.openai.azure.com<br />	- providers:<br />	  - azureopenai:<br />	      deploymentName: gpt-4o-mini-2<br />	      apiVersion: 2024-02-15-preview<br />	      endpoint: ai-gateway-2.openai.azure.com<br />	     policies:<br />	       auth:<br />	         secretRef:<br />	           name: azure-secret |  | MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
@@ -1944,6 +1944,23 @@ _Appears in:_
 | `ToolInput` | Tool call arguments, usually produced by the model.<br /> |
 
 
+#### CopilotConfig
+
+
+
+Settings for the GitHub Copilot LLM provider.
+
+
+
+_Appears in:_
+- [LLMProvider](#llmprovider)
+- [NamedLLMProvider](#namedllmprovider)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `model` _[ShortString](#shortstring)_ | Model name override.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+
+
 #### CrossAppAccessAuth
 
 
@@ -3254,7 +3271,7 @@ _Appears in:_
 Large language model provider that the backend routes requests to.
 
 _Validation:_
-- ExactlyOneOf: [openai azureopenai azure anthropic gemini vertexai bedrock custom]
+- ExactlyOneOf: [openai azureopenai azure anthropic gemini vertexai bedrock custom copilot]
 
 _Appears in:_
 - [AIBackend](#aibackend)
@@ -3263,6 +3280,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `openai` _[OpenAIConfig](#openaiconfig)_ | OpenAI provider settings. |  | Optional: \{\} <br /> |
+| `copilot` _[CopilotConfig](#copilotconfig)_ | GitHub Copilot provider settings. |  | Optional: \{\} <br /> |
 | `azureopenai` _[AzureOpenAIConfig](#azureopenaiconfig)_ | Azure OpenAI provider settings. |  | Optional: \{\} <br /> |
 | `azure` _[AzureConfig](#azureconfig)_ | Azure provider with resource-based configuration.<br />Supports both Azure OpenAI and Azure AI Foundry resource types. |  | Optional: \{\} <br /> |
 | `anthropic` _[AnthropicConfig](#anthropicconfig)_ | Anthropic provider settings. |  | Optional: \{\} <br /> |
@@ -3934,6 +3952,7 @@ _Appears in:_
 | Field | Description |
 | --- | --- |
 | `OpenAI` |  |
+| `Copilot` |  |
 | `Azure` |  |
 | `Anthropic` |  |
 | `Gemini` |  |
@@ -4011,6 +4030,7 @@ _Appears in:_
 | `name` _[SectionName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#sectionname)_ | Name of the provider. Policies can target this provider by name. |  | Required: \{\} <br /> |
 | `policies` _[BackendWithAI](#backendwithai)_ | Policies for communicating with this backend.<br />Policies may also be set in `AgentgatewayPolicy`, or in the top-level<br />`AgentgatewayBackend`. Policies are merged on a field-level basis, with<br />order: `AgentgatewayPolicy` < `AgentgatewayBackend` < `AgentgatewayBackend`<br />LLM provider (this field). |  | Optional: \{\} <br /> |
 | `openai` _[OpenAIConfig](#openaiconfig)_ | OpenAI provider settings. |  | Optional: \{\} <br /> |
+| `copilot` _[CopilotConfig](#copilotconfig)_ | GitHub Copilot provider settings. |  | Optional: \{\} <br /> |
 | `azureopenai` _[AzureOpenAIConfig](#azureopenaiconfig)_ | Azure OpenAI provider settings. |  | Optional: \{\} <br /> |
 | `azure` _[AzureConfig](#azureconfig)_ | Azure provider with resource-based configuration.<br />Supports both Azure OpenAI and Azure AI Foundry resource types. |  | Optional: \{\} <br /> |
 | `anthropic` _[AnthropicConfig](#anthropicconfig)_ | Anthropic provider settings. |  | Optional: \{\} <br /> |
@@ -5038,6 +5058,7 @@ _Appears in:_
 | `GenerateContent` | RouteTypeGenerateContent processes Gemini `models/\{model\}:generateContent`<br />and `models/\{model\}:streamGenerateContent` format requests.<br /> |
 | `GeminiCountTokens` | RouteTypeGeminiCountTokens processes Gemini `models/\{model\}:countTokens`<br />format requests.<br /> |
 | `Decisions` | RouteTypeDecisions processes OpenAI `/v1/decisions` format requests.<br /> |
+| `SystemOne` | RouteTypeSystemOne processes TypeSafe `/v1/systemone` format requests.<br /> |
 
 
 
