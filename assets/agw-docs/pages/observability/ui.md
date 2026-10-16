@@ -4,7 +4,7 @@ The agentgateway UI is a built-in web interface that runs on port 15000 of the `
 
 {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 > [!NOTE]
-> The UI is read-only in Kubernetes mode. Unlike standalone mode, you cannot use the UI to add features such as models, LLM providers, or MCP servers. The Kubernetes UI also does not currently show the standalone **LLM > Client Setup** generator. Instead, make configuration changes by updating your Kubernetes resources, such as through GitOps, and configure LLM clients with the values from their integration guides. Follow [agentgateway/agentgateway#2989](https://github.com/agentgateway/agentgateway/issues/2989) for the Client Setup enhancement.
+> The UI is read-only in Kubernetes mode. Unlike standalone mode, you cannot use the UI to add features such as models, LLM providers, or MCP servers. The Kubernetes UI also does not currently show the standalone **LLM > Client Setup** generator. Instead, make configuration changes by updating your Kubernetes resources, such as through GitOps, and configure LLM clients with the values from their integration guides.
 {{< /version >}}
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 > [!NOTE]

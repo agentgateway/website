@@ -108,13 +108,27 @@ Use the UI to review what agentgateway loaded and to manage the resources that y
 * [MCP quickstart]({{< link-hextra path="/documentation/quickstart/mcp/" >}}) to connect an MCP server and try tools in the built-in playground.
 * [LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}}) to route requests to an LLM provider and see the model in the UI.
 
+## Save changes from the UI {#save-changes}
+
 Whether the UI can save the changes that you make depends on your storage mode. In the binary and Docker installations, the UI writes to your configuration file by default. In the Helm installation, the ConfigMap is read-only and a save fails unless you switch the chart to database mode. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
-In **Settings** > **UI**, choose the public gateway that serves the UI and configure policies that protect the UI. If the UI is already served on a public gateway, the UI asks you to confirm before you save a different gateway or **None**. If you opened the UI through the gateway that you remove, you lose access to the page. With **None**, the UI is served only on the admin interface, which listens on `localhost` by default and might not be reachable from outside a container. In **Settings** > **Observability**, configure tracing and access logs for all traffic.
+The UI checks a change before it writes the configuration file. If the change is not valid, the save fails with an error and the file does not change.
 
-The UI checks a change before it writes the configuration file, so a save that is not valid fails with an error and the file does not change. If you edit the file outside the UI and agentgateway rejects the reload, the UI shows a **Configuration reload failed** banner. The banner means that agentgateway still runs the previous valid configuration. The UI and `/api/config/effective` show the file on disk, including the change that agentgateway rejected. Fix the file and save it again to retry the reload.
+If you edit the file outside the UI and agentgateway rejects the reload, the UI shows a **Configuration reload failed** banner. Agentgateway keeps running the previous valid configuration. The UI and `/api/config/effective` show the file on disk, including the rejected change. To retry the reload, fix the file and save it again.
 {{< /version >}}
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+## Change settings in the UI {#settings}
+
+The **Settings** section of the UI has two pages.
+
+* **UI**: Choose the public gateway that serves the UI, and configure the policies that protect the UI. These settings are the `ui.gateways` and `ui.policies` fields of your configuration file. For more information, see [Serve the UI on its own gateway]({{< link-hextra path="/documentation/setup/ui/gateway-ui/" >}}) and [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).
+* **Observability**: Configure tracing and access logs for all traffic.
+
+> [!CAUTION]
+> If you change or remove the gateway that serves the UI, you can lose access to the UI. The UI asks you to confirm before it saves a different gateway or **None**. If you opened the UI through the gateway that you remove, the page stops loading. If you choose **None**, the UI removes the `ui` section from your configuration, including any `ui.policies`. The UI is then served only on the admin interface. The admin interface listens on `localhost` by default, so you might not reach it from outside a container.
+{{% /version %}}
 
 ## Generate LLM client settings {#client-setup}
 
