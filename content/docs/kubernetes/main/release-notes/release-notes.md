@@ -17,11 +17,18 @@ Review the release notes for agentgateway on Kubernetes.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3763 -->
 
 - **Optional chart-created RBAC**: Set `rbac.create` to `false` in the controller Helm chart to skip the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the chart creates, for clusters that manage role-based access control (RBAC) outside of Helm. For more information, see [Chart-created RBAC resources]({{< link-hextra path="/documentation/install/advanced/#rbac-create" >}}).
+
 ### MCP {#v17-mcp}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3824 -->
 
 - **Conditional virtual MCP targets**: Set `spec.mcp.targets[].condition` on an {{< reuse "agw-docs/snippets/backend.md" >}} to a CEL expression to select which targets take part in a request before agentgateway initializes or contacts them. A backend whose only target is a `static` target cannot set a condition. For more information, see [Select targets with conditions]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
+
+### Observability {#v17-observability}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3850 -->
+
+- **Agent session detection**: CEL expressions can read the agent session of a request as `request.agent.session`. The session is detected from agent headers such as `x-claude-code-session-id`.
 
 ## 🐛 Fixes {#v17-fixes}
 

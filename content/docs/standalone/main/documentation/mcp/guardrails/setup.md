@@ -1,15 +1,15 @@
 ---
 title: Set up MCP guardrails
 weight: 20
-description: Gate and mutate MCP method calls with an external ExtMCP policy server.
+description: Gate and mutate MCP method calls with an external ExtMCP policy server or in-process CEL expressions.
 test:
   mcp-guardrails:
   - path: mcp-guardrails
 ---
 
-Gate and mutate Model Context Protocol (MCP) method calls with an external policy server. For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
+Gate and mutate Model Context Protocol (MCP) method calls with an external policy server or in-process Common Expression Language (CEL) expressions. For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
 
-In this guide, you route `tools/call` and `tools/list` requests through a sample ExtMCP server that denies any tool whose name contains `forbidden` and annotates each tool description in `tools/list` responses.
+In this guide, you route `tools/call` and `tools/list` requests through a sample ExtMCP server that denies any tool whose name contains `forbidden` and annotates each tool description in `tools/list` responses. Then, you add CEL expression processors that reject and mask tool calls without a policy server.
 
 ## Before you begin
 
@@ -248,6 +248,120 @@ EC=$(curl -s http://localhost:3000/mcp \
   -d '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"echo","arguments":{"message":"hello"}}}')
 echo "$EC" | grep -q 'Echo: hello' && echo "✓ allowed tool call (echo) succeeded" || { echo "FAIL: echo call did not succeed: $EC"; exit 1; }
 {{< /doc-test >}}
+
+## Add CEL expression processors {#expression-processors}
+
+You can also run a processor as a CEL expression inside agentgateway, without a policy server. Set `kind: expression` instead of `kind: remote`. One `mcpGuardrails` policy can mix both kinds. Processors run in list order, each processor sees the changes from earlier processors, and the first rejection stops the chain.
+
+1. Update the `config.yaml` file to add three `expression` processors after the `remote` processor. The first processor rejects `echo` calls whose message contains `DO_NOT_SEND`. The second processor masks email addresses in the `echo` message before the call reaches the MCP backend. The third processor masks `demo-secret-` tokens in the text content of tool results.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   gateways:
+     default:
+       port: 3000
+   routes:
+   - policies:
+       cors:
+         allowOrigins:
+         - "*"
+         allowHeaders:
+         - mcp-protocol-version
+         - content-type
+         - mcp-session-id
+         exposeHeaders:
+         - "Mcp-Session-Id"
+       mcpGuardrails:
+         processors:
+         - kind: remote
+           host: "localhost:9001"
+           failureMode: failClosed
+           methods:
+             tools/call: request
+             tools/list: response
+         # Reject before masking, so this processor sees the original message.
+         - kind: expression
+           methods: {"tools/call": request}
+           condition: >-
+             mcp.params.name == 'echo' &&
+             has(mcp.params.arguments) &&
+             has(mcp.params.arguments.message) &&
+             mcp.params.arguments.message.contains('DO_NOT_SEND')
+           reject: "Messages containing DO_NOT_SEND may not be sent upstream"
+         # Mask every email-like match in the echo message.
+         - kind: expression
+           methods: {"tools/call": request}
+           condition: >-
+             mcp.params.name == 'echo' &&
+             has(mcp.params.arguments) &&
+             has(mcp.params.arguments.message)
+           transform: >-
+             mcp.params.with(p, p.merge({
+               'arguments': p.arguments.merge({
+                 'message': p.arguments.message.regexReplaceAll(
+                   '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+[.][A-Za-z]{2,}',
+                   '[EMAIL]'
+                 )
+               })
+             }))
+         # Mask demo secrets in all text blocks that tools return.
+         - kind: expression
+           methods: {"tools/call": response}
+           condition: has(mcp.result.content)
+           transform: >-
+             mcp.result.with(r, r.merge({
+               'content': r.content.map(item,
+                 item.type == 'text'
+                   ? item.merge({'text': item.text.regexReplaceAll(
+                       'demo-secret-[A-Za-z0-9]+', '[SECRET]'
+                     )})
+                   : item
+               )
+             }))
+     backends:
+     - mcp:
+         targets:
+         - name: everything
+           stdio:
+             cmd: npx
+             args: ["@modelcontextprotocol/server-everything"]
+   ```
+
+   Review the following table to understand the `expression` settings. For the variables that an expression can read, see [CEL variables]({{< link-hextra path="/reference/cel/variables" >}}).
+
+   | Setting | Description |
+   |---------|-------------|
+   | `kind: expression` | Run the processor as a CEL expression inside agentgateway instead of calling a remote ExtMCP server. Expression processors have no `failureMode`. |
+   | `condition` | Optional. A CEL expression that must return `true` for the action to run. If you omit `condition`, the action runs for every method that the processor matches. Check optional fields with `has()` first because an expression that fails to evaluate rejects the call with a JSON-RPC internal error. |
+   | `reject` | The message to return when the processor rejects a call. When the processor rejects a `tools/call` request in the request phase, the client receives a tool result with `isError: true` and this message as its text. Other rejections return a JSON-RPC error with code `-32001`. Set exactly one of `reject` or `transform`. |
+   | `transform` | A CEL expression that returns a new version of the MCP message. In the request phase, the expression reads the current request parameters from the `mcp.params` variable and the value that the expression returns becomes the new request parameters. In the response phase, the expression reads the current response result from the `mcp.result` variable and the value that the expression returns becomes the new response result. To change one field and keep the others, use `merge` on the variable, as in the example. To leave the message unchanged, return `null`. If the output is not a valid message for the method, agentgateway rejects the call. |
+   | `methods` | The MCP methods and phases that the processor runs for, the same as for a `remote` processor. |
+
+2. Stop agentgateway with `Ctrl+C` and run it again with the updated configuration file.
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+3. Start a new MCP session. Repeat steps 1 and 2 in [Verify the guardrails](#verify-the-guardrails).
+
+4. Call the `echo` tool with a message that contains `DO_NOT_SEND`. Verify that the response is a tool result with `isError: true` and the text `Messages containing DO_NOT_SEND may not be sent upstream`. The call does not reach the MCP backend.
+   ```sh
+   curl -s http://localhost:3000/mcp \
+     -H "Content-Type: application/json" \
+     -H "Accept: application/json, text/event-stream" \
+     -H "MCP-Protocol-Version: 2025-03-26" \
+     -H "mcp-session-id: $MCP_SESSION_ID" \
+     -d '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"echo","arguments":{"message":"DO_NOT_SEND this"}}}'
+   ```
+
+5. Call the `echo` tool with a message that contains an email address and a demo secret. Verify that the result text is `Echo: Contact [EMAIL] with [SECRET]`. The second processor masked the email address in the request, and the third processor masked the secret in the response.
+   ```sh
+   curl -s http://localhost:3000/mcp \
+     -H "Content-Type: application/json" \
+     -H "Accept: application/json, text/event-stream" \
+     -H "MCP-Protocol-Version: 2025-03-26" \
+     -H "mcp-session-id: $MCP_SESSION_ID" \
+     -d '{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"echo","arguments":{"message":"Contact alice@example.com with demo-secret-abc123"}}}'
+   ```
 
 ## Cleanup
 

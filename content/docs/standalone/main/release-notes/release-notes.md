@@ -12,11 +12,23 @@ Review the release notes for agentgateway standalone.
 
 ## 🌟 New features {#v17-new-features}
 
+### MCP {#v17-mcp}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3711 -->
+
+- **CEL MCP guardrails**: MCP guardrail processors can now use `kind: expression` to reject matching MCP operations, or to transform the request `mcp.params` or response `mcp.result` body with CEL, without a remote ExtMCP server. For more information, see [Set up MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/setup/#expression-processors" >}}).
+
 ### Traffic management and operations {#v17-operations}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3842 -->
 
 - **Standalone Helm session key Secret**: Set `session.secretName` to load the AES-256-GCM session key from an existing Kubernetes Secret. The chart passes the Secret's `key` entry to the proxy as the `SESSION_KEY` environment variable, which takes precedence over `config.session.key`. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
+
+### Observability {#v17-observability}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3850 -->
+
+- **Agent session detection**: CEL expressions can read the agent session of a request as `request.agent.session`. The session is detected from agent headers such as `x-claude-code-session-id`, or set by a CEL expression in `config.standardAttributes.session`.
 
 ## 🐛 Fixes {#v17-fixes}
 

@@ -16,6 +16,8 @@ Each policy execution consistently gets the current view of the request and resp
 
 For the full list of fields and types on every top-level object, see the [CEL reference]({{< link-hextra path="/reference/cel/cel-context" >}}) page. It is generated from the [agentgateway CEL schema](https://github.com/agentgateway/agentgateway/blob/main/schema/cel.md) and is the source of truth for nested fields (for example, `source.address` or `llm.inputTokens`).
 
+When an agent session can be identified, the session is available as `request.agent.session`. By default, the session is detected from agent headers such as `x-claude-code-session-id` and `x-session-id`. To set the session yourself, set `config.standardAttributes.session` to a CEL expression that returns a string. Return `null` or an empty string to mark a request as having no agent session. If the expression fails or returns another type, the detected session is used.
+
 When a policy can run against both directly addressed and Service backends, check `has(backend.endpoint)` before reading `backend.endpoint`. The field is populated only for directly addressed backends, such as static hostnames. Service backends leave `backend.endpoint` unset because workload endpoints are selected separately.
 
 > [!NOTE]
@@ -36,6 +38,8 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 | Network authorization | `env`, `source` [^3] |
 | External Authorization | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` — some expressions run after the authorization service returns and can read `response`. [^4] |
 | MCP Authorization | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` — `mcp.methodName` distinguishes methods such as `tools/list` and `tools/call`. For list methods, rules run once per listed item. `mcp.sessionId` and `mcp.tool.arguments` aren't set. |
+| MCP guardrails (CEL request processor) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` — `mcp.params` contains the current MCP request parameters. |
+| MCP guardrails (CEL response processor) | Same as the request processor, except that `mcp.result` replaces `mcp.params`. `mcp.result` contains the current MCP response result. |
 | External processing (ExtProc) | Request-phase rules: same as Transformation (request). Response-phase rules: same as Transformation (response). |
 | LLM policy | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `llmRequest`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — `llmRequest` is the raw JSON body during LLM request handling (not `mcp`). [^5] |
 | Logging | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` [^6] |

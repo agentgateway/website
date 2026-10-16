@@ -38,6 +38,10 @@ Use the built-in LLM playground in the agentgateway UI to send a chat completion
    {{< reuse-image-light src="img/ui-llm-playground.png" >}}
    {{< reuse-image-dark srcDark="img/ui-llm-playground-dark.png" >}}
 
+## Authentication behavior
+
+The playground sends the request from your browser, but does not forward browser credentials, such as cookies or HTTP basic authentication, to the LLM gateway. If the gateway requires a bearer token, select a saved key in the **Virtual API key** list. Or, select **Raw value** and enter the token in the **Raw API key** field. The playground sends the key in an `Authorization: Bearer` header. The MCP playground also omits browser credentials and sends the value of its **Bearer token** field instead.
+
 ## Next steps
 
 - [Observe LLM traffic]({{< link-hextra path="/documentation/llm/observability/" >}}) with metrics, logs, and traces.

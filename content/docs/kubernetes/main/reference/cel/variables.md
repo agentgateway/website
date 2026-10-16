@@ -18,6 +18,8 @@ Each policy execution consistently gets the current view of the request and resp
 
 For the full list of fields and types on every top-level object, see the [Interactive CEL reference]({{< link-hextra path="/reference/cel/cel-context-interactive" >}}) page.
 
+When an agent session can be identified, the session is available as `request.agent.session`. The session is detected from agent headers such as `x-claude-code-session-id` and `x-session-id`.
+
 When a policy can run against both directly addressed and Service backends, check `has(backend.endpoint)` before reading `backend.endpoint`. The field is populated only for directly addressed backends, such as static hostnames. Service backends leave `backend.endpoint` unset because workload endpoints are selected separately.
 
 > [!NOTE]
@@ -36,6 +38,8 @@ Depending on the policy, different fields are accessible based on when in the re
 |HTTP Authorization| `source`, `request`, `jwt`, `mcp`, `backend` |
 |External Authorization| `source`, `request`, `jwt`, `mcp`, `backend` |
 |MCP Authorization| `source`, `request`, `jwt`, `mcp`, `backend` — `mcp.methodName` distinguishes methods such as `tools/list` and `tools/call`. For list methods, rules run once per listed item. `mcp.sessionId` and `mcp.tool.arguments` aren't set. |
+|MCP guardrails (CEL request processor)| `source`, `request`, `jwt`, `mcp`, `backend` — `mcp.params` contains the current MCP request parameters. |
+|MCP guardrails (CEL response processor)| Same as the request processor, except that `mcp.result` replaces `mcp.params`. `mcp.result` contains the current MCP response result. |
 |Logging| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`|
 |Tracing| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`|
 |Metrics| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`|
