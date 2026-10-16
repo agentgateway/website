@@ -118,18 +118,6 @@ The UI checks a change before it writes the configuration file. If the change is
 If you edit the file outside the UI and agentgateway rejects the reload, the UI shows a **Configuration reload failed** banner. Agentgateway keeps running the previous valid configuration. The UI and `/api/config/effective` show the file on disk, including the rejected change. To retry the reload, fix the file and save it again.
 {{< /version >}}
 
-{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
-## Change settings in the UI {#settings}
-
-The **Settings** section of the UI has two pages.
-
-* **UI**: Choose the public gateway that serves the UI, and configure the policies that protect the UI. These settings are the `ui.gateways` and `ui.policies` fields of your configuration file. For more information, see [Serve the UI on its own gateway]({{< link-hextra path="/documentation/setup/ui/gateway-ui/" >}}) and [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).
-* **Observability**: Configure tracing and access logs for all traffic.
-
-> [!CAUTION]
-> If you change or remove the gateway that serves the UI, you can lose access to the UI. The UI asks you to confirm before it saves a different gateway or **None**. If you opened the UI through the gateway that you remove, the page stops loading. If you choose **None**, the UI removes the `ui` section from your configuration, including any `ui.policies`. The UI is then served only on the admin interface. The admin interface listens on `localhost` by default, so you might not reach it from outside a container.
-{{% /version %}}
-
 ## Generate LLM client settings {#client-setup}
 
 For an example of using the UI to set something up, use the **LLM > Client Setup** page. It generates connection settings and snippets for curl, Claude Code, Claude Desktop, Codex CLI, OpenCode, Cursor, GitHub Copilot, Windsurf, and the OpenAI JavaScript and Python SDKs{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}. The page also includes a Pi recipe that writes `baseUrl` and `apiKey` values into `~/.pi/agent/models.json`{{< /version >}}.
