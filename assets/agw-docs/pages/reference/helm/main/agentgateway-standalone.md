@@ -1,4 +1,8 @@
 
+## Source Code
+
+* <https://github.com/agentgateway/agentgateway>
+
 ## Values
 
 | Key | Type | Description |
@@ -48,8 +52,8 @@
 | monitoring.extraLabels | object | Additional labels to add to the PodMonitor.<br/><br/>The default value is `{}`. |
 | monitoring.podMonitor.enabled | bool | Create the PodMonitor resource.<br/><br/>The default value is `true`. |
 | monitoring.podMonitor.interval | string | How often Prometheus scrapes the agentgateway proxy's metrics.<br/><br/>The default value is `"15s"`. |
-| monitoring.podMonitor.metricRelabelings | list | Relabeling rules applied to scraped metrics before ingestion    (https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_config).<br/><br/>The default value is `[]`. |
-| monitoring.podMonitor.relabelings | list | Relabeling rules applied to the scrape target before metrics are ingested    (https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config).<br/><br/>The default value is `[]`. |
+| monitoring.podMonitor.metricRelabelings | list | Relabeling rules applied to scraped metrics before ingestion.    See the [Prometheus metric_relabel_configs docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs).<br/><br/>The default value is `[]`. |
+| monitoring.podMonitor.relabelings | list | Relabeling rules applied to the scrape target before metrics are ingested.    See the [Prometheus relabel_config docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config).<br/><br/>The default value is `[]`. |
 | monitoring.podMonitor.scrapeClassicHistograms | bool | Scrape classic (legacy bucket) histograms.<br/><br/>The default value is `true`. |
 | monitoring.podMonitor.scrapeNativeHistograms | bool | Scrape native (exponential, high-resolution) histograms. Requires Prometheus >= v3.8.0.<br/><br/>The default value is `false`. |
 | nameOverride | string | Override the name to the Helm base release, which by default is 'agentgateway-standalone'.<br/><br/>The default value is `""`. |

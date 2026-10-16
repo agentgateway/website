@@ -141,7 +141,6 @@ def write_wrapper_pages(website_dir: str, link_version: str, generated: list[Pat
                 f"title: {title}\n"
                 f"weight: {weight}\n"
                 f"description: Reference for the `{title}` command.\n"
-                "test: skip\n"
                 "---\n\n"
                 f'{{{{< reuse "agw-docs/pages/reference/agctl/{link_version}/{slug}.md" >}}}}\n',
                 encoding="utf-8",

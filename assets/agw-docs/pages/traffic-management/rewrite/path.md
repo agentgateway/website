@@ -497,7 +497,76 @@ EOF
    }
    ```
 
-   
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+## Backend-specific path rewrites
+
+To rewrite the path for one backend only, add the `URLRewrite` filter to the `backendRefs` entry of that backend instead of to the rule. When the rule has more than one backend, requests to the other backends keep their original path. For an example that splits traffic between two backends, see [Backend-specific host rewrites]({{< link-hextra path="/documentation/traffic-management/rewrite/host/#backend-specific-host-rewrites" >}}).
+
+1. Create an HTTPRoute that rewrites the `/headers` prefix path to the `/anything` prefix path for the requests that the gateway forwards to the httpbin app on the `backend-path-rewrite.example` domain.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: backend-path-rewrite
+     namespace: httpbin
+   spec:
+     parentRefs:
+     - name: agentgateway-proxy
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     hostnames:
+       - backend-path-rewrite.example
+     rules:
+       - matches:
+           - path:
+               type: PathPrefix
+               value: /headers
+         backendRefs:
+           - name: httpbin
+             port: 8000
+             filters:
+               - type: URLRewrite
+                 urlRewrite:
+                   path:
+                     type: ReplacePrefixMatch
+                     replacePrefixMatch: /anything
+   EOF
+   ```
+
+   |Setting|Description|
+   |--|--|
+   |`spec.rules.matches`| The request to match. To use `ReplacePrefixMatch` in a backend filter, the rule must have exactly one match, and that match must be a `PathPrefix` match. Otherwise, the Kubernetes API server rejects the HTTPRoute when you apply it. |
+   |`spec.rules.backendRefs.filters.type`| The filter that applies only to the requests that the gateway forwards to this backend. In this example, the `URLRewrite` filter is used. |
+   |`spec.rules.backendRefs.filters.urlRewrite.path.type`| The type of HTTPPathModifier that you want to use. In this example, `ReplacePrefixMatch` is used, which replaces only the path prefix. Do not also add a `ReplacePrefixMatch` rewrite to the `filters` of the rule. The backend rewrite runs after the rule rewrite and cannot find the matched prefix in the rewritten path, so the request fails with a 500 HTTP response code. |
+   |`spec.rules.backendRefs.filters.urlRewrite.path.replacePrefixMatch`| The path prefix that you want to rewrite to. In this example, you replace the `/headers` prefix with the `/anything` prefix. |
+
+2. Send a request along the `/headers` path on the `backend-path-rewrite.example` domain. Verify that you get back a 200 HTTP response code and that your request is rewritten to the `/anything` path.
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: backend-path-rewrite.example:80"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -vi localhost:8080/headers -H "host: backend-path-rewrite.example"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+   ```console {hl_lines=[3]}
+   ...
+   "origin": "10.244.0.31:44800",
+   "url": "http://backend-path-rewrite.example/anything",
+   "data": "",
+   "files": null,
+   "form": null,
+   "json": null
+   ...
+   ```
+{{< /version >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
@@ -508,5 +577,10 @@ kubectl delete httproute backend-rewrite -n httpbin
 kubectl delete {{< reuse "/agw-docs/snippets/backend.md" >}} httpbin -n httpbin
 ```
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+If you created the backend-specific path rewrite, delete its HTTPRoute.
 
-
+```sh
+kubectl delete httproute backend-path-rewrite -n httpbin
+```
+{{< /version >}}

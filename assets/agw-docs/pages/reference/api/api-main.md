@@ -44,7 +44,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `provider` _[LLMProvider](#llmprovider)_ | Configuration for how to reach the configured LLM<br />provider. |  | ExactlyOneOf: [openai azureopenai azure anthropic gemini vertexai bedrock custom] <br />Optional: \{\} <br /> |
+| `provider` _[LLMProvider](#llmprovider)_ | Configuration for how to reach the configured LLM<br />provider. |  | ExactlyOneOf: [openai azureopenai azure anthropic gemini vertexai bedrock custom copilot] <br />Optional: \{\} <br /> |
 | `groups` _[PriorityGroup](#prioritygroup) array_ | Groups in priority order, where each group<br />defines a set of LLM providers. The priority determines the priority of<br />the backend endpoints chosen.<br />Note: provider names must be unique across all providers in all priority<br />groups. Backend policies may target a specific provider by name using<br />`targetRefs[].sectionName`.<br />Example configuration with two priority groups:<br />	groups:<br />	- providers:<br />	  - azureopenai:<br />	      deploymentName: gpt-4o-mini<br />	      apiVersion: 2024-02-15-preview<br />	      endpoint: ai-gateway.openai.azure.com<br />	- providers:<br />	  - azureopenai:<br />	      deploymentName: gpt-4o-mini-2<br />	      apiVersion: 2024-02-15-preview<br />	      endpoint: ai-gateway-2.openai.azure.com<br />	     policies:<br />	       auth:<br />	         secretRef:<br />	           name: azure-secret |  | MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
@@ -415,7 +415,7 @@ _Appears in:_
 | `custom` _[CustomProviderSettings](#customprovidersettings)_ | Provider-specific settings for a custom provider. |  | Optional: \{\} <br /> |
 | `baseURL` _[LongString](#longstring)_ | BaseURL overrides the provider address and base path prefix. It must use the<br />http or https scheme. Backend policies may override the default TLS<br />configuration. Query parameters, fragments, and user info are not supported.<br />The URL path is the upstream base path and defaults to / when omitted.<br />Provider-specific endpoint paths are appended to this base path.<br />For example, `https://api.openai.com/v1` sends completions to `/v1/chat/completions`,<br />while `https://api.openai.com` sends them to `/chat/completions`. |  | Format: uri <br />MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `policies` _[ModelPolicies](#modelpolicies)_ | Policies applied to this concrete model. |  | Optional: \{\} <br /> |
-| `virtualModel` _[VirtualModel](#virtualmodel)_ | Request-time routing among concrete AgentgatewayModel resources. |  | ExactlyOneOf: [weighted failover conditional] <br />Optional: \{\} <br /> |
+| `virtualModel` _[VirtualModel](#virtualmodel)_ | Request-time routing among concrete AgentgatewayModel resources. |  | ExactlyOneOf: [weighted failover conditional callout] <br />Optional: \{\} <br /> |
 
 
 #### AgentgatewayModelStatus
@@ -1738,6 +1738,8 @@ _Appears in:_
 - [AuthorizationPolicy](#authorizationpolicy)
 - [AwsAssumeRole](#awsassumerole)
 - [AwsSessionTag](#awssessiontag)
+- [CalloutCache](#calloutcache)
+- [CalloutModelRouting](#calloutmodelrouting)
 - [ConditionalModelTarget](#conditionalmodeltarget)
 - [Delay](#delay)
 - [DirectResponse](#directresponse)
@@ -1799,6 +1801,47 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `additionalOrigins` _[ShortString](#shortstring) array_ | Additional source origins that will be<br />allowed in addition to the destination origin. The `Origin` consists of<br />a scheme and a host, with an optional port, and takes the form<br />`<scheme>://<host>(:<port>)`. |  | MaxItems: 16 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+
+
+#### CalloutCache
+
+
+
+
+
+
+
+_Appears in:_
+- [CalloutModelRouting](#calloutmodelrouting)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `key` _[CELExpression](#celexpression) array_ | Ordered list of CEL expressions evaluated against the request to<br />construct the cache key. |  | MaxItems: 16 <br />MaxLength: 16384 <br />MinItems: 1 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `ttl` _[CELExpression](#celexpression)_ | Duration string, such as `5m`, or a CEL expression that returns the<br />duration that a cached callout response may be reused, or a timestamp<br />when it expires. The expression is evaluated with `callout` available,<br />before `transformation` is applied. |  | MaxLength: 16384 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `maxEntries` _integer_ | Maximum number of callout responses to keep in the cache. If unset, this<br />defaults to 10000. |  | Minimum: 1 <br />Optional: \{\} <br /> |
+
+
+#### CalloutModelRouting
+
+
+
+
+
+_Validation:_
+- ExactlyOneOf: [backendRef url]
+
+_Appears in:_
+- [VirtualModel](#virtualmodel)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
+| `headers` _object (keys:string, values:[CELExpression](#celexpression))_ | Headers to set on the callout request, computed from CEL expressions.<br />Keys may be header names or the `:path`, `:method`, and `:authority`<br />pseudo-headers. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
+| `body` _[CELExpression](#celexpression)_ | CEL expression that computes the callout request body. Strings and bytes<br />are used directly; other values are JSON-encoded. If unset, the original<br />request body is forwarded. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `transformation` _object (keys:string, values:[CELExpression](#celexpression))_ | CEL expressions that compute request payload fields from the callout<br />response, overriding existing values. `callout.headers` holds the response<br />headers and `callout.body` the decoded JSON response body. `model` is<br />required and selects the concrete model name, which is matched against the<br />effective match.model of models attached to the same listener. |  | MaxProperties: 64 <br />MinProperties: 1 <br />Required: \{\} <br /> |
+| `fallback` _[ModelTargetReference](#modeltargetreference)_ | Model used when the callout fails, returns a non-2xx or non-JSON<br />response, or selects an unknown model. `transformation` is not applied to<br />the fallback. If unset, the request is rejected. |  | Optional: \{\} <br /> |
+| `cache` _[CalloutCache](#calloutcache)_ | Reuse callout responses using CEL expressions as the cache key. On a cache<br />hit, `transformation` is evaluated against the cached response. Keying on<br />a session identifier makes routing sticky for that session. |  | Optional: \{\} <br /> |
 
 
 #### CipherSuite
@@ -1899,6 +1942,23 @@ _Appears in:_
 | `Messages` | Regular user/assistant message text, including plaintext reasoning.<br /> |
 | `ToolOutput` | Tool call results, including results from serverside tools.<br /> |
 | `ToolInput` | Tool call arguments, usually produced by the model.<br /> |
+
+
+#### CopilotConfig
+
+
+
+Settings for the GitHub Copilot LLM provider.
+
+
+
+_Appears in:_
+- [LLMProvider](#llmprovider)
+- [NamedLLMProvider](#namedllmprovider)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `model` _[ShortString](#shortstring)_ | Model name override.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### CrossAppAccessAuth
@@ -3211,7 +3271,7 @@ _Appears in:_
 Large language model provider that the backend routes requests to.
 
 _Validation:_
-- ExactlyOneOf: [openai azureopenai azure anthropic gemini vertexai bedrock custom]
+- ExactlyOneOf: [openai azureopenai azure anthropic gemini vertexai bedrock custom copilot]
 
 _Appears in:_
 - [AIBackend](#aibackend)
@@ -3220,6 +3280,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `openai` _[OpenAIConfig](#openaiconfig)_ | OpenAI provider settings. |  | Optional: \{\} <br /> |
+| `copilot` _[CopilotConfig](#copilotconfig)_ | GitHub Copilot provider settings. |  | Optional: \{\} <br /> |
 | `azureopenai` _[AzureOpenAIConfig](#azureopenaiconfig)_ | Azure OpenAI provider settings. |  | Optional: \{\} <br /> |
 | `azure` _[AzureConfig](#azureconfig)_ | Azure provider with resource-based configuration.<br />Supports both Azure OpenAI and Azure AI Foundry resource types. |  | Optional: \{\} <br /> |
 | `anthropic` _[AnthropicConfig](#anthropicconfig)_ | Anthropic provider settings. |  | Optional: \{\} <br /> |
@@ -3891,6 +3952,7 @@ _Appears in:_
 | Field | Description |
 | --- | --- |
 | `OpenAI` |  |
+| `Copilot` |  |
 | `Azure` |  |
 | `Anthropic` |  |
 | `Gemini` |  |
@@ -3911,6 +3973,7 @@ _Appears in:_
 | `Fireworks` |  |
 | `Meta` |  |
 | `Perplexity` |  |
+| `Typesafe` |  |
 | `Custom` |  |
 
 
@@ -3923,6 +3986,7 @@ _Appears in:_
 
 
 _Appears in:_
+- [CalloutModelRouting](#calloutmodelrouting)
 - [ConditionalModelTarget](#conditionalmodeltarget)
 - [FailoverModelTarget](#failovermodeltarget)
 - [WeightedModelTarget](#weightedmodeltarget)
@@ -3966,6 +4030,7 @@ _Appears in:_
 | `name` _[SectionName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#sectionname)_ | Name of the provider. Policies can target this provider by name. |  | Required: \{\} <br /> |
 | `policies` _[BackendWithAI](#backendwithai)_ | Policies for communicating with this backend.<br />Policies may also be set in `AgentgatewayPolicy`, or in the top-level<br />`AgentgatewayBackend`. Policies are merged on a field-level basis, with<br />order: `AgentgatewayPolicy` < `AgentgatewayBackend` < `AgentgatewayBackend`<br />LLM provider (this field). |  | Optional: \{\} <br /> |
 | `openai` _[OpenAIConfig](#openaiconfig)_ | OpenAI provider settings. |  | Optional: \{\} <br /> |
+| `copilot` _[CopilotConfig](#copilotconfig)_ | GitHub Copilot provider settings. |  | Optional: \{\} <br /> |
 | `azureopenai` _[AzureOpenAIConfig](#azureopenaiconfig)_ | Azure OpenAI provider settings. |  | Optional: \{\} <br /> |
 | `azure` _[AzureConfig](#azureconfig)_ | Azure provider with resource-based configuration.<br />Supports both Azure OpenAI and Azure AI Foundry resource types. |  | Optional: \{\} <br /> |
 | `anthropic` _[AnthropicConfig](#anthropicconfig)_ | Anthropic provider settings. |  | Optional: \{\} <br /> |
@@ -4459,6 +4524,7 @@ PolicyBackendEndpoint identifies a backend used by policy features.
 
 _Appears in:_
 - [BackendTunnel](#backendtunnel)
+- [CalloutModelRouting](#calloutmodelrouting)
 - [CrossAppAccessEndpoint](#crossappaccessendpoint)
 - [ExtAuth](#extauth)
 - [ExtAuthOrConditional](#extauthorconditional)
@@ -4708,6 +4774,7 @@ _Appears in:_
 | `Realtime` | ProviderFormatRealtime is the OpenAI-compatible realtime API.<br /> |
 | `Rerank` | ProviderFormatRerank is the Cohere-compatible rerank API.<br /> |
 | `Decisions` | ProviderFormatDecisions is the OpenAI decisions API.<br /> |
+| `SystemOne` | ProviderFormatSystemOne is the TypeSafe SystemOne API.<br /> |
 
 
 #### ProviderFormatConfig
@@ -4991,6 +5058,7 @@ _Appears in:_
 | `GenerateContent` | RouteTypeGenerateContent processes Gemini `models/\{model\}:generateContent`<br />and `models/\{model\}:streamGenerateContent` format requests.<br /> |
 | `GeminiCountTokens` | RouteTypeGeminiCountTokens processes Gemini `models/\{model\}:countTokens`<br />format requests.<br /> |
 | `Decisions` | RouteTypeDecisions processes OpenAI `/v1/decisions` format requests.<br /> |
+| `SystemOne` | RouteTypeSystemOne processes TypeSafe `/v1/systemone` format requests.<br /> |
 
 
 
@@ -5392,7 +5460,7 @@ _Appears in:_
 
 
 _Validation:_
-- ExactlyOneOf: [weighted failover conditional]
+- ExactlyOneOf: [weighted failover conditional callout]
 
 _Appears in:_
 - [AgentgatewayModelSpec](#agentgatewaymodelspec)
@@ -5402,6 +5470,7 @@ _Appears in:_
 | `weighted` _[WeightedModelRouting](#weightedmodelrouting)_ | Weight-based model selection. |  | Optional: \{\} <br /> |
 | `failover` _[FailoverModelRouting](#failovermodelrouting)_ | Priority-based model selection with failover between priority groups. |  | Optional: \{\} <br /> |
 | `conditional` _[ConditionalModelRouting](#conditionalmodelrouting)_ | Ordered condition-based model selection. |  | Optional: \{\} <br /> |
+| `callout` _[CalloutModelRouting](#calloutmodelrouting)_ | Model selection by calling an external HTTP service. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 
 
 #### Webhook

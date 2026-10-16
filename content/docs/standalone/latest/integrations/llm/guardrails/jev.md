@@ -114,7 +114,7 @@ The agentgateway repository ships this integration as a runnable example, so you
 1. Download the example configuration.
 
    ```sh {paths="jev"}
-   curl -L https://agentgateway.dev/examples/llm-guardrail-jev/config.yaml -o config.yaml
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/v1.6.0/examples/llm-guardrail-jev/config.yaml -o config.yaml
    ```
 
 2. Review the configuration file.
@@ -123,7 +123,7 @@ The agentgateway repository ships this integration as a runnable example, so you
    cat config.yaml
    ```
 
-   {{% github-yaml url="https://agentgateway.dev/examples/llm-guardrail-jev/config.yaml" %}}
+   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.6.0/examples/llm-guardrail-jev/config.yaml" %}}
 
    The `jev-latest` model has no `provider.custom.formats` list, because Jev has no chat completion API to convert requests to. For more information, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
@@ -157,10 +157,10 @@ agentgateway -f config.yaml --validate-only
 
 The webhook server turns each guardrail check into a Jev evaluation. Agentgateway sends it the messages to check, and it answers with a pass action or a reject action.
 
-1. Download the example server from the agentgateway repository. The [`guardrail.ts`](https://github.com/agentgateway/agentgateway/blob/main/examples/llm-guardrail-jev/guardrail.ts) file listens on port `8000` and serves the `/request` and `/response` paths that agentgateway calls.
+1. Download the example server from the agentgateway repository. The [`guardrail.ts`](https://github.com/agentgateway/agentgateway/blob/v1.6.0/examples/llm-guardrail-jev/guardrail.ts) file listens on port `8000` and serves the `/request` and `/response` paths that agentgateway calls.
 
    ```sh
-   curl -sL -o guardrail.ts https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/llm-guardrail-jev/guardrail.ts
+   curl -sL -o guardrail.ts https://raw.githubusercontent.com/agentgateway/agentgateway/v1.6.0/examples/llm-guardrail-jev/guardrail.ts
    chmod +x guardrail.ts
    ```
 
@@ -315,7 +315,7 @@ Review the telemetry data for the calls to Jev through agentgateway. For more in
 
 ## More information {#more-information}
 
-- The full [Jev guardrail example](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-guardrail-jev), including the tracing setup that links each evaluation to the client request.
+- The full [Jev guardrail example](https://github.com/agentgateway/agentgateway/tree/v1.6.0/examples/llm-guardrail-jev), including the tracing setup that links each evaluation to the client request.
 - [Custom webhooks]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/" >}}) for the webhook timeout, the `failureMode` setting, and how to change the request path and headers.
 - [Prompt guards]({{< link-hextra path="/documentation/llm/prompt-guards/overview/" >}}) for the built-in regex and moderation guards, which you can run alongside a webhook.
 - [TypeSafe documentation](https://docs.typesafe.ai/introduction) for the question types, the rate limits, and the context size.
