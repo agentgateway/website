@@ -9,7 +9,7 @@ Cap how much each API key can spend on LLM traffic, in US dollars or in tokens.
 
 ## About budget and spend limits
 
-Agentgateway has two ways to cap LLM usage. They solve different problems, and you can use both at the same time.
+Agentgateway has several ways to cap LLM usage. They solve different problems, and you can use more than one at the same time.
 
 | | Per-key budgets | Rate limit token budgets |
 | -- | -- | -- |
