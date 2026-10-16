@@ -289,6 +289,25 @@ Prompt caching is configured by using the `backend.ai.promptCaching` fields in t
 If you omit `promptCaching`, prompt caching is disabled. If you set `promptCaching: {}`, the controller enables prompt caching with the following defaults: `cacheSystem: true`, `cacheMessages: true`, `cacheTools: false`, and `minTokens: 1024`. To override a default, set that field explicitly.
 {{% /version %}}
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+When a client sends prompt-cache markers, Bedrock conversion turns each marker into a Bedrock cache point after the content that the marker is on. In `/v1/messages` requests, the Anthropic `cache_control.ttl` value becomes the TTL of the Bedrock cache point.
+
+The conversion drops some content before sending the request to Bedrock. When dropped content has a cache marker, the marker moves to nearby content that the conversion keeps:
+
+- **Dropped Messages blocks:** Bedrock Converse has no equivalent for the `document`, `search_result`, `server_tool_use`, and `web_search_tool_result` block types, so the conversion drops these blocks. A marker on a dropped block moves to the nearest earlier content that the conversion keeps:
+
+  - When content comes before the dropped block in the same message, the marker moves to the end of that content.
+  - When the dropped block is the first block of the message, the marker moves to the end of the closest earlier message that has content.
+  - When no earlier message has content, the marker moves to the end of the system prompt.
+
+  If that content already ends with a cache point, no cache point is added.
+- **Dropped server tools:** Server tools, such as web search, are dropped from the `tools` list. A marker on a dropped server tool moves to the closest earlier tool definition that the conversion keeps, unless that tool definition already has a marker. When no kept tool definition comes before the server tool, the marker is dropped.
+- **Tool results:** Bedrock accepts cache points only between top-level content blocks. A marker on any part inside a tool result moves to after the whole tool result.
+- **Blank Chat Completions text:** In `/v1/chat/completions` requests, a text part that contains only whitespace is not sent. The marker on that text part moves to the end of the content before the text part in the same message. When the text part is the first content of the message, the marker is dropped.
+
+Messages that are left empty after the conversion drops unsupported blocks are not sent to Bedrock. The conversion adds at most four cache points to a request, so a marker is dropped when four cache points are already set.
+{{% /version %}}
+
 > [!NOTE]
 > Prompt caching is supported for Bedrock Claude 3+ and Nova models. 
 
