@@ -14,7 +14,7 @@ Azure supports two endpoint types:
 You can authenticate to Azure with an API key or with implicit Entra ID authentication through `DefaultAzureCredential`. On Kubernetes, implicit authentication can obtain a token from managed identity or workload identity. It does not require a Kubernetes secret or `policies.auth`.
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.1.x,2.2.x,2.3.x" >}}
-You can also configure explicit managed identity or workload identity authentication in the {{< reuse "agw-docs/snippets/backend.md" >}}. Managed identity and workload identity use different credential sources. For either source, the proxy must be able to reach an Azure managed identity endpoint.
+You can also configure explicit managed identity or workload identity authentication in the {{< reuse "agw-docs/snippets/backend.md" >}}. Managed identity requires access to an Azure managed identity endpoint. Workload identity exchanges the projected ServiceAccount token with Microsoft Entra ID.
 
 ### Use Microsoft Entra Workload ID on AKS
 
@@ -517,5 +517,98 @@ To authenticate with Microsoft Entra Workload ID, prepare the AKS cluster and th
      ]
    }' | jq
    ```
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}
+## Use Microsoft Decision Models on Azure AI Foundry
+
+Use a controller and proxy build that includes Azure Foundry Decisions support.
+Deploy Microsoft-Decision-1 in your Foundry resource, then complete the
+[AKS Workload Identity setup](#use-microsoft-entra-workload-id-on-aks) for
+`agentgateway-proxy`.
+
+Replace the resource, project, and deployment placeholders below. Kubernetes
+requires `projectName`, although Decisions requests use the resource endpoint at
+`https://{resourceName}.cognitiveservices.azure.com/providers/microsoft/v1/systemone`.
+The configured deployment name goes in the upstream request body.
+
+Create a dedicated backend and HTTPRoute for Decisions traffic:
+
+```yaml
+kubectl apply --server-side -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+metadata:
+  name: azure-decisions
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  ai:
+    provider:
+      azure:
+        model: my-decision-deployment
+        projectName: my-project
+        resourceName: my-foundry-resource
+        resourceType: Foundry
+  policies:
+    ai:
+      routes:
+        /v1/decisions: Decisions
+    auth:
+      azure:
+        workloadIdentity: {}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: azure-decisions
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  parentRefs:
+  - name: agentgateway-proxy
+  rules:
+  - backendRefs:
+    - group: {{< reuse "agw-docs/snippets/group.md" >}}
+      kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+      name: azure-decisions
+    matches:
+    - method: POST
+      path:
+        type: Exact
+        value: /v1/decisions
+EOF
+```
+
+The `policies.ai.routes` entry selects the Decisions request format.
+
+Forward the existing gateway Service in one terminal:
+
+```sh
+kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+  service/agentgateway-proxy 8080:80
+```
+
+In another terminal, replace the deployment name and send a choice request:
+
+```sh
+curl --fail-with-body --max-time 120 http://localhost:8080/v1/decisions \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "input": "I was charged twice for my subscription.",
+    "model": "my-decision-deployment",
+    "questions": [{
+      "choices": [
+        {"description": "Payments and invoices", "value": "billing"},
+        {"description": "Software problems", "value": "technical"}
+      ],
+      "instructions": "Which team should handle this support ticket?",
+      "name": "department",
+      "type": "choice"
+    }]
+  }'
+```
+
+The response includes a `department` choice with probabilities and token usage.
+The API also supports `predicate` and `score` questions. Stop the port-forward
+with Ctrl+C when finished.
+{{< /version >}}
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
