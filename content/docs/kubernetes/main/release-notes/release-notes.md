@@ -17,11 +17,14 @@ Review the release notes for agentgateway on Kubernetes.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3763 -->
 
 - **Optional chart-created RBAC**: Set `rbac.create` to `false` in the controller Helm chart to skip the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the chart creates, for clusters that manage role-based access control (RBAC) outside of Helm. For more information, see [Chart-created RBAC resources]({{< link-hextra path="/documentation/install/advanced/#rbac-create" >}}).
+
 ### MCP {#v17-mcp}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3824 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3830 -->
 
 - **Conditional virtual MCP targets**: Set `spec.mcp.targets[].condition` on an {{< reuse "agw-docs/snippets/backend.md" >}} to a CEL expression to select which targets take part in a request before agentgateway initializes or contacts them. A backend whose only target is a `static` target cannot set a condition. For more information, see [Select targets with conditions]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
+- **In-process MCP guardrails with CEL expressions**: You can now set `spec.backend.mcp.guardrails.processors[].expression` on an AgentgatewayPolicy to reject or transform MCP calls with CEL, without running a separate ExtMCP policy server. For more information, see [Set up MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/setup/" >}}).
 
 ## 🐛 Fixes {#v17-fixes}
 

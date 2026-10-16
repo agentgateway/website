@@ -1,5 +1,9 @@
 Use MCP guardrails (also called ExtMCP) to apply external authorization and external processing to Model Context Protocol (MCP) requests. An external gRPC policy server inspects, allows, mutates, or denies individual MCP method calls, such as `tools/call` and `tools/list`, by using the MCP request context instead of generic HTTP metadata.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+You can also run a guardrail as a Common Expression Language (CEL) expression that agentgateway evaluates itself, without an external server. For details, see [Configuration](#configuration).
+{{< /version >}}
+
 ## About MCP guardrails
 
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} already supports {{< conditional-text include-if="kubernetes" >}}[external authorization]({{< link-hextra path="/documentation/security/extauth/basic" >}}){{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}[external authorization]({{< link-hextra path="/documentation/configuration/security/basic-authn" >}}){{< /conditional-text >}} and {{< conditional-text include-if="kubernetes" >}}[external processing (ExtProc)]({{< link-hextra path="/documentation/traffic-management/extproc" >}}){{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}[external processing (ExtProc)]({{< link-hextra path="/documentation/configuration/traffic-management/extproc" >}}){{< /conditional-text >}} for HTTP traffic. Both call out to an external gRPC server so that you can centralize authorization and request or response mutation outside the proxy. However, these integrations operate on raw HTTP. To make a decision about an MCP tool call, the external server must reassemble the HTTP body, parse the JSON-RPC envelope, and handle MCP framing itself.
@@ -111,6 +115,19 @@ For each processor, you define the following settings:
 * **The ExtMCP server**: The {{< conditional-text include-if="kubernetes" >}}`remote.backendRef`{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}`remote` reference, such as `host`{{< /conditional-text >}} points to the gRPC server that enforces the processor. The server must implement the [ExtMCP protocol](https://github.com/agentgateway/agentgateway/blob/main/crates/protos/proto/ext_mcp.proto).
 * **The methods and phases**: The `methods` map selects which MCP methods run through the processor and in which phase. See [Methods](#methods) and [Phases](#phases).
 * **The failure mode**: The `failureMode` setting controls what happens when the server is unreachable or returns an error. See [Failure modes](#failure-modes).
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+A processor can also be a CEL expression instead of an ExtMCP server. For an expression processor, you define the following settings:
+
+* **The processor kind**: Set {{< conditional-text include-if="kubernetes" >}}`expression`{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}`kind: expression`{{< /conditional-text >}} instead of a remote server.
+* **The condition**: The optional `condition` is a CEL expression that must return `true` for the action to run. If you omit it, the action runs for every matching method.
+* **The action**: Set exactly one of the following actions.
+  * `reject`: Deny the call with a message.
+  * `transform`: Return a replacement `mcp.params` in the request phase or `mcp.result` in the response phase.
+* **The methods and phases**: The `methods` map works the same way as for an ExtMCP processor.
+
+Expression processors and ExtMCP processors can be mixed in one list. An expression processor has no failure mode. If an expression fails to evaluate, agentgateway denies the call with an internal error. For an example, see [Set up MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/setup" >}}).
+{{< /version >}}
 
 ### Methods
 
