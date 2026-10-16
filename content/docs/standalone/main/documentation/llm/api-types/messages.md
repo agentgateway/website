@@ -154,6 +154,8 @@ In both conversions, these prefixes are matched against the model name that is s
 
 The Bedrock Converse conversion carries extended-thinking history in both directions, including encrypted reasoning.
 
+The Bedrock Converse conversion preserves tool choice for Messages requests. The `auto` value becomes the Bedrock `toolChoice.auto` value, and `any` becomes `toolChoice.any`. A `tool` choice becomes `toolChoice.tool`. The `none` value or an omitted tool choice is omitted, and the tools are still sent, so the model can still call them. Extended thinking does not rewrite the choice. A model that rejects forced tool use with thinking returns a provider error.
+
 On the way out, a `thinking` block in the message history becomes a Bedrock `reasoningContent.reasoningText` block, with its signature. A `redacted_thinking` block becomes a Bedrock `reasoningContent.redactedContent` block, so that a client can replay encrypted reasoning that Bedrock returned on an earlier turn. `document`, `search_result`, `server_tool_use`, and `web_search_tool_result` blocks are dropped because Bedrock Converse has no equivalent block types.
 
 Each `cache_control` marker becomes a Bedrock cache point after the content that the marker is on, and the `cache_control.ttl` value becomes the TTL of the cache point. The conversion drops some content before sending the request to Bedrock. When dropped content has a cache marker, the marker moves to nearby content that the conversion keeps:
