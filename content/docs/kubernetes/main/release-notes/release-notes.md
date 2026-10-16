@@ -35,6 +35,8 @@ Review the release notes for agentgateway on Kubernetes.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3893 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3809 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3802 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3812 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
 
 **Traffic management**
 
@@ -45,6 +47,7 @@ Review the release notes for agentgateway on Kubernetes.
 - Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
 - Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
 - Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
+- Bedrock Runtime requests now send client `tool_choice` settings as Converse `toolChoice`, so forced tool choices can take effect and models that reject them return Bedrock errors.
 
 **MCP**
 
@@ -60,6 +63,7 @@ Review the release notes for agentgateway on Kubernetes.
 **Operations**
 
 - HTTP/1 clients receive `Connection: close` on the next response when a proxy drains or reaches its maximum connection duration.
+- Metrics requests use the OpenMetrics content type by default, while browser requests use `text/plain` so browsers display metrics instead of downloading them.
 
 ## ✨ Highlights {#v16-highlights}
 
@@ -241,7 +245,6 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3699 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3743 -->
 
 **Traffic management**
@@ -261,7 +264,3 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 **Security**
 
 - The controller no longer fails on a JWT authentication policy that sets `jwks.remote.url` without a `backendRef` when the `AGW_BACKEND_REF_GRANT_MODE` environment variable is set to `route-and-policy`.
-
-**Operations**
-
-- Metrics requests use the OpenMetrics content type by default, while browser requests use `text/plain` so browsers display metrics instead of downloading them.
