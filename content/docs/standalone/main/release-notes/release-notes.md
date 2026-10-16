@@ -120,6 +120,7 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 
 ## 🔄 Other behavior changes {#v16-behavior-changes}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3864 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3639 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3177 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3599 -->
@@ -141,6 +142,7 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 - **Token usage in responses**: The `usage` that agentgateway returns to clients now follows the conventions of the API that the client calls, whichever provider serves the request. Anthropic Messages responses leave cache tokens out of `input_tokens` and report them in `cache_read_input_tokens` and `cache_creation_input_tokens`. OpenAI Chat Completions and Responses include cache tokens in the input and total token counts. For example, a Chat Completions request to an Anthropic or Amazon Bedrock model that writes to the prompt cache now reports those cache tokens in `prompt_tokens`. If a client calculates usage or cost from these fields, review its counts after you upgrade.
 - **Policy service timeouts**: Calls to external services default to a timeout of 2 seconds for gRPC external authorization and 10 seconds for rate limit and external processing services.
 - **Streaming guardrails**: Agentgateway now rejects content if a provider guard fails while checking a streamed response or realtime connection. To keep the 1.5 behavior, set `failureMode: failOpen` on the guard. For example, set it in `ai.promptGuard.response[].bedrockGuardrails`. For more information, see [Provider failures]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#provider-failures" >}}).
+- **Proxy environment variables**: Callouts, such as JWKS fetches, external authorization requests, and AWS and Azure credential fetches, now use the `HTTPS_PROXY`, `HTTP_PROXY`, `ALL_PROXY`, and `NO_PROXY` environment variables when `config.callouts.tunnel` is omitted. In 1.6, only Google Cloud Platform (GCP) credential fetches used these variables. If the environment that runs agentgateway exports these variables for other tools, callouts go through that proxy after you upgrade. To keep callouts direct, set `NO_PROXY` to `*`. For more information, see [Callout proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/" >}}).
 
 ## 🌟 New features {#v16-new-features}
 
@@ -215,6 +217,7 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 
 ### Traffic management and operations {#v16-operations}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3864 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3351 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3542 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3334 -->
@@ -229,6 +232,7 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 - **Graceful drain**: During shutdown, agentgateway stops accepting new connections after `config.connectionMinTerminationDeadline`. It continues to serve open connections until `config.connectionTerminationDeadline`. For more information, see [Shutdown and drain]({{< link-hextra path="/documentation/configuration/static-configuration/#shutdown-drain" >}}).
 - **Helm chart scaling**: The standalone chart can create a PodDisruptionBudget and a HorizontalPodAutoscaler. For more information, see [Create a PodDisruptionBudget]({{< link-hextra path="/documentation/setup/install/helm/#helm-pdb" >}}).
 - **Telemetry**: OTLP access logs use the `agentgateway.access` instrumentation scope. The request duration metric records failed requests with an `error_type` label. For the metrics, see the [metrics reference]({{< link-hextra path="/documentation/observability/metrics/reference/#llm" >}}).
+- **Callout proxy**: Send the requests that agentgateway makes on its own behalf, such as JWKS fetches, OIDC discovery, and cloud provider credential fetches, through a forward proxy. Set `config.callouts.tunnel`, or use the standard proxy environment variables. For more information, see [Callout proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/" >}}).
 
 ### OpenTelemetry field names {#v16-otel-attributes}
 
