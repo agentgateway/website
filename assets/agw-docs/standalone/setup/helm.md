@@ -22,7 +22,7 @@ Keep in mind that the Helm chart installation does not include the following fea
 
 * No database. The steps in this guide have you [Set up a database](#database) for a new installation. Or, you can install the Helm chart without a database for quick testing, and later add a [Database]({{< link-hextra path="/documentation/setup/database/#helm" >}}) to an existing release.
 * No writable UI unless you install in `database` mode. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
-* No PersistentVolumeClaim for persistent storage.
+* No PersistentVolumeClaim for agentgateway to use for persistent storage.
 * No Service for the admin port. Instead, you can reach the admin interface by port-forwarding the `{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}` Deployment.
 
 Also keep in mind that this standalone Kubernetes Deployment via Helm does not include the features of [{{< reuse "agw-docs/snippets/agentgateway.md" >}} for Kubernetes](https://docs.solo.io/agentgateway/kubernetes/latest/), such as a control plane, agentgateway custom resources, or additional services such as rate limiting, external auth, and WAF.
@@ -41,11 +41,13 @@ Install agentgateway with the database and Helm values that you want to use.
 
 ### Create a namespace {#namespace}
 
-Create the namespace that agentgateway and PostgreSQL share. The following example uses the default {{< reuse "agw-docs/snippets/namespace.md" >}} namespace. You can use a different namespace name, but make sure to update the namespace and any override fields throughout the rest of this guide.
+Create the namespace that agentgateway and PostgreSQL share. The following example uses the default {{< reuse "agw-docs/snippets/namespace.md" >}} namespace.
 
 ```sh
 kubectl create namespace {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
+
+To use a different namespace, such as `agw`, create that namespace instead and replace `{{< reuse "agw-docs/snippets/namespace.md" >}}` in every command and value in this guide. Deploy PostgreSQL and its Secret in the same namespace as agentgateway, and make sure that the hostname in `database.postgres.url` matches that namespace. When you install the chart, also follow the **Unique name and namespace** tab to set `namespaceOverride`.
 
 ### Set up a database {#database}
 
@@ -122,7 +124,6 @@ Install the standalone Helm chart with your values file.
 helm upgrade -i {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
   {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
   --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  --create-namespace \
   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
   -f values.yaml
 ```
@@ -132,13 +133,12 @@ helm upgrade -i {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
 helm upgrade -i {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
   {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
   --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  --create-namespace \
   --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
   -f values.yaml
 ```
 {{% /tab %}}
 {{% tab name="Unique name and namespace" %}}
-To change the release name and namespace, set the Helm release namespace and `namespaceOverride`. If you use PostgreSQL, deploy PostgreSQL and its Secret in that namespace too. Update the hostname in `database.postgres.url` to match.
+To change the release name and namespace, set the Helm release namespace and `namespaceOverride` to the namespace that you created in the first step. If you use PostgreSQL, the Secret and the `database.postgres.url` hostname must use that same namespace.
 
 The following example installs an `agw` Helm release in the `agw` namespace.
 
@@ -146,17 +146,12 @@ The following example installs an `agw` Helm release in the `agw` namespace.
 helm upgrade -i agw \
   {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
   --namespace agw \
-  --create-namespace \
   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
   --set namespaceOverride=agw \
   -f values.yaml
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-If the pod logs show `failed to connect postgres database`, the proxy cannot reach PostgreSQL. The proxy retries for about 30 seconds, then exits. Kubernetes restarts the pod.
-
-Check that the PostgreSQL pod is ready. The hostname in `database.postgres.url` must match the namespace of the `postgres` Service.
 
 {{% /steps %}}
 
@@ -175,6 +170,8 @@ Check that the PostgreSQL pod is ready. The hostname in `database.postgres.url` 
    NAME                                       READY   STATUS    RESTARTS   AGE
    {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}}-6d5dc56bdb-792pt   1/1     Running   0          30s
    ```
+
+   If the pod logs show `failed to connect postgres database`, the proxy cannot reach PostgreSQL. If PostgreSQL is not ready, the proxy retries for about 30 seconds, then exits. If the hostname does not resolve, the proxy exits immediately. Either way, Kubernetes restarts the pod. Check that the PostgreSQL pod is ready. The hostname in `database.postgres.url` must match the namespace of the `postgres` Service.
 
 2. Review the configuration that the chart rendered into the ConfigMap.
 
@@ -248,7 +245,7 @@ For quick access to the UI, port-forward the `{{< reuse "agw-docs/standalone/hel
    curl -s http://localhost:15000/api/runtime | jq '.ui.configStoreMode'
    ```
 
-   Expect `hybrid` for PostgreSQL storage. In `readonly` mode, the result is `file`, and UI saves fail.
+   Expect `hybrid` for PostgreSQL storage. In the chart's `readonly` mode, the result is `file`, and UI saves fail.
 
    Example output:
 
