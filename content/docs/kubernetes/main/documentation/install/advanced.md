@@ -145,5 +145,34 @@ Review the following constraints before you set the field.
 | Events are scoped too | The controller publishes a warning Event on a Gateway when a proxy rejects its xDS configuration. After you set the field, the controller can create those Events in the listed namespaces only. |
 | Cluster-scoped access is unaffected | Cluster-wide read permissions, and writes to cluster-scoped resources such as GatewayClass and status subresources, do not change. |
 
+## Chart-created RBAC resources {#rbac-create}
+
+By default, the controller Helm chart creates the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the controller needs. If your cluster manages role-based access control (RBAC) resources outside of Helm, set `rbac.create` to `false`. The chart then creates none of these resources.
+
+```yaml
+rbac:
+  create: false
+```
+
+Before you install with this setting, create the roles and bindings yourself. To get the rules that the chart would create, render its RBAC templates with `rbac.create` left at its default value.
+
+```sh
+helm template {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+  --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+  --show-only templates/role.yaml \
+  --show-only templates/serviceaccount.yaml
+```
+
+The output has the `agentgateway-<controller-namespace>` and `agentgateway-<controller-namespace>-deployer` ClusterRoles, the `agentgateway-<controller-namespace>-local` Role, and a binding for each to the controller's service account.
+
+Review the following constraints before you set the field.
+
+| Constraint | Detail |
+| -- | -- |
+| The service account is separate | `serviceAccount.create` still controls whether the chart creates the controller's ServiceAccount. |
+| Bindings also need `serviceAccount.create` | The chart creates the ClusterRoleBindings and RoleBindings only when both `rbac.create` and `serviceAccount.create` are `true`. If you set `serviceAccount.create` to `false` to use an existing service account, the chart still creates the roles but no bindings, so bind the roles to that account yourself. |
+| `rbac.gatewayNamespaces` has no effect | With `rbac.create` set to `false`, the chart creates no RoleBindings in the namespaces that `rbac.gatewayNamespaces` lists. |
+
 For the full list of chart values, see the [Helm reference]({{< link-hextra path="/reference/helm/" >}}).
 

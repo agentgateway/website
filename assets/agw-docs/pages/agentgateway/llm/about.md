@@ -28,3 +28,19 @@ When adopting an LLM on an enterprise-level, you typically run into the followin
 
 > [!NOTE]
 > Don't see your provider? You might still be able to use it with agentgateway! Many LLM providers offer OpenAI-compatible APIs. To get started, follow the [OpenAI compatible]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}) docs.
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+## How requests reach a provider {#request-translation}
+
+Clients can call the gateway in several LLM API formats, such as OpenAI Chat Completions, OpenAI Responses, Anthropic Messages, and native Gemini. The route type tells the gateway which format the client sent. On an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, the standard serving paths, such as `/v1/messages`, set the route type. On an {{< reuse "agw-docs/snippets/backend.md" >}}, you map paths to route types in `policies.ai.routes`. When the provider supports that format, the request is sent to the provider unchanged in format. When the provider does not support it, the request is converted to a format that the provider supports, and the reply is converted back to the format that the client called. For the route types, see [API types]({{< link-hextra path="/documentation/llm/api-types/" >}}).
+
+### Query strings on converted requests {#query-strings-on-converted-requests}
+
+A client query string belongs to the API format that the client called. For the `Completions`, `Messages`, `Responses`, and `GenerateContent` route types, the client query string is kept when the provider receives the same format and is dropped when the request is converted to another format. For example, a Messages request to `/v1/messages?beta=true` that is converted to Chat Completions for a Gemini provider reaches the provider without `?beta=true`.
+
+These cases differ:
+
+- An Amazon Bedrock request on the Runtime endpoint always drops the client query string, because Runtime serves only the Bedrock APIs.
+- A built-in provider on an {{< reuse "agw-docs/snippets/backend.md" >}} that sets `host` without `pathPrefix` receives the client path and query string unchanged.
+- A `Passthrough` route forwards the client query string, because no conversion happens.
+{{% /version %}}
