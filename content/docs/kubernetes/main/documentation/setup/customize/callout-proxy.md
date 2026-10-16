@@ -23,12 +23,14 @@ The callout proxy does not apply to the following traffic.
 
 ## Configure the callout proxy
 
-You configure the callout proxy on the agentgateway proxy deployment through an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, in either of the following ways. If you use both, `config.callouts.tunnel` takes precedence, and the agentgateway proxy ignores the proxy environment variables for callouts.
+You configure the callout proxy on the agentgateway proxy deployment through an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, in either of the following ways.
 
 * **[With environment variables](#environment-variables)**: Set the standard proxy environment variables, such as `HTTPS_PROXY`, in `spec.env`. Use this configuration for most setups. Note that this configuration is also the only way to send GCP credential fetches through the forward proxy.
-* **[In `rawConfig`](#rawconfig)**: Set `config.callouts.tunnel` in `spec.rawConfig`. Use this way to keep the forward proxy settings separate from environment variables that other tools in the pod read. The control plane reads `rawConfig` only from an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that a Gateway references.
+* **[In `rawConfig`](#rawconfig)**: Set `config.callouts.tunnel` in `spec.rawConfig`. Use this way to keep the forward proxy settings separate from environment variables that other tools in the pod read.
 
-### Option 1: Environment variables
+If you use both, `config.callouts.tunnel` takes precedence, and the agentgateway proxy ignores the proxy environment variables for most callouts. GCP credential fetches are the exception. These fetches never use `config.callouts.tunnel`, and they still use the proxy environment variables if you set them.
+
+### Option 1: Environment variables {#environment-variables}
 
 Set the following variables in `spec.env` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. The agentgateway proxy reads them at startup. Uppercase names take precedence over lowercase names, such as `HTTPS_PROXY` over `https_proxy`.
 
@@ -39,12 +41,30 @@ Set the following variables in `spec.env` of the {{< reuse "agw-docs/snippets/ga
 | `ALL_PROXY` | The forward proxy for callouts when you omit `HTTPS_PROXY` or `HTTP_PROXY`. |
 | `NO_PROXY` | A comma-separated list of destinations that bypass the forward proxy. Each entry is a hostname, an IP address, a Classless Inter-Domain Routing (CIDR) range, or `*` for every destination. A hostname also matches its subdomains. |
 
+You can set `NO_PROXY` together with the other variables. The following example sends TLS and plaintext callouts through the same forward proxy, and keeps callouts to `internal.example.com`, its subdomains, and the `10.0.0.0/8` range direct.
+
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+metadata:
+  name: callout-proxy
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  env:
+  - name: HTTPS_PROXY
+    value: http://proxy.example.com:3128
+  - name: HTTP_PROXY
+    value: http://proxy.example.com:3128
+  - name: NO_PROXY
+    value: internal.example.com,10.0.0.0/8
+```
+
 > [!IMPORTANT]
 > The proxy environment variables apply to callouts even when you set the variables for another purpose. If `spec.env` already sets `HTTPS_PROXY` for other tools, callouts also go through that forward proxy. To keep callouts direct, remove the variables from `spec.env`, or set `NO_PROXY` to `*`.
 
-### Option 2: rawConfig
+### Option 2: rawConfig {#rawconfig}
 
-Set `config.callouts.tunnel` under `spec.rawConfig` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
+Set `config.callouts.tunnel` under `spec.rawConfig` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. You can set `rawConfig` on an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that a Gateway or a GatewayClass references. If both resources set `rawConfig`, the Gateway's `rawConfig` replaces the GatewayClass's `rawConfig` as a whole. The two are not merged.
 
 ```yaml
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -77,6 +97,7 @@ The following callouts go directly to their destination, even when you configure
 * Loopback and link-local IP addresses, such as `127.0.0.1` and the cloud metadata server at `169.254.169.254`. A remote forward proxy cannot reach these addresses.
 * Callouts to an {{< reuse "agw-docs/snippets/backend.md" >}} that has its own `tunnel` policy. These callouts use that tunnel instead.
 * GCP credential fetches, when you configure the callout proxy with `config.callouts.tunnel`. To send these fetches through a forward proxy, use the environment variables instead.
+* Remote JWKS fetches. The control plane makes these fetches, not the agentgateway proxy. For more information, see [About callouts](#about-callouts).
 
 ## Before you begin
 
@@ -147,7 +168,7 @@ Deploy a test forward proxy, point the agentgateway proxy at it with the `HTTPS_
 
    To use `rawConfig` instead, replace `spec.env` with `spec.rawConfig.config.callouts.tunnel.url`, as shown in [rawConfig](#rawconfig).
 
-3. Attach the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to your Gateway with `infrastructure.parametersRef`. The patch keeps the rest of your Gateway as it is. If your Gateway already references an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, add the `spec.env` setting to that resource instead, because a Gateway references one resource only.
+3. Attach the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to your Gateway. The patch keeps the rest of your Gateway as it is. If your Gateway already references an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, add the `spec.env` setting to that resource instead, because a Gateway can reference one {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource only.
    ```sh
    kubectl patch gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge \
      -p '{"spec":{"infrastructure":{"parametersRef":{"group":"{{< reuse "agw-docs/snippets/group.md" >}}","kind":"{{< reuse "agw-docs/snippets/gatewayparameters.md" >}}","name":"callout-proxy"}}}}'
@@ -158,7 +179,7 @@ Deploy a test forward proxy, point the agentgateway proxy at it with the `HTTPS_
    kubectl rollout status deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
-5. Check the agentgateway proxy logs for the line that names the forward proxy. The label selector reads every agentgateway proxy pod, so the command also works while an old pod is still shutting down.
+5. Check the agentgateway proxy logs for the line that names the forward proxy.
    ```sh
    kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy --tail=-1 | grep "callouts will use proxy"
    ```
@@ -186,7 +207,7 @@ Deploy a test forward proxy, point the agentgateway proxy at it with the `HTTPS_
    EOF
    ```
 
-7. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that sends an external authorization request for every request to the httpbin route. The `/status/200` path makes `httpbin.org` allow every request. The `http.path` value is a CEL expression, so the path is a string literal in double quotes.
+7. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that sends an external authorization request for every request to the httpbin stand-in authorization server. The `/status/200` path makes `httpbin.org` allow every request. The `http.path` value is a CEL expression, so the path is a string literal in double quotes.
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -231,7 +252,7 @@ Deploy a test forward proxy, point the agentgateway proxy at it with the `HTTPS_
    HTTP/1.1 200 OK
    ```
 
-9. Check the Squid access log for a CONNECT request to `httpbin.org:443`.
+9. Check the Squid access log for a CONNECT request to `httpbin.org:443`. This entry shows the whole callout path, from the agentgateway proxy through Squid to `httpbin.org`.
    ```sh
    kubectl exec -n squid deployment/squid -- cat /var/log/squid/access.log
    ```
@@ -240,6 +261,13 @@ Deploy a test forward proxy, point the agentgateway proxy at it with the `HTTPS_
    ```console
    1791983992.466  46059 10.244.0.19 TCP_TUNNEL/200 4933 CONNECT httpbin.org:443 - HIER_DIRECT/54.159.186.149 -
    ```
+
+   | Field | Description |
+   | -- | -- |
+   | `10.244.0.19` | The client of Squid, which is the agentgateway proxy pod. |
+   | `TCP_TUNNEL/200` | Squid opened the CONNECT tunnel. |
+   | `CONNECT httpbin.org:443` | The destination of the external authorization callout. |
+   | `HIER_DIRECT/54.159.186.149` | Squid connected directly to `httpbin.org` at this IP address. |
 
 10. If the log has no CONNECT entry, restart the agentgateway proxy, and then check the log again. Squid writes the entry only when the tunnel closes, and the agentgateway proxy keeps the tunnel open to reuse it. The restart closes the tunnel.
     ```sh
