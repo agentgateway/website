@@ -693,3 +693,88 @@ if [ "$PROVIDER" != "azure" ]; then
 fi
 echo "✓ The wildcard model is served and resolves to the azure provider"
 {{< /doc-test >}}
+
+## Use Microsoft Decision Models on Azure AI Foundry
+
+Use an agentgateway build that includes Azure Foundry Decisions and native
+SystemOne support. Deploy Microsoft-Decision-1 in your Foundry resource and set
+`params.model` to its deployment name.
+
+Agentgateway converts `/v1/decisions` requests and responses, and forwards
+`/v1/systemone` in its native format. Both APIs use Foundry's endpoint at
+`https://{resourceName}.cognitiveservices.azure.com/providers/microsoft/v1/systemone`.
+The deployment name goes in the upstream request body.
+
+Save the following as `config-decisions.yaml`, replacing the resource and
+deployment placeholders.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  models:
+  - auth:
+      azure:
+        developerImplicit: {}
+    name: foundry-decision
+    params:
+      azureResourceName: my-foundry-resource
+      azureResourceType: foundry
+      model: my-decision-deployment
+    provider: azure
+  port: 3000
+```
+
+Sign in with the Azure CLI or Azure Developer CLI using an identity with inference
+access to the Foundry resource. Validate the configuration, then start agentgateway:
+
+```sh
+agentgateway --validate-only -f config-decisions.yaml
+agentgateway -f config-decisions.yaml
+```
+
+Send a choice request from another terminal:
+
+```sh
+curl --fail-with-body --max-time 120 http://localhost:3000/v1/decisions \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "input": "I was charged twice for my subscription.",
+    "model": "foundry-decision",
+    "questions": [{
+      "choices": [
+        {"description": "Payments and invoices", "value": "billing"},
+        {"description": "Software problems", "value": "technical"}
+      ],
+      "instructions": "Which team should handle this support ticket?",
+      "name": "department",
+      "type": "choice"
+    }]
+  }'
+```
+
+The response includes a `department` choice with probabilities and token usage.
+The Decisions API also supports `predicate` and `score` questions.
+
+To send a native SystemOne request through the same configuration:
+
+```sh
+curl --fail-with-body --max-time 120 http://localhost:3000/v1/systemone \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "foundry-decision",
+    "questions": {
+      "department": {
+        "criteria": {
+          "billing": "Payments and invoices",
+          "technical": "Software problems"
+        },
+        "instructions": "Which team should handle this support ticket?",
+        "type": "choice"
+      }
+    },
+    "state": "I was charged twice for my subscription."
+  }'
+```
+
+SystemOne uses `state` and a question map, and returns an `answers` map. Its question
+types are `noul` (predicate), `choice`, and `score`.
