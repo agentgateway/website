@@ -108,7 +108,15 @@ Use the UI to review what agentgateway loaded and to manage the resources that y
 * [MCP quickstart]({{< link-hextra path="/documentation/quickstart/mcp/" >}}) to connect an MCP server and try tools in the built-in playground.
 * [LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}}) to route requests to an LLM provider and see the model in the UI.
 
+## Save changes from the UI {#save-changes}
+
 Whether the UI can save the changes that you make depends on your storage mode. In the binary and Docker installations, the UI writes to your configuration file by default. In the Helm installation, the ConfigMap is read-only and a save fails unless you switch the chart to database mode. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+The UI checks a change before it writes the configuration file. If the change is not valid, the save fails with an error and the file does not change.
+
+If you edit the file outside the UI and agentgateway rejects the reload, the UI shows a **Configuration reload failed** banner. Agentgateway keeps running the previous valid configuration. The UI and `/api/config/effective` show the file on disk, including the rejected change. To retry the reload, fix the file and save it again.
+{{< /version >}}
 
 ## Generate LLM client settings {#client-setup}
 
@@ -118,6 +126,10 @@ For an example of using the UI to set something up, use the **LLM > Client Setup
 2. Open the **LLM** > **Client Setup** page in the UI, such as [http://localhost:15000/ui/llm/client-setup](http://localhost:15000/ui/llm/client-setup).
 3. Review the **Gateway base URL**, and select a model and virtual API key.
 4. Select the client from the **Integration** dropdown, and copy the generated settings or snippet.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+Client Setup fills in **Gateway base URL** from the gateway that serves LLM traffic. If the same gateway also serves the UI, Client Setup uses the address in your browser instead, so the URL keeps the host, scheme, and port of a reverse proxy in front of agentgateway. Check the URL before you copy a snippet, and change it if clients reach agentgateway through a different address. The snippets appear only when **Gateway base URL** has a value.
+{{< /version >}}
 
 Client Setup does not create a route, model, authentication policy, or provider credential. It generates client-side values from the configuration that already exists. For client-specific prerequisites, see [LLM clients]({{< link-hextra path="/integrations/llm/clients/" >}}).
 
