@@ -329,7 +329,7 @@ jobs:
           else
             echo "has_tests=false" >> $GITHUB_OUTPUT
           fi
-          MATRIX=$(echo "$TESTS" | jq -c '(length | [., 40] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | [.[].test] | join(", ") | if length > 80 then .[:77] + "..." else . end)})]}')
+          MATRIX=$(echo "$TESTS" | jq -c '(length | [., 40] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | [.[] | "\(.test) (\(.file | split("/")[2:4] | join("/")))"] | join(", ") | if length > 80 then .[:77] + "..." else . end)})]}')
           echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
           echo "Discovered $COUNT functional/live test case(s)"
 
@@ -343,7 +343,7 @@ jobs:
           else
             echo "has_credentialed_tests=false" >> $GITHUB_OUTPUT
           fi
-          MATRIX_CREDENTIALED=$(echo "$TESTS_CREDENTIALED" | jq -c '(length | [., 40] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | [.[].test] | join(", ") | if length > 80 then .[:77] + "..." else . end)})]}')
+          MATRIX_CREDENTIALED=$(echo "$TESTS_CREDENTIALED" | jq -c '(length | [., 40] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | [.[] | "\(.test) (\(.file | split("/")[2:4] | join("/")))"] | join(", ") | if length > 80 then .[:77] + "..." else . end)})]}')
           echo "matrix_credentialed=${MATRIX_CREDENTIALED}" >> $GITHUB_OUTPUT
           echo "Discovered $COUNT_CREDENTIALED credentialed test case(s)"
 
@@ -874,6 +874,10 @@ jobs:
           # shortfall. schema-check needs no equivalent guard: it is a single job that
           # reports every case it discovers, and it fails the workflow on its own if
           # it does not run.
+          #
+          # A scenario skipped because its test markup no longer attaches is listed
+          # under skipped_needs_update, not tests. The shard already reported it and
+          # the summary flags it as a warning, so it counts as accounted for here.
           EXPECTED_TESTS: ${{ needs.discover.outputs.test_count }}
         run: |
           python3 -c "
@@ -883,15 +887,16 @@ jobs:
           tests = report.get('tests', {})
           failed = [k for k, v in tests.items() if v.get('status') != 'passed']
           sharded = {k: v for k, v in tests.items() if v.get('type') != 'schema'}
+          needs_update = report.get('skipped_needs_update') or {}
           expected = int(os.environ.get('EXPECTED_TESTS') or 0)
-          missing = expected - len(sharded)
+          missing = expected - len(sharded) - len(needs_update)
           if failed:
               print(f'{len(failed)} test(s) failed:', file=sys.stderr)
               for name in failed:
                   print(f'  - {name}', file=sys.stderr)
           if missing > 0:
               print(f'{missing} discovered functional/live test(s) produced no result:', file=sys.stderr)
-              print(f'  discovered {expected}, reported {len(sharded)}', file=sys.stderr)
+              print(f'  discovered {expected}, reported {len(sharded)}, skipped (needs update) {len(needs_update)}', file=sys.stderr)
           if failed or missing > 0:
               sys.exit(1)
           print(f'All {len(tests)} test(s) passed')
