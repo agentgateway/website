@@ -12,11 +12,18 @@ Review the release notes for agentgateway on Kubernetes.
 
 ## 🌟 New features {#v17-new-features}
 
+### LLM {#v17-llm}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3843 -->
+
+- **Callout routing for virtual models**: An `AgentgatewayModel` virtual model can set `spec.virtualModel.callout` to ask an HTTP service which model serves each request, with an optional fallback model and response cache. For more information, see [Choose a model with an HTTP callout]({{< link-hextra path="/documentation/llm/models/virtual/#callout-routing" >}}).
+
 ### Security {#v17-security}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3763 -->
 
 - **Optional chart-created RBAC**: Set `rbac.create` to `false` in the controller Helm chart to skip the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the chart creates, for clusters that manage role-based access control (RBAC) outside of Helm. For more information, see [Chart-created RBAC resources]({{< link-hextra path="/documentation/install/advanced/#rbac-create" >}}).
+
 ### MCP {#v17-mcp}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3824 -->
