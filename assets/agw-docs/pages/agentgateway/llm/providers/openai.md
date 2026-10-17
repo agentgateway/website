@@ -400,6 +400,32 @@ Example output:
 {{% /conditional-text %}}
 {{% /version %}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+## Send OpenAI Decisions API requests {#decisions}
+
+To send requests to the OpenAI Decisions API, add the `/v1/decisions` path with the `Decisions` route type to the `routes` of the {{< reuse "agw-docs/snippets/backend.md" >}} that you created in Step 2. Without this entry, the `"*": "Passthrough"` route in the example passes Decisions requests through without processing them as Decisions requests. If the backend sets no `routes` at all, every request is processed as a chat completion.
+
+```yaml
+  policies:
+    ai:
+      routes:
+        "/v1/decisions": "Decisions"
+        "/v1/responses": "Responses"
+        "/v1/chat/completions": "Completions"
+        "/v1/models": "Models"
+        "*": "Passthrough"
+```
+
+Review the following behavior of Decisions requests.
+
+| Behavior | Detail |
+| -- | -- |
+| Telemetry | When the response includes OpenAI usage fields, LLM telemetry records the model and token usage, with the operation name `decisions`. |
+| Model | The request must name a model, unless the backend sets a default model. |
+| Providers | Only the OpenAI provider and custom providers that declare the `Decisions` format accept Decisions requests. Other providers reject them. |
+| Policies | Request and response guardrails and the `prompts` policy do not apply to Decisions requests. |
+{{< /version >}}
+
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
 
 ## Cleanup

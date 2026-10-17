@@ -12,11 +12,22 @@ Review the release notes for agentgateway on Kubernetes.
 
 ## 🌟 New features {#v17-new-features}
 
+### LLM {#v17-llm}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3832 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3839 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3852 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3854 -->
+
+- **OpenAI Decisions API**: Requests to the OpenAI Decisions API at `/v1/decisions` have their own `Decisions` route type and provider format. Add `"/v1/decisions": "Decisions"` to the `routes` of an OpenAI backend, or declare the `Decisions` format on a custom provider, so that LLM telemetry records the model and token usage. For more information, see [Send OpenAI Decisions API requests]({{< link-hextra path="/integrations/llm/providers/openai/#decisions" >}}).
+- **TypeSafe and Decisions API support in Kubernetes**: Kubernetes `AgentgatewayModel` resources can now use the `Typesafe` provider preset, and custom providers can declare `Decisions` and `SystemOne` formats for OpenAI Decisions and TypeSafe Jev APIs. For more information, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
+
 ### Security {#v17-security}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3763 -->
 
 - **Optional chart-created RBAC**: Set `rbac.create` to `false` in the controller Helm chart to skip the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the chart creates, for clusters that manage role-based access control (RBAC) outside of Helm. For more information, see [Chart-created RBAC resources]({{< link-hextra path="/documentation/install/advanced/#rbac-create" >}}).
+
 ### MCP {#v17-mcp}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3824 -->

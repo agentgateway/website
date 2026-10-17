@@ -11,7 +11,7 @@ test:
     path: openai-compat-validate
 ---
 
-Use this page for providers that implement the OpenAI API format but do not have a first-class `provider:` support yet. For built-in providers such as [Baseten]({{< link-hextra path="/integrations/llm/providers/baseten/" >}}), [Cerebras]({{< link-hextra path="/integrations/llm/providers/cerebras/" >}}), [Cohere]({{< link-hextra path="/integrations/llm/providers/cohere/" >}}), [DeepInfra]({{< link-hextra path="/integrations/llm/providers/deepinfra/" >}}), [DeepSeek]({{< link-hextra path="/integrations/llm/providers/deepseek/" >}}), [Fireworks AI]({{< link-hextra path="/integrations/llm/providers/fireworks/" >}}), [Groq]({{< link-hextra path="/integrations/llm/providers/groq/" >}}), [Hugging Face]({{< link-hextra path="/integrations/llm/providers/huggingface/" >}}), [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}}), [Mistral]({{< link-hextra path="/integrations/llm/providers/mistral/" >}}), [OpenRouter]({{< link-hextra path="/integrations/llm/providers/openrouter/" >}}), [Together AI]({{< link-hextra path="/integrations/llm/providers/togetherai/" >}}), [xAI]({{< link-hextra path="/integrations/llm/providers/xai/" >}}), and [Ollama]({{< link-hextra path="/integrations/llm/providers/ollama/" >}}), use the dedicated provider pages instead.
+Use this page for providers that implement the OpenAI API format but do not have a first-class `provider:` support yet. For built-in providers such as [Baseten]({{< link-hextra path="/integrations/llm/providers/baseten/" >}}), [Cerebras]({{< link-hextra path="/integrations/llm/providers/cerebras/" >}}), [Cohere]({{< link-hextra path="/integrations/llm/providers/cohere/" >}}), [DeepInfra]({{< link-hextra path="/integrations/llm/providers/deepinfra/" >}}), [DeepSeek]({{< link-hextra path="/integrations/llm/providers/deepseek/" >}}), [Fireworks AI]({{< link-hextra path="/integrations/llm/providers/fireworks/" >}}), [Groq]({{< link-hextra path="/integrations/llm/providers/groq/" >}}), [Hugging Face]({{< link-hextra path="/integrations/llm/providers/huggingface/" >}}), [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}}), [Mistral]({{< link-hextra path="/integrations/llm/providers/mistral/" >}}), [OpenRouter]({{< link-hextra path="/integrations/llm/providers/openrouter/" >}}), [Together AI]({{< link-hextra path="/integrations/llm/providers/togetherai/" >}}), [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}), [xAI]({{< link-hextra path="/integrations/llm/providers/xai/" >}}), and [Ollama]({{< link-hextra path="/integrations/llm/providers/ollama/" >}}), use the dedicated provider pages instead.
 
 > [!NOTE]
 > Many providers provide "OpenAI compatible" or "Anthropic compatible" endpoints.
@@ -42,7 +42,9 @@ Agentgateway will automatically handle mapping between the incoming format and t
 
 The `formats` list controls how agentgateway converts incoming requests. Each conversion supports different features. For Messages requests, agentgateway prefers `responses` over `completions`. The Responses conversion drops extended-thinking history without an error. To preserve thinking history across turns, declare `completions` and omit `responses`.
 
-Declare only the formats that the upstream server supports. For example, include `responses` only if the server supports `/v1/responses`. For details about each conversion, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
+Declare only the formats that the upstream server supports. For example, include `responses` only if the server supports `/v1/responses`. Include `decisions` only if the server supports `/v1/decisions`. For details about each conversion, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
+
+Use `systemOne` for a TypeSafe SystemOne upstream that serves `/v1/systemone`. With `systemOne`, OpenAI Decisions requests from `/v1/decisions` go to `/v1/systemone` on the upstream. The conversion returns the upstream response in the Decisions format.
 
 An error such as `failed to parse Messages request` names the route type that parsed the client request before provider conversion. Check that the request path maps to the expected route type and that the body matches that format.
 
@@ -74,6 +76,8 @@ llm:
           # - type: generateContent
           # - type: geminiCountTokens
           # - type: rerank
+          # - type: decisions
+          # - type: systemOne
     params:
       apiKey: "$PERPLEXITY_API_KEY"
       model: llama-3.1-sonar-large-128k-online

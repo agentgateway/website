@@ -35,6 +35,7 @@ Many providers now have dedicated integrations with preconfigured base URLs and 
 - [OpenRouter]({{< link-hextra path="/integrations/llm/providers/openrouter/" >}})
 - [Fireworks AI]({{< link-hextra path="/integrations/llm/providers/fireworks/" >}})
 - [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}})
+- [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}})
 
 ### Self-hosted solutions
 

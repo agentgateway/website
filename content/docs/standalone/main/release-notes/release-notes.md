@@ -12,6 +12,16 @@ Review the release notes for agentgateway standalone.
 
 ## 🌟 New features {#v17-new-features}
 
+### LLM {#v17-llm}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3832 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3839 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3852 -->
+
+- **OpenAI Decisions API**: Requests to the OpenAI Decisions API at `/v1/decisions` have their own `decisions` route type and provider format. The OpenAI provider accepts them, custom providers accept them when they declare the `decisions` format, and LLM telemetry records the model and token usage. For more information, see [OpenAI]({{< link-hextra path="/integrations/llm/providers/openai/" >}}).
+- **TypeSafe SystemOne format for OpenAI Decisions**: Custom providers can declare the `systemOne` format to send OpenAI Decisions requests to TypeSafe's `/v1/systemone` API. For more information, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/#supported-formats" >}}).
+- **TypeSafe provider preset**: Use `provider: typesafe` to connect to TypeSafe Jev with built-in defaults for the TypeSafe API host and SystemOne request format. For more information, see [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}).
+
 ### Traffic management and operations {#v17-operations}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3842 -->
