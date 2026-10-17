@@ -10,7 +10,20 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🔄 Other behavior changes {#v17-behavior-changes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3826 -->
+
+- **UI sign-in**: An `oidc` policy in `ui.policies` now also accepts an ID token from the same identity provider and client in the `Authorization: Bearer <token>` header, so that CLI clients can call the UI's API. To accept only browser sessions, as in 1.6, set `credentials: session` on the policy. For more information, see [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).
+
 ## 🌟 New features {#v17-new-features}
+
+### Security {#v17-security}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3826 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3903 -->
+
+- **Use one OIDC policy for browsers and API clients**: The new `credentials` field of an OIDC policy controls which credentials the policy accepts. Set `credentials: sessionOrBearer` to accept browser sessions and ID tokens from the same identity provider in the `Authorization: Bearer <token>` header. Set `credentials: permissive` to keep the browser login flow, and let other requests continue to policies such as `jwtAuth` or `mcpAuthentication`. Pair `permissive` with an `authorization` policy, because it does not reject unauthenticated requests by itself. For more information, see [Bearer tokens for API clients]({{< link-hextra path="/documentation/configuration/security/oidc/#bearer-id-tokens" >}}).
 
 ### Traffic management and operations {#v17-operations}
 
