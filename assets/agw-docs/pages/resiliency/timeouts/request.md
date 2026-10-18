@@ -1,5 +1,9 @@
 Set the route-level timeout with an HTTPRoute or {{< reuse "agw-docs/snippets/policy.md" >}}. To ensure that your apps are available even if they are temporarily unavailable, you can use timeouts alongside [Retries]({{< link-hextra path="/documentation/resiliency/retry/" >}}).
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+For MCP routes, use a response idle timeout to end an upstream response body that stops sending frames. Set `spec.traffic.timeouts.responseIdle` in an {{< reuse "agw-docs/snippets/policy.md" >}} that attaches to the route, route rule, or Gateway listener. This timeout does not apply to responses that switch protocols.
+{{< /version >}}
+
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up timeouts {#timeouts}
