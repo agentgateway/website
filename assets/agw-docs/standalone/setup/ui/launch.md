@@ -115,6 +115,10 @@ Whether the UI can save the changes that you make depends on your storage mode. 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 The UI checks a change before it writes the configuration file. If the change is not valid, the save fails with an error and the file does not change.
 
+The UI preserves comments and formatting when the YAML structure can be updated in place. If the YAML structure cannot be updated safely, the UI rewrites the validated configuration file instead of failing the save.
+
+With database storage, the UI validates concurrent saves against the latest stored configuration before it writes them. One save cannot overwrite another save while validation is running.
+
 If you edit the file outside the UI and agentgateway rejects the reload, the UI shows a **Configuration reload failed** banner. Agentgateway keeps running the previous valid configuration. The UI and `/api/config/effective` show the file on disk, including the rejected change. To retry the reload, fix the file and save it again.
 {{< /version >}}
 

@@ -72,14 +72,14 @@ Only the built-in HTTP field set is renamed. The `gen_ai.*` and `mcp.*` fields a
 > [!NOTE]
 > The preset changes only the stdout access log, and only for HTTP traffic. A TCP listener has no HTTP field set to rename, so the preset has no effect there. An OTLP export already uses semantic convention attribute names, so it is unaffected. For more information, see [Export logs over OTLP]({{< link-hextra path="/documentation/observability/access-logs/export/" >}}).
 
-## View access logs in the UI
+## View access logs in the UI {#view-access-logs-in-the-ui}
 
 The agentgateway UI includes a **Logs** page that you can use to review the access logs that were captured by your proxy. 
 
 To view access logs in the UI: 
 
 1. Open the [agentgateway UI](http://localhost:15000/ui). This address is the copy of the UI on the admin interface, which works from the host that runs the proxy. If you serve the UI on a gateway, use that gateway's port instead. 
-2. Go to **Logs** and review the access logs that agentgateway captured for your previous requests. Use the filter options to limit the number of access logs that are shown to you. For example, you can filter logs by model, providers, or users. Note that in order to filter logs by user, you must configure authentication in agentgateway. 
+2. Go to **Logs** and review the access logs that agentgateway captured for your previous requests. Use the filter options to limit the number of access logs that are shown to you. For example, you can filter logs by model, providers, or users. The **Users** and **Groups** filters include search boxes that narrow values already discovered from stored traffic. Select a value to change the log query. To filter logs by user, configure authentication in agentgateway.
 
    {{< reuse-image src="img/agentgateway-ui-logs.png" srcDark="img/agentgateway-ui-logs-dark.png" >}}
 

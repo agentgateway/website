@@ -15,8 +15,10 @@ Review the release notes for agentgateway standalone.
 ### Traffic management and operations {#v17-operations}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3842 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3656 -->
 
 - **Standalone Helm session key Secret**: Set `session.secretName` to load the AES-256-GCM session key from an existing Kubernetes Secret. The chart passes the Secret's `key` entry to the proxy as the `SESSION_KEY` environment variable, which takes precedence over `config.session.key`. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
+- **Agentgateway UI management workflows are safer to use**: The UI can search Users and Groups values in Logs and Analytics filters, regenerate generated virtual API keys while editing, and protect database-backed configuration saves from concurrent writes. When a YAML edit cannot preserve formatting, the UI rewrites the validated configuration instead of failing the save. For more information, see [Launch the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}), [View access logs in the UI]({{< link-hextra path="/documentation/observability/access-logs/view/#view-access-logs-in-the-ui" >}}), and [Set up virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#set-up-virtual-keys-ui" >}}).
 
 ## 🐛 Fixes {#v17-fixes}
 
