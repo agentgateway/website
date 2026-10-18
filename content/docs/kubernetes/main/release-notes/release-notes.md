@@ -37,6 +37,7 @@ Review the release notes for agentgateway on Kubernetes.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3802 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3812 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3924 -->
 
 **Traffic management**
 
@@ -59,6 +60,7 @@ Review the release notes for agentgateway on Kubernetes.
 **Security**
 
 - Invalid `oauthTokenExchange` or `crossAppAccess` backend authentication no longer blocks the rest of your configuration from reaching the proxy. Only requests that use the invalid block fail, with HTTP `500` and the message `oauthTokenExchange configuration is invalid` or `crossAppAccess configuration is invalid`. The policy reports `Accepted: True` with the reason `PartiallyValid`. For more information, see [Debug your setup]({{< link-hextra path="/documentation/operations/debug/" >}}).
+- JWT policies can use JWKS documents that include `x5c` certificate chains and `x5t` SHA-1 thumbprints when the controller runs with `GODEBUG=fips140=only`.
 
 **Operations**
 
