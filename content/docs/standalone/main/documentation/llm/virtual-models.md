@@ -173,7 +173,7 @@ Configure health on the concrete `llm.models[]` entries that the virtual model t
 
 | Setting | What it does |
 | -- | -- |
-| No `health` policy | The default unhealthy classifier covers `5xx` responses, non-zero gRPC statuses, and connection failures. When the virtual model has more than one priority group, these failures use default eviction: a single unhealthy response evicts the endpoint for `3s`, and each repeated eviction lasts longer. Traffic fails over to the next priority. |
+| No `health` policy | The default unhealthy classifier covers `5xx` responses, server-side gRPC failures, and connection failures. When the virtual model has more than one priority group, these failures use default eviction: a single unhealthy response evicts the endpoint for `3s`, and each repeated eviction lasts longer. Traffic fails over to the next priority. |
 | `health` without `eviction` | Setting `health` replaces the default eviction instead of adding to it. You can use `health.unhealthyExpression` to classify additional responses, such as `429`, as unhealthy. Without an `eviction` block, the endpoint is evicted only when a retry policy's `backoff`, or a `Retry-After` header on a response that is classified as unhealthy, supplies an eviction duration. To keep the default eviction settings, add `eviction: {}`. |
 | `health.eviction` | Override how long an unhealthy endpoint leaves the active set, and which thresholds trigger eviction. When every endpoint in a priority group is evicted, later requests use the next priority. |
 
@@ -181,7 +181,7 @@ You do not need a `health` policy for basic failover on server errors or connect
 
 Useful `health` fields:
 
-- `unhealthyExpression`: Optional CEL expression; `true` marks the response unhealthy. When unset, any `5xx`, non-zero gRPC status, or connection failure is unhealthy.
+- `unhealthyExpression`: Optional CEL expression; `true` marks the response unhealthy. When unset, any `5xx`, server-side gRPC failure, or connection failure is unhealthy.
 - `eviction.duration`: Base time to keep an endpoint evicted. When you omit `duration`, agentgateway uses the `Retry-After` value from a 429 response, then the `backoff` from a retry policy, and then a default of `3s`. Repeated evictions use multiplicative backoff, with no upper bound.
 - `eviction.consecutiveFailures`: Unhealthy responses required before eviction. When this and `healthThreshold` are both unset, a single unhealthy response can evict.
 - `eviction.healthThreshold`: Evict when the endpoint health score (0.0–1.0) is below this value. Either this or `consecutiveFailures` can trigger eviction when both are set.
