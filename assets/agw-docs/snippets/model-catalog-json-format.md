@@ -92,8 +92,29 @@ Key points:
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}- `perPage` is **USD per page** for document or OCR models that report page usage, not USD per 1,000,000 tokens.{{< /version >}}
 - If a rate is omitted, that token type is not priced for the model.
 - `tiers[]` is optional. Each tier selects alternate `rates` when the request context length is **over** the tier's `contextOver` value. Tiers must be ordered by strictly increasing `contextOver`.
+{{< version exclude-if="1.3.x,1.4.x,1.5.x,1.6.x" >}}- To select rates by the service tier that the provider served, set `serviceTier` to `standard`, `flex`, `priority`, or `reserved`. Omit `serviceTier` to match any served tier. Omit `contextOver` to make the rule apply from zero context tokens. Within one `serviceTier`, order rules by increasing `contextOver`.{{< /version >}}
 {{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 - `tags[]` is optional. Tags describe a model instead of pricing it, so a model entry can carry tags with no rates at all.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,2.2.x" >}} For more information, see [Model tags](#model-tags).{{< /version >}}
+{{% /version %}}
+
+{{% version exclude-if="1.3.x,1.4.x,1.5.x,1.6.x" %}}
+The following example adds a Flex tier that applies from zero context tokens, plus a second Flex tier for requests over 200,000 context tokens:
+
+```json
+{
+  "tiers": [
+    {
+      "serviceTier": "flex",
+      "rates": { "input": "1.0", "output": "6", "cacheRead": "0.1" }
+    },
+    {
+      "contextOver": 200000,
+      "serviceTier": "flex",
+      "rates": { "input": "2.0", "output": "9", "cacheRead": "0.2" }
+    }
+  ]
+}
+```
 {{% /version %}}
 
 The following minimal example prices two OpenAI models and one tiered Gemini model:

@@ -44,6 +44,12 @@ Review the release notes for agentgateway on Kubernetes.
 
 - **Model discovery responses include catalog metadata**: The Models API now returns catalog-backed metadata such as context limits, modalities, capabilities, and supported parameters from `/v1/models` and `/models`. Clients can also limit list responses and fetch one model by ID with `/v1/models/<model-id>` or `/models/<model-id>`. For more information, see {{< conditional-text include-if="standalone" >}}[Models]({{< link-hextra path="/documentation/llm/api-types/models/" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[Serve a model]({{< link-hextra path="/documentation/llm/models/serve/" >}}){{< /conditional-text >}}.
 
+### LLM {#v17-llm}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3661 -->
+
+- **Service-tier pricing in the model catalog**: The model catalog can price requests by normalized service tier, such as `standard`, `flex`, `priority`, or `reserved`. The `agctl catalog import` default sources now include `vertex-pricing`, which adds Vertex AI Gemini service-tier rates.
+
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->
