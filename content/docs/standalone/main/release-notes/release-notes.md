@@ -32,6 +32,7 @@ Review the release notes for agentgateway standalone.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3774 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3812 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3936 -->
 
 **Traffic management**
 
@@ -50,6 +51,7 @@ Review the release notes for agentgateway standalone.
 - Stateful MCP requests with a session ID that the proxy cannot decode, such as after the session key changes, now return `404` instead of `400`, so clients start a new session.
 - MCP authentication derives JWKS URLs without a double slash when an issuer value ends with `/`.
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
+- MCP authentication can validate a request after route-level JWT authentication when the route JWT policy keeps the original token with `preserveToken: true`, and strict mode rejects only when the token is unavailable.
 
 **Operations**
 
