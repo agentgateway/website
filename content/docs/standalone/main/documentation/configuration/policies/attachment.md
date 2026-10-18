@@ -17,6 +17,8 @@ Policies that are attached at multiple levels are applied at all levels.
 |Route|All Policies|Runs after route selection, before backend selection|
 |Backend|Backend TLS, Backend Authentication, Backend HTTP, Backend TCP, AI/LLM, MCP Authorization, MCP Authentication, External Authorization, Header modification|Runs after backend selection|
 
+Use `policies.target.backend.backend.kind` only when a backend target comes from a typed backend resource that can share a namespace and name with another backend type. For example, set `kind: XBackend` to attach the policy to an XBackend instead of a different backend type with the same name. Omit `kind` for ordinary standalone backend targets.
+
 ## Example policy configuration
 
 Review the following example configuration that uses one of each policy type.

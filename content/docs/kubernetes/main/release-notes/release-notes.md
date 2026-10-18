@@ -37,10 +37,12 @@ Review the release notes for agentgateway on Kubernetes.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3802 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3812 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3891 -->
 
 **Traffic management**
 
 - Local gRPC policy call failures, such as DNS errors, unavailable endpoints, refused connections, and timeouts, are reported with the mapped gRPC status instead of `UNKNOWN`.
+- Typed backend targets now keep XBackend resources separate from {{< reuse "agw-docs/snippets/backend.md" >}} resources that have the same namespace and name, so policies and routes attach to the intended backend.
 
 **LLM**
 
