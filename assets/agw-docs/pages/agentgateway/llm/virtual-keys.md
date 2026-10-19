@@ -32,10 +32,12 @@ When a request arrives:
 
 1. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} validates the API key, extracts the user ID from the key's metadata, and checks the request against the user's token budget.
 2. If budget is available:
-   1. The request proceeds to the LLM.
+   1. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} removes the API key from the request, attaches the provider API key that the {{< reuse "agw-docs/snippets/backend.md" >}} references, and forwards the request to the LLM. The provider never receives the virtual key, and clients never need the provider key.
    2. Agentgateway tracks token usage and deducts tokens from the user's budget.
    3. Budgets refill at the configured interval (such as daily, hourly).
-3. If budget is exhausted, the request is rejected with a 429 status code
+3. If budget is exhausted, the request is rejected with a 429 status code.
+
+Because each client has its own virtual key, you can revoke one client's access without rotating the provider key or changing other clients.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} For a walkthrough of this pattern, see [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}).{{< /version >}}
 
 ### More considerations
 
@@ -632,6 +634,39 @@ EOF
    {{< /tabs >}}
 
    Bob's requests succeed because he has his own independent budget.
+
+{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+### Revoke a virtual key
+
+To revoke a virtual key, remove its entry from the ConfigMap. The next request with that key is rejected with a 401 status code. You do not need to restart the proxy, and the provider key and the other virtual keys keep working.
+
+1. Remove Bob's entry from the `llm-api-keys` ConfigMap.
+
+   ```sh
+   kubectl patch configmap llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --type=json -p='[{"op": "remove", "path": "/data/bob"}]'
+   ```
+
+2. Send a request with Bob's API key. Verify that the request is rejected with a 401 status code.
+
+   ```sh
+   curl -s -o /dev/null -w "%{http_code}\n" "$INGRESS_GW_ADDRESS/openai" \
+     -H "Authorization: Bearer sk-bob-xyz789uvw012" \
+     -H "Content-Type: application/json" \
+     -d '{"model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}", "messages": [{"role": "user", "content": "Hello!"}]}'
+   ```
+
+   Expected response:
+   ```
+   401
+   ```
+{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+### Limit the models that clients can use
+
+By default, a virtual key can request any model that the provider offers. To allow only some models, add an authorization rule on the requested model to the same policy as the API key authentication. For an example, see [Require virtual keys and allow only some models]({{< link-hextra path="/documentation/llm/protect-provider-keys/#step-2-require-virtual-keys-and-allow-only-some-models" >}}).
+{{< /version >}}
 
 ## Monitor per-key spending
 
