@@ -61,12 +61,18 @@ agentgateway -f config.yaml --validate-only
 
 ### Add static hosts in the UI {#static-hosts-ui}
 
-In the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), static hosts are part of a route. To add or change one, open **Traffic** > **Routes**, click the edit icon for the route, and scroll to the **Backends** section.
+In the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), static hosts are part of a route. To add or change one, edit the route.
 
-* Click **Add backend** to add another host.
-* Set the **Weight** of each backend to split traffic between the hosts. In the following example, the route sends 80% of requests to `api-v2.example.com:8080` and 20% to `api-v1.example.com:8080`.
+1. Open **Traffic** > **Routes**, and click the edit icon for the route.
+2. Scroll to the **Backends** section, and click **Add backend** for each host that you want to add.
+3. Enter the **Host** of each backend, such as `api-v2.example.com:8080`.
+4. Set the **Weight** of each backend to split traffic between the hosts. In the following example, the route sends 80% of requests to `api-v2.example.com:8080` and 20% to `api-v1.example.com:8080`.
 
-{{< reuse-image src="img/ui-route-weighted-backends.png" srcDark="img/ui-route-weighted-backends-dark.png" >}}
+   {{< reuse-image src="img/ui-route-weighted-backends.png" srcDark="img/ui-route-weighted-backends-dark.png" >}}
+
+5. Click **Save route**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 
 ## Backend connection lifetime {#connection-lifetime}
 
