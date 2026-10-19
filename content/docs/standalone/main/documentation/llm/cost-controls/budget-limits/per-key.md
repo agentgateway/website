@@ -125,8 +125,6 @@ llm:
           limit:
             unit: Tokens
             amount: 250
-          window:
-            rolling: 24h
           onBudgetExceeded: Audit
   models:
   - name: "*"
@@ -136,7 +134,7 @@ llm:
 EOF
 ```
 
-The `team-a` key has a dollar budget that blocks requests when the budget is exhausted, and the `team-b` key has a token budget that only records the overage. Review the following table to understand this configuration. Both limits are small so that you can reach them in a few requests. Use realistic limits in production.
+The `team-a` key has a dollar budget that blocks requests when the budget is exhausted. The `team-b` key omits `window`, so its token budget never resets and only records the overage. Review the following table to understand this configuration. Both limits are small so that you can reach them in a few requests. Use realistic limits in production.
 
 | Setting | Description |
 | -- | -- |
@@ -146,7 +144,8 @@ The `team-a` key has a dollar budget that blocks requests when the budget is exh
 | `budgets` | List of budgets that are charged independently. A key can have several budgets, such as an hourly dollar cap and a monthly dollar cap. |
 | `budgets[].name` | Names the budget within its key. The name must be unique among that key's budgets. |
 | `budgets[].limit.unit` | `USD` to cap realized cost, or `Tokens` to cap token usage. |
-| `budgets[].limit.amount` | The maximum usage in the window. A `Tokens` amount must be a whole number. A `USD` amount takes up to nine decimal places. |
+| `budgets[].limit.amount` | The maximum usage for the budget. A `Tokens` amount must be a whole number. A `USD` amount takes up to nine decimal places. |
+| `budgets[].window` | Optional rolling-window block. Omit this block when the budget must keep accumulating usage and never reset. |
 | `budgets[].window.rolling` | Length of the fixed usage window, such as `1h`, `24h`, or `30d`. Windows are aligned to the Unix epoch rather than to the key's first request. |
 | `budgets[].onBudgetExceeded` | `Block` to reject requests with a `429` after the limit is passed, or `Audit` to record the overage and allow the request. |
 | `allowedModels` | Model name patterns that the key can reach. Omit the field to leave the key unconstrained. For more information, see [Limit model access per key](#limit-model-access-per-key). |
@@ -400,7 +399,7 @@ You can also review and edit budgets in the built-in [Admin UI]({{< link-hextra 
 
 ### Step 7: Try a token budget
 
-The `team-b` key that you configured in Step 2 caps tokens rather than dollars, and it uses the `Audit` action. An `Audit` budget records usage and logs the overage, but it never rejects a request. Use an `Audit` budget to size a limit before you enforce it, or to alert on a team that goes over its allocation without interrupting its work.
+The `team-b` key that you configured in Step 2 caps tokens rather than dollars. The budget omits `window` and uses the `Audit` action. Because the budget has no window, the budget keeps accumulating usage and never resets. An `Audit` budget records usage and logs the overage, but it never rejects a request.
 
 1. Send four requests with the `team-b` key. Each request uses 101 tokens, so four requests use more than the 250-token limit allows.
 
@@ -428,7 +427,7 @@ The `team-b` key that you configured in Step 2 caps tokens rather than dollars, 
    request 4: 200
    ```
 
-2. Check the gateway logs. Agentgateway logs each request that it receives while the budget is over its limit, so you can alert on the `budget` target in your log pipeline. A `Tokens` budget reports its amounts as whole tokens.
+2. Check the gateway logs. The gateway logs each request that it receives while the budget is over its limit, so you can alert on the `budget` target in your log pipeline. A `Tokens` budget reports its amounts as whole tokens. If you query the admin API for this budget, `window.end` and `window.durationMs` are `null`.
 
    ```
    warn budget API key budget exceeded api_key="team-b" budget="daily-tokens" used=303 limit_unit="Tokens" limit_amount=250 exceeded=true
