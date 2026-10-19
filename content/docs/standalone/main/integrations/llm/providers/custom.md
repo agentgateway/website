@@ -40,7 +40,11 @@ export PERPLEXITY_API_KEY="${PERPLEXITY_API_KEY:-test}"
 With a custom provider, you provide the API endpoint and a list of formats it supports.
 Agentgateway will automatically handle mapping between the incoming format and the supported formats.
 
-The `formats` list controls how agentgateway converts incoming requests. Each conversion supports different features. For Messages requests, agentgateway prefers `responses` over `completions`. The Responses conversion drops extended-thinking history without an error. To preserve thinking history across turns, declare `completions` and omit `responses`.
+The `formats` list controls how agentgateway converts incoming requests. Each conversion supports different features. For Messages requests, agentgateway prefers `responses` over `completions`.
+
+For SystemOne requests, agentgateway prefers `systemOne` over `decisions`. For Decisions requests, agentgateway prefers `decisions` over `systemOne`.
+
+The Responses conversion drops extended-thinking history without an error. To preserve thinking history across turns, declare `completions` and omit `responses`.
 
 Declare only the formats that the upstream server supports. For example, include `responses` only if the server supports `/v1/responses`. For details about each conversion, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
 
@@ -48,7 +52,7 @@ An error such as `failed to parse Messages request` names the route type that pa
 
 Converted response usage follows the API format that the client called. Messages responses use Anthropic usage conventions. In that format, `usage.input_tokens` excludes prompt-cache tokens. Chat Completions and Responses replies use OpenAI usage conventions. In those formats, the main input count includes prompt-cache tokens. When a Gemini OpenAI-compatible response reports reasoning tokens separately from `usage.completion_tokens`, converted Messages and Responses replies include visible output and reasoning tokens in `usage.output_tokens`.
 
-The `formats` list is optional. A model without it accepts only requests on paths that are forwarded to the provider without format conversion, such as `/v1/systemone`, `/v1/ocr`, `/v1/images/generations`, and `/v1/responses/compact`. A request in an LLM API format, such as a chat completions or messages request, has no format to convert to and is rejected. For an example, see the [Jev guardrail guide]({{< link-hextra path="/integrations/llm/guardrails/jev/" >}}).
+The `formats` list is optional. A model without it accepts only requests on paths that are forwarded to the provider without format conversion, such as `/v1/ocr`, `/v1/images/generations`, and `/v1/responses/compact`. A request in an LLM API format has no format to convert to and is rejected. Examples include chat completions, messages, and SystemOne requests. For an example, see the [Jev guardrail guide]({{< link-hextra path="/integrations/llm/guardrails/jev/" >}}).
 
 Below shows an example of connecting to [Perplexity](https://www.perplexity.ai/), which exposes an OpenAI-compatible API for search-augmented models and does not currently have a first-class provider.
 
@@ -74,6 +78,7 @@ llm:
           # - type: generateContent
           # - type: geminiCountTokens
           # - type: rerank
+          # - type: systemOne
     params:
       apiKey: "$PERPLEXITY_API_KEY"
       model: llama-3.1-sonar-large-128k-online

@@ -21,7 +21,7 @@ The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API removes the sca
 Every model that attaches to the same parent is aggregated into a single model table, called a *model router*. From that table, agentgateway serves the following behavior.
 
 - Model extraction from the request body.
-- The standard LLM API paths, such as `/v1/chat/completions` and `/v1/audio/transcriptions`.
+- The standard LLM API paths, such as `/v1/chat/completions`, `/v1/systemone`, and `/v1/audio/transcriptions`.
 - Model discovery on `/v1/models`.
 - Per-model provider routing.
 - OpenAI-compatible error responses for unknown models.
