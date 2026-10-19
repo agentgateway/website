@@ -31,11 +31,20 @@ Agentgateway evaluates conditions before contacting targets. Excluded targets re
    EOF
    ```
 
-2. Save the MCP endpoint of your agentgateway proxy in an environment variable. Use the address from [Step 3](#verify): `http://${INGRESS_GW_ADDRESS}/mcp` for a load balancer, or `http://localhost:8080/mcp` for a port-forward.
+2. Save the MCP endpoint of your agentgateway proxy in an environment variable. Select the connection method that you used in [Step 3](#verify).
 
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   export MCP_URL="http://${INGRESS_GW_ADDRESS}/mcp"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    export MCP_URL=http://localhost:8080/mcp
    ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 3. Initialize an MCP session without the header, and save the session ID.
 

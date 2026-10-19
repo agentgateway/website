@@ -303,7 +303,7 @@ Check the policy's status reason and message as well as `Accepted`. Invalid CEL 
      -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"echo","arguments":{"message":"Contact alice@example.com and bob@example.org; tokens demo-secret-abc and demo-secret-xyz"}}}'
    ```
 
-   Verify that the result masks both email addresses and both secrets. The request guardrail masks the addresses; the response guardrail masks the secrets.
+   Verify that the result masks both email addresses and both secrets. The request guardrail masks the addresses; the response guardrail masks the secrets. This response uses server-sent events (`Content-Type: text/event-stream`).
    ```console
    event: message
    data: {"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"Echo: Contact [EMAIL] and [EMAIL]; tokens [SECRET] and [SECRET]"}]}}
@@ -319,7 +319,7 @@ Check the policy's status reason and message as well as `Accepted`. Invalid CEL 
      -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"echo","arguments":{"message":"DO_NOT_SEND alice@example.com"}}}'
    ```
 
-   Verify that the call is rejected before it reaches the MCP server. The tool result contains `isError: true` and the configured rejection message.
+   Verify that the call is rejected before it reaches the MCP server. The tool result contains `isError: true` and the configured rejection message. Agentgateway returns this request-phase rejection as plain JSON (`Content-Type: application/json`) with HTTP 200.
    ```console
    {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"Messages containing DO_NOT_SEND may not be sent upstream"}],"isError":true}}
    ```
@@ -360,17 +360,24 @@ for attempt in $(seq 1 20); do
   if [ -z "$SID" ]; then sleep 5; continue; fi
   curl -s --max-time 10 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
     -d '{"jsonrpc":"2.0","method":"notifications/initialized"}' >/dev/null || true
-  MASKED=$(curl -s --max-time 15 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
+  MASKED=$(curl -s -i --max-time 15 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
     -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"echo","arguments":{"message":"Contact alice@example.com and bob@example.org; tokens demo-secret-abc and demo-secret-xyz"}}}')
   echo "$MASKED" | grep -q '\[SECRET\]' && break
   sleep 5
 done
 
+# Check transport framing as well as the transformed text.
+echo "$MASKED" | grep -iq '^content-type: text/event-stream' && echo "$MASKED" | grep -q '^data: ' \
+  || { echo "FAIL: expected an SSE tool result: $MASKED"; exit 1; }
+
 echo "$MASKED" | grep -q 'Echo: Contact \[EMAIL\] and \[EMAIL\]; tokens \[SECRET\] and \[SECRET\]' \
   || { echo "FAIL: request and response were not masked: $MASKED"; exit 1; }
 
-REJECTED=$(curl -s --max-time 10 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
+REJECTED=$(curl -s -i --max-time 10 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
   -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"echo","arguments":{"message":"DO_NOT_SEND alice@example.com"}}}')
+# A request-phase rejection is an HTTP 200 JSON response, without SSE framing.
+echo "$REJECTED" | grep -Eq '^HTTP/[0-9.]+ 200' && echo "$REJECTED" | grep -iq '^content-type: application/json' && echo "$REJECTED" | grep -q '^{' \
+  || { echo "FAIL: expected an HTTP 200 JSON rejection: $REJECTED"; exit 1; }
 echo "$REJECTED" | grep -q '"isError":true' && echo "$REJECTED" | grep -q 'Messages containing DO_NOT_SEND may not be sent upstream' \
   || { echo "FAIL: DO_NOT_SEND call was not rejected: $REJECTED"; exit 1; }
 
