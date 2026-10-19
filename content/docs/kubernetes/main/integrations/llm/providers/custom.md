@@ -142,6 +142,9 @@ When an Anthropic messages request is converted to the `Responses` or the
   tokens. When a Gemini OpenAI-compatible response reports reasoning tokens
   separately from `usage.completion_tokens`, converted Messages and Responses
   replies include visible output and reasoning tokens in `usage.output_tokens`.
+- For a streamed reply converted from Responses to Messages, telemetry includes
+  the time to first token from the first content-bearing event. Each later
+  content-bearing event adds an inter-chunk latency sample.
 - When a streamed reply in the `Responses` format fails, the converted Messages
   stream emits the content blocks that arrived before the failure, then emits
   an Anthropic `error` event. After the error, the stream does not emit

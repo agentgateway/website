@@ -135,6 +135,9 @@ When an Anthropic messages request is converted to the `Responses` or the
   prompt-cache tokens. Chat Completions and Responses replies use OpenAI usage
   conventions. In those replies, the main input count includes prompt-cache
   tokens.
+- For a streamed reply converted from Responses to Messages, telemetry includes
+  the time to first token from the first content-bearing event. Each later
+  content-bearing event adds an inter-chunk latency sample.
 - When a streamed reply in the `Responses` format fails, the converted Messages
   stream emits the content blocks that arrived before the failure, then emits
   an Anthropic `error` event. After the error, the stream does not emit

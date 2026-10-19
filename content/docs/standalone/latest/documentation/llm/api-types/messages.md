@@ -86,6 +86,7 @@ These behaviors apply to both the Responses and the Chat Completions conversion.
 - A function call with empty arguments becomes a `tool_use` block whose `input` is `{}`. When the reply reaches the output token limit partway through the arguments, `stop_reason` is `max_tokens`, and a buffered reply returns the partial arguments in `input` as a string instead of an object. Check `stop_reason` before you parse `input`.
 - When the provider rejects a prompt that is longer than the model's context window, the converted error message starts with `capability_rejected: prompt_too_long`, followed by the original message. Clients such as Claude Code use this marker to compact the prompt and retry. The marker is added only to an HTTP 400 error that has the `context_length_exceeded` code, or that has no code and a message that says the prompt exceeds the context window. An error that already contains `capability_rejected:` keeps its message. A Gemini or Vertex AI provider returns errors in the Google format, which does not get the marker.
 - Response usage follows Anthropic Messages conventions. The `usage.input_tokens` field excludes prompt-cache tokens. When the provider returns them, `usage.cache_read_input_tokens` and `usage.cache_creation_input_tokens` report cache tokens separately.
+- For a streamed reply converted from Responses to Messages, telemetry includes the time to first token from the first content-bearing event. Each later content-bearing event adds an inter-chunk latency sample.
 
 ### Converting to the Responses format
 
