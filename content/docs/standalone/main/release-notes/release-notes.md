@@ -18,6 +18,12 @@ Review the release notes for agentgateway standalone.
 
 - **Standalone Helm session key Secret**: Set `session.secretName` to load the AES-256-GCM session key from an existing Kubernetes Secret. The chart passes the Secret's `key` entry to the proxy as the `SESSION_KEY` environment variable, which takes precedence over `config.session.key`. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
 
+### Security {#v17-security}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3903 -->
+
+- **OIDC permissive credentials mode**: Use `credentials: permissive` on OIDC policies to keep browser login behavior while non-browser requests and credentials for sibling authentication policies continue to those policies. Pair permissive mode with `authorization`, `jwtAuth`, `mcpAuthentication`, or another enforcement point. For more information, see [Permissive credentials]({{< link-hextra path="/documentation/configuration/security/oidc/#permissive-credentials" >}}).
+
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->

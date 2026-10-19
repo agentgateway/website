@@ -48,11 +48,19 @@ sequenceDiagram
 
 ### Navigation and fetch requests {#navigation-and-fetch-requests}
 
-The gateway reads the `Sec-Fetch-Mode` request header that browsers send to tell a page navigation apart from a script request.
+The gateway reads the `Sec-Fetch-Mode` request header that browsers send to tell a page navigation apart from a script request. With `credentials: session` and `sessionOrBearer`, unauthenticated requests behave in the following ways.
 
 - Requests with `Sec-Fetch-Mode` set to `cors`, `no-cors`, `same-origin`, or `websocket`, such as `fetch()` calls, receive `401 Unauthorized` instead of a redirect to the identity provider.
 - If you set `login.redirect`, the `401` response also includes a `Location` header with that page, so that your application can send the user there. For more information, see [Custom login page and logout](#custom-login-page-and-logout).
 - Requests without a `Sec-Fetch-Mode` header, such as `curl` requests, are treated as navigation requests and redirected.
+
+### Permissive credentials {#permissive-credentials}
+
+Use `credentials: permissive` to protect browser sessions with OIDC while a later authentication policy protects non-browser clients. Browser navigations keep the normal OIDC login behavior. Non-navigation requests that OIDC does not authenticate continue to later policies with their credentials intact.
+
+In `permissive` mode, `Sec-Fetch-Mode: navigate` marks a request as a browser navigation. Without `Sec-Fetch-Mode`, a request is a browser navigation only when an `Accept` header includes the `text/html` media type. The media type comparison ignores case and parameters, and checks every `Accept` header line.
+
+The OIDC policy accepts a valid OIDC ID token in `Authorization: Bearer` and removes the token before forwarding, as with `sessionOrBearer`. A bearer token that OIDC cannot validate, a Basic credential, or a request without credentials continues to later policies. Pair `permissive` with `authorization`, `jwtAuth`, `mcpAuthentication`, or another enforcement point so unauthenticated requests cannot reach the backend.
 
 ### Session cookies {#session-cookies}
 
@@ -265,6 +273,7 @@ All `login` and `logout` endpoint and redirect values must be safe local paths. 
 | `clientSecret` | Yes | OAuth2 client secret for token exchange. |
 | `redirectURI` | Yes | Absolute callback URI handled by the gateway, such as `http://localhost:3000/oauth/callback`. |
 | `scopes` | No | Additional OAuth2 scopes to request. `openid` is always included automatically. Add `offline_access` when your identity provider requires that scope to issue refresh tokens. Returned refresh tokens are used automatically. |
+| `credentials` | No | Credentials accepted for authentication. Defaults to `session`, or `sessionOrBearer` for `ui.policies.oidc`. Use `session` for browser sessions only. Use `sessionOrBearer` for browser sessions or valid OIDC bearer tokens. Use `permissive` to let non-navigation requests that OIDC does not authenticate continue to later policies. Pair `permissive` with another enforcement point. |
 | `discovery` | No | Override the OIDC discovery document location. If omitted, uses `${issuer}/.well-known/openid-configuration`. |
 | `authorizationEndpoint` | No | Explicit authorization endpoint. Overrides the value from discovery. |
 | `tokenEndpoint` | No | Explicit token endpoint. Overrides the value from discovery. |
