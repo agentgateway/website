@@ -96,6 +96,42 @@ Key points:
 {{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 - `tags[]` is optional. Tags describe a model instead of pricing it, so a model entry can carry tags with no rates at all.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,2.2.x" >}} For more information, see [Model tags](#model-tags).{{< /version >}}
 {{% /version %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+- A model entry can also carry descriptive metadata. Use `name` for the display name. Use `status` for `alpha`, `beta`, or `deprecated`. If `status` is omitted, the model is generally available.
+- Use `released` for a `YYYY-MM-DD` or `YYYY-MM` release date.
+- Use `limits` for token limits and `modalities` for accepted input and output types.
+- Use `capabilities` for supported features. In `capabilities`, omitted fields are unknown.
+- Use `reasoning` for accepted reasoning controls.
+
+For example, the following model entry carries pricing and descriptive metadata:
+
+```json
+{
+  "rates": { "input": "1", "output": "5", "cacheRead": "0.1" },
+  "name": "Claude Haiku 4.5",
+  "released": "2025-10-15",
+  "limits": {
+    "context": 200000,
+    "output": 64000
+  },
+  "modalities": {
+    "input": ["text", "image", "pdf"],
+    "output": ["text"]
+  },
+  "capabilities": {
+    "reasoning": true,
+    "structuredOutput": true,
+    "toolCall": true,
+    "temperature": true
+  },
+  "reasoning": {
+    "budgetTokens": {
+      "min": 1024
+    }
+  }
+}
+```
+{{% /version %}}
 
 {{% version exclude-if="1.3.x,1.4.x,1.5.x,1.6.x" %}}
 The following example adds a Flex tier that applies from zero context tokens, plus a second Flex tier for requests over 200,000 context tokens:
