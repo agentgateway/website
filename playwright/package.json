@@ -27,7 +27,7 @@
     "test:file": "CAPTURE_MODE=file playwright test tests/storage-file.spec.ts"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0",
+    "@playwright/test": "1.64.1",
     "pixelmatch": "^7.2.0",
     "pngjs": "^7.0.0"
   }
