@@ -20,6 +20,8 @@ Attaches to: {{< badge content="Listener" path="/documentation/configuration/lis
 
 > [!TIP]
 > This policy is about authenticating incoming requests. For attaching API keys to outgoing requests, see [Backend Authentication](../backend-authn).
+>
+> After agentgateway validates an API key, it removes the key from the request, so the backend never receives it. For LLM traffic, you can use this behavior to give each client its own API key, also known as a virtual key, instead of a key for your LLM provider. For more information, see [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}).
 
 ## Configure API key authentication
 
