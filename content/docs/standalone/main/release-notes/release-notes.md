@@ -68,6 +68,10 @@ For more information, see [Session key]({{< link-hextra path="/integrations/mcp/
 
 - **Service-tier pricing in the model catalog**: The model catalog can price requests by normalized service tier, such as `standard`, `flex`, `priority`, or `reserved`. The `agctl catalog import` default sources now include `vertex-pricing`, which adds Vertex AI Gemini service-tier rates.
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3981 -->
+
+- **Model catalog metadata in CEL**: CEL expressions can read `llm.model` for the catalog entry that served a completed LLM request, including model IDs, tags, limits, modalities, capabilities, and reasoning metadata. Use the fields to log, trace, or emit metrics based on the resolved model.
+
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->
