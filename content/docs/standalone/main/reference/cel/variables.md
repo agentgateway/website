@@ -21,6 +21,14 @@ When a policy can run against both directly addressed and Service backends, chec
 > [!NOTE]
 > The `llm` object carries both normalized and provider-reported token counts. `llm.inputTokens` and `llm.totalTokens` include the tokens read from or written to the prompt cache, so they mean the same thing for every provider. `llm.providerInputTokens` and `llm.providerTotalTokens` report what the provider sent. For guidance on which one to read, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
 
+### Agent sessions {#agent-sessions}
+
+When agentgateway identifies an agent session, CEL expressions can read its ID as `request.agent.session`. Agentgateway detects the ID from recognized agent headers, such as `x-claude-code-session-id` and `x-session-id`.
+
+To override detection, set `config.standardAttributes.session` to a CEL expression that returns a string. Return `null` or an empty string to leave the request without an agent session. If the expression fails or returns another type, agentgateway uses the detected session instead.
+
+For a logging example, see [Log the agent session]({{< link-hextra path="/documentation/observability/access-logs/view/#agent-session" >}}).
+
 ## Variables by policy type
 
 Depending on the policy, different top-level variables are bound when CEL runs. A variable is only non-null when it is populated for the current request (for example, `has(jwt.sub)` or `has(apiKey.key)`). The same name can refer to different snapshots depending on pipeline stage: early policies evaluate against the live HTTP request, while logging, tracing, and metrics run after the exchange and can include `response`, `mcp`, and full telemetry fields. Note that when using streaming responses, the evaluation of response body attributes or LLM response information can be inconsistent.

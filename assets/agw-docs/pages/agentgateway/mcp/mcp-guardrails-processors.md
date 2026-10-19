@@ -131,7 +131,7 @@ Each processor uses a `methods` map to select MCP methods and phases. Other sett
 
 ### CEL expression processors {#expression}
 
-A CEL expression processor evaluates an optional condition and then takes exactly one action.
+A CEL expression processor evaluates an optional condition. Set exactly one action: `reject` or `transform`.
 
 | Setting | Description |
 |---------|-------------|
@@ -146,11 +146,26 @@ Expression processors can read the usual MCP policy variables, such as `request`
 | `mcp.params` | Request | The current MCP request's `params` object. For `tools/call`, `mcp.params.name` is the resolved tool name that agentgateway sends to the target, without a target-name prefix. |
 | `mcp.result` | Response | The current MCP response's `result` object. |
 
+Use `has()` to check optional fields before reading them. A missing field can cause an evaluation error.
+
 Processors run in order, and each processor sees the changes from earlier processors. To make a rejection rule see the original request, list it before any processor that masks the same fields.
 
 Use `regexReplace` to replace the first regular expression match, or `regexReplaceAll` to replace every non-overlapping match. Both support capture groups in replacements, such as `$1`. For the full list of functions, see the [CEL reference]({{< link-hextra path="/reference/cel/variables/#functions-policy-all" >}}).
 
-Expression processors fail closed. If an expression fails to evaluate, or if a transform returns a body that is not a valid MCP message, agentgateway rejects the call with an internal error.
+Expression processors fail closed and do not support `failureMode`. If an expression fails to evaluate, or if a transform returns a body that is not a valid MCP message, agentgateway rejects the call with an internal error.
+
+{{< conditional-text include-if="kubernetes" >}}
+#### Kubernetes validation {#expression-validation}
+
+The API server enforces these requirements:
+
+* Each processor sets exactly one of `remote` or `expression`.
+* Each expression processor sets exactly one of `reject` or `transform`.
+* A `reject` message contains 1 to 4096 characters.
+* Each processor supplies a non-empty `methods` map.
+
+Invalid CEL syntax can produce a policy condition with `type: Accepted`, `status: "True"`, and `reason: PartiallyValid`. Check the condition's reason and message, which identify the invalid expression. A call that evaluates that expression fails closed.
+{{< /conditional-text >}}
 
 ### Remote processors {#remote}
 

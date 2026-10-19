@@ -246,6 +246,8 @@ EOF
 
 {{% /steps %}}
 
+Check the policy's status reason and message as well as `Accepted`. Invalid CEL can produce `Accepted` with the reason `PartiallyValid`. For admission requirements and error behavior, see [Kubernetes validation]({{< link-hextra path="/documentation/mcp/guardrails/processors/#expression-validation" >}}).
+
 ## Verify the guardrails
 
 1. Set the agentgateway address. The following steps use the `MCP_ADDR` variable for the MCP endpoint.

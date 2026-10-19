@@ -23,6 +23,10 @@ When a policy can run against both directly addressed and Service backends, chec
 > [!NOTE]
 > The `llm` object carries both normalized and provider-reported token counts. `llm.inputTokens` and `llm.totalTokens` include the tokens read from or written to the prompt cache, so they mean the same thing for every provider. `llm.providerInputTokens` and `llm.providerTotalTokens` report what the provider sent. For guidance on which one to read, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
 
+### Agent sessions {#agent-sessions}
+
+When agentgateway identifies an agent session, CEL expressions can read its ID as `request.agent.session`. Agentgateway detects the ID from recognized agent headers, such as `x-claude-code-session-id` and `x-session-id`.
+
 ## Variables by policy type
 
 Depending on the policy, different fields are accessible based on when in the request processing they are applied.

@@ -10,6 +10,22 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v17-new-features}
+
+### MCP {#v17-mcp}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3824 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3830 -->
+
+- **Conditional virtual MCP targets**: Set `spec.mcp.targets[].condition` on an {{< reuse "agw-docs/snippets/backend.md" >}} to select targets with CEL before agentgateway contacts them. A condition requires at least two targets unless the target uses `selector`. For more information, see [Include targets conditionally]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
+- **CEL MCP guardrails**: Set `spec.backend.mcp.guardrails.processors[].expression` on an {{< reuse "agw-docs/snippets/policy.md" >}} to reject or transform MCP messages inside the proxy. No external policy server is required. For more information, see [Set up CEL guardrails]({{< link-hextra path="/documentation/mcp/guardrails/cel/" >}}).
+
+### Observability {#v17-observability}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3850 -->
+
+- **Agent session detection**: CEL expressions can read detected agent session IDs as `request.agent.session`. For more information, see [Agent sessions]({{< link-hextra path="/reference/cel/variables/#agent-sessions" >}}).
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.

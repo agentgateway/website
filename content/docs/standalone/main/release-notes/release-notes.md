@@ -10,6 +10,20 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v17-new-features}
+
+### MCP {#v17-mcp}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3711 -->
+
+- **CEL MCP guardrails**: Use `kind: expression` in `mcpGuardrails.processors` to reject or transform MCP messages inside the proxy. No external policy server is required. For more information, see [Set up CEL guardrails]({{< link-hextra path="/documentation/mcp/guardrails/cel/" >}}).
+
+### Observability {#v17-observability}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3850 -->
+
+- **Agent session detection**: CEL expressions can read detected agent session IDs as `request.agent.session`. Override detection with `config.standardAttributes.session`. For more information, see [Agent sessions]({{< link-hextra path="/reference/cel/variables/#agent-sessions" >}}).
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.
