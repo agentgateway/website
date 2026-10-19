@@ -5058,6 +5058,7 @@ _Appears in:_
 | `GenerateContent` | RouteTypeGenerateContent processes Gemini `models/\{model\}:generateContent`<br />and `models/\{model\}:streamGenerateContent` format requests.<br /> |
 | `GeminiCountTokens` | RouteTypeGeminiCountTokens processes Gemini `models/\{model\}:countTokens`<br />format requests.<br /> |
 | `Decisions` | RouteTypeDecisions processes OpenAI `/v1/decisions` format requests.<br /> |
+| `SystemOne` | RouteTypeSystemOne processes TypeSafe `/v1/systemone` format requests.<br /> |
 
 
 

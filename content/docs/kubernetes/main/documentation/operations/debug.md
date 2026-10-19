@@ -4,7 +4,7 @@ weight: 15
 description: Debug your agentgateway environment.
 ---
 
-Inspect and troubleshoot agentgateway proxies through the admin endpoints and the [`agctl`]({{< link-hextra path="/documentation/operations/agctl" >}}) command-line tool.
+Inspect and troubleshoot agentgateway proxies through the admin endpoints and the [`agctl`]({{< link-hextra path="/documentation/operations/agctl" >}}) command-line tool. If you need help from the community or support, [collect a bug report](#bug-report) that captures the state of your setup.
 
 ## Admin endpoints
 
@@ -366,3 +366,44 @@ Agentgateway includes pprof endpoints to help you investigate CPU and memory iss
 
 > [!NOTE]
 > To profile an agentgateway binary that runs on your workstation instead of a proxy pod, use `--local`, such as `agctl proxy profile heap --local`. Note that profiling data is available only when agentgateway runs on Linux. Proxy pods always meet this requirement, but a local macOS or Windows build does not: the CPU profile endpoint is not registered, so `agctl proxy profile cpu` fails with a `404 Not Found` error, and `agctl proxy profile heap` writes a profile that contains no allocation samples.
+
+## Collect a bug report {#bug-report}
+
+When you open an issue or ask for help, attach a snapshot of your setup. The `agctl bug-report` command collects the agentgateway resources, logs, and metrics from your cluster into a single `.tar.gz` archive, so you do not have to gather them one by one.
+
+The archive includes the following information.
+
+* All Gateway API resources and all resources with an agentgateway category, along with the Services, ConfigMaps, Secrets, and Events in every namespace that holds one of those resources or the controller. Secret values are redacted.
+* Logs and metrics from the agentgateway proxy pods and from all pods in the controller namespace.
+
+1. Collect the bug report. By default, `agctl` captures the last 24 hours of logs, up to 5,000 lines per container, and writes `bug-report.tar.gz` to the current directory.
+
+   ```sh
+   agctl bug-report
+   ```
+
+2. Optional: Narrow or extend the report with flags. For example, limit the report to specific namespaces and the last hour of logs. Add `--config-dump` to also capture the `/config_dump` output from each proxy, which includes the routes, backends, and policies that the proxy loaded. The controller namespace is always captured, even if you do not list it with `-n`.
+
+   > [!TIP]
+   > For all flags, see the [`agctl bug-report` reference]({{< link-hextra path="/reference/agctl/agctl-bug-report/" >}}).
+
+   {{< tabs >}}
+   {{% tab name="Replace with your own" %}}
+   ```sh
+   agctl bug-report -n <namespace1> -n <namespace2> --since 1h --config-dump -o /tmp/report.tar.gz
+   ```
+   {{% /tab %}}
+   {{% tab name="Quickstart example" %}}
+   ```sh
+   agctl bug-report -n agentgateway-system --since 1h --config-dump -o /tmp/report.tar.gz
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+3. Review the archive before you share it. Secret values are redacted, but logs and config dumps can still contain details that are specific to your environment, such as hostnames and request metadata.
+
+   ```sh
+   tar -tzf bug-report.tar.gz
+   ```
+
+4. Attach the archive to your [GitHub issue](https://github.com/agentgateway/agentgateway/issues) or share it with your support contact.

@@ -19,7 +19,7 @@ Check that you have these resources and permissions before changing the cluster.
 - Azure CLI (tested with version 2.85.0), `kubectl`, `jq`, `curl`, and OpenSSL installed locally. Sign in to Azure and configure `kubectl` for the target cluster.
 - `Contributor` on the resource group, or an equivalent custom role that grants create and read access to `Microsoft.OperationalInsights/workspaces`, `Microsoft.Insights/dataCollectionEndpoints`, `Microsoft.Insights/dataCollectionRules`, `Microsoft.ManagedIdentity/userAssignedIdentities`, and `Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`.
 - `Role Based Access Control Administrator`, `User Access Administrator`, or equivalent `Microsoft.Authorization/roleAssignments/read` and `Microsoft.Authorization/roleAssignments/write` permissions at the Data Collection Rule (DCR) scope. These permissions let you inspect and assign `Monitoring Metrics Publisher` for the Collector identity.
-- Kubernetes create and get access for the named `ServiceMonitor`, `PodMonitor`, `AgentgatewayPolicy`, `ServiceAccount`, `ConfigMap`, `Deployment`, `Service`, `NetworkPolicy`, and `ReferenceGrant` resources used by this guide.
+- Kubernetes create and get access for the named `ServiceMonitor`, `PodMonitor`, `{{< reuse "agw-docs/snippets/policy.md" >}}`, `ServiceAccount`, `ConfigMap`, `Deployment`, `Service`, `NetworkPolicy`, and `ReferenceGrant` resources used by this guide.
 - You need get access for the cluster-scoped `Namespace` resource named `otel-system`. If the namespace is absent, you also need create access for that resource.
 - Verification requires get and list access to the relevant Custom Resource Definitions (CRDs), each named resource, the agentgateway controller, Collector and Gateway proxy pods, and pod logs. Deployment rollout status also requires watch access to the Collector `Deployment`.
 - `Log Analytics Reader` or equivalent query permission on the Log Analytics workspace for trace verification.
@@ -41,7 +41,7 @@ export DATA_COLLECTION_ENDPOINT="agw-dce"
 export DATA_COLLECTION_RULE="agw-dcr"
 export COLLECTOR_IDENTITY="agw-otel"
 export CONTROLLER_NAMESPACE={{< reuse "agw-docs/snippets/namespace.md" >}}
-export CONTROLLER_SERVICE_NAME=agentgateway
+export CONTROLLER_SERVICE_NAME={{< reuse "agw-docs/snippets/helm-agentgateway.md" >}}
 export CONTROLLER_SERVICE_MONITOR=agentgateway-controller
 export GATEWAY_NAMESPACE={{< reuse "agw-docs/snippets/namespace.md" >}}
 export GATEWAY_NAME=agentgateway-proxy
@@ -138,8 +138,8 @@ Managed Prometheus uses Azure Monitor's versions of the Prometheus Operator moni
      selector:
        matchLabels:
          agentgateway: agentgateway
-         app.kubernetes.io/name: agentgateway
-         app.kubernetes.io/instance: agentgateway
+         app.kubernetes.io/name: {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}}
+         app.kubernetes.io/instance: {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}}
      endpoints:
        - port: metrics
          path: /metrics
@@ -331,8 +331,8 @@ The Collector receives trace data inside the cluster and exports only traces to 
      namespace: ${OTEL_NAMESPACE}
    spec:
      from:
-       - group: agentgateway.dev
-         kind: AgentgatewayPolicy
+       - group: {{< reuse "agw-docs/snippets/group.md" >}}
+         kind: {{< reuse "agw-docs/snippets/policy.md" >}}
          namespace: ${GATEWAY_NAMESPACE}
      to:
        - group: ""
@@ -369,7 +369,7 @@ Attach tracing to your existing Gateway with an {{< reuse "agw-docs/snippets/pol
 Check that the tracing policy name is available and no other tracing policy targets the Gateway, then create the policy.
 
    ```sh
-   if ! object_state="$(kubectl get agentgatewaypolicies.agentgateway.dev \
+   if ! object_state="$(kubectl get {{< reuse "agw-docs/snippets/policies.md" >}}.{{< reuse "agw-docs/snippets/group.md" >}} \
      "$TRACE_POLICY_NAME" \
      --namespace "$GATEWAY_NAMESPACE" \
      --ignore-not-found \
@@ -386,7 +386,7 @@ Check that the tracing policy name is available and no other tracing policy targ
      "$GATEWAY_NAME" \
      --namespace "$GATEWAY_NAMESPACE" \
      --output json)" &&
-   policies_json="$(kubectl get agentgatewaypolicies.agentgateway.dev \
+   policies_json="$(kubectl get {{< reuse "agw-docs/snippets/policies.md" >}}.{{< reuse "agw-docs/snippets/group.md" >}} \
      --namespace "$GATEWAY_NAMESPACE" \
      --output json)" &&
    conflicting_policies="$(jq -nr \
@@ -507,7 +507,7 @@ Check the Collector and policy before you send a known trace ID. Azure Monitor i
 2. Confirm that the policy reports current `Accepted` and `Attached` conditions.
 
    ```sh
-   policy_json="$(kubectl get agentgatewaypolicies.agentgateway.dev \
+   policy_json="$(kubectl get {{< reuse "agw-docs/snippets/policies.md" >}}.{{< reuse "agw-docs/snippets/group.md" >}} \
      "$TRACE_POLICY_NAME" \
      --namespace "$GATEWAY_NAMESPACE" \
      --output json)" &&
@@ -736,7 +736,7 @@ By default, agentgateway writes one structured access log per request to stdout.
 Remove only the tracing policy and monitors created by this guide. Keep the Gateway, controller, provider routes, model access, and their namespaces. Do not remove a shared Collector until every workload using it has stopped exporting traces.
 
 ```sh
-kubectl delete agentgatewaypolicies.agentgateway.dev "$TRACE_POLICY_NAME" \
+kubectl delete {{< reuse "agw-docs/snippets/policies.md" >}}.{{< reuse "agw-docs/snippets/group.md" >}} "$TRACE_POLICY_NAME" \
   --namespace "$GATEWAY_NAMESPACE" --ignore-not-found --wait=true &&
 kubectl delete podmonitors.azmonitoring.coreos.com "$GATEWAY_POD_MONITOR" \
   --namespace "$GATEWAY_NAMESPACE" --ignore-not-found --wait=true &&
