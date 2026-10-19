@@ -5,6 +5,9 @@ Use the {{< reuse "agw-docs/snippets/backend.md" >}} `tunnel` policy to route ba
 The `tunnel` field on an {{< reuse "agw-docs/snippets/backend.md" >}} configures an HTTP CONNECT tunnel to the target backend. Agentgateway establishes an HTTP tunnel through the proxy and forwards all requests to the upstream endpoint.
 
 The tunnel supports `Service` and {{< reuse "agw-docs/snippets/backend.md" >}} types as the proxy target.
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+The `tunnel` policy applies to one backend. To send every request that the agentgateway proxy makes on its own behalf through a forward proxy, such as external authorization and guardrail requests, see [Callout proxy]({{< link-hextra path="/documentation/setup/customize/callout-proxy/" >}}). For callouts to a backend that has its own `tunnel` policy, that tunnel takes precedence over the callout proxy.
+{{< /version >}}
 
 ## Before you begin
 
