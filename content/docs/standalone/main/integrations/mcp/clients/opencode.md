@@ -6,6 +6,8 @@ description: Connect OpenCode to agentgateway
 
 Configure OpenCode, the open source AI coding assistant, to use agentgateway as an MCP server.
 
+To send the LLM requests of OpenCode through agentgateway instead, see [OpenCode LLM client]({{< link-hextra path="/integrations/llm/clients/opencode/" >}}).
+
 ## Before you begin
 
 {{< reuse "agw-docs/standalone/prereq-mcp-clients.md" >}}

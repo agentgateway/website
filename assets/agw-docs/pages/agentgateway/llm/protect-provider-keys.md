@@ -125,7 +125,7 @@ EOF
 
 ## Step 3: Connect a client with a virtual key
 
-Give each client the Gateway address and its virtual key, instead of a provider key. Most clients accept a custom base URL for an OpenAI-compatible API, such as `http://$INGRESS_GW_ADDRESS/v1`, and an API key. For example, see the guides for [Codex]({{< link-hextra path="/integrations/llm/clients/codex/" >}}) and [other LLM clients]({{< link-hextra path="/integrations/llm/clients/" >}}).
+Give each client the Gateway address and its virtual key, instead of a provider key. Most clients accept a custom base URL for an OpenAI-compatible API, such as `http://$INGRESS_GW_ADDRESS/v1`, and an API key. For example, see the guides for [OpenCode]({{< link-hextra path="/integrations/llm/clients/opencode/" >}}), [Codex]({{< link-hextra path="/integrations/llm/clients/codex/" >}}), and [other LLM clients]({{< link-hextra path="/integrations/llm/clients/" >}}).
 
 If you use port-forwarding instead of a LoadBalancer address, replace `$INGRESS_GW_ADDRESS` with `localhost:8080` in the following requests.
 
