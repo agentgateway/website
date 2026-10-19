@@ -16,7 +16,8 @@ Install `agctl`, the command-line tool that you use to inspect and debug agentga
 | `agctl costs` | Manage the model cost catalogs that price LLM requests, including importing catalog data from supported pricing sources. |{{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 | `agctl catalog` | Manage the model catalogs that price LLM requests, including importing catalog data from supported pricing sources. |{{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 | `agctl migrate` | Migrate agentgateway resources to newer configurations. |{{< /version >}}
-| `agctl version` | Print version information for the `agctl` CLI. |
+| `agctl version` | Print version information for the `agctl` CLI. |{{< version include-if="main" >}}{{< conditional-text include-if="kubernetes" >}}
+| `agctl bug-report` | Collect agentgateway resources, logs, and metrics from your cluster into an archive that you can attach to a bug report. Secret values are redacted. |{{< /conditional-text >}}{{< /version >}}
 | `agctl completion` | Turn on autocompletion for your shell in `bash`, `zsh`, `fish`, or `powershell`. |
 
 For a complete list of subcommands and flags, see the [`agctl` CLI reference]({{< link-hextra path="/reference/agctl/" >}}).
@@ -37,7 +38,7 @@ Download the `agctl` binary for your platform from the [releases page](https://g
 Download the pre-compiled binary:
 
 ```sh
-curl -sL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-linux-amd64 -o agctl
+curl -fsSL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-linux-amd64 -o agctl
 chmod +x agctl
 sudo mv agctl /usr/local/bin/agctl
 ```
@@ -49,10 +50,10 @@ Download the pre-compiled binary:
 
 ```sh
 # Intel
-curl -sL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-darwin-amd64 -o agctl
+curl -fsSL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-darwin-amd64 -o agctl
 
 # Apple Silicon
-curl -sL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-darwin-arm64 -o agctl
+curl -fsSL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-darwin-arm64 -o agctl
 
 chmod +x agctl
 sudo mv agctl /usr/local/bin/agctl
