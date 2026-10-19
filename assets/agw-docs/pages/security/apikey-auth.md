@@ -6,7 +6,7 @@
 > When you use API keys, your services are only as secure as the API keys. Storing and rotating the API key securely is up to the user.
 
 > [!TIP]
-> You can also use API keys to protect the API keys of your LLM providers. Give each client its own API key for {{< reuse "agw-docs/snippets/agentgateway.md" >}}, also known as a virtual key, instead of a provider key. The proxy removes the virtual key from each request and attaches the provider key, so the provider key never leaves your cluster. For more information, see [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}){{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} and [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}){{< /version >}}.
+> You can also use API keys to protect the API keys of your LLM providers. Give each client its own API key for {{< reuse "agw-docs/snippets/agentgateway.md" >}}, also known as a virtual key, instead of a provider key. The proxy removes the virtual key from each request and attaches the provider key, so the provider key never leaves your cluster.{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} For more information, see [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} For more information, see [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}).{{< /version >}}
 
 ## API key auth in agentgateway
 

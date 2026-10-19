@@ -5,7 +5,7 @@ Configure [OpenCode](https://opencode.ai/), the open source AI coding agent, to 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 2. [Set up access to the OpenAI LLM provider]({{< link-hextra path="/integrations/llm/providers/openai/" >}}). Use the HTTPRoute that matches all paths, so that OpenCode can send requests to the `/v1/chat/completions` path.
 3. Require a virtual key for requests to the Gateway, such as by following [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}) or [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). This guide uses the `vk-alice-4f9c2a` key from the Protect provider API keys guide.
-4. [Install OpenCode](https://opencode.ai/docs/).
+4. [Install OpenCode](https://opencode.ai/docs/). This guide was tested with OpenCode 1.18.35.
 
 ## Set the gateway URL and virtual key
 
@@ -89,9 +89,6 @@ If the virtual key is missing, unknown, or revoked, OpenCode shows the `401` res
 ```
 Error: Unauthorized: api key authentication failure: invalid credentials
 ```
-
-> [!NOTE]
-> This configuration was tested with OpenCode `1.18.35`.
 
 ## Next steps
 

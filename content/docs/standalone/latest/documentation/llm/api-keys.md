@@ -119,3 +119,9 @@ Rotate a provider key on a schedule, when your provider asks you to, or as soon 
 
 3. Send a request through agentgateway, and verify that it succeeds with the new key.
 4. Revoke the old key in the console of your LLM provider.
+
+## Next steps
+
+{{< cards >}}
+  {{< card path="/documentation/llm/protect-provider-keys/" title="Protect provider API keys" subtitle="Give clients revocable virtual keys instead of the provider key" >}}
+{{< /cards >}}

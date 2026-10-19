@@ -5,7 +5,7 @@ To connect OpenCode to MCP servers through agentgateway instead, see [OpenCode M
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. [Install OpenCode](https://opencode.ai/docs/).
+2. [Install OpenCode](https://opencode.ai/docs/). This guide was tested with OpenCode 1.18.35.
 
 {{< reuse "agw-docs/snippets/llm-client-setup-callout.md" >}}
 
@@ -114,9 +114,6 @@ If the virtual key is missing, unknown, or revoked, OpenCode shows the `401` res
 ```
 Error: Unauthorized: api key authentication failure: invalid credentials
 ```
-
-> [!NOTE]
-> This configuration was tested with OpenCode `1.18.35`.
 
 ## Next steps
 

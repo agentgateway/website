@@ -484,3 +484,11 @@ Rotate a provider key on a schedule, when your provider asks you to, or as soon 
 5. Revoke the old key in the console of your LLM provider.
 
 If you provide the key inline instead, update the `policies.auth.key` field of the {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+## Next steps
+
+{{< cards >}}
+  {{< card path="/documentation/llm/protect-provider-keys/" title="Protect provider API keys" subtitle="Give clients revocable virtual keys instead of the provider key" >}}
+{{< /cards >}}
+{{< /version >}}

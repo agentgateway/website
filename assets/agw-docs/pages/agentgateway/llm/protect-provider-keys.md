@@ -36,13 +36,19 @@ Because the provider keys live in one place, routine and emergency changes happe
 | Limit the damage from a copied virtual key | Set a token budget for each key. | None. |
 | Allow only some models | Add an authorization rule for the requested model. | None. |
 
-This pattern does not remove the risk of a leaked key. It moves the provider keys into your cluster, where you control access to them. For more information, see [Secure the provider keys](#secure-the-provider-keys).
+### More security considerations
+
+This pattern does not remove the risk of a leaked key. It moves the provider keys into your cluster, where you control access to them. The Secret holds a provider key that every client depends on, so protect it as you would any other production credential.
+
+* **Restrict who can read the Secret.** Limit the Kubernetes RBAC permissions to read Secrets in the namespace of the {{< reuse "agw-docs/snippets/backend.md" >}}.
+* **Encrypt client traffic.** Virtual keys are bearer credentials. Serve clients over [HTTPS]({{< link-hextra path="/documentation/setup/listeners/https/" >}}), or keep the Gateway on a private network.
+* **Keep {{< reuse "agw-docs/snippets/agentgateway.md" >}} up to date** with security patches.
 
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
-The OpenAI provider guide stores your OpenAI API key in the `openai-secret` Secret, and creates an `openai` {{< reuse "agw-docs/snippets/backend.md" >}} that references the Secret in its `policies.auth.secretRef` field. Clients never need this key. Use the HTTPRoute that matches all paths, so that clients can send requests to the `/v1/chat/completions` path.
+The OpenAI provider guide stores your OpenAI API key in the `openai-secret` Secret, and creates an `openai` {{< reuse "agw-docs/snippets/backend.md" >}} that references the Secret in its `policies.auth.secretRef` field. Clients never need this key. Use the HTTPRoute that matches all paths, so that clients can send requests to the `/v1/chat/completions` path. For other options of providing the API key to {{< reuse "agw-docs/snippets/agentgateway.md" >}}, see [Provider API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
 
 ## Step 1: Create virtual keys
 
@@ -206,14 +212,6 @@ Make the following changes in the cluster. You do not need to restart the proxy 
 
 To give each key its own token budget and to track the usage of each key, see [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). To see the cost of each request, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
 
-## Secure the provider keys
-
-The Secret now holds a provider key that every client depends on, so protect it as you would any other production credential.
-
-* **Restrict who can read the Secret.** Limit the Kubernetes RBAC permissions to read Secrets in the namespace of the {{< reuse "agw-docs/snippets/backend.md" >}}.
-* **Encrypt client traffic.** Virtual keys are bearer credentials. Serve clients over [HTTPS]({{< link-hextra path="/documentation/setup/listeners/https/" >}}), or keep the Gateway on a private network.
-* **Keep {{< reuse "agw-docs/snippets/agentgateway.md" >}} up to date** with security patches.
-
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
@@ -227,7 +225,6 @@ kubectl delete configmap llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.
 
 {{< cards >}}
   {{< card path="/documentation/llm/cost-controls/virtual-keys/" title="Virtual keys" subtitle="Issue virtual keys with token budgets and per-key metrics" >}}
-  {{< card path="/documentation/llm/api-keys/" title="Provider API keys" subtitle="Ways to provide and rotate the keys for your LLM providers" >}}
   {{< card path="/documentation/security/apikey/" title="API key auth" subtitle="Options for storing and selecting API keys" >}}
   {{< card path="/integrations/llm/clients/" title="LLM clients" subtitle="Connect coding agents and other clients to agentgateway" >}}
 {{< /cards >}}

@@ -36,13 +36,21 @@ Because the provider keys live in one place, routine and emergency changes happe
 | Limit the damage from a copied virtual key | Set a rate limit or budget for each key. | None. |
 | Allow only some models | List the models that the gateway serves, or that each key can use. | None. |
 
-This pattern does not remove the risk of a leaked key. It moves the provider keys to one host that you control. For more information, see [Secure the gateway host](#secure-the-gateway-host).
+### More security considerations
+
+This pattern does not remove the risk of a leaked key. It moves the provider keys to one host that you control. The gateway host holds every provider key, so protect it as you would any other secret store.
+
+* **Restrict access to the files.** Run agentgateway as a dedicated user, and make the key file and the configuration file readable only by that user.
+* **Do not store raw virtual keys.** Store a `keyHash` for each virtual key instead of the raw `key`, so that a copy of the configuration file does not contain usable keys.
+* **Encrypt client traffic.** Virtual keys are bearer credentials. Serve clients over TLS, or keep the gateway on a private network.
+* **Protect the UI and admin API.** Anyone who can reach them can create and read virtual keys. For more information, see [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).
+* **Keep agentgateway up to date** with security patches.
 
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-You also need an API key for your LLM provider. This guide uses OpenAI.
+You also need an API key for your LLM provider. This guide uses OpenAI and stores the key in a file. For other options of providing the API key to agentgateway, see [Provider API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
 
 ## Step 1: Store the provider key on the gateway host
 
@@ -207,21 +215,10 @@ Make the following changes on the gateway host while agentgateway runs. You do n
 
 You can also create, edit, and delete virtual keys in the [UI]({{< link-hextra path="/documentation/setup/ui/" >}}). For more information, see [Virtual key management]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
 
-## Secure the gateway host
-
-The gateway host now holds every provider key, so protect it as you would any other secret store.
-
-* **Restrict access to the files.** Run agentgateway as a dedicated user, and make the key file and the configuration file readable only by that user.
-* **Do not store raw virtual keys.** Store a `keyHash` for each virtual key instead of the raw `key`, so that a copy of the configuration file does not contain usable keys.
-* **Encrypt client traffic.** Virtual keys are bearer credentials. Serve clients over TLS, or keep the gateway on a private network.
-* **Protect the UI and admin API.** Anyone who can reach them can create and read virtual keys. For more information, see [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).
-* **Keep agentgateway up to date** with security patches.
-
 ## Next steps
 
 {{< cards >}}
   {{< card path="/documentation/llm/cost-controls/virtual-keys/" title="Virtual keys" subtitle="Issue virtual keys with token budgets and per-key metrics" >}}
   {{< card path="/documentation/llm/cost-controls/budget-limits/per-key/" title="Per-key budgets" subtitle="Cap the spend of each virtual key in tokens or US dollars" >}}
-  {{< card path="/documentation/llm/api-keys/" title="Provider API keys" subtitle="Ways to provide and rotate the keys for your LLM providers" >}}
   {{< card path="/integrations/llm/clients/" title="LLM clients" subtitle="Connect coding agents and other clients to agentgateway" >}}
 {{< /cards >}}
