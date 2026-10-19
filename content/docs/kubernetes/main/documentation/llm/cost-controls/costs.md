@@ -14,7 +14,7 @@ test:
     path: costs
 ---
 
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} computes the realized USD cost of each LLM request from a model cost catalog. For each priced request, {{< reuse "agw-docs/snippets/agentgateway.md" >}} records the cost in access logs, traces, and metrics, and exposes the values to CEL expressions as `llm.cost` and `llm.costRates`.
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} computes the realized USD cost of each LLM request from a model cost catalog. For each request that matches a catalog entry, CEL expressions can use `llm.model` to read the resolved model metadata. For each priced request, {{< reuse "agw-docs/snippets/agentgateway.md" >}} also records the cost in access logs, traces, and metrics, and exposes the values to CEL expressions as `llm.cost` and `llm.costRates`.
 
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} ships with a built-in catalog, so requests to common public models are priced without any configuration. The built-in catalog is fixed when your {{< reuse "agw-docs/snippets/agentgateway.md" >}} version is built. To price newer models, set contracted rates, or add your own models, add catalog sources as described in the following steps.
 
@@ -191,6 +191,7 @@ When a request matches an entry in the catalog, {{< reuse "agw-docs/snippets/age
 
 - `llm.cost`: The realized USD cost of the request. Includes `total` plus per-usage-type components: `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, `outputAudio`, and `pages` for page-billed document models. Unset when the model cannot be priced.
 - `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied, after tier selection. For page-billed document models, `perPage` holds the USD-per-page rate instead. Unset when the model cannot be priced.
+- `llm.model`: The resolved model's catalog metadata, including `id`, `tags`, `limits`, `modalities`, `capabilities`, and `reasoning`. Unset when no catalog entry matches the request provider and model.
 
 The request access log includes `agw.ai.usage.cost.total` only for priced LLM requests. When the model cannot be priced, which is a lookup status of `Unpriced` or `Missing` as described in the next step, the access log leaves out the field. For how to view logs and add cost fields, see [Metrics and logs]({{< link-hextra path="/documentation/llm/observability/" >}}).
 
