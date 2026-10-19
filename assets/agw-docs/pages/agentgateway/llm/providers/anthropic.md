@@ -7,6 +7,10 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
 > {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Client response bodies use the usage convention for the API format that the client called. A `/v1/messages` response uses Anthropic usage fields. In that response, `usage.input_tokens` excludes prompt-cache tokens and cache counts appear separately. A `/v1/chat/completions` response uses OpenAI usage fields, and `usage.prompt_tokens` includes prompt-cache tokens.{{< /version >}}
 {{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+For Anthropic Messages and token-count requests, a client `anthropic-version` header is forwarded. If the client sends no version header, the request uses the default `2023-06-01` version.
+{{< /version >}}
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
