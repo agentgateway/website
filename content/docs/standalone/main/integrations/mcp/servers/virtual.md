@@ -315,7 +315,7 @@ Configure your MCP client to send `x-include-time: true` on its requests, includ
 
 Keep the following behaviors in mind when you write target conditions:
 
-* **Evaluation timing**: In stateful mode (the default), conditions run at session initialization. The selected targets apply to all later requests in that session. In stateless mode, conditions run on every request.
+* **Evaluation timing**: In stateful mode (the default), conditions run at session initialization. The selected targets apply to all later requests in that session. Conditions run again if agentgateway rebuilds the session from its session ID, such as on another replica. In stateless mode, conditions run on every request.
 * **Stable names**: Tool and prompt names keep their target-name prefix even when only one target remains.
 * **Excluded targets**: Their tools are absent from lists. Calls to those tools fail because the target is not part of the session.
 * **Evaluation errors**: Agentgateway excludes the target if its condition fails to evaluate, such as when it reads a missing JWT claim.

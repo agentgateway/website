@@ -224,6 +224,7 @@ In this guide, you configure three CEL guardrails for the `echo` tool of a sampl
 
    Verify that the result masks both email addresses and both secrets. The request guardrail masks the addresses; the response guardrail masks the secrets.
    ```console
+   event: message
    data: {"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"Echo: Contact [EMAIL] and [EMAIL]; tokens [SECRET] and [SECRET]"}]}}
    ```
 

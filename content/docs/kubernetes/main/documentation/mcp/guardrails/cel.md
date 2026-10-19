@@ -305,6 +305,7 @@ Check the policy's status reason and message as well as `Accepted`. Invalid CEL 
 
    Verify that the result masks both email addresses and both secrets. The request guardrail masks the addresses; the response guardrail masks the secrets.
    ```console
+   event: message
    data: {"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"Echo: Contact [EMAIL] and [EMAIL]; tokens [SECRET] and [SECRET]"}]}}
    ```
 

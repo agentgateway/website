@@ -44,7 +44,7 @@ The LLM and MCP playgrounds omit browser credentials, including cookies and HTTP
 
 For a bearer token in the LLM playground, select a saved key from **Virtual API key**. Alternatively, select **Raw value** and enter the token in **Raw API key**. The playground sends it in an `Authorization: Bearer` header.
 
-In the MCP playground, enter the token in **Bearer token**.
+In the MCP playground, expand **Authorization header** and enter the token in **Bearer token**.
 
 ## Next steps
 

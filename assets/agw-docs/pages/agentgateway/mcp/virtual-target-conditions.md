@@ -66,7 +66,7 @@ Agentgateway evaluates conditions before contacting targets. Excluded targets re
 
 Keep the following behaviors in mind when you write target conditions:
 
-* **Evaluation timing**: With `Stateful` routing (the default), conditions run at session initialization. The selected targets apply to all later requests in that session, even without the header. With `sessionRouting: Stateless`, conditions run on every request.
+* **Evaluation timing**: With `Stateful` routing (the default), conditions run at session initialization. The selected targets apply to all later requests in that session, even without the header. Conditions run again if agentgateway rebuilds the session from its session ID, such as on another replica. With `sessionRouting: Stateless`, conditions run on every request.
 * **Stable names**: Tool and prompt names keep their target-name prefix even when only one target remains.
 * **Excluded targets**: Their tools are absent from lists. Calls to those tools fail because the target is not part of the session.
 * **Evaluation errors**: Agentgateway excludes the target if its condition fails to evaluate, such as when it reads a missing JWT claim.

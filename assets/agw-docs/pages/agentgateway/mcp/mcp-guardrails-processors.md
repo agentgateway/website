@@ -171,7 +171,7 @@ Invalid CEL syntax can produce a policy condition with `type: Accepted`, `status
 
 A remote processor calls an external gRPC server that implements the [ExtMCP protocol](https://github.com/agentgateway/agentgateway/blob/main/crates/protos/proto/ext_mcp.proto). ExtMCP follows the model of Envoy's `ext_authz` filter. The server receives the MCP method name, target, request parameters or response result, and selected request headers.
 
-* **The ExtMCP server**: The {{< conditional-text include-if="kubernetes" >}}`remote.backendRef`{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}`remote` reference, such as `host`{{< /conditional-text >}} points to the gRPC server that enforces the processor.
+* **The ExtMCP server**: The {{< conditional-text include-if="kubernetes" >}}`remote.backendRef` or `remote.url`{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}`remote` reference, such as `host`{{< /conditional-text >}} points to the gRPC server that enforces the processor.{{< conditional-text include-if="kubernetes" >}} Set exactly one. A `url` must not include a path, and an `https` URL enables TLS.{{< /conditional-text >}}
 * **The failure mode**: The `failureMode` setting controls what happens when the server is unreachable or returns an error. See [Failure modes](#failure-modes).
 
 ### Methods
@@ -212,7 +212,7 @@ Keep the following behaviors in mind when you design a policy:
 
 ### Error codes
 
-When a processor denies a call, agentgateway returns a JSON-RPC error to the client. A CEL expression processor that rejects a call uses the `PERMISSION_DENIED` code. For a remote processor, the server's authorization code maps to a JSON-RPC error code:
+When a processor denies a call, agentgateway returns a JSON-RPC error to the client. A CEL expression processor that rejects a call returns the `-32001` code, the same as a remote `PERMISSION_DENIED`. For a remote processor, the server's authorization code maps to a JSON-RPC error code:
 
 | ExtMCP code | JSON-RPC code |
 |-------------|---------------|

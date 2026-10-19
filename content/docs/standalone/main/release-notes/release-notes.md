@@ -51,7 +51,7 @@ Review the release notes for agentgateway standalone.
 
 **LLM**
 
-- Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
+- OpenAI-compatible responses, such as from Gemini, count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
 - Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
 - Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 - Bedrock Runtime requests now send client `tool_choice` settings as Converse `toolChoice`, so forced tool choices can take effect and models that reject them return Bedrock errors.
@@ -265,8 +265,6 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3720 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3724 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3743 -->
 
 **Traffic management**
@@ -278,7 +276,6 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 **LLM**
 
 - Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
-- Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
 - A client query string, such as the `?beta=true` that Claude Code sends, is no longer forwarded when an LLM request is converted to another provider format. Before, strict providers such as Gemini rejected these requests with a `400` error.
 
 **MCP**
@@ -289,4 +286,3 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `fro
 **Operations**
 
 - Standalone Helm installs can set `podDisruptionBudget.maxUnavailable` without also rendering the default `podDisruptionBudget.minAvailable` value.
-- Metrics requests use the OpenMetrics content type by default, while browser requests use `text/plain` so browsers display metrics instead of downloading them.
