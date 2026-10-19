@@ -280,19 +280,20 @@ Use `sessionOrBearer` when your API clients can get an ID token from the same id
        credentials: sessionOrBearer
    ```
 
-2. Get an ID token for the `clientId` from your identity provider, and send the token in the `Authorization` header. The policy checks the token signature against its JWKS, and checks that the token is not expired. The `iss` claim must match `issuer` and the `aud` claim must include `clientId`. An access token is rejected unless its `aud` claim also includes `clientId`, so send the ID token.
+2. Get an ID token for the `clientId` from your identity provider, and send the token in the `Authorization` header. The policy checks the token signature against its JWKS, and checks that the token is not expired. The `iss` claim must match `issuer` and the `aud` claim must include `clientId`. Access tokens usually have a different audience, so send the ID token, not an access token.
 
    ```sh
    curl -i http://localhost:3000/ -H "Authorization: Bearer $ID_TOKEN"
    ```
 
-Review the following behavior.
+The policy handles each request according to its `Authorization` header.
 
-- A valid token authenticates the request without the browser login flow. The token claims are available as `jwt` in authorization rules and access logs, as they are for a browser session.
-- The gateway removes the `Authorization` header before it forwards the request.
-- An invalid token gets a `401 Unauthorized` response, even if the request also carries a valid session cookie. The gateway does not redirect the request to log in.
-- A request without an `Authorization` header uses the browser session flow.
-- On the `login.path` endpoint, the policy ignores the `Authorization` header.
+| Request | Behavior |
+|---------|----------|
+| Valid token | The request is authenticated without the browser login flow. The token claims are available as `jwt` in authorization rules and access logs, as they are for a browser session. The gateway removes the `Authorization` header before it forwards the request. |
+| Invalid token | The request gets a `401 Unauthorized` response, even if it also carries a valid session cookie. The gateway does not redirect the request to log in. |
+| No `Authorization` header | The request uses the browser session flow. |
+| Any request to the `login.path` endpoint | The policy ignores the `Authorization` header. |
 
 ### Pass API clients to other authentication policies {#permissive-credentials}
 
