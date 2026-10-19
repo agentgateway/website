@@ -18,6 +18,12 @@ Review the release notes for agentgateway standalone.
 
 - **Standalone Helm session key Secret**: Set `session.secretName` to load the AES-256-GCM session key from an existing Kubernetes Secret. The chart passes the Secret's `key` entry to the proxy as the `SESSION_KEY` environment variable, which takes precedence over `config.session.key`. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
 
+### MCP {#v17-mcp}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3973 -->
+
+- **OpenAPI MCP targets can override schema server paths**: Standalone OpenAPI MCP targets can now use a non-root `host` URI or `path` value as the request prefix. Previously, the OpenAPI schema server path controlled the prefix even when the target URL included a path. Omitted, empty, and root paths keep using the schema server path; to route to root, update the schema server URL. For more information, see [Override the schema server path]({{< link-hextra path="/integrations/mcp/servers/openapi/#override-schema-server-path" >}}).
+
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->
