@@ -1,8 +1,8 @@
-Provider API keys, such as an OpenAI or Anthropic API key, are the credentials that {{< reuse "agw-docs/snippets/agentgateway.md" >}} sends to your LLM provider. Managing these keys is an important security mechanism to prevent unauthorized access to your LLM provider. If API keys are compromised, attackers can deliberately run expensive queries, such as large and recursive prompts, at your expense.
+Provider API keys authenticate {{< reuse "agw-docs/snippets/agentgateway.md" >}} to LLM providers such as OpenAI or Anthropic. A leaked key lets attackers run requests at your expense.
 
-When you issue API keys to users or teams and attach per-key token budgets (via [budget and spend limits]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}})), you get a similar functionality that other AI gateways often call virtual keys or virtual key management. Agentgateway delivers this by composing API key authentication, token-based rate limits keyed by user or header, and optional observability. For a complete virtual key setup guide, see [Virtual key management]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). The proxy removes the virtual key from each request and attaches the provider API key, so your clients never need a provider key.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} For a walkthrough, see [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}).{{< /version >}}
+Clients can authenticate with [virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). The proxy replaces each virtual key with the provider key before forwarding the request. You can also apply [per-key token budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}) and track usage.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} For a walkthrough, see [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}).{{< /version >}}
 
-Follow the instructions in this guide to learn how to use these different methods. 
+Choose a method to provide the key to the proxy.
 
 ## Before you begin
 
@@ -461,7 +461,7 @@ Pass through an existing token directly from the client or a successful OpenID C
 
 ## Rotate a provider key {#rotate}
 
-Rotate a provider key on a schedule, when your provider asks you to, or as soon as you suspect that a key leaked. If you store the key in a Kubernetes secret, you rotate it in the cluster only. Clients that authenticate with their own [virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) do not change.
+Rotate provider keys regularly, when your provider requires it, or after a suspected leak. For keys stored in Kubernetes Secrets, update the Secret in the cluster. Clients that use [virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) need no configuration changes.
 
 1. Create a new API key in the console of your LLM provider. Keep the old key active for now.
 

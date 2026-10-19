@@ -1,10 +1,10 @@
-Keep your LLM provider API keys on {{< reuse "agw-docs/snippets/agentgateway.md" >}}, and give each coding agent, tool, or user a virtual key that you can revoke.
+Keep LLM provider API keys on {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Give each client a revocable virtual key.
 
 ## About
 
-Coding agents such as OpenCode, Codex, and Claude Code usually authenticate with a provider API key, such as an OpenAI or Anthropic key. That key ends up in a config file or environment variable on every laptop, CI runner, and workspace where the agent runs. When the provider asks you to rotate the key, or a copy leaks, you have to find and replace every copy.
+When clients use a provider API key directly, each laptop, CI runner, or workspace stores a copy. Rotating the key means finding and replacing every copy.
 
-With {{< reuse "agw-docs/snippets/agentgateway.md" >}} in front of your LLM providers, the provider keys stay in a Kubernetes Secret in your cluster. Each client gets a virtual key instead. A virtual key works only against {{< reuse "agw-docs/snippets/agentgateway.md" >}}, and you can revoke it without affecting any other client.
+With {{< reuse "agw-docs/snippets/agentgateway.md" >}}, provider keys stay in Kubernetes Secrets. Clients receive virtual keys that work only with the proxy. You can revoke each virtual key independently.
 
 ```mermaid
 sequenceDiagram
@@ -20,25 +20,18 @@ sequenceDiagram
     AGW-->>C: Response
 ```
 
-When a request arrives, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy does the following:
+The provider never receives the virtual key, and the client never receives the provider key. Manage access in the cluster without reconfiguring clients:
 
-1. Validates the virtual key. A missing, unknown, or revoked key gets a `401` response.
-2. Applies your policies, such as which models clients can use and how many tokens each key can spend.
-3. Removes the virtual key from the request and attaches the provider key from the Secret that the {{< reuse "agw-docs/snippets/backend.md" >}} references. The provider never receives the virtual key, and the client never sees the provider key.
-4. Records the token usage and cost of the request in metrics and logs, which you can attribute to the user of each key.
-
-Because the provider keys live in one place, routine and emergency changes happen in the cluster only.
-
-| When you need to | Change in the cluster | Change on clients |
-| -- | -- | -- |
-| Rotate a provider key | Update the Secret that holds the provider key. | None. |
-| Revoke a client | Remove its virtual key from the ConfigMap. Its next request gets a `401` response. | None for other clients. |
-| Limit the damage from a copied virtual key | Set a token budget for each key. | None. |
-| Allow only some models | Add an authorization rule for the requested model. | None. |
+| Task | Change in the cluster |
+| -- | -- |
+| Rotate a provider key | Update the Secret that holds it. |
+| Revoke a client | Remove its virtual key from the ConfigMap. Its next request gets a `401` response. |
+| Limit usage of a copied virtual key | Set a token budget for each key. |
+| Restrict model access | Add an authorization rule for the requested model. |
 
 ### More security considerations
 
-This pattern does not remove the risk of a leaked key. It moves the provider keys into your cluster, where you control access to them. The Secret holds a provider key that every client depends on, so protect it as you would any other production credential.
+All clients depend on the provider key in the Secret. Protect it as you would any other production credential.
 
 * **Restrict who can read the Secret.** Limit the Kubernetes RBAC permissions to read Secrets in the namespace of the {{< reuse "agw-docs/snippets/backend.md" >}}.
 * **Encrypt client traffic.** Virtual keys are bearer credentials. Serve clients over [HTTPS]({{< link-hextra path="/documentation/setup/listeners/https/" >}}), or keep the Gateway on a private network.
@@ -48,11 +41,13 @@ This pattern does not remove the risk of a leaked key. It moves the provider key
 
 {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
-The OpenAI provider guide stores your OpenAI API key in the `openai-secret` Secret, and creates an `openai` {{< reuse "agw-docs/snippets/backend.md" >}} that references the Secret in its `policies.auth.secretRef` field. Clients never need this key. Use the HTTPRoute that matches all paths, so that clients can send requests to the `/v1/chat/completions` path. For other options of providing the API key to {{< reuse "agw-docs/snippets/agentgateway.md" >}}, see [Provider API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
+The OpenAI provider guide creates the `openai-secret` Secret and an `openai` {{< reuse "agw-docs/snippets/backend.md" >}}. The {{< reuse "agw-docs/snippets/backend.md" >}} references the Secret in `policies.auth.secretRef`.
+
+Use the HTTPRoute that matches all paths to allow requests to `/v1/chat/completions`. For other ways to provide the key, see [Provider API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
 
 ## Step 1: Create virtual keys
 
-Store a SHA-256 hash of each virtual key in a ConfigMap. Clients send the raw key, and the proxy hashes it and compares it to the stored hash, so usable keys never have to exist in the cluster.
+Store a SHA-256 hash of each virtual key in a ConfigMap. The proxy hashes each incoming key and compares it to the stored hash. You do not need to store raw virtual keys in the cluster.
 
 1. Generate a hash for each virtual key. This example creates keys for Alice and Bob. Do not include a trailing newline.
 
@@ -92,7 +87,7 @@ Store a SHA-256 hash of each virtual key in a ConfigMap. Clients send the raw ke
 
 ## Step 2: Require virtual keys and allow only some models
 
-Create an {{< reuse "agw-docs/snippets/policy.md" >}} that requires a valid virtual key for every request to the Gateway, and that allows requests for only the models that you list. Put both settings in one policy. If two policies target the same Gateway, one policy silently overwrites the other.
+Create an {{< reuse "agw-docs/snippets/policy.md" >}} to require virtual keys and restrict model access. Put both settings in one policy. If two policies target the same Gateway, one policy silently overwrites the other.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -126,12 +121,16 @@ EOF
 | -- | -- |
 | `apiKeyAuthentication.mode` | Set to `Strict` so that every request needs a valid virtual key. |
 | `configMapSelector` | Selects the ConfigMaps that hold the virtual keys. |
-| `authorization.action` | Set to `Require` so that a request is denied with a `403` response unless the expression is true. |
-| `matchExpressions` | Allows a `POST` request only if the `model` field in the request body is in the list. Requests without a body, such as a `GET` request to list models, are allowed. To allow different models for each user, combine the expression with the user of the key, such as `apiKey.user_id == "bob"`. |
+| `authorization.action` | Set to `Require` to reject requests with a `403` response unless the expression is true. |
+| `matchExpressions` | Allows `POST` requests only for the listed models. Allows other methods, such as `GET` to list models. |
+
+To set model access per user, combine the model expression with a check on the key metadata, such as `apiKey.user_id == "bob"`.
 
 ## Step 3: Connect a client with a virtual key
 
-Give each client the Gateway address and its virtual key, instead of a provider key. Most clients accept a custom base URL for an OpenAI-compatible API, such as `http://$INGRESS_GW_ADDRESS/v1`, and an API key. For example, see the guides for [OpenCode]({{< link-hextra path="/integrations/llm/clients/opencode/" >}}), [Codex]({{< link-hextra path="/integrations/llm/clients/codex/" >}}), and [other LLM clients]({{< link-hextra path="/integrations/llm/clients/" >}}).
+Configure your client with its virtual key and the Gateway base URL, such as `http://$INGRESS_GW_ADDRESS/v1`.
+
+For client-specific instructions, see [OpenCode]({{< link-hextra path="/integrations/llm/clients/opencode/" >}}), [Codex]({{< link-hextra path="/integrations/llm/clients/codex/" >}}), or [other LLM clients]({{< link-hextra path="/integrations/llm/clients/" >}}).
 
 If you use port-forwarding instead of a LoadBalancer address, replace `$INGRESS_GW_ADDRESS` with `localhost:8080` in the following requests.
 
@@ -144,7 +143,7 @@ If you use port-forwarding instead of a LoadBalancer address, replace `$INGRESS_
      -d '{"model": "gpt-4o-mini", "messages": [{"role": "user", "content": "Hello!"}]}' | jq .
    ```
 
-2. Send a request for a model that is not in the list, such as `o3`. The request is rejected with a `403` response, even though the provider key could use that model.
+2. Request an unlisted model, such as `o3`. The proxy returns `403`, even if the provider key allows that model.
 
    ```sh
    curl -s -w "\n%{http_code}\n" "$INGRESS_GW_ADDRESS/v1/chat/completions" \
@@ -160,7 +159,7 @@ If you use port-forwarding instead of a LoadBalancer address, replace `$INGRESS_
    403
    ```
 
-3. Send a request with a key that is not in the ConfigMap. The request is rejected with a `401` response.
+3. Send a request with an unknown key. The proxy returns `401`.
 
    ```sh
    curl -s -w "\n%{http_code}\n" "$INGRESS_GW_ADDRESS/v1/chat/completions" \
@@ -210,7 +209,7 @@ Make the following changes in the cluster. You do not need to restart the proxy 
   401
   ```
 
-To give each key its own token budget and to track the usage of each key, see [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). To see the cost of each request, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
+For per-key budgets and usage tracking, see [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). For request costs, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
 
 ## Cleanup
 

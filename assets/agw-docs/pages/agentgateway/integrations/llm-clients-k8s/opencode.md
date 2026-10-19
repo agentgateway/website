@@ -1,21 +1,21 @@
-Configure [OpenCode](https://opencode.ai/), the open source AI coding agent, to send its LLM requests through {{< reuse "agw-docs/snippets/agentgateway.md" >}} running in Kubernetes. OpenCode holds only a virtual key for {{< reuse "agw-docs/snippets/agentgateway.md" >}}, and the provider API key stays in a Kubernetes Secret in your cluster.
+Route LLM requests from [OpenCode](https://opencode.ai/) through {{< reuse "agw-docs/snippets/agentgateway.md" >}} in Kubernetes. In this guide, OpenCode uses a virtual key, and the provider API key stays in a Kubernetes Secret.
 
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
-2. [Set up access to the OpenAI LLM provider]({{< link-hextra path="/integrations/llm/providers/openai/" >}}). Use the HTTPRoute that matches all paths, so that OpenCode can send requests to the `/v1/chat/completions` path.
-3. Require a virtual key for requests to the Gateway, such as by following [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}) or [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). This guide uses the `vk-alice-4f9c2a` key from the Protect provider API keys guide.
+2. [Set up access to the OpenAI LLM provider]({{< link-hextra path="/integrations/llm/providers/openai/" >}}). Use the HTTPRoute that matches all paths to allow requests to `/v1/chat/completions`.
+3. Require virtual keys for the Gateway. Follow [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}) or [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). This guide uses the `vk-alice-4f9c2a` key from the Protect provider API keys guide.
 4. [Install OpenCode](https://opencode.ai/docs/). This guide was tested with OpenCode 1.18.35.
 
 ## Set the gateway URL and virtual key
 
-1. Set the OpenCode base URL from the Gateway address. The [installation quickstart]({{< link-hextra path="/documentation/quickstart/install/" >}}) sets `INGRESS_GW_ADDRESS` to the Gateway address. The `/v1` suffix is required. If you use port-forwarding instead, use `http://localhost:8080/v1`.
+1. Set the base URL with the required `/v1` suffix. Use `INGRESS_GW_ADDRESS` from the [installation quickstart]({{< link-hextra path="/documentation/quickstart/install/" >}}), or `http://localhost:8080/v1` for port-forwarding.
 
    ```sh
    export AGENTGATEWAY_BASE_URL="http://${INGRESS_GW_ADDRESS}/v1"
    ```
 
-2. Save the virtual key in an environment variable. This key authenticates OpenCode to {{< reuse "agw-docs/snippets/agentgateway.md" >}}. It is not the OpenAI API key that the proxy sends upstream.
+2. Save the virtual key in an environment variable.
 
    ```sh
    export AGENTGATEWAY_API_KEY='vk-alice-4f9c2a'
@@ -26,7 +26,7 @@ Configure [OpenCode](https://opencode.ai/), the open source AI coding agent, to 
 
 ## Connect OpenCode to agentgateway
 
-1. Create an `opencode.json` file in your project directory. To use {{< reuse "agw-docs/snippets/agentgateway.md" >}} in every project instead, add the same settings to the global OpenCode configuration file, `~/.config/opencode/opencode.json`.
+1. Create `opencode.json` in your project directory. For settings that apply to all projects, use `~/.config/opencode/opencode.json`.
 
    ```sh
    cat > opencode.json <<'EOF'
@@ -56,9 +56,9 @@ Configure [OpenCode](https://opencode.ai/), the open source AI coding agent, to 
    | -- | -- |
    | `model` | The default model, in `<provider>/<model>` format. |
    | `provider.agentgateway.npm` | The AI SDK package for an OpenAI-compatible API. |
-   | `options.baseURL` | The Gateway address. The `{env:AGENTGATEWAY_BASE_URL}` value reads the address from the environment variable. |
-   | `options.apiKey` | The virtual key. The `{env:AGENTGATEWAY_API_KEY}` value reads the key from the environment variable, so the key is not stored in the file. Instead of the environment variable, you can also enter the key with the `/connect` command in OpenCode. |
-   | `models` | The models that OpenCode can request. If you allow only some models on the Gateway, list only those models. |
+   | `options.baseURL` | Reads the Gateway base URL from `AGENTGATEWAY_BASE_URL`. |
+   | `options.apiKey` | Reads the virtual key from `AGENTGATEWAY_API_KEY` to keep it out of the file. You can also enter the key with OpenCode's `/connect` command. |
+   | `models` | The models that OpenCode can request. List only models that the Gateway allows. |
 
 2. Start OpenCode from the same directory.
 
@@ -68,7 +68,7 @@ Configure [OpenCode](https://opencode.ai/), the open source AI coding agent, to 
 
 ## Verify the connection
 
-1. Send a prompt from OpenCode. To send a single prompt without the interactive interface, run the following command.
+1. Send a prompt in OpenCode, or run a single prompt from the command line:
 
    ```sh
    opencode run "Say hello"

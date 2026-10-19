@@ -1,10 +1,10 @@
-Keep your LLM provider API keys on agentgateway, and give each coding agent, tool, or user a virtual key that you can revoke.
+Keep LLM provider API keys on agentgateway. Give each client a revocable virtual key.
 
 ## About
 
-Coding agents such as OpenCode, Codex, and Claude Code usually authenticate with a provider API key, such as an OpenAI or Anthropic key. That key ends up in a config file or environment variable on every laptop, CI runner, and workspace where the agent runs. When the provider asks you to rotate the key, or a copy leaks, you have to find and replace every copy.
+When clients use a provider API key directly, each laptop, CI runner, or workspace stores a copy. Rotating the key means finding and replacing every copy.
 
-With agentgateway in front of your LLM providers, the provider keys stay on the gateway host. Each client gets a virtual key instead. A virtual key works only against agentgateway, and you can revoke it without affecting any other client.
+With agentgateway, provider keys stay on the gateway host. Clients receive virtual keys that work only with agentgateway. You can revoke each virtual key independently.
 
 ```mermaid
 sequenceDiagram
@@ -20,25 +20,18 @@ sequenceDiagram
     AGW-->>C: Response
 ```
 
-When a request arrives, agentgateway does the following:
+The provider never receives the virtual key, and the client never receives the provider key. Manage access on the gateway without reconfiguring clients:
 
-1. Validates the virtual key. A missing, unknown, or revoked key gets a `401` response.
-2. Applies the policies for that key, such as which models the key can use and how many tokens it can spend.
-3. Removes the virtual key from the request and attaches the provider key. The provider never receives the virtual key, and the client never sees the provider key.
-4. Records the token usage and cost of the request, which you can attribute to the user of each key.
-
-Because the provider keys live in one place, routine and emergency changes happen on the gateway only.
-
-| When you need to | Change on the gateway | Change on clients |
-| -- | -- | -- |
-| Rotate a provider key | Replace the key file. | None. |
-| Revoke a client | Remove its virtual key. Its next request gets a `401` response. | None for other clients. |
-| Limit the damage from a copied virtual key | Set a rate limit or budget for each key. | None. |
-| Allow only some models | List the models that the gateway serves, or that each key can use. | None. |
+| Task | Change on the gateway |
+| -- | -- |
+| Rotate a provider key | Replace the key file. |
+| Revoke a client | Remove its virtual key. Its next request gets a `401` response. |
+| Limit usage of a copied virtual key | Set a rate limit or budget for each key. |
+| Restrict model access | List the models that the gateway serves or that each key can use. |
 
 ### More security considerations
 
-This pattern does not remove the risk of a leaked key. It moves the provider keys to one host that you control. The gateway host holds every provider key, so protect it as you would any other secret store.
+The gateway host holds every provider key. Protect it as you would any other secret store.
 
 * **Restrict access to the files.** Run agentgateway as a dedicated user, and make the key file and the configuration file readable only by that user.
 * **Do not store raw virtual keys.** Store a `keyHash` for each virtual key instead of the raw `key`, so that a copy of the configuration file does not contain usable keys.
@@ -50,11 +43,11 @@ This pattern does not remove the risk of a leaked key. It moves the provider key
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-You also need an API key for your LLM provider. This guide uses OpenAI and stores the key in a file. For other options of providing the API key to agentgateway, see [Provider API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
+You also need an OpenAI API key. This guide stores it in a file. For other ways to provide the key, see [Provider API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
 
 ## Step 1: Store the provider key on the gateway host
 
-Save the provider key in a file that only the user who runs agentgateway can read. Agentgateway watches the file, so you can later rotate the key by replacing the contents of the file.
+Save the provider key in a file readable only by the user who runs agentgateway. Agentgateway watches this file for changes.
 
 ```sh
 printf '%s' "$OPENAI_API_KEY" > openai-key
@@ -63,7 +56,7 @@ chmod 600 openai-key
 
 ## Step 2: Configure virtual keys
 
-Create a configuration that defines the virtual keys for your users, and that reads the provider key from the file. This example creates virtual keys for Alice and Bob. Bob's key can use only the `gpt-4o-mini` model.
+Configure agentgateway to read the provider key file and accept virtual keys for Alice and Bob. Bob can use only `gpt-4o-mini`.
 
 ```yaml
 cat <<'EOF' > config.yaml
@@ -114,15 +107,17 @@ EOF
 
 | Setting | Description |
 | -- | -- |
-| `frontendPolicies.accessLog.add.user` | Adds the `user` metadata of the virtual key to each request log, so that you can attribute token usage and cost to a user. |
+| `frontendPolicies.accessLog.add.user` | Adds the key's `user` metadata to request logs to track usage and cost per user. |
 | `apiKey.mode` | Set to `strict` so that every request needs a valid virtual key. |
-| `apiKey.keys` | The virtual keys that clients send in the `Authorization: Bearer <key>` header. To keep usable keys out of the config file, store a SHA-256 hash of each key in a `keyHash` field instead of the raw `key`. For more information, see [API key authentication]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}). |
+| `apiKey.keys` | The virtual keys that clients send in the `Authorization: Bearer <key>` header. |
 | `metadata.user` | The user of the key, which the rate limit and the request log read as `apiKey.user`. |
 | `allowedModels` | The models that the key can use. A request for any other model gets a `403` response. Omit the field to allow all the models that the gateway serves. |
-| `localRateLimit` | A token budget of 10,000 tokens per minute. The `key: apiKey.user` setting gives each user a separate budget, so a copied key cannot use up the budget of other users. To cap spend in US dollars instead, see [Per-key budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/" >}}). |
-| `providers` | Defines the OpenAI provider once, so that every model that references it uses the same provider key. |
-| `defaults.auth.key.value.file` | The file that holds the provider key. Agentgateway reloads the key when the file changes. A relative path resolves from the directory where you start agentgateway, so use an absolute path in production. |
-| `models` | The models that the gateway serves. A request for a model that is not in the list gets a `404` response. Avoid the `*` wildcard if you want to control which models clients can use. |
+| `localRateLimit` | A budget of 10,000 tokens per minute for each `apiKey.user`. A copied key cannot consume another user's budget. |
+| `providers` | Defines a shared OpenAI provider and key for the models that reference it. |
+| `defaults.auth.key.value.file` | The provider key file. Relative paths resolve from the directory where you start agentgateway. Use an absolute path in production. |
+| `models` | The models that the gateway serves. Unlisted models get a `404` response. Avoid `*` to restrict model access. |
+
+To store hashes instead of raw virtual keys, use `keyHash` as described in [API key authentication]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}). To cap spend in US dollars, see [Per-key budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/" >}}).
 
 ## Step 3: Start agentgateway
 
@@ -132,7 +127,9 @@ agentgateway -f config.yaml
 
 ## Step 4: Connect a client with a virtual key
 
-Give each client the gateway address and its virtual key, instead of a provider key. Most clients accept a custom base URL for an OpenAI-compatible API, such as `http://localhost:4000/v1`, and an API key. For example, see the guides for [OpenCode]({{< link-hextra path="/integrations/llm/clients/opencode/" >}}), [Codex]({{< link-hextra path="/integrations/llm/clients/codex/" >}}), and [other LLM clients]({{< link-hextra path="/integrations/llm/clients/" >}}).
+Configure your client with its virtual key and the gateway base URL, `http://localhost:4000/v1`.
+
+For client-specific instructions, see [OpenCode]({{< link-hextra path="/integrations/llm/clients/opencode/" >}}), [Codex]({{< link-hextra path="/integrations/llm/clients/codex/" >}}), or [other LLM clients]({{< link-hextra path="/integrations/llm/clients/" >}}).
 
 1. Send a request with Alice's virtual key. The request succeeds.
 
@@ -143,13 +140,13 @@ Give each client the gateway address and its virtual key, instead of a provider 
      -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Hello!"}]}' | jq .
    ```
 
-   In the agentgateway logs, the request log shows the user, the token usage, and the cost of the request.
+   The request log shows the user, token usage, and cost.
 
    ```
    info  request gateway=default/default listener=llm route=internal/llm:request endpoint=api.openai.com:443 ... http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai gen_ai.request.model=gpt-4o gen_ai.response.model=gpt-4o-2024-08-06 gen_ai.usage.input_tokens=9 gen_ai.usage.output_tokens=10 agw.ai.usage.cost.total=0.0001225 duration=640ms user="alice"
    ```
 
-2. Send a request with Bob's virtual key for the `gpt-4o` model. Bob's key is not allowed to use that model, so the request is rejected with a `403` response.
+2. Request `gpt-4o` with Bob's key. Agentgateway returns `403` because his key allows only `gpt-4o-mini`.
 
    ```sh
    curl -s http://localhost:4000/v1/chat/completions \
@@ -164,7 +161,7 @@ Give each client the gateway address and its virtual key, instead of a provider 
    {"error":{"message":"Model is not allowed for this API key","type":"invalid_request_error","code":"model_not_allowed"}}
    ```
 
-3. Send a request for a model that the gateway does not serve, such as `o3`. The request is rejected with a `404` response, even though the provider key could use that model.
+3. Request an unlisted model, such as `o3`. Agentgateway returns `404`, even if the provider key allows that model.
 
    ```sh
    curl -s http://localhost:4000/v1/chat/completions \
@@ -189,7 +186,7 @@ Make the following changes on the gateway host while agentgateway runs. You do n
   printf '%s' "$NEW_OPENAI_API_KEY" > openai-key
   ```
 
-* **Revoke a virtual key**: Remove the key from the `apiKey.keys` list in `config.yaml` and save the file. Agentgateway reloads the configuration, and the next request with that key gets a `401` response. For example, to revoke Bob's key, the list keeps only Alice's key.
+* **Revoke a virtual key**: Remove the key from `apiKey.keys` in `config.yaml` and save the file. Agentgateway reloads the configuration. To revoke Bob's key, keep only Alice's key:
 
   ```yaml
   keys:

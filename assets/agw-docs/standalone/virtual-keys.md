@@ -26,7 +26,7 @@ flowchart TD
   end
 ```
 
-Before agentgateway forwards a request, it removes the virtual key from the request and attaches the provider API key that you configure for the model. The provider never receives the virtual key, and clients never need the provider key. Because each client has its own virtual key, you can revoke one client's access without rotating the provider key or changing other clients.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} For a walkthrough of this pattern, see [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}).{{< /version >}}
+The provider never receives the virtual key, and clients never need the provider key. Revoke a client's virtual key without rotating the provider key or reconfiguring other clients.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} For a walkthrough of this pattern, see [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}).{{< /version >}}
 
 ## Before you begin
 
@@ -115,8 +115,8 @@ EOF
 | `apiKey.keys` | List of API keys. Each key has a `key` value and optional `metadata`. |
 | `key` | The API key value that users include in the `Authorization: Bearer <key>` header. |
 | `metadata` | Optional metadata associated with the key, such as a user identifier or tier. |
-| `models[].name` | The models that the gateway serves. The `*` wildcard serves every model that the provider offers. To restrict the models, list them by name, or set `allowedModels` on a key as shown in [Step 5](#step-5-limit-the-models-for-each-key). |
-| `params.apiKey` | The provider API key that agentgateway attaches to requests in place of the virtual key. Clients never receive this key.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} To rotate the provider key without restarting agentgateway, read it from a file instead. For more information, see [Rotate a provider key]({{< link-hextra path="/documentation/llm/api-keys/#rotate" >}}).{{< /version >}} |
+| `models[].name` | The models that the gateway serves. Use `*` for all provider models, or list model names to restrict access. For per-key restrictions, see [Step 5](#step-5-limit-the-models-for-each-key). |
+| `params.apiKey` | The provider key that replaces the virtual key in outgoing requests.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} For file-based rotation without a restart, see [Rotate a provider key]({{< link-hextra path="/documentation/llm/api-keys/#rotate" >}}).{{< /version >}} |
 
 ### Step 2: Start agentgateway
 
@@ -241,7 +241,7 @@ EOF
 
 ### Step 4: Revoke a virtual key
 
-To revoke a virtual key, remove it from the `apiKey.keys` list and save the configuration file. Agentgateway reloads the file without a restart, and the next request with the revoked key gets a `401` response. Other keys keep working, and neither the provider key nor the configuration of other clients changes.
+Remove a key from `apiKey.keys` and save the configuration to revoke it. Agentgateway reloads the file without a restart. Other keys keep working.
 
 1. Remove Bob's key from `config.yaml`, so that the list keeps only Alice's key.
 
@@ -252,7 +252,7 @@ To revoke a virtual key, remove it from the `apiKey.keys` list and save the conf
        user: alice
    ```
 
-2. Send a request with Bob's key. Verify that the request is rejected with a `401` status.
+2. Send a request with Bob's key. Verify that agentgateway returns `401`.
 
    ```sh
    curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/v1/chat/completions \
@@ -273,7 +273,7 @@ To revoke a virtual key, remove it from the `apiKey.keys` list and save the conf
 
 ### Step 5: Limit the models for each key
 
-The `*` model in this guide serves every model that the provider offers, to every key. To limit the models that a key can use, add an `allowedModels` list to the key. A request for any other model gets a `403` response.
+The `*` wildcard makes all provider models available to every key. Add `allowedModels` to restrict a key to specific models.
 
 ```yaml
 keys:
@@ -287,13 +287,13 @@ keys:
   - gpt-4o-mini
 ```
 
-With this configuration, a request with Bob's key for a model other than `gpt-4o-mini` is rejected.
+Requests with Bob's key for models other than `gpt-4o-mini` get a `403` response:
 
 ```json
 {"error":{"message":"Model is not allowed for this API key","type":"invalid_request_error","code":"model_not_allowed"}}
 ```
 
-For pattern matching in `allowedModels` and how it works with budgets, see [Limit model access per key]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/#limit-model-access-per-key" >}}).
+For model patterns and budget interactions, see [Limit model access per key]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/#limit-model-access-per-key" >}}).
 
 ## Configure token budgets
 

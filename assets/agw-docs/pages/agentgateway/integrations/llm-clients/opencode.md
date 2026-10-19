@@ -1,4 +1,4 @@
-Configure [OpenCode](https://opencode.ai/), the open source AI coding agent, to send its LLM requests through agentgateway. OpenCode holds only a virtual key for agentgateway, and the provider API key stays on the gateway host.
+Route LLM requests from [OpenCode](https://opencode.ai/) through agentgateway. In this guide, OpenCode uses a virtual key, and the provider API key stays on the gateway host.
 
 To connect OpenCode to MCP servers through agentgateway instead, see [OpenCode MCP client]({{< link-hextra path="/integrations/mcp/clients/opencode/" >}}).
 
@@ -11,7 +11,7 @@ To connect OpenCode to MCP servers through agentgateway instead, see [OpenCode M
 
 ## Configure agentgateway
 
-Start agentgateway with an OpenAI model and a virtual key for OpenCode. OpenCode sends the virtual key, and agentgateway replaces it with the OpenAI API key before it forwards the request.
+Configure an OpenAI model and a virtual key for OpenCode. Agentgateway replaces the virtual key with the OpenAI API key when forwarding requests.
 
 1. Create a configuration file. List each model that OpenCode can use. A request for any other model is rejected.
 
@@ -36,8 +36,8 @@ Start agentgateway with an OpenAI model and a virtual key for OpenCode. OpenCode
 
    | Setting | Description |
    | -- | -- |
-   | `apiKey.keys` | The virtual key that OpenCode sends to agentgateway. Create one key for each user or workspace, so that you can revoke them separately. For more information, see [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). |
-   | `params.apiKey` | The OpenAI API key that agentgateway sends to OpenAI. OpenCode never receives this key. To rotate the key without restarting agentgateway, read it from a file instead. For more information, see [Provider API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}). |
+   | `apiKey.keys` | The virtual key for OpenCode. Use one per user or workspace to revoke access separately. See [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). |
+   | `params.apiKey` | The key for OpenAI. For file-based rotation without a restart, see [Provider API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}). |
 
 2. Start agentgateway.
 
@@ -47,13 +47,13 @@ Start agentgateway with an OpenAI model and a virtual key for OpenCode. OpenCode
 
 ## Connect OpenCode to agentgateway
 
-1. Save the virtual key in an environment variable. This key authenticates OpenCode to agentgateway. It is not the OpenAI API key.
+1. Save the virtual key in an environment variable.
 
    ```sh
    export AGENTGATEWAY_API_KEY='vk-opencode-4f9c2a'
    ```
 
-2. Create an `opencode.json` file in your project directory. To use agentgateway in every project instead, add the same settings to the global OpenCode configuration file, `~/.config/opencode/opencode.json`.
+2. Create `opencode.json` in your project directory. For settings that apply to all projects, use `~/.config/opencode/opencode.json`.
 
    ```sh
    cat > opencode.json <<'EOF'
@@ -84,7 +84,7 @@ Start agentgateway with an OpenAI model and a virtual key for OpenCode. OpenCode
    | `model` | The default model, in `<provider>/<model>` format. |
    | `provider.agentgateway.npm` | The AI SDK package for an OpenAI-compatible API. |
    | `options.baseURL` | The agentgateway address. The `/v1` suffix is required. |
-   | `options.apiKey` | The virtual key. The `{env:AGENTGATEWAY_API_KEY}` value reads the key from the environment variable, so the key is not stored in the file. Instead of the environment variable, you can also enter the key with the `/connect` command in OpenCode. |
+   | `options.apiKey` | Reads the virtual key from `AGENTGATEWAY_API_KEY` to keep it out of the file. You can also enter the key with OpenCode's `/connect` command. |
    | `models` | The models that agentgateway serves. Use the same names as the `models` in the agentgateway configuration. |
 
 3. Start OpenCode from the same directory.
@@ -95,7 +95,7 @@ Start agentgateway with an OpenAI model and a virtual key for OpenCode. OpenCode
 
 ## Verify the connection
 
-1. Send a prompt from OpenCode. To send a single prompt without the interactive interface, run the following command.
+1. Send a prompt in OpenCode, or run a single prompt from the command line:
 
    ```sh
    opencode run "Say hello"
