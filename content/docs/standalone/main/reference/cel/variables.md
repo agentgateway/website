@@ -27,7 +27,7 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 
 | Policy | Available top-level variables |
 |--------|------------------------------|
-| Transformation (request) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` — not `response` or `llmRequest`. [^1] |
+| Transformation (request) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `llmRequest`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` — not `response`. [^1] |
 | Transformation (response) | Same as request-path, plus `response` for response-side rules. [^2] |
 | Remote rate limit | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` |
 | Local rate limit key (`requests` rule) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` — not `llm`, because the rule is checked before the LLM request is parsed. [^7] |
@@ -42,7 +42,7 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 | Tracing | Same as Logging. |
 | Metrics | Same as Logging. |
 
-[^1]: Request-time transformation evaluation binds `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, and `metadata` when earlier filters have populated them. `mcp` is populated only for MCP JSON-RPC requests to an MCP backend.
+[^1]: Request-time transformation evaluation binds `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, and `metadata` when earlier filters have populated them. For AI requests, `llm.requestModel` is available before provider overrides. `llmRequest` is available for the parsed JSON body. `mcp` is populated only for MCP JSON-RPC requests to an MCP backend.
 
 [^2]: Response-side transformation sees the HTTP response object as well as the request snapshot fields.
 
