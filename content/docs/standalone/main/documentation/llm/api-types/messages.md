@@ -99,7 +99,7 @@ The Responses conversion covers a common agent subset:
 - Assistant tool-use history, and tool results that are text or images
 - Structured output JSON schemas. The converted Responses request sets `text.format.strict` to `false`, so optional schema properties stay optional.
 - Reasoning effort, from `output_config.effort` or from a `thinking` budget
-- Prompt cache breakpoints
+- Prompt cache breakpoints on system text, input text, input images, assistant text, tool result text, and tool result images. The model name must start with `gpt-`, and its major and minor version must be `5.6` or later.
 - Streaming and usage reporting
 
 The reasoning effort is sent as the Responses `reasoning.effort` field. A request that sets `thinking.type` to `disabled` sends no reasoning setting, even when `output_config.effort` is set. Older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o` also receive no reasoning setting, because those models reject reasoning parameters. The tools exception for models such as `gpt-5.3`, which the [Chat Completions conversion](#converting-to-the-chat-completions-format) applies, does not apply here.
