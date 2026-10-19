@@ -59,6 +59,15 @@ EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
 
+### Add static hosts in the UI {#static-hosts-ui}
+
+In the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), static hosts are part of a route. To add or change one, open **Traffic** > **Routes**, click the edit icon for the route, and scroll to the **Backends** section.
+
+* Click **Add backend** to add another host.
+* Set the **Weight** of each backend to split traffic between the hosts. In the following example, the route sends 80% of requests to `api-v2.example.com:8080` and 20% to `api-v1.example.com:8080`.
+
+{{< reuse-image src="img/ui-route-weighted-backends.png" srcDark="img/ui-route-weighted-backends-dark.png" >}}
+
 ## Backend connection lifetime {#connection-lifetime}
 
 Use `policies.http.maxConnectionDuration` to stop reusing a connection after a fixed age. Agentgateway opens a fresh connection for subsequent requests and lets requests already using the old connection finish. This is a connection-pool setting, separate from a request timeout.

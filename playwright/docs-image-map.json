@@ -315,6 +315,26 @@
       "$note": "standalone/setup/ui/launch-ui, Tour the UI. LLM > Client Setup with the curl integration selected for the gpt-4o-mini model. Captured by tests/tour.spec.ts under CAPTURE_MODE=tour.",
       "light": "assets/img/ui-tour-client-setup.png",
       "dark": "assets/img/ui-tour-client-setup-dark.png"
+    },
+    "ui-add-gateway.png": {
+      "$note": "configuration/gateways, Define a gateway: Add gateway drawer filled in for the http-proxy gateway on port 8080. Never saved. Captured by tests/traffic-drawers.spec.ts under CAPTURE_MODE=tour.",
+      "light": "assets/img/ui-add-gateway.png",
+      "dark": "assets/img/ui-add-gateway-dark.png"
+    },
+    "ui-add-route.png": {
+      "$note": "configuration/routes, HTTP routes: Add route drawer filled in for the http-backend route (match fields). Never saved. Captured by tests/traffic-drawers.spec.ts under CAPTURE_MODE=tour.",
+      "light": "assets/img/ui-add-route.png",
+      "dark": "assets/img/ui-add-route-dark.png"
+    },
+    "ui-add-route-backend.png": {
+      "$note": "configuration/routes, HTTP routes: the same Add route drawer scrolled to its http.example.com:8080 backend. Captured by tests/traffic-drawers.spec.ts under CAPTURE_MODE=tour.",
+      "light": "assets/img/ui-add-route-backend.png",
+      "dark": "assets/img/ui-add-route-backend-dark.png"
+    },
+    "ui-route-weighted-backends.png": {
+      "$note": "configuration/backends, Static Hosts: Edit route drawer for the fixture api-v2 route, showing two host backends weighted 80 and 20. Captured by tests/traffic-drawers.spec.ts under CAPTURE_MODE=tour.",
+      "light": "assets/img/ui-route-weighted-backends.png",
+      "dark": "assets/img/ui-route-weighted-backends-dark.png"
     }
   }
 }

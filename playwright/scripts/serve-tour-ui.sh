@@ -25,6 +25,15 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CFG_DIR="${AGW_RUNTIME_DIR:-$ROOT/.agw-runtime}"
 NODE="${NODE_BIN:-node}"
 
+# Refuse to start over another UI. A leftover container on the port makes `docker run` fail to
+# bind, but the readiness loop below would still see a UI answer and report ready, so the specs
+# would capture whatever build was left behind (for example, an enterprise image from the docs
+# hub harness, which uses the same port).
+if curl -sf -o /dev/null "http://localhost:$UI_PORT/ui/"; then
+  echo "ERROR: something already serves http://localhost:$UI_PORT/ui/. Run 'npm run clean:ui' first." >&2
+  exit 1
+fi
+
 mkdir -p "$CFG_DIR"
 cp "$ROOT/fixtures/tour-config.yaml" "$CFG_DIR/config.yaml"
 

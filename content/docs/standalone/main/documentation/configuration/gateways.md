@@ -124,6 +124,20 @@ EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
 
+### Add a gateway in the UI {#define-ui}
+
+You can also add a gateway in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}).
+
+1. Open **Traffic** > **Gateways**, and click **Add gateway**.
+2. Enter a **Name** and a **Port**, such as `http-proxy` and `8080`.
+3. Select the **Protocol**. The **Resulting YAML** shows the gateway entry that the UI writes.
+
+   {{< reuse-image src="img/ui-add-gateway.png" srcDark="img/ui-add-gateway-dark.png" >}}
+
+4. Click **Save gateway**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+
 ### Choose a listen address {#bind-address}
 
 Set `bindAddress` to an IPv4 or IPv6 address to restrict the network interface that a gateway listens on. When omitted, the gateway listens on all interfaces. For example, bind to loopback when a sidecar should accept traffic only from processes in the same pod or host network namespace.

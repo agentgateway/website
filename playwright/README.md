@@ -363,6 +363,7 @@ setup the `reference-docs` workflow uses.
 | `tests/llm-add-model.spec.ts` | The Add model drawer filled in for each supported provider, one capture per provider tab in the standalone LLM quickstart. Runs under `CAPTURE_MODE=llm`; the form is client-side, so it never saves and needs no provider key |
 | `tests/logs.spec.ts` | LLM > Logs list and a call's Trajectory + Conversation detail. Runs under `CAPTURE_MODE=costs`; **main only** |
 | `tests/tour.spec.ts` | The UI tour in `setup/ui/launch-ui`: Traffic Gateways and Routes, the route drawer's policies, LLM Models and Policies, MCP Servers and Policies, and Client Setup. Runs under `CAPTURE_MODE=tour` against `fixtures/tour-config.yaml` |
+| `tests/traffic-drawers.spec.ts` | Add gateway and Add route drawers filled in (never saved) for the standalone gateways and routes guides, plus a route's weighted backends for the backends guide. Runs under `CAPTURE_MODE=tour` |
 | `scripts/serve-*.sh` | Per-mode launchers: start backend(s) + UI container, clean up on exit |
 | `scripts/mock-*.mjs` | Deterministic mock backends (openai, mcp-time, petstore) |
 | `scripts/seed-costs-db.mjs` | Seeds the request-log SQLite DB for the `costs` mode: 800 rows for Analytics, plus three conversation rows with payloads for the Logs detail |
