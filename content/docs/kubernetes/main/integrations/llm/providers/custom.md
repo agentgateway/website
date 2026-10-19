@@ -61,11 +61,11 @@ non-default path for that format.
 | `Messages` | `/v1/messages` |
 | `Responses` | `/v1/responses` |
 | `Decisions` | `/v1/decisions` |
+| `SystemOne` | `/v1/systemone` |
 | `Embeddings` | `/v1/embeddings` |
 | `AnthropicTokenCount` | `/v1/messages/count_tokens` |
 | `Realtime` | `/v1/realtime` |
 | `Rerank` | `/v1/rerank` |
-| `SystemOne` | `/v1/systemone` |
 
 Agentgateway chooses from the provider-native formats that you declare. For
 example, if a custom provider supports OpenAI chat completions but not OpenAI
@@ -78,6 +78,7 @@ shapes, declare each supported format and optionally set a per-format path.
 | Anthropic messages | `Messages`, then `Responses`, then `Completions` |
 | OpenAI responses | `Responses`, then `Completions` |
 | OpenAI decisions | `Decisions`, then `SystemOne` |
+| TypeSafe SystemOne | `SystemOne`, then `Decisions` |
 | OpenAI embeddings | `Embeddings` |
 | Anthropic token count | `AnthropicTokenCount` |
 | OpenAI realtime | `Realtime` |
@@ -88,7 +89,9 @@ agentgateway rejects the request.
 
 Use `SystemOne` for a TypeSafe SystemOne upstream. With `SystemOne`, OpenAI
 Decisions requests from `/v1/decisions` go to `/v1/systemone` on the upstream.
-The conversion returns the upstream response in the Decisions format.
+The conversion returns the upstream response in the Decisions format. The
+conversion also works in the other direction: SystemOne requests from
+`/v1/systemone` can go to a `Decisions` upstream.
 
 An error such as `failed to parse Messages request` names the route type that
 parsed the client request before provider conversion. Check that the request

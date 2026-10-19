@@ -44,13 +44,13 @@ The `formats` list controls how agentgateway converts incoming requests. Each co
 
 Declare only the formats that the upstream server supports. For example, include `responses` only if the server supports `/v1/responses`. Include `decisions` only if the server supports `/v1/decisions`. For details about each conversion, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
 
-Use `systemOne` for a TypeSafe SystemOne upstream that serves `/v1/systemone`. With `systemOne`, OpenAI Decisions requests from `/v1/decisions` go to `/v1/systemone` on the upstream. The conversion returns the upstream response in the Decisions format.
+Use `systemOne` for a TypeSafe SystemOne upstream that serves `/v1/systemone`. With `systemOne`, OpenAI Decisions requests from `/v1/decisions` go to `/v1/systemone` on the upstream. The conversion returns the upstream response in the Decisions format. The conversion also works in the other direction: SystemOne requests from `/v1/systemone` can go to a `decisions` upstream. When a provider declares both formats, agentgateway prefers `systemOne` for SystemOne requests and `decisions` for Decisions requests.
 
 An error such as `failed to parse Messages request` names the route type that parsed the client request before provider conversion. Check that the request path maps to the expected route type and that the body matches that format.
 
 Converted response usage follows the API format that the client called. Messages responses use Anthropic usage conventions. In that format, `usage.input_tokens` excludes prompt-cache tokens. Chat Completions and Responses replies use OpenAI usage conventions. In those formats, the main input count includes prompt-cache tokens. When a Gemini OpenAI-compatible response reports reasoning tokens separately from `usage.completion_tokens`, converted Messages and Responses replies include visible output and reasoning tokens in `usage.output_tokens`.
 
-The `formats` list is optional. A model without it accepts only requests on paths that are forwarded to the provider without format conversion, such as `/v1/systemone`, `/v1/ocr`, `/v1/images/generations`, and `/v1/responses/compact`. A request in an LLM API format, such as a chat completions or messages request, has no format to convert to and is rejected. For an example, see the [Jev guardrail guide]({{< link-hextra path="/integrations/llm/guardrails/jev/" >}}).
+The `formats` list is optional. A model without it accepts only requests on paths that are forwarded to the provider without format conversion, such as `/v1/ocr`, `/v1/images/generations`, and `/v1/responses/compact`. A request in an LLM API format has no format to convert to and is rejected. Examples include chat completions, messages, and SystemOne requests.
 
 Below shows an example of connecting to [Perplexity](https://www.perplexity.ai/), which exposes an OpenAI-compatible API for search-augmented models and does not currently have a first-class provider.
 

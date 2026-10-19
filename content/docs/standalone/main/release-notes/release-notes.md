@@ -59,9 +59,10 @@ For more information, see [Session key]({{< link-hextra path="/integrations/mcp/
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3832 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3839 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3852 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3928 -->
 
 - **OpenAI Decisions API**: Requests to the OpenAI Decisions API at `/v1/decisions` have their own `decisions` route type and provider format. The OpenAI provider accepts them, custom providers accept them when they declare the `decisions` format, and LLM telemetry records the model and token usage. For more information, see [OpenAI]({{< link-hextra path="/integrations/llm/providers/openai/" >}}).
-- **TypeSafe SystemOne format for OpenAI Decisions**: Custom providers can declare the `systemOne` format to send OpenAI Decisions requests to TypeSafe's `/v1/systemone` API. For more information, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/#supported-formats" >}}).
+- **TypeSafe SystemOne format and translation**: SystemOne requests on `/v1/systemone` now have their own `systemOne` route type. Custom providers can declare the `systemOne` format to send OpenAI Decisions requests to TypeSafe's `/v1/systemone` API, and agentgateway also translates SystemOne requests for providers that declare `decisions`. Custom providers without `formats` now reject `/v1/systemone` requests, which version 1.6 forwarded to the provider without conversion. To keep serving these requests, declare the `systemOne` format. For more information, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/#configuring-a-custom-provider" >}}).
 - **TypeSafe provider preset**: Use `provider: typesafe` to connect to TypeSafe Jev with built-in defaults for the TypeSafe API host and SystemOne request format. For more information, see [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}).
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4010 -->
