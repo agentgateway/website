@@ -10,8 +10,6 @@ Each client has its own key, so you can revoke one client's access without rotat
 
 {{% reuse "agw-docs/snippets/llm-provider-key-flow.md" %}}
 
-First, [set up virtual keys](#set-up-virtual-keys) and [manage client access](#manage-client-access). You can stop there, or continue with optional [token budgets](#configure-token-budgets) and [usage tracking](#monitor-per-key-spending).
-
 ### Security considerations
 
 All clients depend on the provider key in the Secret. Protect it as you would any other production credential.
@@ -19,8 +17,7 @@ All clients depend on the provider key in the Secret. Protect it as you would an
 * **Restrict who can read the Secret.** Limit the Kubernetes RBAC permissions to read Secrets in the namespace of the {{< reuse "agw-docs/snippets/backend.md" >}}.
 * **Encrypt client traffic.** Virtual keys are bearer credentials. Serve clients over [HTTPS]({{< link-hextra path="/documentation/setup/listeners/https/" >}}), or keep the Gateway on a private network.
 * **Keep {{< reuse "agw-docs/snippets/agentgateway.md" >}} up to date** with security patches.
-
-**Multiple policies:** Keep authentication, model authorization, and rate limits in the same policy when they target the same Gateway. Separate policies can overwrite one another even when both report `ACCEPTED/ATTACHED`.
+* **Multiple policies:** Keep authentication, model authorization, and rate limits in the same policy when they target the same Gateway. Separate policies can overwrite one another even when both report `ACCEPTED/ATTACHED`.
 
 ## Before you begin
 
@@ -30,7 +27,9 @@ The OpenAI provider guide stores the provider key in `openai-secret`. For other 
 
 ## Set up virtual keys
 
-Create virtual keys for Alice and Bob, configure authentication, and verify their access. This setup does not require a rate limit server.
+Create virtual keys for Alice and Bob, configure authentication, and verify their access. This setup does not require a rate limit server. Complete the following steps in order.
+
+{{% steps %}}
 
 ### Create API keys for users
 
@@ -506,63 +505,74 @@ EOF
 
 Configure other clients with the Gateway base URL, such as `http://$INGRESS_GW_ADDRESS/v1`, and their virtual key. See [LLM clients]({{< link-hextra path="/integrations/llm/clients/" >}}) for client-specific settings.
 
+{{% /steps %}}
+
 ## Manage client access
+
+Choose a task to restrict model access, revoke a client key, or rotate provider credentials.
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
 ### Restrict model access {#restrict-model-access}
 
-By default, a key can request any model the provider offers. Add an authorization rule to the existing `api-key-auth` policy to restrict requests to a model list. Include the model used by the examples in this guide.
+By default, a key can request any model the provider offers.
 
-```sh
-kubectl patch {{< reuse "agw-docs/snippets/policy.md" >}} api-key-auth -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  --type=merge --patch-file=/dev/stdin <<'EOF'
-spec:
-  traffic:
-    authorization:
-      action: Require
-      policy:
-        matchExpressions:
-          - 'request.method != "POST" || json(request.body).model in ["{{< reuse "agw-docs/snippets/openai-model.md" >}}", "gpt-4o-mini", "gpt-4o"]'
-EOF
-```
+1. Add an authorization rule to the existing `api-key-auth` policy. Include the model used by this guide.
 
-The rule allows `POST` requests only for listed models. Other methods, such as `GET` to list models, are allowed. To set access per user, combine the model expression with a metadata check such as `apiKey.user_id == "bob"`.
+   ```sh
+   kubectl patch {{< reuse "agw-docs/snippets/policy.md" >}} api-key-auth -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --type=merge --patch-file=/dev/stdin <<'EOF'
+   spec:
+     traffic:
+       authorization:
+         action: Require
+         policy:
+           matchExpressions:
+             - 'request.method != "POST" || json(request.body).model in ["{{< reuse "agw-docs/snippets/openai-model.md" >}}", "gpt-4o-mini", "gpt-4o"]'
+   EOF
+   ```
 
-Request an unlisted model, such as `o3`. The proxy returns `403`, even if the provider key allows that model.
+   The rule allows `POST` requests only for listed models. Other methods, such as `GET` to list models, are allowed. To set access per user, combine the model expression with a metadata check such as `apiKey.user_id == "bob"`.
 
-```sh
-curl -s -w "\n%{http_code}\n" "$INGRESS_GW_ADDRESS/v1/chat/completions" \
-  -H "Authorization: Bearer vk-alice-4f9c2a" \
-  -H "Content-Type: application/json" \
-  -d '{"model": "o3", "messages": [{"role": "user", "content": "Hello!"}]}'
-```
+2. Request an unlisted model, such as `o3`. Verify that the proxy returns `403`.
+
+   ```sh
+   curl -s -w "\n%{http_code}\n" "$INGRESS_GW_ADDRESS/v1/chat/completions" \
+     -H "Authorization: Bearer vk-alice-4f9c2a" \
+     -H "Content-Type: application/json" \
+     -d '{"model": "o3", "messages": [{"role": "user", "content": "Hello!"}]}'
+   ```
 {{< /version >}}
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ### Revoke a virtual key {#revoke-a-virtual-key}
 
-Remove Bob's entry from the ConfigMap. Other keys keep working, and the proxy does not need a restart.
+Revoke one client's access without restarting the proxy or changing other keys.
 
-```sh
-kubectl patch configmap llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  --type=json -p='[{"op": "remove", "path": "/data/bob"}]'
-```
+1. Remove Bob's entry from the ConfigMap.
 
-Send a request with Bob's key and verify that the proxy returns `401`.
+   ```sh
+   kubectl patch configmap llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --type=json -p='[{"op": "remove", "path": "/data/bob"}]'
+   ```
 
-```sh
-curl -s -o /dev/null -w "%{http_code}\n" "$INGRESS_GW_ADDRESS/v1/chat/completions" \
-  -H "Authorization: Bearer vk-bob-8d1e7b" \
-  -H "Content-Type: application/json" \
-  -d '{"model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}", "messages": [{"role": "user", "content": "Hello!"}]}'
-```
+2. Send a request with Bob's key. Verify that the proxy returns `401`.
 
-To continue with the budget examples, restore Bob's key by reapplying the ConfigMap from [Create API keys for users](#create-api-keys-for-users).
+   ```sh
+   curl -s -o /dev/null -w "%{http_code}\n" "$INGRESS_GW_ADDRESS/v1/chat/completions" \
+     -H "Authorization: Bearer vk-bob-8d1e7b" \
+     -H "Content-Type: application/json" \
+     -d '{"model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}", "messages": [{"role": "user", "content": "Hello!"}]}'
+   ```
+
+3. To continue with the budget examples, restore Bob's key by reapplying the ConfigMap from [Create API keys for users](#create-api-keys-for-users).
 {{< /version >}}
 
 ### Rotate a provider key {#rotate-a-provider-key}
 
-Update the provider credential on the gateway. Clients keep their virtual keys. Follow [Rotate a provider key]({{< link-hextra path="/documentation/llm/api-keys/#rotate" >}}) to replace the credential, verify requests, and revoke the old provider key.
+Replace the provider credential in the cluster. Clients keep their virtual keys.
+
+1. Follow [Rotate a provider key]({{< link-hextra path="/documentation/llm/api-keys/#rotate" >}}) to replace the credential and revoke the old provider key.
+2. Send a request with an existing virtual key. Verify that it still succeeds.
 
 ## Configure token budgets {#configure-token-budgets}
 

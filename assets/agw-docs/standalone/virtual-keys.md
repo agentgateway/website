@@ -10,8 +10,6 @@ Each client has its own key, so you can revoke one client's access without rotat
 
 {{% reuse "agw-docs/snippets/llm-provider-key-flow.md" %}}
 
-First, [set up virtual keys](#set-up-virtual-keys-config-file) and [manage client access](#manage-client-access). You can stop there, or continue with optional [token budgets](#configure-token-budgets) and [usage tracking](#monitor-per-key-spending).
-
 ### Security considerations
 
 The gateway host holds every provider key. Protect it as you would any other secret store.
@@ -237,56 +235,63 @@ EOF
 
 ## Manage client access
 
+Choose a task to restrict model access, revoke a client key, or rotate provider credentials.
+
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ### Restrict model access {#restrict-model-access}
 
-The `*` model serves every model the provider offers. To restrict access for all clients, replace it with named model entries. To restrict a specific key, add `allowedModels` to that key.
+The `*` model serves every model the provider offers. To restrict access for all clients, replace it with named model entries.
 
-For example, keep Bob's access to the model used by this guide:
+1. To restrict a specific key, add `allowedModels` to that key. This example keeps Bob's access to the model used by this guide.
 
-```yaml
-keys:
-- key: vk-alice-4f9c2a
-  metadata:
-    user: alice
-- key: vk-bob-8d1e7b
-  metadata:
-    user: bob
-  allowedModels:
-  - gpt-3.5-turbo
-```
+   ```yaml
+   keys:
+   - key: vk-alice-4f9c2a
+     metadata:
+       user: alice
+   - key: vk-bob-8d1e7b
+     metadata:
+       user: bob
+     allowedModels:
+     - gpt-3.5-turbo
+   ```
 
-Requests with Bob's key for other models get a `403` response. Requests for a model absent from `llm.models` get `404`. For model patterns and budget interactions, see [Limit model access per key]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/#limit-model-access-per-key" >}}).
+2. Send a request with Bob's key for a model outside `allowedModels`. Verify that agentgateway returns `403`. Requests for a model absent from `llm.models` get `404`.
+
+For model patterns and budget interactions, see [Limit model access per key]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/#limit-model-access-per-key" >}}).
 {{< /version >}}
 
 ### Revoke a virtual key {#revoke-a-virtual-key}
 
-Remove a key from `llm.policies.apiKey.keys` and save the configuration. Agentgateway reloads it without a restart. Other keys keep working.
+Revoke one client's access without restarting agentgateway or changing other keys.
 
-To revoke Bob's key, keep only Alice's entry:
+1. Remove Bob's entry from `llm.policies.apiKey.keys` and save the configuration. Keep Alice's entry:
 
-```yaml
-keys:
-- key: vk-alice-4f9c2a
-  metadata:
-    user: alice
-```
+   ```yaml
+   keys:
+   - key: vk-alice-4f9c2a
+     metadata:
+       user: alice
+   ```
 
-Send a request with Bob's key and verify that agentgateway returns `401`.
+2. Send a request with Bob's key. Verify that agentgateway returns `401`.
 
-```sh
-curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/v1/chat/completions \
-  -H "Authorization: Bearer vk-bob-8d1e7b" \
-  -H "Content-Type: application/json" \
-  -d '{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello!"}]}'
-```
+   ```sh
+   curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/v1/chat/completions \
+     -H "Authorization: Bearer vk-bob-8d1e7b" \
+     -H "Content-Type: application/json" \
+     -d '{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello!"}]}'
+   ```
 
-Restore Bob's key before continuing with the budget examples.
+3. Restore Bob's key before continuing with the budget examples.
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ### Rotate a provider key {#rotate-a-provider-key}
 
-Update the provider credential on the gateway host. Clients keep their virtual keys. Follow [Rotate a provider key]({{< link-hextra path="/documentation/llm/api-keys/#rotate" >}}) to replace the credential, verify requests, and revoke the old provider key.
+Replace the provider credential on the gateway host. Clients keep their virtual keys.
+
+1. Follow [Rotate a provider key]({{< link-hextra path="/documentation/llm/api-keys/#rotate" >}}) to replace the credential and revoke the old provider key.
+2. Send a request with an existing virtual key. Verify that it still succeeds.
 {{< /version >}}
 
 ## Configure token budgets
