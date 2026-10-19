@@ -1,16 +1,18 @@
-Agentgateway provides three ways to filter Model Context Protocol (MCP) traffic through a virtual MCP server:
+Agentgateway provides three ways to filter Model Context Protocol (MCP) traffic through a virtual MCP server. Use them separately or together:
 
-* **Filter a request** with [guardrail processors]({{< link-hextra path="/documentation/mcp/guardrails/processors" >}}) (`mcpGuardrails`). Reject or rewrite MCP requests and responses, such as tool calls that contain sensitive data.
+* **Filter a request** with [guardrail processors]({{< link-hextra path="/documentation/mcp/guardrails/processors" >}}) (`mcpGuardrails`). Inspect tool arguments and results to reject disallowed calls or mask sensitive data. Use a remote processor to call an external policy service.
 * **Filter a target** with a {{< conditional-text include-if="kubernetes" >}}[target `condition`]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}){{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}[target `condition`]({{< link-hextra path="/integrations/mcp/servers/virtual/#target-conditions" >}}){{< /conditional-text >}}. Exclude an upstream MCP server before agentgateway contacts it.
-* **Filter tools and other resources** with {{< conditional-text include-if="kubernetes" >}}[MCP authorization]({{< link-hextra path="/documentation/mcp/tool-access" >}}){{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}[MCP authorization (`mcpAuthorization`)]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}){{< /conditional-text >}}. Hide individual tools, prompts, and resources from list responses, and reject calls to them.
+* **Filter tools and other resources** with {{< conditional-text include-if="kubernetes" >}}[MCP authorization]({{< link-hextra path="/documentation/mcp/tool-access" >}}){{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}[MCP authorization (`mcpAuthorization`)]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}){{< /conditional-text >}}. Hide individual tools, prompts, and resources from list responses, and reject calls to them. Rules evaluate each item separately, so you can allow some tools and hide the rest.
 
-All three support Common Expression Language (CEL) expressions that read request attributes, such as headers and JWT claims. Their scope and timing differ, as shown below.
+All three support Common Expression Language (CEL) expressions that read request attributes, such as headers and JWT claims. Their scope and timing differ.
 
 ## Compare the options {#compare}
 
+Use this table to compare what each option filters, when it runs, and whether agentgateway contacts upstream servers.
+
 | | Filter a request | Filter a target | Filter tools and other resources |
 |--|--|--|--|
-| **Configure with** | {{< conditional-text include-if="kubernetes" >}}`backend.mcp.guardrails` in an {{< reuse "agw-docs/snippets/policy.md" >}}{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}`mcpGuardrails` policy{{< /conditional-text >}} | {{< conditional-text include-if="kubernetes" >}}`spec.mcp.targets[].condition` in an {{< reuse "agw-docs/snippets/backend.md" >}}{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}`condition` on an MCP target{{< /conditional-text >}} | {{< conditional-text include-if="kubernetes" >}}`backend.mcp.authorization` in an {{< reuse "agw-docs/snippets/policy.md" >}}{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}`mcpAuthorization` policy{{< /conditional-text >}} |
+| **Configure with** | {{% conditional-text include-if="kubernetes" %}}`backend.mcp.guardrails` in an {{< reuse "agw-docs/snippets/policy.md" >}}{{% /conditional-text %}}{{% conditional-text include-if="standalone" %}}`mcpGuardrails` policy{{% /conditional-text %}} | {{% conditional-text include-if="kubernetes" %}}`spec.mcp.targets[].condition` in an {{< reuse "agw-docs/snippets/backend.md" >}}{{% /conditional-text %}}{{% conditional-text include-if="standalone" %}}`condition` on an MCP target{{% /conditional-text %}} | {{% conditional-text include-if="kubernetes" %}}`backend.mcp.authorization` in an {{< reuse "agw-docs/snippets/policy.md" >}}{{% /conditional-text %}}{{% conditional-text include-if="standalone" %}}`mcpAuthorization` policy{{% /conditional-text %}} |
 | **What it filters** | One MCP request or response, for the methods that you select | One upstream MCP server | One tool, prompt, or resource at a time |
 | **When it runs** | Before forwarding the request, after receiving the response, or both | At session initialization (stateful), or on every request (stateless) | On each listed item or call to an individual item |
 | **What it can read** | The full request parameters (`mcp.params`) or response result (`mcp.result`), plus the request context | The request context and the name of the target (`mcp.target.name`) | The item, such as `mcp.tool.name` and `mcp.tool.target`, plus the request context. Tool arguments are not available. |
@@ -18,15 +20,7 @@ All three support Common Expression Language (CEL) expressions that read request
 | **Contacts the upstream server** | No, for a rejected request | No, for an excluded target | Yes. Agentgateway initializes and lists every included target, then removes denied items. |
 | **What the client sees** | An error with your rejection message. For `tools/call`, a tool result with `isError: true`. | A virtual MCP server without that target's tools, prompts, or resources | Lists without the denied items. Denied tools appear not to exist. |
 
-## Choose an option {#choose}
-
-* **Use a target condition to exclude an entire MCP server.** Authorization can hide all of a target's tools, but agentgateway still contacts that target.
-* **Use MCP authorization to hide specific tools, prompts, or resources.** Rules evaluate each item separately. For example, allow some tools based on JWT claims and hide the rest.
-* **Use guardrail processors to inspect or change request and response content.** CEL processors can reject disallowed arguments or mask data. Remote processors can call an external policy service.
-
-You can combine all three. For example, expose an admin MCP server only to administrators with a target condition. Then use authorization to restrict destructive tools and a processor to mask secrets in tool results.
-
-## Example: keep a client away from an MCP server {#example}
+## Example: Keep a client away from an MCP server {#example}
 
 The following authorization rule hides the `admin-tools` target's tools from clients without the `admin` role. Agentgateway still initializes the target and sends it `tools/list` requests for those clients.
 
