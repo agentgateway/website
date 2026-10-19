@@ -1,36 +1,32 @@
-Issue API keys to users or applications and control token usage (also known as virtual keys).
+Keep provider API keys on the gateway and give each client a revocable virtual key. Add token budgets and usage tracking as needed.
 
 ## About
 
-Virtual key management allows you to issue API keys to users or applications, each with independent tracking and cost controls. Agentgateway composes existing capabilities to do this:
-- API key authentication identifies incoming requests by API key.
-- Token-based rate limiting enforces token budgets.
-- Observability metrics track per-key spending and usage.
+Clients use virtual keys to authenticate to agentgateway. The gateway replaces each virtual key with the provider key before forwarding the request. Clients never receive the provider key, and the provider never receives the virtual key.
+
+Each client has its own key, so you can revoke one client's access without rotating the provider key or reconfiguring other clients. Provider-key rotation happens on the gateway host.
 
 ### How virtual keys work
 
-```mermaid
-flowchart TD
-  A[Request arrives with API key] --> B[Validate API key]
-  B --> C{Key valid?}
-  C -->|Yes| D[Check token budget]
-  D --> E{Budget available?}
-  E -->|Yes| K[Replace virtual key with provider key]
-  K --> F[Forward to LLM]
-  F --> G[Track token usage]
-  G --> H[Deduct from budget]
-  E -->|No| I[Reject with 429]
-  C -->|No| J[Reject with 401]
-  subgraph refill["Budget refills periodically"]
-    H
-  end
-```
+{{% reuse "agw-docs/snippets/llm-provider-key-flow.md" %}}
 
-The provider never receives the virtual key, and clients never need the provider key. Revoke a client's virtual key without rotating the provider key or reconfiguring other clients.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} For a walkthrough of this pattern, see [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}).{{< /version >}}
+First, [set up virtual keys](#set-up-virtual-keys-config-file) and [manage client access](#manage-client-access). You can stop there, or continue with optional [token budgets](#configure-token-budgets) and [usage tracking](#monitor-per-key-spending).
+
+### Security considerations
+
+The gateway host holds every provider key. Protect it as you would any other secret store.
+
+* **Restrict access to the files.** Run agentgateway as a dedicated user, and make the key file and the configuration file readable only by that user.
+* **Do not store raw virtual keys.** Store a `keyHash` for each virtual key instead of the raw `key`, so that a copy of the configuration file does not contain usable keys.
+* **Encrypt client traffic.** Virtual keys are bearer credentials. Serve clients over TLS, or keep the gateway on a private network.
+* **Protect the UI and admin API.** Anyone who can reach them can create and read virtual keys. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x" >}}For more information, see [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).{{< /version >}}
+* **Keep agentgateway up to date** with security patches.
 
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+
+You also need an OpenAI API key. The examples read it from `OPENAI_API_KEY`. For file-based credentials and rotation without a restart, see [Provider API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
 
 {{< doc-test paths="virtual-keys" >}}
 # ============================================================================
@@ -95,10 +91,10 @@ llm:
     apiKey:
       mode: strict
       keys:
-      - key: sk-alice-abc123def456
+      - key: vk-alice-4f9c2a
         metadata:
           user: alice
-      - key: sk-bob-xyz789uvw012
+      - key: vk-bob-8d1e7b
         metadata:
           user: bob
   models:
@@ -115,7 +111,7 @@ EOF
 | `apiKey.keys` | List of API keys. Each key has a `key` value and optional `metadata`. |
 | `key` | The API key value that users include in the `Authorization: Bearer <key>` header. |
 | `metadata` | Optional metadata associated with the key, such as a user identifier or tier. |
-| `models[].name` | The models that the gateway serves. Use `*` for all provider models, or list model names to restrict access. For per-key restrictions, see [Step 5](#step-5-limit-the-models-for-each-key). |
+| `models[].name` | The models that the gateway serves. Use `*` for all provider models, or list model names to restrict access. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}For per-key restrictions, see [Restrict model access](#restrict-model-access).{{< /version >}} |
 | `params.apiKey` | The provider key that replaces the virtual key in outgoing requests.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} For file-based rotation without a restart, see [Rotate a provider key]({{< link-hextra path="/documentation/llm/api-keys/#rotate" >}}).{{< /version >}} |
 
 ### Step 2: Start agentgateway
@@ -139,7 +135,7 @@ sleep 3
 
    ```sh {paths="virtual-keys"}
    curl -s http://localhost:4000/v1/chat/completions \
-     -H "Authorization: Bearer sk-alice-abc123def456" \
+     -H "Authorization: Bearer vk-alice-4f9c2a" \
      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-3.5-turbo",
@@ -190,7 +186,7 @@ YAMLTest -f - <<'EOF'
     method: POST
     headers:
       content-type: application/json
-      Authorization: "Bearer sk-alice-abc123def456"
+      Authorization: "Bearer vk-alice-4f9c2a"
     body: |
       {
         "model": "gpt-3.5-turbo",
@@ -226,7 +222,7 @@ YAMLTest -f - <<'EOF'
     method: POST
     headers:
       content-type: application/json
-      Authorization: "Bearer sk-bob-xyz789uvw012"
+      Authorization: "Bearer vk-bob-8d1e7b"
     body: |
       {
         "model": "gpt-3.5-turbo",
@@ -239,65 +235,63 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-### Step 4: Revoke a virtual key
+## Manage client access
 
-Remove a key from `apiKey.keys` and save the configuration to revoke it. Agentgateway reloads the file without a restart. Other keys keep working.
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+### Restrict model access {#restrict-model-access}
 
-1. Remove Bob's key from `config.yaml`, so that the list keeps only Alice's key.
+The `*` model serves every model the provider offers. To restrict access for all clients, replace it with named model entries. To restrict a specific key, add `allowedModels` to that key.
 
-   ```yaml
-   keys:
-   - key: sk-alice-abc123def456
-     metadata:
-       user: alice
-   ```
-
-2. Send a request with Bob's key. Verify that agentgateway returns `401`.
-
-   ```sh
-   curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/v1/chat/completions \
-     -H "Authorization: Bearer sk-bob-xyz789uvw012" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "model": "gpt-3.5-turbo",
-       "messages": [{"role": "user", "content": "Hello!"}]
-     }'
-   ```
-
-   Expected response:
-   ```
-   401
-   ```
-
-3. Add Bob's key back to `config.yaml` to continue with the rest of this guide.
-
-### Step 5: Limit the models for each key
-
-The `*` wildcard makes all provider models available to every key. Add `allowedModels` to restrict a key to specific models.
+For example, keep Bob's access to the model used by this guide:
 
 ```yaml
 keys:
-- key: sk-alice-abc123def456
+- key: vk-alice-4f9c2a
   metadata:
     user: alice
-- key: sk-bob-xyz789uvw012
+- key: vk-bob-8d1e7b
   metadata:
     user: bob
   allowedModels:
-  - gpt-4o-mini
+  - gpt-3.5-turbo
 ```
 
-Requests with Bob's key for models other than `gpt-4o-mini` get a `403` response:
+Requests with Bob's key for other models get a `403` response. Requests for a model absent from `llm.models` get `404`. For model patterns and budget interactions, see [Limit model access per key]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/#limit-model-access-per-key" >}}).
+{{< /version >}}
 
-```json
-{"error":{"message":"Model is not allowed for this API key","type":"invalid_request_error","code":"model_not_allowed"}}
+### Revoke a virtual key {#revoke-a-virtual-key}
+
+Remove a key from `llm.policies.apiKey.keys` and save the configuration. Agentgateway reloads it without a restart. Other keys keep working.
+
+To revoke Bob's key, keep only Alice's entry:
+
+```yaml
+keys:
+- key: vk-alice-4f9c2a
+  metadata:
+    user: alice
 ```
 
-For model patterns and budget interactions, see [Limit model access per key]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/#limit-model-access-per-key" >}}).
+Send a request with Bob's key and verify that agentgateway returns `401`.
+
+```sh
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/v1/chat/completions \
+  -H "Authorization: Bearer vk-bob-8d1e7b" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello!"}]}'
+```
+
+Restore Bob's key before continuing with the budget examples.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+### Rotate a provider key {#rotate-a-provider-key}
+
+Update the provider credential on the gateway host. Clients keep their virtual keys. Follow [Rotate a provider key]({{< link-hextra path="/documentation/llm/api-keys/#rotate" >}}) to replace the credential, verify requests, and revoke the old provider key.
+{{< /version >}}
 
 ## Configure token budgets
 
-LLMs typically charge per input and output token. Without spending control, users can quickly generate large bills by submitting long prompts, streaming or retrying requests, or running recursive agent loops. To protect against unexpected bills, scaling surprises, and abuse, use token-based rate limits to cap the number of tokens that can be used.
+Token budgets are optional. Continue here to limit token usage across clients, then give each key its own budget. Keep your existing keys, provider credentials, and model restrictions when adding these policies.
 
 > [!WARNING]
 > `localRateLimit` is a **gateway-wide** limit, not a per-key limit. It enforces a single shared token budget across **all** requests and API keys.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} To give each virtual key its own budget instead, add a `key` field to the rule, as shown in [Step 4](#per-key-budget).{{< /version >}}
@@ -316,34 +310,16 @@ Agentgateway checks token-based rate limits in two phases:
 
 ### Step 1: Add a token budget
 
-Update your configuration to include a `localRateLimit` policy. The following example builds on the virtual keys configuration from the previous section and adds a token budget.
+Add `localRateLimit` under `llm.policies` in `config.yaml`. Keep the existing `apiKey` policy and model configuration.
 
 ```yaml
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
 llm:
   policies:
-    apiKey:
-      mode: strict
-      keys:
-      - key: sk-alice-abc123def456
-        metadata:
-          user: alice
-      - key: sk-bob-xyz789uvw012
-        metadata:
-          user: bob
     localRateLimit:
     - maxTokens: 10
       tokensPerFill: 1
       fillInterval: 60s
       type: tokens
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-EOF
 ```
 
 | Setting | Description |
@@ -369,7 +345,7 @@ EOF
    ```sh
    curl http://localhost:4000/v1/chat/completions \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer sk-alice-abc123def456' \
+     -H 'Authorization: Bearer vk-alice-4f9c2a' \
      -d '{
        "model": "gpt-3.5-turbo",
        "messages": [
@@ -405,7 +381,7 @@ EOF
    ```sh
    curl http://localhost:4000/v1/chat/completions \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer sk-alice-abc123def456' \
+     -H 'Authorization: Bearer vk-alice-4f9c2a' \
      -d '{
        "model": "gpt-3.5-turbo",
        "messages": [
@@ -428,35 +404,12 @@ By default, agentgateway does not estimate token counts at request time. To reje
 
 For more information about rate limiting configuration options, see [Rate limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/" >}}).
 
-1. Update your configuration with `tokenize: true` for your model. With this setting, requests are denied immediately if the estimated prompt token count exceeds the available budget.
+1. Add `tokenize: true` to the model's `params` in `config.yaml`. Keep the existing provider credentials. Requests are rejected immediately if the estimated prompt tokens exceed the available budget.
    
    ```yaml
-   cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-   llm:
-     policies:
-       apiKey:
-         mode: strict
-         keys:
-         - key: sk-alice-abc123def456
-           metadata:
-             user: alice
-         - key: sk-bob-xyz789uvw012
-           metadata:
-             user: bob
-       localRateLimit:
-       - maxTokens: 10
-         tokensPerFill: 1
-         fillInterval: 60s
-         type: tokens
-     models:
-     - name: "*"
-       provider: openAI
-       params:
-         apiKey: "$OPENAI_API_KEY"
-         tokenize: true
-   EOF
+   params:
+     apiKey: "$OPENAI_API_KEY"
+     tokenize: true
    ```
 
 2. Send a request. Use Bob's virtual key because Alice's virtual key already reached the rate limit in the previous step. This time, the request is rate limited because the estimated tokens exceed the budget.
@@ -464,7 +417,7 @@ For more information about rate limiting configuration options, see [Rate limits
    ```sh
    curl http://localhost:4000/v1/chat/completions \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer sk-bob-xyz789uvw012' \
+     -H 'Authorization: Bearer vk-bob-8d1e7b' \
      -d '{
        "model": "gpt-3.5-turbo",
        "messages": [
@@ -486,35 +439,17 @@ For more information about rate limiting configuration options, see [Rate limits
 
 So far, all of the virtual keys share one token budget, so the busiest key exhausts the budget for everyone else. To give each key its own budget, add a `key` field to the rate limit rule. The `key` field takes a CEL expression, and each distinct value that the expression returns gets its own token bucket with the limits of that rule. Use `apiKey.user` to read the `user` metadata from the authenticated key.
 
-1. Update your configuration to key the rate limit on the virtual key's user. This example returns to the configuration from [Step 1](#step-1-add-a-token-budget) and adds only the `key` field, so that you can compare the results with Step 3, where Bob's key was rate limited by Alice's usage.
+1. Add `key: apiKey.user` to the rate limit rule. Remove `tokenize: true` from the model to compare the result with [Step 1](#step-1-add-a-token-budget). Keep the other authentication and model settings.
 
    ```yaml
-   cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
    llm:
      policies:
-       apiKey:
-         mode: strict
-         keys:
-         - key: sk-alice-abc123def456
-           metadata:
-             user: alice
-         - key: sk-bob-xyz789uvw012
-           metadata:
-             user: bob
        localRateLimit:
        - maxTokens: 10
          tokensPerFill: 1
          fillInterval: 60s
          type: tokens
          key: apiKey.user
-     models:
-     - name: "*"
-       provider: openAI
-       params:
-         apiKey: "$OPENAI_API_KEY"
-   EOF
    ```
 
 2. Restart agentgateway with the updated configuration.
@@ -528,7 +463,7 @@ So far, all of the virtual keys share one token budget, so the busiest key exhau
    ```sh
    curl http://localhost:4000/v1/chat/completions \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer sk-alice-abc123def456' \
+     -H 'Authorization: Bearer vk-alice-4f9c2a' \
      -d '{
        "model": "gpt-3.5-turbo",
        "messages": [
@@ -565,7 +500,7 @@ So far, all of the virtual keys share one token budget, so the busiest key exhau
    ```sh
    curl http://localhost:4000/v1/chat/completions \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer sk-alice-abc123def456' \
+     -H 'Authorization: Bearer vk-alice-4f9c2a' \
      -d '{
        "model": "gpt-3.5-turbo",
        "messages": [
@@ -587,7 +522,7 @@ So far, all of the virtual keys share one token budget, so the busiest key exhau
    ```sh
    curl http://localhost:4000/v1/chat/completions \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer sk-bob-xyz789uvw012' \
+     -H 'Authorization: Bearer vk-bob-8d1e7b' \
      -d '{
        "model": "gpt-3.5-turbo",
        "messages": [
@@ -629,6 +564,8 @@ For more information, including how to key a limit on a JWT claim or on the requ
 
 ## Monitor per-key spending
 
+Usage tracking is optional and does not require a token budget.
+
 Agentgateway exposes token usage as Prometheus metrics on its stats endpoint, which listens on port `15020` by default (not the `15000` admin port). The `agentgateway_gen_ai_client_token_usage` metric is a histogram that records the tokens used per request.
 
 By default, this metric is broken down by dimensions such as the model (`gen_ai_request_model`) and token type (`gen_ai_token_type`), but *not* by key. To attribute usage to each virtual key, add a label such as `user_id` that reads the `user` metadata from the authenticated key, then query Prometheus.
@@ -640,40 +577,14 @@ By default, this metric is broken down by dimensions such as the model (`gen_ai_
 
 You can add a per-key metric label such as to track metrics by user ID. Note that the `user_id` label is high cardinality: every unique value creates a new metric series, which increases Prometheus memory and storage. This is acceptable for tens or hundreds of keys, but avoid attaching unbounded identifiers at large scale. Prefer lower-cardinality dimensions like tier or team when possible.
 
-1. Update your configuration to add a `user_id` metric label. The `add` field maps a label name to a CEL expression that is evaluated per request. Use `apiKey.user` to read the `user` metadata from the authenticated key. This example builds on the previous configuration.
+1. Update your configuration to add a `user_id` metric label. The `add` field maps a label name to a CEL expression that is evaluated per request. Use `apiKey.user` to read the `user` metadata from the authenticated key. Add this block to `config.yaml` without replacing the existing authentication or budget policies.
 
    ```yaml
-   cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
    config:
      metrics:
        fields:
          add:
            user_id: apiKey.user
-
-   llm:
-     policies:
-       apiKey:
-         mode: strict
-         keys:
-         - key: sk-alice-abc123def456
-           metadata:
-             user: alice
-         - key: sk-bob-xyz789uvw012
-           metadata:
-             user: bob
-       localRateLimit:
-       - maxTokens: 10
-         tokensPerFill: 1
-         fillInterval: 60s
-         type: tokens
-     models:
-     - name: "*"
-       provider: openAI
-       params:
-         apiKey: "$OPENAI_API_KEY"
-   EOF
    ```
 
    | Setting | Description |

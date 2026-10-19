@@ -6,7 +6,7 @@
 > When you use API keys, your services are only as secure as the API keys. Storing and rotating the API key securely is up to the user.
 
 > [!TIP]
-> For LLM traffic, give clients virtual keys and keep provider keys in the cluster. The proxy replaces each virtual key with the provider key before forwarding the request.{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} For more information, see [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} For more information, see [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}).{{< /version >}}
+> For LLM traffic, give clients virtual keys and keep provider keys in the cluster. The proxy replaces each virtual key with the provider key before forwarding the request. For more information, see [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
 
 ## API key auth in agentgateway
 

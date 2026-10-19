@@ -118,6 +118,5 @@ Error: Unauthorized: api key authentication failure: invalid credentials
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/documentation/llm/protect-provider-keys/" title="Protect provider API keys" subtitle="Rotate and revoke keys without changing clients" >}}
-  {{< card path="/documentation/llm/cost-controls/virtual-keys/" title="Virtual keys" subtitle="Issue virtual keys with token budgets and per-key metrics" >}}
+  {{< card path="/documentation/llm/cost-controls/virtual-keys/" title="Virtual keys" subtitle="Protect provider keys and add optional budgets and usage tracking" >}}
 {{< /cards >}}

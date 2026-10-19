@@ -43,7 +43,7 @@ EOF
 ```
 
 > [!NOTE]
-> This example keeps the `configMapSelector` authentication from the previous step. If you used `secretRef` or `secretSelector` instead, keep that block in place of `configMapSelector`.
+> This example keeps the `configMapSelector` authentication from the previous step. If you used `secretRef` or `secretSelector`, keep that block instead. If your policy includes `traffic.authorization` for model restrictions, keep it alongside `apiKeyAuthentication` and `rateLimit`.
 {{< /version >}}
 
 {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}

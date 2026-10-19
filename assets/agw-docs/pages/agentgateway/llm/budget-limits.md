@@ -304,6 +304,164 @@ The budgets in the previous sections are measured in *tokens*. If you configure 
 
 -->
 
+## Advanced per-key budgets {#advanced-per-key-budgets}
+
+These examples build on the authentication and global rate limit server from [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
+
+### Tiered budgets based on user type
+
+Provide different budget tiers for free, standard, and premium users.
+
+{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+1. Add tier metadata to each API key. Store the keys in a ConfigMap, using the `keyHash` of each key. Generate each hash with `printf '%s' '<key>' | sha256sum | awk '{print "sha256:"$1}'`.
+
+   ```yaml
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: llm-api-keys
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       agentgateway.dev/apikey: "true"
+   data:
+     alice: |
+       {
+         "keyHash": "sha256:84d589f2439e4d9ff4438aa840e63ffcbf231a87e7fef929f975d2bde03dc78c",
+         "metadata": {
+           "user_id": "alice",
+           "tier": "premium"
+         }
+       }
+     charlie: |
+       {
+         "keyHash": "sha256:1dfa4e699a31bc3bdcb34c74b43f7a4e58d38c51cec243b4add27b16de599355",
+         "metadata": {
+           "user_id": "charlie",
+           "tier": "free"
+         }
+       }
+   ```
+{{< /version >}}
+{{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+1. Add tier metadata to each API key. Store the keys in a Secret, with one entry per user.
+
+   ```yaml
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: llm-api-keys
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   type: Opaque
+   stringData:
+     alice: |
+       {
+         "key": "vk-alice-4f9c2a",
+         "metadata": {
+           "user_id": "alice",
+           "tier": "premium"
+         }
+       }
+     charlie: |
+       {
+         "key": "sk-charlie-ghi345jkl678",
+         "metadata": {
+           "user_id": "charlie",
+           "tier": "free"
+         }
+       }
+   ```
+{{< /version >}}
+
+2. Configure rate limiting to use the tier and user_id from API key metadata.
+
+   ```yaml
+   traffic:
+     rateLimit:
+       global:
+         domain: agentgateway
+         backendRef:
+           kind: Service
+           name: ratelimit
+           namespace: ratelimit
+           port: 8081
+         descriptors:
+           - entries:
+               - name: tier
+                 expression: 'apiKey.tier'
+               - name: user_id
+                 expression: 'apiKey.user_id'
+             unit: Tokens
+   ```
+
+3. Configure the rate limit server with tier-based budgets.
+
+   ```yaml
+   domain: agentgateway
+   descriptors:
+     - key: tier
+       value: "free"
+       descriptors:
+         - key: user_id
+           rate_limit:
+             unit: day
+             requests_per_unit: 10000  # 10K tokens/day for free tier
+     - key: tier
+       value: "standard"
+       descriptors:
+         - key: user_id
+           rate_limit:
+             unit: day
+             requests_per_unit: 100000  # 100K tokens/day for standard tier
+     - key: tier
+       value: "premium"
+       descriptors:
+         - key: user_id
+           rate_limit:
+             unit: day
+             requests_per_unit: 500000  # 500K tokens/day for premium tier
+   ```
+
+### Hourly budget limits
+
+Set a smaller budget that refreshes every hour for tighter cost control.
+
+```yaml
+# In the ratelimit-config ConfigMap
+domain: agentgateway
+descriptors:
+  - key: user_id
+    rate_limit:
+      unit: hour
+      requests_per_unit: 10000  # 10,000 tokens per hour
+```
+
+### Multi-tenant virtual keys
+
+Create virtual keys scoped to both user and tenant for multi-tenant applications. Add tenant_id to the API key metadata.
+
+```yaml
+# In TrafficPolicy
+descriptors:
+  - entries:
+      - name: tenant_id
+        expression: 'apiKey.tenant_id'
+      - name: user_id
+        expression: 'apiKey.user_id'
+    unit: Tokens
+```
+
+```yaml
+# In the ratelimit-config ConfigMap
+domain: agentgateway
+descriptors:
+  - key: tenant_id
+    descriptors:
+      - key: user_id
+        rate_limit:
+          unit: day
+          requests_per_unit: 50000
+```
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}

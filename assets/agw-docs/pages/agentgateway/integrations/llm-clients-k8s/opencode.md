@@ -4,7 +4,7 @@ Route LLM requests from [OpenCode](https://opencode.ai/) through {{< reuse "agw-
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 2. [Set up access to the OpenAI LLM provider]({{< link-hextra path="/integrations/llm/providers/openai/" >}}). Use the HTTPRoute that matches all paths to allow requests to `/v1/chat/completions`.
-3. Require virtual keys for the Gateway. Follow [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}) or [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). This guide uses the `vk-alice-4f9c2a` key from the Protect provider API keys guide.
+3. Require [virtual key authentication]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#set-up-virtual-keys" >}}) for the Gateway. This guide uses the `vk-alice-4f9c2a` example key. Token budgets are optional.
 4. [Install OpenCode](https://opencode.ai/docs/). This guide was tested with OpenCode 1.18.35.
 
 ## Set the gateway URL and virtual key
@@ -93,6 +93,5 @@ Error: Unauthorized: api key authentication failure: invalid credentials
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/documentation/llm/protect-provider-keys/" title="Protect provider API keys" subtitle="Rotate and revoke keys without changing clients" >}}
-  {{< card path="/documentation/llm/cost-controls/virtual-keys/" title="Virtual keys" subtitle="Issue virtual keys with token budgets and per-key metrics" >}}
+  {{< card path="/documentation/llm/cost-controls/virtual-keys/" title="Virtual keys" subtitle="Protect provider keys and add optional budgets and usage tracking" >}}
 {{< /cards >}}

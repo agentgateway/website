@@ -7,7 +7,7 @@ prev: /llm/providers
 
 Provider API keys authenticate agentgateway to LLM providers such as OpenAI or Anthropic. A leaked key lets attackers run requests at your expense.
 
-Clients can authenticate with [virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). Agentgateway replaces each virtual key with the provider key before forwarding the request. For a walkthrough, see [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}).
+Clients can authenticate with [virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). Agentgateway replaces each virtual key with the provider key before forwarding the request.
 
 This guide covers inline keys, environment variables, files, and Kubernetes secrets or passthrough tokens. To replace an existing key, see [Rotate a provider key](#rotate).
 
@@ -85,7 +85,7 @@ Store the key in a file on the gateway host. Agentgateway watches the file for c
    EOF
    ```
 
-   To share a key across models, define it in `llm.providers` and reference that provider from each model. See [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}).
+   Clients authenticate with separate keys. See [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) for setup.
 {{% /tab %}}
 {{% tab name="Kubernetes secret or passthrough token" %}}
 
@@ -117,5 +117,5 @@ Rotate provider keys regularly, when your provider requires it, or after a suspe
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/documentation/llm/protect-provider-keys/" title="Protect provider API keys" subtitle="Give clients revocable virtual keys instead of the provider key" >}}
+  {{< card path="/documentation/llm/cost-controls/virtual-keys/" title="Virtual keys" subtitle="Protect provider keys and add optional budgets and usage tracking" >}}
 {{< /cards >}}

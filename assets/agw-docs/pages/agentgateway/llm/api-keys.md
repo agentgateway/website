@@ -1,6 +1,6 @@
 Provider API keys authenticate {{< reuse "agw-docs/snippets/agentgateway.md" >}} to LLM providers such as OpenAI or Anthropic. A leaked key lets attackers run requests at your expense.
 
-Clients can authenticate with [virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). The proxy replaces each virtual key with the provider key before forwarding the request. You can also apply [per-key token budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}) and track usage.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} For a walkthrough, see [Protect provider API keys]({{< link-hextra path="/documentation/llm/protect-provider-keys/" >}}).{{< /version >}}
+Clients can authenticate with [virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). The proxy replaces each virtual key with the provider key before forwarding the request. You can also apply [per-key token budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}) and track usage.
 
 Choose a method to provide the key to the proxy.
 
@@ -489,6 +489,6 @@ If you provide the key inline instead, update the `policies.auth.key` field of t
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/documentation/llm/protect-provider-keys/" title="Protect provider API keys" subtitle="Give clients revocable virtual keys instead of the provider key" >}}
+  {{< card path="/documentation/llm/cost-controls/virtual-keys/" title="Virtual keys" subtitle="Protect provider keys and add optional budgets and usage tracking" >}}
 {{< /cards >}}
 {{< /version >}}
