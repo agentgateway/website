@@ -102,7 +102,17 @@ The Responses conversion covers a common agent subset:
 - Prompt cache breakpoints
 - Streaming and usage reporting
 
-The reasoning effort is sent as the Responses `reasoning.effort` field. A request that sets `thinking.type` to `disabled` sends no reasoning setting, even when `output_config.effort` is set. Older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o` also receive no reasoning setting, because those models reject reasoning parameters. The tools exception for models such as `gpt-5.3`, which the [Chat Completions conversion](#converting-to-the-chat-completions-format) applies, does not apply here.
+The reasoning effort is sent as the Responses `reasoning.effort` field. A request that sets `thinking.type` to `disabled` sends no reasoning setting, even when `output_config.effort` is set. An adaptive `thinking` request without an effort uses `high` as the reasoning effort. Older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o` also receive no reasoning setting, because those models reject reasoning parameters. The tools exception for models such as `gpt-5.3`, which the [Chat Completions conversion](#converting-to-the-chat-completions-format) applies, does not apply here.
+
+When `output_config.effort` is omitted, a `thinking` budget maps to these OpenAI effort buckets.
+
+| `thinking.budget_tokens` | OpenAI effort |
+|--------------------------|---------------|
+| `0` through `2047` | `low` |
+| `2048` through `4095` | `medium` |
+| `4096` through `8191` | `high` |
+| `8192` through `16383` | `xhigh` |
+| `16384` or higher | `max` |
 
 > [!WARNING]
 > The Responses format has no equivalent for `stop_sequences` or `top_k`. Agentgateway accepts both fields and drops them, with no error and no warning to the client. A request that relies on a stop sequence to end generation behaves differently against a provider that takes the Responses conversion.
@@ -142,7 +152,7 @@ Function tools keep their `strict` setting. A tool that omits `strict` is sent w
 
 The `stop_sequences` field is sent to the provider as `stop`. The reply reports which stop sequence ended generation only when the engine names it. When the Chat Completions reply has `finish_reason: "stop"` and a string in the vLLM `stop_reason` field or the SGLang `matched_stop` field, the Messages reply has `stop_reason: "stop_sequence"` and that string in `stop_sequence`. A numeric stop-token ID is ignored, so a natural end of turn still returns `stop_reason: "end_turn"`. This applies to buffered and streamed replies.
 
-The reasoning effort comes from `output_config.effort`, or from the `thinking` budget when `output_config.effort` is not set, and is sent as `reasoning_effort`. The effort applies even when the request omits `thinking`. A request that sets `thinking.type` to `disabled` sends no `reasoning_effort`, even when `output_config.effort` is set. An adaptive `thinking` request without an effort is sent with `reasoning_effort: "high"`.
+The reasoning effort comes from `output_config.effort`, or from the `thinking` budget when `output_config.effort` is not set, and is sent as `reasoning_effort`. The effort applies even when the request omits `thinking`. A request that sets `thinking.type` to `disabled` sends no `reasoning_effort`, even when `output_config.effort` is set. An adaptive `thinking` request without an effort is sent with `reasoning_effort: "high"`. A `thinking` budget maps to the same OpenAI effort buckets as the Responses conversion.
 
 Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. In the Chat Completions conversion, a request with tools to one of these models is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped.
 
