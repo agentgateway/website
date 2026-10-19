@@ -76,6 +76,10 @@ For more information, see [Session key]({{< link-hextra path="/integrations/mcp/
 
 - **Model catalogs include descriptive model metadata**: Model catalog entries can now include display names, lifecycle status, release dates, token limits, modalities, capabilities, and reasoning controls in addition to pricing fields. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3970 -->
+
+- **Per-key budgets can run without a reset window**: Omit `budgets[].window` to create an API key budget whose usage accumulates for the lifetime of the budget and never resets. For more information, see [Per-key dollar or token budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/" >}}).
+
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->
