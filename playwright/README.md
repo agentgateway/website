@@ -294,6 +294,15 @@ Screenshots are pixel-compared, so captures must be byte-stable across runs:
   column a reader expects to see. `tests/logs.spec.ts` keeps its real timestamps and relies on
   the config's default `maxDiffPixelRatio: 0.01`; measured drift across a deliberate three-hour
   clock shift is 0.0033, so the default already has 3x headroom.
+- **Two Traffic pages have nothing to show in standalone mode.** Traffic > Policies is the
+  read-only xDS dump view, so a standalone gateway gets only a "Readonly policies unavailable"
+  notice. Traffic > Listeners lists legacy `binds` and shows an empty state when the config uses
+  `gateways`, which is what the standalone docs teach. To show route policies, capture the
+  route's edit drawer instead, as `tests/tour.spec.ts` does.
+- **Docker Desktop on macOS may refuse to mount the clone.** A clone under `~/Documents` fails
+  with `mkdir /host_mnt/Users/<you>/Documents: operation not permitted` unless Docker has the
+  macOS Files and Folders permission for that folder. Grant it, or point `AGW_RUNTIME_DIR` at a
+  directory Docker can reach, such as one under `/tmp`.
 - **Do not reach for a looser ratio to make a capture stable.** It hides content changes as
   well as clock drift, and `--update-snapshots` will then *decline to rewrite* a stale baseline
   because the old one still "passes" — which is how a masked baseline survived several
@@ -353,6 +362,7 @@ setup the `reference-docs` workflow uses.
 | `tests/llm-playground.spec.ts` | LLM playground against the mock provider |
 | `tests/llm-add-model.spec.ts` | The Add model drawer filled in for each supported provider, one capture per provider tab in the standalone LLM quickstart. Runs under `CAPTURE_MODE=llm`; the form is client-side, so it never saves and needs no provider key |
 | `tests/logs.spec.ts` | LLM > Logs list and a call's Trajectory + Conversation detail. Runs under `CAPTURE_MODE=costs`; **main only** |
+| `tests/tour.spec.ts` | The UI tour in `setup/ui/launch-ui`: Traffic Gateways and Routes, the route drawer's policies, LLM Models and Policies, MCP Servers and Policies, and Client Setup. Runs under `CAPTURE_MODE=tour` against `fixtures/tour-config.yaml` |
 | `scripts/serve-*.sh` | Per-mode launchers: start backend(s) + UI container, clean up on exit |
 | `scripts/mock-*.mjs` | Deterministic mock backends (openai, mcp-time, petstore) |
 | `scripts/seed-costs-db.mjs` | Seeds the request-log SQLite DB for the `costs` mode: 800 rows for Analytics, plus three conversation rows with payloads for the Logs detail |
@@ -366,7 +376,7 @@ setup the `reference-docs` workflow uses.
 |---|---|
 | `test:standalone` | Capture/verify the no-backend specs (landing, cel, smoke) |
 | `test:welcome` | Capture/verify the first-run welcome wizard (no backend; pristine bootstrap config) |
-| `test:mcp` / `:a2a` / `:llm` / `:virtual` / `:openapi` / `:jwt` | Capture/verify one backend mode (brings up its backend + UI) |
+| `test:mcp` / `:a2a` / `:llm` / `:virtual` / `:openapi` / `:jwt` / `:tour` | Capture/verify one backend mode (brings up its backend + UI) |
 | `capture:all` | Run every mode in sequence (what CI runs); `clean:ui` between modes |
 | `update:all` | Same as `capture:all` but **regenerates** baselines (`--update-snapshots`) |
 | `update` | Regenerate only the no-backend baselines (quick) |
@@ -386,6 +396,7 @@ Append `-- --update-snapshots` to any `test:*` to refresh just that mode's basel
 | `AGENTGATEWAY_BIN` | — | Launch a local binary instead of the docker image |
 | `CAPTURE_MODE` | `''` | Which `serve-*.sh` launcher to run (set by the `test:*` scripts) |
 | `PETSTORE_REAL` | — | `1` runs the real Petstore container instead of the mock |
+| `AGW_RUNTIME_DIR` | `.agw-runtime` | Config dir the launcher mounts into the container. Set it to a path outside the clone when Docker cannot mount the clone (see [Determinism and gotchas](#determinism-and-gotchas)). Only `serve-tour-ui.sh` reads it so far |
 
 ## Known limitations
 

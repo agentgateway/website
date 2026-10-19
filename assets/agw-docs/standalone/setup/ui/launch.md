@@ -101,6 +101,57 @@ EOF
 kill $AGW_DEFAULT_PID 2>/dev/null || true
 {{< /doc-test >}}
 
+## Tour the UI {#tour}
+
+The sidebar groups the UI into three areas: **LLM**, **MCP**, and **Traffic**. Each page lists the resources in your configuration, and you can add, edit, or delete them in the page. The following examples show a configuration with one gateway, two routes, an LLM model, and an MCP server.
+
+### Traffic {#tour-traffic}
+
+The **Traffic** area holds the HTTP gateways and routes that are not LLM or MCP traffic.
+
+* **Gateways**: Shows each gateway with its port and protocol. Click **Add gateway** to open a new port.
+
+  {{< reuse-image src="img/ui-tour-traffic-gateways.png" srcDark="img/ui-tour-traffic-gateways-dark.png" >}}
+
+* **Routes**: Lists every route with its gateway, path match, and backends. A route with more than one backend splits traffic between them by weight.
+
+  {{< reuse-image src="img/ui-tour-traffic-routes.png" srcDark="img/ui-tour-traffic-routes-dark.png" >}}
+
+* **Route policies**: To change a backend or a policy on a route, click the edit icon for the route. The **Edit route** drawer shows the backends, a **Route policies** summary such as CORS and rate limits, and the YAML that your change produces. Click **View diff** to compare the change with your current configuration before you save.
+
+  {{< reuse-image src="img/ui-tour-route-policies.png" srcDark="img/ui-tour-route-policies-dark.png" >}}
+
+> [!NOTE]
+> In standalone mode, you set route policies in the **Edit route** drawer. The **Traffic** > **Policies** page is a read-only view for gateways that get their configuration from a control plane, such as agentgateway on Kubernetes. In standalone mode, that page is empty.
+
+### LLM {#tour-llm}
+
+The **LLM** area configures the models that clients can request and the policies that apply to all LLM traffic.
+
+* **Models**: Lists each model with its provider and the model name that the request uses with that provider. Click the play icon to try a model in the **Chat Playground**.
+
+  {{< reuse-image src="img/ui-tour-llm-models.png" srcDark="img/ui-tour-llm-models-dark.png" >}}
+
+* **Policies**: Shows each policy type as a card that is marked **enabled** or **disabled**. Click a card to configure that policy for all LLM traffic.
+
+  {{< reuse-image src="img/ui-tour-llm-policies.png" srcDark="img/ui-tour-llm-policies-dark.png" >}}
+
+The **LLM** area also has pages for providers, guardrails, virtual API keys, costs, analytics, and logs. For more information, see the [LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}}).
+
+### MCP {#tour-mcp}
+
+The **MCP** area configures the MCP servers behind the gateway and the policies that apply to MCP traffic.
+
+* **Servers**: Lists each MCP server with its transport, endpoint, and connection state. A server in the **ready** state is connected, and its tools are available in the **Tool Playground**.
+
+  {{< reuse-image src="img/ui-tour-mcp-servers.png" srcDark="img/ui-tour-mcp-servers-dark.png" >}}
+
+* **Policies**: Shows the MCP policy types as cards, including MCP authentication, MCP authorization, and CORS. Click a card to configure that policy.
+
+  {{< reuse-image src="img/ui-tour-mcp-policies.png" srcDark="img/ui-tour-mcp-policies-dark.png" >}}
+
+For more information, see the [MCP quickstart]({{< link-hextra path="/documentation/quickstart/mcp/" >}}).
+
 ## Try out the UI
 
 Use the UI to review what agentgateway loaded and to manage the resources that you can edit from the UI. The following guides configure agentgateway from a file first, and then you can open the same configuration in the UI to see how the UI presents it.
@@ -126,6 +177,8 @@ For an example of using the UI to set something up, use the **LLM > Client Setup
 2. Open the **LLM** > **Client Setup** page in the UI, such as [http://localhost:15000/ui/llm/client-setup](http://localhost:15000/ui/llm/client-setup).
 3. Review the **Gateway base URL**, and select a model and virtual API key.
 4. Select the client from the **Integration** dropdown, and copy the generated settings or snippet.
+
+   {{< reuse-image src="img/ui-tour-client-setup.png" srcDark="img/ui-tour-client-setup-dark.png" >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 Client Setup fills in **Gateway base URL** from the gateway that serves LLM traffic. If the same gateway also serves the UI, Client Setup uses the address in your browser instead, so the URL keeps the host, scheme, and port of a reverse proxy in front of agentgateway. Check the URL before you copy a snippet, and change it if clients reach agentgateway through a different address. The snippets appear only when **Gateway base URL** has a value.

@@ -275,6 +275,46 @@
       "$note": "standalone/quickstart/llm — the Add model drawer filled in for xAI, captured by llm-add-model.spec.ts. One per provider tab in the guide.",
       "light": "assets/img/ui-llm-add-model-xai.png",
       "dark": "assets/img/ui-llm-add-model-xai-dark.png"
+    },
+    "ui-tour-traffic-gateways.png": {
+      "$note": "standalone/setup/ui/launch-ui, Tour the UI. Traffic > Gateways list: the default gateway on port 3000. Captured by tests/tour.spec.ts under CAPTURE_MODE=tour.",
+      "light": "assets/img/ui-tour-traffic-gateways.png",
+      "dark": "assets/img/ui-tour-traffic-gateways-dark.png"
+    },
+    "ui-tour-traffic-routes.png": {
+      "$note": "standalone/setup/ui/launch-ui, Tour the UI. Traffic > Routes list: two HTTP routes with their matches and backends, one with a weighted split. Captured by tests/tour.spec.ts under CAPTURE_MODE=tour.",
+      "light": "assets/img/ui-tour-traffic-routes.png",
+      "dark": "assets/img/ui-tour-traffic-routes-dark.png"
+    },
+    "ui-tour-route-policies.png": {
+      "$note": "standalone/setup/ui/launch-ui, Tour the UI. Edit route drawer for the httpbin route, scrolled to the backend and the Route policies summary (CORS and local rate limit). Standalone has no editable Traffic > Policies page; the Policies view is xDS-only. Captured by tests/tour.spec.ts under CAPTURE_MODE=tour.",
+      "light": "assets/img/ui-tour-route-policies.png",
+      "dark": "assets/img/ui-tour-route-policies-dark.png"
+    },
+    "ui-tour-llm-models.png": {
+      "$note": "standalone/setup/ui/launch-ui, Tour the UI. LLM > Models list with one OpenAI model (backed by scripts/mock-openai.mjs). Captured by tests/tour.spec.ts under CAPTURE_MODE=tour.",
+      "light": "assets/img/ui-tour-llm-models.png",
+      "dark": "assets/img/ui-tour-llm-models-dark.png"
+    },
+    "ui-tour-llm-policies.png": {
+      "$note": "standalone/setup/ui/launch-ui, Tour the UI. LLM > Policies card grid with CORS enabled. Viewport capture, not full page. Captured by tests/tour.spec.ts under CAPTURE_MODE=tour.",
+      "light": "assets/img/ui-tour-llm-policies.png",
+      "dark": "assets/img/ui-tour-llm-policies-dark.png"
+    },
+    "ui-tour-mcp-servers.png": {
+      "$note": "standalone/setup/ui/launch-ui, Tour the UI. MCP > Servers list with one streamable HTTP target in the ready state (backed by scripts/mock-mcp-time.mjs). Captured by tests/tour.spec.ts under CAPTURE_MODE=tour.",
+      "light": "assets/img/ui-tour-mcp-servers.png",
+      "dark": "assets/img/ui-tour-mcp-servers-dark.png"
+    },
+    "ui-tour-mcp-policies.png": {
+      "$note": "standalone/setup/ui/launch-ui, Tour the UI. MCP > Policies card grid with CORS enabled. Viewport capture, not full page. Captured by tests/tour.spec.ts under CAPTURE_MODE=tour.",
+      "light": "assets/img/ui-tour-mcp-policies.png",
+      "dark": "assets/img/ui-tour-mcp-policies-dark.png"
+    },
+    "ui-tour-client-setup.png": {
+      "$note": "standalone/setup/ui/launch-ui, Tour the UI. LLM > Client Setup with the curl integration selected for the gpt-4o-mini model. Captured by tests/tour.spec.ts under CAPTURE_MODE=tour.",
+      "light": "assets/img/ui-tour-client-setup.png",
+      "dark": "assets/img/ui-tour-client-setup-dark.png"
     }
   }
 }

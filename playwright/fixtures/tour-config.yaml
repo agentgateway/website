@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Config for the UI tour capture (setup/ui/launch-ui, "Tour the UI"). One gateway that fills
+# every capability the tour shows, so each page has a populated, readable view instead of an
+# empty state: Traffic (a gateway, routes, route policies), LLM (a model and policies), and MCP
+# (a server and policies).
+#
+# Most of these views render the config statically, so backends such as
+# httpbin.example.com never need to be reachable. The two exceptions run on the host:
+#   - the MCP target points at scripts/mock-mcp-time.mjs (:3011). The MCP Servers page connects
+#     to it for the target's state, so it must answer. mcp-time.example.com is a docker
+#     --add-host alias for the host (see scripts/serve-tour-ui.sh), so the published image
+#     shows a readable endpoint instead of host.docker.internal.
+#   - the LLM model points at scripts/mock-openai.mjs (:8088), so nothing calls a real provider.
+# Both run on the host because the UI image is distroless and cannot exec a stdio server.
+gateways:
+  default:
+    port: 3000
+    protocol: HTTP
+routes:
+- name: httpbin
+  gateways: [default]
+  hostnames:
+  - "www.example.com"
+  matches:
+  - path:
+      pathPrefix: /
+  policies:
+    cors:
+      allowOrigins:
+      - "https://www.example.com"
+      allowMethods:
+      - GET
+      - POST
+    localRateLimit:
+    - maxTokens: 10
+      tokensPerFill: 1
+      fillInterval: 1s
+  backends:
+  - host: httpbin.example.com:80
+- name: api-v2
+  gateways: [default]
+  matches:
+  - path:
+      pathPrefix: /v2
+  backends:
+  - host: api-v2.example.com:8080
+    weight: 80
+  - host: api-v1.example.com:8080
+    weight: 20
+llm:
+  port: 3030
+  policies:
+    cors:
+      allowOrigins:
+      - "*"
+      allowHeaders:
+      - "*"
+    localRateLimit:
+    - maxTokens: 100
+      tokensPerFill: 10
+      fillInterval: 1s
+      type: tokens
+  models:
+  - name: gpt-4o-mini
+    provider: openAI
+    params:
+      model: gpt-4o-mini
+      apiKey: "sk-mock-not-a-real-key"
+      hostOverride: "host.docker.internal:8088"
+mcp:
+  port: 3040
+  targets:
+  - name: time
+    mcp:
+      host: http://mcp-time.example.com:3011/mcp
+  policies:
+    cors:
+      allowOrigins:
+      - "*"
+      allowHeaders:
+      - "*"
