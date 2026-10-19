@@ -23,6 +23,12 @@ Review the release notes for agentgateway on Kubernetes.
 
 - **Conditional virtual MCP targets**: Set `spec.mcp.targets[].condition` on an {{< reuse "agw-docs/snippets/backend.md" >}} to a CEL expression to select which targets take part in a request before agentgateway initializes or contacts them. A backend whose only target is a `static` target cannot set a condition. For more information, see [Select targets with conditions]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
 
+### LLM {#v17-llm}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3825 -->
+
+- **Anthropic 1-hour cache writes can use a separate catalog rate**: Set `cacheWrite1h` in a model cost catalog to price Anthropic prompt-cache writes with a 1-hour TTL separately from 5-minute cache writes. If `cacheWrite1h` is omitted, those tokens use the `cacheWrite` rate. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-json-format" >}}).
+
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->
