@@ -23,6 +23,12 @@ Review the release notes for agentgateway on Kubernetes.
 
 - **Conditional virtual MCP targets**: Set `spec.mcp.targets[].condition` on an {{< reuse "agw-docs/snippets/backend.md" >}} to a CEL expression to select which targets take part in a request before agentgateway initializes or contacts them. A backend whose only target is a `static` target cannot set a condition. For more information, see [Select targets with conditions]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
 
+### LLM {#v17-llm}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3965 -->
+
+- **Model discovery responses include catalog metadata**: The Models API now returns catalog-backed metadata such as context limits, modalities, capabilities, and supported parameters from `/v1/models` and `/models`. Clients can also limit list responses and fetch one model by ID with `/v1/models/<model-id>` or `/models/<model-id>`. For more information, see {{< conditional-text include-if="standalone" >}}[Models]({{< link-hextra path="/documentation/llm/api-types/models/" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[Serve a model]({{< link-hextra path="/documentation/llm/models/serve/" >}}){{< /conditional-text >}}.
+
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->

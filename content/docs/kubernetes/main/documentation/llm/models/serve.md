@@ -393,6 +393,10 @@ Real providers require credentials. Use `spec.policies.auth` to read them from a
 
 Every public model on a listener appears in the OpenAI-compatible discovery endpoint. The endpoint requires no configuration.
 
+Each entry includes the OpenAI model object fields, such as `id`, `object`, `created`, and `owned_by`. When the model catalog has metadata for a model, the response also includes the display name and context limits. The response can also include input and output modalities, capabilities, and supported request parameters.
+
+To return only the first listed models, add the `limit` query parameter. To look up one model by ID, send a request to `/v1/models/<model-id>` or `/models/<model-id>`.
+
 ```sh
 curl -s http://$INGRESS_GW_ADDRESS/v1/models
 ```
@@ -435,7 +439,7 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-Wildcard models expand to matching IDs from the [model catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) for their `provider`. For example, `openai/*` expands to IDs such as `openai/gpt-4o`. The catalog combines the built-in catalog with any catalogs that you configure.
+Wildcard models expand to matching IDs from the [model catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) for their `provider`. For example, `openai/*` expands to IDs such as `openai/gpt-4o`. The catalog combines the built-in catalog with any catalogs that you configure. The discovery response uses catalog metadata for the extra fields.
 
 - **Model transformations**: Agentgateway reverses transformations that strip or add a fixed string, such as `stripPrefix("openai/")`. The list then uses the model names that clients send.
 - **Unexpanded patterns**: Agentgateway lists the pattern itself if the provider has no catalog entries. It also keeps the pattern if the model overrides the upstream model or uses a transformation that cannot be reversed.
