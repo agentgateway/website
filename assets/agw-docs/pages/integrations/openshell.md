@@ -256,7 +256,7 @@ Replace the example hostname and identity provider settings with your own values
      --timeout 10m
    ```
 
-   If the upgrade times out and the `openshell-0` pod crash-loops, the pod cannot reach the OIDC issuer. Correct the issuer settings, and then delete the pod. The StatefulSet does not replace a pod that never became ready, so the new pod picks up the corrected configuration only after you delete the old one.
+   If the upgrade times out or the `openshell-0` pod crash-loops, check the pod logs first with `kubectl logs openshell-0 -n openshell`. If an `OIDC discovery request failed` error confirms that the pod cannot reach the issuer, correct the issuer settings. Then delete the pod. The StatefulSet uses the `OrderedReady` pod management policy, so a pod that never became ready blocks the rollout and is not replaced with the corrected configuration until you delete it. For more information, see [Forced rollback](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#forced-rollback) in the Kubernetes docs.
 
    ```bash
    kubectl delete pod openshell-0 -n openshell
@@ -299,7 +299,7 @@ Replace the example hostname and identity provider settings with your own values
 
    Configure DNS and network access so that your hostname reaches the agentgateway proxy Service on HTTPS port `443`.
 
-5. Register the HTTPS endpoint with the CLI and authenticate with your identity provider. The command opens a browser for the identity provider login, which uses the authorization code flow with Proof Key for Code Exchange (PKCE), and stores the resulting token. For CI and other non-interactive use, set the `OPENSHELL_OIDC_CLIENT_SECRET` environment variable to use the client credentials flow instead. To authenticate again after the token expires, run `openshell gateway login production`.
+5. Register the HTTPS endpoint with the CLI and authenticate with your identity provider. The command opens a browser for the identity provider login, which uses the authorization code flow with Proof Key for Code Exchange (PKCE), and stores the resulting token. For CI and other non-interactive use, set the `OPENSHELL_OIDC_CLIENT_SECRET` environment variable to use the client credentials flow instead. The CLI refreshes the token automatically. If the token refresh fails or reauthentication is required, run `openshell gateway login production`.
 
    ```bash
    openshell gateway add https://gateway.example.com \
