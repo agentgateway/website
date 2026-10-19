@@ -18,11 +18,19 @@ Nothing is maintained by hand. For each section, the kept versions are the
 linkVersion, or `latest` for the entry whose linkVersion is "latest" (the first
 entry if there is none). `make serve VERSION=main` passes it.
 
+--preview-base is for PR previews (`make build` on a Cloudflare Pages branch
+build). It skips the same trees, unless the branch changed a file inside one
+of them compared with the base ref; then it writes an empty overlay and
+everything builds. Shared files (assets/, layouts/, hugo.yaml) do not count, so
+a snippet change that breaks an older version shows up only in the production
+build. If git cannot work out what changed, everything builds.
+
 If PyYAML is missing, the overlay is written empty and everything builds.
 """
 
 import argparse
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -41,9 +49,46 @@ HEADER = (
 )
 
 
+def git(*args: str) -> str:
+    return subprocess.run(
+        ["git", *args], cwd=REPO_ROOT, check=True, capture_output=True, text=True
+    ).stdout
+
+
+def changed_files(base: str) -> list[str] | None:
+    """Files this branch changed against `base`, or None if git can't tell.
+
+    Cloudflare Pages clones only the branch, so fetch the base first if it's
+    missing. A shallow clone may share no history with it; then compare the
+    trees directly, which also counts changes made on the base since the branch
+    was cut (so it builds everything more often, never less).
+    """
+    try:
+        try:
+            git("rev-parse", "--verify", "--quiet", base)
+        except subprocess.CalledProcessError:
+            remote, _, branch = base.partition("/")
+            git("fetch", "--depth=1", "--no-tags", remote, f"{branch}:refs/remotes/{base}")
+        try:
+            since = git("merge-base", base, "HEAD").strip()
+        except subprocess.CalledProcessError:
+            since = base
+        # No HEAD: compare with the working tree, so local uncommitted edits count.
+        files = git("diff", "--name-only", since).split()
+        files += git("ls-files", "--others", "--exclude-standard").split()
+        return files
+    except (subprocess.CalledProcessError, FileNotFoundError) as err:
+        print(f"Could not diff against {base} ({err}); building every version.")
+        return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--version", default="", help="build only this listed linkVersion, or `latest`")
+    parser.add_argument(
+        "--preview-base", default="", metavar="REF",
+        help="build every version if this branch changed an unlisted version tree against REF",
+    )
     args = parser.parse_args()
 
     try:
@@ -86,6 +131,19 @@ def main() -> int:
             if VERSION_DIR.match(name) and name not in listed:
                 patterns.append(f"(^|/)content/docs/{re.escape(section)}/{re.escape(name)}/")
                 skipped.append(f"{section}/{name}")
+
+    if args.preview_base and skipped:
+        files = changed_files(args.preview_base)
+        hits = (
+            sorted({s for s in skipped for f in files if f.startswith(f"content/docs/{s}/")})
+            if files is not None
+            else skipped
+        )
+        if hits:
+            if files is not None:
+                print(f"This branch changes {', '.join(hits)}; building every version.")
+            OUT.write_text(HEADER + "ignoreFiles: []\n", encoding="utf-8")
+            return 0
 
     body = "".join(f"  - '{p}'\n" for p in patterns)
     text = HEADER + ("ignoreFiles:\n" + body if body else "ignoreFiles: []\n")
