@@ -62,6 +62,12 @@ Review the release notes for agentgateway on Kubernetes.
 
 - **Model catalogs include descriptive model metadata**: Model catalog entries can now include display names, lifecycle status, release dates, token limits, modalities, capabilities, and reasoning controls in addition to pricing fields. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
 
+### LLM {#v17-llm}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3825 -->
+
+- **Anthropic 1-hour cache writes can use a separate catalog rate**: Set `cacheWrite1h` in a model cost catalog to price Anthropic prompt-cache writes with a 1-hour TTL separately from 5-minute cache writes. If `cacheWrite1h` is omitted, those tokens use the `cacheWrite` rate. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-json-format" >}}).
+
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->

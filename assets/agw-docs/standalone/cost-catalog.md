@@ -165,6 +165,8 @@ When a request matches an entry in the catalog, agentgateway populates these CEL
 - `llm.model`: The resolved model's catalog metadata, including `id`, `tags`, `limits`, `modalities`, `capabilities`, and `reasoning`. Unset when no catalog entry matches the request provider and model.
 {{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}For Anthropic prompt-cache writes with a 1-hour time to live (TTL), `llm.cost.cacheWrite1h` reports the 1-hour cache-write cost. `llm.cost.cacheWrite` reports the cost for cache writes that do not use a 1-hour TTL, such as 5-minute cache writes. When the catalog includes `cacheWrite1h`, `llm.costRates.cacheWrite1h` reports the effective rate.{{< /version >}}
+
 {{< version exclude-if="1.5.x" >}}For page-billed document models, `llm.cost.pages` reports the page-cost component, and `llm.costRates.perPage` reports the USD-per-page rate that was applied.{{< /version >}}
 
 The request access log includes `agw.ai.usage.cost.total` only for priced LLM requests. When the model cannot be priced, the access log leaves out the field.
@@ -174,6 +176,7 @@ Traces always include the full breakdown:
 * `agw.ai.usage.cost.output`
 * `agw.ai.usage.cost.cache_read`
 * `agw.ai.usage.cost.cache_write`
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}* `agw.ai.usage.cost.cache_write_1h`{{< /version >}}
 * `agw.ai.usage.cost.reasoning`
 * `agw.ai.usage.cost.input_audio`
 * `agw.ai.usage.cost.output_audio`
@@ -227,6 +230,8 @@ The model catalog provides pricing data for spend visibility. To block or thrott
 Usually, you do not need to write catalog JSON by hand. Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` or the UI to generate the base catalog, then add overrides only when needed.
 
 {{< reuse "agw-docs/snippets/model-catalog-json-format.md" >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}To price Anthropic 1-hour cache writes separately, add `cacheWrite1h` to a model's `rates` or tier `rates`, beside `cacheWrite`. If you omit `cacheWrite1h`, 1-hour cache writes use the `cacheWrite` rate.{{< /version >}}
 
 {{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 ## Model tags
