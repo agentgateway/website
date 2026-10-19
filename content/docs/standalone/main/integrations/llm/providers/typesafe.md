@@ -1,6 +1,7 @@
 ---
 title: TypeSafe
 weight: 20
+icon: /integrations/providers/bw/typesafe.svg
 description: Route agentgateway LLM traffic to TypeSafe Jev with the built-in provider preset.
 test:
   typesafe:

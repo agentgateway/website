@@ -19,8 +19,8 @@ Review the release notes for agentgateway on Kubernetes.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3852 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3854 -->
 
-- **OpenAI Decisions API**: Requests to the OpenAI Decisions API at `/v1/decisions` have their own `Decisions` route type and provider format. Add `"/v1/decisions": "Decisions"` to the `routes` of an OpenAI backend, or declare the `Decisions` format on a custom provider, so that LLM telemetry records the model and token usage. For more information, see [Send OpenAI Decisions API requests]({{< link-hextra path="/integrations/llm/providers/openai/#decisions" >}}).
-- **TypeSafe and Decisions API support in Kubernetes**: Kubernetes `AgentgatewayModel` resources can now use the `Typesafe` provider preset, and custom providers can declare `Decisions` and `SystemOne` formats for OpenAI Decisions and TypeSafe Jev APIs. For more information, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
+- **OpenAI Decisions API**: Requests to the OpenAI Decisions API at `/v1/decisions` have their own `Decisions` route type and provider format. Add `"/v1/decisions": "Decisions"` to the `routes` of an OpenAI backend, or declare the `Decisions` format on a custom provider, so that LLM telemetry records the model and token usage. For more information, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}).
+- **TypeSafe and Decisions API support in Kubernetes**: Kubernetes `AgentgatewayModel` resources can now use the `Typesafe` provider preset, and custom providers can declare `Decisions` and `SystemOne` formats for OpenAI Decisions and TypeSafe Jev APIs. For more information, see [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}) and [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
 ### Security {#v17-security}
 
