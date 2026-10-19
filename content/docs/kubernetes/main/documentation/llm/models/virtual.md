@@ -508,11 +508,13 @@ Failover depends on eviction. A virtual model with more than one priority group 
 
 ## Choose a model with an HTTP callout {#callout-routing}
 
-Use `virtualModel.callout` to let an HTTP service select the target model for each request. Use callout routing when the decision depends on logic outside the configuration. For example, a service can score the complexity of the prompt or track the state of an agent session.
+Use `virtualModel.callout` to let a routing service select the target model for each request. Use callout routing when the decision depends on logic outside the configuration. For example, a service can score the complexity of the prompt or track the state of an agent session.
 
-For each request to the virtual model, the gateway sends a `POST` request to the routing service. The service must return a `2xx` response with a JSON body. The `transformation` expressions read that response from the `callout` CEL variable, and the `model` expression selects the target.
+For each request to the virtual model, the gateway sends a `POST` request to the routing service. The service must return a `2xx` response with a JSON body. The `transformation` expressions read that response from the `callout` CEL variable, and the `model` expression selects the target. If the callout fails, the fallback model serves the request.
 
-This guide has no routing service. Instead, the example points the callout at the `unreachable-llm` Service from the failover example, which has no backing workload. Every callout fails, so you can see the fallback model serve the request. In a real deployment, point the callout at your routing service. For routing services that you can run, see the [`llm-callout-jev`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-jev) and [`llm-callout-switchyard`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-switchyard) examples.
+In this guide, the httpbun mock LLM stands in for the routing service. Its `/mix` endpoint returns the response that you encode in the URL, so the service always selects `internal-premium` with a `medium` reasoning effort. For routing services that make real decisions, see the [`llm-callout-jev`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-jev) and [`llm-callout-switchyard`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-switchyard) examples.
+
+For your own in-cluster routing service, set `backendRef` instead of `url`. A `url` that names a cluster hostname does not get the `Service` policies or load balancing. A `backendRef` has no path, so set the `:path` pseudo-header in `headers`, such as `":path": '"/v1/route"'`. Each `headers` value is a CEL expression, so quote a literal string twice. A `backendRef` in another namespace needs a ReferenceGrant. Without one, the model status reports the error, and every callout fails.
 
 1. Create a virtual model that asks the routing service which model to use and falls back to `internal-fast`.
 
@@ -531,11 +533,7 @@ This guide has no routing service. Instead, the example points the callout at th
        sectionName: http
      virtualModel:
        callout:
-         backendRef:
-           name: unreachable-llm
-           port: 9235
-         headers:
-           ":path": '"/v1/route"'
+         url: http://httpbun.default.svc.cluster.local:3090/mix/s=200/h=content-type:application%2Fjson/b64=eyJtb2RlbCI6ImludGVybmFsLXByZW1pdW0iLCJyZWFzb25pbmdfZWZmb3J0IjoibWVkaXVtIn0=
          body: '{"messages": llmRequest.messages}'
          transformation:
            model: callout.body.model
@@ -554,8 +552,7 @@ This guide has no routing service. Instead, the example points the callout at th
 
    | Field | Value | Description |
    |-------|-------|-------------|
-   | `backendRef` | `unreachable-llm`, port `9235` | The `Service` or `Backend` that runs the routing service. Set exactly one of `backendRef` or `url`. A `url` such as `https://router.example.com/v1/route` can include the path, and an `https` URL turns on TLS. A `url` that names a cluster hostname does not get the `Service` policies or load balancing, so prefer `backendRef` for in-cluster services. A `backendRef` in another namespace needs a ReferenceGrant. Without one, the model status reports the error, and every callout fails. |
-   | `headers` | `":path": '"/v1/route"'` | Headers to set on the callout request. Each value is a CEL expression, so quote a literal string twice. Keys can be header names or the `:path`, `:method`, and `:authority` pseudo-headers. A `backendRef` has no path, so set `:path` to send the request to a path other than `/`. |
+   | `url` | The httpbun `/mix` endpoint | The URL of the routing service, including the path. An `https` URL turns on TLS. In this guide, the URL encodes the response that httpbun returns: status `200`, an `application/json` `content-type` header, and the base64-encoded body `{"model":"internal-premium","reasoning_effort":"medium"}`. Set exactly one of `url` or `backendRef`. |
    | `body` | `{"messages": llmRequest.messages}` | A CEL expression that builds the callout request body. `llmRequest` is the client's JSON request body. A string or bytes value is sent as is, and any other value is sent as JSON. If you omit `body`, the routing service receives the original request body. |
    | `transformation.model` | `callout.body.model` | Required. A CEL expression that returns the target model name as a string. `callout.body` is the decoded JSON response body and `callout.headers` holds the response headers. The routing service must return the model name that the target matches. That name is the target's `match.model` value or the target's resource name when `match.model` is not set. In this guide, the names are `internal-fast` and `internal-premium`. The target must be attached to the same parent as the virtual model. |
    | `transformation.reasoning_effort` | `callout.body.reasoning_effort` | Optional. Each key other than `model` sets that field in the request body and overrides the client's value. If the expression fails, such as when the response does not contain the field, the field is removed from the request. These keys apply only to requests that carry the model in a JSON body. |
@@ -563,7 +560,59 @@ This guide has no routing service. Instead, the example points the callout at th
    | `cache.key` | `request.headers["x-session-id"]` | One or more CEL expressions that make up the cache key. Requests with the same key reuse the first response, so a session identifier keeps a session on one model. If a key expression fails, such as when the header is missing, the response is not cached. On a cache hit, `transformation` runs against the cached response. To limit the cache size, set `cache.maxEntries`, which defaults to `10000`. |
    | `cache.ttl` | `10m` | How long a cached response is reused. Set a duration string, or a CEL expression that can read `callout` and returns a duration or the time at which the response expires. |
 
-2. Send a request with a session header. The routing service cannot be reached, so the fallback model serves the request.
+2. Send a request with a session header. The routing service selects `internal-premium` and sets `reasoning_effort` to `medium`, so the response shows `resolved-internal-premium`. Later requests with the same `x-session-id` header reuse this routing response for 10 minutes without another callout.
+
+   ```sh
+   curl -s -X POST http://$INGRESS_GW_ADDRESS/v1/chat/completions \
+     -H "Content-Type: application/json" \
+     -H "x-session-id: session-1" \
+     -d '{"model": "routed", "messages": [], "httpbun": {"content": "hi"}}'
+   ```
+
+   Example output:
+
+   ```json
+   {"model":"resolved-internal-premium","usage":{"prompt_tokens":0,"completion_tokens":1,"total_tokens":1},"choices":[{"message":{"content":"hi","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
+   ```
+
+   {{< doc-test paths="virtual-models" >}}
+   for i in $(seq 1 60); do
+     curl -s --max-time 15 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
+       -H "Content-Type: application/json" \
+       -d '{"model":"routed","messages":[],"httpbun":{"content":"warmup"}}' && break
+     sleep 2
+   done
+
+   YAMLTest -f - <<'EOF'
+   - name: callout routing selects the model that the routing service returns
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+       method: POST
+       headers:
+         Content-Type: application/json
+         x-session-id: session-1
+       body: |
+         {"model": "routed", "messages": [], "httpbun": {"content": "hi"}}
+     source:
+       type: local
+     retries: 3
+     expect:
+       statusCode: 200
+       bodyJsonPath:
+         - path: "$.model"
+           comparator: equals
+           value: "resolved-internal-premium"
+   EOF
+   {{< /doc-test >}}
+
+3. To make the callout fail, point the callout URL at the httpbun `/status/503` endpoint, which returns a `503` response.
+
+   ```sh {paths="virtual-models"}
+   kubectl patch {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} routed -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type=json \
+     -p='[{"op": "replace", "path": "/spec/virtualModel/callout/url", "value": "http://httpbun.default.svc.cluster.local:3090/status/503"}]'
+   ```
+
+4. Send the request again. Updating the callout clears the cached routing responses, so the same session sends a new callout. The callout fails, and the fallback model serves the request.
 
    ```sh
    curl -s -X POST http://$INGRESS_GW_ADDRESS/v1/chat/completions \
@@ -578,8 +627,6 @@ This guide has no routing service. Instead, the example points the callout at th
    {"model":"resolved-internal-fast","usage":{"prompt_tokens":0,"completion_tokens":1,"total_tokens":1},"choices":[{"message":{"content":"hi","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
    ```
 
-   With a running routing service that returns a body such as `{"model": "internal-premium", "reasoning_effort": "medium"}`, the request goes to `internal-premium` with `reasoning_effort` set to `medium`. Later requests with the same `x-session-id` header reuse that response for 10 minutes.
-
    {{< doc-test paths="virtual-models" >}}
    for i in $(seq 1 60); do
      curl -s --max-time 15 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
@@ -589,7 +636,7 @@ This guide has no routing service. Instead, the example points the callout at th
    done
 
    YAMLTest -f - <<'EOF'
-   - name: callout routing falls back when the routing service cannot be reached
+   - name: callout routing falls back when the routing service fails
      http:
        url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
        method: POST
