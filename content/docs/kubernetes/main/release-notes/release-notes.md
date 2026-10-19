@@ -37,10 +37,18 @@ Review the release notes for agentgateway on Kubernetes.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3802 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3812 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3953 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3959 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3985 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3992 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4002 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4011 -->
 
 **Traffic management**
 
 - Local gRPC policy call failures, such as DNS errors, unavailable endpoints, refused connections, and timeouts, are reported with the mapped gRPC status instead of `UNKNOWN`.
+- Agent Substrate ingress and egress now match the updated Substrate contract, including actor JWT credential injection, `workerPodIps` assignments, `ate-error-reason` responses, and rejection of duplicate target actor headers.
+- Backend request mirrors now run after backend authorization policies, and route mirrors keep the original request metadata when they are sent.
 
 **LLM**
 
@@ -48,6 +56,8 @@ Review the release notes for agentgateway on Kubernetes.
 - Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
 - Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 - Bedrock Runtime requests now send client `tool_choice` settings as Converse `toolChoice`, so forced tool choices can take effect and models that reject them return Bedrock errors.
+- Non-standard LLM request extensions that agentgateway accepts, including Gemini generation parameters and Bedrock metadata headers, are now documented in one place.
+- LLM request policies now get the 32 MiB body buffer before they run, so policies that inspect LLM request bodies use the same buffer limit as provider processing.
 
 **MCP**
 
@@ -64,6 +74,8 @@ Review the release notes for agentgateway on Kubernetes.
 
 - HTTP/1 clients receive `Connection: close` on the next response when a proxy drains or reaches its maximum connection duration.
 - Metrics requests use the OpenMetrics content type by default, while browser requests use `text/plain` so browsers display metrics instead of downloading them.
+- Configuration warnings from proxy xDS responses now publish Kubernetes Events with the reason `AgentGatewayConfigWarning` and increment `agentgateway_xds_warnings_total` without counting the response as rejected.
+- Controller reconciliation metrics now report only total reconciliations by controller and result, without per-Gateway labels or duration and running histograms.
 
 ## ✨ Highlights {#v16-highlights}
 

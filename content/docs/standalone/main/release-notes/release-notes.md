@@ -32,10 +32,16 @@ Review the release notes for agentgateway standalone.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3774 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3812 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3959 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3985 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4002 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4011 -->
 
 **Traffic management**
 
 - Local gRPC policy call failures, such as DNS errors, unavailable endpoints, refused connections, and timeouts, are reported with the mapped gRPC status instead of `UNKNOWN`.
+- Agent Substrate ingress and egress now match the updated Substrate contract, including actor JWT credential injection, `workerPodIps` assignments, `ate-error-reason` responses, and rejection of duplicate target actor headers.
+- Backend request mirrors now run after backend authorization policies, and route mirrors keep the original request metadata when they are sent.
 
 **LLM**
 
@@ -43,6 +49,8 @@ Review the release notes for agentgateway standalone.
 - Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
 - Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 - Bedrock Runtime requests now send client `tool_choice` settings as Converse `toolChoice`, so forced tool choices can take effect and models that reject them return Bedrock errors.
+- Non-standard LLM request extensions that agentgateway accepts, including Gemini generation parameters and Bedrock metadata headers, are now documented in one place.
+- LLM request policies now get the 32 MiB body buffer before they run, so policies that inspect LLM request bodies use the same buffer limit as provider processing.
 
 **MCP**
 
