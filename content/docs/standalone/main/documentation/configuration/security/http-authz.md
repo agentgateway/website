@@ -63,6 +63,8 @@ The following steps add the same `authorization` policy as the **Simplified (LLM
    | **Require** | `jwt.aud == "my-service"` |
    | **Allow** | `request.headers["x-allow"] == "true"` |
 
+   {{< reuse-image src="img/ui-llm-policy-authorization.png" srcDark="img/ui-llm-policy-authorization-dark.png" >}}
+
 5. Click **Save policy**.
 
 The UI saves every rule as an object with an `allow`, `deny`, or `require` key. A legacy string rule, such as the last rule in the **Config file** tab, is saved as an `allow` rule, which behaves the same. To try out an expression first, click **Playground** on the rule to open it in the CEL playground.
@@ -276,6 +278,8 @@ The following steps add the model-level rules from the **Config file** tab to th
    | **Require** | `jwt.aud == "llm-api"` |
    | **Deny** | `request.headers["x-org"] == "blocked"` |
    | **Allow** | `request.headers["x-org"] == "engineering"` |
+
+   {{< reuse-image src="img/ui-llm-model-authorization.png" srcDark="img/ui-llm-model-authorization-dark.png" >}}
 
 5. Click **Apply authorization**, and then click **Save model**.
 

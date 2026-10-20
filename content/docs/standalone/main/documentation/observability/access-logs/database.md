@@ -69,6 +69,9 @@ Whether the UI can save depends on your storage mode. For more information, see 
 
 1. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability), and click the **Access logs** card.
 2. In the **Database** section, select **Full** from the **LLM detail** dropdown.
+
+   {{< reuse-image src="img/ui-access-logs-database-llm.png" srcDark="img/ui-access-logs-database-llm-dark.png" >}}
+
 3. Click **Save policy**.
 
 You can also open the **Logs** page, such as [http://localhost:15000/ui/llm/logs](http://localhost:15000/ui/llm/logs), click **Settings**, select **Include prompts and completions in logs**, and click **Save settings**. Clearing that checkbox later sets `llm: metadata` instead of removing the field.
@@ -125,6 +128,9 @@ Use the `frontendPolicies.accessLog.database.add` field to store additional acce
 {{% tab name="UI" %}}
 1. Open the **Settings** > **Observability** page, and click the **Access logs** card.
 2. In the **Database** section, under **Database fields**, enter `user_id` as the name and `request.headers["x-user-id"]` as the value, and click **Add**.
+
+   {{< reuse-image src="img/ui-access-logs-database-fields.png" srcDark="img/ui-access-logs-database-fields-dark.png" >}}
+
 3. Click **Save policy**.
 {{% /tab %}}
 {{% tab name="Config file" %}}

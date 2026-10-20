@@ -77,7 +77,7 @@ Use `llm.models[].visibility` to control whether a model is directly exposed to 
 - `public`: The model can be requested directly by clients and can also be used as a virtual model target.
 - `internal`: The model is intended for internal routing targets and is not exposed as a direct client model.
 
-The model drawer in the UI has no field for `visibility`. To set it in the UI, open the model, click the **Raw** toggle, and add the `visibility` field to the YAML. When you edit a model in the form, the UI keeps the `visibility` value that the model already has.
+The model drawer in the UI has no field for `visibility`. To set it in the UI, open the model, click the **Raw** icon (`<>`) in the drawer header, and add the `visibility` field to the YAML. When you edit a model in the form, the UI keeps the `visibility` value that the model already has.
 
 ## Route selection modes
 
@@ -124,6 +124,9 @@ Use `routing.weighted.targets` to split traffic between targets with `weight`.
 5. In the **Weighted targets** section, configure the targets.
    1. From the first **Model** dropdown, select `gpt-4o-primary`, and enter `90` for the **Weight**.
    2. Click **Add target**. Select `gpt-4o-fallback`, and enter `10` for the **Weight**.
+
+   {{< reuse-image src="img/ui-llm-virtual-model-weighted.png" srcDark="img/ui-llm-virtual-model-weighted-dark.png" >}}
+
 6. Click **Save virtual model**.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
@@ -283,6 +286,9 @@ Failover is driven by eviction of the active set, not by rewriting a single in-f
 5. In the **First attempt** group, select `claude-primary` from the **Model** dropdown. The UI writes this group as `priority: 0`.
 6. Click **Add fallback group**. In the new group, select `claude-backup-a`.
 7. In the same group, click **Add target**, and select `claude-backup-b`. Both targets in this group get `priority: 1`.
+
+   {{< reuse-image src="img/ui-llm-virtual-model-failover.png" srcDark="img/ui-llm-virtual-model-failover-dark.png" >}}
+
 8. Click **Save virtual model**.
 {{% /tab %}}
 {{% tab name="Config file" %}}
@@ -430,7 +436,13 @@ Use `routing.conditional.targets` and `when` expressions to select targets by re
 3. Enter `adaptive` for the **Virtual model name**.
 4. For the **Routing strategy**, select **Conditional**. The UI adds a **Rule 1** card and a **Fallback** card, each with a **Condition** and a **Target model**.
 5. In **Rule 1**, replace the **Condition** with `request.headers["x-tier"] == "free"`, and select `openai-fast` as the **Target model**.
+
+   {{< reuse-image src="img/ui-llm-virtual-model-conditional.png" srcDark="img/ui-llm-virtual-model-conditional-dark.png" >}}
+
 6. In the **Fallback** card, enter `request.headers["x-tier"] == "pro"` as the **Condition**, and select `openai-smart` as the **Target model**. With a condition, the card becomes **Rule 2**.
+
+   {{< reuse-image src="img/ui-llm-virtual-model-conditional-rule-2.png" srcDark="img/ui-llm-virtual-model-conditional-rule-2-dark.png" >}}
+
 7. Click **Save virtual model**.
 
 To send requests that match no condition to a default model, leave the **Condition** of the last card empty. Only the last card can omit a condition.

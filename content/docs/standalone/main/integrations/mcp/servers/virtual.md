@@ -187,6 +187,9 @@ The UI adds both targets to the top-level `mcp` section, as in the [example mult
    1. Click **Add server**.
    2. Enter `time` for the **Server name**, and select the **Command Line** transport. Target names cannot include underscores (`_`).
    3. Enter `uvx` for the **Command** and `--with mcp<2 mcp-server-time` for the **Arguments**.
+
+      {{< reuse-image src="img/ui-mcp-servers-add-time.png" srcDark="img/ui-mcp-servers-add-time-dark.png" >}}
+
    4. Click **Save server**.
 3. Add the `everything` server.
    1. Click **Add server**.
@@ -307,6 +310,9 @@ You can set the prefix mode in the UI or in your configuration file.
 1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**.
 2. For **Prefix mode**, select **Never**.
 3. For **State mode**, select **Stateful** to keep the default session behavior. The list shows **Stateless** when `statefulMode` is not set, and the drawer saves the selected value.
+
+   {{< reuse-image src="img/ui-mcp-settings-prefix-never.png" srcDark="img/ui-mcp-settings-prefix-never-dark.png" >}}
+
 4. Click **Save settings**.
 
 The UI sets `prefixMode` to `never`, as in the **Config file** tab. It also writes the selected state mode, sets `failureMode` to `failClosed`, and writes an empty `gateways` list. The **None** option removes `prefixMode`, so the default `conditional` behavior applies, and names are still prefixed when the backend has more than one target.

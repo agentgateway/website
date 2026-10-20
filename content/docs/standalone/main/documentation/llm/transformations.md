@@ -85,6 +85,9 @@ To learn more about CEL, see the following resources:
    2. Open **LLM** > **Models** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models). Click the **Edit model** icon for the `*` model.
    3. Expand **Advanced** > **Model policies** > **Transformation**.
    4. In the **LLM request fields** section, enter `max_tokens` as the field name and `min(llmRequest.max_tokens, 10)` as the CEL expression, and click **Add**.
+
+      {{< reuse-image src="img/ui-llm-model-transformation.png" srcDark="img/ui-llm-model-transformation-dark.png" >}}
+
    5. Click **Save model**.
 
    The UI writes the `transformation` map that the **Config file** tab shows. Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
@@ -364,6 +367,9 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
    4. Expand **Final transformation**. In the **Provider request fields** section, add each of the following fields. For each field, enter the field name and the CEL expression, and click **Add**.
       * `max_completion_tokens`: `min(llmRequest.max_completion_tokens, 10)`
       * `reasoning_effort`: `fail("remove")`
+
+      {{< reuse-image src="img/ui-llm-model-final-transformation.png" srcDark="img/ui-llm-model-final-transformation-dark.png" >}}
+
    5. Click **Save model**.
 
    The UI writes the `finalTransformation` map that the **Config file** tab shows.

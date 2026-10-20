@@ -40,9 +40,12 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 4. In the **Incoming model match** field, replace the default `meta/*` with `*`.
 5. For the **Provider API key**, select **Env var**, and enter `META_API_KEY`.
 6. Keep **Incoming model** as the **Outgoing model**. To send every request to one model instead, select **Explicit**, and enter the model name, such as `muse-spark-1.3`. This option sets `params.model`.
+
+   {{< reuse-image src="img/ui-llm-add-model-meta.png" srcDark="img/ui-llm-add-model-meta-dark.png" >}}
+
 7. Click **Save model**.
 
-The form has no field for `params.baseUrl`. To override the provider URL, click **Raw** in the drawer header and add the field, or use the **Config file** tab.
+The form has no field for `params.baseUrl`. To override the provider URL, click the **Raw** icon (`<>`) in the drawer header and add the field, or use the **Config file** tab.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}

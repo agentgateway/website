@@ -30,6 +30,9 @@ The UI must be able to save changes, which depends on your storage mode. For mor
    2. Enter `ui-gateway` for the **Name** and `4001` for the **Port**, and click **Save gateway**.
 2. Open the **Settings** > **UI** page, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui).
 3. From the **Public gateway** dropdown, select `ui-gateway`. To serve the UI only on the admin interface, select **None** instead.
+
+   {{< reuse-image src="img/ui-settings-public-gateway.png" srcDark="img/ui-settings-public-gateway-dark.png" >}}
+
 4. Click **Save UI gateway**. If the UI is already served on a gateway, confirm the change in the **Change UI gateway?** dialog.
 
    If you opened the UI through the gateway that you changed or removed, the page stops loading. Open the UI on the new gateway or on the admin interface. If you chose **None**, the UI also removes the `ui` section from your configuration, including any `ui.policies`.

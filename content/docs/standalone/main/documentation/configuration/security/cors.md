@@ -128,6 +128,11 @@ The following steps add the same CORS policy as the **Simplified (LLM)** example
    4. In **Expose headers**, click the `x-request-id` suggestion.
    5. Select **Allow credentials**.
    6. Enter `10m` for the **Max age**.
+
+   {{< reuse-image src="img/ui-llm-policy-cors.png" srcDark="img/ui-llm-policy-cors-dark.png" >}}
+
+   {{< reuse-image src="img/ui-llm-policy-cors-bottom.png" srcDark="img/ui-llm-policy-cors-bottom-dark.png" >}}
+
 5. Click **Save policy**.
 
 You can also add a CORS policy in **MCP** > **Policies**, or in the **Route policies** section of a route in **Traffic** > **Routes**.

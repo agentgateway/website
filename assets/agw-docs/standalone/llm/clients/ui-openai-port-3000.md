@@ -16,11 +16,16 @@ To create the same configuration in the [UI]({{< link-hextra path="/documentatio
    2. From the **Provider** dropdown, select **OpenAI**.
    3. In the **Incoming model match** field, replace the default `openai/*` with `*`.
    4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
+
+      {{< reuse-image src="img/ui-llm-add-model.png" srcDark="img/ui-llm-add-model-dark.png" >}}
+
    5. Click **Save model**.
 3. Serve LLM traffic on port `3000`.
    1. Open the **Gateway Overview** page, such as [http://localhost:15000/ui/](http://localhost:15000/ui/).
    2. On the **LLM** card, click **Settings**.
    3. Enter `3000` for the **Port**, and click **Save settings**.
+
+      {{< reuse-image src="img/ui-llm-settings-port.png" srcDark="img/ui-llm-settings-port-dark.png" >}}
 
 The UI writes the same deprecated `llm.port` field as the **Config file** tab, plus an empty `llm.gateways` list. If your configuration defines `gateways`, the **Settings** drawer shows a **Gateway** dropdown instead of **Port**, and binds LLM traffic to the gateway that you select. The UI also writes the provider as `openai` instead of `openAI`. Agentgateway accepts both values.
 

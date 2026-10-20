@@ -75,9 +75,12 @@ You can add the MCP server in the UI or in a configuration file.
 2. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Add server**.
 3. Enter `everything` for the **Server name**, and select the **Command Line** transport.
 4. Enter `npx` for the **Command** and `@modelcontextprotocol/server-everything` for the **Arguments**.
+
+   {{< reuse-image src="img/ui-mcp-servers-add-stdio.png" srcDark="img/ui-mcp-servers-add-stdio-dark.png" >}}
+
 5. Click **Save server**.
 
-The UI writes the same `everything` target as the example configuration, plus an empty `env` map and `clear_env: false`. The UI splits **Arguments** on spaces. For an argument that contains a space, use the drawer's **Raw** toggle.
+The UI writes the same `everything` target as the example configuration, plus an empty `env` map and `clear_env: false`. The UI splits **Arguments** on spaces. For an argument that contains a space, use the **Raw** icon (`<>`) in the drawer header.
 
 The example configuration also sets a CORS policy for the UI playground. In the UI, you add that policy with **Apply CORS** when you verify the setup in the next section.
 

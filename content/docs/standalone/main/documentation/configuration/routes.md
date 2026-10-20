@@ -129,6 +129,9 @@ To add a TCP route in the [UI]({{< link-hextra path="/documentation/setup/ui/lau
 3. Select **TCP** as the **Kind**. The path, method, header, and query fields disappear.
 4. Select the `postgres-proxy` **Gateway**, and enter `postgres-backend` for the **Name**.
 5. In the **Backends** section, click **Add backend**, and enter `postgres.example.com:5432` for the **Host**. Keep the **Weight** of `1`.
+
+   {{< reuse-image src="img/ui-routes-tcp.png" srcDark="img/ui-routes-tcp-dark.png" >}}
+
 6. Click **Save route**.
 
 The UI leaves out the default `weight: 1`, and writes `gateways` as a single value instead of a list.

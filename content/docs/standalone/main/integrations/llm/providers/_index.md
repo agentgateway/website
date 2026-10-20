@@ -30,9 +30,12 @@ You can set a model's API key in the UI or in your configuration file.
    * **Env var**: Enter the name of an environment variable, such as `OPENAI_API_KEY`. The UI saves the value as `$OPENAI_API_KEY`. The variable must be set when agentgateway starts.
    * **API key**: Enter the key value. The UI saves the raw value in your configuration.
    * **File**: Enter the path to a file that contains the key.
+
+   {{< reuse-image src="img/ui-llm-add-model.png" srcDark="img/ui-llm-add-model-dark.png" >}}
+
 3. Click **Save model**.
 
-Amazon Bedrock and Gemini Enterprise (GCP Vertex) show cloud credential options instead. For Azure, select **API key** in the **Azure credentials** field to see the same choices. The form has no field for `auth.key.location`. To set it, click **Raw** in the drawer header, or use the **Config file** tab.
+Amazon Bedrock and Gemini Enterprise (GCP Vertex) show cloud credential options instead. For Azure, select **API key** in the **Azure credentials** field to see the same choices. The form has no field for `auth.key.location`. To set it, click the **Raw** icon (`<>`) in the drawer header, or use the **Config file** tab.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}

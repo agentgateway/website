@@ -292,6 +292,9 @@ The following steps create the same gateway and routes as the **Config file** ta
    2. Select **HTTPS** as the **Protocol**. The **TLS** section appears.
    3. Enter `a.example.com` for the **Hostname**.
    4. Expand the **TLS** section. Enter `./certs/cert-a.pem` for the **Certificate** and `./certs/key-a.pem` for the **Key**.
+
+   {{< reuse-image src="img/ui-gateways-listener.png" srcDark="img/ui-gateways-listener-dark.png" >}}
+
 5. Click **Save listener**.
 6. In the header of the `web` gateway, click the **Add listener** icon. Repeat the previous steps for a `wildcard` listener with the `*.example.com` hostname and the `cert-wildcard.pem` and `key-wildcard.pem` files.
 7. Open **Traffic** > **Routes**, and add the two routes. For each route, click **Add route**, enter the **Name**, select the **Gateway**, add a backend **Host**, and click **Save route**.
@@ -379,6 +382,9 @@ TCP and TLS gateways serve `tcpRoutes` instead of `routes`.
 1. Open **Traffic** > **Gateways**, and click **Add gateway**.
 2. Enter a **Name** and a **Port**, such as `tcp` and `9000`.
 3. Select **TCP** as the **Protocol**, and click **Save gateway**.
+
+   {{< reuse-image src="img/ui-listeners-tcp.png" srcDark="img/ui-listeners-tcp-dark.png" >}}
+
 4. Open **Traffic** > **Routes**, and click **Add route**.
 5. Select **TCP** as the **Kind**, and select the `tcp` **Gateway**.
 6. Enter a **Name**, such as `tcp-backend`. The UI requires a route name.
@@ -544,6 +550,9 @@ The following steps add the CORS policy from the **Config file** tab to an exist
    1. In **Allowed origins**, enter `https://app.example.com`, and click **Add**.
    2. In **Allowed methods**, keep **GET** and **POST** selected.
    3. In **Allowed headers**, clear **Allow all request headers**.
+
+   {{< reuse-image src="img/ui-gateways-cors.png" srcDark="img/ui-gateways-cors-dark.png" >}}
+
 4. Click **Save**, and close the **Gateway policies** drawer.
 5. Click **Save gateway**.
 
@@ -647,6 +656,9 @@ You can convert a configuration in the UI or by editing your configuration file.
 {{% tab name="UI" %}}
 1. Start agentgateway with your `binds` configuration, and open **Traffic** > **Gateways**. A **Detected legacy binds config** banner appears when the configuration has `binds` but no `gateways`.
 2. Click **Review migration**. The **Migrate binds to gateways** drawer shows your current configuration next to the converted one.
+
+   {{< reuse-image src="img/ui-gateways-migrate-binds.png" srcDark="img/ui-gateways-migrate-binds-dark.png" >}}
+
 3. Review the diff, and click **Save**.
 
 For the previous example, the UI writes the same `gateways` configuration, without the default `protocol: HTTP` field.

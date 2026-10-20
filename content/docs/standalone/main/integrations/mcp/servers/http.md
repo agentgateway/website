@@ -58,6 +58,9 @@ These steps assume an MCP server that you already added, as described in [Config
 
 1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**.
 2. For **State mode**, select **Stateless**.
+
+   {{< reuse-image src="img/ui-mcp-settings-stateless.png" srcDark="img/ui-mcp-settings-stateless-dark.png" >}}
+
 3. Click **Save settings**.
 
 The UI sets `statefulMode` to `stateless`, as in the **Config file** tab. It also sets `failureMode` to `failClosed` and writes an empty `gateways` list.
@@ -220,10 +223,16 @@ Then, connect agentgateway to your MCP server. You can use the UI or a configura
 2. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Add server**.
 3. Enter `mcp` for the **Server name**, and keep the **Streamable HTTP** transport.
 4. Enter `http://localhost:3005/mcp/` for the **URL**, and click **Save server**.
+
+   {{< reuse-image src="img/ui-mcp-servers-add-http.png" srcDark="img/ui-mcp-servers-add-http-dark.png" >}}
+
 5. Open **MCP** > **Policies**, and click **CORS**. Expose the `Mcp-Session-Id` header so that clients keep their session.
    1. In **Allowed origins**, enter `*`, and click **Add**.
    2. Keep **Allow all request headers** selected.
    3. In **Expose headers**, enter `Mcp-Session-Id`, and click **Add**.
+
+      {{< reuse-image src="img/ui-mcp-cors-session-id.png" srcDark="img/ui-mcp-cors-session-id-dark.png" >}}
+
    4. Click **Save policy**.
 
 The UI writes the same `mcp` section as the **Config file** tab, with two additions. The CORS policy also lists the selected **Allowed methods**, `GET` and `POST`. The first save also adds a generated session key, `config.session.key`.

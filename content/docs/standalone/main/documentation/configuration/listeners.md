@@ -41,6 +41,9 @@ To add a gateway with an HTTP listener in the [UI]({{< link-hextra path="/docume
 1. Open **Traffic** > **Gateways**, and click **Add gateway**.
 2. Enter a **Name** and a **Port**, such as `http` and `3000`.
 3. Keep **HTTP** as the **Protocol**.
+
+   {{< reuse-image src="img/ui-listeners-http.png" srcDark="img/ui-listeners-http-dark.png" >}}
+
 4. Click **Save gateway**.
 
 Because HTTP is the default protocol, the UI leaves the `protocol` field out of the gateway entry.
@@ -89,6 +92,9 @@ Serving {{< gloss "HTTPS (HTTP Secure)" >}}HTTPS{{< /gloss >}} traffic requires 
 4. Expand the **TLS** section, and enter the paths to your files.
    * **Certificate**: `examples/tls/certs/cert.pem`
    * **Key**: `examples/tls/certs/key.pem`
+
+   {{< reuse-image src="img/ui-listeners-https.png" srcDark="img/ui-listeners-https-dark.png" >}}
+
 5. Click **Save gateway**.
 
 The certificate and key files must exist when you save. Relative paths resolve from the directory where agentgateway runs. The UI leaves out `protocol: HTTPS`, because setting `tls` implies it.
@@ -152,6 +158,9 @@ The most exact match will be used, as well as the corresponding TLS certificates
    2. Select **HTTPS** as the **Protocol**.
    3. Enter `a.example.com` for the **Hostname**.
    4. Expand the **TLS** section. Enter `examples/tls/certs/cert-a.pem` for the **Certificate** and `examples/tls/certs/key-a.pem` for the **Key**.
+
+   {{< reuse-image src="img/ui-listeners-hostname.png" srcDark="img/ui-listeners-hostname-dark.png" >}}
+
 5. Click **Save listener**.
 6. In the header of the `web` gateway, click the **Add listener** icon. Repeat the previous steps for a `wildcard` listener with the `*.example.com` hostname and the `cert-wildcard.pem` and `key-wildcard.pem` files.
 
@@ -275,6 +284,9 @@ TCP listeners are useful when serving traffic that is not HTTP based.
 1. Open **Traffic** > **Gateways**, and click **Add gateway**.
 2. Enter a **Name** and a **Port**, such as `tcp` and `9000`.
 3. Select **TCP** as the **Protocol**.
+
+   {{< reuse-image src="img/ui-listeners-tcp.png" srcDark="img/ui-listeners-tcp-dark.png" >}}
+
 4. Click **Save gateway**.
 {{% /tab %}}
 {{% tab name="Config file" %}}
@@ -336,6 +348,9 @@ A TLS listener without a certificate passes TLS through. A TLS listener with a c
    2. Select **TLS** as the **Protocol**.
    3. Enter `termination.example.com` for the **Hostname**.
    4. Expand the **TLS** section. Enter `examples/tls/certs/cert.pem` for the **Certificate** and `examples/tls/certs/key.pem` for the **Key**.
+
+   {{< reuse-image src="img/ui-listeners-tls.png" srcDark="img/ui-listeners-tls-dark.png" >}}
+
 7. Click **Save listener**.
 {{% /tab %}}
 {{% tab name="Config file" %}}

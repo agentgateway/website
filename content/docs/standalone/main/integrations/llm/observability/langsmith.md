@@ -67,6 +67,9 @@ Whether the UI can save depends on your storage mode. For more information, see 
       ```
    3. **Protocol**: Select **HTTP**, and enter `/otel/v1/traces` for the **Path**.
    4. **Random sampling**: Enter `true`.
+
+   {{< reuse-image src="img/ui-tracing-langsmith.png" srcDark="img/ui-tracing-langsmith-dark.png" >}}
+
 5. Click **Save policy**.
 {{% /tab %}}
 {{% tab name="Config file" %}}

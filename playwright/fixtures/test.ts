@@ -17,6 +17,19 @@ export const test = base.extend({
 export { expect };
 
 /**
+ * Skip a capture unless this run is for the `main` docs.
+ *
+ * The "UI" tabs in the standalone guides are written against the nightly UI and gated to main,
+ * so their drawers may not exist, or may have other labels, in the released image that the
+ * `latest` run uses. Skipping keeps the nightly's latest pass green and publishes nothing to
+ * the bare assets/img path; the main pass then writes assets/img/main/<file>, which is the only
+ * copy those pages need (see "How images map to doc versions" in the README).
+ */
+export function mainOnly(): void {
+  test.skip((process.env.DOC_VERSION || 'latest') !== 'main', 'UI-tab capture: main docs only');
+}
+
+/**
  * Clear the first-run "Welcome to Agentgateway" overlay.
  *
  * The overlay has two variants and which one renders depends on the config the gateway

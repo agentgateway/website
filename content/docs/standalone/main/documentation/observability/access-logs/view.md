@@ -45,6 +45,9 @@ Whether the UI can save depends on your storage mode. For more information, see 
 1. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability).
 2. Click the **Access logs** card.
 3. In the **Log fields** section, select **OpenTelemetry** from the **Stdout preset** dropdown.
+
+   {{< reuse-image src="img/ui-access-logs-preset.png" srcDark="img/ui-access-logs-preset-dark.png" >}}
+
 4. Click **Save policy**. The **Access logs** card shows **enabled**.
 
 The UI saves the policy under `frontendPolicies.accessLog` in your configuration.
@@ -143,6 +146,9 @@ The following example adds 3 fields to every access log entry:
    1. `user_id` with the value `request.headers["x-user-id"]`
    2. `env` with the value `"production"`. Keep the double quotes, because the value is a CEL string.
    3. `cost` with the value `string(llm.cost)`
+
+   {{< reuse-image src="img/ui-access-logs-add-fields.png" srcDark="img/ui-access-logs-add-fields-dark.png" >}}
+
 3. Click **Save policy**.
 {{% /tab %}}
 {{% tab name="Config file" %}}
@@ -196,6 +202,9 @@ The following filter includes all requests with guardrail results, even when eve
 3. Under **Add fields**, add each field, and click **Add** after each one.
    1. `guardrails` with the value `guardrails`
    2. `guardrail_action` with the value `guardrails[0].action`
+
+   {{< reuse-image src="img/ui-access-logs-guardrails.png" srcDark="img/ui-access-logs-guardrails-dark.png" >}}
+
 4. Click **Save policy**.
 {{% /tab %}}
 {{% tab name="Config file" %}}

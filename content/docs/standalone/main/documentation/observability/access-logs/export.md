@@ -51,6 +51,9 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
    1. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability), and click the **Access logs** card.
    2. In the **OTLP export** section, select **Export logs over OTLP**.
    3. Keep `localhost:4317` for the **Collector host** and **gRPC** for the **Protocol**.
+
+      {{< reuse-image src="img/ui-access-logs-otlp.png" srcDark="img/ui-access-logs-otlp-dark.png" >}}
+
    4. Click **Save policy**. The UI saves the `frontendPolicies.accessLog.otlp` section in your configuration.
 
 4. Send a request through agentgateway, then check the collector output to verify that log records are arriving.
@@ -213,6 +216,9 @@ The following example sends only error responses to the OTLP collector while log
 1. Open the **Settings** > **Observability** page, and click the **Access logs** card.
 2. In the **OTLP export** section, select **Export logs over OTLP**, and keep `localhost:4317` for the **Collector host**.
 3. Enter `response.code >= 400` in the **OTLP filter** field. To set the top-level filter instead, use the **Filter** field in the **Log fields** section.
+
+   {{< reuse-image src="img/ui-access-logs-otlp-filter.png" srcDark="img/ui-access-logs-otlp-filter-dark.png" >}}
+
 4. Click **Save policy**.
 {{% /tab %}}
 {{% tab name="Config file" %}}

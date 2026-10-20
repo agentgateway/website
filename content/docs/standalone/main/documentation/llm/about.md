@@ -172,6 +172,9 @@ You can configure the model in the UI or in your configuration file.
 3. Replace the **Incoming model match** with `*`.
 4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`. The variable must be set in the environment that agentgateway runs in, or the save fails.
 5. For the **Outgoing model**, make sure that **Incoming model** is selected.
+
+   {{< reuse-image src="img/ui-llm-model-passthrough.png" srcDark="img/ui-llm-model-passthrough-dark.png" >}}
+
 6. Click **Save model**.
 
 The UI writes the same model as the **Config file** tab, but spells the provider `openai`. Agentgateway accepts both spellings.
@@ -203,6 +206,9 @@ This is the recommended approach when you want to expose all models from multipl
 2. From the **Provider** dropdown, select **OpenAI**. The UI fills in `openai/*` for the **Incoming model match**.
 3. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
 4. For the **Outgoing model**, make sure that **Strip openai/** is selected. This option writes the `stripPrefix("openai/")` transformation.
+
+   {{< reuse-image src="img/ui-llm-model-prefixed.png" srcDark="img/ui-llm-model-prefixed-dark.png" >}}
+
 5. Click **Save model**.
 {{% /tab %}}
 {{% tab name="Config file" %}}
@@ -233,6 +239,9 @@ This lets you decouple client-facing model names from provider-specific identifi
 3. Replace the **Incoming model match** with `fast`.
 4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
 5. For the **Outgoing model**, select **Explicit**. In the **Explicit outgoing model** field, enter or select `gpt-4o-mini`.
+
+   {{< reuse-image src="img/ui-llm-model-alias.png" srcDark="img/ui-llm-model-alias-dark.png" >}}
+
 6. Click **Save model**.
 7. Repeat the previous steps for the `smart` alias, with `gpt-4o` as the explicit outgoing model.
 {{% /tab %}}
@@ -273,6 +282,9 @@ The UI adds each new model to the end of the list, and cannot reorder models. Ad
    5. For the **Outgoing model**, select **Incoming model**. Otherwise, the UI keeps the default **Strip accounts/** option.
    6. Expand **Advanced** > **Matches**, and click **Add match**.
    7. Enter `x-org` for the header name and `eng` for the exact value.
+
+      {{< reuse-image src="img/ui-llm-model-priority.png" srcDark="img/ui-llm-model-priority-dark.png" >}}
+
    8. Click **Save model**.
 2. Add the catch-all model in the same way, with the following values.
    * **Provider**: **OpenAI**

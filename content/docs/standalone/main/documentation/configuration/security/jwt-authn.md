@@ -76,9 +76,12 @@ The following steps add the same `jwtAuth` policy as the **Simplified (LLM)** ex
    1. Enter `agentgateway.dev` for the **Issuer**.
    2. In **Audiences**, enter `test.agentgateway.dev`, and click **Add**.
    3. Keep the default **Required claims** selection, `exp`.
+
+   {{< reuse-image src="img/ui-llm-policy-jwt-auth.png" srcDark="img/ui-llm-policy-jwt-auth-dark.png" >}}
+
 8. Click **Save policy**.
 
-The UI also writes an empty `jwtValidationOptions` field, which keeps the default required claims. The form supports one issuer. To configure more than one entry under `providers`, use the drawer's **Raw** toggle or the **Config file** tab.
+The UI also writes an empty `jwtValidationOptions` field, which keeps the default required claims. The form supports one issuer. To configure more than one entry under `providers`, use the **Raw** icon (`<>`) in the drawer header or the **Config file** tab.
 
 You can also add a JWT policy in **MCP** > **Policies**, or in the **Gateway policies** section of a gateway in **Traffic** > **Gateways**.
 
@@ -221,6 +224,9 @@ The following steps add the `authorization` policy from the **Simplified (LLM)**
 1. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **Authorization** tile.
 2. Click **Add rule**. Keep the **Allow** effect.
 3. Replace the example expression with `request.path == "/admin" && jwt.groups.contains("admins")`.
+
+   {{< reuse-image src="img/ui-llm-policy-jwt-authorization.png" srcDark="img/ui-llm-policy-jwt-authorization-dark.png" >}}
+
 4. Click **Save policy**.
 
 In **MCP** > **Policies**, add the same two policies. For the **Routing-based** example, add the **JWT auth** policy in the gateway's **Gateway policies** section. Then, add the **Authorization** policy in the **Route policies** section of a named route.

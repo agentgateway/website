@@ -93,6 +93,9 @@ The following steps add the same `mcpAuthentication` policy as the **Simplified 
 4. In the **Enforcement** section, keep **Strict** for the **Validation mode**.
 5. In the **Signing keys** section, select **Remote URL** for the **JWKS source**. Then, enter `http://localhost:7080/realms/mcp/protocol/openid-connect/certs` for the **JWKS URL**.
 6. In the **Token validation** section, enter `http://localhost:7080/realms/mcp` for the **Issuer**. In **Audiences**, enter `http://localhost:3000/mcp`, and click **Add**.
+
+   {{< reuse-image src="img/ui-mcp-policy-authn-keycloak.png" srcDark="img/ui-mcp-policy-authn-keycloak-dark.png" >}}
+
 7. In the **Protected resource metadata** section, enter the following YAML in **Resource metadata YAML**.
    ```yaml
    resource: http://localhost:3000/mcp
@@ -105,7 +108,10 @@ The following steps add the same `mcpAuthentication` policy as the **Simplified 
    resourceDocumentation: http://localhost:3000/stdio/docs
    resourcePolicyUri: http://localhost:3000/stdio/policies
    ```
-8. The form has no field for `provider`. Click the **Raw** toggle (`<>`) in the drawer header, and add the following lines at the end of the YAML.
+
+   {{< reuse-image src="img/ui-mcp-policy-authn-keycloak-metadata.png" srcDark="img/ui-mcp-policy-authn-keycloak-metadata-dark.png" >}}
+
+8. The form has no field for `provider`. Click the **Raw** icon (`<>`) in the drawer header, and add the following lines at the end of the YAML.
    ```yaml
    provider:
      keycloak: {}
@@ -319,6 +325,9 @@ The following steps add the same `mcpAuthentication` policy as the **Simplified 
 4. In the **Enforcement** section, keep **Strict** for the **Validation mode**.
 5. In the **Signing keys** section, select **Remote URL** for the **JWKS source**. Then, enter `http://localhost:9000/.well-known/jwks.json` for the **JWKS URL**.
 6. In the **Token validation** section, enter `http://localhost:9000` for the **Issuer**. In **Audiences**, enter `http://localhost:3000/mcp`, and click **Add**.
+
+   {{< reuse-image src="img/ui-mcp-policy-authn-resource-server.png" srcDark="img/ui-mcp-policy-authn-resource-server-dark.png" >}}
+
 7. In the **Protected resource metadata** section, enter the following YAML in **Resource metadata YAML**.
    ```yaml
    resource: http://localhost:3000/mcp
@@ -329,6 +338,9 @@ The following steps add the same `mcpAuthentication` policy as the **Simplified 
    - body
    - query
    ```
+
+   {{< reuse-image src="img/ui-mcp-policy-authn-resource-server-metadata.png" srcDark="img/ui-mcp-policy-authn-resource-server-metadata-dark.png" >}}
+
 8. Click **Save policy**.
 
 The authorization server must be running when you save, because agentgateway fetches the JWKS when it loads the policy. If the JWKS URL is unreachable, the save fails with a `failed to load JWKS` error.

@@ -59,6 +59,9 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 4. In the **Incoming model match** field, replace the default `anthropic/*` with `*`.
 5. For the **Provider API key**, select **Env var**, and enter `ANTHROPIC_API_KEY`.
 6. Keep **Incoming model** as the **Outgoing model**. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
+
+   {{< reuse-image src="img/ui-llm-add-model-anthropic.png" srcDark="img/ui-llm-add-model-anthropic-dark.png" >}}
+
 7. Click **Save model**.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).

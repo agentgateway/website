@@ -23,6 +23,9 @@ Whether the UI can save depends on your storage mode. For more information, see 
    1. **Host**: Enter the hostname and port of the OTLP receiver, such as `localhost:4317`.
    2. **Protocol**: Keep **gRPC**. The UI does not write the default `protocol: grpc` value to your configuration.
    3. **Random sampling**: Enter `true`.
+
+   {{< reuse-image src="img/ui-tracing-enable.png" srcDark="img/ui-tracing-enable-dark.png" >}}
+
 4. Click **Save policy**. The **Tracing** card shows **enabled**.
 
 The UI saves the policy under `frontendPolicies.tracing` in your configuration.
@@ -110,6 +113,9 @@ The following example exports only spans for requests with an HTTP response code
 {{% tab name="UI" %}}
 1. Open the **Settings** > **Observability** page, and click the **Tracing** card.
 2. In the **Sampling** section, enter `response.code >= 400` in the **Filter** field.
+
+   {{< reuse-image src="img/ui-tracing-filter.png" srcDark="img/ui-tracing-filter-dark.png" >}}
+
 3. Click **Save policy**.
 {{% /tab %}}
 {{% tab name="Config file" %}}
@@ -157,6 +163,9 @@ The following example sets a custom service name and deployment environment in `
 3. Under **Span attributes**, add the span attributes.
    1. Enter `user.id` as the name and `request.headers["x-user-id"]` as the value, and click **Add**.
    2. Enter `request.path` as the name and `request.path` as the value, and click **Add**.
+
+   {{< reuse-image src="img/ui-tracing-attributes.png" srcDark="img/ui-tracing-attributes-dark.png" >}}
+
 4. Click **Save policy**.
 {{% /tab %}}
 {{% tab name="Config file" %}}
@@ -188,6 +197,9 @@ The following example removes the HTTP protocol version and client address from 
 2. In the **Attributes** section, add each attribute to **Remove attributes**.
    1. Enter `client.address`, and click **Add**.
    2. Enter `network.protocol.version`, and click **Add**.
+
+   {{< reuse-image src="img/ui-tracing-remove.png" srcDark="img/ui-tracing-remove-dark.png" >}}
+
 3. Click **Save policy**.
 {{% /tab %}}
 {{% tab name="Config file" %}}

@@ -59,9 +59,12 @@ The following steps add the same `localRateLimit` policy as the **Simplified (LL
    2. **Fill interval**: `60s`
    3. **Max tokens**: `10`
    4. **Tokens per fill**: `1`
+
+   {{< reuse-image src="img/ui-llm-policy-local-rate-limit.png" srcDark="img/ui-llm-policy-local-rate-limit-dark.png" >}}
+
 5. Click **Save policy**.
 
-The UI omits `type: requests`, because `requests` is the default type. The form edits a single rate limit rule without a `key`. To add more rules or a per-key limit, use the drawer's **Raw** toggle or the **Config file** tab.
+The UI omits `type: requests`, because `requests` is the default type. The form edits a single rate limit rule without a `key`. To add more rules or a per-key limit, use the **Raw** icon (`<>`) in the drawer header or the **Config file** tab.
 
 You can also add a local rate limit policy in **MCP** > **Policies**, or in the **Route policies** section of a named route in **Traffic** > **Routes**.
 

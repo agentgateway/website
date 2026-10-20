@@ -44,11 +44,16 @@ To create the same configuration in the [UI]({{< link-hextra path="/documentatio
    4. Keep **Unset** for the **Provider API key**.
    5. If Ollama runs somewhere other than `http://localhost:11434/v1`, enter the **Base URL**, such as `http://192.168.1.20:11434/v1`. Otherwise, leave the field empty.
    6. For the **Outgoing model**, select **Explicit**, and enter `llama3.2`.
+
+      {{< reuse-image src="img/ui-llm-add-model-ollama.png" srcDark="img/ui-llm-add-model-ollama-dark.png" >}}
+
    7. Click **Save model**.
 3. Serve LLM traffic on port `3000`.
    1. Open the **Gateway Overview** page, such as [http://localhost:15000/ui/](http://localhost:15000/ui/).
    2. On the **LLM** card, click **Settings**.
    3. Enter `3000` for the **Port**, and click **Save settings**.
+
+      {{< reuse-image src="img/ui-llm-settings-port.png" srcDark="img/ui-llm-settings-port-dark.png" >}}
 
 The UI writes the same deprecated `llm.port` field as the **Config file** tab, plus an empty `llm.gateways` list. If your configuration defines `gateways`, the **Settings** drawer shows a **Gateway** dropdown instead of **Port**, and binds LLM traffic to the gateway that you select.
 

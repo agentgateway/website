@@ -42,6 +42,9 @@ To create the same configuration in the [UI]({{< link-hextra path="/documentatio
 3. From the **Provider** dropdown, select **OpenAI**.
 4. In the **Incoming model match** field, replace the default `openai/*` with `*`.
 5. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
+
+   {{< reuse-image src="img/ui-llm-add-model.png" srcDark="img/ui-llm-add-model-dark.png" >}}
+
 6. Click **Save model**.
 
 The UI writes the provider as `openai` instead of `openAI`. Agentgateway accepts both values.

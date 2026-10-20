@@ -33,6 +33,9 @@ Run a Jaeger container on the same host as agentgateway.
    1. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability), and click the **Tracing** card.
    2. Keep `localhost:4317` for the **Host** and **gRPC** for the **Protocol**.
    3. Enter `true` for **Random sampling**.
+
+      {{< reuse-image src="img/ui-tracing-enable.png" srcDark="img/ui-tracing-enable-dark.png" >}}
+
    4. Click **Save policy**.
 
 3. Open the Jaeger UI at [http://localhost:16686](http://localhost:16686) to view traces.

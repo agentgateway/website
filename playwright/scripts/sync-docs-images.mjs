@@ -78,14 +78,14 @@ function ownedByTarget(name) {
 
 // True if the two PNGs differ beyond DIFF_RATIO (or differ in size). Used to decide whether
 // `main` needs its own image or can keep sharing the latest one.
-function diverged(aPath, bPath) {
+function diverged(aPath, bPath, ratio = DIFF_RATIO) {
   if (!aPath || !bPath) return true;
   const a = PNG.sync.read(readFileSync(aPath));
   const b = PNG.sync.read(readFileSync(bPath));
   if (a.width !== b.width || a.height !== b.height) return true;
   const total = a.width * a.height;
   const mismatched = pixelmatch(a.data, b.data, null, a.width, a.height, { threshold: 0.1 });
-  return mismatched / total > DIFF_RATIO;
+  return mismatched / total > ratio;
 }
 
 function mainDest(dest) {
@@ -119,7 +119,12 @@ for (const [name, dests] of Object.entries(map)) {
     if (VERSION === 'main') {
       // Publish to assets/img/main/<name> only when main visually differs from latest.
       const latestBaseline = findBaseline(name, 'latest', variant);
-      if (!diverged(baseline, latestBaseline)) {
+      // An image can set its own `syncDiffRatio` in docs-image-map.json when the change that
+      // matters is smaller than the default ratio. The sidebar version label alone differs by
+      // about 0.1% between latest and main, so a small panel that main dropped (the Add gateway
+      // drawer's "Resulting YAML") reads as noise at 0.01. Setting 0 always publishes main's copy.
+      const ratio = typeof dests.syncDiffRatio === 'number' ? dests.syncDiffRatio : DIFF_RATIO;
+      if (!diverged(baseline, latestBaseline, ratio)) {
         shared++;
         // main has converged back to latest. If a previous run published a divergent
         // img/main/<name>.png, remove it so create-pull-request commits the removal —

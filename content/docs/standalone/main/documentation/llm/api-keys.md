@@ -44,6 +44,9 @@ You can set the provider API key in the UI or in your configuration file.
    * **Env var**: Enter the name of the environment variable, such as `OPENAI_API_KEY`. The UI writes `apiKey: $OPENAI_API_KEY`. The variable must be set in the environment that agentgateway runs in, or the save fails.
    * **File**: Enter the path to a file that holds the key, such as `/etc/agentgateway/openai-key.txt`. The UI writes `apiKey: {file: <path>}`, and agentgateway reads the key from the file. This option differs from the **File** steps in the **Config file** tab, which load the file into an environment variable.
    * **Unset**: Configure no provider credential.
+
+   {{< reuse-image src="img/ui-llm-model-passthrough.png" srcDark="img/ui-llm-model-passthrough-dark.png" >}}
+
 6. Click **Save model**.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).

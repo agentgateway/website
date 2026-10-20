@@ -50,6 +50,9 @@ The following steps add the same `mcpAuthorization` policy as the **Simplified (
    1. `mcp.tool.name == "echo"` allows anyone to call the `echo` tool.
    2. `jwt.sub == "test-user" && mcp.tool.name == "add"` allows only `test-user` to call the `add` tool.
    3. `mcp.tool.name == "printEnv" && jwt.nested.key == "value"` allows users with the claim `nested.key == value` to call the `printEnv` tool.
+
+   {{< reuse-image src="img/ui-mcp-policy-authorization.png" srcDark="img/ui-mcp-policy-authorization-dark.png" >}}
+
 5. Click **Save policy**.
 
 The UI saves each rule as an object with an `allow` key, such as `- allow: mcp.tool.name == "echo"`, instead of the legacy string form in the **Config file** tab. Both forms behave the same.

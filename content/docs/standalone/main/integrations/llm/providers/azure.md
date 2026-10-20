@@ -76,9 +76,12 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 6. Enter the **Azure resource name**, such as `your-resource-name`.
 7. For the **Azure resource type**, select **Foundry** or **OpenAI**. For **Foundry**, also enter the **Azure project name**, such as `your-project-name`.
 8. Optional: Enter an **Azure API version**. Leave the field empty to use the default.
+
+   {{< reuse-image src="img/ui-llm-add-model-azure-foundry.png" srcDark="img/ui-llm-add-model-azure-foundry-dark.png" >}}
+
 9. Click **Save model**.
 
-The **API key** option saves the key in `params.apiKey`. The **Foundry (API key)** example in the **Config file** tab uses an `auth.key` block instead, which sends the key in the `api-key` header. To write that block, click **Raw** in the drawer header, or use the **Config file** tab.
+The **API key** option saves the key in `params.apiKey`. The **Foundry (API key)** example in the **Config file** tab uses an `auth.key` block instead, which sends the key in the `api-key` header. To write that block, click the **Raw** icon (`<>`) in the drawer header, or use the **Config file** tab.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}

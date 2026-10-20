@@ -165,6 +165,26 @@ When a new agentgateway release ships a changed UI and you need to refresh the d
    baselines + `assets/img/` come from the `playwright-screenshots` workflow's PR (see
    [CI](#ci)) — that's the set that gets merged, so the pixels match CI.
 
+### UI-tab captures (fixture mode, main only)
+
+The standalone guides pair **UI** and **Config file** tabs. Each UI tab's screenshot comes from a
+`tests/ui-tabs-*.spec.ts` spec that fills in a drawer with the guide's values and never saves.
+These specs need no backends, so they share one launcher, `scripts/serve-fixture-ui.sh`, which
+runs the image with any one fixture named by `FIXTURE` (`CAPTURE_MODE=fixture`).
+
+- Every spec starts with `mainOnly()`, because the UI tabs are written against the nightly UI
+  and gated to `main`. On any other `DOC_VERSION`, `playwright.config.ts` starts no UI and every
+  test skips, so a fixture that the released image cannot load never stalls the nightly.
+- The images exist only as `assets/img/main/<name>.png`. Pages still reference the bare
+  `img/<name>.png`, and the theme resolves the `main` override.
+- To add one, put the capture in the batch spec for that area (or add a spec and fixture pair),
+  add its `docs-image-map.json` entry, and add the `test:ui-tabs-<name>` script to
+  `capture:all` and `update:all`. Run several side by side with distinct `UI_HOST_PORT`s, and set
+  `AGW_RUNTIME_DIR` on macOS when the clone is under `~/Documents`.
+- An image whose `main` change is smaller than the sidebar's version label (about 0.1% of the
+  pixels) can set `"syncDiffRatio": 0` in its map entry, so `sync-docs` always publishes main's
+  copy. `ui-add-gateway.png` does this.
+
 ### Adding a backend mode
 
 For a guide whose UI talks to a server, add a self-contained capture mode:

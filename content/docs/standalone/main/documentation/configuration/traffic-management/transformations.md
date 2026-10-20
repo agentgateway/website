@@ -57,9 +57,15 @@ The following steps add the same `transformations` policy as the **Simplified (L
 4. Expand **Request transformations**. In **Add headers**, add the following headers. For each header, enter the header name and the CEL expression, and click **Add**.
    1. `x-request-path` with `request.path`
    2. `x-client-ip` with `source.address`
+
+   {{< reuse-image src="img/ui-llm-policy-transformations.png" srcDark="img/ui-llm-policy-transformations-dark.png" >}}
+
 5. Expand **Response transformations**.
    1. In **Add headers**, enter `x-response-code` and `string(response.code)`, and click **Add**.
    2. In **Remove headers**, add `server` and `x-content-type-options`. For each header, enter the name, and click **Add**.
+
+   {{< reuse-image src="img/ui-llm-policy-transformations-response.png" srcDark="img/ui-llm-policy-transformations-response-dark.png" >}}
+
 6. Click **Save policy**.
 
 You can also add a transformation policy in **MCP** > **Policies**, or in the **Route policies** section of a named route in **Traffic** > **Routes**. The **Routing-based** example uses an inline `ai` backend, which the UI edits only as raw YAML. For that example, use the **Config file** tab.
@@ -266,6 +272,9 @@ The following steps add the same `transformations` policy as the **Simplified (L
 2. Start agentgateway with this configuration.
 3. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **Transformations** tile.
 4. Expand **Request transformations**. In **Add headers**, enter `x-gateway` for the header name and `"agentgateway"` for the CEL expression, and click **Add**. The double quotes make the value a string. The UI saves the value as `'"agentgateway"'`.
+
+   {{< reuse-image src="img/ui-llm-policy-transformations-listener.png" srcDark="img/ui-llm-policy-transformations-listener-dark.png" >}}
+
 5. Click **Save policy**.
 
 For the **Routing-based** example, add the policy at the gateway level instead.

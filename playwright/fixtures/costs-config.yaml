@@ -10,6 +10,9 @@
 #     is part of the documented setup and keeps any live request priced too.
 #   - llm.policies.apiKey seeds a couple of virtual keys so the LLM > Virtual API Keys page
 #     has content to capture; the provider apiKey is a throwaway literal (no real traffic).
+#     The keys match the UI steps in assets/agw-docs/standalone/virtual-keys.md: the name
+#     (metadata.name, which the UI writes from the Name field) plus the user metadata, so the
+#     list shows alice and bob rather than "Unnamed key".
 config:
   adminAddr: 0.0.0.0:15000
   database:
@@ -24,9 +27,11 @@ llm:
       keys:
         - key: sk-alice-abc123def456
           metadata:
+            name: alice
             user: alice
         - key: sk-bob-xyz789uvw012
           metadata:
+            name: bob
             user: bob
   models:
     - name: "*"

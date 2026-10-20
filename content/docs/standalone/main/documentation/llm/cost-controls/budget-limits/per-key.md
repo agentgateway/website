@@ -118,6 +118,9 @@ You can configure the keys and budgets in the UI or in your configuration file.
    1. Enter `team-a` for the **Name**. The UI writes the name to `metadata.name`.
    2. From the **Key value** dropdown, select **Use custom key**, and enter `sk-team-a-abc123def456`.
    3. Expand **Budgets**, and click **Add budget**. Enter `daily-spend` for the **Name**, `24h` for the **Rolling window**, and `0.008` for the **Limit amount**. Select **USD** for the **Limit unit** and **Block requests** for **When limit is reached**.
+
+      {{< reuse-image src="img/ui-llm-key-budget.png" srcDark="img/ui-llm-key-budget-dark.png" >}}
+
    4. Expand **Model access**, and select **Selected models**. Enter `gpt-5*` in the **Allowed model patterns** field, and click **Add**.
    5. Click **Save key**.
 5. In the **Copy your new API key** dialog, click **Done**.
@@ -527,6 +530,9 @@ The `allowedModels` field limits which models an API key can reach. The field is
 1. Open **LLM** > **Virtual API Keys**, and click the **Edit key** icon for the `team-a` key. To create a key instead, click **New key**.
 2. Expand **Model access**, and select **Selected models**.
 3. In the **Allowed model patterns** field, enter `gpt-5*`, and click **Add**. Then add `claude-sonnet-5` in the same way.
+
+   {{< reuse-image src="img/ui-llm-key-model-access.png" srcDark="img/ui-llm-key-model-access-dark.png" >}}
+
 4. Click **Save key**.
 
 The **Access mode** options map to the values in the following table. **Unrestricted** omits the field, and **Deny all** writes an empty list.

@@ -49,6 +49,9 @@ To create the shared provider and the two models in the [UI]({{< link-hextra pat
    2. Enter `openai-prod` for the **Provider name**.
    3. Keep **OpenAI** as the **Provider**.
    4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
+
+      {{< reuse-image src="img/ui-llm-add-provider.png" srcDark="img/ui-llm-add-provider-dark.png" >}}
+
    5. Click **Save provider**.
 3. Create the `fast` model.
    1. Open **LLM** > **Models**, and click **Add model**.

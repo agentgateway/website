@@ -64,6 +64,9 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 6. In the **Custom provider** section, enter `https://api.perplexity.ai` for the **Base URL**.
 7. In the **Route formats** list, keep **Chat completions (/chat/completions)** selected. Select any other format that the upstream supports, and optionally enter a path override for it.
 8. For the **Outgoing model**, select **Explicit**, and enter `llama-3.1-sonar-large-128k-online`.
+
+   {{< reuse-image src="img/ui-llm-add-model-custom-perplexity.png" srcDark="img/ui-llm-add-model-custom-perplexity-dark.png" >}}
+
 9. Click **Save model**.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).

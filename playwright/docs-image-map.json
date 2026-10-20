@@ -127,7 +127,7 @@
       "dark": "assets/img/ui-virtual-keys-list-dark.png"
     },
     "ui-virtual-keys-new.png": {
-      "$note": "llm/cost-controls/virtual-keys — Create virtual key drawer (name, auto-generated key, metadata).",
+      "$note": "llm/cost-controls/virtual-keys, Step 1 UI tab: Create virtual key drawer for alice (Use custom key sk-alice-abc123def456, metadata user: alice). Never saved. Captured by tests/costs.spec.ts under CAPTURE_MODE=costs.",
       "light": "assets/img/ui-virtual-keys-new.png",
       "dark": "assets/img/ui-virtual-keys-new-dark.png"
     },
@@ -317,9 +317,10 @@
       "dark": "assets/img/ui-tour-client-setup-dark.png"
     },
     "ui-add-gateway.png": {
-      "$note": "configuration/gateways, Define a gateway: Add gateway drawer filled in for the http-proxy gateway on port 8080. Never saved. Captured by tests/traffic-drawers.spec.ts under CAPTURE_MODE=tour.",
+      "$note": "configuration/gateways, Define a gateway: Add gateway drawer filled in for the http-proxy gateway on port 8080. Never saved. Captured by tests/traffic-drawers.spec.ts under CAPTURE_MODE=tour. syncDiffRatio 0: main's drawer has no Resulting YAML panel, a change of only ~0.1% of the pixels, so main always publishes its own copy.",
       "light": "assets/img/ui-add-gateway.png",
-      "dark": "assets/img/ui-add-gateway-dark.png"
+      "dark": "assets/img/ui-add-gateway-dark.png",
+      "syncDiffRatio": 0
     },
     "ui-add-route.png": {
       "$note": "configuration/routes, HTTP routes: Add route drawer filled in for the http-backend route (match fields). Never saved. Captured by tests/traffic-drawers.spec.ts under CAPTURE_MODE=tour.",
@@ -335,6 +336,401 @@
       "$note": "configuration/backends, Static Hosts: Edit route drawer for the fixture api-v2 route, showing two host backends weighted 80 and 20. Captured by tests/traffic-drawers.spec.ts under CAPTURE_MODE=tour.",
       "light": "assets/img/ui-route-weighted-backends.png",
       "dark": "assets/img/ui-route-weighted-backends-dark.png"
+    },
+    "ui-llm-policy-cors.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/cors.md, UI tab, step 4: the LLM CORS drawer filled in with the origin, POST and OPTIONS methods, and the authorization and content-type header allowlist (top of the drawer). Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-llm-policy-cors.png",
+      "dark": "assets/img/ui-llm-policy-cors-dark.png"
+    },
+    "ui-llm-policy-cors-bottom.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/cors.md, UI tab, step 4: the same CORS drawer scrolled down to the x-request-id expose header, Allow credentials, and the 10m max age. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-llm-policy-cors-bottom.png",
+      "dark": "assets/img/ui-llm-policy-cors-bottom-dark.png"
+    },
+    "ui-llm-policy-jwt-auth.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/jwt-authn.md, first UI tab, steps 5-7: the LLM JWT auth drawer with a local JWKS file, the agentgateway.dev issuer, and the test.agentgateway.dev audience. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-llm-policy-jwt-auth.png",
+      "dark": "assets/img/ui-llm-policy-jwt-auth-dark.png"
+    },
+    "ui-llm-policy-jwt-authorization.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/jwt-authn.md, second UI tab, step 3: the LLM Authorization drawer with the one allow rule for /admin and the admins group. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-llm-policy-jwt-authorization.png",
+      "dark": "assets/img/ui-llm-policy-jwt-authorization-dark.png"
+    },
+    "ui-llm-policy-oidc.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/oidc.md, Configuration UI tab, steps 4-6: the LLM OIDC drawer scrolled to the client ID, secret, redirect URI, and the profile and email scopes. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-llm-policy-oidc.png",
+      "dark": "assets/img/ui-llm-policy-oidc-dark.png"
+    },
+    "ui-llm-policy-authorization.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/http-authz.md, first UI tab, step 4: the LLM Authorization drawer with the four allow, deny, require, and allow rules. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-llm-policy-authorization.png",
+      "dark": "assets/img/ui-llm-policy-authorization-dark.png"
+    },
+    "ui-llm-model-authorization.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/http-authz.md, LLM authorization UI tab, step 4: the gpt-4 Edit model drawer's Model policies > Authorization section with the require, deny, and allow rules. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-llm-model-authorization.png",
+      "dark": "assets/img/ui-llm-model-authorization-dark.png"
+    },
+    "ui-llm-policy-ext-authz-grpc.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/external-authz.md, gRPC External Authorization UI tab, step 6: the External authz drawer's gRPC details with the dev.agentgateway.jwt metadata entry. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-llm-policy-ext-authz-grpc.png",
+      "dark": "assets/img/ui-llm-policy-ext-authz-grpc-dark.png"
+    },
+    "ui-llm-policy-ext-authz-http.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/external-authz.md, HTTP External Authorization UI tab, steps 3-4: the External authz drawer with the HTTP protocol and the cookie request header. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-llm-policy-ext-authz-http.png",
+      "dark": "assets/img/ui-llm-policy-ext-authz-http-dark.png"
+    },
+    "ui-llm-policy-ext-authz-http-details.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/external-authz.md, HTTP External Authorization UI tab, steps 5-6: the HTTP details with the path expression and the x-auth-request-user response header. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-llm-policy-ext-authz-http-details.png",
+      "dark": "assets/img/ui-llm-policy-ext-authz-http-details-dark.png"
+    },
+    "ui-mcp-policy-authn-keycloak.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/mcp-authn.md, Authorization Server Proxy UI tab, steps 5-6: the MCP authentication drawer with the Keycloak JWKS URL, issuer, and audience. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-mcp-policy-authn-keycloak.png",
+      "dark": "assets/img/ui-mcp-policy-authn-keycloak-dark.png"
+    },
+    "ui-mcp-policy-authn-keycloak-metadata.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/mcp-authn.md, Authorization Server Proxy UI tab, step 7: the same drawer scrolled to the resource metadata YAML. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-mcp-policy-authn-keycloak-metadata.png",
+      "dark": "assets/img/ui-mcp-policy-authn-keycloak-metadata-dark.png"
+    },
+    "ui-mcp-policy-authn-resource-server.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/mcp-authn.md, Resource Server Only UI tab, steps 5-6: the MCP authentication drawer with the localhost:9000 JWKS URL, issuer, and audience. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-mcp-policy-authn-resource-server.png",
+      "dark": "assets/img/ui-mcp-policy-authn-resource-server-dark.png"
+    },
+    "ui-mcp-policy-authn-resource-server-metadata.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/mcp-authn.md, Resource Server Only UI tab, step 7: the same drawer scrolled to the resource metadata YAML. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-mcp-policy-authn-resource-server-metadata.png",
+      "dark": "assets/img/ui-mcp-policy-authn-resource-server-metadata-dark.png"
+    },
+    "ui-mcp-policy-authorization.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/security/mcp-authz.md, first UI tab, step 4: the MCP authorization drawer with the three allow rules for echo, add, and printEnv. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-mcp-policy-authorization.png",
+      "dark": "assets/img/ui-mcp-policy-authorization-dark.png"
+    },
+    "ui-llm-policy-transformations.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/traffic-management/transformations.md, Route-level header transformation UI tab, step 4: the Transformations drawer's request section with the x-request-path and x-client-ip headers. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-llm-policy-transformations.png",
+      "dark": "assets/img/ui-llm-policy-transformations-dark.png"
+    },
+    "ui-llm-policy-transformations-response.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/traffic-management/transformations.md, Route-level header transformation UI tab, step 5: the response section with the x-response-code header and the two removed headers. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-llm-policy-transformations-response.png",
+      "dark": "assets/img/ui-llm-policy-transformations-response-dark.png"
+    },
+    "ui-llm-policy-transformations-listener.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/traffic-management/transformations.md, Listener-level header transformation UI tab, step 4: the request section with the x-gateway header. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-llm-policy-transformations-listener.png",
+      "dark": "assets/img/ui-llm-policy-transformations-listener-dark.png"
+    },
+    "ui-llm-policy-local-rate-limit.png": {
+      "$note": "content/docs/standalone/main/documentation/configuration/resiliency/rate-limits.md, Request-based rate limits UI tab, step 4: the Local rate limit drawer with Requests, 60s, 10, and 1. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "light": "assets/img/ui-llm-policy-local-rate-limit.png",
+      "dark": "assets/img/ui-llm-policy-local-rate-limit-dark.png"
+    },
+    "ui-llm-model-passthrough.png": {
+      "$note": "llm/about.md, \"Passthrough\" UI tab (also reused by llm/api-keys.md, UI tab): Add model drawer with OpenAI, match *, env var OPENAI_API_KEY, Incoming model; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "light": "assets/img/ui-llm-model-passthrough.png",
+      "dark": "assets/img/ui-llm-model-passthrough-dark.png"
+    },
+    "ui-llm-model-prefixed.png": {
+      "$note": "llm/about.md, \"Prefixed Passthrough\" UI tab: Add model drawer with OpenAI, the default openai/* match, env var OPENAI_API_KEY, Strip openai/; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "light": "assets/img/ui-llm-model-prefixed.png",
+      "dark": "assets/img/ui-llm-model-prefixed-dark.png"
+    },
+    "ui-llm-model-alias.png": {
+      "$note": "llm/about.md, \"Model aliases\" UI tab: Add model drawer for the fast alias, Explicit outgoing model gpt-4o-mini; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "light": "assets/img/ui-llm-model-alias.png",
+      "dark": "assets/img/ui-llm-model-alias-dark.png"
+    },
+    "ui-llm-model-priority.png": {
+      "$note": "llm/about.md, \"Route priority\" UI tab: Add model drawer for Fireworks AI accounts/fireworks/*, scrolled to Advanced > Matches with header x-org exact eng; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "light": "assets/img/ui-llm-model-priority.png",
+      "dark": "assets/img/ui-llm-model-priority-dark.png"
+    },
+    "ui-llm-virtual-model-weighted.png": {
+      "$note": "llm/virtual-models.md, \"Weighted routing\" UI tab: Add virtual model drawer, smart, gpt-4o-primary 90 and gpt-4o-fallback 10; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "light": "assets/img/ui-llm-virtual-model-weighted.png",
+      "dark": "assets/img/ui-llm-virtual-model-weighted-dark.png"
+    },
+    "ui-llm-virtual-model-failover.png": {
+      "$note": "llm/virtual-models.md, \"Failover routing\" UI tab: Add virtual model drawer, resilient, First attempt claude-primary, fallback group claude-backup-a and claude-backup-b; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "light": "assets/img/ui-llm-virtual-model-failover.png",
+      "dark": "assets/img/ui-llm-virtual-model-failover-dark.png"
+    },
+    "ui-llm-virtual-model-conditional.png": {
+      "$note": "llm/virtual-models.md, \"Conditional routing\" UI tab: Add virtual model drawer, adaptive, Rule 1 x-tier free to openai-fast (top half); never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "light": "assets/img/ui-llm-virtual-model-conditional.png",
+      "dark": "assets/img/ui-llm-virtual-model-conditional-dark.png"
+    },
+    "ui-llm-virtual-model-conditional-rule-2.png": {
+      "$note": "llm/virtual-models.md, \"Conditional routing\" UI tab: the same drawer scrolled to Rule 2, x-tier pro to openai-smart; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "light": "assets/img/ui-llm-virtual-model-conditional-rule-2.png",
+      "dark": "assets/img/ui-llm-virtual-model-conditional-rule-2-dark.png"
+    },
+    "ui-llm-model-transformation.png": {
+      "$note": "llm/transformations.md, \"Configure LLM request transformations\" UI tab: Edit model drawer for *, Transformation with max_tokens = min(llmRequest.max_tokens, 10); never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "light": "assets/img/ui-llm-model-transformation.png",
+      "dark": "assets/img/ui-llm-model-transformation-dark.png"
+    },
+    "ui-llm-model-final-transformation.png": {
+      "$note": "llm/transformations.md, \"Transform requests after provider conversion\" UI tab: Edit model drawer for *, Final transformation with max_completion_tokens and reasoning_effort; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "light": "assets/img/ui-llm-model-final-transformation.png",
+      "dark": "assets/img/ui-llm-model-final-transformation-dark.png"
+    },
+    "ui-llm-key-budget.png": {
+      "$note": "llm/cost-controls/budget-limits/per-key.md, \"Step 2\" UI tab: Create virtual key drawer for team-a, scrolled to the daily-spend budget (24h, 0.008 USD, Block requests); never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "light": "assets/img/ui-llm-key-budget.png",
+      "dark": "assets/img/ui-llm-key-budget-dark.png"
+    },
+    "ui-llm-key-model-access.png": {
+      "$note": "llm/cost-controls/budget-limits/per-key.md, \"Limit model access per key\" UI tab: Create virtual key drawer, Model access Selected models gpt-5* and claude-sonnet-5; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "light": "assets/img/ui-llm-key-model-access.png",
+      "dark": "assets/img/ui-llm-key-model-access-dark.png"
+    },
+    "ui-llm-costs-custom.png": {
+      "$note": "assets/agw-docs/standalone/cost-catalog.md, \"Override catalog entries\" UI tab: LLM Costs page, Custom costs in edit mode with an openai gpt-4o-mini row (0.15 / 0.60); never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "light": "assets/img/ui-llm-costs-custom.png",
+      "dark": "assets/img/ui-llm-costs-custom-dark.png"
+    },
+    "ui-llm-add-provider.png": {
+      "$note": "providers/multiple-llms.md, \"Reusable provider configuration\" UI tab, step 2: the LLM > Providers Add provider drawer filled in with the shared openai-prod provider (OpenAI, Env var OPENAI_API_KEY), before Save provider. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-provider.png",
+      "dark": "assets/img/ui-llm-add-provider-dark.png"
+    },
+    "ui-llm-settings-port.png": {
+      "$note": "agw-docs/standalone/llm/clients/ui-openai-port-3000.md step 3 (reused by the continue, curl, cursor, devin, github-copilot, and openai-sdk client guides and the goose, librechat, and open-webui web UI guides) and ollama-standalone.md step 3: the Gateway Overview LLM card's Settings drawer with Port 3000, before Save settings. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-settings-port.png",
+      "dark": "assets/img/ui-llm-settings-port-dark.png"
+    },
+    "ui-llm-add-model-azure-foundry.png": {
+      "$note": "providers/azure.md, \"Configuration\" UI tab, matching the Foundry (implicit auth) example: the Add model drawer with model match *, Azure, Default credentials, resource name your-resource-name, resource type Foundry, project name your-project-name, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-azure-foundry.png",
+      "dark": "assets/img/ui-llm-add-model-azure-foundry-dark.png"
+    },
+    "ui-llm-add-model-bedrock-runtime.png": {
+      "$note": "providers/bedrock.md, \"Configuration\" and \"Bedrock Mantle\" UI tabs: the Add model drawer with model match *, Amazon Bedrock, Ambient credentials, region us-west-2, Bedrock endpoint Prefer Runtime, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-bedrock-runtime.png",
+      "dark": "assets/img/ui-llm-add-model-bedrock-runtime-dark.png"
+    },
+    "ui-llm-add-model-vertex-explicit.png": {
+      "$note": "providers/vertex.md, \"Configuration\" UI tab: the Add model drawer with model match gemini-2.5-flash, Gemini Enterprise (GCP Vertex), ADC, project my-project-id, region us-west2, explicit outgoing model google/gemini-2.5-flash-lite-preview-06-17, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-vertex-explicit.png",
+      "dark": "assets/img/ui-llm-add-model-vertex-explicit-dark.png"
+    },
+    "ui-llm-add-model-custom-perplexity.png": {
+      "$note": "providers/custom.md, \"Configuring a custom provider\" UI tab: the top of the Add model drawer for Perplexity through the Custom provider (model match *, Env var PERPLEXITY_API_KEY, base URL https://api.perplexity.ai, Chat completions format checked), before Save model. The explicit outgoing model is filled in below the fold. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-custom-perplexity.png",
+      "dark": "assets/img/ui-llm-add-model-custom-perplexity-dark.png"
+    },
+    "ui-mcp-servers-add-http.png": {
+      "$note": "integrations/mcp/servers/http.md, Configure the agentgateway, UI tab steps 3-4. Add MCP server drawer: the mcp target, Streamable HTTP, URL http://localhost:3005/mcp/, filled in, never saved. Captured by tests/ui-tabs-d.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-d.yaml.",
+      "light": "assets/img/ui-mcp-servers-add-http.png",
+      "dark": "assets/img/ui-mcp-servers-add-http-dark.png"
+    },
+    "ui-mcp-cors-session-id.png": {
+      "$note": "integrations/mcp/servers/http.md, Configure the agentgateway, UI tab step 5. MCP > Policies CORS drawer (/ui/mcp/policies#cors) with allowed origin * and expose header Mcp-Session-Id added, never saved. Captured by tests/ui-tabs-d.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-d.yaml.",
+      "light": "assets/img/ui-mcp-cors-session-id.png",
+      "dark": "assets/img/ui-mcp-cors-session-id-dark.png"
+    },
+    "ui-mcp-settings-stateless.png": {
+      "$note": "integrations/mcp/servers/http.md, Stateless sessions, UI tab (also used by openapi.md, Stateless sessions). MCP Servers Settings drawer with State mode Stateless, never saved. Captured by tests/ui-tabs-d.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-d.yaml.",
+      "light": "assets/img/ui-mcp-settings-stateless.png",
+      "dark": "assets/img/ui-mcp-settings-stateless-dark.png"
+    },
+    "ui-mcp-servers-add-openapi-file.png": {
+      "$note": "integrations/mcp/servers/openapi.md, Configure the agentgateway, UI tab steps 3-5. Add MCP server drawer: the openapi target, OpenAPI transport, URL localhost:8080, Schema source File, schema openapi.json, never saved. Captured by tests/ui-tabs-d.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-d.yaml.",
+      "light": "assets/img/ui-mcp-servers-add-openapi-file.png",
+      "dark": "assets/img/ui-mcp-servers-add-openapi-file-dark.png"
+    },
+    "ui-mcp-servers-edit-openapi-url.png": {
+      "$note": "integrations/mcp/servers/openapi.md, Schema URL, UI tab. Edit MCP server drawer for the openapi target with Schema source URL and http://localhost:8080/api/v3/openapi.json, never saved. Captured by tests/ui-tabs-d.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-d.yaml.",
+      "light": "assets/img/ui-mcp-servers-edit-openapi-url.png",
+      "dark": "assets/img/ui-mcp-servers-edit-openapi-url-dark.png"
+    },
+    "ui-mcp-servers-edit-openapi-inline.png": {
+      "$note": "integrations/mcp/servers/openapi.md, Inline schema, UI tab. Edit MCP server drawer for the openapi target with Schema source Inline, showing the page's inline Petstore document (from the fixture), never saved. Captured by tests/ui-tabs-d.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-d.yaml.",
+      "light": "assets/img/ui-mcp-servers-edit-openapi-inline.png",
+      "dark": "assets/img/ui-mcp-servers-edit-openapi-inline-dark.png"
+    },
+    "ui-mcp-servers-add-stdio.png": {
+      "$note": "integrations/mcp/servers/stdio.md, Configure the agentgateway, UI tab steps 3-4. Add MCP server drawer: the everything target, Command Line, command npx, arguments @modelcontextprotocol/server-everything, never saved. Captured by tests/ui-tabs-d.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-d.yaml.",
+      "light": "assets/img/ui-mcp-servers-add-stdio.png",
+      "dark": "assets/img/ui-mcp-servers-add-stdio-dark.png"
+    },
+    "ui-mcp-servers-add-time.png": {
+      "$note": "integrations/mcp/servers/virtual.md, Configure the agentgateway, UI tab step 2. Add MCP server drawer: the time target, Command Line, command uvx, arguments --with mcp<2 mcp-server-time, never saved. Captured by tests/ui-tabs-d.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-d.yaml.",
+      "light": "assets/img/ui-mcp-servers-add-time.png",
+      "dark": "assets/img/ui-mcp-servers-add-time-dark.png"
+    },
+    "ui-mcp-settings-prefix-never.png": {
+      "$note": "integrations/mcp/servers/virtual.md, Tool name prefixing, UI tab. MCP Servers Settings drawer with Prefix mode Never and State mode Stateful, never saved. Captured by tests/ui-tabs-d.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-d.yaml.",
+      "light": "assets/img/ui-mcp-settings-prefix-never.png",
+      "dark": "assets/img/ui-mcp-settings-prefix-never-dark.png"
+    },
+    "ui-listeners-http.png": {
+      "$note": "configuration/listeners.md, \"HTTP Listeners\" UI tab: the Add gateway drawer filled in with the http gateway on port 3000, HTTP, before Save gateway. Captured by tests/ui-tabs-e-listeners.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e-listeners.yaml.",
+      "light": "assets/img/ui-listeners-http.png",
+      "dark": "assets/img/ui-listeners-http-dark.png"
+    },
+    "ui-listeners-https.png": {
+      "$note": "configuration/listeners.md, \"HTTPS Listeners\" UI tab: the Add gateway drawer for the https gateway on port 443, HTTPS, with the examples/tls/certs/ certificate and key, before Save gateway. Captured by tests/ui-tabs-e-listeners.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e-listeners.yaml.",
+      "light": "assets/img/ui-listeners-https.png",
+      "dark": "assets/img/ui-listeners-https-dark.png"
+    },
+    "ui-listeners-hostname.png": {
+      "$note": "configuration/listeners.md, \"HTTPS Listeners\" multiple-hostnames UI tab: the Edit listener drawer of the web gateway's listener1, filled in as the discrete HTTPS listener for a.example.com with cert-a.pem and key-a.pem, before Save listener. Captured by tests/ui-tabs-e-listeners.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e-listeners.yaml.",
+      "light": "assets/img/ui-listeners-hostname.png",
+      "dark": "assets/img/ui-listeners-hostname-dark.png"
+    },
+    "ui-listeners-tcp.png": {
+      "$note": "configuration/listeners.md, \"TCP Listeners\" UI tab, and configuration/gateways.md, \"Set the gateway protocol\": the Add gateway drawer for the tcp gateway on port 9000, TCP, before Save gateway. Captured by tests/ui-tabs-e-listeners.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e-listeners.yaml.",
+      "light": "assets/img/ui-listeners-tcp.png",
+      "dark": "assets/img/ui-listeners-tcp-dark.png"
+    },
+    "ui-listeners-tls.png": {
+      "$note": "configuration/listeners.md, \"TLS Listeners\" UI tab: the Add listener drawer of the tls gateway, filled in as the termination TLS listener for termination.example.com with cert.pem and key.pem, before Save listener. Captured by tests/ui-tabs-e-listeners.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e-listeners.yaml.",
+      "light": "assets/img/ui-listeners-tls.png",
+      "dark": "assets/img/ui-listeners-tls-dark.png"
+    },
+    "ui-gateways-listener.png": {
+      "$note": "configuration/gateways.md, \"Add listeners to a gateway\" UI tab: the Edit listener drawer of the web gateway's listener1, filled in as the discrete HTTPS listener for a.example.com with ./certs/cert-a.pem and ./certs/key-a.pem, before Save listener. Captured by tests/ui-tabs-e.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e.yaml.",
+      "light": "assets/img/ui-gateways-listener.png",
+      "dark": "assets/img/ui-gateways-listener-dark.png"
+    },
+    "ui-gateways-cors.png": {
+      "$note": "configuration/gateways.md, \"Attach policies to a gateway\" UI tab: the CORS form of the default gateway's policies with https://app.example.com, GET and POST, and Allow all request headers cleared, before Save. Captured by tests/ui-tabs-e.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e.yaml.",
+      "light": "assets/img/ui-gateways-cors.png",
+      "dark": "assets/img/ui-gateways-cors-dark.png"
+    },
+    "ui-gateways-migrate-binds.png": {
+      "$note": "configuration/gateways.md, \"Migrate from binds\" UI tab: the Migrate binds to gateways drawer that Review migration opens, showing the binds example next to the converted gateways config, before Save. Captured by tests/ui-tabs-e-binds.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e-binds.yaml.",
+      "light": "assets/img/ui-gateways-migrate-binds.png",
+      "dark": "assets/img/ui-gateways-migrate-binds-dark.png"
+    },
+    "ui-routes-tcp.png": {
+      "$note": "configuration/routes.md, \"TCP routes\" UI tab: the Add route drawer with TCP kind, the postgres-proxy gateway, the postgres-backend name, and the postgres.example.com:5432 backend with weight 1, before Save route. Captured by tests/ui-tabs-e.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e.yaml.",
+      "light": "assets/img/ui-routes-tcp.png",
+      "dark": "assets/img/ui-routes-tcp-dark.png"
+    },
+    "ui-matching-path.png": {
+      "$note": "configuration/traffic-management/matching.md, \"Path matching\" UI tab: the Add route drawer for the api-exact route with an Exact path match on /api/v1/users, before Save route. Captured by tests/ui-tabs-e.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e.yaml.",
+      "light": "assets/img/ui-matching-path.png",
+      "dark": "assets/img/ui-matching-path-dark.png"
+    },
+    "ui-matching-headers.png": {
+      "$note": "configuration/traffic-management/matching.md, \"Header matching\" UI tab: the Headers section of the Add route drawer for the multi-header route, a regex Authorization condition and an exact Content-Type condition, plus the backend, before Save route. Captured by tests/ui-tabs-e.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e.yaml.",
+      "light": "assets/img/ui-matching-headers.png",
+      "dark": "assets/img/ui-matching-headers-dark.png"
+    },
+    "ui-matching-method.png": {
+      "$note": "configuration/traffic-management/matching.md, \"Method matching\" UI tab: the Add route drawer for the get-only route with /api and the GET method, before Save route. Captured by tests/ui-tabs-e.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e.yaml.",
+      "light": "assets/img/ui-matching-method.png",
+      "dark": "assets/img/ui-matching-method-dark.png"
+    },
+    "ui-matching-query.png": {
+      "$note": "configuration/traffic-management/matching.md, \"Query parameter matching\" UI tab: the Query section of the Add route drawer for the multi-query route, an exact version condition and a regex format condition, plus the backend, before Save route. Captured by tests/ui-tabs-e.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e.yaml.",
+      "light": "assets/img/ui-matching-query.png",
+      "dark": "assets/img/ui-matching-query-dark.png"
+    },
+    "ui-matching-tcp-hostname.png": {
+      "$note": "configuration/traffic-management/matching.md, \"Hostname matching\" (TCP routes) UI tab: the Add route drawer with TCP kind, the database-proxy gateway, the database-backend name, the db.example.com hostname, and the postgres.example.com:5432 backend, before Save route. Captured by tests/ui-tabs-e.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e.yaml.",
+      "light": "assets/img/ui-matching-tcp-hostname.png",
+      "dark": "assets/img/ui-matching-tcp-hostname-dark.png"
+    },
+    "ui-matching-tcp-weights.png": {
+      "$note": "configuration/traffic-management/matching.md, \"Backend routing\" (TCP routes) UI tab: the Add route drawer for redis-cluster on redis-proxy with three backends weighted 1:2:1, before Save route. Captured at 1280x1100 so all three backends show. Captured by tests/ui-tabs-e.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e.yaml.",
+      "light": "assets/img/ui-matching-tcp-weights.png",
+      "dark": "assets/img/ui-matching-tcp-weights-dark.png"
+    },
+    "ui-tracing-enable.png": {
+      "$note": "content/docs/standalone/main/documentation/observability/traces/setup.md, \"Enable tracing\" UI tab (also used by traces/configs/jaeger.md and content/docs/standalone/main/integrations/llm/observability/phoenix.md, which set the same values): the Tracing drawer scrolled to Export and Sampling, gRPC protocol and Random sampling true, with the default localhost:4317 host. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-tracing-enable.png",
+      "dark": "assets/img/ui-tracing-enable-dark.png"
+    },
+    "ui-tracing-filter.png": {
+      "$note": "content/docs/standalone/main/documentation/observability/traces/setup.md, \"Filter spans\" UI tab: the Tracing drawer's Sampling section with Random sampling true and the Filter response.code >= 400. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-tracing-filter.png",
+      "dark": "assets/img/ui-tracing-filter-dark.png"
+    },
+    "ui-tracing-attributes.png": {
+      "$note": "content/docs/standalone/main/documentation/observability/traces/setup.md, \"Add span and resource attributes\" UI tab: the Attributes section with the user.id and request.path span attributes and the service.name and deployment.environment resource attributes. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-tracing-attributes.png",
+      "dark": "assets/img/ui-tracing-attributes-dark.png"
+    },
+    "ui-tracing-remove.png": {
+      "$note": "content/docs/standalone/main/documentation/observability/traces/setup.md, \"Remove span attributes\" UI tab: the Attributes section with client.address and network.protocol.version under Remove attributes. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-tracing-remove.png",
+      "dark": "assets/img/ui-tracing-remove-dark.png"
+    },
+    "ui-tracing-langfuse.png": {
+      "$note": "content/docs/standalone/main/integrations/llm/observability/langfuse.md, \"Configuration\" UI tab, step 4: the Tracing drawer with the cloud.langfuse.com:443 host, the backendTLS and Authorization header backend policies, HTTP protocol, and the /api/public/otel/v1/traces path. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-tracing-langfuse.png",
+      "dark": "assets/img/ui-tracing-langfuse-dark.png"
+    },
+    "ui-tracing-langsmith.png": {
+      "$note": "content/docs/standalone/main/integrations/llm/observability/langsmith.md, \"Configuration\" UI tab, step 4: the Tracing drawer with the api.smith.langchain.com:443 host, the backendTLS and x-api-key header backend policies, HTTP protocol, and the /otel/v1/traces path. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-tracing-langsmith.png",
+      "dark": "assets/img/ui-tracing-langsmith-dark.png"
+    },
+    "ui-access-logs-preset.png": {
+      "$note": "content/docs/standalone/main/documentation/observability/access-logs/view.md, \"Use OpenTelemetry field names\" UI tab: the Access logs drawer with OpenTelemetry selected as the Stdout preset. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-access-logs-preset.png",
+      "dark": "assets/img/ui-access-logs-preset-dark.png"
+    },
+    "ui-access-logs-add-fields.png": {
+      "$note": "content/docs/standalone/main/documentation/observability/access-logs/view.md, \"Add custom fields to logs\" UI tab: the Access logs drawer with the user_id, env, and cost fields under Add fields. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-access-logs-add-fields.png",
+      "dark": "assets/img/ui-access-logs-add-fields-dark.png"
+    },
+    "ui-access-logs-guardrails.png": {
+      "$note": "content/docs/standalone/main/documentation/observability/access-logs/view.md, \"Log guardrail results\" UI tab: the Access logs drawer with the guardrails.size() > 0 filter and the guardrails and guardrail_action fields. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-access-logs-guardrails.png",
+      "dark": "assets/img/ui-access-logs-guardrails-dark.png"
+    },
+    "ui-access-logs-otlp.png": {
+      "$note": "content/docs/standalone/main/documentation/observability/access-logs/export.md, setup UI tab, step 3: the Access logs drawer's OTLP export section with Export logs over OTLP selected, localhost:4317, and gRPC. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-access-logs-otlp.png",
+      "dark": "assets/img/ui-access-logs-otlp-dark.png"
+    },
+    "ui-access-logs-otlp-filter.png": {
+      "$note": "content/docs/standalone/main/documentation/observability/access-logs/export.md, \"Filter logs before export\" UI tab: the OTLP export section with the OTLP filter response.code >= 400. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-access-logs-otlp-filter.png",
+      "dark": "assets/img/ui-access-logs-otlp-filter-dark.png"
+    },
+    "ui-access-logs-database-llm.png": {
+      "$note": "content/docs/standalone/main/documentation/observability/access-logs/database.md, LLM content UI tab: the Access logs drawer's Database section with Full selected for LLM detail. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-access-logs-database-llm.png",
+      "dark": "assets/img/ui-access-logs-database-llm-dark.png"
+    },
+    "ui-access-logs-database-fields.png": {
+      "$note": "content/docs/standalone/main/documentation/observability/access-logs/database.md, \"Add custom fields to database logs\" UI tab: the Database section with the user_id database field. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-access-logs-database-fields.png",
+      "dark": "assets/img/ui-access-logs-database-fields-dark.png"
+    },
+    "ui-settings-oidc.png": {
+      "$note": "assets/agw-docs/standalone/setup/ui/secure.md (setup/ui/secure-ui.md), \"Binary and Docker\" UI tab, step 4: the Settings > UI OIDC drawer with the ${ISSUER_URL} issuer (top of the drawer). Never saved, so the discovery document is never fetched. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-settings-oidc.png",
+      "dark": "assets/img/ui-settings-oidc-dark.png"
+    },
+    "ui-settings-oidc-client.png": {
+      "$note": "assets/agw-docs/standalone/setup/ui/secure.md (setup/ui/secure-ui.md), \"Binary and Docker\" UI tab, step 4: the same OIDC drawer scrolled to the client ID, secret, and redirect URI env var references and the profile and email scopes. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-settings-oidc-client.png",
+      "dark": "assets/img/ui-settings-oidc-client-dark.png"
+    },
+    "ui-gateway-tls.png": {
+      "$note": "assets/agw-docs/standalone/setup/ui/expose.md (setup/ui/expose-ui.md), \"Binary and Docker\" UI tab, step 4: the ui-gateway Edit gateway drawer switched to HTTPS with the /etc/agentgateway/tls certificate and key. Never saved. Captured by tests/ui-tabs-f.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml.",
+      "light": "assets/img/ui-gateway-tls.png",
+      "dark": "assets/img/ui-gateway-tls-dark.png"
+    },
+    "ui-settings-public-gateway.png": {
+      "$note": "assets/agw-docs/standalone/setup/ui/gateway.md (setup/ui/gateway-ui.md), \"Serve the UI on its own gateway\" UI tab, step 3: Settings > UI with ui-gateway selected as the Public gateway and the Save UI gateway button showing. Never saved. Captured by tests/ui-tabs-f-2.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f-2.yaml.",
+      "light": "assets/img/ui-settings-public-gateway.png",
+      "dark": "assets/img/ui-settings-public-gateway-dark.png"
     }
   }
 }

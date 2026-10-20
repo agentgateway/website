@@ -70,6 +70,9 @@ Whether the UI can save depends on your storage mode. For more information, see 
    1. **Host**: Keep `localhost:4317`.
    2. **Protocol**: Keep **gRPC**. The UI does not write the default `protocol: grpc` value to your configuration.
    3. **Random sampling**: Enter `true`.
+
+   {{< reuse-image src="img/ui-tracing-enable.png" srcDark="img/ui-tracing-enable-dark.png" >}}
+
 4. Click **Save policy**.
 {{% /tab %}}
 {{% tab name="Config file" %}}

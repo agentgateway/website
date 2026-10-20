@@ -60,6 +60,9 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 6. Enter `my-project-id` for the **Vertex project**.
 7. For the **Vertex region**, enter or select `us-west2`. If you leave the field empty, Vertex uses `global`.
 8. For the **Outgoing model**, select **Explicit**, and enter `google/gemini-2.5-flash-lite-preview-06-17`.
+
+   {{< reuse-image src="img/ui-llm-add-model-vertex-explicit.png" srcDark="img/ui-llm-add-model-vertex-explicit-dark.png" >}}
+
 9. Click **Save model**.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).

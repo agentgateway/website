@@ -103,6 +103,9 @@ The following steps add the same `oidc` policy as the **Simplified (LLM)** examp
    2. **Client secret**: `agentgateway-secret`
    3. **Redirect URI**: `http://localhost:3000/oauth/callback`
 6. In the **Scopes** section, click the `profile` and `email` suggestions.
+
+   {{< reuse-image src="img/ui-llm-policy-oidc.png" srcDark="img/ui-llm-policy-oidc-dark.png" >}}
+
 7. Click **Save policy**. The identity provider must be running, because agentgateway fetches the discovery document when it loads the policy. If the issuer is unreachable, the save fails with a `failed to decode oidc discovery response` error.
 
 The UI writes the client secret to the configuration as plain text, the same as the **Config file** tab. You can also add an OIDC policy in the **Route policies** section of a route in **Traffic** > **Routes**. The **MCP** > **Policies** page does not list the OIDC policy, so use the **Config file** tab for the **Simplified (MCP)** example.

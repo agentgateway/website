@@ -79,6 +79,9 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 6. For the **AWS region**, enter or select `us-west-2`.
 7. From the **Bedrock endpoint** dropdown, select **Prefer Runtime**. The UI preselects **Prefer Mantle** for a new Bedrock model, and saves the choice as `params.bedrockEndpointPreference`. For more information, see [Bedrock Mantle](#bedrock-mantle).
 8. Keep **Incoming model** as the **Outgoing model**. To send every request to one model instead, select **Explicit**, and enter the model ID. This option sets `params.model`.
+
+   {{< reuse-image src="img/ui-llm-add-model-bedrock-runtime.png" srcDark="img/ui-llm-add-model-bedrock-runtime-dark.png" >}}
+
 9. Click **Save model**.
 
 The UI writes `bedrockEndpointPreference: runtimePreferred` in addition to the fields in the **Config file** tab. Runtime is also the default when the field is not set, so both configurations behave the same.

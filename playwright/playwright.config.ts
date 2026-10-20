@@ -35,6 +35,8 @@ import { resolveImage } from './scripts/resolve-image.mjs';
  *                      file    — writable config file, default storage (storage-file.spec.ts)
  *                      tour    — one populated gateway: routes, LLM model, MCP server, and
  *                                policies, for the UI tour in setup/ui/launch-ui (tour.spec.ts)
+ *                      fixture — any fixtures/<FIXTURE>, no backends, for the UI-tab drawer
+ *                                captures (tests/ui-tabs-*.spec.ts); main only
  *                    The scripts under scripts/ are self-contained: they start any backing
  *                    servers, run the container, and clean up on exit.
  *   REUSE: webServer.reuseExistingServer attaches to anything already serving the URL,
@@ -58,6 +60,13 @@ const BIN = process.env.AGENTGATEWAY_BIN;
 const ADMIN_ADDR = process.env.ADMIN_ADDR || 'localhost:15000';
 const MODE = process.env.CAPTURE_MODE || '';
 
+// The fixture-mode specs (tests/ui-tabs-*.spec.ts) capture the main-only "UI" tabs and skip every
+// test on any other version (mainOnly() in fixtures/test.ts). Playwright still starts the webServer
+// before it knows that, and a fixture written for the nightly UI may not load in a released image:
+// the container would never answer, the run would wait out the timeout, and the nightly's
+// `update:all` chain would stop there. So a non-main fixture run starts no UI at all.
+const NEEDS_SERVER = !(MODE === 'fixture' && VERSION !== 'main');
+
 const BASE_URL =
   process.env.UI_BASE_URL || (BIN ? `http://${ADMIN_ADDR}` : `http://localhost:${HOST_PORT}`);
 
@@ -75,6 +84,8 @@ const SCRIPT_FOR = {
   storage: 'serve-storage-ui.sh',
   file: 'serve-file-ui.sh',
   tour: 'serve-tour-ui.sh',
+  // Any one fixture, named by FIXTURE: the UI-tab drawer captures (tests/ui-tabs-*.spec.ts).
+  fixture: 'serve-fixture-ui.sh',
 };
 const command = BIN
   ? `"${BIN}" -f fixtures/standalone-config.yaml`
@@ -105,7 +116,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   reporter: [['html', { open: 'never' }], ['list']],
 
-  webServer: {
+  webServer: NEEDS_SERVER ? {
     command,
     url: `${BASE_URL}/ui/`,
     reuseExistingServer: true, // attach to an already-running UI (container, dev server, port-forward)
@@ -120,7 +131,7 @@ export default defineConfig({
           READINESS_ADDR: process.env.READINESS_ADDR || 'localhost:15021',
         }
       : {},
-  },
+  } : undefined,
 
   use: {
     baseURL: BASE_URL,
