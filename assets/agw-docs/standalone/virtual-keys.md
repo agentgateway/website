@@ -36,7 +36,7 @@ flowchart TD
 # WHAT THIS TEST VALIDATES:
 #   * "Step 1": the virtual keys config is accepted by agentgateway
 #     (--validate-only), so the apiKey policy fields are correct.
-#   * "Step 3": a request with either virtual key is authenticated and proxied
+#   * "Step 2": a request with either virtual key is authenticated and proxied
 #     to the provider (200), and a request with an unknown key is rejected (401),
 #     which is the behavior the strict apiKey mode describes.
 #
@@ -52,41 +52,63 @@ flowchart TD
 {{< reuse "agw-docs/snippets/start-mock-llm.md" >}}
 {{< /doc-test >}}
 
-{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
+## Set up virtual keys {#set-up-virtual-keys}
 
-> [!NOTE]
-> You can manage virtual keys two ways: interactively in the built-in [UI]({{< link-hextra path="/documentation/setup/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes. The config file is the source of truth for GitOps workflows.
+<span id="set-up-virtual-keys-ui"></span><span id="set-up-virtual-keys-config-file"></span>
 
-## Set up virtual keys (UI)
+Turn on API key authentication, and create two virtual keys, one for Alice and one for Bob. You can do this interactively in the built-in [UI]({{< link-hextra path="/documentation/setup/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes. The config file is the source of truth for GitOps workflows.
 
-Set up virtual keys interactively through the UI.
+### Step 1: Create the virtual keys {#step-1-configure-api-key-authentication}
 
-1. Open [http://localhost:15000/ui/llm/keys](http://localhost:15000/ui/llm/keys) (**LLM > Virtual API Keys**). Configured keys and their metadata are listed here, where you can show, copy, edit, or delete each one.
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Create a configuration with an LLM model, but no API key authentication. You add the authentication and the keys in the UI.
+
+   ```yaml
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   EOF
+   ```
+
+2. Start agentgateway.
+
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+3. Open [http://localhost:15000/ui/llm/keys](http://localhost:15000/ui/llm/keys) (**LLM > Virtual API Keys**).
+4. Click **Enable API key auth**. Keep the **Strict** validation mode, and click **Enable API key auth** again. Strict mode requires a valid API key for all requests.
+5. Click **New key**, and create Alice's key.
+   1. Enter `alice` for the **Name**.
+   2. For the **Key value**, select **Use custom key**, and enter `sk-alice-abc123def456`. To have agentgateway generate the key instead, keep the auto-generate option, and use the generated value in the later steps.
+   3. Expand **Metadata**, enter `user` and `alice`, and click **Add**.
+   4. Click **Save key**.
+
+   {{< reuse-image-light src="img/ui-virtual-keys-new.png" alt="Create virtual key drawer with name, key value, and metadata" >}}
+   {{< reuse-image-dark srcDark="img/ui-virtual-keys-new-dark.png" alt="Create virtual key drawer with name, key value, and metadata" >}}
+
+6. In the **Copy your new API key** dialog, copy the key, and click **Done**. The UI does not show the key again.
+7. Repeat the previous two steps for Bob, with the name `bob`, the key `sk-bob-xyz789uvw012`, and the metadata `user` and `bob`.
+
+   The **Virtual API Keys** page lists both keys. From here, you can show, copy, edit, or delete each one.
 
    {{< reuse-image-light src="img/ui-virtual-keys-list.png" alt="UI Virtual API Keys page listing configured keys and metadata" >}}
    {{< reuse-image-dark srcDark="img/ui-virtual-keys-list-dark.png" alt="UI Virtual API Keys page listing configured keys and metadata" >}}
 
-2. Click **New key**. Give the key a name, let {{< reuse "agw-docs/snippets/agentgateway.md" >}} auto-generate the key value (or paste your own), and add metadata such as a `user` entry to attribute usage. Click **Save key**.
-
-   {{< reuse-image-light src="img/ui-virtual-keys-new.png" alt="Create virtual key drawer with name, auto-generated key value, and metadata" >}}
-   {{< reuse-image-dark srcDark="img/ui-virtual-keys-new-dark.png" alt="Create virtual key drawer with name, auto-generated key value, and metadata" >}}
-3. **Copy** the virtual key value. Give this key to your users to use in an `Authorization: Bearer $VIRTUAL_KEY` header in subsequent requests through agentgateway.
-
-The rest of this guide uses the equivalent config-file settings, which apply the same `apiKey` policy shown in the UI.
-{{< /version >}}
-
-## Set up virtual keys (config file)
-
-Set up virtual keys in a declarative config file, particularly useful in GitOps settings.
-
-### Step 1: Configure API key authentication
-
+The UI writes the same `apiKey` policy as the **Config file** tab, with one difference. It saves a hash of each key (`keyHash`), not the raw value. To save the raw value, select **Store raw key**. Give the keys to your users to send in an `Authorization: Bearer $VIRTUAL_KEY` header.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 Create a configuration with API key authentication. This example creates two virtual keys for Alice and Bob.
 
 ```yaml {paths="virtual-keys"}
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
 llm:
   policies:
     apiKey:
@@ -113,11 +135,13 @@ EOF
 | `key` | The API key value that users include in the `Authorization: Bearer <key>` header. |
 | `metadata` | Optional metadata associated with the key, such as a user identifier or tier. |
 
-### Step 2: Start agentgateway
+Start agentgateway.
 
 ```sh
 agentgateway -f config.yaml
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="virtual-keys" >}}
 # Virtual keys: validate the documented config, then run it against the mock LLM.
@@ -128,7 +152,7 @@ trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
 sleep 3
 {{< /doc-test >}}
 
-### Step 3: Test the virtual keys
+### Step 2: Test the virtual keys {#step-3-test-the-virtual-keys}
 
 1. Send a request with Alice's API key. Verify that the request succeeds.
 

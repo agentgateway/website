@@ -64,6 +64,10 @@ Example output:
 
 ### Step 2: Configure agentgateway to route to httpbin
 
+You can add the gateway and route in the UI, or write them in a configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
 You add the gateway and route from the UI, so you can start agentgateway without a config file. When you run `agentgateway` without specifying a config, it bootstraps a basic config at `~/.config/agentgateway/config.yaml` and uses it automatically.
 
 1. In a separate terminal, start agentgateway.
@@ -92,10 +96,36 @@ You add the gateway and route from the UI, so you can start agentgateway without
 
    {{< reuse-image-light src="img/ui-traffic-add-route.png" >}}
    {{< reuse-image-dark srcDark="img/ui-traffic-add-route-dark.png" >}}
+{{% /tab %}}
+{{% tab name="Config file" %}}
+1. Create a configuration file with a gateway on port 3000 and a route to httpbin.
+
+   ```yaml
+   cat > config.yaml << 'EOF'
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   gateways:
+     httpbin:
+       port: 3000
+       protocol: HTTP
+   routes:
+   - name: httpbin
+     gateways: [httpbin]
+     backends:
+     - host: 127.0.0.1:8000
+   EOF
+   ```
+
+2. In a separate terminal, start agentgateway with the configuration file.
+
+   ```sh
+   agentgateway -f config.yaml
+   ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="httpbin" >}}
-# Hidden test: the UI steps above (Add gateway/route) are not scriptable, so this block
-# reproduces the equivalent config they produce, to keep the resulting setup tested.
+# Hidden test: runs the Config file tab's setup. The UI tab produces the same gateway
+# and route, but its clicks are not scriptable.
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:

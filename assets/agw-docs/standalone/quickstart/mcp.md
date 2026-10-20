@@ -127,24 +127,79 @@ Run the open source `server-everything` MCP test server with the streamable HTTP
 PORT=3005 npx -y @modelcontextprotocol/server-everything streamableHttp
 ```
 
-### Step 2: Start agentgateway
+### Step 2: Configure agentgateway {#step-2-start-agentgateway}
 
-You add the MCP server from the UI in the next steps, so you can start agentgateway without a config file. When you run `agentgateway` without specifying a config, it bootstraps a basic config at `~/.config/agentgateway/config.yaml` and uses it automatically.
+<span id="step-3-enable-mcp"></span><span id="step-4-add-the-mcp-server"></span>
 
-```sh
-agentgateway
-```
+You can add the MCP server in the UI, or write it in a configuration file.
 
-Example output:
+{{< tabs >}}
+{{% tab name="UI" %}}
+Because you add the MCP server from the UI, you can start agentgateway without a config file. When you run `agentgateway` without specifying a config, it bootstraps a basic config at `~/.config/agentgateway/config.yaml` and uses it automatically.
 
-```
-info  app  serving UI at http://localhost:4000/ui
-```
+1. Start agentgateway.
+
+   ```sh
+   agentgateway
+   ```
+
+   Example output:
+
+   ```
+   info  app  serving UI at http://localhost:4000/ui
+   ```
+
+2. Open the [agentgateway UI](http://localhost:4000/ui/). The first time that you run the UI, the **Welcome to Agentgateway** wizard opens. Click **Enable MCP**, and then click **Continue**. If you already did this, skip to the next step.
+
+   {{< reuse-image-light src="img/ui-welcome-wizard.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-welcome-wizard-dark.png" >}}
+
+   The **Gateway Overview** home page opens, with the **MCP** row enabled.
+
+3. Add the MCP server.
+   1. In the **MCP** section of the navigation menu, click **Servers**, and then click **Add server**.
+   2. For the **Server name**, enter `server-everything`.
+   3. Keep the **Streamable HTTP** transport. For the **URL**, enter `http://localhost:3005/mcp`.
+   4. Click **Save server**.
+
+   {{< reuse-image-light src="img/ui-mcp-add-server.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-mcp-add-server-dark.png" >}}
+{{% /tab %}}
+{{% tab name="Config file" %}}
+1. Create a configuration file with the MCP server as a target. The configuration also serves the UI on the same gateway, so that you can use the playground in the next step.
+
+   ```yaml
+   cat > config.yaml << 'EOF'
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   gateways:
+     default:
+       port: 4000
+   mcp:
+     targets:
+     - name: server-everything
+       mcp:
+         host: http://localhost:3005/mcp
+   ui: {}
+   EOF
+   ```
+
+2. Start agentgateway with the configuration file.
+
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+   Example output:
+
+   ```
+   info  app  serving UI at http://localhost:4000/ui
+   ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="mcp" >}}
-# Hidden test: the UI steps below (Enable MCP -> Add server) are not scriptable, so this
-# block reproduces the equivalent config they produce and starts the same backends, to keep
-# the resulting setup tested.
+# Hidden test: runs the Config file tab's setup. The UI tab produces the same MCP target,
+# but its clicks are not scriptable.
 # Redirect background output to files so the started servers don't keep the test
 # runner's stdout pipe open (which would block the run from ever completing).
 PORT=3005 npx -y @modelcontextprotocol/server-everything streamableHttp >/tmp/mcp-server.log 2>&1 &
@@ -152,12 +207,15 @@ MCP_PID=$!
 sleep 5
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 4000
 mcp:
-  port: 3000
   targets:
   - name: server-everything
     mcp:
       host: http://localhost:3005/mcp
+ui: {}
 EOF
 agentgateway -f config.yaml >/tmp/agentgateway.log 2>&1 &
 AGW_PID=$!
@@ -167,31 +225,9 @@ trap 'kill $AGW_PID 2>/dev/null || true; pkill -P $MCP_PID 2>/dev/null || true; 
 sleep 3
 {{< /doc-test >}}
 
-### Step 3: Enable MCP
+### Step 3: Try a tool in the playground {#step-5-try-a-tool-in-the-playground}
 
-The first time that you run the UI, the **Welcome to Agentgateway** wizard walks you through enabling LLM configuration. If you already did this, you can skip to the next step.
-
-1. Open the [agentgateway UI](http://localhost:4000/ui/). 
-2. From the welcome wizard, click **Enable MCP** and then click **Continue**.
-
-   {{< reuse-image-light src="img/ui-welcome-wizard.png" >}}
-   {{< reuse-image-dark srcDark="img/ui-welcome-wizard-dark.png" >}}
-
-The **Gateway Overview** home page opens, with the **MCP** row enabled.
-
-### Step 4: Add the MCP server
-
-1. In the **MCP** section of the navigation menu, click **Servers**, and then click **Add server**.
-2. For the **Server name**, enter `server-everything`.
-3. Keep the **Streamable HTTP** transport. For the **URL**, enter `http://localhost:3005/mcp`.
-4. Click **Save server**.
-
-{{< reuse-image-light src="img/ui-mcp-add-server.png" >}}
-{{< reuse-image-dark srcDark="img/ui-mcp-add-server-dark.png" >}}
-
-### Step 5: Try a tool in the playground
-
-1. In the **MCP** section, click **Tool Playground**.
+1. In the [agentgateway UI](http://localhost:4000/ui/), click **Tool Playground** in the **MCP** section.
 2. If you see a **Browser access is not allowed** notice, click **Apply CORS** so the playground can call the MCP listener from the UI.
 3. Click **Initialize** to open an MCP session. The playground lists the tools that the server exposes, such as `echo` and various `get` commands.
 
