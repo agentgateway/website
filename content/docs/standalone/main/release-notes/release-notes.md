@@ -18,6 +18,10 @@ Review the release notes for agentgateway standalone.
 
 - **CEL MCP guardrails**: Use `kind: expression` in `mcpGuardrails.processors` to reject or transform MCP messages inside the proxy. No external policy server is required. For more information, see [Set up CEL guardrails]({{< link-hextra path="/documentation/mcp/guardrails/cel/" >}}).
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3973 -->
+
+- **OpenAPI MCP targets can override schema server paths**: Standalone OpenAPI MCP targets can now use a non-root `host` URI or `path` value as the request prefix. Previously, the OpenAPI schema server path controlled the prefix even when the target URL included a path. Omitted, empty, and root paths keep using the schema server path; to route to root, update the schema server URL. For more information, see [Override the schema server path]({{< link-hextra path="/integrations/mcp/servers/openapi/#override-schema-server-path" >}}).
+
 ### Observability {#v17-observability}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3850 -->
