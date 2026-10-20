@@ -14,6 +14,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: cors-demo
+  namespace: default
   annotations:
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "https://example.com, https://app.example.com"
@@ -21,7 +22,7 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-headers: "Authorization, Content-Type"
     nginx.ingress.kubernetes.io/cors-max-age: "3600"
 spec:
-  ingressClassName: agentgateway
+  ingressClassName: nginx
   rules:
   - host: api.example.com
     http:
