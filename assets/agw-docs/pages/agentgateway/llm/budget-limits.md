@@ -334,7 +334,7 @@ Provide different budget tiers for free, standard, and premium users.
        }
      charlie: |
        {
-         "keyHash": "sha256:1dfa4e699a31bc3bdcb34c74b43f7a4e58d38c51cec243b4add27b16de599355",
+         "keyHash": "sha256:d405d9c7afbcc63d8f559bb1cf4d23af148ffd6f8d65ac07cf98fbc1ac546dde",
          "metadata": {
            "user_id": "charlie",
            "tier": "free"
@@ -363,7 +363,7 @@ Provide different budget tiers for free, standard, and premium users.
        }
      charlie: |
        {
-         "key": "sk-charlie-ghi345jkl678",
+         "key": "vk-charlie-ghi345jkl678",
          "metadata": {
            "user_id": "charlie",
            "tier": "free"

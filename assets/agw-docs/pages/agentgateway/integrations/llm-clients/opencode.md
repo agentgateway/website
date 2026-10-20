@@ -5,7 +5,13 @@ To connect OpenCode to MCP servers through agentgateway instead, see [OpenCode M
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. [Install OpenCode](https://opencode.ai/docs/). This guide was tested with OpenCode 1.18.35.
+2. Get an [OpenAI API key](https://platform.openai.com/api-keys) and save it in the `OPENAI_API_KEY` environment variable. The configuration in this guide reads the key from that variable.
+
+   ```sh
+   export OPENAI_API_KEY=<your-api-key>
+   ```
+
+3. [Install OpenCode](https://opencode.ai/docs/). This guide was tested with OpenCode 1.18.35.
 
 {{< reuse "agw-docs/snippets/llm-client-setup-callout.md" >}}
 

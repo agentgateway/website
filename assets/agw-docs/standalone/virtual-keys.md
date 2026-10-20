@@ -24,7 +24,7 @@ The gateway host holds every provider key. Protect it as you would any other sec
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-You also need an OpenAI API key. The examples read it from `OPENAI_API_KEY`. For file-based credentials and rotation without a restart, see [Provider API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
+You also need an OpenAI API key. The examples read it from `OPENAI_API_KEY`.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} For file-based credentials and rotation without a restart, see [Provider API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).{{< /version >}}
 
 {{< doc-test paths="virtual-keys" >}}
 # ============================================================================
@@ -109,7 +109,7 @@ EOF
 | `apiKey.keys` | List of API keys. Each key has a `key` value and optional `metadata`. |
 | `key` | The API key value that users include in the `Authorization: Bearer <key>` header. |
 | `metadata` | Optional metadata associated with the key, such as a user identifier or tier. |
-| `models[].name` | The models that the gateway serves. Use `*` for all provider models, or list model names to restrict access. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}For per-key restrictions, see [Restrict model access](#restrict-model-access).{{< /version >}} |
+| `models[].name` | The models that the gateway serves. Use `*` for all provider models, or list model names to restrict access. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x" >}}For per-key restrictions, see [Restrict model access](#restrict-model-access).{{< /version >}} |
 | `params.apiKey` | The provider key that replaces the virtual key in outgoing requests.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} For file-based rotation without a restart, see [Rotate a provider key]({{< link-hextra path="/documentation/llm/api-keys/#rotate" >}}).{{< /version >}} |
 
 ### Step 2: Start agentgateway
@@ -235,9 +235,9 @@ EOF
 
 ## Manage client access
 
-Choose a task to restrict model access, revoke a client key, or rotate provider credentials.
+Control access for individual clients without reconfiguring the others.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} You can also rotate the provider key without changing any client.{{< /version >}}
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x" >}}
 ### Restrict model access {#restrict-model-access}
 
 The `*` model serves every model the provider offers. To restrict access for all clients, replace it with named model entries.
@@ -257,6 +257,19 @@ The `*` model serves every model the provider offers. To restrict access for all
    ```
 
 2. Send a request with Bob's key for a model outside `allowedModels`. Verify that agentgateway returns `403`. Requests for a model absent from `llm.models` get `404`.
+
+   ```sh
+   curl -s http://localhost:4000/v1/chat/completions \
+     -H "Authorization: Bearer vk-bob-8d1e7b" \
+     -H "Content-Type: application/json" \
+     -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Hello!"}]}'
+   ```
+
+   Example output:
+
+   ```json
+   {"error":{"message":"Model is not allowed for this API key","type":"invalid_request_error","code":"model_not_allowed"}}
+   ```
 
 For model patterns and budget interactions, see [Limit model access per key]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/#limit-model-access-per-key" >}}).
 {{< /version >}}
@@ -281,6 +294,12 @@ Revoke one client's access without restarting agentgateway or changing other key
      -H "Authorization: Bearer vk-bob-8d1e7b" \
      -H "Content-Type: application/json" \
      -d '{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello!"}]}'
+   ```
+
+   Example output:
+
+   ```
+   401
    ```
 
 3. Restore Bob's key before continuing with the budget examples.
@@ -412,9 +431,13 @@ For more information about rate limiting configuration options, see [Rate limits
 1. Add `tokenize: true` to the model's `params` in `config.yaml`. Keep the existing provider credentials. Requests are rejected immediately if the estimated prompt tokens exceed the available budget.
    
    ```yaml
-   params:
-     apiKey: "$OPENAI_API_KEY"
-     tokenize: true
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+         tokenize: true
    ```
 
 2. Send a request. Use Bob's virtual key because Alice's virtual key already reached the rate limit in the previous step. This time, the request is rate limited because the estimated tokens exceed the budget.

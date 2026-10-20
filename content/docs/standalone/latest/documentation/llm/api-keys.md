@@ -111,7 +111,27 @@ Rotate provider keys regularly, when your provider requires it, or after a suspe
 
    For file references in `params.apiKey`, agentgateway reads the key only when loading the configuration. After replacing the key file, save the configuration file to trigger a reload, or restart agentgateway.
 
-3. Send a request through agentgateway, and verify that it succeeds with the new key.
+3. Send a request through agentgateway, and verify that it succeeds with the new key. If your gateway requires [virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}), add an `Authorization: Bearer <virtual-key>` header.
+
+   ```sh
+   curl -s http://localhost:4000/v1/chat/completions \
+     -H "Content-Type: application/json" \
+     -d '{"model": "gpt-4o-mini", "messages": [{"role": "user", "content": "Hello!"}]}' | jq .
+   ```
+
+   Example output:
+
+   ```json
+   {
+     "choices": [{
+       "message": {
+         "role": "assistant",
+         "content": "Hello! How can I help you today?"
+       }
+     }]
+   }
+   ```
+
 4. Revoke the old key in the console of your LLM provider.
 
 ## Next steps

@@ -8,7 +8,7 @@ Choose a method to provide the key to the proxy.
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-## Manage API keys
+## Provide the API key
 
 You can choose between the following options to provide an API key to agentgateway: 
 * [Inline](#inline)
@@ -480,6 +480,38 @@ Rotate provider keys regularly, when your provider requires it, or after a suspe
    ```
 
 4. Send a request through the proxy, and verify that it succeeds with the new key.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
+      "messages": [{"role": "user", "content": "Hello!"}]
+    }'
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl "localhost:8080/openai" -H content-type:application/json -d '{
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
+      "messages": [{"role": "user", "content": "Hello!"}]
+    }'
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+
+   ```json
+   {
+     "choices": [{
+       "message": {
+         "role": "assistant",
+         "content": "Hello! How can I help you today?"
+       }
+     }]
+   }
+   ```
 
 5. Revoke the old key in the console of your LLM provider.
 

@@ -7,25 +7,11 @@ The policy sends a per-user token cost to the rate limit server. It extracts the
 > This guide uses global rate limiting so that every proxy replica draws from the same budget. If you do not need the budget to be shared across replicas, you can skip the rate limit server and set `traffic.rateLimit.local[].key` to `apiKey.user_id` instead, which gives each virtual key its own in-memory budget. For more information, see [Claim-level budget limits]({{< link-hextra path="/documentation/llm/rate-limit/#claim-level" >}}).
 {{< /version >}}
 
-{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ```yaml,paths="virtual-keys-with-ratelimit"
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-metadata:
-  name: api-key-auth
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl patch {{< reuse "agw-docs/snippets/policy.md" >}} api-key-auth -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+  --type=merge --patch-file=/dev/stdin <<'EOF'
 spec:
-  targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: agentgateway-proxy
   traffic:
-    apiKeyAuthentication:
-      mode: Strict
-      configMapSelector:
-        matchLabels:
-          agentgateway.dev/apikey: "true"
     rateLimit:
       global:
         domain: agentgateway
@@ -42,47 +28,7 @@ spec:
 EOF
 ```
 
-> [!NOTE]
-> This example keeps the `configMapSelector` authentication from the previous step. If you used `secretRef` or `secretSelector`, keep that block instead. If your policy includes `traffic.authorization` for model restrictions, keep it alongside `apiKeyAuthentication` and `rateLimit`.
-{{< /version >}}
-
-{{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-```yaml,paths="virtual-keys-with-ratelimit"
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-metadata:
-  name: api-key-auth
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: agentgateway-proxy
-  traffic:
-    apiKeyAuthentication:
-      mode: Strict
-      secretRef:
-        name: llm-api-keys
-    rateLimit:
-      global:
-        domain: agentgateway
-        backendRef:
-          kind: Service
-          name: ratelimit
-          namespace: ratelimit
-          port: 8081
-        descriptors:
-          - entries:
-              - name: user_id
-                expression: 'apiKey.user_id'
-            unit: Tokens
-EOF
-```
-
-> [!NOTE]
-> This example keeps the `secretRef` authentication from the previous step. If you used `secretSelector` instead, keep your `secretSelector` block in place of `secretRef`.
-{{< /version >}}
+The merge patch adds the rate limit and keeps the authentication, model restrictions, and metrics settings that the policy already has.
 
 {{< doc-test paths="virtual-keys-with-ratelimit" >}}
 YAMLTest -f - <<'EOF'
@@ -107,7 +53,6 @@ EOF
 
 | Setting     | Description |
 |-------------|-------------|
-| `apiKeyAuthentication` | The API key authentication from the previous step. Keeping it in the same policy as the rate limit avoids the silent conflict that occurs when two policies target the same Gateway. |
 | `rateLimit.global` | Use global rate limiting to enforce limits across all {{< reuse "agw-docs/snippets/agentgateway.md" >}} instances. |
 | `domain` | The rate limit domain. Must match the `domain` in the rate limit server configuration (`agentgateway`). |
 | `backendRef` | References the rate limit server Service. Must include `kind`, `name`, `namespace`, and `port`. This example points at the `ratelimit` Service in the `ratelimit` namespace that you deploy in the next step. |

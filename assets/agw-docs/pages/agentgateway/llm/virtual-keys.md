@@ -541,6 +541,13 @@ By default, a key can request any model the provider offers.
      -H "Content-Type: application/json" \
      -d '{"model": "o3", "messages": [{"role": "user", "content": "Hello!"}]}'
    ```
+
+   Example output:
+
+   ```
+   authorization failed
+   403
+   ```
 {{< /version >}}
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
