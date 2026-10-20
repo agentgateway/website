@@ -357,56 +357,59 @@ EOF
 
 ### Step 6: Check budget usage
 
-Use [agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}) to view the key's budget usage as a table. The command is `budgets`, plural. Omit `--key` to list every per-key budget.
+1. Check the budget usage of the key with [agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}). To list the budgets of every key, omit the `--key` flag.
 
-```sh
-agctl standalone budgets --key team-a
-```
+   ```sh
+   agctl standalone budgets --key team-a
+   ```
 
-The table shows `daily-spend` with `USED` above the `$0.008` limit, `REMAINING` at `$0`, `STATUS` set to `exceeded`, and `ACTION` set to `block`. `RESETS` shows the end of the current window in your local time.
+   The `USED` value is higher than the limit, because agentgateway charged the request that crossed the limit after the request completed. The `RESETS` column shows the end of the current window in your local time.
 
-The CLI reports usage; it does not create, reset, or edit budgets. To inspect the full status response, including window timestamps, use the API below.
+   Example output:
 
-Query the admin API for the current usage of a key. To return every budget, omit the `apiKeyName` parameter.
+   ```text
+   KEY     BUDGET       USED      LIMIT   REMAINING  RESETS            STATUS    ACTION
+   team-a  daily-spend  $0.00903  $0.008  $0         2026-10-20 20:00  exceeded  block
+   ```
 
-```sh {paths="apikey-budgets"}
-curl -s "http://localhost:15000/api/budgets/status?apiKeyName=team-a" | jq .
-```
+2. For the full budget status, query the admin API. The response adds the window start and end as Unix timestamps in milliseconds, and the time of the last update. To return every budget, omit the `apiKeyName` parameter.
 
-The `used` value is a dollar amount, and it is higher than the limit, because agentgateway charged the request that crossed the limit after it completed.
+   ```sh {paths="apikey-budgets"}
+   curl -s "http://localhost:15000/api/budgets/status?apiKeyName=team-a" | jq .
+   ```
 
-Example output:
+   Example output:
 
-```json
-{
-  "observedAt": 1787773624201,
-  "budgets": [
-    {
-      "apiKeyName": "team-a",
-      "name": "daily-spend",
-      "limit": {
-        "unit": "USD",
-        "amount": "0.008"
-      },
-      "usage": {
-        "used": "0.00903",
-        "remaining": "0",
-        "exceeded": true
-      },
-      "window": {
-        "start": 1787702400000,
-        "end": 1787788800000,
-        "durationMs": 86400000,
-        "expired": false
-      },
-      "onBudgetExceeded": "Block",
-      "updatedAt": 1787773623159
-    }
-  ]
-}
-```
+   ```json
+   {
+     "observedAt": 1787773624201,
+     "budgets": [
+       {
+         "apiKeyName": "team-a",
+         "name": "daily-spend",
+         "limit": {
+           "unit": "USD",
+           "amount": "0.008"
+         },
+         "usage": {
+           "used": "0.00903",
+           "remaining": "0",
+           "exceeded": true
+         },
+         "window": {
+           "start": 1787702400000,
+           "end": 1787788800000,
+           "durationMs": 86400000,
+           "expired": false
+         },
+         "onBudgetExceeded": "Block",
+         "updatedAt": 1787773623159
+       }
+     ]
+   }
+   ```
 
-You can also review and edit budgets in the built-in [Admin UI]({{< link-hextra path="/documentation/setup/ui/" >}}), on the same **LLM > Virtual API Keys** page that lists your keys.
+The CLI and the API report usage only. To edit a budget, update the key in your configuration file, or use the built-in [UI]({{< link-hextra path="/documentation/setup/ui/" >}}) on the same **LLM > Virtual API Keys** page that lists your keys.
 
 ### Step 7: Try a token budget
 
@@ -484,7 +487,7 @@ EOF
 
 ## Limit model access per key
 
-To issue a new key with model restrictions and a budget at runtime, use the [virtual-key CLI workflow]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#create" >}}). For example, after configuring the API-key policy and database:
+To issue a new key with model restrictions and a budget at runtime, use the [virtual key CLI workflow]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl-create" >}}). For example, after configuring the API-key policy and database:
 
 ```sh
 CI_KEY="$(agctl standalone keys create ci \
@@ -494,7 +497,7 @@ CI_KEY="$(agctl standalone keys create ci \
 agctl standalone budgets --key ci
 ```
 
-The CLI names this budget `usd-24h` and stores a hash of the generated key. It defaults to `audit` unless you pass `--budget-action block`. Capture the key on creation, and revoke this optional example key with `agctl standalone delete llm.apiKey ci` when you finish. For existing keys or custom budget names, [export, edit, and apply the key resource]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#update" >}}).
+The CLI names this budget `usd-24h` and stores a hash of the generated key. It defaults to `audit` unless you pass `--budget-action block`. Capture the key on creation, and revoke this optional example key with `agctl standalone delete llm.apiKey ci` when you finish. For existing keys or custom budget names, [export, edit, and apply the key resource]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl-update" >}}).
 
 The `allowedModels` field limits which models an API key can reach. The field is independent of budgets, so it needs no database and no catalog, and you can use it on its own.
 

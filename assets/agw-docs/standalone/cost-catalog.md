@@ -211,6 +211,26 @@ A rising `Missing` or `Unpriced` count means requests are flowing through models
 > [!NOTE]
 > In traces, the corresponding cost-resolution `status` attribute uses lowercase values: `exact`, `unpriced`, `missing`, and `noCatalog`.
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Check priced traffic with agctl {#agctl}
+
+After you send an LLM request, use [agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}) to inspect the recorded costs. These commands require a [request-log database]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}).
+
+```sh
+agctl standalone logs --limit 10
+agctl standalone analytics --by provider,model --since 1h
+```
+
+Example output of the `analytics` command:
+
+```text
+PROVIDER  MODEL        REQUESTS  ERRORS  TOKENS  COST       AVG TTFT  TOK/S  CACHE HIT
+openai    gpt-4o-mini  1         0       19      $0.000007  -         -      0.0%
+```
+
+The `COST` column of the log table shows the cost of each request, and the analytics summary adds up the recorded costs. A request that the catalog does not price shows no cost. Therefore, a low or zero total does not prove that the catalog priced every request. To find unpriced requests, use the catalog lookup metrics in the previous section. For time buckets and identity breakdowns, see [CLI analytics]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/#cli" >}}).
+{{< /version >}}
+
 ## Enforce budgets
 
 The model catalog provides pricing data for spend visibility. To block or throttle traffic, combine cost visibility with rate limiting or virtual key management.

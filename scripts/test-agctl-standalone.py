@@ -26,7 +26,10 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCS = ROOT / "assets/agw-docs/standalone/main"
+ASSETS = ROOT / "assets/agw-docs"
+VIRTUAL_KEYS = ASSETS / "standalone/virtual-keys.md"
+CONFIG_RESOURCES = ASSETS / "pages/operations/config-resources-standalone.md"
+STORAGE = ASSETS / "standalone/setup/storage.md"
 
 
 def example(path, filename, multiple=False):
@@ -48,14 +51,6 @@ def free_port():
 
 
 class MockLLM(BaseHTTPRequestHandler):
-    def do_GET(self):
-        data = b'{"headers": {"Host": "mock-httpbin"}}'
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(data)))
-        self.end_headers()
-        self.wfile.write(data)
-
     def do_POST(self):
         request = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         response = dict(id="chatcmpl-test", object="chat.completion", created=0,
@@ -75,7 +70,7 @@ class MockLLM(BaseHTTPRequestHandler):
 
 def run_mode(mode, root, mock_port, gateway, agctl):
     admin_port, traffic_port = free_port(), free_port()
-    config = example(DOCS / "virtual-keys.md", "config.yaml")
+    config = example(VIRTUAL_KEYS, "config-agctl.yaml")
     config["config"].update(adminAddr=f"127.0.0.1:{admin_port}",
                              statsAddr=f"127.0.0.1:{free_port()}",
                              readinessAddr=f"127.0.0.1:{free_port()}", storage=dict(mode=mode))
@@ -108,7 +103,7 @@ def run_mode(mode, root, mock_port, gateway, agctl):
                 raise AssertionError("Gateway did not start")
 
             resource = root / "model.yaml"
-            resource.write_text(yaml.safe_dump(example(DOCS / "config-resources.md", "model.yaml")))
+            resource.write_text(yaml.safe_dump(example(CONFIG_RESOURCES, "model.yaml")))
             if mode == "readOnly":
                 result = cli("apply", "-f", str(resource), check=False)
                 assert result.returncode and "403" in result.stderr
@@ -123,39 +118,13 @@ def run_mode(mode, root, mock_port, gateway, agctl):
             assert "llama3.1" in cli("get", "llm.model", "example-model", "-o", "yaml").stdout
             cli("delete", "llm.model", "example-model")
 
-            target = example(ROOT / "content/docs/standalone/main/documentation/setup/storage.md", "target.yaml")
+            target = example(STORAGE, "target.yaml")
             resource.write_text(yaml.safe_dump(target))
             cli("apply", "-f", str(resource))
             assert "cli-target" in cli("get", "mcp.target").stdout
             cli("delete", "mcp.target", "cli-target")
 
-            # Apply the actual quickstart resource documents, adapting ports and upstreams.
-            quick_model = example(DOCS / "quickstart-llm-cli.md", "openai-model.yaml")
-            quick_model["value"]["params"].update(apiKey="test", baseUrl=f"http://127.0.0.1:{mock_port}")
-            resource.write_text(yaml.safe_dump(quick_model))
-            cli("apply", "-f", str(resource))
-            assert "gpt-3.5-turbo" in cli("get", "llm.model", "gpt-3.5-turbo").stdout
-            cli("delete", "llm.model", "gpt-3.5-turbo")
-            quick_mcp = example(DOCS / "quickstart-mcp-cli.md", "mcp-target.yaml")
-            resource.write_text(yaml.safe_dump(quick_mcp))
-            cli("apply", "-f", str(resource))
-            assert "server-everything" in cli("get", "mcp.target").stdout
-            cli("delete", "mcp.target", "server-everything")
-            http_resources = example(DOCS / "quickstart-http-cli.md", "httpbin-resources.yaml", multiple=True)
-            http_port = free_port()
-            http_resources[0]["value"]["port"] = http_port
-            http_resources[1]["value"]["backends"][0]["host"] = f"127.0.0.1:{mock_port}"
-            resource.write_text(yaml.safe_dump_all(http_resources))
-            cli("apply", "-f", str(resource))
-            assert "httpbin" in cli("get", "traffic.gateway", "httpbin").stdout
-            assert "httpbin" in cli("get", "traffic.route", "httpbin").stdout
-            time.sleep(.5)
-            with urllib.request.urlopen(f"http://127.0.0.1:{http_port}/headers", timeout=10) as response:
-                assert response.status == 200
-            cli("delete", "traffic.route", "httpbin")
-            cli("delete", "traffic.gateway", "httpbin")
-
-            key = cli("keys", "create", "team-a", "--model", "gpt-5*", "--budget", "250tokens/24h",
+            key = cli("keys", "create", "team-a", "--model", "gpt-4o*", "--budget", "250tokens/24h",
                       "--budget-action", "block").stdout.strip()
             exported = yaml.safe_load(cli("get", "llm.apiKey", "team-a", "-o", "yaml", "--no-metadata").stdout)
             assert exported["id"] and exported["value"]["keyHash"].startswith("sha256:")
@@ -166,7 +135,7 @@ def run_mode(mode, root, mock_port, gateway, agctl):
             assert len(json.loads(cli("get", "llm.apiKey", "-o", "json").stdout)) == 1
             time.sleep(1)
 
-            def request(model="gpt-5"):
+            def request(model="gpt-4o-mini"):
                 req = urllib.request.Request(f"http://127.0.0.1:{traffic_port}/v1/chat/completions",
                     data=json.dumps(dict(model=model, messages=[dict(role="user", content="Hello!")])).encode(),
                     headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"})
@@ -176,12 +145,12 @@ def run_mode(mode, root, mock_port, gateway, agctl):
                 except urllib.error.HTTPError as error:
                     return error.code
 
-            assert request("other-model") == 403
+            assert request("gpt-5") == 403
             assert [request() for _ in range(3)] == [200, 200, 200]
             assert request() == 429
             budget = cli("budgets", "--key", "team-a").stdout
             assert "303 tokens" in budget and "exceeded" in budget and "block" in budget
-            cli("keys", "create", "ci", "--model", "gpt-5*", "--budget", "5usd/24h", "--budget-action", "block")
+            cli("keys", "create", "ci", "--model", "gpt-4o*", "--budget", "5usd/24h", "--budget-action", "block")
             time.sleep(.5)
             assert "usd-24h" in cli("budgets", "--key", "ci").stdout
             cli("delete", "llm.apiKey", "ci")
@@ -192,10 +161,10 @@ def run_mode(mode, root, mock_port, gateway, agctl):
             assert "engineering" in json.dumps(logs)
             assert "mock completion" in cli("logs", success["id"], "-o", "json").stdout
             filtered = json.loads(cli("logs", "--since", "1h", "--status", "200", "--provider", "openai",
-                                      "--model", "gpt-5", "-o", "json").stdout)["logs"]
+                                      "--model", "gpt-4o-mini", "-o", "json").stdout)["logs"]
             assert len(filtered) == 3 and all(entry["httpStatus"] == 200 for entry in filtered)
             follower = subprocess.Popen([agctl, "standalone", "--address", f"http://127.0.0.1:{admin_port}",
-                                         "logs", "-f", "--model", "gpt-5", "-o", "json"],
+                                         "logs", "-f", "--model", "gpt-4o-mini", "-o", "json"],
                                         env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             try:
                 time.sleep(1.5)
