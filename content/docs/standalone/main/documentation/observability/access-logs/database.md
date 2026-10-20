@@ -7,7 +7,7 @@ aliases:
   - ../../../integrations/observability/database/
 ---
 
-By default, all access logs are written to stdout. To persist access logs, you can configure agentgateway to write logs to a `request_logs` table in your database. Agentgateway can write logs to the same database that you use for configuration storage, or you can also choose to send access logs to a separate database to keep them separate. 
+By default, access logs are written to stdout. To persist LLM request logs, configure agentgateway to write records to a `request_logs` table. The current database logger captures LLM traffic, rather than every HTTP or MCP access log. Agentgateway can use the configuration database or a separate request-log database.
 
 ## Set up the database
 
@@ -73,6 +73,18 @@ frontendPolicies:
 
 ## Query the database
 
+Use [agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}) for routine queries through the gateway API. You do not need database credentials on the machine running the CLI.
+
+```sh
+agctl standalone logs --limit 10
+agctl standalone logs --since 1h --attributes -o json
+agctl standalone analytics --by provider,model --since 24h
+```
+
+To inspect a stored prompt and completion, run `agctl standalone logs <request-id>` with an ID from the listing. Payloads are available only when capture was enabled. For filters and streaming, see [View LLM request logs with agctl]({{< link-hextra path="/documentation/observability/access-logs/view/#cli" >}}).
+
+### Query with a database client
+
 Use your database client to inspect the `request_logs` table directly and verify that access logs were written successfully. The following examples show the most recent 10 log entries.
 
 {{< tabs >}}
@@ -117,7 +129,12 @@ frontendPolicies:
         user_id: 'request.headers["x-user-id"]'
 ```
 
-Custom fields are stored as a JSON blob in the `attributes_json` column of the `request_logs` table, not as separate columns. Use your database's JSON functions to extract them.
+Custom fields are stored as a JSON blob in the `attributes_json` column of the `request_logs` table, not as separate columns. After sending another LLM request, inspect the new fields through the CLI, or use your database's JSON functions below.
+
+```sh
+agctl standalone logs --attributes -o json
+agctl standalone analytics --by user_id --since 1h
+```
 
 {{< tabs >}}
 {{% tab name="SQLite" %}}
@@ -143,4 +160,4 @@ psql "postgres://user:password@host:5432/dbname" \
 
 ## Disable database logging
 
-To stop writing access logs to a database, remove both `config.logging.database` and `config.database` from your configuration. Access logs continue to go to stdout. The cost dashboard and analytics pages in the UI become unavailable, but all other functionality is unaffected.
+To stop writing access logs to a database, remove both `config.logging.database` and `config.database`, then restart agentgateway. Remove the primary database only if you no longer need features that depend on it, such as budgets or hybrid configuration storage. Access logs continue to go to stdout. Database-backed UI pages and `agctl standalone logs` and `analytics` become unavailable.

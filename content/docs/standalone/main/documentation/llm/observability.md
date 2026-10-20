@@ -47,6 +47,14 @@ Anthropic and Amazon Bedrock exclude cached tokens from the input count that the
 
 ## View realized costs
 
+For a terminal summary of database-recorded LLM traffic, [configure a request-log database]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}) and [install agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}), then run:
+
+```sh
+agctl standalone analytics --by provider,model --since 24h
+```
+
+For user and group breakdowns, time buckets, and exports, see [CLI analytics]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/#cli" >}}).
+
 When you configure a [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}), agentgateway computes the realized USD cost of each LLM request and exposes it across the observability surface:
 
 * **Logs**: each LLM request log line includes `agw.ai.usage.cost.total`. Add the cost breakdown or applied rates with CEL `llm.cost` and `llm.costRates` fields.
@@ -101,6 +109,15 @@ For catalog configuration and the full list of cost fields, see [Model costs]({{
    
 
 ## View logs
+
+To query or follow database-recorded requests, use [agctl request logs]({{< link-hextra path="/documentation/observability/access-logs/view/#cli" >}}).
+
+```sh
+agctl standalone logs --since 1h --provider openai
+agctl standalone logs -f --model gpt-5
+```
+
+These commands require database logging. They complement the stdout examples below and do not change process log levels.
 
 Agentgateway automatically logs information to stdout. When you run agentgateway on your local machine, you can view a log entry for each request that is sent to agentgateway in your CLI output. 
 

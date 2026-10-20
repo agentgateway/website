@@ -156,6 +156,18 @@ def run_mode(mode, root, mock_port, gateway, agctl):
             success = next(entry for entry in logs if entry["httpStatus"] == 200)
             assert "engineering" in json.dumps(logs)
             assert "mock completion" in cli("logs", success["id"], "-o", "json").stdout
+            filtered = json.loads(cli("logs", "--since", "1h", "--status", "200", "--provider", "openai",
+                                      "--model", "gpt-5", "-o", "json").stdout)["logs"]
+            assert len(filtered) == 3 and all(entry["httpStatus"] == 200 for entry in filtered)
+            follower = subprocess.Popen([agctl, "standalone", "--address", f"http://127.0.0.1:{admin_port}",
+                                         "logs", "-f", "--model", "gpt-5", "-o", "json"],
+                                        env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            try:
+                time.sleep(1.5)
+            finally:
+                follower.terminate()
+                output, _ = follower.communicate(timeout=5)
+            assert any(json.loads(line)["httpStatus"] == 200 for line in output.splitlines())
             assert "team-a" in cli("analytics", "--by", "agentgateway.user", "--since", "24h").stdout
             assert "engineering" in cli("analytics", "--by", "agentgateway.group", "--since", "24h").stdout
             cli("analytics", "--by", "provider,model", "--since", "168h")
@@ -172,7 +184,11 @@ def run_mode(mode, root, mock_port, gateway, agctl):
             raise
         finally:
             process.terminate()
-            process.wait(timeout=15)
+            try:
+                process.wait(timeout=15)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=5)
 
 
 def main():

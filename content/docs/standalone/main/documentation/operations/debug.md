@@ -56,6 +56,8 @@ For complete steps, see [Inspect agentgateway configuration]({{< link-hextra pat
 
 ## Trace requests
 
+For historical LLM requests, query the [request-log database with agctl]({{< link-hextra path="/documentation/observability/access-logs/view/#cli" >}}). For example, `agctl standalone logs --since 1h --status 500` lists stored server-error responses. Database request logs complement the live trace below; startup and configuration-reload errors remain in the process logs.
+
 To capture a per-request trace as agentgateway processes it, use `agctl proxy trace`. The trace shows you the route that was selected, the policies that were applied, the backend that was chosen, and the response status. Tracing is invaluable for understanding why a request matched (or did not match) a route, why a policy was or was not applied, or why a request returned an unexpected status.
 
 1. In one terminal, start a watch.
@@ -278,4 +280,3 @@ The default admin address binds to the container's own loopback interface, so pu
      {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
      -f /config.yaml
    ```
-

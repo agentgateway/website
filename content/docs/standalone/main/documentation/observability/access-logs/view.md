@@ -91,6 +91,8 @@ To view access logs in the UI:
 
    {{< reuse-image src="img/agentgateway-ui-log-detail.png" srcDark="img/agentgateway-ui-log-detail-dark.png" >}}
 
+{{< reuse "agw-docs/standalone/main/request-logs.md" >}}
+
 ## Filter requests
 
 Use a [CEL]({{< link-hextra path="/reference/cel/" >}}) expression to log only a subset of requests. Requests that do not match the expression are not logged. The following example produces access logs only for requests with a response code of 400 or greater.
