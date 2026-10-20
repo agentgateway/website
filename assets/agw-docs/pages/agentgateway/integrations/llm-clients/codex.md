@@ -20,7 +20,11 @@ export AGENTGATEWAY_API_KEY='<gateway-client-key>'
 
 Start agentgateway with an OpenAI backend configuration. Use `name: "*"` to forward the model name from each Codex request.
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}A `*` model suits a gateway that serves only OpenAI. To add other providers, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+A `*` model suits a gateway that serves only OpenAI.
+
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
+{{< /version >}}
 
 1. Create a configuration file.
 

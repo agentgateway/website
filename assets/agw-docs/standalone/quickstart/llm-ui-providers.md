@@ -362,10 +362,11 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 {{% /tab %}}
 {{< /tabs >}}
 
-> [!NOTE]
-> **Incoming model match** matches the request's `model` field. This quick start uses an exact name.
->
-> If you leave the field empty, selecting a provider adds a prefix such as `openai/*` and a transformation to strip it. This exposes all models from that provider. See [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}) to compare patterns.
+**Incoming model match** matches the request's `model` field. This quick start uses an exact name.
+
+If you leave the field empty, selecting a provider adds a prefix such as `openai/*` and a transformation to strip it. This exposes all models from that provider.
+
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
 
 ### Step 5: Send a chat completion request
 

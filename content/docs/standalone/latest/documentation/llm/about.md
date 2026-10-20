@@ -132,7 +132,7 @@ The model configurations shown in this section live under the `llm.models` key.
 Agentgateway routes requests by matching an incoming model name, and then sending it to the configured model.
 The outgoing model can be passed through from the incoming model, be transformed, or be a static model.
 
-To compare matching patterns, see [Choose how to expose models](#choose-how-to-expose-models).
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
 
 | Field | Purpose |
 |-------|---------|

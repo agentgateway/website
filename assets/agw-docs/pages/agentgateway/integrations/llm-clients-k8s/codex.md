@@ -9,10 +9,9 @@ route requests through agentgateway running in Kubernetes.
    the [ChatGPT desktop app](https://chatgpt.com/download/).
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
-> [!TIP]
-> The OpenAI provider guide forwards Codex's requested model to OpenAI.
->
-> With `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources, clients must request a name you publish. See [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
+The OpenAI provider guide forwards Codex's requested model to OpenAI. With `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources, clients must request a name you publish.
+
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
 {{< /version >}}
 
 ## Set the gateway URL

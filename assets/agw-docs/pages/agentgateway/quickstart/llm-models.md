@@ -107,7 +107,7 @@ EOF
 | `spec.policies.auth` | References the Secret that stores the provider API key. |
 | `spec.policies.transformations` | Removes the `openai/` prefix before forwarding the request. |
 
-Provider prefixes expose all models from a provider with one resource. For other naming options, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
 
 {{< doc-test paths="quickstart-llm" >}}
 # Route the model to the httpbun mock LLM instead of OpenAI, so the test needs no API

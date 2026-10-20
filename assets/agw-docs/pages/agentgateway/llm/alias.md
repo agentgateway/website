@@ -3,8 +3,10 @@ Configure global or provider-specific aliases for your models to refer to your m
 {{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
 > [!NOTE]
 > **Model-centric alternative**: The {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}experimental {{< /version >}}`{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API uses a `model` transformation to map a client-facing name to the provider's model name. It has no `modelAliases` field. See [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
->
-> {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Compare naming patterns in [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
+{{< /version >}}
 {{< /version >}}
 
 
