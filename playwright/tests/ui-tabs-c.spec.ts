@@ -1,5 +1,5 @@
 import { type Locator, type Page } from '@playwright/test';
-import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly, blurAll, escapeRegExp, openAddModel, scrollIntoViewChecked } from '../fixtures/test';
 
 /**
  * "UI" tab captures for the standalone LLM provider, LLM client, and web UI guides:
@@ -27,32 +27,6 @@ import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
  * ui-llm-add-model-azure-foundry.png, ui-llm-add-model-bedrock-runtime.png,
  * ui-llm-add-model-vertex-explicit.png, ui-llm-add-model-custom-perplexity.png.
  */
-
-/** Drop focus so no field shows a focus ring or caret in the published image. */
-async function blurAll(page: Page): Promise<void> {
-  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/** Open the Add model drawer and pick a provider from the searchable Provider dropdown. */
-async function openAddModel(page: Page, provider: string): Promise<Locator> {
-  await page.goto('/ui/llm/models');
-  await dismissWelcome(page);
-  // The page header and the table both render an "Add model" button.
-  const addModel = page.getByRole('button', { name: 'Add model', exact: true }).first();
-  await expect(addModel).toBeVisible();
-  await addModel.click();
-  const drawer = page.getByRole('dialog', { name: 'Add model' });
-  await expect(drawer.getByRole('heading', { name: 'Add model', exact: true })).toBeVisible();
-  await drawer.getByRole('combobox', { name: 'Provider', exact: true }).click();
-  await page.getByRole('combobox', { name: 'Search Provider', exact: true }).fill(provider);
-  await page.getByRole('option', { name: new RegExp(`(^|\\s)${escapeRegExp(provider)}$`) }).click();
-  await expect(drawer.getByRole('combobox', { name: 'Provider', exact: true })).toHaveText(provider);
-  return drawer;
-}
 
 /**
  * Fill one of the freeform comboboxes (regions, explicit outgoing model) and close its menu by
@@ -166,7 +140,7 @@ test.describe('LLM provider, client, and web UI tabs', () => {
     await drawer.getByRole('textbox', { name: 'Vertex project', exact: true }).fill('my-project-id');
     await fillCombo(drawer, 'Vertex region', 'us-west2');
     await explicitModel(drawer, 'google/gemini-2.5-flash-lite-preview-06-17');
-    await drawer.getByText('Outgoing model', { exact: true }).scrollIntoViewIfNeeded();
+    await scrollIntoViewChecked(drawer.getByText('Outgoing model', { exact: true }));
     await expect(page).toHaveScreenshot('ui-llm-add-model-vertex-explicit.png', { animations: 'disabled' });
   });
 

@@ -25,7 +25,9 @@ jobs:
   screenshots:
     name: Regenerate UI screenshots and open a PR
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # The UI-tab modes added about 10 container launches and 190 captures to each pass.
+    # run-all.mjs prints each mode's time, so trim this once a few runs show the real total.
+    timeout-minutes: 120
 
     steps:
       - name: Checkout website repo
@@ -52,7 +54,11 @@ jobs:
       # sync-docs (publish-on-diff) can compare against the freshly captured latest baselines.
       # Each mode brings up its own backends + UI container and tears them down (sequential).
       # Baselines are Linux-rendered here, the canonical environment (see playwright/README.md).
+      # A failed mode doesn't stop the run: run-all.mjs keeps capturing the other modes, and this
+      # step keeps going to the next version and to sync-docs, so one broken mode can't skip the
+      # whole `main` pass. The failure is recorded here and fails the job after the PR step.
       - name: Regenerate standalone baselines (latest + main)
+        id: capture
         working-directory: playwright
         env:
           CI: true
@@ -61,14 +67,19 @@ jobs:
           # the standalone images. The Kubernetes images are the kube workflow's to manage via
           # `sync-docs:kube` — before that split, each run acted on the other's images from stale
           # baselines and both nightlies opened byte-identical PRs.
+          failed=""
           for v in latest main; do
             export DOC_VERSION="$v"
             export AGW_IMAGE="$(node scripts/resolve-image.mjs "$v")"
             echo "::group::standalone capture — $v ($AGW_IMAGE)"
-            npm run update:all
+            if ! npm run update:all; then
+              echo "::error::Some capture modes failed for $v. See the mode summary in the log."
+              failed="$failed $v"
+            fi
             npm run sync-docs
             echo "::endgroup::"
           done
+          echo "failed=${failed# }" >> "$GITHUB_OUTPUT"
 
       - name: Upload Playwright report
         if: always()
@@ -120,3 +131,9 @@ jobs:
           else
             echo "No screenshot changes — UI matches the committed images."
           fi
+
+      - name: Fail if any capture mode failed
+        if: steps.capture.outputs.failed != ''
+        run: |
+          echo "::error::Capture modes failed for: ${{ steps.capture.outputs.failed }}. The PR (if any) has only the modes that passed."
+          exit 1

@@ -1,5 +1,5 @@
 import { type Page } from '@playwright/test';
-import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly, escapeRegExp, openAddModel, scrollDrawerTo } from '../fixtures/test';
 
 /**
  * "UI" tab captures for the standalone LLM core guides (docs 1.7 and later):
@@ -26,27 +26,10 @@ import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
  * ui-llm-costs-custom.png.
  */
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 async function openModels(page: Page): Promise<void> {
   await page.goto('/ui/llm/models');
   await dismissWelcome(page);
   await expect(page.getByRole('button', { name: 'Add model', exact: true })).toBeVisible();
-}
-
-async function openAddModel(page: Page, provider: string) {
-  await openModels(page);
-  await page.getByRole('button', { name: 'Add model', exact: true }).click();
-  const drawer = page.getByRole('dialog', { name: 'Add model' });
-  await expect(drawer).toBeVisible();
-  // Provider first: the editor rewrites the model match to the provider's default while it still
-  // looks auto-filled, so the match is set after the provider (see llm-add-model.spec.ts).
-  await page.getByRole('combobox', { name: 'Provider', exact: true }).click();
-  await page.getByRole('combobox', { name: 'Search Provider', exact: true }).fill(provider);
-  await page.getByRole('option', { name: new RegExp(`(^|\\s)${escapeRegExp(provider)}$`) }).click();
-  return drawer;
 }
 
 async function envVar(page: Page, name: string): Promise<void> {
@@ -107,13 +90,6 @@ async function addCelField(section, field: string, expr: string): Promise<void> 
   await section.getByRole('textbox', { name: 'field name' }).fill(field);
   await section.getByRole('textbox', { name: 'CEL expression' }).fill(expr);
   await section.getByRole('button', { name: 'Add', exact: true }).click();
-}
-
-/** Scroll the drawer body so that `el` sits at its top, and wait until it has moved. */
-async function pinToTop(drawer, el): Promise<void> {
-  const body = drawer.locator('.drawer-body');
-  await el.evaluate((node) => node.scrollIntoView({ block: 'start' }));
-  await expect.poll(() => body.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
 }
 
 async function openNewKey(page: Page) {
@@ -187,7 +163,7 @@ test.describe('UI tabs: LLM core', () => {
     const value = drawer.getByRole('textbox', { name: 'Header value' });
     await value.fill('eng');
     await value.blur();
-    await pinToTop(drawer, drawer.getByText('Outgoing model', { exact: true }));
+    await scrollDrawerTo(drawer, drawer.getByText('Outgoing model', { exact: true }));
     await expect(page).toHaveScreenshot('ui-llm-model-priority.png');
   });
 
@@ -215,7 +191,7 @@ test.describe('UI tabs: LLM core', () => {
     await pickOption(page, models.nth(1), 'claude-backup-a');
     await drawer.getByRole('button', { name: 'Add target', exact: true }).last().click();
     await pickOption(page, models.nth(2), 'claude-backup-b');
-    await pinToTop(drawer, drawer.getByText('Routing strategy', { exact: true }));
+    await scrollDrawerTo(drawer, drawer.getByText('Routing strategy', { exact: true }));
     await expect(page).toHaveScreenshot('ui-llm-virtual-model-failover.png');
   });
 
@@ -237,10 +213,10 @@ test.describe('UI tabs: LLM core', () => {
     await drawer.getByRole('heading', { name: 'Add virtual model' }).click();
     await expect(drawer.getByText('Rule 2', { exact: true })).toBeVisible();
 
-    await pinToTop(drawer, drawer.getByText('Routing strategy', { exact: true }));
+    await scrollDrawerTo(drawer, drawer.getByText('Routing strategy', { exact: true }));
     await expect(page).toHaveScreenshot('ui-llm-virtual-model-conditional.png');
 
-    await pinToTop(drawer, drawer.getByText('Rule 2', { exact: true }));
+    await scrollDrawerTo(drawer, drawer.getByText('Rule 2', { exact: true }));
     await expect(page).toHaveScreenshot('ui-llm-virtual-model-conditional-rule-2.png');
   });
 
@@ -251,7 +227,7 @@ test.describe('UI tabs: LLM core', () => {
     const section = drawer.locator('section, div').filter({ has: page.getByText('LLM request fields') }).last();
     await addCelField(section, 'max_tokens', 'min(llmRequest.max_tokens, 10)');
     await expect(drawer.getByText('min(llmRequest.max_tokens, 10)')).toBeVisible();
-    await pinToTop(drawer, drawer.getByRole('button', { name: /^Model policies/ }));
+    await scrollDrawerTo(drawer, drawer.getByRole('button', { name: /^Model policies/ }));
     await expect(page).toHaveScreenshot('ui-llm-model-transformation.png');
   });
 
@@ -263,7 +239,7 @@ test.describe('UI tabs: LLM core', () => {
     await addCelField(section, 'max_completion_tokens', 'min(llmRequest.max_completion_tokens, 10)');
     await addCelField(section, 'reasoning_effort', 'fail("remove")');
     await expect(drawer.getByText('fail("remove")')).toBeVisible();
-    await pinToTop(drawer, drawer.getByRole('button', { name: /^Model policies/ }));
+    await scrollDrawerTo(drawer, drawer.getByRole('button', { name: /^Model policies/ }));
     await expect(page).toHaveScreenshot('ui-llm-model-final-transformation.png');
   });
 
@@ -283,7 +259,7 @@ test.describe('UI tabs: LLM core', () => {
     await budget.getByRole('button', { name: /^Block requests/ }).click();
     await amount.blur();
     await expect(budget.getByRole('button', { name: /^Block requests/ })).toHaveAttribute('aria-pressed', 'true');
-    await pinToTop(drawer, drawer.getByRole('button', { name: /^Budgets/ }));
+    await scrollDrawerTo(drawer, drawer.getByRole('button', { name: /^Budgets/ }));
     await expect(page).toHaveScreenshot('ui-llm-key-budget.png');
   });
 

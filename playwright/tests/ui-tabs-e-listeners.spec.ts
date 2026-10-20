@@ -1,4 +1,4 @@
-import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly, openGateways } from '../fixtures/test';
 import type { Locator, Page } from '@playwright/test';
 
 /**
@@ -14,13 +14,6 @@ import type { Locator, Page } from '@playwright/test';
  * ui-listeners-hostname.png, ui-listeners-tcp.png (also used by gateways.md, "Set the gateway
  * protocol", which adds the same tcp gateway), ui-listeners-tls.png.
  */
-
-async function openGateways(page: Page) {
-  await page.goto('/ui/traffic/gateways');
-  await page.waitForLoadState('networkidle');
-  await dismissWelcome(page);
-  await expect(page.getByRole('heading', { name: 'Traffic Gateways', exact: true })).toBeVisible();
-}
 
 async function openAddGateway(page: Page): Promise<Locator> {
   await openGateways(page);

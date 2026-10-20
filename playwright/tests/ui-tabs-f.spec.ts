@@ -1,4 +1,12 @@
-import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly, blurAll, scrollDrawerTo } from '../fixtures/test';
+
+// Park the pointer on the drawer's backdrop so the last clicked button keeps no hover shade.
+const PARK = { x: 400, y: 650 };
+
+/** Pin the first element with this exact text to the top of the drawer body. */
+async function scrollTo(drawer: Locator, heading: string) {
+  await scrollDrawerTo(drawer, drawer.getByText(heading, { exact: true }).first());
+}
 import type { Locator, Page } from '@playwright/test';
 
 /**
@@ -95,25 +103,6 @@ async function select(page: Page, drawer: Locator, combobox: string, option: Reg
   await page.getByRole('option', { name: option }).first().click();
 }
 
-/**
- * Pin a section heading to the top of the drawer body and wait until the body has actually
- * scrolled: a scroll issued while the drawer is still rendering is undone when it finishes.
- */
-async function scrollTo(drawer: Locator, heading: string) {
-  const body = drawer.locator('.drawer-body');
-  await drawer.getByText(heading, { exact: true }).first().evaluate((el) => el.scrollIntoView({ block: 'start' }));
-  await expect.poll(() => body.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
-}
-
-/**
- * Drop the focus ring so the published image shows a filled form, not a field mid-edit, and park
- * the mouse on the drawer's backdrop so the last clicked button does not keep its hover shade.
- */
-async function blur(page: Page) {
-  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-  await page.mouse.move(400, 650);
-}
-
 test.describe('Tracing drawer', () => {
   uiTabsOnly();
 
@@ -124,7 +113,7 @@ test.describe('Tracing drawer', () => {
     await expect(field(drawer, 'Host')).toHaveValue('localhost:4317');
     await expect(drawer.getByRole('combobox', { name: 'Protocol' })).toHaveText(/gRPC/);
     await field(drawer, 'Random sampling').fill('true');
-    await blur(page);
+    await blurAll(page, PARK);
     await scrollTo(drawer, 'Export');
     await expect(page).toHaveScreenshot('ui-tracing-enable.png');
   });
@@ -134,7 +123,7 @@ test.describe('Tracing drawer', () => {
     const drawer = await openTracing(page);
     await field(drawer, 'Random sampling').fill('true');
     await editor(drawer, 1, 'response.code >= 400');
-    await blur(page);
+    await blurAll(page, PARK);
     await scrollTo(drawer, 'Sampling');
     await expect(page).toHaveScreenshot('ui-tracing-filter.png');
   });
@@ -149,7 +138,7 @@ test.describe('Tracing drawer', () => {
     await addPair(drawer, 'service.name', '"agentgateway"', 'deployment.environment', '"production"');
     await addPair(drawer, 'http.route', 'request.path', 'user.id', 'request.headers["x-user-id"]');
     await addPair(drawer, 'http.route', 'request.path', 'request.path', 'request.path');
-    await blur(page);
+    await blurAll(page, PARK);
     await scrollTo(drawer, 'Attributes');
     await expect(page).toHaveScreenshot('ui-tracing-attributes.png');
   });
@@ -160,7 +149,7 @@ test.describe('Tracing drawer', () => {
     await field(drawer, 'Random sampling').fill('true');
     await addItem(drawer, 'http.user_agent', 'client.address');
     await addItem(drawer, 'http.user_agent', 'network.protocol.version');
-    await blur(page);
+    await blurAll(page, PARK);
     await scrollTo(drawer, 'Attributes');
     await expect(page).toHaveScreenshot('ui-tracing-remove.png');
   });
@@ -189,7 +178,7 @@ test.describe('Tracing drawer', () => {
       await select(page, drawer, 'Protocol', /^HTTP\b/);
       await field(drawer, 'Path').fill(c.path);
       await field(drawer, 'Random sampling').fill('true');
-      await blur(page);
+      await blurAll(page, PARK);
       // Start just below the Target heading so Host, Backend policies, and Protocol + Path fit.
       const body = drawer.locator('.drawer-body');
       await field(drawer, 'Host').evaluate((el) => {
@@ -210,7 +199,7 @@ test.describe('Access logs drawer', () => {
     const drawer = await openAccessLogs(page);
     await select(page, drawer, 'Stdout preset', /^OpenTelemetry/);
     await expect(drawer.getByRole('combobox', { name: 'Stdout preset' })).toHaveText(/OpenTelemetry/);
-    await blur(page);
+    await blurAll(page, PARK);
     await expect(page).toHaveScreenshot('ui-access-logs-preset.png');
   });
 
@@ -220,7 +209,7 @@ test.describe('Access logs drawer', () => {
     await addPair(drawer, 'user', 'jwt.sub', 'user_id', 'request.headers["x-user-id"]');
     await addPair(drawer, 'user', 'jwt.sub', 'env', '"production"');
     await addPair(drawer, 'user', 'jwt.sub', 'cost', 'string(llm.cost)');
-    await blur(page);
+    await blurAll(page, PARK);
     await expect(page).toHaveScreenshot('ui-access-logs-add-fields.png');
   });
 
@@ -230,7 +219,7 @@ test.describe('Access logs drawer', () => {
     await editor(drawer, 0, 'guardrails.size() > 0');
     await addPair(drawer, 'user', 'jwt.sub', 'guardrails', 'guardrails');
     await addPair(drawer, 'user', 'jwt.sub', 'guardrail_action', 'guardrails[0].action');
-    await blur(page);
+    await blurAll(page, PARK);
     await expect(page).toHaveScreenshot('ui-access-logs-guardrails.png');
   });
 
@@ -239,7 +228,7 @@ test.describe('Access logs drawer', () => {
     const drawer = await openAccessLogs(page);
     await drawer.getByText('Export logs over OTLP', { exact: true }).click();
     await expect(field(drawer, 'Collector host')).toHaveValue('localhost:4317');
-    await blur(page);
+    await blurAll(page, PARK);
     await scrollTo(drawer, 'OTLP export');
     await expect(page).toHaveScreenshot('ui-access-logs-otlp.png');
   });
@@ -250,7 +239,7 @@ test.describe('Access logs drawer', () => {
     await drawer.getByText('Export logs over OTLP', { exact: true }).click();
     await expect(field(drawer, 'Collector host')).toHaveValue('localhost:4317');
     await editor(drawer, 1, 'response.code >= 400');
-    await blur(page);
+    await blurAll(page, PARK);
     await scrollTo(drawer, 'OTLP export');
     await expect(page).toHaveScreenshot('ui-access-logs-otlp-filter.png');
   });
@@ -260,7 +249,7 @@ test.describe('Access logs drawer', () => {
     const drawer = await openAccessLogs(page);
     await select(page, drawer, 'LLM detail', /^Full/);
     await expect(drawer.getByRole('combobox', { name: 'LLM detail' })).toHaveText(/Full/);
-    await blur(page);
+    await blurAll(page, PARK);
     await scrollTo(drawer, 'Database');
     await expect(page).toHaveScreenshot('ui-access-logs-database-llm.png');
   });
@@ -269,7 +258,7 @@ test.describe('Access logs drawer', () => {
   test('database fields', async ({ page }) => {
     const drawer = await openAccessLogs(page);
     await addPair(drawer, 'team', 'request.headers["x-team"]', 'user_id', 'request.headers["x-user-id"]');
-    await blur(page);
+    await blurAll(page, PARK);
     await scrollTo(drawer, 'Database');
     await expect(page).toHaveScreenshot('ui-access-logs-database-fields.png');
   });
@@ -290,7 +279,7 @@ test.describe('UI settings and gateway TLS', () => {
     await drawer.getByRole('button', { name: 'profile', exact: true }).click();
     await drawer.getByRole('button', { name: 'email', exact: true }).click();
     await expect(drawer.getByText('No additional scopes configured.')).toHaveCount(0);
-    await blur(page);
+    await blurAll(page, PARK);
     // Clicking the scope suggestions scrolled the drawer down; the first capture is its top.
     const body = drawer.locator('.drawer-body');
     await body.evaluate((el) => el.scrollTo(0, 0));
@@ -318,7 +307,7 @@ test.describe('UI settings and gateway TLS', () => {
     if (!(await cert.isVisible())) await tls.click();
     await cert.fill('/etc/agentgateway/tls/tls.crt');
     await drawer.getByPlaceholder('/etc/certs/tls.key', { exact: true }).fill('/etc/agentgateway/tls/tls.key');
-    await blur(page);
+    await blurAll(page, PARK);
     await expect(drawer.getByRole('combobox', { name: 'Protocol' })).toHaveText(/HTTPS/);
     await expect(page).toHaveScreenshot('ui-gateway-tls.png');
   });

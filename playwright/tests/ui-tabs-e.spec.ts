@@ -1,4 +1,14 @@
-import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly, openGateways, scrollDrawerTo, scrollDrawerTop } from '../fixtures/test';
+
+/**
+ * Pin a drawer section heading to the top of the drawer body. The last click leaves the pointer
+ * over whatever scrolled under it (a hover state shows the Weight spinner arrows), so park it
+ * outside the drawer.
+ */
+async function scrollToSection(drawer: Locator, heading: string) {
+  await scrollDrawerTo(drawer, drawer.getByRole('heading', { name: heading, exact: true }));
+  await drawer.page().mouse.move(0, 0);
+}
 import type { Locator, Page } from '@playwright/test';
 
 /**
@@ -20,13 +30,6 @@ import type { Locator, Page } from '@playwright/test';
  * ui-matching-query.png, ui-matching-tcp-hostname.png, ui-matching-tcp-weights.png.
  */
 
-async function openGateways(page: Page) {
-  await page.goto('/ui/traffic/gateways');
-  await page.waitForLoadState('networkidle');
-  await dismissWelcome(page);
-  await expect(page.getByRole('heading', { name: 'Traffic Gateways', exact: true })).toBeVisible();
-}
-
 async function openAddRoute(page: Page): Promise<Locator> {
   await page.goto('/ui/traffic/routes');
   await page.waitForLoadState('networkidle');
@@ -42,23 +45,6 @@ async function openAddRoute(page: Page): Promise<Locator> {
 async function pick(page: Page, drawer: Locator, combobox: string, option: string | RegExp) {
   await drawer.getByRole('combobox', { name: combobox, exact: true }).click();
   await page.getByRole('option', { name: option }).click();
-}
-
-/** Pin a drawer section heading to the top of the drawer body, and wait until it moved. */
-async function scrollToSection(drawer: Locator, heading: string) {
-  const body = drawer.locator('.drawer-body');
-  await drawer.getByRole('heading', { name: heading, exact: true }).evaluate((el) => el.scrollIntoView({ block: 'start' }));
-  await expect.poll(() => body.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
-  // The last click leaves the pointer over whatever scrolled under it (a hover state shows
-  // the Weight spinner arrows), so park it outside the drawer.
-  await drawer.page().mouse.move(0, 0);
-}
-
-/** Scroll the drawer body back to the top (adding a backend scrolls it down). */
-async function scrollToTop(drawer: Locator) {
-  const body = drawer.locator('.drawer-body');
-  await body.evaluate((el) => { el.scrollTop = 0; });
-  await expect.poll(() => body.evaluate((el) => el.scrollTop)).toBe(0);
 }
 
 /** Add one condition row (header or query) and fill it. */
@@ -149,7 +135,7 @@ test.describe('UI tabs: routes and matching', () => {
     const path = drawer.getByRole('textbox', { name: 'Path', exact: true });
     await path.fill('/api/v1/users');
     await addBackend(drawer, 0, 'api.example.com:8080');
-    await scrollToTop(drawer);
+    await scrollDrawerTop(drawer);
     await expect(page).toHaveScreenshot('ui-matching-path.png');
   });
 
@@ -174,7 +160,7 @@ test.describe('UI tabs: routes and matching', () => {
     const method = drawer.getByRole('textbox', { name: 'Method', exact: true });
     await method.fill('GET');
     await addBackend(drawer, 0, 'api.example.com:8080');
-    await scrollToTop(drawer);
+    await scrollDrawerTop(drawer);
     await expect(page).toHaveScreenshot('ui-matching-method.png');
   });
 
@@ -223,7 +209,7 @@ test.describe('UI tabs: routes and matching', () => {
       await w.fill(weight);
       await w.blur();
     }
-    await scrollToTop(drawer);
+    await scrollDrawerTop(drawer);
     await expect(drawer.getByPlaceholder('localhost:8080', { exact: true }).nth(2)).toHaveValue('redis-3.example.com:6379');
     await expect(page).toHaveScreenshot('ui-matching-tcp-weights.png');
   });

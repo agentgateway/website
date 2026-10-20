@@ -117,7 +117,7 @@ The **Traffic** area holds the HTTP gateways and routes that are not LLM or MCP 
 
   {{< reuse-image src="img/ui-tour-traffic-routes.png" srcDark="img/ui-tour-traffic-routes-dark.png" >}}
 
-* **Route policies**: To change a backend or a policy on a route, click the edit icon for the route. The **Edit route** drawer shows the backends, a **Route policies** summary such as CORS and rate limits, and the YAML that your change produces. Click **View diff** to compare the change with your current configuration before you save.
+* **Route policies**: To change a backend or a policy on a route, click the edit icon for the route. The **Edit route** drawer shows the backends, a **Route policies** summary such as CORS and rate limits{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}, and the YAML that your change produces{{< /version >}}. Click **View diff** to compare the change with your current configuration before you save.
 
   {{< reuse-image src="img/ui-tour-route-policies.png" srcDark="img/ui-tour-route-policies-dark.png" >}}
 

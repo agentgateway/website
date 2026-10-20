@@ -93,7 +93,7 @@ Turn on API key authentication, and create two virtual keys, one for Alice and o
    {{< reuse-image-light src="img/ui-virtual-keys-new.png" alt="Create virtual key drawer with name, key value, and metadata" >}}
    {{< reuse-image-dark srcDark="img/ui-virtual-keys-new-dark.png" alt="Create virtual key drawer with name, key value, and metadata" >}}
 
-6. In the **Copy your new API key** dialog, copy the key, and click **Done**. The UI does not show the key again.
+6. Copy the key. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}In the **Copy your new API key** dialog, click **Copy**, and click **Done**. The UI does not show the key again.{{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}In the key list, click **Copy** for the key.{{< /version >}}
 7. Repeat the previous two steps for Bob, with the name `bob`, the key `sk-bob-xyz789uvw012`, and the metadata `user` and `bob`.
 
    The **Virtual API Keys** page lists both keys. From here, you can show, copy, edit, or delete each one.
@@ -101,7 +101,7 @@ Turn on API key authentication, and create two virtual keys, one for Alice and o
    {{< reuse-image-light src="img/ui-virtual-keys-list.png" alt="UI Virtual API Keys page listing configured keys and metadata" >}}
    {{< reuse-image-dark srcDark="img/ui-virtual-keys-list-dark.png" alt="UI Virtual API Keys page listing configured keys and metadata" >}}
 
-The UI writes the same `apiKey` policy as the **Config file** tab, with one difference. It saves a hash of each key (`keyHash`), not the raw value. To save the raw value, select **Store raw key**. Give the keys to your users to send in an `Authorization: Bearer $VIRTUAL_KEY` header.
+The UI writes the same `apiKey` policy as the **Config file** tab{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}, with one difference. It saves a hash of each key (`keyHash`), not the raw value. To save the raw value, select **Store raw key**{{< /version >}}. Give the keys to your users to send in an `Authorization: Bearer $VIRTUAL_KEY` header.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 Create a configuration with API key authentication. This example creates two virtual keys for Alice and Bob.

@@ -1,5 +1,8 @@
 import { type Locator, type Page } from '@playwright/test';
-import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly, blurAll, scrollDrawerTo, scrollDrawerTop } from '../fixtures/test';
+
+// Park the pointer on the dimmed page, outside every drawer, so no button keeps a hover state.
+const PARK = { x: 5, y: 700 };
 
 /**
  * "UI" tab captures for the standalone security, transformation, and rate limit guides, all
@@ -81,33 +84,6 @@ function monacoAfter(scope: Locator, label: string): Locator {
 }
 
 /**
- * Drop focus so no field shows a focus ring or caret in the published image, and park the mouse
- * on the dimmed page so no button in the drawer keeps a hover state.
- */
-async function blurAll(page: Page): Promise<void> {
-  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-  await page.mouse.move(5, 700);
-}
-
-/**
- * Scroll the drawer body so `target` sits at the top (or as far as the body scrolls), and wait
- * for the scroll to land. Scrolling while the drawer is still rendering gets undone, so the
- * caller waits for the content it needs first.
- */
-async function scrollDrawerTo(drawer: Locator, target: Locator): Promise<void> {
-  const body = drawer.locator('.drawer-body');
-  await target.evaluate((el) => el.scrollIntoView({ block: 'start' }));
-  await expect.poll(() => body.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
-}
-
-/** Scroll the drawer body back to the top. */
-async function scrollDrawerTop(drawer: Locator): Promise<void> {
-  const body = drawer.locator('.drawer-body');
-  await body.evaluate((el) => (el.scrollTop = 0));
-  await expect.poll(() => body.evaluate((el) => el.scrollTop)).toBe(0);
-}
-
-/**
  * Add authorization rules: Add rule, pick the effect, replace the example expression, then
  * collapse the rule with Done so every rule shows as a one-line summary with its effect badge.
  */
@@ -146,7 +122,7 @@ test.describe('UI tabs: policies and security', () => {
     await drawer.getByRole('button', { name: 'x-request-id', exact: true }).click();
     await drawer.getByRole('checkbox', { name: /allow credentials/i }).click();
     await drawer.getByRole('textbox', { name: 'Max age' }).fill('10m');
-    await blurAll(page);
+    await blurAll(page, PARK);
     await scrollDrawerTop(drawer);
     await expect(page).toHaveScreenshot('ui-llm-policy-cors.png');
 
@@ -163,7 +139,7 @@ test.describe('UI tabs: policies and security', () => {
     await drawer.getByRole('textbox', { name: 'JWKS file' }).fill('./manifests/jwt/pub-key');
     await drawer.getByRole('textbox', { name: 'Issuer' }).fill('agentgateway.dev');
     await addListValue(drawer.getByPlaceholder('api://gateway', { exact: true }), 'test.agentgateway.dev');
-    await blurAll(page);
+    await blurAll(page, PARK);
     await scrollDrawerTo(drawer, drawer.getByRole('heading', { name: 'Signing keys' }));
     await expect(page).toHaveScreenshot('ui-llm-policy-jwt-auth.png');
   });
@@ -174,7 +150,7 @@ test.describe('UI tabs: policies and security', () => {
     await addRules(page, drawer, [
       { effect: 'Allow', expression: 'request.path == "/admin" && jwt.groups.contains("admins")' },
     ]);
-    await blurAll(page);
+    await blurAll(page, PARK);
     await expect(page).toHaveScreenshot('ui-llm-policy-jwt-authorization.png');
   });
 
@@ -190,7 +166,7 @@ test.describe('UI tabs: policies and security', () => {
     await drawer.getByRole('textbox', { name: 'Redirect URI' }).fill('http://localhost:3000/oauth/callback');
     await drawer.getByRole('button', { name: 'profile', exact: true }).click();
     await drawer.getByRole('button', { name: 'email', exact: true }).click();
-    await blurAll(page);
+    await blurAll(page, PARK);
     await scrollDrawerTo(drawer, drawer.getByRole('heading', { name: 'Client', exact: true }));
     await expect(page).toHaveScreenshot('ui-llm-policy-oidc.png');
   });
@@ -205,7 +181,7 @@ test.describe('UI tabs: policies and security', () => {
       { effect: 'Require', expression: 'jwt.aud == "my-service"' },
       { effect: 'Allow', expression: 'request.headers["x-allow"] == "true"' },
     ]);
-    await blurAll(page);
+    await blurAll(page, PARK);
     await expect(page).toHaveScreenshot('ui-llm-policy-authorization.png');
   });
 
@@ -225,7 +201,7 @@ test.describe('UI tabs: policies and security', () => {
       { effect: 'Deny', expression: 'request.headers["x-org"] == "blocked"' },
       { effect: 'Allow', expression: 'request.headers["x-org"] == "engineering"' },
     ]);
-    await blurAll(page);
+    await blurAll(page, PARK);
     await scrollDrawerTo(drawer, drawer.getByRole('button', { name: /^authorization\b/i }));
     await expect(drawer.getByRole('button', { name: 'Apply authorization' })).toBeVisible();
     await expect(page).toHaveScreenshot('ui-llm-model-authorization.png');
@@ -238,7 +214,7 @@ test.describe('UI tabs: policies and security', () => {
     await expect(drawer.getByRole('combobox', { name: 'Protocol' })).toHaveText(/gRPC/);
     await drawer.getByPlaceholder('key', { exact: true }).last().fill('dev.agentgateway.jwt');
     await addListValue(drawer.getByPlaceholder('CEL expression', { exact: true }), '{"claims": jwt}');
-    await blurAll(page);
+    await blurAll(page, PARK);
     await expect(drawer.getByText('dev.agentgateway.jwt', { exact: true })).toBeVisible();
     // The target and the default gRPC/Deny behavior need no input, so the capture opens on the
     // gRPC details section that holds the one value the guide adds.
@@ -256,7 +232,7 @@ test.describe('UI tabs: policies and security', () => {
     await addListValue(drawer.getByPlaceholder('authorization', { exact: true }), 'cookie');
     await fillMonaco(page, monacoAfter(drawer, 'Path expression'), '"/auth" + request.path');
     await addListValue(drawer.getByPlaceholder('x-auth-request-user', { exact: true }), 'x-auth-request-user');
-    await blurAll(page);
+    await blurAll(page, PARK);
     await scrollDrawerTo(drawer, drawer.getByRole('heading', { name: 'Authorization behavior' }));
     await expect(page).toHaveScreenshot('ui-llm-policy-ext-authz-http.png');
 
@@ -274,7 +250,7 @@ test.describe('UI tabs: policies and security', () => {
     await drawer.getByRole('textbox', { name: 'Issuer' }).fill(v.issuer);
     await addListValue(drawer.getByPlaceholder('mcp://gateway', { exact: true }), 'http://localhost:3000/mcp');
     await fillMonaco(page, monacoAfter(drawer, 'Resource metadata YAML'), v.metadata);
-    await blurAll(page);
+    await blurAll(page, PARK);
     return drawer;
   }
 
@@ -339,7 +315,7 @@ test.describe('UI tabs: policies and security', () => {
       { effect: 'Allow', expression: 'jwt.sub == "test-user" && mcp.tool.name == "add"' },
       { effect: 'Allow', expression: 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"' },
     ]);
-    await blurAll(page);
+    await blurAll(page, PARK);
     await expect(page).toHaveScreenshot('ui-mcp-policy-authorization.png');
   });
 
@@ -367,7 +343,7 @@ test.describe('UI tabs: policies and security', () => {
     const remove = drawer.getByPlaceholder('header name', { exact: true }).nth(5);
     await addListValue(remove, 'server');
     await addListValue(remove, 'x-content-type-options');
-    await blurAll(page);
+    await blurAll(page, PARK);
     await scrollDrawerTop(drawer);
     await expect(page).toHaveScreenshot('ui-llm-policy-transformations.png');
 
@@ -381,7 +357,7 @@ test.describe('UI tabs: policies and security', () => {
     await drawer.getByRole('button', { name: /^request transformations\b/i }).click();
     await expect(drawer.getByPlaceholder('header name', { exact: true })).toHaveCount(3);
     await addHeader(drawer, 0, 'x-gateway', '"agentgateway"');
-    await blurAll(page);
+    await blurAll(page, PARK);
     await expect(page).toHaveScreenshot('ui-llm-policy-transformations-listener.png');
   });
 
@@ -393,7 +369,7 @@ test.describe('UI tabs: policies and security', () => {
     await drawer.getByRole('textbox', { name: 'Fill interval' }).fill('60s');
     await drawer.getByRole('spinbutton', { name: 'Max tokens' }).fill('10');
     await drawer.getByRole('spinbutton', { name: 'Tokens per fill' }).fill('1');
-    await blurAll(page);
+    await blurAll(page, PARK);
     await expect(page).toHaveScreenshot('ui-llm-policy-local-rate-limit.png');
   });
 });

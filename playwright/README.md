@@ -183,8 +183,8 @@ runs the image with any one fixture named by `FIXTURE` (`CAPTURE_MODE=fixture`).
   `latest` resolves to 1.7, and the `latest` pass captures too. `sync-docs` then publishes the
   bare `assets/img/<name>.png` and removes each `img/main/` copy that matches it (`CONVERGED rm`).
 - To add one, put the capture in the batch spec for that area (or add a spec and fixture pair),
-  add its `docs-image-map.json` entry, and add the `test:ui-tabs-<name>` script to
-  `capture:all` and `update:all`. Run several side by side with distinct `UI_HOST_PORT`s, and set
+  add its `docs-image-map.json` entry, and add the `test:ui-tabs-<name>` script to the `MODES`
+  list in `scripts/run-all.mjs`. Run several side by side with distinct `UI_HOST_PORT`s, and set
   `AGW_RUNTIME_DIR` on macOS when the clone is under `~/Documents`.
 - An image whose `main` change is smaller than the sidebar's version label (about 0.1% of the
   pixels) can set `"syncDiffRatio": 0` in its map entry, so `sync-docs` always publishes main's
@@ -206,7 +206,7 @@ For a guide whose UI talks to a server, add a self-contained capture mode:
    live third-party server.
 3. **Register the mode** in two places:
    - `playwright.config.ts` → add `<name>: 'serve-<name>-ui.sh'` to the `SCRIPT_FOR` map.
-   - `package.json` → add `"test:<name>": "CAPTURE_MODE=<name> playwright test tests/<name>.spec.ts --project=standalone-light --project=standalone-dark"`, and add it (with a `clean:ui` before it) to both `capture:all` and `update:all`.
+   - `package.json` → add `"test:<name>": "CAPTURE_MODE=<name> playwright test tests/<name>.spec.ts --project=standalone-light --project=standalone-dark"`, and add it to the `MODES` list in `scripts/run-all.mjs`, which both `capture:all` and `update:all` run.
 
 ---
 
@@ -403,7 +403,7 @@ setup the `reference-docs` workflow uses.
 | `test:standalone` | Capture/verify the no-backend specs (landing, cel, smoke) |
 | `test:welcome` | Capture/verify the first-run welcome wizard (no backend; pristine bootstrap config) |
 | `test:mcp` / `:a2a` / `:llm` / `:virtual` / `:openapi` / `:jwt` / `:tour` | Capture/verify one backend mode (brings up its backend + UI) |
-| `capture:all` | Run every mode in sequence (what CI runs); `clean:ui` between modes |
+| `capture:all` | Run every mode in `scripts/run-all.mjs` in sequence, with `clean:ui` between modes. A failed mode doesn't stop the run; the run prints each mode's time and exits 1 at the end if any mode failed |
 | `update:all` | Same as `capture:all` but **regenerates** baselines (`--update-snapshots`) |
 | `update` | Regenerate only the no-backend baselines (quick) |
 | `sync-docs` | Copy baselines into `assets/img/` (`--dry-run` to preview) |

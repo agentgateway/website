@@ -15,7 +15,9 @@
 # Ctrl-C (or Playwright's webServer teardown) tears everything down. Requires Docker + Node 18+.
 set -euo pipefail
 
-IMAGE="${AGW_IMAGE:-cr.agentgateway.dev/agentgateway:v1.6.0}"
+# Playwright passes AGW_IMAGE (resolved from DOC_VERSION in playwright.config.ts). On a manual run,
+# resolve it the same way, so the image matches the docs line that the captures are for.
+IMAGE="${AGW_IMAGE:-$(cd "$(dirname "$0")/.." && node -e 'import("./scripts/resolve-image.mjs").then(m=>console.log(m.resolveImage(process.env.DOC_VERSION||"latest")))')}"
 UI_PORT="${UI_HOST_PORT:-15100}"
 TIME_PORT=3011         # must match the mcp target host in fixtures/tour-config.yaml
 OPENAI_PORT=8088       # must match hostOverride in fixtures/tour-config.yaml
@@ -29,6 +31,10 @@ NODE="${NODE_BIN:-node}"
 # bind, but the readiness loop below would still see a UI answer and report ready, so the specs
 # would capture whatever build was left behind (for example, an enterprise image from the docs
 # hub harness, which uses the same port).
+# This check covers manual runs only. Under Playwright, webServer.reuseExistingServer attaches to
+# anything that already answers on the port and never starts this script. `npm run capture:all`
+# and `update:all` run `clean:ui` before every mode, which removes such a container; before a
+# single `npm run test:tour`, run `npm run clean:ui` yourself.
 if curl -sf -o /dev/null "http://localhost:$UI_PORT/ui/"; then
   echo "ERROR: something already serves http://localhost:$UI_PORT/ui/. Run 'npm run clean:ui' first." >&2
   exit 1
@@ -62,8 +68,17 @@ docker run --rm --name agw-ui-tour --user "$(id -u):$(id -g)" \
   -v "$CFG_DIR:/config" \
   -p "$UI_PORT:15000" \
   "$IMAGE" -f /config/config.yaml &
+AGW_PID=$!
 
 echo "→ waiting for UI…"
-until curl -sf -o /dev/null "http://localhost:$UI_PORT/ui/"; do sleep 1; done
+until curl -sf -o /dev/null "http://localhost:$UI_PORT/ui/"; do
+  # Stop waiting if the container exited (for example, the image rejected the fixture), instead
+  # of polling until Playwright's 240-second webServer timeout.
+  if ! kill -0 "$AGW_PID" 2>/dev/null; then
+    echo "ERROR: the agentgateway container exited before the UI answered. See its output above." >&2
+    exit 1
+  fi
+  sleep 1
+done
 echo "✓ UI ready at http://localhost:$UI_PORT/ui/"
 wait

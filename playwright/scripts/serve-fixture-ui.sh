@@ -13,7 +13,10 @@
 # Ctrl-C tears everything down.
 set -euo pipefail
 
-IMAGE="${AGW_IMAGE:-cr.agentgateway.dev/agentgateway:latest-dev}"
+# Playwright passes AGW_IMAGE (resolved from DOC_VERSION in playwright.config.ts). On a manual run,
+# resolve it the same way. The fixtures are written for the UI tabs in docs 1.7 and later, so a
+# manual run defaults to the `main` line (the nightly image) rather than `latest`.
+IMAGE="${AGW_IMAGE:-$(cd "$(dirname "$0")/.." && node -e 'import("./scripts/resolve-image.mjs").then(m=>console.log(m.resolveImage(process.env.DOC_VERSION||"main")))')}"
 UI_PORT="${UI_HOST_PORT:-15100}"
 FIXTURE="${FIXTURE:?set FIXTURE to a file in fixtures/}"
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
@@ -44,13 +47,23 @@ cleanup
 echo "→ starting agentgateway UI ($IMAGE) with fixtures/$FIXTURE on :$UI_PORT"
 # Only the admin port is published. The captures never send proxy traffic, and leaving the
 # gateway ports unpublished is what lets several fixture UIs run at once.
-docker run -d --rm --name "$NAME" --user "$(id -u):$(id -g)" \
+# No --rm: if the container exits early, its logs are still there to print. cleanup removes it.
+docker run -d --name "$NAME" --user "$(id -u):$(id -g)" \
   -e ADMIN_ADDR=0.0.0.0:15000 \
   -v "$CFG_DIR:/config" \
   -p "$UI_PORT:15000" \
   "$IMAGE" -f /config/config.yaml >/dev/null
 
 echo "→ waiting for UI…"
-until curl -sf -o /dev/null "http://localhost:$UI_PORT/ui/"; do sleep 1; done
+until curl -sf -o /dev/null "http://localhost:$UI_PORT/ui/"; do
+  # Stop waiting if the container exited (for example, the image rejected the fixture), instead
+  # of polling until Playwright's 240-second webServer timeout.
+  if [[ "$(docker inspect -f '{{.State.Running}}' "$NAME" 2>/dev/null)" != "true" ]]; then
+    echo "ERROR: the agentgateway container exited before the UI answered:" >&2
+    docker logs "$NAME" 2>&1 | tail -20 >&2 || true
+    exit 1
+  fi
+  sleep 1
+done
 echo "✓ UI ready at http://localhost:$UI_PORT/ui/ (fixtures/$FIXTURE)"
 docker logs -f "$NAME"

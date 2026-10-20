@@ -1,4 +1,4 @@
-import { test, expect, dismissWelcome } from '../fixtures/test';
+import { test, expect, dismissWelcome, scrollDrawerTo, scrollIntoViewChecked } from '../fixtures/test';
 
 /**
  * "Do it in the UI" captures for the standalone configuration guides: gateways, routes, and
@@ -52,10 +52,10 @@ test.describe('Traffic drawers', () => {
     await host.fill('http.example.com:8080');
     await host.blur();
 
-    await drawer.getByText(/^name$/i).first().scrollIntoViewIfNeeded();
+    await scrollIntoViewChecked(drawer.getByText(/^name$/i).first());
     await expect(page).toHaveScreenshot('ui-add-route.png');
 
-    await drawer.getByText('Backends', { exact: true }).scrollIntoViewIfNeeded();
+    await scrollIntoViewChecked(drawer.getByText('Backends', { exact: true }));
     await expect(drawer.getByPlaceholder('localhost:8080', { exact: true })).toHaveValue('http.example.com:8080');
     await expect(page).toHaveScreenshot('ui-add-route-backend.png');
   });
@@ -75,9 +75,7 @@ test.describe('Traffic drawers', () => {
     // scrollIntoViewIfNeeded is a no-op here: the Backends heading already sits at the bottom
     // edge of the drawer. Pin it to the top so both backend rows and their weights fit, and
     // confirm the drawer body actually moved before capturing.
-    const body = drawer.locator('.drawer-body');
-    await drawer.getByText('Backends', { exact: true }).evaluate((el) => el.scrollIntoView({ block: 'start' }));
-    await expect.poll(() => body.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+    await scrollDrawerTo(drawer, drawer.getByText('Backends', { exact: true }));
     await expect(page).toHaveScreenshot('ui-route-weighted-backends.png');
   });
 });

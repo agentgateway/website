@@ -1,4 +1,4 @@
-import { test, expect, dismissWelcome, sortTableRows } from '../fixtures/test';
+import { test, expect, dismissWelcome, sortTableRows, scrollIntoViewChecked } from '../fixtures/test';
 
 /**
  * UI tour captures for the standalone "Launch the UI" guide (setup/ui/launch-ui, "Tour the UI").
@@ -42,11 +42,13 @@ test.describe('UI tour', () => {
     await page.getByRole('row', { name: /httpbin/ }).getByRole('button').first().click();
     const drawer = page.getByRole('dialog');
     await expect(drawer.getByText(/edit route/i)).toBeVisible();
-    // Route policies sit below the fold of the drawer. Scroll the Backends section to the top
-    // so one capture shows where traffic goes and which policies apply to it.
-    await drawer.getByText('Backends', { exact: true }).scrollIntoViewIfNeeded();
-    await drawer.getByText(/^route policies$/i).scrollIntoViewIfNeeded();
+    // Route policies sit below the fold of the drawer. Wait for the policy summary first: a
+    // scroll issued while the drawer is still rendering is undone when it finishes. Then scroll
+    // the Backends section and the policies into view, so one capture shows where traffic goes
+    // and which policies apply to it.
     await expect(drawer.getByText(/local rate limit/i)).toBeVisible();
+    await scrollIntoViewChecked(drawer.getByText('Backends', { exact: true }));
+    await scrollIntoViewChecked(drawer.getByText(/^route policies$/i));
     await expect(page).toHaveScreenshot('ui-tour-route-policies.png');
   });
 

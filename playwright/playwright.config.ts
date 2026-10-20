@@ -41,6 +41,9 @@ import { lineAtLeast, resolveImage } from './scripts/resolve-image.mjs';
  *                    servers, run the container, and clean up on exit.
  *   REUSE: webServer.reuseExistingServer attaches to anything already serving the URL,
  *          so you can run a `scripts/serve-*.sh` (or `docker run …`) yourself and point here.
+ *          The flip side: a leftover container on the port is captured instead, and the
+ *          launcher's own checks never run. `capture:all`/`update:all` run `clean:ui` before
+ *          each mode; before a single `npm run test:<mode>`, run `npm run clean:ui` yourself.
  */
 
 // Which docs version line we are capturing for. Drives both the image (a released tag for
@@ -131,7 +134,9 @@ export default defineConfig({
           STATS_ADDR: process.env.STATS_ADDR || 'localhost:15020',
           READINESS_ADDR: process.env.READINESS_ADDR || 'localhost:15021',
         }
-      : {},
+      // Pass the resolved image to the serve-*.sh launchers, so a local run of any mode uses the
+      // image for DOC_VERSION even when AGW_IMAGE is not exported (CI exports it anyway).
+      : { AGW_IMAGE: IMAGE },
   } : undefined,
 
   use: {
