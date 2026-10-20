@@ -29,7 +29,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "assets/agw-docs/standalone/main"
 
 
-def example(path, filename):
+def example(path, filename, multiple=False):
     """Read the literal YAML in a documented shell heredoc."""
     text = path.read_text()
     match = re.search(r"cat <<'EOF' > " + re.escape(filename) + r"\n(.*?)\n\s*EOF", text, re.S)
@@ -37,7 +37,8 @@ def example(path, filename):
         raise AssertionError(f"Missing example {filename} in {path}")
     lines = match[1].splitlines()
     indent = len(lines[0]) - len(lines[0].lstrip())
-    return yaml.safe_load("\n".join(line[indent:] for line in lines))
+    text = "\n".join(line[indent:] for line in lines)
+    return list(yaml.safe_load_all(text)) if multiple else yaml.safe_load(text)
 
 
 def free_port():
@@ -47,6 +48,14 @@ def free_port():
 
 
 class MockLLM(BaseHTTPRequestHandler):
+    def do_GET(self):
+        data = b'{"headers": {"Host": "mock-httpbin"}}'
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
     def do_POST(self):
         request = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         response = dict(id="chatcmpl-test", object="chat.completion", created=0,
@@ -119,6 +128,32 @@ def run_mode(mode, root, mock_port, gateway, agctl):
             cli("apply", "-f", str(resource))
             assert "cli-target" in cli("get", "mcp.target").stdout
             cli("delete", "mcp.target", "cli-target")
+
+            # Apply the actual quickstart resource documents, adapting ports and upstreams.
+            quick_model = example(DOCS / "quickstart-llm-cli.md", "openai-model.yaml")
+            quick_model["value"]["params"].update(apiKey="test", baseUrl=f"http://127.0.0.1:{mock_port}")
+            resource.write_text(yaml.safe_dump(quick_model))
+            cli("apply", "-f", str(resource))
+            assert "gpt-3.5-turbo" in cli("get", "llm.model", "gpt-3.5-turbo").stdout
+            cli("delete", "llm.model", "gpt-3.5-turbo")
+            quick_mcp = example(DOCS / "quickstart-mcp-cli.md", "mcp-target.yaml")
+            resource.write_text(yaml.safe_dump(quick_mcp))
+            cli("apply", "-f", str(resource))
+            assert "server-everything" in cli("get", "mcp.target").stdout
+            cli("delete", "mcp.target", "server-everything")
+            http_resources = example(DOCS / "quickstart-http-cli.md", "httpbin-resources.yaml", multiple=True)
+            http_port = free_port()
+            http_resources[0]["value"]["port"] = http_port
+            http_resources[1]["value"]["backends"][0]["host"] = f"127.0.0.1:{mock_port}"
+            resource.write_text(yaml.safe_dump_all(http_resources))
+            cli("apply", "-f", str(resource))
+            assert "httpbin" in cli("get", "traffic.gateway", "httpbin").stdout
+            assert "httpbin" in cli("get", "traffic.route", "httpbin").stdout
+            time.sleep(.5)
+            with urllib.request.urlopen(f"http://127.0.0.1:{http_port}/headers", timeout=10) as response:
+                assert response.status == 200
+            cli("delete", "traffic.route", "httpbin")
+            cli("delete", "traffic.gateway", "httpbin")
 
             key = cli("keys", "create", "team-a", "--model", "gpt-5*", "--budget", "250tokens/24h",
                       "--budget-action", "block").stdout.strip()

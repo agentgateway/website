@@ -80,7 +80,7 @@ llm:
       type: tokens
 ```
 
-For the full local rate limit walkthrough, see [Virtual key management]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#configure-token-budgets" >}}).
+For the full local rate limit walkthrough, see [Local rate limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/#local" >}}).
 
 ## Convert a token budget to cost
 
@@ -102,7 +102,7 @@ To track how much of each budget a user has consumed, query the Prometheus metri
 curl http://localhost:15020/metrics
 ```
 
-Query token usage by user with the `agentgateway_gen_ai_client_token_usage_sum` metric, or realized cost with `agw.ai.usage.cost.total`. For per-key spending queries and cost tracking, see [Virtual key management]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#monitor-per-key-spending" >}}) and [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
+Query token usage by user with the `agentgateway_gen_ai_client_token_usage_sum` metric, or realized cost with `agw.ai.usage.cost.total`. For database-backed usage queries and cost tracking, see [Virtual key usage]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#usage" >}}) and [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). The `agctl standalone budgets` command reports per-key budgets, not the rate-limit token buckets on this page.
 
 > [!WARNING]
 > When you sum token usage, do not add the `input_cache_read` or `input_cache_write` token types to the `input` type. The `input` series already includes the cached tokens, so adding them double counts.

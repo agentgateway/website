@@ -169,6 +169,10 @@ sleep 3
 
 ### Step 3: Enable MCP
 
+{{< version include-if="1.7.x" >}}
+{{< reuse "agw-docs/standalone/main/quickstart-mcp-cli.md" >}}
+{{< /version >}}
+
 The first time that you run the UI, the **Welcome to Agentgateway** wizard walks you through enabling LLM configuration. If you already did this, you can skip to the next step.
 
 1. Open the [agentgateway UI](http://localhost:4000/ui/). 

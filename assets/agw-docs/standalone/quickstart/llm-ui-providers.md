@@ -167,6 +167,10 @@ sleep 3
 
 ### Step 3: Enable LLM
 
+{{< version include-if="1.7.x" >}}
+{{< reuse "agw-docs/standalone/main/quickstart-llm-cli.md" >}}
+{{< /version >}}
+
 1. Open the [agentgateway UI](http://localhost:4000/ui/).
 2. On the first run, the **Welcome to Agentgateway** wizard opens. Click **Enable LLM**, and then click **Continue**.
 

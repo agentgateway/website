@@ -92,6 +92,8 @@ flowchart LR
 
 ## Define a gateway {#define}
 
+For a running standalone instance, use `agctl standalone get traffic.gateway -o yaml` to inspect managed gateway definitions. The [HTTP quickstart CLI alternative]({{< link-hextra path="/documentation/quickstart/non-agentic-http/#cli" >}}) shows how to apply a gateway and route, verify them, and delete them. For storage-mode limitations, see [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/" >}}).
+
 Each key in the `gateways` map is the gateway name, and each gateway needs a `port`. The following configuration listens for HTTP traffic on port 3000 and forwards it to a backend on `localhost:8000`.
 
 ```yaml
