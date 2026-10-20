@@ -151,7 +151,10 @@ When an Anthropic messages request is converted to the `Responses` or the
 
 The Responses conversion covers text, system instructions, images, function
 tools, tool-use history, tool results that are text or images, structured
-output, prompt cache breakpoints, and streaming. A function tool that omits
+output, prompt cache breakpoints, and streaming. Prompt cache breakpoints are
+kept on system text, input text, input images, assistant text, tool result text,
+and tool result images. They are kept only when the model name starts with
+`gpt-` and its major and minor version is `5.6` or later. A function tool that omits
 `strict` is sent with `strict: false`, so that the optional properties of its
 input schema stay optional. A structured output JSON schema is sent with
 `text.format.strict` set to `false`, so that optional schema properties stay
