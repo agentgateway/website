@@ -47,14 +47,6 @@ Anthropic and Amazon Bedrock exclude cached tokens from the input count that the
 
 ## View realized costs
 
-For a terminal summary of database-recorded LLM traffic, [configure a request-log database]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}) and [install agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}), then run:
-
-```sh
-agctl standalone analytics --by provider,model --since 24h
-```
-
-For user and group breakdowns, time buckets, and exports, see [CLI analytics]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/#cli" >}}).
-
 When you configure a [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}), agentgateway computes the realized USD cost of each LLM request and exposes it across the observability surface:
 
 * **Logs**: each LLM request log line includes `agw.ai.usage.cost.total`. Add the cost breakdown or applied rates with CEL `llm.cost` and `llm.costRates` fields.
@@ -62,6 +54,14 @@ When you configure a [model cost catalog]({{< link-hextra path="/documentation/l
 * **Traces**: cost attributes are attached to the request span.
 
 For catalog configuration and the full list of cost fields, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
+
+To summarize the LLM traffic in your request-log database from the terminal, [configure the database]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}) and [install agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}). Then, run the following command.
+
+```sh
+agctl standalone analytics --by provider,model --since 24h
+```
+
+For user and group breakdowns, time buckets, and exports, see [CLI analytics]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/#cli" >}}).
 
 ## View traces
 
@@ -110,16 +110,11 @@ For catalog configuration and the full list of cost fields, see [Model costs]({{
 
 ## View logs
 
-To query or follow database-recorded requests, use [agctl request logs]({{< link-hextra path="/documentation/observability/access-logs/view/#cli" >}}).
+Agentgateway writes a log entry for each request to the output of its process. If you configure a request-log database, agentgateway also stores each LLM request in the database, where you can query the request with agctl.
 
-```sh
-agctl standalone logs --since 1h --provider openai
-agctl standalone logs -f --model gpt-5
-```
+### Process logs {#process-logs}
 
-These commands require database logging. They complement the stdout examples below and do not change process log levels.
-
-Agentgateway automatically logs information to stdout. When you run agentgateway on your local machine, you can view a log entry for each request that is sent to agentgateway in your CLI output. 
+Agentgateway automatically logs information to stdout. When you run agentgateway on your local machine, you can view a log entry for each request that is sent to agentgateway in your CLI output.
 
 Example for a successful request to the OpenAI LLM: 
 ```
@@ -137,6 +132,25 @@ src.addr=127.0.0.1:51794 http.method=POST http.host=localhost http.path=/openai 
 http.status=429 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai
 gen_ai.request.model=gpt-4o error=rate limit exceeded duration=206ms
 ```
+
+### Request logs {#request-logs}
+
+To query or follow the LLM requests in the database, use `agctl standalone logs`. These commands require [database logging]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}), and do not change the log level of the process.
+
+```sh
+agctl standalone logs --since 1h --provider openai
+agctl standalone logs -f --model gpt-4o
+```
+
+Example output of the first command:
+
+```text
+TIME                 STATUS  DURATION  PROVIDER  MODEL        TOKENS(IN/OUT)  COST       ID
+2026-10-20 15:58:05  200     2ms       openai    gpt-4o-mini  1/250           $0.000150  01a15ae4-7924-7147-89b4-8dde2ae7404b
+2026-10-20 15:58:05  200     0ms       openai    gpt-4o       1/300           $0.003002  01a15ae4-7939-72dd-b477-2f5648b31f3a
+```
+
+For more filters, and to inspect the details of a request, see [View LLM request logs with agctl]({{< link-hextra path="/documentation/observability/access-logs/view/#cli" >}}).
 
 ## Learn more
 
