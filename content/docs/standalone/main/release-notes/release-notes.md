@@ -10,6 +10,26 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🔥 Breaking changes {#v17-breaking-changes}
+
+### Standalone generates an MCP session key by default {#v17-session-key}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4031 -->
+
+Agentgateway allows defining an MCP session key that encrypts MCP session IDs. The agentgateway Kubernetes control plane already generated this key. Standalone deployments now match this.
+
+When you set neither `SESSION_KEY` nor `config.session.key`, agentgateway generates a key. In `file` storage mode, the default, agentgateway writes the key to `config.session.key` in your configuration file. In `hybrid` mode, agentgateway stores the key in the database. In `readOnly` mode, or when agentgateway cannot write the configuration file, such as in the default `readonly` mode of the Helm chart, session IDs stay unencrypted and agentgateway logs a warning.
+
+If agentgateway generates a key during the upgrade, MCP sessions established before the upgrade are rejected, and clients must establish new sessions.
+
+**Actions to take**:
+
+* If you keep your configuration file in version control, set `SESSION_KEY` before you upgrade, so that agentgateway does not write a secret into the file.
+* If you install with the Helm chart in the default `readonly` mode, set `session.secretName` to encrypt session IDs. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
+* To keep sessions unencrypted, set `SESSION_KEY` or `config.session.key` to `disabled`.
+
+For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
+
 ## 🌟 New features {#v17-new-features}
 
 ### MCP {#v17-mcp}
