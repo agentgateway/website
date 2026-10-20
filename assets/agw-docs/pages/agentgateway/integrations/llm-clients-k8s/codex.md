@@ -33,7 +33,7 @@ export AGENTGATEWAY_API_KEY='<gateway-client-key>'
 
 ## Verify gateway connectivity
 
-Follow [Step 4 of the OpenAI quickstart]({{< link-hextra path="/documentation/quickstart/llm/#step-4-send-a-request-to-the-llm" >}})
+Follow [Step 4 of the OpenAI provider guide]({{< link-hextra path="/integrations/llm/providers/openai/#step-4-send-a-request-to-the-llm" >}})
 to verify that the configured Gateway can reach the LLM provider.
 
 ## Connect Codex to agentgateway
