@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 
-import { test, expect, dismissWelcome, mainOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
 
 /**
  * "UI" tab captures for the standalone MCP server guides:
@@ -11,7 +11,7 @@ import { test, expect, dismissWelcome, mainOnly } from '../fixtures/test';
  *   - integrations/mcp/servers/virtual.md  "Configure the agentgateway", "Tool name prefixing"
  *
  * Runs under CAPTURE_MODE=fixture FIXTURE=ui-tabs-d.yaml (scripts/serve-fixture-ui.sh, no
- * backends), main only. The fixture holds one `openapi` target with an inline schema, which the
+ * backends), docs 1.7 and later. The fixture holds one `openapi` target with an inline schema, which the
  * Schema URL and Inline schema tabs edit. Every drawer is filled in but NEVER saved, so the
  * fixture is unchanged between runs. Values match each section's YAML example.
  *
@@ -21,7 +21,7 @@ import { test, expect, dismissWelcome, mainOnly } from '../fixtures/test';
  * ui-mcp-servers-add-stdio.png, ui-mcp-servers-add-time.png, ui-mcp-settings-prefix-never.png.
  */
 test.describe('MCP server UI tabs', () => {
-  mainOnly();
+  uiTabsOnly();
 
   async function openServers(page: Page) {
     await page.goto('/ui/mcp/servers');

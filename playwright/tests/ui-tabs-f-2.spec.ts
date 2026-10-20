@@ -1,4 +1,4 @@
-import { test, expect, dismissWelcome, mainOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
 
 /**
  * "UI" tab capture for "Serve the UI on its own gateway"
@@ -13,7 +13,7 @@ import { test, expect, dismissWelcome, mainOnly } from '../fixtures/test';
  * Produces (light + dark per project): ui-settings-public-gateway.png.
  */
 test.describe('Settings > UI public gateway', () => {
-  mainOnly();
+  uiTabsOnly();
 
   // setup/ui/gateway.md, "Serve the UI on its own gateway" > UI tab, step 3: select ui-gateway.
   test('public gateway', async ({ page }) => {

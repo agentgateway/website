@@ -1,5 +1,5 @@
 import { type Locator, type Page } from '@playwright/test';
-import { test, expect, dismissWelcome, mainOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
 
 /**
  * "UI" tab captures for the standalone LLM provider, LLM client, and web UI guides:
@@ -85,7 +85,7 @@ async function explicitModel(drawer: Locator, model: string): Promise<void> {
 }
 
 test.describe('LLM provider, client, and web UI tabs', () => {
-  mainOnly();
+  uiTabsOnly();
 
   // providers/multiple-llms.md, "Reusable provider configuration" UI tab, step 2: the shared
   // openai-prod provider with OPENAI_API_KEY from the environment.

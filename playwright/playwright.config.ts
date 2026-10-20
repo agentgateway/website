@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { resolveImage } from './scripts/resolve-image.mjs';
+import { lineAtLeast, resolveImage } from './scripts/resolve-image.mjs';
 
 /**
  * Proof-of-concept config for capturing screenshots of the agentgateway product UI.
@@ -36,7 +36,7 @@ import { resolveImage } from './scripts/resolve-image.mjs';
  *                      tour    — one populated gateway: routes, LLM model, MCP server, and
  *                                policies, for the UI tour in setup/ui/launch-ui (tour.spec.ts)
  *                      fixture — any fixtures/<FIXTURE>, no backends, for the UI-tab drawer
- *                                captures (tests/ui-tabs-*.spec.ts); main only
+ *                                captures (tests/ui-tabs-*.spec.ts); docs 1.7 and later
  *                    The scripts under scripts/ are self-contained: they start any backing
  *                    servers, run the container, and clean up on exit.
  *   REUSE: webServer.reuseExistingServer attaches to anything already serving the URL,
@@ -60,12 +60,13 @@ const BIN = process.env.AGENTGATEWAY_BIN;
 const ADMIN_ADDR = process.env.ADMIN_ADDR || 'localhost:15000';
 const MODE = process.env.CAPTURE_MODE || '';
 
-// The fixture-mode specs (tests/ui-tabs-*.spec.ts) capture the main-only "UI" tabs and skip every
-// test on any other version (mainOnly() in fixtures/test.ts). Playwright still starts the webServer
-// before it knows that, and a fixture written for the nightly UI may not load in a released image:
-// the container would never answer, the run would wait out the timeout, and the nightly's
-// `update:all` chain would stop there. So a non-main fixture run starts no UI at all.
-const NEEDS_SERVER = !(MODE === 'fixture' && VERSION !== 'main');
+// The fixture-mode specs (tests/ui-tabs-*.spec.ts) capture the "UI" tabs, which start in docs 1.7,
+// and skip every test on an older line (uiTabsOnly() in fixtures/test.ts). Playwright still starts
+// the webServer before it knows that, and a fixture written for the nightly UI may not load in an
+// older released image: the container would never answer, the run would wait out the timeout, and
+// the nightly's `update:all` chain would stop there. So a fixture run on an older line starts no UI.
+// Keep '1.7' in step with UI_TABS_SINCE in fixtures/test.ts.
+const NEEDS_SERVER = !(MODE === 'fixture' && !lineAtLeast(VERSION, '1.7'));
 
 const BASE_URL =
   process.env.UI_BASE_URL || (BIN ? `http://${ADMIN_ADDR}` : `http://localhost:${HOST_PORT}`);

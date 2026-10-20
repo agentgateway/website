@@ -165,18 +165,23 @@ When a new agentgateway release ships a changed UI and you need to refresh the d
    baselines + `assets/img/` come from the `playwright-screenshots` workflow's PR (see
    [CI](#ci)) — that's the set that gets merged, so the pixels match CI.
 
-### UI-tab captures (fixture mode, main only)
+### UI-tab captures (fixture mode, docs 1.7 and later)
 
 The standalone guides pair **UI** and **Config file** tabs. Each UI tab's screenshot comes from a
 `tests/ui-tabs-*.spec.ts` spec that fills in a drawer with the guide's values and never saves.
 These specs need no backends, so they share one launcher, `scripts/serve-fixture-ui.sh`, which
 runs the image with any one fixture named by `FIXTURE` (`CAPTURE_MODE=fixture`).
 
-- Every spec starts with `mainOnly()`, because the UI tabs are written against the nightly UI
-  and gated to `main`. On any other `DOC_VERSION`, `playwright.config.ts` starts no UI and every
-  test skips, so a fixture that the released image cannot load never stalls the nightly.
-- The images exist only as `assets/img/main/<name>.png`. Pages still reference the bare
-  `img/<name>.png`, and the theme resolves the `main` override.
+- Every spec starts with `uiTabsOnly()`, because the UI tabs start in docs 1.7 (`UI_TABS_SINCE`
+  in `fixtures/test.ts`, which must match the content's version gate). On an older
+  `DOC_VERSION`, `playwright.config.ts` starts no UI and every test skips, so a fixture that an
+  older released image cannot load never stalls the nightly.
+- Until 1.7 ships, only `main` captures, so the images exist only as
+  `assets/img/main/<name>.png`. Pages still reference the bare `img/<name>.png`, and the theme
+  resolves the `main` override.
+- At the 1.7 release no spec edit is needed. The release rotates `assets/agw-docs/versions/n-patch.md`,
+  `latest` resolves to 1.7, and the `latest` pass captures too. `sync-docs` then publishes the
+  bare `assets/img/<name>.png` and removes each `img/main/` copy that matches it (`CONVERGED rm`).
 - To add one, put the capture in the batch spec for that area (or add a spec and fixture pair),
   add its `docs-image-map.json` entry, and add the `test:ui-tabs-<name>` script to
   `capture:all` and `update:all`. Run several side by side with distinct `UI_HOST_PORT`s, and set

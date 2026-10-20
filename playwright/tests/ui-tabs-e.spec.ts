@@ -1,4 +1,4 @@
-import { test, expect, dismissWelcome, mainOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
 import type { Locator, Page } from '@playwright/test';
 
 /**
@@ -8,7 +8,7 @@ import type { Locator, Page } from '@playwright/test';
  *   - configuration/routes.md: "TCP routes" (Add route drawer, TCP kind).
  *   - configuration/traffic-management/matching.md: path, header, method, and query matching,
  *     and TCP hostname matching and weighted backend routing.
- * Runs under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e.yaml (main only). The listeners guide is in
+ * Runs under CAPTURE_MODE=fixture FIXTURE=ui-tabs-e.yaml (docs 1.7 and later). The listeners guide is in
  * ui-tabs-e-listeners.spec.ts and the binds migration in ui-tabs-e-binds.spec.ts, because each
  * needs its own fixture.
  *
@@ -84,7 +84,7 @@ async function addBackend(drawer: Locator, index: number, host: string) {
 }
 
 test.describe('UI tabs: gateways', () => {
-  mainOnly();
+  uiTabsOnly();
 
   // configuration/gateways.md, "Add listeners to a gateway": listener1 of the web gateway
   // becomes the discrete HTTPS listener for a.example.com with the ./certs/ files.
@@ -127,7 +127,7 @@ test.describe('UI tabs: gateways', () => {
 });
 
 test.describe('UI tabs: routes and matching', () => {
-  mainOnly();
+  uiTabsOnly();
 
   // configuration/routes.md, "TCP routes": the postgres-backend route on postgres-proxy.
   test('tcp route', async ({ page }) => {

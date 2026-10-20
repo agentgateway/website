@@ -1,10 +1,10 @@
-import { test, expect, dismissWelcome, mainOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
 import type { Locator, Page } from '@playwright/test';
 
 /**
  * "UI" tab captures for configuration/listeners.md (batch e): the HTTP, HTTPS, hostname-based
  * HTTPS, TCP, and TLS listener sections. Runs under CAPTURE_MODE=fixture
- * FIXTURE=ui-tabs-e-listeners.yaml (main only); the fixture has the web (443) and tls (8443)
+ * FIXTURE=ui-tabs-e-listeners.yaml (docs 1.7 and later); the fixture has the web (443) and tls (8443)
  * gateways already switched to Multiple listeners.
  *
  * Every drawer is filled in but NEVER saved, so the certificate paths never need to exist and
@@ -59,7 +59,7 @@ function gatewayCard(page: Page, name: string): Locator {
 }
 
 test.describe('UI tabs: listeners', () => {
-  mainOnly();
+  uiTabsOnly();
 
   // configuration/listeners.md, "HTTP Listeners": the http gateway on port 3000, HTTP.
   test('http listener', async ({ page }) => {

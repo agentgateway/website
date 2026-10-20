@@ -1,4 +1,4 @@
-import { test, expect, dismissWelcome, mainOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
 import type { Locator, Page } from '@playwright/test';
 
 /**
@@ -115,7 +115,7 @@ async function blur(page: Page) {
 }
 
 test.describe('Tracing drawer', () => {
-  mainOnly();
+  uiTabsOnly();
 
   // traces/setup.md, "Enable tracing": localhost:4317 over gRPC with randomSampling: true.
   // Also used by traces/configs/jaeger.md and integrations/llm/observability/phoenix.md.
@@ -203,7 +203,7 @@ test.describe('Tracing drawer', () => {
 });
 
 test.describe('Access logs drawer', () => {
-  mainOnly();
+  uiTabsOnly();
 
   // access-logs/view.md, "Use OpenTelemetry field names": preset: otel.
   test('otel preset', async ({ page }) => {
@@ -276,7 +276,7 @@ test.describe('Access logs drawer', () => {
 });
 
 test.describe('UI settings and gateway TLS', () => {
-  mainOnly();
+  uiTabsOnly();
 
   // setup/ui/secure.md, "Binary and Docker" > UI tab, step 4: the OIDC card with env var
   // references. Two captures because the drawer is taller than the viewport: the issuer, then

@@ -1,5 +1,5 @@
 import { type Locator, type Page } from '@playwright/test';
-import { test, expect, dismissWelcome, mainOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
 
 /**
  * "UI" tab captures for the standalone security, transformation, and rate limit guides, all
@@ -130,7 +130,7 @@ async function addRules(
 }
 
 test.describe('UI tabs: policies and security', () => {
-  mainOnly();
+  uiTabsOnly();
 
   // security/cors.md, "UI" tab: the Simplified (LLM) cors policy. Two captures, because the
   // drawer is taller than the viewport: origins, methods, and headers; then expose headers,

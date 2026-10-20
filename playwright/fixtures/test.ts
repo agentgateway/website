@@ -1,4 +1,5 @@
 import { test as base, expect, type Page, type TestInfo } from '@playwright/test';
+import { lineAtLeast } from '../scripts/resolve-image.mjs';
 
 export const test = base.extend({
   page: async ({ page }, use, testInfo: TestInfo) => {
@@ -17,16 +18,29 @@ export const test = base.extend({
 export { expect };
 
 /**
- * Skip a capture unless this run is for the `main` docs.
- *
- * The "UI" tabs in the standalone guides are written against the nightly UI and gated to main,
- * so their drawers may not exist, or may have other labels, in the released image that the
- * `latest` run uses. Skipping keeps the nightly's latest pass green and publishes nothing to
- * the bare assets/img path; the main pass then writes assets/img/main/<file>, which is the only
- * copy those pages need (see "How images map to doc versions" in the README).
+ * The first docs line whose standalone guides have the "UI" / "Config file" tabs. The tabs are
+ * gated in the content with `exclude-if` on every older line; keep this value in step with
+ * that gate.
  */
-export function mainOnly(): void {
-  test.skip((process.env.DOC_VERSION || 'latest') !== 'main', 'UI-tab capture: main docs only');
+export const UI_TABS_SINCE = '1.7';
+
+/** Whether DOC_VERSION is a docs line that has the "UI" tabs (see UI_TABS_SINCE). */
+export function hasUiTabs(): boolean {
+  return lineAtLeast(process.env.DOC_VERSION || 'latest', UI_TABS_SINCE);
+}
+
+/**
+ * Skip a capture unless this run is for a docs line that has the "UI" tabs.
+ *
+ * The tabs are written against the nightly UI, so before UI_TABS_SINCE ships their drawers may not
+ * exist, or may have other labels, in the released image that the `latest` run uses. Until then
+ * only the `main` pass captures, and it writes assets/img/main/<file>, which is the only copy
+ * those pages need (see "How images map to doc versions" in the README). Once the release rotates
+ * n-patch.md, `latest` resolves to the new patch, the `latest` pass captures too, and sync-docs
+ * publishes the bare assets/img/<file> that the released pages use. No spec edit is needed.
+ */
+export function uiTabsOnly(): void {
+  test.skip(!hasUiTabs(), `UI-tab capture: docs ${UI_TABS_SINCE} and later only`);
 }
 
 /**

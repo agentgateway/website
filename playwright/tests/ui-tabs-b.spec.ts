@@ -1,8 +1,8 @@
 import { type Page } from '@playwright/test';
-import { test, expect, dismissWelcome, mainOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
 
 /**
- * "UI" tab captures for the standalone LLM core guides (main only):
+ * "UI" tab captures for the standalone LLM core guides (docs 1.7 and later):
  *   - llm/about.md: Passthrough, Prefixed Passthrough, Model aliases, Route priority
  *     (the Add model drawer). The Passthrough capture is reused by llm/api-keys.md.
  *   - llm/virtual-models.md: Weighted, Failover, and Conditional routing (Add virtual model).
@@ -133,7 +133,7 @@ async function customKey(page: Page, drawer, name: string, value: string): Promi
 }
 
 test.describe('UI tabs: LLM core', () => {
-  mainOnly();
+  uiTabsOnly();
 
   // llm/about.md, "Passthrough" (also referenced from llm/api-keys.md): OpenAI, "*", env var.
   test('model passthrough', async ({ page }) => {

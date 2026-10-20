@@ -1,8 +1,8 @@
-import { test, expect, dismissWelcome, mainOnly } from '../fixtures/test';
+import { test, expect, dismissWelcome, uiTabsOnly } from '../fixtures/test';
 
 /**
  * "UI" tab capture for configuration/gateways.md, "Migrate from binds" (batch e). Runs under
- * CAPTURE_MODE=fixture FIXTURE=ui-tabs-e-binds.yaml (main only): the guide's binds example,
+ * CAPTURE_MODE=fixture FIXTURE=ui-tabs-e-binds.yaml (docs 1.7 and later): the guide's binds example,
  * with no gateways, which is what makes Traffic > Gateways show the "Detected legacy binds
  * config" banner.
  *
@@ -12,7 +12,7 @@ import { test, expect, dismissWelcome, mainOnly } from '../fixtures/test';
  * Produces (light + dark per project): ui-gateways-migrate-binds.png.
  */
 test.describe('UI tabs: migrate from binds', () => {
-  mainOnly();
+  uiTabsOnly();
 
   // configuration/gateways.md, "Migrate from binds": the migration review drawer.
   test('review binds migration', async ({ page }) => {

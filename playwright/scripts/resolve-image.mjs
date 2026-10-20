@@ -60,6 +60,19 @@ export function resolveImage(docVersion) {
   return `${REGISTRY}:${tag}`;
 }
 
+/**
+ * Whether a docs line (`main`, `latest`, or an explicit `X.Y.x`) is at or past `minLine` (`X.Y`).
+ * `main` (a dev patch) always is. Lets a capture follow the docs' own version gates: when the
+ * next release rotates n-patch, `latest` resolves to the new patch and starts to pass, with no
+ * edit to the specs.
+ */
+export function lineAtLeast(docVersion, minLine) {
+  const patch = resolvePatch(docVersion);
+  if (!patch) return false;
+  if (isDev(patch)) return true;
+  return cmpSemver(patch, `${minLine}.0`) >= 0;
+}
+
 function cmpSemver(a, b) {
   const pa = a.split('.').map(Number);
   const pb = b.split('.').map(Number);
