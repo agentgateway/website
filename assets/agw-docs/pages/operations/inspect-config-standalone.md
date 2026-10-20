@@ -95,3 +95,17 @@ agctl proxy config all --file /tmp/agw-dump.json -o json | jq '.binds[].listener
 # Show only the backends
 agctl proxy config all --file /tmp/agw-dump.json -o json | jq '.backends'
 ```
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Inspect managed resources with agctl {#agctl}
+
+To list the configuration resources that the config resource API manages, use `agctl standalone get`.
+
+```sh
+agctl standalone get all
+agctl standalone get llm.model -o yaml
+agctl standalone get traffic.route -o yaml
+```
+
+The output shows the saved resource definitions. It does not show the runtime health of endpoints, or the translated configuration from the config dump. In hybrid mode, the output lists the resources from the database only. To investigate the configuration that the proxy loaded, use the config dump steps earlier on this page. For resource kinds and storage behavior, see [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
+{{< /version >}}
