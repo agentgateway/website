@@ -18,7 +18,9 @@ export AGENTGATEWAY_API_KEY='<gateway-client-key>'
 
 ## Configure agentgateway
 
-Start agentgateway with an OpenAI backend configuration. The wildcard `*` model name accepts any model. Codex sends the model in each request, so you do not need to pin a specific model.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} A `*` model suits a gateway that serves only OpenAI. To serve other providers from the same gateway, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).{{< /version >}}
+Start agentgateway with an OpenAI backend configuration. Use `name: "*"` to forward the model name from each Codex request.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}A `*` model suits a gateway that serves only OpenAI. To add other providers, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).{{< /version >}}
 
 1. Create a configuration file.
 

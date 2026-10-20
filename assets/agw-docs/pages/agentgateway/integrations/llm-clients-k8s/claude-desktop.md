@@ -43,7 +43,9 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 ## Set up the Anthropic backend
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
-The following backend passes the model ID that Claude Desktop requests through to Anthropic. If you publish models with `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources instead, Claude Desktop must request a model name that one of the resources publishes. For the naming options, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
+This backend forwards Claude Desktop's requested model ID to Anthropic.
+
+With `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources, clients must request a name you publish. See [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
 {{< /version >}}
 
 1. Create a Kubernetes Secret for the Anthropic API key that agentgateway sends

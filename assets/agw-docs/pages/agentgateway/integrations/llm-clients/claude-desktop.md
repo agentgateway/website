@@ -70,7 +70,7 @@ to Anthropic. Do not add a provider API key or apply a virtual API key policy
 to this model.
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
-The `*` model forwards each model ID that Claude Desktop sends to Anthropic, which suits a gateway that serves only Anthropic. To serve other providers from the same gateway, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
+Use `*` to forward Claude Desktop's requested model ID to Anthropic when the gateway serves only Anthropic. To add other providers, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
 {{< /version >}}
 
 > [!NOTE]

@@ -7,5 +7,4 @@ test: skip
 
 {{< reuse "agw-docs/pages/agentgateway/llm/about.md" >}}
 
-
 {{< reuse "agw-docs/pages/agentgateway/llm/model-exposure-patterns.md" >}}

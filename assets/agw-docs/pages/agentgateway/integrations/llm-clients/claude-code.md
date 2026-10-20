@@ -34,7 +34,7 @@ Route Claude Code to any OpenAI-compatible LLM provider (such as vLLM, Ollama, o
    EOF
    ```
 
-   Replace `Qwen/Qwen3-32B` with a model that your backend serves, and `http://localhost:8000/v1` with your OpenAI-compatible provider's endpoint.
+   Replace `Qwen/Qwen3-32B` with your backend's model name. Set `baseUrl` to your provider's OpenAI-compatible endpoint.
 
    {{< doc-test paths="claude-code-openai-validate" >}}
    agentgateway -f config.yaml --validate-only

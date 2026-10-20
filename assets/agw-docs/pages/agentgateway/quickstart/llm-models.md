@@ -5,7 +5,7 @@ Expose [OpenAI](https://openai.com/) models through {{< reuse "agw-docs/snippets
 
 ## Before you begin
 
-Complete the [Install agentgateway]({{< link-hextra path="/documentation/quickstart/install/" >}}) quick start. This guide uses the `agentgateway-proxy` Gateway that you created in that guide.
+Complete the [Install agentgateway]({{< link-hextra path="/documentation/quickstart/install/" >}}) quick start to create the `agentgateway-proxy` Gateway.
 
 ## Steps
 
@@ -41,7 +41,7 @@ Complete the [Install agentgateway]({{< link-hextra path="/documentation/quickst
 
 ### Step 2: Allow models on the Gateway
 
-Allow the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind on the Gateway's `http` listener. Keep `HTTPRoute` enabled for the other quick starts.
+Allow the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind on the Gateway's `http` listener. The listener accepts only the kinds you list in `allowedRoutes.kinds`, so keep `HTTPRoute` for the other quick starts.
 
 ```yaml {paths="quickstart-llm"}
 kubectl apply -f- <<EOF
@@ -66,8 +66,6 @@ spec:
         kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
 EOF
 ```
-
-When you set `allowedRoutes.kinds`, the listener accepts only the listed kinds.
 
 ### Step 3: Expose the OpenAI models
 
@@ -103,13 +101,13 @@ EOF
 
 | Field | Description |
 |-------|-------------|
-| `parentRefs` | Attaches the model to the `http` listener of the `agentgateway-proxy` Gateway. |
-| `match.model` | Matches model names that start with `openai/`. |
-| `provider` | The provider that serves the requests. |
-| `policies.auth` | The Secret that holds the credential for the provider. |
-| `policies.transformations` | Removes the `openai/` prefix before forwarding the request. |
+| `spec.parentRefs` | Attaches the model to the `http` listener of the `agentgateway-proxy` Gateway. |
+| `spec.match.model` | Matches model names that start with `openai/`. |
+| `spec.provider` | The provider that serves the requests. |
+| `spec.policies.auth` | References the Secret that stores the provider API key. |
+| `spec.policies.transformations` | Removes the `openai/` prefix before forwarding the request. |
 
-Provider prefixes are the recommended starting point: one resource exposes all of a provider's models. For exact names and custom names such as `fast`, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
+Provider prefixes expose all models from a provider with one resource. For other naming options, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
 
 {{< doc-test paths="quickstart-llm" >}}
 # Route the model to the httpbun mock LLM instead of OpenAI, so the test needs no API
@@ -159,7 +157,9 @@ kubectl patch agentgatewaymodel openai -n {{< reuse "agw-docs/snippets/namespace
      }' | jq
    ```
 
-   Example output (abbreviated). The `model` field contains the provider's model name without the `openai/` prefix.
+   The response uses the provider's model name without the `openai/` prefix.
+
+   Example output (abbreviated):
 
    ```json
    {

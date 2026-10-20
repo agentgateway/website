@@ -27,4 +27,4 @@ Many providers, such as Cohere, DeepSeek, Groq, Mistral, Together AI, and xAI, e
 
 Use [custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) for unsupported, non-standard, or self-hosted targets when you need to declare formats, upstream paths, or backend targets explicitly.
 
-{{< reuse "agw-docs/pages/agentgateway/llm/model-exposure-patterns.md" >}}
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}

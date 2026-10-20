@@ -365,7 +365,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 > [!NOTE]
 > **Incoming model match** matches the request's `model` field. This quick start uses an exact name.
 >
-> If you leave the field empty when selecting a provider, the form adds a prefix such as `openai/*` and an outgoing transformation to strip it. One entry then exposes all of the provider's models. See [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}) to compare patterns.
+> If you leave the field empty, selecting a provider adds a prefix such as `openai/*` and a transformation to strip it. This exposes all models from that provider. See [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}) to compare patterns.
 
 ### Step 5: Send a chat completion request
 

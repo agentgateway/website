@@ -10,7 +10,9 @@ route requests through agentgateway running in Kubernetes.
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 > [!TIP]
-> The OpenAI provider guide sets up a route that passes the model that Codex requests through to OpenAI. If you publish models with `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources instead, Codex must request a model name that one of the resources publishes. For the naming options, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
+> The OpenAI provider guide forwards Codex's requested model to OpenAI.
+>
+> With `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources, clients must request a name you publish. See [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
 {{< /version >}}
 
 ## Set the gateway URL

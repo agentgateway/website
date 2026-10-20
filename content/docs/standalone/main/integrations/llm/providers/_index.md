@@ -15,7 +15,7 @@ Use the dedicated provider pages when agentgateway already knows the upstream ba
 
 Use [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) only for providers that do not have a first-class shortcut, such as Perplexity, vLLM, LM Studio, or another service that exposes a compatible [API format]({{< link-hextra path="/documentation/llm/api-types/" >}}).
 
-{{< reuse "agw-docs/pages/agentgateway/llm/model-exposure-patterns.md" >}}
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
 
 ## Authentication
 
@@ -73,7 +73,7 @@ llm:
 
 These are the default auth mechanisms for the corresponding built-in providers, so you usually only need to override them when you need custom credential handling.
 
-This example sets authentication explicitly for each cloud provider. Distinct [provider prefixes](#provider-prefix), such as `bedrock/*`, route each model name to one provider.
+This example sets authentication explicitly for each cloud provider. It uses [provider prefixes]({{< link-hextra path="/documentation/llm/about/#provider-prefix" >}}), such as `bedrock/*`, to route requests to the matching provider.
 
 ```yaml
 llm:
