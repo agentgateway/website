@@ -73,10 +73,6 @@ You add the gateway and route from the UI, so you can start agentgateway without
    ```
 
 2. Open the [agentgateway UI](http://localhost:4000/ui/). 
-
-   {{< version include-if="1.7.x" >}}
-   To configure the gateway and route from the terminal instead, follow the [CLI alternative](#cli). Then continue with Step 3 to send a request.
-   {{< /version >}}
    
    * On the first run of the UI, the welcome wizard already enables the **API** row, because the bootstrap config includes a gateway. Click **Continue**. 
    * If you already opened the UI, the **Gateway Overview** home page shows the **Traffic** row enabled.
@@ -117,10 +113,6 @@ AGW_PID=$!
 trap 'kill $AGW_PID 2>/dev/null' EXIT
 sleep 3
 {{< /doc-test >}}
-
-{{< version include-if="1.7.x" >}}
-{{< reuse "agw-docs/standalone/main/quickstart-http-cli.md" >}}
-{{< /version >}}
 
 ### Step 3: Send a request through agentgateway
 

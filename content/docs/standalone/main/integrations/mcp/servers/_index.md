@@ -9,7 +9,7 @@ Connect agentgateway to an MCP tool server.
 
 ## Why put agentgateway in front of an MCP server?
 
-For terminal-based configuration, the [MCP quickstart]({{< link-hextra path="/documentation/quickstart/mcp/#step-3-enable-mcp" >}}) includes an `agctl standalone apply` example. Use `agctl standalone get mcp.target -o yaml` to inspect targets in the top-level `mcp` section. Targets nested inside a route are part of the `traffic.route` resource instead; see [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/" >}}).
+To inspect the targets in the top-level `mcp` section from the terminal, use `agctl standalone get mcp.target -o yaml`. A target that you nest inside a route is part of the `traffic.route` resource instead. To add or remove targets from the command line, see [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
 
 | Without agentgateway | With agentgateway |
 |----------------------|-------------------|

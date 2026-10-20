@@ -9,7 +9,7 @@ Learn how to configure agentgateway for a particular LLM {{< gloss "Provider" >}
 
 ## First-class providers
 
-To manage simplified LLM configuration from the terminal, use [agctl resources]({{< link-hextra path="/documentation/operations/config-resources/" >}}). A model entry becomes the `value` of a `kind: llm.model` resource; named providers use `llm.provider`. Inspect them with `agctl standalone get llm.model` and `agctl standalone get llm.provider`. Provider credentials and environment references are resolved by the gateway, not by the CLI.
+To manage the LLM configuration from the terminal, use [agctl]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}). A model entry becomes the `value` of an `llm.model` resource, and a named provider becomes an `llm.provider` resource. To inspect them, run `agctl standalone get llm.model` and `agctl standalone get llm.provider`. The gateway resolves provider credentials and environment variable references, not the CLI.
 
 Use the dedicated provider pages when agentgateway already knows the upstream base URL and request format. This list includes Anthropic, OpenAI, and many more!
 

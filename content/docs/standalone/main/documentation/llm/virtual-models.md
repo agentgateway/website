@@ -72,7 +72,7 @@ To see which target served a request, check the access log or the trace span. Th
 
 ## Public and internal models
 
-To inspect configured virtual models, use `agctl standalone get llm.virtualModel -o yaml`. Use `agctl standalone get llm.model -o yaml` for their target model definitions. These commands show managed configuration resources; the client-facing `/v1/models` checks below verify what callers can discover. For updates, see [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/" >}}).
+To inspect the configured virtual models, use `agctl standalone get llm.virtualModel -o yaml`. For the definitions of their target models, use `agctl standalone get llm.model -o yaml`. These commands show the stored configuration. To verify the models that clients can discover, use the `/v1/models` checks later on this page. To update the resources, see [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
 
 Use `llm.models[].visibility` to control whether a model is directly exposed to clients or kept as an internal target.
 
