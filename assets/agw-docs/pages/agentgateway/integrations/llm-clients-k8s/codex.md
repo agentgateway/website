@@ -8,6 +8,11 @@ route requests through agentgateway running in Kubernetes.
 3. Install either the [Codex CLI](https://learn.chatgpt.com/docs/codex/cli) or
    the [ChatGPT desktop app](https://chatgpt.com/download/).
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+> [!TIP]
+> The OpenAI provider guide sets up a route that passes the model that Codex requests through to OpenAI. If you publish models with `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources instead, Codex must request a model name that one of the resources publishes. For the naming options, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
+{{< /version >}}
+
 ## Set the gateway URL
 
 The [installation quickstart]({{< link-hextra path="/documentation/quickstart/install/" >}})
