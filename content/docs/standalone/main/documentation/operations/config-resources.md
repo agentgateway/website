@@ -1,8 +1,8 @@
 ---
 title: Manage config resources
 weight: 12
-description: Create, update, and revoke config resources such as API keys at runtime through the agentgateway config resource API.
+description: Use agctl to list, apply, update, and delete standalone configuration resources without restarting agentgateway.
 test: skip
 ---
 
-{{< reuse "agw-docs/pages/operations/config-resources-standalone.md" >}}
+{{< reuse "agw-docs/standalone/main/config-resources.md" >}}

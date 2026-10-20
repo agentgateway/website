@@ -1,5 +1,11 @@
 Install `agctl`, the command-line tool that you use to inspect and debug agentgateway.
 
+{{< version include-if="1.7.x" >}}
+{{< conditional-text include-if="standalone" >}}
+You can also manage configuration resources, virtual keys, budgets, and recorded LLM traffic with `agctl standalone`. See [Manage standalone agentgateway](#manage-standalone-agentgateway) for the command overview and development-build requirements.
+{{< /conditional-text >}}
+{{< /version >}}
+
 ## About
 
 `agctl` is the agentgateway command-line interface. Use `agctl` to inspect the configuration that an agentgateway proxy has loaded, capture detailed traces of requests as the proxy handles them, {{< version exclude-if="1.3.x,1.2.x" >}}collect CPU and heap profiles, {{< /version >}}and manage proxy and controller log levels. The CLI works against agentgateway running in Kubernetes or as a standalone binary on your workstation.
