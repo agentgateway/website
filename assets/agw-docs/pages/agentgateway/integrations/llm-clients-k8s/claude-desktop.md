@@ -164,7 +164,7 @@ With `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources, clients
 
 ## Use a gateway API key {#gateway-api-key}
 
-You can use the same client-side values that the standalone **Client Setup** page produces. The Kubernetes Admin UI does not generate these values, so configure the gateway and Claude Desktop manually.
+You can use the same client-side values that the standalone **Client Setup** page produces. The Kubernetes UI does not generate these values, so configure the gateway and Claude Desktop manually.
 
 1. Verify that the `anthropic-desktop` backend references `anthropic-secret` in
    `policies.auth`, as configured in [Set up the Anthropic
@@ -348,19 +348,6 @@ path="/integrations/llm/clients/microsoft-intune/#claude-subscription" >}}).
    > open(p, 'w').write(json.dumps(d, indent=2))
    > EOF
    > ```
-
-## Use a gateway API key {#gateway-api-key}
-
-You can use the same client-side values that the standalone **Client Setup** page produces. The Kubernetes UI does not generate these values, so configure the gateway and Claude Desktop manually.
-
-1. Give the `anthropic-desktop` backend an Anthropic API key. Follow [Anthropic provider]({{< link-hextra path="/integrations/llm/providers/anthropic/" >}}) to create a provider credential Secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}}. This credential is sent upstream and is separate from the key that Claude Desktop sends to agentgateway.
-2. Follow [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) to create a client API key and a strict API key authentication policy. Target the `claude-desktop` `HTTPRoute` if the key must protect only this integration, or target the `agentgateway-proxy` `Gateway` to protect all of its routes.
-3. In Claude Desktop, go to **Developer → Configure Third Party Inference → Gateway**.
-4. For **Gateway base URL**, enter the URL from [Get the gateway URL](#gateway-url), including the `/claude` path.
-5. For **Credential kind**, select **Static API key**. Enter the client API key from step 2 in **Gateway API key**.
-6. Click **Apply Changes**, then fully quit Claude Desktop and reopen it.
-
-Claude Desktop sends Anthropic Messages API requests to `/v1/messages`. Agentgateway can translate those requests for another provider, but a route that exposes only the OpenAI-compatible `/v1/chat/completions` API is not sufficient.
 
 ## Authenticate users with your identity provider {#sso}
 
