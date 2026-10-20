@@ -1,5 +1,7 @@
 Issue virtual API keys to users or applications with `agctl standalone`. Each key can restrict model access and carry independent dollar or token budgets. Clients use the virtual key to authenticate to agentgateway, while agentgateway uses separate credentials to authenticate to the provider.
 
+This guide uses the CLI. You can also manage the same keys interactively in [the UI]({{< link-hextra path="/documentation/setup/ui/" >}}) on **LLM > Virtual API Keys**, or declare them in your configuration file for GitOps workflows, as described in [API key authentication]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}). For refillable token buckets instead of fixed-window budgets, see [Rate limit token budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/rate-limit/" >}}).
+
 ## Before you begin
 
 1. [Install agentgateway]({{< link-hextra path="/documentation/setup/install/" >}}) and [agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}) from the main development builds.
@@ -183,6 +185,4 @@ For credential rotation, create a replacement under a new name, update the clien
 ## Next steps
 
 - [Per-key dollar or token budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/" >}}) for a walkthrough that exhausts a small budget.
-- [Rate limit token budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/rate-limit/" >}}) for refillable token buckets.
-- [API key authentication]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}) for declarative configuration and policy attachment.
-- [The UI]({{< link-hextra path="/documentation/setup/ui/" >}}) to manage keys interactively on **LLM > Virtual API Keys**.
+- [API key authentication]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}) to attach key policies to routes and MCP traffic.
