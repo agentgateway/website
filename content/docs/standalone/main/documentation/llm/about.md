@@ -123,6 +123,16 @@ console.log(response);
 {{% /tab %}}
 {{< /tabs >}}
 
+### Query strings on converted requests
+
+A client query string belongs to the API format that the client called. For the Chat Completions, Messages, Responses, and Gemini formats, the client query string is kept when the provider receives the same format, and is dropped when the request is converted to another format. For example, a Messages request to `/v1/messages?beta=true` that is converted to Chat Completions for a Gemini provider reaches the provider without `?beta=true`.
+
+These cases differ:
+
+- An Amazon Bedrock request on the Runtime endpoint always drops the client query string, because Runtime serves only the Bedrock APIs.
+- A built-in provider that sets `params.hostOverride` without `params.pathPrefix` receives the client path and query string unchanged. This provider path prefix is a different setting from `llm.pathPrefix`, which sets the base path that clients call.
+- A request on a path that is forwarded without format conversion keeps the client query string.
+
 ## Model routing and aliases
 
 Model routing is configured within the `llm` section of your agentgateway configuration file. 

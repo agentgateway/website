@@ -21,6 +21,8 @@ gen_ai.usage.input_tokens=68 gen_ai.usage.output_tokens=298 duration=2488ms
 
 For LLM traffic, the log line automatically includes `gen_ai.*` fields. When the LLM request format cannot be inferred, such as for passthrough traffic, the `gen_ai.operation.name` value is `unknown`. For MCP traffic, the log line includes `mcp.*` fields.
 
+For requests that the `llm.models` configuration or a virtual model serves, `agw.ai.original_model` records the model name that the client sent, and `gen_ai.request.model` records the model that reaches the provider after routing, such as the target that a virtual model selected.
+
 You can change the default log format to JSON by setting the `config.logging.format` field. 
 
 ```yaml
@@ -120,6 +122,20 @@ frontendPolicies:
 ```
 
 For the full list of available fields, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables/" >}}). 
+
+### Log the agent session {#agent-session}
+
+Add `request.agent.session` to correlate requests from the same agent session. This example records an empty string when no session is available.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    add:
+      agent_session: 'has(request.agent.session) ? request.agent.session : ""'
+```
+
+Agentgateway detects sessions from recognized agent headers. To override detection, use `config.standardAttributes.session`. For details, see [Agent sessions]({{< link-hextra path="/reference/cel/variables/#agent-sessions" >}}).
 
 ### Log the selected backend endpoint {#backend-endpoint}
 

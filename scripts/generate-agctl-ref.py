@@ -100,14 +100,15 @@ def rewrite_file(path: Path) -> None:
 
     # Rewrite relative .md links so they resolve under reference/agctl/.
     # Cobra emits links like [agctl trace](agctl_trace.md). Convert to
-    # ../<slug>/ which works under Hugo's section page layout.
+    # ../<slug>/ which works under Hugo's section page layout. Command names
+    # can contain hyphens (agctl_bug-report.md), so the match allows them.
     def link_sub(match: re.Match) -> str:
         label = match.group(1)
         target = match.group(2)
         slug = slug_for_filename(target)
         return f"[{label}](../{slug}/)"
 
-    text = re.sub(r"\[([^\]]+)\]\(([a-zA-Z0-9_]+\.md)\)", link_sub, text)
+    text = re.sub(r"\[([^\]]+)\]\(([a-zA-Z0-9_-]+\.md)\)", link_sub, text)
 
     path.write_text(text.lstrip(), encoding="utf-8")
 
@@ -141,7 +142,6 @@ def write_wrapper_pages(website_dir: str, link_version: str, generated: list[Pat
                 f"title: {title}\n"
                 f"weight: {weight}\n"
                 f"description: Reference for the `{title}` command.\n"
-                "test: skip\n"
                 "---\n\n"
                 f'{{{{< reuse "agw-docs/pages/reference/agctl/{link_version}/{slug}.md" >}}}}\n',
                 encoding="utf-8",

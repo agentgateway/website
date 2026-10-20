@@ -33,6 +33,8 @@ Three routing strategies are available, and each virtual model uses exactly one 
 
 After a virtual model selects a target, the gateway rewrites the request so that the provider receives the selected model. This rewrite applies to JSON request bodies and multipart form data, such as `/v1/audio/transcriptions`. For multipart requests, file fields and non-model fields are preserved while each `model` form field is rewritten.
 
+To see which target served a request, check the access log or the trace span. The `agw.ai.original_model` attribute records the virtual model name that the client sent, and `gen_ai.request.model` records the model that the selected target sends to the provider. For more information, see [Generative AI attributes]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#generative-ai-attributes-llm" >}}).
+
 Targets are usually `Internal` models, so clients cannot request them directly and they stay out of `/v1/models`. For more on visibility, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
 
 {{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}

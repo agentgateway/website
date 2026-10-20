@@ -14,18 +14,33 @@ go install sigs.k8s.io/cloud-provider-kind@latest
 
 ---
 
+## Where tests live
+
+Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/docs-tests). CI no longer reads the test markup on these pages: before each run, it removes the markup from a copy of the site and attaches the copy kept in docs-tests. The markup syntax in this guide is the same in both places.
+
+| What | Where it lives | How to change it |
+|---|---|---|
+| Scenario definitions (what front matter `test:` declares) | `products/agentgateway/<kubernetes or standalone>/tests.yaml` in docs-tests | Edit `tests.yaml`. The format is described in the docs-tests README. |
+| Code-block tags (`paths="..."`) and hidden `{{< doc-test >}}` checks | One annotation file per page under `products/agentgateway/annotations/` in docs-tests | In docs-tests, run `make annotate PAGE=<page> CONTENT_REPO=<path to this repo>`, edit the markup in the copy it writes to `out/annotate/`, then run `make save` with the same arguments. |
+
+**Do not add `paths=` tags, `{{< doc-test >}}` blocks, or front matter `test:` to pages in this repo.** Every markup example in this guide is written in the `make annotate` copy in docs-tests.
+
+- Markup that is still on a page in this repo is ignored. Tests run only from docs-tests, and the daily refresh in docs-tests never copies a page's markup into the annotations, so an edit to that markup does nothing. A front matter `test:` edit is reported by the refresh so that `tests.yaml` can be updated, but it is not applied.
+- When a content change needs a test change in docs-tests, push the test change to a docs-tests branch with the same name as the content PR's branch. The content PR's doc-tests run then uses that branch instead of docs-tests `main`, and the job summary says so. Merge the content PR here first, then the docs-tests PR.
+
+---
+
 ## How it works
 
-1. A doc page declares a `test:` block in its YAML front matter, listing one or more named test scenarios.
-2. Each scenario lists source files and path selectors — the pieces of shell/YAML to include.
-3. `doc_test_run.py` reads this metadata, chains the sources together, and produces a standalone bash script.
-4. The script is run inside a fresh `kind` cluster (with `cloud-provider-kind` for load balancer support).
+1. A scenario in docs-tests `tests.yaml` (or, on pages that are not covered there, a `test:` block in a page's front matter) names a test and lists source files and path selectors — the pieces of shell and YAML to include.
+2. `annotations.py` attaches the docs-tests annotations to a copy of the pages. `doc_test_run.py` then reads the scenarios, chains the sources together, and produces a standalone bash script.
+3. The script is run inside a fresh `kind` cluster (with `cloud-provider-kind` for load balancer support).
 
 ---
 
 ## Path selectors
 
-A **path** is a string label attached to a fenced code block or hidden command block. It controls which blocks are included in which test scenario.
+A **path** is a string label attached to a fenced code block or hidden command block. It controls which blocks are included in which test scenario. Write tags and hidden blocks in the `make annotate` copy of the page in docs-tests (see [Where tests live](#where-tests-live)), not on the page in this repo.
 
 ### Tagging visible code blocks
 
@@ -67,56 +82,33 @@ The `paths=` attribute works identically to fenced blocks.
 
 ## Front matter test metadata
 
-On the page being tested, add a `test:` key to the YAML front matter. Each child key is a named test scenario. Each entry in the list is a `file`+`path` pair — a source file and the path selector to pull from it.
+> Scenarios for this site now live in docs-tests `tests.yaml` (see [Where tests live](#where-tests-live)). This section describes the front matter form, which the runner still reads for pages that `tests.yaml` does not cover. The `file`/`path` steps work the same way in both.
 
-### Version-relative `file:` values
+Do not add front matter `test:` to new pages. On an older page that still has one, it lists named scenarios, each a list of `file`+`path` pairs. `file:` can use `${versionRoot}` (the page's version directory) or be omitted to mean the page itself.
 
-So that a page can be copied between `main` and `latest` without editing its front matter, prefer **version-relative** `file:` values over hardcoded paths. The runner resolves these against the page that declares the test:
+### Typing scenarios
 
-- **Omit `file:` entirely** when the source is the **declaring page itself**. `file:` defaults to the page that the `test:` block lives on.
-- **Use `${versionRoot}`** for sources in the **same version** as the declaring page. `${versionRoot}` expands to the path up to and including the version directory (e.g. `content/docs/kubernetes/main` for a page under `main/`). `${version}` is also available and expands to just the version segment (e.g. `main`).
-
-Both tokens are derived from the declaring page's own path, so a page copied from `main/` to `latest/` resolves every `${versionRoot}` to the new version directory with no edits. The literal-path form still works and is the right choice when an entry must point at a *different* version on purpose.
-
-> The `${...}` syntax (not `{...}`) is deliberate: a YAML value starting with `{` is parsed as a flow mapping and would need quoting, whereas a leading `$` is a plain scalar, so `${versionRoot}/...` is valid unquoted.
+A scenario in `tests.yaml` declares a `type:`. A scenario without one is `functional`.
 
 ```yaml
----
-title: CORS
-test:
-  cors-in-httproute:
-  - file: ${versionRoot}/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/install/sample-app.md
-    path: install-httpbin
-  - path: cors-in-httproute            # file: omitted -> the declaring page
-
-  cors-in-agentgatewaypolicy:
-  - file: ${versionRoot}/quickstart/install.md
-    path: standard
-  - file: ${versionRoot}/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/install/sample-app.md
-    path: install-httpbin
-  - path: cors-in-agentgatewaypolicy   # file: omitted -> the declaring page
----
+scenarios:
+  rewrite:
+    type: functional
+    needs: [install-experimental, gateway, httpbin]
+    source: agw-docs/pages/traffic-management/transformations/rewrite.md
+    path: rewrite
 ```
 
-The literal equivalent (hardcoding `main`) is still accepted, but then copying the page to `latest` requires rewriting every `file:` line:
+| Type | What it checks | Needs | Blocks the PR? |
+|---|---|---|---|
+| `schema` | The doc's own example CR validates against the real CRD's OpenAPI schema (renamed/removed/mistyped fields, wrong types) | Nothing — no cluster, no execution. See `doc_test_schema_check.py`. | Yes, in its own job (`schema-check`) |
+| `functional` | Real behavior in a real cluster (apply config, assert on a real response) | A `kind` cluster, no vendor credentials | Yes |
+| `live` | Same as functional, but a real external endpoint is reachable and returns the documented unauthenticated response (e.g. a JWKS discovery endpoint rejecting an unauthenticated request) | A real public endpoint, no credentials | Yes — runs in the same job as `functional` |
+| `credentialed` | Full behavior against a real vendor with real credentials (e.g. a real OpenAI key) | Named secrets, provisioned out of band | No — runs on its own daily schedule via `--types credentialed`, `continue-on-error: true`, never on a PR |
 
-```yaml
-  cors-in-httproute:
-  - file: content/docs/kubernetes/main/documentation/quickstart/install.md
-    path: experimental
-  - file: content/docs/kubernetes/main/documentation/security/cors.md
-    path: cors-in-httproute
-```
+`type:` also accepts a list, such as `type: [schema, functional]`. This produces two independent test cases, `rewrite::schema` and `rewrite::functional`, that share the same steps. `--test rewrite` selects both; `--test rewrite::schema` selects only the schema one. Add `schema` only when the scenario's final step is a custom resource with a local CRD schema (currently `AgentgatewayPolicy` and `AgentgatewayBackend`; see `doc_test_schema_check.py`). A plain Gateway API resource such as `HTTPRoute` has nothing to validate against, so it would only ever pass vacuously.
 
-> Token resolution currently applies to the `kubernetes` and `standalone` sections. A `file:` value that doesn't match the `content/docs/<section>/<version>/` layout is left unchanged.
-
-Multiple scenarios on the same page each get their own kind cluster and generated script.
+`doc_test_run.py --list-tests` and every generated report include each case's `type`. Filter what runs with `--types schema,functional,live` (comma-separated); omit it to run everything.
 
 ---
 
@@ -135,10 +127,10 @@ For each hop:
 
 1. Open the file and find its `## Before you begin` section.
 2. Follow the linked page.
-3. Identify which code blocks are relevant and what path label they carry (or add one if missing).
-4. Add that file+path as a source entry above the current one in the `test:` front matter.
+3. Identify which code blocks are relevant and what path label they carry (or add one in the page's annotation if missing).
+4. Use the matching prerequisite in the scenario's `needs:` list in docs-tests `tests.yaml`. The common chain (install, gateway, sample app) is already defined under `prerequisites:` at the top of the file.
 
-The extractor follows `{{< reuse "..." >}}` and internal links automatically, so you don't need to inline snippet contents — just reference the top-level content file.
+The extractor follows `{{< reuse "..." >}}` and internal links automatically, so you don't need to inline snippet contents — the scenario's `source:` names the reused file.
 
 ---
 
@@ -151,7 +143,7 @@ The extractor follows `{{< reuse "..." >}}` and internal links automatically, so
 
 ### Adding a path to an existing block
 
-If a block you need has no path, add one:
+If a block you need has no path, add one in the `make annotate` copy:
 
 ````md
 ```sh {paths="install-httpbin"}
@@ -298,20 +290,31 @@ EOF
 
 ## Running the tests
 
+The scripts, scenarios, and annotations live in the `docs-tests` repo, not here (see
+[Where tests live](#where-tests-live)). Run the `make` targets from this repo. They copy
+the working tree, including uncommitted edits, to `out/doc-tests-tree`, attach the
+annotations from your docs-tests clone to the copy, and run against it, so your pages are
+never rewritten. Results and generated scripts are copied back to `out/tests/`.
+`DOCS_TESTS_DIR` defaults to `../docs-tests`; set it if you cloned docs-tests elsewhere.
+
+Do not call `doc_test_run.py --repo-root .` on this repo directly. Without the attach
+step it reads only markup that is still on the pages.
+
 ### Generate scripts only (no cluster)
 
 ```sh
-python3 scripts/doc_test_run.py --generate-only
+make test-generate DOCS_TESTS_DIR=<path to docs-tests>
 ```
 
-Scripts are written to `out/tests/generated/`.
+Scripts are written to `out/tests/generated/`. `out/annotations/attach-report.json`
+lists any markup that did not attach; scenarios that use it are skipped with a warning.
 
 ### Run all tests
 
 Requires `kind` and `cloud-provider-kind` in PATH.
 
 ```sh
-python3 scripts/doc_test_run.py
+make test-run DOCS_TESTS_DIR=<path to docs-tests>
 ```
 
 Each test scenario:
@@ -331,29 +334,27 @@ This is also why a doc-test block must not read anything from the repo by relati
 
 ### Run a single test scenario
 
-Point directly to a file and (optionally) a named scenario. This generates the script, creates a `kind` cluster, starts `cloud-provider-kind`, runs the test, and cleans up — all in one command:
+Pass runner options through `DOC_TESTS_ARGS`. `--file` takes the content page, not the
+assets file:
 
 ```sh
 # Run one specific scenario
-python3 scripts/doc_test_run.py \
-  --file content/docs/kubernetes/main/documentation/security/cors.md \
-  --test cors-in-httproute
+make test-run DOCS_TESTS_DIR=<path> \
+  DOC_TESTS_ARGS='--file content/docs/kubernetes/main/documentation/security/cors.md --test cors-in-httproute'
 
-# Run all scenarios defined in a single file
-python3 scripts/doc_test_run.py \
-  --file content/docs/kubernetes/main/documentation/security/cors.md
+# Run all scenarios for a single page
+make test-run DOCS_TESTS_DIR=<path> \
+  DOC_TESTS_ARGS='--file content/docs/kubernetes/main/documentation/security/cors.md'
+
+# Only generate the script, for inspection
+make test-generate DOCS_TESTS_DIR=<path> \
+  DOC_TESTS_ARGS='--file content/docs/kubernetes/main/documentation/security/cors.md --test cors-in-httproute'
 ```
 
-To only generate the script without running (useful for inspection):
+To run a generated script by hand, run it from a scratch directory. Invoked from the repo
+root, the script writes its config files into the working tree:
 
 ```sh
-python3 scripts/doc_test_run.py \
-  --file content/docs/kubernetes/main/documentation/security/cors.md \
-  --test cors-in-httproute \
-  --generate-only
-
-# Run it from a scratch directory. Invoked by hand from the repo root, the script
-# writes its config files into the working tree.
 mkdir -p out/tests/work/manual && cd out/tests/work/manual
 bash ../../generated/<script-name>.sh
 ```
@@ -366,6 +367,8 @@ bash ../../generated/<script-name>.sh
 | `--test` | — | Name of a specific test scenario within `--file` |
 | `--docs-glob` | `content/docs/**/*.md` | Glob to discover pages with `test:` metadata (ignored when `--file` is set) |
 | `--product` | `kubernetes` | Context product used for `conditional-text` resolution |
+| `--types` | all types | Comma-separated test types to run, e.g. `schema,functional,live`. See [Typing scenarios](#typing-scenarios) |
+| `--docs-tests-root` | the docs-tests checkout the script runs from | docs-tests checkout to read the scenario manifests (`tests.yaml`) from (or `DOCS_TESTS_ROOT` env var). See [Where tests live](#where-tests-live) |
 | `--generated-dir` | `out/tests/generated` | Output directory for scripts and manifests |
 | `--generate-only` | false | Skip cluster creation and execution |
 | `--verbose` | true | Stream all command output |
@@ -390,13 +393,13 @@ The `version` context (used to resolve `{{< version include-if="..." >}}` blocks
 ## Checklist for adding a test to a new page
 
 1. **Trace prerequisites** — follow "Before you begin" links back to `helm.md`.
-2. **Verify path labels** on all prerequisite code blocks; add `paths="..."` where missing.
+2. **Verify path labels** on all prerequisite code blocks; add `paths="..."` where missing, in the page's annotation (`make annotate` / `make save` in docs-tests).
 3. **Add wait blocks** after each `kubectl apply` that creates something tests depend on.
 4. **Export `INGRESS_GW_ADDRESS`** — it flows from `gateway.md` via `setVars`.
-5. **Add the feature assertion** as a `{{< doc-test >}}` shortcode block on the feature page.
-6. **Write the `test:` front matter** on the feature page, listing sources in dependency order (install → setup → prereqs → feature).
-7. **Regenerate** with `--generate-only` and inspect the script for unresolved shortcodes or missing commands.
-8. **Run locally** with `bash out/tests/generated/<script>.sh` against an existing cluster to verify before committing.
+5. **Add the feature assertion** as a `{{< doc-test >}}` block in the feature page's annotation, never on the page itself.
+6. **Add the scenario to docs-tests `tests.yaml`**, listing its prerequisites under `needs:` and the feature page's selector (see [Where tests live](#where-tests-live)).
+7. **Regenerate** with `make test-generate`, confirm all of the markup attached, and inspect the script for unresolved shortcodes or missing commands.
+8. **Run locally** with `make test-run DOC_TESTS_ARGS='--file <page> --test <scenario>'` to verify before opening the docs-tests PR. If it goes with a content PR, push it to a docs-tests branch with the same name as the content PR's branch.
 
 ---
 
@@ -410,6 +413,7 @@ Doc pages with passing tests display a "Verified" badge below the page title.
 2. **`doc_test_inject_status.py`** reads the results and adds a `test_status` field to each tested document's front matter:
    - `test_status: passed` — all tests for the page passed
    - `test_status: failed` — one or more tests failed (no badge displayed)
+   - `test_status: partial` — no tests failed, but a scenario was skipped because its test annotations did not attach (no badge displayed)
 3. **Hugo templates** check for `test_status: passed` and render a green "Verified" badge.
 
 ### Makefile targets
@@ -472,15 +476,13 @@ make test-artifacts-fetch
 
 If you run into issues with installing yamltest, include the `--force` flag.
 
-On macOS, you might need to run either the `python3 scripts/doc_test_run.py` command with `sudo`, or run `sudo cloud-provider-kind --gateway-channel=disabled` in a separate tab before running the tests. In macOS, the cloud-provider-kind tool to get a LoadBalancer IP requires elevated permissions.
+On macOS, you might need to run either the `doc_test_run.py` command with `sudo`, or run `sudo cloud-provider-kind --gateway-channel=disabled` in a separate tab before running the tests. In macOS, the cloud-provider-kind tool to get a LoadBalancer IP requires elevated permissions.
 
 ### Common issues
 
 **File paths differ between `latest` and `main`**
 
-Prefer version-relative `file:` values (`${versionRoot}/...`, or omit `file:` for the declaring page — see [Version-relative `file:` values](#version-relative-file-values)). A page written this way can be copied between `main` and `latest` with no front-matter edits, because the tokens resolve against the version directory of whichever page declares the test.
-
-If a chain still uses **literal** paths (e.g. `content/docs/kubernetes/main/...`), then when you copy it to `latest` you must update every `file:` line to the target version directory. Using the wrong version directory causes the extractor to pull blocks from a different version's content, or fail silently if the file doesn't exist.
+A `tests.yaml` scenario keyed by `source:` (an assets file) covers every version that reuses it, so this does not apply to it. It applies to older pages that still declare front matter `test:`: prefer `${versionRoot}/...` or an omitted `file:`, which resolve against the declaring page's version directory. A **literal** path (e.g. `content/docs/kubernetes/main/...`) must be updated when the page is copied to `latest`; otherwise the extractor pulls blocks from a different version's content, or fails silently if the file doesn't exist.
 
 **Wrong prerequisite file paths**
 
