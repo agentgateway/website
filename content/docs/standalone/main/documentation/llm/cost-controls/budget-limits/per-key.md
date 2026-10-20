@@ -88,12 +88,54 @@ EOF
 
 ### Step 2: Configure budgets on your API keys
 
+You can configure the keys and budgets in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Start agentgateway with a database, the catalog, and a model, but no API key authentication. You add the authentication, the keys, and the budgets in the UI. The UI cannot add the `config.database` or `config.modelCatalog` settings.
+
+   ```sh
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   config:
+     database:
+       url: sqlite://budgets.db
+     modelCatalog:
+     - file: ./catalog.json
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   EOF
+   agentgateway -f config.yaml
+   ```
+
+2. Open **LLM** > **Virtual API Keys** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/keys](http://localhost:15000/ui/llm/keys).
+3. Click **Enable API key auth**. From the **Validation mode** dropdown, select **Strict**, and click **Enable API key auth** again.
+4. Click **New key**, and create the `team-a` key.
+   1. Enter `team-a` for the **Name**. The UI writes the name to `metadata.name`.
+   2. From the **Key value** dropdown, select **Use custom key**, and enter `sk-team-a-abc123def456`.
+   3. Expand **Budgets**, and click **Add budget**. Enter `daily-spend` for the **Name**, `24h` for the **Rolling window**, and `0.008` for the **Limit amount**. Select **USD** for the **Limit unit** and **Block requests** for **When limit is reached**.
+   4. Expand **Model access**, and select **Selected models**. Enter `gpt-5*` in the **Allowed model patterns** field, and click **Add**.
+   5. Click **Save key**.
+5. In the **Copy your new API key** dialog, click **Done**.
+6. Click **New key**, and create the `team-b` key in the same way, with the following values. Keep **Model access** set to **Unrestricted**.
+   * **Name**: `team-b`
+   * **Key value**: `sk-team-b-xyz789uvw012`
+   * **Budget**: `daily-tokens`, `24h`, `250`, **Tokens**, **Audit only**
+
+The UI writes the same `apiKey` policy as the **Config file** tab, with two differences. It saves a hash of each key (`keyHash`) instead of the raw value, unless you select **Store raw key**. It also adds `agentgateway.dev/` entries to each key's metadata, such as a key hint and a creation time. If the configuration has no `config.database`, the **Budgets** section shows a **Database required** warning.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 Create a configuration with a database, the catalog, API key authentication, and a budget on each key.
 
 ```yaml {paths="apikey-budgets"}
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
 config:
   database:
     url: sqlite://budgets.db
@@ -135,6 +177,8 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 EOF
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 The `team-a` key has a dollar budget that blocks requests when the budget is exhausted, and the `team-b` key has a token budget that only records the overage. Review the following table to understand this configuration. Both limits are small so that you can reach them in a few requests. Use realistic limits in production.
 
@@ -155,6 +199,8 @@ The `team-a` key has a dollar budget that blocks requests when the budget is exh
 > A `USD` budget charges nothing unless the catalog prices the models that the key uses. Agentgateway does not report an error in this case. The budget stays at zero usage and never rejects a request. Before you rely on a `USD` budget, confirm that the access log records `agw.ai.usage.cost.total` for the traffic that the budget covers.
 
 ### Step 3: Start agentgateway
+
+If you used the UI in Step 2, agentgateway is already running, and you can skip this step.
 
 ```sh
 agentgateway -f config.yaml
@@ -476,6 +522,16 @@ EOF
 
 The `allowedModels` field limits which models an API key can reach. The field is independent of budgets, so it needs no database and no catalog, and you can use it on its own.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Virtual API Keys**, and click the **Edit key** icon for the `team-a` key. To create a key instead, click **New key**.
+2. Expand **Model access**, and select **Selected models**.
+3. In the **Allowed model patterns** field, enter `gpt-5*`, and click **Add**. Then add `claude-sonnet-5` in the same way.
+4. Click **Save key**.
+
+The **Access mode** options map to the values in the following table. **Unrestricted** omits the field, and **Deny all** writes an empty list.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   policies:
@@ -489,6 +545,8 @@ llm:
         - "gpt-5*"
         - claude-sonnet-5
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 Each entry is an exact model name or a pattern with one `*` wildcard, such as a `gpt-5*` prefix or a `*-mini` suffix. Agentgateway rejects a request for any other model with a `403` response and the `model_not_allowed` code, before the request reaches a provider.
 

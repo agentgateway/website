@@ -47,11 +47,27 @@ export ANTHROPIC_AWS_API_KEY="${ANTHROPIC_AWS_API_KEY:-test}"
 
 For the common API key case, use the following config. Use the AWS SigV4 section later in the page only when you need Claude Platform on AWS or custom signing behavior.
 
+You can add the model in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same model as the **Config file** tab.
+
+1. Start agentgateway with the `ANTHROPIC_API_KEY` environment variable set. The UI checks that the variable exists when you save the model.
+2. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+3. From the **Provider** dropdown, select **Anthropic**.
+4. In the **Incoming model match** field, replace the default `anthropic/*` with `*`.
+5. For the **Provider API key**, select **Env var**, and enter `ANTHROPIC_API_KEY`.
+6. Keep **Incoming model** as the **Outgoing model**. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
+7. Click **Save model**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
 llm:
   models:
   - name: "*"
@@ -59,6 +75,15 @@ llm:
     params:
       apiKey: "$ANTHROPIC_API_KEY"
 ```
+
+| Setting | Description |
+|---------|-------------|
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
+| `provider` | The LLM provider, set to `anthropic` for Claude models. |
+| `params.model` | The specific Claude model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
+| `params.apiKey` | The Anthropic API key for authentication. |
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="anthropic" >}}
 cat <<'EOF' > config.yaml
@@ -73,15 +98,6 @@ llm:
 EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
-
-{{< reuse "agw-docs/snippets/review-configuration.md" >}}
-
-| Setting | Description |
-|---------|-------------|
-| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
-| `provider` | The LLM provider, set to `anthropic` for Claude models. |
-| `params.model` | The specific Claude model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
-| `params.apiKey` | The Anthropic API key for authentication. |
 
 ## Example request
 

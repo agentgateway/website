@@ -163,6 +163,22 @@ When the selected model changes the upstream model name, the gateway rewrites th
 
 Use `name: "*"` without setting `params.model` to accept any model name and pass it directly to the provider. This is the simplest configuration for single-provider setups.
 
+You can configure the model in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Models** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+2. From the **Provider** dropdown, select **OpenAI**. The UI fills in a default **Incoming model match**, such as `openai/*`.
+3. Replace the **Incoming model match** with `*`.
+4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`. The variable must be set in the environment that agentgateway runs in, or the save fails.
+5. For the **Outgoing model**, make sure that **Incoming model** is selected.
+6. Click **Save model**.
+
+The UI writes the same model as the **Config file** tab, but spells the provider `openai`. Agentgateway accepts both spellings.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   models:
@@ -171,6 +187,8 @@ llm:
     params:
       apiKey: "$OPENAI_API_KEY"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 Clients specify the actual model in their requests, such as `"model": "gpt-4o-mini"`, and agentgateway forwards it to the provider as-is.
 
@@ -179,16 +197,27 @@ Clients specify the actual model in their requests, such as `"model": "gpt-4o-mi
 Use `name: "openai/*"` without setting `params.model` to accept model requests like `openai/gpt-4o-mini` and forward to OpenAI as `gpt-4o-mini`.
 This is the recommended approach when you want to expose all models from multiple providers.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Models**, and click **Add model**.
+2. From the **Provider** dropdown, select **OpenAI**. The UI fills in `openai/*` for the **Incoming model match**.
+3. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
+4. For the **Outgoing model**, make sure that **Strip openai/** is selected. This option writes the `stripPrefix("openai/")` transformation.
+5. Click **Save model**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   models:
-  - name: "*"
+  - name: "openai/*"
     provider: openAI
     params:
       apiKey: "$OPENAI_API_KEY"
     transformation:
       model: llmRequest.model.stripPrefix("openai/")
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 Clients specify the provider and model in their requests, such as `"model": "openai/gpt-4o-mini"`, and agentgateway forwards to `gpt-4o-mini`
 
@@ -197,6 +226,17 @@ Clients specify the provider and model in their requests, such as `"model": "ope
 Set `name` to a user-friendly alias and `params.model` to the actual provider model.
 This lets you decouple client-facing model names from provider-specific identifiers, making it easier to swap models without updating client code.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Models**, and click **Add model**.
+2. From the **Provider** dropdown, select **OpenAI**.
+3. Replace the **Incoming model match** with `fast`.
+4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
+5. For the **Outgoing model**, select **Explicit**. In the **Explicit outgoing model** field, enter or select `gpt-4o-mini`.
+6. Click **Save model**.
+7. Repeat the previous steps for the `smart` alias, with `gpt-4o` as the explicit outgoing model.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   models:
@@ -211,6 +251,8 @@ llm:
       model: gpt-4o
       apiKey: "$OPENAI_API_KEY"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 Clients send `"model": "fast"` or `"model": "smart"`, and agentgateway translates these to the corresponding provider models.
 
@@ -219,6 +261,27 @@ Clients send `"model": "fast"` or `"model": "smart"`, and agentgateway translate
 When multiple models match a request, the more precise match takes precedence.
 For example, with the configuration below, requests with `accounts/fireworks/*` will match the `fireworks` provider first:
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+The UI adds each new model to the end of the list, and cannot reorder models. Add the models in the order that you want them listed.
+
+1. Add the Fireworks model.
+   1. Open **LLM** > **Models**, and click **Add model**.
+   2. From the **Provider** dropdown, select **Fireworks AI**.
+   3. Replace the **Incoming model match** with `accounts/fireworks/*`.
+   4. For the **Provider API key**, select **Env var**, and enter `FIREWORKS_API_KEY`.
+   5. For the **Outgoing model**, select **Incoming model**. Otherwise, the UI keeps the default **Strip accounts/** option.
+   6. Expand **Advanced** > **Matches**, and click **Add match**.
+   7. Enter `x-org` for the header name and `eng` for the exact value.
+   8. Click **Save model**.
+2. Add the catch-all model in the same way, with the following values.
+   * **Provider**: **OpenAI**
+   * **Incoming model match**: `*`
+   * **Provider API key**: **Env var** `OPENAI_API_KEY`
+   * **Outgoing model**: **Incoming model**
+   * **Matches**: header `x-org` with the exact value `engineering`
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   models:
@@ -243,6 +306,8 @@ llm:
     params:
       apiKey: "$OPENAI_API_KEY"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 In this example, both routes have one header matcher, so they have equal specificity. Because the Fireworks route is listed first, it takes priority when both routes match.
 

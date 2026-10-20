@@ -27,6 +27,38 @@ If a tool or other resource is not allowed, the gateway automatically filters it
 
 You can attach `mcpAuthorization` at the route level or directly to an MCP backend. A backend-level policy applies to every MCP target in that backend. To vary the rules per target instead, keep one route-level policy and match on the `mcp.tool.target` variable, as shown in [Different rules per target](#different-rules-per-target). For the other policies that you can scope to an individual target, see [MCP target policies]({{< link-hextra path="/documentation/mcp/mcp-target-policies" >}}).
 
+You can configure MCP authorization rules in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `mcpAuthorization` policy as the **Simplified (MCP)** example in the **Config file** tab.
+
+1. Create a configuration with an MCP target, but no authorization policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   mcp:
+     port: 3000
+     targets:
+     - name: everything
+       stdio:
+         cmd: npx
+         args: ["@modelcontextprotocol/server-everything"]
+   ```
+2. Start agentgateway with this configuration.
+3. Open [http://localhost:15000/ui/mcp/policies](http://localhost:15000/ui/mcp/policies) (**MCP** > **Policies**), and click the **MCP authorization** tile.
+4. Add each of the following rules. For each rule, click **Add rule**, keep the **Allow** effect, and replace the example expression in the editor.
+   1. `mcp.tool.name == "echo"` allows anyone to call the `echo` tool.
+   2. `jwt.sub == "test-user" && mcp.tool.name == "add"` allows only `test-user` to call the `add` tool.
+   3. `mcp.tool.name == "printEnv" && jwt.nested.key == "value"` allows users with the claim `nested.key == value` to call the `printEnv` tool.
+5. Click **Save policy**.
+
+The UI saves each rule as an object with an `allow` key, such as `- allow: mcp.tool.name == "echo"`, instead of the legacy string form in the **Config file** tab. Both forms behave the same.
+
+You can also add an MCP authorization policy in the **Route policies** section of a route in **Traffic** > **Routes**. The **Routing-based** example uses an inline `mcp` backend, which the UI edits only as raw YAML. For that example, use the **Config file** tab.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
@@ -74,6 +106,8 @@ routes:
           args: ["@modelcontextprotocol/server-everything"]
 ```
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 {{< doc-test paths="mcp-authz-config" >}}
@@ -170,6 +204,27 @@ When you combine MCP authorization with [MCP authentication]({{< link-hextra pat
 - Only the user `test-user` can call the `add` tool.
 - Only users with the nested claim `nested.key == "value"` can call the `printEnv` tool.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Start agentgateway with the MCP target configuration from the previous **UI** tab.
+2. Open [http://localhost:15000/ui/mcp/policies](http://localhost:15000/ui/mcp/policies) (**MCP** > **Policies**), and click the **MCP authentication** tile.
+   1. In the **Signing keys** section, select **Remote URL**, and enter `http://localhost:9000/.well-known/jwks.json` for the **JWKS URL**.
+   2. Enter `http://localhost:9000` for the **Issuer**.
+   3. In **Audiences**, enter `http://localhost:3000/mcp`, and click **Add**.
+   4. In **Resource metadata YAML**, enter the following YAML.
+      ```yaml
+      resource: http://localhost:3000/mcp
+      scopesSupported:
+      - read:all
+      bearerMethodsSupported:
+      - header
+      ```
+   5. Click **Save policy**. The authorization server must be running, because agentgateway fetches the JWKS when it loads the policy.
+3. Click the **MCP authorization** tile, and add the three **Allow** rules from the previous **UI** tab. Then, click **Save policy**.
+
+For more information about the authentication form, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 mcp:
@@ -201,6 +256,8 @@ mcp:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Different rules per target
 

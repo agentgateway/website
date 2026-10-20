@@ -33,26 +33,29 @@ The proxy combines the built-in catalog and your catalog sources into one catalo
 > The proxy ignores imported catalogs that are older than its built-in catalog, without a warning. You can remove your imported catalog if the built-in catalog has the rates that you need. To customize rates, omit `metadata` from your catalog. The proxy then applies your catalog as an overlay, regardless of its age.
 {{% /version %}}
 
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+You can load a catalog in the UI or in your configuration file.
 
-config:
-  modelCatalog:
-  - file: ./costs/catalog.json
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Costs** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/costs](http://localhost:15000/ui/llm/costs).
+2. Click **Refresh base costs**. The UI downloads the agentgateway model catalog to a `base-costs.json` file in the same directory as your configuration file, and adds the file to `config.modelCatalog`. The **Catalog sources** table lists the file.
 
-llm:
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-```
+   > [!CAUTION]
+   > If `config.modelCatalog` already lists a file, the refresh writes the downloaded catalog to the first listed file instead, and replaces its contents. Keep your own rates in a later file or in **Custom costs**, not in the first file.
 
-Run agentgateway with the config file.
+The UI cannot add a catalog file that you wrote yourself. To load your own catalog files, use the **Config file** tab. For more information about the refresh, see [Import costs (UI)](#import-costs-ui).
 
-```sh
-agentgateway -f config.yaml
-```
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/cost-catalog-configure.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/standalone/cost-catalog-configure.md" >}}
+{{% /version %}}
 
 After the catalog is loaded, priced requests include cost data. The access log includes `agw.ai.usage.cost.total`, and CEL exposes cost data as `llm.cost` and `llm.costRates`.
 
@@ -129,12 +132,24 @@ After you load a catalog, the same UI visualizes your priced traffic. For more i
 
 If your provider pricing differs from the imported public catalog, add another catalog file after the imported one. Later catalog sources override earlier sources. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Leave out the `metadata` field in the override file so that the file is applied as an overlay. For more information, see [Configure a model catalog](#configure-a-model-catalog).{{< /version >}}
 
-```yaml
-config:
-  modelCatalog:
-  - file: ./costs/catalog.json
-  - file: ./costs/overrides.json
-```
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Costs**, and click **Edit** in the **Custom costs** section.
+2. Click **Add model cost**, and enter the **Provider** and **Model**, such as `openai` and `gpt-4o-mini`.
+3. Enter the rates in USD per 1M tokens for **Input** and **Output**, and optionally for **Cache read** and **Cache write**.
+4. Click **Save**.
+
+The UI writes the custom costs as an `inline` catalog source at the end of `config.modelCatalog`, not as a separate file. Like a later file, the inline source overrides the earlier sources.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/cost-catalog-override.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/standalone/cost-catalog-override.md" >}}
+{{% /version %}}
 
 Use overrides for contracted pricing, internally hosted models, or models that do not appear in the imported catalog.
 

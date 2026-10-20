@@ -11,6 +11,23 @@ Agentgateway natively exports distributed traces over OTLP (OpenTelemetry Protoc
 
 To enable tracing in agentgateway, add a `tracing` block under the `frontendPolicies` section and point agentgateway to your OTLP-compatible backend. For sample tracing backend setups, see [Sample tracing configurations]({{< link-hextra path="/documentation/observability/traces/configs/" >}}).
 
+You can enable tracing in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+
+1. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability).
+2. Click the **Tracing** card.
+3. In the **Tracing** drawer, configure the following fields.
+   1. **Host**: Enter the hostname and port of the OTLP receiver, such as `localhost:4317`.
+   2. **Protocol**: Keep **gRPC**. The UI does not write the default `protocol: grpc` value to your configuration.
+   3. **Random sampling**: Enter `true`.
+4. Click **Save policy**. The **Tracing** card shows **enabled**.
+
+The UI saves the policy under `frontendPolicies.tracing` in your configuration.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -18,6 +35,8 @@ frontendPolicies:
     host: localhost:4317
     randomSampling: true
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 | Field | Description |
 |-------|-------------|
@@ -63,6 +82,14 @@ Only one setting applies to each request. Because `clientSampling` defaults to `
 
 In the following example, you want to sample 10% of requests.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Settings** > **Observability** page, and click the **Tracing** card.
+2. In the **Sampling** section, enter `0.1` for **Random sampling**.
+3. Optional: Enter a value for **Client sampling** or **Parent not sampled**. Each field accepts `true`, `false`, or a sampling fraction.
+4. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -70,6 +97,8 @@ frontendPolicies:
     host: localhost:4317
     randomSampling: 0.1   # sample 10% of requests
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Filter spans
 
@@ -77,6 +106,13 @@ Use the `filter` field to write a [CEL]({{< link-hextra path="/reference/cel/" >
 
 The following example exports only spans for requests with an HTTP response code of 400 or greater. 
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Settings** > **Observability** page, and click the **Tracing** card.
+2. In the **Sampling** section, enter `response.code >= 400` in the **Filter** field.
+3. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -85,6 +121,8 @@ frontendPolicies:
     randomSampling: true
     filter: 'response.code >= 400'
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 You can combine conditions to export specific traffic. The following examples show common filter patterns:
 
@@ -110,6 +148,18 @@ Use the `resources` field to describe the agentgateway process itself. Resource 
 
 The following example sets a custom service name and deployment environment in `resources`, and adds the user ID and request path to each individual span by using `attributes`. 
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Settings** > **Observability** page, and click the **Tracing** card.
+2. In the **Attributes** section, add the resource attributes.
+   1. Under **Resource attributes**, click **service.name**, enter `"my-agentgateway"` as the value, and click **Add**. Keep the double quotes, because the value is a CEL string.
+   2. Click **deployment.environment**, enter `"production"` as the value, and click **Add**.
+3. Under **Span attributes**, add the span attributes.
+   1. Enter `user.id` as the name and `request.headers["x-user-id"]` as the value, and click **Add**.
+   2. Enter `request.path` as the name and `request.path` as the value, and click **Add**.
+4. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -123,6 +173,8 @@ frontendPolicies:
       user.id: 'request.headers["x-user-id"]'
       request.path: 'request.path'
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Remove span attributes {#remove-attributes}
 
@@ -130,6 +182,15 @@ Use the `remove` field to drop attributes from spans before your `attributes` ex
 
 The following example removes the HTTP protocol version and client address from the span. The `remove` list matches the attribute names on the request span, as listed in [Default span attributes]({{< link-hextra path="/documentation/observability/traces/attribute-reference/" >}}). A name that is not on the span, such as the earlier `src.addr` or `http.version`, removes nothing.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Settings** > **Observability** page, and click the **Tracing** card.
+2. In the **Attributes** section, add each attribute to **Remove attributes**.
+   1. Enter `client.address`, and click **Add**.
+   2. Enter `network.protocol.version`, and click **Add**.
+3. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -140,3 +201,5 @@ frontendPolicies:
       - client.address
       - network.protocol.version
 ```
+{{% /tab %}}
+{{< /tabs >}}

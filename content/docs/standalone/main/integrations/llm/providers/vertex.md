@@ -46,11 +46,29 @@ Before you can use Vertex AI as an LLM provider, you must authenticate by using 
 
 ## Configuration
 
+You can add the model in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same model as the **Config file** tab.
+
+1. Start agentgateway in an environment that has GCP Application Default Credentials (ADC).
+2. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+3. From the **Provider** dropdown, select **Gemini Enterprise (GCP Vertex)**.
+4. In the **Incoming model match** field, replace the default `vertex/*` with `gemini-2.5-flash`.
+5. Keep **ADC** for the **Google credentials**. To use a service account key file instead, select **File**, and enter the path to the file.
+6. Enter `my-project-id` for the **Vertex project**.
+7. For the **Vertex region**, enter or select `us-west2`. If you leave the field empty, Vertex uses `global`.
+8. For the **Outgoing model**, select **Explicit**, and enter `google/gemini-2.5-flash-lite-preview-06-17`.
+9. Click **Save model**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
 llm:
   models:
   - name: gemini-2.5-flash
@@ -60,6 +78,17 @@ llm:
       vertexProject: my-project-id
       vertexRegion: us-west2
 ```
+
+| Setting | Description |
+|---------|-------------|
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
+| `provider` | The LLM provider, set to `vertex` for Google Cloud Vertex AI. |
+| `params.model` | The specific Vertex AI model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
+| `params.vertexProject` | The Google Cloud project ID. |
+| `params.vertexRegion` | The Google Cloud region. Defaults to `global` if not specified. |
+| `auth.gcp` | Google Cloud authentication configuration. Uses Application Default Credentials (ADC) by default. |
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="vertex" >}}
 cat <<'EOF' > config.yaml
@@ -76,17 +105,6 @@ llm:
 EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
-
-{{< reuse "agw-docs/snippets/review-configuration.md" >}}
-
-| Setting | Description |
-|---------|-------------|
-| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
-| `provider` | The LLM provider, set to `vertex` for Google Cloud Vertex AI. |
-| `params.model` | The specific Vertex AI model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
-| `params.vertexProject` | The Google Cloud project ID. |
-| `params.vertexRegion` | The Google Cloud region. Defaults to `global` if not specified. |
-| `auth.gcp` | Google Cloud authentication configuration. Uses Application Default Credentials (ADC) by default. |
 
 {{< doc-test paths="vertex" >}}
 # Confirm the client-facing `name` is served and that `params.model`,

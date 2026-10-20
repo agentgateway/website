@@ -167,16 +167,45 @@ routes:
 
 ## Configure the agentgateway
 
+You can add the MCP servers in the UI or in a configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+The UI adds both targets to the top-level `mcp` section, as in the [example multiplexing configuration](#about). The downloaded configuration in the **Config file** tab puts the same targets in a route backend instead. Both setups multiplex the targets in the same way.
+
+1. Create a configuration with an empty `mcp` section, and start agentgateway. You add the MCP servers in the UI.
+   ```sh
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   mcp:
+     port: 3000
+     targets: []
+   EOF
+   agentgateway -f config.yaml
+   ```
+2. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and add the `time` server.
+   1. Click **Add server**.
+   2. Enter `time` for the **Server name**, and select the **Command Line** transport. Target names cannot include underscores (`_`).
+   3. Enter `uvx` for the **Command** and `--with mcp<2 mcp-server-time` for the **Arguments**.
+   4. Click **Save server**.
+3. Add the `everything` server.
+   1. Click **Add server**.
+   2. Enter `everything` for the **Server name**, and select the **Command Line** transport.
+   3. Enter `npx` for the **Command** and `@modelcontextprotocol/server-everything` for the **Arguments**.
+   4. Click **Save server**.
+
+The **MCP Servers** page lists both servers. The UI writes each target with an empty `env` map and `clear_env: false`.
+
+To use the UI playground, you also need a CORS policy. In the UI, you add it with **Apply CORS** when you verify the setup in the next section.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 1. Download a multiplex configuration for your agentgateway.
 
    ```yaml {paths="mcp-virtual"}
    curl -L https://agentgateway.dev/examples/mcp-multiplex/config.yaml -o config.yaml
    ```
-
-   {{< doc-test paths="mcp-virtual" >}}
-   # Step 1: the documented multiplex config downloads and is accepted
-   agentgateway -f config.yaml --validate-only
-   {{< /doc-test >}}
 
 2. Review the configuration file. 
 
@@ -220,6 +249,13 @@ routes:
    ```sh
    agentgateway -f config.yaml
    ```
+{{% /tab %}}
+{{< /tabs >}}
+
+{{< doc-test paths="mcp-virtual" >}}
+# Step 1: the documented multiplex config downloads and is accepted
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
 
 ## Verify access to tools
 
@@ -264,6 +300,18 @@ When you multiplex multiple targets, agentgateway namespaces tool and prompt nam
 
 Use `never` when clients need to call tools by their plain names, such as for [MCP Apps]({{< link-hextra path="/documentation/mcp/apps" >}}) that issue tool calls from a rendered UI. Because unprefixed names must be unique, agentgateway fails to start if two targets expose the same tool name in this mode.
 
+You can set the prefix mode in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**.
+2. For **Prefix mode**, select **Never**.
+3. For **State mode**, select **Stateful** to keep the default session behavior. The list shows **Stateless** when `statefulMode` is not set, and the drawer saves the selected value.
+4. Click **Save settings**.
+
+The UI sets `prefixMode` to `never`, as in the **Config file** tab. It also writes the selected state mode, sets `failureMode` to `failClosed`, and writes an empty `gateways` list. The **None** option removes `prefixMode`, so the default `conditional` behavior applies, and names are still prefixed when the backend has more than one target.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 mcp:
@@ -279,6 +327,8 @@ mcp:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 > [!NOTE]
 > The `time` target pins the MCP Python SDK with `--with mcp<2` because `mcp-server-time` does not yet support version 2.x of the SDK. Without the constraint, the target fails to start. Drop the constraint after `mcp-server-time` adds support.

@@ -83,7 +83,7 @@ Turn on API key authentication, and create two virtual keys, one for Alice and o
    ```
 
 3. Open [http://localhost:15000/ui/llm/keys](http://localhost:15000/ui/llm/keys) (**LLM > Virtual API Keys**).
-4. Click **Enable API key auth**. Keep the **Strict** validation mode, and click **Enable API key auth** again. Strict mode requires a valid API key for all requests.
+4. Click **Enable API key auth**. For the **Validation mode**, select **Strict**, and click **Enable API key auth** again. Strict mode requires a valid API key for all requests.
 5. Click **New key**, and create Alice's key.
    1. Enter `alice` for the **Name**.
    2. For the **Key value**, select **Use custom key**, and enter `sk-alice-abc123def456`. To have agentgateway generate the key instead, keep the auto-generate option, and use the generated value in the later steps.

@@ -21,7 +21,35 @@ Follow the instructions in this guide to learn how to use these different method
 
 ## Configure your agentgateway proxy
 
-Browse through the tabs to learn about different ways for how to provide your API key to agentgateway. 
+You can set the provider API key in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Start agentgateway with a configuration that has an `llm` section. You add the model and its API key in the UI.
+
+   ```sh
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models: []
+   EOF
+   agentgateway -f config.yaml
+   ```
+
+2. Open **LLM** > **Models** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+3. From the **Provider** dropdown, select **OpenAI**.
+4. Replace the **Incoming model match** with `*`.
+5. For the **Provider API key**, select one of the following options.
+   * **API key**: Enter the key itself, such as `sk-proj....`. The UI writes the key inline in the `params.apiKey` field. This option is the least secure. Only use this option for quick tests.
+   * **Env var**: Enter the name of the environment variable, such as `OPENAI_API_KEY`. The UI writes `apiKey: $OPENAI_API_KEY`. The variable must be set in the environment that agentgateway runs in, or the save fails.
+   * **File**: Enter the path to a file that holds the key, such as `/etc/agentgateway/openai-key.txt`. The UI writes `apiKey: {file: <path>}`, and agentgateway reads the key from the file. This option differs from the **File** steps in the **Config file** tab, which load the file into an environment variable.
+   * **Unset**: Configure no provider credential.
+6. Click **Save model**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+Browse through the tabs to learn about different ways for how to provide your API key to agentgateway.
 
 {{< tabs >}}
 
@@ -96,5 +124,7 @@ When deploying agentgateway on Kubernetes, you can leverage Kubernetes secrets t
 
 For more information, see the [agentgateway on Kubernetes docs](https://agentgateway.dev/docs/kubernetes/latest/documentation/llm/api-keys/). 
 
+{{% /tab %}}
+{{< /tabs >}}
 {{% /tab %}}
 {{< /tabs >}}

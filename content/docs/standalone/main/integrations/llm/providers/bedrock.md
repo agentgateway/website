@@ -65,11 +65,31 @@ Agentgateway will automatically detect the local ambient credentials, but these 
 
 ## Configuration
 
+You can add the model in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same model as the **Config file** tab.
+
+1. Start agentgateway in an environment that has AWS credentials, such as an AWS profile or environment variables.
+2. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+3. From the **Provider** dropdown, select **Amazon Bedrock**.
+4. In the **Incoming model match** field, replace the default `bedrock/*` with `*`.
+5. Keep **Ambient** for the **AWS credentials**. To enter an access key instead, select **Static**. This option writes the key to an `auth.aws` block.
+6. For the **AWS region**, enter or select `us-west-2`.
+7. From the **Bedrock endpoint** dropdown, select **Prefer Runtime**. The UI preselects **Prefer Mantle** for a new Bedrock model, and saves the choice as `params.bedrockEndpointPreference`. For more information, see [Bedrock Mantle](#bedrock-mantle).
+8. Keep **Incoming model** as the **Outgoing model**. To send every request to one model instead, select **Explicit**, and enter the model ID. This option sets `params.model`.
+9. Click **Save model**.
+
+The UI writes `bedrockEndpointPreference: runtimePreferred` in addition to the fields in the **Config file** tab. Runtime is also the default when the field is not set, so both configurations behave the same.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
 llm:
   models:
   - name: "*"
@@ -77,6 +97,15 @@ llm:
     params:
       awsRegion: us-west-2
 ```
+
+| Setting | Description |
+|---------|-------------|
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
+| `provider` | The LLM provider, set to `bedrock` for Amazon Bedrock models. |
+| `params.model` | The specific Bedrock model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
+| `params.awsRegion` | The AWS region where the Bedrock model is hosted. |
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="bedrock" >}}
 cat <<'EOF' > config.yaml
@@ -91,15 +120,6 @@ llm:
 EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
-
-{{< reuse "agw-docs/snippets/review-configuration.md" >}}
-
-| Setting | Description |
-|---------|-------------|
-| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
-| `provider` | The LLM provider, set to `bedrock` for Amazon Bedrock models. |
-| `params.model` | The specific Bedrock model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
-| `params.awsRegion` | The AWS region where the Bedrock model is hosted. |
 
 ## Passthrough
 
@@ -212,11 +232,19 @@ Bedrock serves models on two API surfaces: the Runtime endpoint, which carries t
 
 For chat requests, the endpoint is chosen per model from the `runtime` and `mantle` tags in the [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). The built-in catalog that ships with {{< reuse "agw-docs/snippets/agentgateway.md" >}} already tags the Amazon Bedrock models. To tag models that are newer than your agentgateway version, run `agctl catalog import`. Its default sources include `aws-bedrock-mantle`, which reads the tags from the AWS model cards. A model with neither tag falls back to the preference alone.
 
-Set `params.bedrockEndpointPreference` to choose how the tags are applied.
+Set `params.bedrockEndpointPreference` to choose how the tags are applied. You can set the preference in the UI or in your configuration file.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Models**, and click the edit icon for the Bedrock model. To create a model, click **Add model**, and select **Amazon Bedrock** from the **Provider** dropdown.
+2. From the **Bedrock endpoint** dropdown, select an option. **Prefer Runtime** writes `runtimePreferred`, **Prefer Mantle** writes `mantlePreferred`, **Runtime only (advanced)** writes `runtimeOnly`, and **Mantle only (advanced)** writes `mantleOnly`.
+3. Click **Save model**.
+
+The **Bedrock endpoint** dropdown is also in the **Add provider** drawer on the **LLM** > **Providers** page.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
 llm:
   models:
   - name: "*"
@@ -225,6 +253,8 @@ llm:
       awsRegion: us-west-2
       bedrockEndpointPreference: runtimePreferred
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="bedrock" >}}
 cat <<'EOF' > config-mantle.yaml

@@ -36,8 +36,37 @@ You can add, set, or remove request and response headers with agentgateway's tra
 
 #### Route-level header transformation
 
-Transform headers after route selection:
+Transform headers after route selection. You can configure the transformation in the UI or in your configuration file.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `transformations` policy as the **Simplified (LLM)** example in the **Config file** tab.
+
+1. Create a configuration with an LLM model, but no transformation policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPEN_AI_APIKEY"
+   ```
+2. Start agentgateway with this configuration.
+3. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **Transformations** tile.
+4. Expand **Request transformations**. In **Add headers**, add the following headers. For each header, enter the header name and the CEL expression, and click **Add**.
+   1. `x-request-path` with `request.path`
+   2. `x-client-ip` with `source.address`
+5. Expand **Response transformations**.
+   1. In **Add headers**, enter `x-response-code` and `string(response.code)`, and click **Add**.
+   2. In **Remove headers**, add `server` and `x-content-type-options`. For each header, enter the name, and click **Add**.
+6. Click **Save policy**.
+
+You can also add a transformation policy in **MCP** > **Policies**, or in the **Route policies** section of a named route in **Traffic** > **Routes**. The **Routing-based** example uses an inline `ai` backend, which the UI edits only as raw YAML. For that example, use the **Config file** tab.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
@@ -121,6 +150,8 @@ routes:
         - x-content-type-options
 ```
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 {{< doc-test paths="transformations" >}}
@@ -219,6 +250,33 @@ agentgateway -f config-mcp.yaml --validate-only
 Transform headers before route selection by attaching the policy at the listener level:
 
 {{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `transformations` policy as the **Simplified (LLM)** example in the **Config file** tab.
+
+1. Create a configuration with an LLM model, but no transformation policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPEN_AI_APIKEY"
+   ```
+2. Start agentgateway with this configuration.
+3. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **Transformations** tile.
+4. Expand **Request transformations**. In **Add headers**, enter `x-gateway` for the header name and `"agentgateway"` for the CEL expression, and click **Add**. The double quotes make the value a string. The UI saves the value as `'"agentgateway"'`.
+5. Click **Save policy**.
+
+For the **Routing-based** example, add the policy at the gateway level instead.
+
+1. Open **Traffic** > **Gateways**, and click **Edit gateway** for the `default` gateway.
+2. Click **Gateway policies**, and then click the **Transformations** tile.
+3. Add the `x-gateway` header as described in step 4, and click **Save**.
+4. Close the **Gateway policies** drawer, and click **Save gateway**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -274,6 +332,8 @@ routes:
          model: gpt-3.5-turbo
 ```
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 {{< doc-test paths="transformations" >}}
@@ -350,6 +410,29 @@ When the `body` CEL expression returns a string or bytes value, the result repla
 > To provide a specific string value, add your string in single quotes `'` followed by double quotes `"`. This way, the string is interpreted as a string value. If you provide the value without quotes or with double quotes only, it is interpreted as a CEL expression. 
 
 {{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `transformations` policy as the **Simplified (LLM)** example in the **Config file** tab.
+
+1. Create a configuration with an LLM model, but no transformation policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPEN_AI_APIKEY"
+   ```
+2. Start agentgateway with this configuration.
+3. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **Transformations** tile.
+4. Expand **Request transformations**, and enter `"Hello " + default(request.headers["x-user-name"], "guest")` for the **Body expression**.
+5. Expand **Response transformations**, and enter `"Response code: " + string(response.code)` for the **Body expression**.
+6. Click **Save policy**.
+
+The UI saves each body expression as a single-quoted string instead of a `|` block. Both forms set the same expression.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -408,6 +491,8 @@ routes:
   - host: localhost:8080
 ```
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 {{< doc-test paths="transformations" >}}

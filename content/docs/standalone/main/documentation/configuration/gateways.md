@@ -100,7 +100,7 @@ To add a gateway in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 
 1. Open **Traffic** > **Gateways**, and click **Add gateway**.
 2. Enter a **Name** and a **Port**, such as `http-proxy` and `8080`.
-3. Select the **Protocol**. The **Resulting YAML** shows the gateway entry that the UI writes.
+3. Select the **Protocol**. To preview the change to your configuration file, click **View diff**.
 
    {{< reuse-image src="img/ui-add-gateway.png" srcDark="img/ui-add-gateway-dark.png" >}}
 
@@ -276,6 +276,31 @@ Use the `listeners` field when one port must serve multiple hostnames with diffe
 
 When you set `listeners`, you can also set `port` and `bindAddress` on the gateway itself. Move the protocol, hostname, and TLS settings into each listener.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps create the same gateway and routes as the **Config file** tab.
+
+1. Open **Traffic** > **Gateways**, and click **Add gateway**.
+2. Enter a **Name** and a **Port**, such as `web` and `8443`.
+3. Select **Multiple listeners**, and click **Save gateway**. The gateway gets one listener named `listener1`.
+
+   > [!NOTE]
+   > Select **Multiple listeners** before you change other fields. The option is unavailable after you set a protocol, TLS, or a policy on the gateway.
+
+4. In the listener table of the `web` gateway, click the edit icon for `listener1`, and fill out the **Edit listener** drawer.
+   1. Enter `discrete` for the **Name**.
+   2. Select **HTTPS** as the **Protocol**. The **TLS** section appears.
+   3. Enter `a.example.com` for the **Hostname**.
+   4. Expand the **TLS** section. Enter `./certs/cert-a.pem` for the **Certificate** and `./certs/key-a.pem` for the **Key**.
+5. Click **Save listener**.
+6. In the header of the `web` gateway, click the **Add listener** icon. Repeat the previous steps for a `wildcard` listener with the `*.example.com` hostname and the `cert-wildcard.pem` and `key-wildcard.pem` files.
+7. Open **Traffic** > **Routes**, and add the two routes. For each route, click **Add route**, enter the **Name**, select the **Gateway**, add a backend **Host**, and click **Save route**.
+   * `a-only`: Select the `web/discrete` gateway, and enter `a-backend.example.com:443`.
+   * `everything-else`: Select **web (all HTTP listeners)**, and enter `shared-backend.example.com:443`.
+
+The certificate and key files must exist when you save the listener. The UI leaves out `protocol: HTTPS` on each listener, because setting `tls` implies it.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -302,6 +327,8 @@ routes:
   backends:
   - host: shared-backend.example.com:443
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 All listeners under a gateway share the gateway's bind address and port, so they cannot mix encrypted and plaintext traffic. If you need both HTTP and HTTPS, define two gateways as shown in [Serve the same routes on multiple gateways](#multiple-gateways).
 
@@ -347,6 +374,18 @@ The `protocol` field controls whether a gateway accepts HTTP routes or TCP route
 
 TCP and TLS gateways serve `tcpRoutes` instead of `routes`.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **Traffic** > **Gateways**, and click **Add gateway**.
+2. Enter a **Name** and a **Port**, such as `tcp` and `9000`.
+3. Select **TCP** as the **Protocol**, and click **Save gateway**.
+4. Open **Traffic** > **Routes**, and click **Add route**.
+5. Select **TCP** as the **Kind**, and select the `tcp` **Gateway**.
+6. Enter a **Name**, such as `tcp-backend`. The UI requires a route name.
+7. Click **Add backend**, and enter `localhost:8000` for the **Host**.
+8. Click **Save route**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -358,6 +397,8 @@ tcpRoutes:
   backends:
   - host: localhost:8000
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 For more information about each protocol, including TLS termination and passthrough, see [Listeners]({{< link-hextra path="/documentation/configuration/listeners/" >}}).
 
@@ -493,6 +534,22 @@ agentgateway -f config7.yaml --validate-only
 
 Gateways and listeners accept the same policies that listeners accepted under `binds`, such as `jwtAuth`, `authorization`, `cors`, `basicAuth`, `apiKey`, `oidc`, `extAuthz`, `extProc`, and `transformations`. A policy on a gateway applies to all traffic that enters that gateway, including LLM, MCP, and UI traffic.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the CORS policy from the **Config file** tab to an existing `default` gateway.
+
+1. Open **Traffic** > **Gateways**, and click the edit icon for the `default` gateway.
+2. Click **Gateway policies**, and then click the **CORS** tile.
+3. Fill out the CORS form.
+   1. In **Allowed origins**, enter `https://app.example.com`, and click **Add**.
+   2. In **Allowed methods**, keep **GET** and **POST** selected.
+   3. In **Allowed headers**, clear **Allow all request headers**.
+4. Click **Save**, and close the **Gateway policies** drawer.
+5. Click **Save gateway**.
+
+To attach a policy to one listener instead, click the edit icon for the listener, and use its **Listener policies** section.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -508,6 +565,8 @@ routes:
 - backends:
   - host: localhost:8000
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 To scope a policy more narrowly, attach it to a listener or to a route instead. For more information, see [Attachment points]({{< link-hextra path="/documentation/configuration/policies/attachment/" >}}).
 
@@ -582,6 +641,22 @@ routes:
   - host: localhost:8000
 ```
 
+You can convert a configuration in the UI or by editing your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Start agentgateway with your `binds` configuration, and open **Traffic** > **Gateways**. A **Detected legacy binds config** banner appears when the configuration has `binds` but no `gateways`.
+2. Click **Review migration**. The **Migrate binds to gateways** drawer shows your current configuration next to the converted one.
+3. Review the diff, and click **Save**.
+
+For the previous example, the UI writes the same `gateways` configuration, without the default `protocol: HTTP` field.
+
+The UI leaves the following binds in `binds`. Convert them by editing the configuration file.
+* Binds with a non-default `mode` or `tunnelProtocol`.
+* Binds whose listeners mix HTTP and TCP routes.
+* Binds whose listeners mix TLS and plaintext traffic.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 To convert a configuration:
 
 1. Replace the `binds` list with a `gateways` map. Give each port a name, and name your primary gateway `default` so that routes and endpoints attach to it without an explicit `gateways` field.
@@ -594,8 +669,8 @@ To convert a configuration:
    ```shell
    agentgateway -f config.yaml --validate-only
    ```
-
-If you configure agentgateway through the UI, the UI detects an existing `binds` configuration and offers a one-click migration to gateways.
+{{% /tab %}}
+{{< /tabs >}}
 
 > [!NOTE]
 > You can keep `binds` and `gateways` in the same file while you migrate, as long as they do not claim the same port.

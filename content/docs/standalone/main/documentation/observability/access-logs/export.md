@@ -8,6 +8,65 @@ Log export happens in addition to stdout output, so you can send logs to a colle
 
 This guide walks through setting up an OpenTelemetry Collector to receive access logs from agentgateway.
 
+You can configure the export in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+
+Run the OTel Collector as a Docker container on the same host as agentgateway.
+
+1. Create an `otel-collector-config.yaml` file that defines an OTLP receiver and a logs pipeline.
+   ```sh
+   cat > otel-collector-config.yaml << 'EOF'
+   receivers:
+     otlp:
+       protocols:
+         grpc:
+           endpoint: 0.0.0.0:4317
+   processors:
+     batch:
+   exporters:
+     debug:
+       verbosity: detailed
+   service:
+     pipelines:
+       logs:
+         receivers: [otlp]
+         processors: [batch]
+         exporters: [debug]
+   EOF
+   ```
+   Replace the `debug` exporter with the exporter for your logging backend (for example, Loki, Elasticsearch, or an OTLP-compatible storage system).
+
+2. Start the OTel Collector container and mount your config file.
+   ```sh
+   docker run -d --name otel-collector \
+     -p 4317:4317 \
+     -v $(pwd)/otel-collector-config.yaml:/etc/otelcol/config.yaml \
+     otel/opentelemetry-collector:latest
+   ```
+
+3. Configure agentgateway to send access logs to the collector.
+   1. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability), and click the **Access logs** card.
+   2. In the **OTLP export** section, select **Export logs over OTLP**.
+   3. Keep `localhost:4317` for the **Collector host** and **gRPC** for the **Protocol**.
+   4. Click **Save policy**. The UI saves the `frontendPolicies.accessLog.otlp` section in your configuration.
+
+4. Send a request through agentgateway, then check the collector output to verify that log records are arriving.
+   ```sh
+   docker logs otel-collector
+   ```
+   Each proxied request appears as a `LogRecord` entry in the collector output. Look for a block that starts with `LogRecord #` and includes attributes such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`.
+
+5. When you are done, remove the OTel Collector container.
+   ```sh
+   docker rm -f otel-collector
+   ```
+
+For a Helm installation, use the **Kubernetes (Helm)** tab in the **Config file** tab.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< tabs >}}
 {{% tab name="Binary and Docker" %}}
 
@@ -21,14 +80,11 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
        protocols:
          grpc:
            endpoint: 0.0.0.0:4317
-
    processors:
      batch:
-
    exporters:
      debug:
        verbosity: detailed
-
    service:
      pipelines:
        logs:
@@ -139,6 +195,8 @@ Deploy the OTel Collector into your cluster by using the OpenTelemetry Helm char
 
 {{% /tab %}}
 {{< /tabs >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Other configurations
 
@@ -150,6 +208,14 @@ You can filter which access logs are exported to your OTLP backend by setting th
 
 The following example sends only error responses to the OTLP collector while logging all requests to stdout.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Settings** > **Observability** page, and click the **Access logs** card.
+2. In the **OTLP export** section, select **Export logs over OTLP**, and keep `localhost:4317` for the **Collector host**.
+3. Enter `response.code >= 400` in the **OTLP filter** field. To set the top-level filter instead, use the **Filter** field in the **Log fields** section.
+4. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -158,6 +224,8 @@ frontendPolicies:
       host: localhost:4317
       filter: 'response.code >= 400'
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 The following example logs only error responses to stdout, the database, and the OTLP collector. Because no `otlp.filter` is set, the top-level filter applies to all three backends.
 

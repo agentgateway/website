@@ -12,6 +12,39 @@ Jaeger works best for local development and testing. For production deployments,
 
 The way you set up Jaeger depends on how you installed agentgateway. 
 
+You can point agentgateway at Jaeger in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+
+Run a Jaeger container on the same host as agentgateway.
+
+1. Start a Jaeger container on the same host that agentgateway runs.
+   ```sh
+   docker run -d --name jaeger \
+     -p 16686:16686 \
+     -p 4317:4317 \
+     -e COLLECTOR_OTLP_ENABLED=true \
+     jaegertracing/all-in-one:latest
+   ```
+
+2. Point agentgateway at the Jaeger endpoint.
+   1. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability), and click the **Tracing** card.
+   2. Keep `localhost:4317` for the **Host** and **gRPC** for the **Protocol**.
+   3. Enter `true` for **Random sampling**.
+   4. Click **Save policy**.
+
+3. Open the Jaeger UI at [http://localhost:16686](http://localhost:16686) to view traces.
+
+4. When you are done, remove the Jaeger container.
+   ```sh
+   docker rm -f jaeger
+   ```
+
+For a Helm installation, use the **Kubernetes (Helm)** tab in the **Config file** tab.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< tabs >}}
 {{% tab name="Binary and Docker" %}}
 
@@ -76,6 +109,8 @@ Install Jaeger into your cluster by using Helm and point agentgateway at the Jae
    kubectl delete namespace monitoring
    ```
 
+{{% /tab %}}
+{{< /tabs >}}
 {{% /tab %}}
 {{< /tabs >}}
 

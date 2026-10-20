@@ -10,62 +10,50 @@ You need agentgateway 1.6.0 or later and a Meta Model API key. Create a key in t
 
 Use the `meta` preset to route requests to the Meta Model API. The preset supplies the provider URL and supported request formats.
 
-1. Set your API key in the terminal where you will run agentgateway.
+{{< doc-test paths="meta-validate" >}}
+# Validate the configuration without calling the Meta API. A placeholder key
+# is sufficient because --validate-only resolves environment variables.
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+export META_API_KEY="test"
+{{< /doc-test >}}
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+You can add the model in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same model as the **Config file** tab.
+
+1. Set your API key, create a configuration file with an empty `llm` section, and start agentgateway. The UI checks that the `META_API_KEY` environment variable exists when you save the model.
 
    ```sh
    export META_API_KEY='<your-api-key>'
-   ```
-
-   {{< doc-test paths="meta-validate" >}}
-   # Validate the configuration without calling the Meta API. A placeholder key
-   # is sufficient because --validate-only resolves environment variables.
-   {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-   export META_API_KEY="test"
-   {{< /doc-test >}}
-
-2. Create a `config.yaml` file with the following configuration.
-
-   ```sh {paths="meta-validate"}
    cat > config.yaml <<'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
-     models:
-     - name: "*"
-       provider: meta
-       params:
-         apiKey: "$META_API_KEY"
-         # Optional: use this upstream model for every matching request.
-         # model: muse-spark-1.3
-         # Optional: override the default provider URL.
-         # baseUrl: https://api.meta.ai/v1
+     models: []
    EOF
-   ```
-
-   | Setting | Description |
-   |---------|-------------|
-   | `name` | The model name to match in incoming requests. Use `*` to accept any model name. |
-   | `provider` | The provider preset. Set to `meta`. |
-   | `params.apiKey` | Your Meta Model API key. Use `$META_API_KEY` to read the key from the environment. |
-   | `params.model` | Optional. The upstream model to use for every matching request. Omit to use the model from the request. |
-   | `params.baseUrl` | Optional. Overrides the provider URL. Defaults to `https://api.meta.ai/v1`. |
-
-3. Validate the configuration.
-
-   ```sh {paths="meta-validate"}
-   agentgateway -f config.yaml --validate-only
-   ```
-
-   Example output:
-
-   ```text
-   Configuration is valid!
-   ```
-
-4. Start agentgateway.
-
-   ```sh
    agentgateway -f config.yaml
    ```
+
+2. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+3. From the **Provider** dropdown, select **Meta**.
+4. In the **Incoming model match** field, replace the default `meta/*` with `*`.
+5. For the **Provider API key**, select **Env var**, and enter `META_API_KEY`.
+6. Keep **Incoming model** as the **Outgoing model**. To send every request to one model instead, select **Explicit**, and enter the model name, such as `muse-spark-1.3`. This option sets `params.model`.
+7. Click **Save model**.
+
+The form has no field for `params.baseUrl`. To override the provider URL, click **Raw** in the drawer header and add the field, or use the **Config file** tab.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/llm/providers/meta-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/standalone/llm/providers/meta-config.md" >}}
+{{% /version %}}
 
 ## Example request
 

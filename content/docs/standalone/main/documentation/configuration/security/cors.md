@@ -103,6 +103,38 @@ CORS policies are typically implemented to limit access to server resources for 
 - `allowCredentials`
 - `maxAge`
 
+You can configure CORS in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same CORS policy as the **Simplified (LLM)** example in the **Config file** tab.
+
+1. Create a configuration with an LLM model, but no CORS policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   ```
+2. Start agentgateway with this configuration.
+3. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **CORS** tile.
+4. Fill out the CORS form.
+   1. In **Allowed origins**, enter `https://chat.example.com`, and click **Add**.
+   2. In **Allowed methods**, select **POST** and **OPTIONS**, and clear **GET**.
+   3. In **Allowed headers**, clear **Allow all request headers**. Then, in **Header allowlist**, click the `authorization` and `content-type` suggestions.
+   4. In **Expose headers**, click the `x-request-id` suggestion.
+   5. Select **Allow credentials**.
+   6. Enter `10m` for the **Max age**.
+5. Click **Save policy**.
+
+You can also add a CORS policy in **MCP** > **Policies**, or in the **Route policies** section of a route in **Traffic** > **Routes**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
@@ -181,6 +213,8 @@ routes:
       maxAge: 100s
 ```
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 {{< doc-test paths="cors" >}}

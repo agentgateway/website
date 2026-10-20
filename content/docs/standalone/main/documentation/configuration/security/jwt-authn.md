@@ -51,6 +51,40 @@ After it validates a token, agentgateway removes the token from the location tha
 * Set `preserveToken: true` on the `jwtAuth` policy to leave the validated token where it was found. Use this setting when another policy on the same route reads the token from the request, such as an [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/standard/" >}}) that takes it as the subject token.
 * Set the `passthrough` [backend authentication]({{< link-hextra path="/documentation/configuration/security/backend-authn/" >}}) method to forward the validated token to one backend. Prefer this form when only the backend needs the token, because it does not expose the credential to every policy that runs later.
 
+You can configure JWT authentication in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `jwtAuth` policy as the **Simplified (LLM)** example in the **Config file** tab.
+
+1. Save your JWKS to a file on the gateway host, such as `./manifests/jwt/pub-key`. The file must exist before you save the policy. Otherwise, the save fails with a `failed to load JWKS` error.
+2. Create a configuration with an LLM model, but no JWT policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   ```
+3. Start agentgateway with this configuration.
+4. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **JWT auth** tile.
+5. In the **Enforcement** section, select **Strict** for the **Validation mode**.
+6. In the **Signing keys** section, select **Local file** for the **JWKS source**. Then, enter `./manifests/jwt/pub-key` for the **JWKS file**. A relative path is resolved from the folder that agentgateway runs from.
+7. In the **Token validation** section, fill out the following fields.
+   1. Enter `agentgateway.dev` for the **Issuer**.
+   2. In **Audiences**, enter `test.agentgateway.dev`, and click **Add**.
+   3. Keep the default **Required claims** selection, `exp`.
+8. Click **Save policy**.
+
+The UI also writes an empty `jwtValidationOptions` field, which keeps the default required claims. The form supports one issuer. To configure more than one entry under `providers`, use the drawer's **Raw** toggle or the **Config file** tab.
+
+You can also add a JWT policy in **MCP** > **Policies**, or in the **Gateway policies** section of a gateway in **Traffic** > **Gateways**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
@@ -109,6 +143,8 @@ routes:
   - host: localhost:8080
 ```
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 {{< doc-test paths="jwt-authn" >}}
@@ -179,6 +215,18 @@ It is common to pair `jwtAuth` with `authorization`, using the `claims` from the
 For example:
 
 {{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the `authorization` policy from the **Simplified (LLM)** example in the **Config file** tab. Add the **JWT auth** policy first, as described in the previous **UI** tab.
+
+1. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **Authorization** tile.
+2. Click **Add rule**. Keep the **Allow** effect.
+3. Replace the example expression with `request.path == "/admin" && jwt.groups.contains("admins")`.
+4. Click **Save policy**.
+
+In **MCP** > **Policies**, add the same two policies. For the **Routing-based** example, add the **JWT auth** policy in the gateway's **Gateway policies** section. Then, add the **Authorization** policy in the **Route policies** section of a named route.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -243,6 +291,8 @@ routes:
   - host: localhost:8080
 ```
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 {{< doc-test paths="jwt-authn" >}}

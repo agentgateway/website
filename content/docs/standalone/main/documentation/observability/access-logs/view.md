@@ -36,12 +36,28 @@ config:
 
 The field names in the previous example are short and human-oriented. To rename the built-in HTTP fields to their [OpenTelemetry semantic convention](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) equivalents, such as `url.path` instead of `http.path`, set `preset: otel` on the access log policy.
 
+You can set the preset in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+
+1. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability).
+2. Click the **Access logs** card.
+3. In the **Log fields** section, select **OpenTelemetry** from the **Stdout preset** dropdown.
+4. Click **Save policy**. The **Access logs** card shows **enabled**.
+
+The UI saves the policy under `frontendPolicies.accessLog` in your configuration.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
   accessLog:
     preset: otel
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 Use this preset when you ship stdout logs to a pipeline that already expects semantic convention attribute names, so that you do not have to rename the fields downstream.
 
@@ -95,12 +111,21 @@ To view access logs in the UI:
 
 Use a [CEL]({{< link-hextra path="/reference/cel/" >}}) expression to log only a subset of requests. Requests that do not match the expression are not logged. The following example produces access logs only for requests with a response code of 400 or greater.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Settings** > **Observability** page, and click the **Access logs** card.
+2. In the **Log fields** section, enter `response.code >= 400` in the **Filter** field.
+3. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
   accessLog:
     filter: 'response.code >= 400'
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Add custom fields to logs
 
@@ -111,6 +136,16 @@ The following example adds 3 fields to every access log entry:
 - `env`: Adds a static string of `production`.
 - `cost`: Converts the LLM request cost to a string and logs it.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Settings** > **Observability** page, and click the **Access logs** card.
+2. In the **Log fields** section, add each field under **Add fields**. For each field, enter the name and the CEL expression, and click **Add**.
+   1. `user_id` with the value `request.headers["x-user-id"]`
+   2. `env` with the value `"production"`. Keep the double quotes, because the value is a CEL string.
+   3. `cost` with the value `string(llm.cost)`
+3. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -120,6 +155,8 @@ frontendPolicies:
       env: '"production"'
       cost: 'string(llm.cost)'
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 For the full list of available fields, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables/" >}}). 
 
@@ -127,6 +164,13 @@ For the full list of available fields, see the [CEL variables reference]({{< lin
 
 Use `backend.endpoint` to record the resolved destination of a directly addressed backend, such as a static hostname, including its port for a network endpoint. This complements `backend.name`, which identifies the configured backend. Service backends leave `backend.endpoint` unset because their workload endpoints are selected separately. The endpoint is available only after the target is resolved, so guard the lookup for Service backends and requests rejected earlier in processing.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Settings** > **Observability** page, and click the **Access logs** card.
+2. Under **Add fields**, enter `backend_endpoint` as the name and `has(backend.endpoint) ? backend.endpoint : ""` as the value, and click **Add**.
+3. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -134,6 +178,8 @@ frontendPolicies:
     add:
       backend_endpoint: 'has(backend.endpoint) ? backend.endpoint : ""'
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Log guardrail results {#guardrails}
 
@@ -143,6 +189,16 @@ When a request guard rejects an LLM request before the provider call, the access
 
 The following filter includes all requests with guardrail results, even when every guard allows the content.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Settings** > **Observability** page, and click the **Access logs** card.
+2. In the **Log fields** section, enter `guardrails.size() > 0` in the **Filter** field.
+3. Under **Add fields**, add each field, and click **Add** after each one.
+   1. `guardrails` with the value `guardrails`
+   2. `guardrail_action` with the value `guardrails[0].action`
+4. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -152,6 +208,8 @@ frontendPolicies:
       guardrails: 'guardrails'
       guardrail_action: 'guardrails[0].action'
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 The `frontendPolicies.accessLog.filter` field takes a boolean CEL expression that selects which requests to log. In this example, `guardrails.size() > 0` counts the results and logs requests with at least one result. The expressions under `frontendPolicies.accessLog.add` separately choose the values recorded in each log field.
 
@@ -168,6 +226,13 @@ An ExtMCP request-phase guardrail can return dynamic metadata with a `Pass` or m
 
 The metadata keys depend on the ExtMCP server response. The following example records the `decision` key when the policy server returns metadata such as `{"decision":"allow"}`.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Settings** > **Observability** page, and click the **Access logs** card.
+2. Under **Add fields**, enter `mcp_guardrail_decision` as the name and `mcpGuardrails != null ? string(mcpGuardrails.decision) : ""` as the value, and click **Add**.
+3. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -175,11 +240,22 @@ frontendPolicies:
     add:
       mcp_guardrail_decision: 'mcpGuardrails != null ? string(mcpGuardrails.decision) : ""'
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Remove fields from logs
 
 Remove fields from access log lines. The following example removes the source address and HTTP path that are included by default. 
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Settings** > **Observability** page, and click the **Access logs** card.
+2. In the **Log fields** section, add each field to **Remove fields**.
+   1. Enter `src.addr`, and click **Add**.
+   2. Enter `http.path`, and click **Add**.
+3. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -188,3 +264,5 @@ frontendPolicies:
       - src.addr
       - http.path
 ```
+{{% /tab %}}
+{{< /tabs >}}

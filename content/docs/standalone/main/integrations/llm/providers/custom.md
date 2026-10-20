@@ -52,6 +52,23 @@ The `formats` list is optional. A model without it accepts only requests on path
 
 Below shows an example of connecting to [Perplexity](https://www.perplexity.ai/), which exposes an OpenAI-compatible API for search-augmented models and does not currently have a first-class provider.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same model as the **Config file** tab.
+
+1. Start agentgateway with the `PERPLEXITY_API_KEY` environment variable set. The UI checks that the variable exists when you save the model.
+2. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+3. From the **Provider** dropdown, select **Custom**.
+4. In the **Incoming model match** field, replace the default `custom/*` with `*`.
+5. For the **Provider API key**, select **Env var**, and enter `PERPLEXITY_API_KEY`.
+6. In the **Custom provider** section, enter `https://api.perplexity.ai` for the **Base URL**.
+7. In the **Route formats** list, keep **Chat completions (/chat/completions)** selected. Select any other format that the upstream supports, and optionally enter a path override for it.
+8. For the **Outgoing model**, select **Explicit**, and enter `llama-3.1-sonar-large-128k-online`.
+9. Click **Save model**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml {paths="openai-compat-validate"}
 cat > /tmp/test-perplexity.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -80,3 +97,5 @@ llm:
       baseUrl: "https://api.perplexity.ai"
 EOF
 ```
+{{% /tab %}}
+{{< /tabs >}}

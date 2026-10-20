@@ -61,8 +61,19 @@ Each access log record captures the following data.
 
 When a request prompt guard rejects an LLM request before the provider call, the database still stores a log record. The **Logs** page shows the rejection. The record includes request-side LLM metadata, but no provider response fields because the request never reaches the LLM provider.
 
-By default, LLM prompt and completion content is not stored. To capture it, set `llm: full` under the `frontendPolicies.accessLog.database` section.
+By default, LLM prompt and completion content is not stored. To capture it, set `llm: full` under the `frontendPolicies.accessLog.database` section. You can set it in the UI or in your configuration file.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+
+1. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability), and click the **Access logs** card.
+2. In the **Database** section, select **Full** from the **LLM detail** dropdown.
+3. Click **Save policy**.
+
+You can also open the **Logs** page, such as [http://localhost:15000/ui/llm/logs](http://localhost:15000/ui/llm/logs), click **Settings**, select **Include prompts and completions in logs**, and click **Save settings**. Clearing that checkbox later sets `llm: metadata` instead of removing the field.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -70,6 +81,8 @@ frontendPolicies:
     database:
       llm: full
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Query the database
 
@@ -108,6 +121,13 @@ LIMIT 10;
 
 Use the `frontendPolicies.accessLog.database.add` field to store additional access log fields that are evaluated as CEL expressions alongside each record.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Settings** > **Observability** page, and click the **Access logs** card.
+2. In the **Database** section, under **Database fields**, enter `user_id` as the name and `request.headers["x-user-id"]` as the value, and click **Add**.
+3. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -116,6 +136,8 @@ frontendPolicies:
       add:
         user_id: 'request.headers["x-user-id"]'
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 Custom fields are stored as a JSON blob in the `attributes_json` column of the `request_logs` table, not as separate columns. Use your database's JSON functions to extract them.
 

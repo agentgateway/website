@@ -21,8 +21,55 @@ description: Integrate agentgateway with LangSmith for LLM debugging and monitor
 
 ## Configuration
 
-LangSmith accepts OpenTelemetry traces directly. Configure agentgateway to export traces directly to LangSmith:
+LangSmith accepts OpenTelemetry traces directly. Configure agentgateway to export traces directly to LangSmith.
 
+You can configure tracing in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+
+1. Set the API key that the tracing policy sends in the `x-api-key` header. Export the variable in the environment that starts agentgateway. The UI checks environment variable references when you save, so the save fails if agentgateway does not have the variable.
+   ```bash
+   export LANGSMITH_API_KEY="<your-langsmith-api-key>"
+   ```
+2. Create a configuration that routes LLM traffic, and start agentgateway.
+   ```yaml
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   gateways:
+     default:
+       port: 3000
+   routes:
+   - backends:
+     - ai:
+         name: openai
+         provider:
+           openAI:
+             model: gpt-4o-mini
+     policies:
+       backendAuth:
+         key: "$OPENAI_API_KEY"
+   EOF
+   ```
+   ```sh
+   agentgateway -f config.yaml
+   ```
+3. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability), and click the **Tracing** card.
+4. In the **Tracing** drawer, configure the following fields.
+   1. **Host**: Enter `api.smith.langchain.com:443`.
+   2. **Backend policies**: Enter the following YAML to enable TLS and set the API key header.
+      ```yaml
+      backendTLS: {}
+      requestHeaderModifier:
+        set:
+          x-api-key: "${LANGSMITH_API_KEY}"
+      ```
+   3. **Protocol**: Select **HTTP**, and enter `/otel/v1/traces` for the **Path**.
+   4. **Random sampling**: Enter `true`.
+5. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -36,7 +83,6 @@ frontendPolicies:
       requestHeaderModifier:
         set:
           x-api-key: "${LANGSMITH_API_KEY}"
-
 gateways:
   default:
     port: 3000
@@ -51,6 +97,8 @@ routes:
     backendAuth:
       key: "$OPENAI_API_KEY"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Authentication
 

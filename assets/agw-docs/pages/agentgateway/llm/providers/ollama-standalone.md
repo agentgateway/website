@@ -20,47 +20,48 @@ Configure [Ollama](https://ollama.com/) to serve local models through agentgatew
 
 ## Configure agentgateway
 
-Create a configuration file that routes requests to your local Ollama instance.
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+You can configure agentgateway in the UI or in your configuration file.
 
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  port: 3000
-  models:
-  - name: "*"
-    provider: ollama
-    params:
-      model: llama3.2
-```
+{{< tabs >}}
+{{% tab name="UI" %}}
+To create the same configuration in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps.
 
-{{% reuse "agw-docs/snippets/review-table.md" %}}
+1. Create a configuration file with an empty `llm` section, and start agentgateway.
 
-| Setting | Description |
-|---------|-------------|
-| `provider: ollama` | Uses the built-in Ollama provider shortcut instead of the older `openAI` compatibility path. |
-| `params.model` | Sets the default Ollama model. The model must already exist in your local Ollama instance. |
-| `params.baseUrl` | Optional override for non-default Ollama endpoints. If omitted, agentgateway uses `http://localhost:11434/v1`. |
-| `name: "*"` | Matches any requested model name, so clients can request any model that Ollama has pulled. |
+   ```sh
+   cat > config.yaml <<'EOF'
+   llm:
+     models: []
+   EOF
+   agentgateway -f config.yaml
+   ```
 
-If Ollama is running somewhere other than `http://localhost:11434/v1`, override the base URL instead of using host overrides.
+2. Add the model.
+   1. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+   2. From the **Provider** dropdown, select **Ollama**.
+   3. In the **Incoming model match** field, replace the default `ollama/*` with `*`.
+   4. Keep **Unset** for the **Provider API key**.
+   5. If Ollama runs somewhere other than `http://localhost:11434/v1`, enter the **Base URL**, such as `http://192.168.1.20:11434/v1`. Otherwise, leave the field empty.
+   6. For the **Outgoing model**, select **Explicit**, and enter `llama3.2`.
+   7. Click **Save model**.
+3. Serve LLM traffic on port `3000`.
+   1. Open the **Gateway Overview** page, such as [http://localhost:15000/ui/](http://localhost:15000/ui/).
+   2. On the **LLM** card, click **Settings**.
+   3. Enter `3000` for the **Port**, and click **Save settings**.
 
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  port: 3000
-  models:
-  - name: "*"
-    provider: ollama
-    params:
-      model: llama3.2
-      baseUrl: http://192.168.1.20:11434/v1
-```
+The UI writes the same deprecated `llm.port` field as the **Config file** tab, plus an empty `llm.gateways` list. If your configuration defines `gateways`, the **Settings** drawer shows a **Gateway** dropdown instead of **Port**, and binds LLM traffic to the gateway that you select.
 
-Start agentgateway:
-
-```sh
-agentgateway -f config.yaml
-```
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/pages/agentgateway/llm/providers/ollama-standalone-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/pages/agentgateway/llm/providers/ollama-standalone-config.md" >}}
+{{% /version %}}
 
 ## Test the configuration
 
