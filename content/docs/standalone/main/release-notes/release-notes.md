@@ -51,7 +51,7 @@ Review the release notes for agentgateway standalone.
 - Stateful MCP requests with a session ID that the proxy cannot decode, such as after the session key changes, now return `404` instead of `400`, so clients start a new session.
 - MCP authentication derives JWKS URLs without a double slash when an issuer value ends with `/`.
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
-- MCP upstream responses now honor response idle timeout settings, so `responseIdleTimeout` or `spec.traffic.timeouts.responseIdle` ends a response when the MCP server stops sending body frames.
+- MCP responses now honor the `responseIdleTimeout` response idle timeout, which previously did not apply on MCP routes. A response, including an SSE stream, that sends no data for longer than the timeout is now ended.
 
 **Operations**
 

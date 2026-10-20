@@ -29,7 +29,7 @@ You can configure these types of timeouts on a route.
 |-|-|
 |`requestTimeout`|The time budget for an incoming request, including the total time across retries, before agentgateway returns response headers to the client. It does not limit the duration of a response body streamed to the client.|
 |`backendRequestTimeout`|The time budget for each request to a backend, including receiving response headers and any response body that agentgateway buffers. With retries, each attempt has its own budget. Receiving headers does not reset or end the deadline for buffered body reads. The deadline does not limit a response body that agentgateway streams without buffering.|
-|`responseIdleTimeout`|The maximum time to wait for the next frame from the upstream response body. Time spent processing the response body, buffering response guardrails, transforming the response, or waiting for the client to receive data does not count. For MCP traffic, the timeout watches the response stream from the selected MCP target. Use this setting to terminate a backend that stalls mid-stream, without capping how long a legitimately long upstream response might run. The timeout is disabled when the field is unset or set to zero, and it never applies to responses that switch protocols, so upgraded WebSocket and CONNECT tunnels are not terminated by it.|
+|`responseIdleTimeout`|The maximum time to wait for the next frame from the upstream response body. Time spent processing the response body, buffering response guardrails, transforming the response, or waiting for the client to receive data does not count. Use this setting to terminate a backend that stalls mid-stream, without capping how long a legitimately long upstream response might run. The timeout is disabled when the field is unset or set to zero, and it never applies to responses that switch protocols, so upgraded WebSocket and CONNECT tunnels are not terminated by it.|
 
 The `backendRequestTimeout` deadline also applies when agentgateway buffers a body for processing, such as CEL body inspection, non-SSE MCP responses, A2A responses, or external authorization response processing. For example, if the timeout is `5s` and the response headers arrive after `1s`, buffered body reads have only the remaining `4s`.
 
@@ -44,7 +44,6 @@ mcp:
   policies:
     timeout:
       requestTimeout: 1s
-      responseIdleTimeout: 5s
   targets:
   - name: everything
     stdio:
@@ -87,9 +86,9 @@ routes:
 #   * The route-level timeout policy is accepted by agentgateway in all three
 #     forms the page shows: routing-based (gateways), simplified MCP
 #     (mcp.policies) and simplified LLM (llm.policies).
-#   * That `responseIdleTimeout` is a real field on all three forms. It is the
-#     newest of the three timeouts, so a rename upstream would otherwise reach
-#     the page as prose nobody can run.
+#   * That `responseIdleTimeout` is a real field on both the routing-based and
+#     the simplified LLM forms. It is the newest of the three timeouts, so a
+#     rename upstream would otherwise reach the page as prose nobody can run.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests actually time out at runtime — requires a slow backend the
 #     page omits to exceed the configured deadline.
@@ -118,7 +117,6 @@ mcp:
   policies:
     timeout:
       requestTimeout: 1s
-      responseIdleTimeout: 5s
   targets:
   - name: everything
     stdio:
