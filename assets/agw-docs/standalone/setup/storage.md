@@ -145,7 +145,7 @@ Agentgateway preserves the schema comment at the top of the file, and reloads th
 > In this mode the UI is a writer of your configuration file, not only a reader. If you keep your configuration in version control, or if you generate it from another tool, use `readOnly` or `hybrid` mode so that a UI edit cannot overwrite it.
 
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-Agentgateway also writes to your configuration file at startup when you do not set an MCP session key. It generates a key and saves it in the `config.session.key` field, with a comment that marks the key as generated. The UI and the `/api/config` admin endpoint return your configuration file as it is, including the key, so [secure access to the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}). To keep the key out of your file, set the `SESSION_KEY` environment variable. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
+Agentgateway also writes to your configuration file at startup when you do not set an MCP session key. It generates a key and saves it in the `config.session.key` field, with a comment that marks the key as generated. The UI and the `/api/config` admin endpoint show your configuration file as it is, including the key and any other secrets in the file. For more information, see [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}). To keep the key out of your file, set the `SESSION_KEY` environment variable. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
 {{< /version >}}
 
 ### `hybrid` mode {#binary-hybrid}
