@@ -41,6 +41,9 @@ sequenceDiagram
 4. **Session resumption**: Subsequent requests with the same session ID are automatically routed to the same backend
 
 If a client sends a session ID that the proxy cannot decode, the proxy returns `HTTP 404`, and the [MCP specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#session-management) requires the client to start a new session. A session ID cannot be decoded after the session key changes. The key comes from the `SESSION_KEY` environment variable, or from `session.key` in the configuration file when the variable is not set. For example, a session ID fails to decode after you restart the proxy with a different key, or when proxy instances behind one load balancer use different keys.
+
+When a client closes a stateful session with `DELETE /mcp`, the proxy decodes the session ID before it sends close requests to upstream targets. Any replica with the same session key can close the upstream sessions. Deletion is best effort. Upstream close failures still return `HTTP 202`, and those upstream sessions stay open until the target's idle timeout. If the proxy cannot rebuild a target connection from the session ID, the client receives the rebuild error.
+
 Client `POST` requests to the MCP endpoint must list both `application/json` and `text/event-stream` in the `Accept` header. Clients can send the two media types as one comma-separated value or as separate `Accept` header lines. If either media type is missing, the request fails with HTTP 406.
 
 ## Stateless sessions {#stateless-sessions}
