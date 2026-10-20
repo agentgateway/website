@@ -48,7 +48,7 @@ The database holds only the resource types in the following table. Everything el
 | UI | Policies and the model catalog |
 
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-The database also holds the MCP session key that agentgateway generates when you do not set one, so every instance that shares the database encrypts session IDs with the same key. The key is not a configuration resource, so the UI and the config resource API do not show it. Anyone with read access to the database can read the key. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
+Besides these resources, the database holds the MCP session key that agentgateway generates when you do not set one, so every instance that shares the database encrypts session IDs with the same key. The key is not a configuration resource, so the UI and the config resource API do not show it. Anyone with read access to the database can read the key. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
 {{< /version >}}
 
 The overlay only adds resources. It does not replace a resource that your configuration file already defines. For example, in `hybrid` mode you can add a gateway in the UI, and agentgateway serves it alongside the gateways in your file. But if the resource that you store has the same name as one in your file, agentgateway rejects the write with a `409` response.
@@ -145,7 +145,7 @@ Agentgateway preserves the schema comment at the top of the file, and reloads th
 > In this mode the UI is a writer of your configuration file, not only a reader. If you keep your configuration in version control, or if you generate it from another tool, use `readOnly` or `hybrid` mode so that a UI edit cannot overwrite it.
 
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-Agentgateway also writes to your configuration file at startup when you do not set an MCP session key. It generates a key and saves it in the `config.session.key` field, with a comment that marks the key as generated. To keep the key out of your file, set the `SESSION_KEY` environment variable. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
+Agentgateway also writes to your configuration file at startup when you do not set an MCP session key. It generates a key and saves it in the `config.session.key` field, with a comment that marks the key as generated. The UI and the `/api/config` admin endpoint return your configuration file as it is, including the key, so [secure access to the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}). To keep the key out of your file, set the `SESSION_KEY` environment variable. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
 {{< /version >}}
 
 ### `hybrid` mode {#binary-hybrid}
