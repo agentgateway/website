@@ -10,6 +10,18 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🔥 Breaking changes {#v17-breaking-changes}
+
+### Standalone always encrypts MCP sessions {#v17-session-key}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4031 -->
+
+Agentgateway allows defining an MCP session key that encrypts MCP session IDs. On Kubernetes, this was auto-generated; standalone deployments now match this.
+
+When neither the `SESSION_KEY` environment variable nor `config.session.key` is set, agentgateway generates a key and stores it in the config file or database, whichever is writable. If neither is writable, agentgateway logs a warning and asks you to set the key.
+
+If you did not previously set a session key, MCP sessions established before the upgrade are rejected, and clients must establish new sessions. To keep sessions unencrypted, set `config.session.key: disabled`. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
+
 ## 🌟 New features {#v17-new-features}
 
 ### MCP {#v17-mcp}
