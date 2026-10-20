@@ -1,11 +1,9 @@
 ---
-title: Virtual keys
+title: Virtual key management
 weight: 10
-description: Protect provider credentials with virtual keys, then add optional token budgets and usage tracking.
-test:
-  virtual-keys:
-  - file: ${versionRoot}/documentation/llm/cost-controls/virtual-keys.md
-    path: virtual-keys
+description: Generate, restrict, update, and revoke virtual API keys with agctl, and inspect their budgets and spending.
+test: skip
+# CLI walkthrough verified by scripts/test-agctl-standalone.py with main binaries.
 ---
 
-{{< reuse "agw-docs/standalone/virtual-keys.md" >}}
+{{< reuse "agw-docs/standalone/main/virtual-keys.md" >}}

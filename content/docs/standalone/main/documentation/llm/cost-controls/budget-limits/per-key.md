@@ -357,6 +357,16 @@ EOF
 
 ### Step 6: Check budget usage
 
+Use [agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}) to view the key's budget usage as a table. The command is `budgets`, plural. Omit `--key` to list every per-key budget.
+
+```sh
+agctl standalone budgets --key team-a
+```
+
+The table shows `daily-spend` with `USED` above the `$0.008` limit, `REMAINING` at `$0`, `STATUS` set to `exceeded`, and `ACTION` set to `block`. `RESETS` shows the end of the current window in your local time.
+
+The CLI reports usage; it does not create, reset, or edit budgets. To inspect the full status response, including window timestamps, use the API below.
+
 Query the admin API for the current usage of a key. To return every budget, omit the `apiKeyName` parameter.
 
 ```sh {paths="apikey-budgets"}
@@ -473,6 +483,18 @@ EOF
 {{< /doc-test >}}
 
 ## Limit model access per key
+
+To issue a new key with model restrictions and a budget at runtime, use the [virtual-key CLI workflow]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#create" >}}). For example, after configuring the API-key policy and database:
+
+```sh
+CI_KEY="$(agctl standalone keys create ci \
+  --model 'gpt-5*' \
+  --budget 5usd/24h \
+  --budget-action block)"
+agctl standalone budgets --key ci
+```
+
+The CLI names this budget `usd-24h` and stores a hash of the generated key. It defaults to `audit` unless you pass `--budget-action block`. Capture the key on creation, and revoke this optional example key with `agctl standalone delete llm.apiKey ci` when you finish. For existing keys or custom budget names, [export, edit, and apply the key resource]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#update" >}}).
 
 The `allowedModels` field limits which models an API key can reach. The field is independent of budgets, so it needs no database and no catalog, and you can use it on its own.
 

@@ -91,6 +91,8 @@ curl -s http://localhost:4000/v1/chat/completions \
 
 Refresh the **Analytics** page and the request appears: tokens counted, cost calculated against the catalog, and attributed to the model, provider, and (if present) user. The realized `cost` is recorded alongside token counts, which is why the same fields you see in [logs and metrics]({{< link-hextra path="/documentation/llm/observability/" >}}) also drive the dashboard.
 
+{{< reuse "agw-docs/standalone/main/analytics.md" >}}
+
 ## Persistence and scaling
 
 The dashboard reads from the database at `config.database.url`. Agentgateway supports SQLite (default, single instance) and PostgreSQL. See [Request Log]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}) for full configuration details, including connection string format, credentials, and schema reference.
