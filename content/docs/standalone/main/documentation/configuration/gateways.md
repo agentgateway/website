@@ -92,6 +92,23 @@ flowchart LR
 
 ## Define a gateway {#define}
 
+You can define a gateway in the UI or in the configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+To add a gateway in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps.
+
+1. Open **Traffic** > **Gateways**, and click **Add gateway**.
+2. Enter a **Name** and a **Port**, such as `http-proxy` and `8080`.
+3. Select the **Protocol**. The **Resulting YAML** shows the gateway entry that the UI writes.
+
+   {{< reuse-image src="img/ui-add-gateway.png" srcDark="img/ui-add-gateway-dark.png" >}}
+
+4. Click **Save gateway**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 Each key in the `gateways` map is the gateway name, and each gateway needs a `port`. The following configuration listens for HTTP traffic on port 3000 and forwards it to a backend on `localhost:8000`.
 
 ```yaml
@@ -105,6 +122,8 @@ routes:
 ```
 
 The route in this example does not set a `gateways` field. When you omit that field, the route attaches to the gateway named `default`. Naming your primary gateway `default` keeps simple configurations short.
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="gateways" >}}
 # WHAT THIS TEST VALIDATES:
@@ -123,20 +142,6 @@ routes:
 EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
-
-### Add a gateway in the UI {#define-ui}
-
-You can also add a gateway in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}).
-
-1. Open **Traffic** > **Gateways**, and click **Add gateway**.
-2. Enter a **Name** and a **Port**, such as `http-proxy` and `8080`.
-3. Select the **Protocol**. The **Resulting YAML** shows the gateway entry that the UI writes.
-
-   {{< reuse-image src="img/ui-add-gateway.png" srcDark="img/ui-add-gateway-dark.png" >}}
-
-4. Click **Save gateway**.
-
-Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 
 ### Choose a listen address {#bind-address}
 

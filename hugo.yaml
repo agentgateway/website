@@ -146,6 +146,10 @@ params:
 
   page:
     width: wide
+    # Tab groups with the same tab names switch together, and the reader's
+    # choice carries across pages (for example, UI vs. Config file).
+    tabs:
+      sync: true
 
   theme:
     default: light

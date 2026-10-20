@@ -21,6 +21,24 @@ export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
 
 ## Static Hosts
 
+You can add static hosts in the UI or in the configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+In the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), static hosts are part of a route. To add or change one, edit the route.
+
+1. Open **Traffic** > **Routes**, and click the edit icon for the route.
+2. Scroll to the **Backends** section, and click **Add backend** for each host that you want to add.
+3. Enter the **Host** of each backend, such as `api-v2.example.com:8080`.
+4. Set the **Weight** of each backend to split traffic between the hosts. In the following example, the route sends 80% of requests to `api-v2.example.com:8080` and 20% to `api-v1.example.com:8080`.
+
+   {{< reuse-image src="img/ui-route-weighted-backends.png" srcDark="img/ui-route-weighted-backends-dark.png" >}}
+
+5. Click **Save route**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 The simplest form of backend is a static hostname or IP address. Static hosts are a routing-based backend, so they are configured in a `routes` entry; the simplified `llm` and `mcp` modes model only LLM providers and MCP targets. For example:
 
 ```yaml
@@ -36,6 +54,8 @@ routes:
   - host: 127.0.0.1:80
     weight: 9
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="backends" >}}
 # WHAT THIS TEST VALIDATES:
@@ -58,21 +78,6 @@ routes:
 EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
-
-### Add static hosts in the UI {#static-hosts-ui}
-
-In the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), static hosts are part of a route. To add or change one, edit the route.
-
-1. Open **Traffic** > **Routes**, and click the edit icon for the route.
-2. Scroll to the **Backends** section, and click **Add backend** for each host that you want to add.
-3. Enter the **Host** of each backend, such as `api-v2.example.com:8080`.
-4. Set the **Weight** of each backend to split traffic between the hosts. In the following example, the route sends 80% of requests to `api-v2.example.com:8080` and 20% to `api-v1.example.com:8080`.
-
-   {{< reuse-image src="img/ui-route-weighted-backends.png" srcDark="img/ui-route-weighted-backends-dark.png" >}}
-
-5. Click **Save route**.
-
-Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 
 ## Backend connection lifetime {#connection-lifetime}
 

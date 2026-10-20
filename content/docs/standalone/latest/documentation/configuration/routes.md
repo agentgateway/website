@@ -47,7 +47,27 @@ You can configure two types of routes: HTTP routes (`routes`) and TCP routes (`t
 
 [HTTP or HTTPS gateways](../listeners/) use `routes` to configure HTTP routes. HTTP routes support all HTTP features such as path, header, method, or query {{< gloss "Matching" >}}matching{{< /gloss >}}, and HTTP-specific filters and {{< gloss "Policy" >}}policies{{< /gloss >}}.
 
-Example configuration:
+{{< tabs >}}
+{{% tab name="UI" %}}
+To add an HTTP route in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same `http-backend` route as the **Config file** tab.
+
+1. Open **Traffic** > **Routes**, and click **Add route**.
+2. Select the **Gateway** that the route attaches to.
+3. Enter a **Name** and the **Hostnames** to match, such as `http-backend` and `example.com`.
+4. Select a **Path match** type, and enter the **Path**, such as **Prefix** and `/`.
+
+   {{< reuse-image src="img/ui-add-route.png" srcDark="img/ui-add-route-dark.png" >}}
+
+5. In the **Backends** section, click **Add backend**, and enter the **Host**, such as `http.example.com:8080`.
+
+   {{< reuse-image src="img/ui-add-route-backend.png" srcDark="img/ui-add-route-backend-dark.png" >}}
+
+6. Click **Save route**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+The following configuration creates the `http-backend` route.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -67,6 +87,8 @@ routes:
   - host: http.example.com:8080
     weight: 1
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="routes" >}}
 cat <<'EOF' > config-http.yaml
@@ -91,25 +113,6 @@ agentgateway -f config-http.yaml --validate-only
 {{< /doc-test >}}
 
 HTTP routes support various matching options for incoming requests. For more information, see the [Request matching]({{< link-hextra path="/documentation/configuration/traffic-management/matching/" >}}) guide.
-
-#### Add an HTTP route in the UI {#http-ui}
-
-You can also add an HTTP route in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}). The following steps create the `http-backend` route from the previous example.
-
-1. Open **Traffic** > **Routes**, and click **Add route**.
-2. Select the **Gateway** that the route attaches to.
-3. Enter a **Name** and the **Hostnames** to match, such as `http-backend` and `example.com`.
-4. Select a **Path match** type, and enter the **Path**, such as **Prefix** and `/`.
-
-   {{< reuse-image src="img/ui-add-route.png" srcDark="img/ui-add-route-dark.png" >}}
-
-5. In the **Backends** section, click **Add backend**, and enter the **Host**, such as `http.example.com:8080`.
-
-   {{< reuse-image src="img/ui-add-route-backend.png" srcDark="img/ui-add-route-backend-dark.png" >}}
-
-6. Click **Save route**.
-
-Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 
 ### TCP routes
 
