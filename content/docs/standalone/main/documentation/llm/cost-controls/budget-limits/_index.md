@@ -31,7 +31,7 @@ Agentgateway has several ways to cap LLM usage. They solve different problems, a
 
 ## How per-key budgets work
 
-A budget belongs to one entry in `apiKey.keys`. Each budget has a name, a limit, a window, and an action to take when the key goes over the limit.
+A budget belongs to one entry in `apiKey.keys`. Each budget has a name, a limit, and an action to take when the key goes over the limit. A budget can also have an optional window.
 
 Every budget needs a database. Agentgateway keeps the running count for each budget in the database that you set in `config.database`, and refuses to start when a key has a budget but that section is missing. To set up the database, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
@@ -44,6 +44,6 @@ Agentgateway holds the running count in memory and writes it to the database eve
 
 ## How budget windows work
 
-A window is aligned to the Unix epoch, not to the first request that uses the key. A `1h` window follows UTC clock hours, a `24h` window starts at midnight UTC, and a `30d` window uses consecutive 30-day periods rather than calendar months. Every key with the same window length therefore resets at the same moment.
+A window is aligned to the Unix epoch, not to the first request that uses the key. A `1h` window follows UTC clock hours, a `24h` window starts at midnight UTC, and a `30d` window uses consecutive 30-day periods rather than calendar months. Every key with the same window length therefore resets at the same moment. If you omit `window`, the budget keeps accumulating usage and never resets.
 
 ## Guides

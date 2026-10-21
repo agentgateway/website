@@ -852,11 +852,15 @@ jobs:
             --docs-dir content/docs \
             --output out/tests/generated/untested-docs.txt
 
+      # Read by production builds for the Verified badge, by the name
+      # doc-test-results. A manual run with another docs_tests_ref tries
+      # unmerged tests, so its results go under a different name and never
+      # reach the badge.
       - name: Upload merged results
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: doc-test-results
+          name: ${{ inputs.docs_tests_ref && inputs.docs_tests_ref != 'main' && 'doc-test-results-trial' || 'doc-test-results' }}
           path: out/tests/generated/
           retention-days: 14
 

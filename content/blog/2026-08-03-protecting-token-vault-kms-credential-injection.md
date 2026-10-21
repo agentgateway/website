@@ -9,6 +9,8 @@ toc: false
 
 {{< reuse-image src="img/blog/cb4a/cb4a-part2.gif" alt="CB4A flow" >}}
 
+> **Updated October 2026:** after review feedback (thanks [Stephane Nangue](https://www.linkedin.com/in/stephane-nangue-480a2557/)), I tightened the Mode 3 section on what IAM pins vs what the broker decides, and on what the broker checks before it mints. The scaling problem with KMS grants, and the variant that fixes it, got its own post: [Part 2.5: Where KMS Grants Stop Scaling](/blog/2026-10-20-credential-brokering-mode-3-at-scale/).
+
 In [part 1](/blog/2026-07-27-credential-injection-ai-agent-egress-cb4a/), I made the case that the only credential brokering model from [the CB4A paper](https://www.ietf.org/archive/id/draft-hartman-credential-broker-4-agents-00.html) that really works for AI agents today is the one where the **agent never holds a credential at all**. The agent uses its identity/OBO, calls through the proxy, the proxy injects the real token just in time, and the agent's memory never contains any credential. The agent can't be tricked to exfiltrate (or willingly hand over) any credentials.
 
 Although the agent doesn't see the real tokens, we didn't really _get rid of them_. We just moved them. The proxy's token store now holds every user's GitHub token, every Slack token, every upstream API key in the environment. The CB4A draft is blunt about this: the broker ["is the highest-value target in the architecture."](https://www.ietf.org/archive/id/draft-hartman-credential-broker-4-agents-00.html#name-security-considerations) If the broker/controller/etc is compromised its blast radius is all of the credentials.
@@ -45,9 +47,11 @@ Both layers bind their ciphertext to context using **AAD**, additional authentic
 The AAD on the outer layer is the one that matters later. Alongside the row's identity and key metadata, it carries:
 
 ```
-owner    = HMAC(user_id)          # <-- this one does the real work later
+owner    = HMAC(sub)              # <-- important for later matching / decrypt
 resource = e.g. https://api.github.com
 ```
+
+The `sub` here is the user's subject claim from the IdP, the same one that shows up later in their token when an agent acts on their behalf, so it has to be stable for that user. If the IdP changes the `sub` it issues (e.g. switching to pairwise subject identifiers, or migrating IdPs), existing rows won't unwrap until the user re-authorizes.
 
 That binding is the same in all three modes below. What changes is **who authenticates it**: either a local AES-GCM tag the controller computes itself, or a KMS `EncryptionContext` that KMS checks on every wrap and unwrap and records in CloudTrail.
 
@@ -116,7 +120,11 @@ Now let's look at taking away the standing decrypt from the controller, complete
 
 The controller keeps the ciphertext and its role as an KMS **grantee**, and loses `kms:Decrypt` entirely. Every decrypt now needs a short-lived, credential-scoped **grant**, minted on demand by a separate **broker**. The broker holds `kms:CreateGrant` and has no database, no ciphertext, no DEKs, and no ability to decrypt anything at all.
 
-Decryption now requires **two independent trust domains**. The broker has to authorize, *and* the controller has to be the grantee holding the ciphertext. Neither one alone can read a credential. Although this is not EXACTLY the implementation [proposed by the CB4A paper](https://www.ietf.org/archive/id/draft-hartman-credential-broker-4-agents-00.html), it does align with its principals: separate out into different trust domains the "policy" or grant from the thing that can issue/mint.
+Decryption now requires two independent trust domains. The broker has to authorize, *and* the controller has to be the grantee holding the ciphertext. Neither one alone can read a credential.
+
+The IAM policy on the broker pins the *shape of the grant* (grantee = the controller's role, operations = `Decrypt`, constraint type = `EncryptionContextSubset`) but not the `owner` value inside it, since that's a per-request fact a static policy can't express. That value comes from the broker: it verifies the user's subject token, computes `owner = HMAC(sub)` from it, and puts that in the grant. KMS does the matching, because the row's DEK was wrapped with its user's `owner` in the encryption context at write time, so a grant minted for Alice can't open a row sealed for Bob. Against a compromised controller that's enough, because the controller can't mint anything. Compromise the broker too and it can mint grants for any owner, and you're back to Mode 2.
+
+Although this is not EXACTLY the implementation [proposed by the CB4A paper](https://www.ietf.org/archive/id/draft-hartman-credential-broker-4-agents-00.html), it does align with its principals: separate out into different trust domains the "policy" or grant from the thing that can issue/mint.
 
 For example, the controller's config is Mode 2 and a new config for the broker and an `enforce` mode:
 
@@ -130,6 +138,8 @@ tokenExchange:
 ```
 
 The broker runs as a separate Deployment with its own ServiceAccount and its own IAM identity. It's configured with the IdP it re-verifies subject tokens against, a policy expression for allow/deny, the shared key it uses to derive `owner`, an audit sink, and the AWS parameters for minting grants. What it is emphatically *not* configured with is a database, a KEK, or any path to ciphertext.
+
+What does the broker actually check before it mints? It re-verifies the user's subject token against the IdP, it verifies a freshness proof the gateway signed with its SVID (single-use `jti`, short `exp`, bound to the resource and a hash of `sub`), and it computes `owner` itself from the token it just verified. A compromised controller has its own SVID and whatever subject tokens it harvested, and neither one forges the gateway's signature.
 
 {{< reuse-image src="img/blog/cb4a/mode3a.png" alt="Mode 3 — broker-gated KMS grants" >}}
 
@@ -151,7 +161,7 @@ sequenceDiagram
     GW->>CT: token exchange — subject_token + freshness header
     Note over CT: locate credential row →<br/>must unwrap this row's DEK
     CT->>BR: Authorize(subject_token, freshness proof, credential)
-    Note over BR: re-verify subject token (IdP JWKS)<br/>verify freshness (gw sig, jti single-use, exp)<br/>CEL policy + check HMAC(sub) == owner
+    Note over BR: re-verify subject token (IdP JWKS)<br/>verify freshness (gw sig, jti single-use, exp)<br/>CEL policy + owner = HMAC(sub) computed here
     alt allowed
         BR->>KMS: CreateGrant(grantee=Controller, Operations=[Decrypt],<br/>EncryptionContextSubset={owner, resource, elicitation_id})
         KMS-->>BR: GrantToken
@@ -180,7 +190,7 @@ The only KMS mechanism for dynamic, per-request, per-user scoping is a **grant**
 
 That principal *is* the broker. So the broker isn't an extra component bolted onto per-key callback. It's what per-user scoping turns into once you follow the requirement all the way down.
 
-Mode 3 is a tradeoff, of course. It's more latency, more code, more operational surface, and a new trusted component to lock down (the broker). Its return is a better answer to the original question: *prevented* rather than merely detected single-component mass decrypt, per-user cryptographic scoping, liveness binding, etc.
+Mode 3 is a tradeoff, of course. It's more latency, more code, more operational surface, and a new trusted component to lock down (the broker). Its return is a better answer to the original question: a compromised controller can't mass decrypt, period, instead of "can, but we'd see it", plus per-user/per-row scoping and a live request behind every read.
 
 ## The Main Point
 
@@ -188,8 +198,4 @@ Line the three modes up against the one question we started with, and what you'r
 
 {{< reuse-image src="img/blog/cb4a/part2-wrapup.png" alt="The three modes compared" >}}
 
-But AWS KMS is just one way to answer "who holds the KEK, and who's allowed to unwrap it." It's not the only way, and a lot of enterprises aren't on AWS, or already run a Vault/OpenBAO cluster doing this exact job for everything else in the environment. Part 3 of this blog series stays focused on Mode 3 -- the broker-gated grant model -- and rebuilds it on Vault/OpenBAO instead of KMS. In Mode 3 the KEK lives in the transit engine, and the grant becomes a Vault-issued, single-use, time-boxed token instead of an IAM grant. Follow along / [connect on LinkedIn](https://linkedin.com/in/ceposta) if you are working through credential isolation for agent egress in your own stack. Stay tuned!!
-
----
-
-_A version of this post first appeared on [blog.christianposta.com](https://blog.christianposta.com/credential-brokering-patterns-for-ai-agent-egress-part2/). This one focuses on the agentgateway implementation._
+But AWS KMS is just one way to answer "who holds the KEK, and who's allowed to unwrap it." It's not the only way, and a lot of enterprises aren't on AWS, or already run a Vault/OpenBAO cluster doing this exact job for everything else in the environment. Before we get there, I am introducing a [part 2.5](/blog/2026-10-20-credential-brokering-mode-3-at-scale/) on where the KMS grant design stops scaling and the variant I'd use instead. Part 3 of this blog series stays focused on Mode 3 and rebuilds it on Vault/OpenBAO instead of KMS. Follow along / [connect on LinkedIn](https://linkedin.com/in/ceposta) if you are working through credential isolation for agent egress in your own stack. Stay tuned!!

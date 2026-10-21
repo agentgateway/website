@@ -252,6 +252,26 @@ mcp:
       host: localhost:8080
 ```
 
+### Override the schema server path {#override-schema-server-path}
+
+By default, operation paths use the path from the OpenAPI schema's server URL. To replace that prefix without editing the schema, set a non-root path in the target's `host` URI. If the target uses `host`/`port`/`path` or `backend`, set `path` instead.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  targets:
+  - name: openapi
+    openapi:
+      host: https://example.com/api
+      schema:
+        url: https://example.com/openapi.json
+```
+
+With this configuration, an operation at `/users` is forwarded to `https://example.com/api/users`. Config validation rejects paths that do not start with a single `/`. Validation also rejects paths that contain a query string, fragment, or backslash.
+
+If the path is omitted, empty, or `/`, the target keeps using the schema's server path. To route to root when the schema has a server path, update the schema's server URL to `/`.
+
 ### Stateless sessions
 
 OpenAPI backends are inherently stateless because they translate standard REST endpoints into MCP tools. You can set `statefulMode: stateless` on the MCP backend to skip session tracking. In stateless mode, the gateway automatically wraps each request with an initialization sequence so the upstream processes every request independently.
