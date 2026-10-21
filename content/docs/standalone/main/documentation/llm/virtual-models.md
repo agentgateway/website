@@ -173,7 +173,7 @@ Configure health on the concrete `llm.models[]` entries that the virtual model t
 
 | Setting | What it does |
 | -- | -- |
-| No `health` policy | The default unhealthy classifier covers `5xx` responses, server-side gRPC failures, and connection failures. When the virtual model has more than one priority group, these failures use default eviction: a single unhealthy response evicts the endpoint for `3s`, and each repeated eviction lasts longer. Traffic fails over to the next priority. |
+| No `health` policy | The default unhealthy classifier covers `5xx` responses, server-side gRPC failures (`UNKNOWN`, `DEADLINE_EXCEEDED`, `INTERNAL`, `UNAVAILABLE`, and `DATA_LOSS`), and connection failures. When the virtual model has more than one priority group, these failures use default eviction: a single unhealthy response evicts the endpoint for `3s`, and each repeated eviction lasts longer. Traffic fails over to the next priority. |
 | `health` without `eviction` | Setting `health` replaces the default eviction instead of adding to it. You can use `health.unhealthyExpression` to classify additional responses, such as `429`, as unhealthy. Without an `eviction` block, the endpoint is evicted only when a retry policy's `backoff`, or a `Retry-After` header on a response that is classified as unhealthy, supplies an eviction duration. To keep the default eviction settings, add `eviction: {}`. |
 | `health.eviction` | Override how long an unhealthy endpoint leaves the active set, and which thresholds trigger eviction. When every endpoint in a priority group is evicted, later requests use the next priority. |
 

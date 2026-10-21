@@ -32,7 +32,6 @@ Review the release notes for agentgateway standalone.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3774 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3812 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3897 -->
 
 **Traffic management**
 
@@ -44,7 +43,6 @@ Review the release notes for agentgateway standalone.
 - Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
 - Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 - Bedrock Runtime requests now send client `tool_choice` settings as Converse `toolChoice`, so forced tool choices can take effect and models that reject them return Bedrock errors.
-- A client-side gRPC status from an LLM provider no longer evicts the target from a failover group.
 
 **MCP**
 
