@@ -2,7 +2,7 @@
 
 Clients select a model with the request's `model` field. Choose a matching pattern to control which models they can request and how you name them.
 
-{{% conditional-text include-if="standalone" %}}Each pattern sets the `name` field of an `llm.models` entry.{{% /conditional-text %}}{{% conditional-text include-if="kubernetes" %}}Each pattern sets `spec.match.model` in an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`. Omit `spec.match` to match `metadata.name` exactly.
+{{% conditional-text include-if="standalone" %}}Each pattern sets the `name` field of an `llm.models` entry.{{% /conditional-text %}}{{% conditional-text include-if="kubernetes" %}}Each pattern sets the name that clients request in an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`. For a wildcard pattern, set `spec.match.model`. Otherwise, omit `spec.match` to match `metadata.name` exactly.
 
 For API details, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}). For configurations that use an {{< reuse "agw-docs/snippets/backend.md" >}} and an `HTTPRoute`, see [Model aliasing]({{< link-hextra path="/documentation/llm/alias/" >}}).{{% /conditional-text %}}
 
@@ -194,6 +194,11 @@ spec:
       secretRef:
         name: openai-secret
 ```
+
+{{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+> [!WARNING]
+> In version 1.6, agentgateway does not rank models by how specific their match is. It selects the first matching model in alphabetical order of `metadata.name`. A catch-all model can therefore take requests that are meant for an exact name or a provider prefix, and the request reaches the provider without the prefix stripped. Do not attach a catch-all model to the same listener as other models.
+{{< /version >}}
 {{% /conditional-text %}}
 
 ### Custom model name

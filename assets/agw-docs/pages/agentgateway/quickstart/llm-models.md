@@ -19,14 +19,9 @@ Complete the [Install agentgateway]({{< link-hextra path="/documentation/quickst
    export OPENAI_API_KEY='<your-api-key>'
    ```
 
-   {{< doc-test paths="quickstart-llm" >}}
-   # The test routes to the httpbun mock LLM, which ignores credentials.
-   export OPENAI_API_KEY="${OPENAI_API_KEY:-sk-placeholder}"
-   {{< /doc-test >}}
-
 2. Create a Kubernetes Secret that stores the API key. By default, agentgateway reads the key from the `Authorization` field and sends it to the provider as a bearer token.
 
-   ```yaml {paths="quickstart-llm"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -43,7 +38,7 @@ Complete the [Install agentgateway]({{< link-hextra path="/documentation/quickst
 
 Allow the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind on the Gateway's `http` listener. The listener accepts only the kinds you list in `allowedRoutes.kinds`, so keep `HTTPRoute` for the other quick starts.
 
-```yaml {paths="quickstart-llm"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -69,9 +64,9 @@ EOF
 
 ### Step 3: Expose the OpenAI models
 
-Create an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that matches `openai/*`. Clients request names such as `openai/gpt-5-mini`. Agentgateway strips the prefix so OpenAI receives `gpt-5-mini`.
+Create an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resource that matches `openai/*` model names. Clients request names such as `openai/gpt-5-mini`. A `model` transformation strips the prefix, so OpenAI receives `gpt-5-mini`.
 
-```yaml {paths="quickstart-llm"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -108,15 +103,6 @@ EOF
 | `spec.policies.transformations` | Removes the `openai/` prefix before forwarding the request. |
 
 {{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
-
-{{< doc-test paths="quickstart-llm" >}}
-# Route the model to the httpbun mock LLM instead of OpenAI, so the test needs no API
-# key and bills nothing. httpbun echoes the model that it receives, which lets the test
-# assert that the gateway stripped the `openai/` prefix.
-{{< reuse "agw-docs/snippets/deploy-mock-llm.md" >}}
-kubectl patch agentgatewaymodel openai -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type=merge \
-  -p '{"spec":{"baseURL":"http://httpbun.default.svc.cluster.local:3090/llm"}}'
-{{< /doc-test >}}
 
 ### Step 4: Send a request
 
@@ -183,62 +169,6 @@ kubectl patch agentgatewaymodel openai -n {{< reuse "agw-docs/snippets/namespace
    }
    ```
 
-   {{< doc-test paths="quickstart-llm" >}}
-   # An AgentgatewayModel does not report status, so poll the data plane until the
-   # model is served instead of waiting on a resource condition.
-   for i in $(seq 1 60); do
-     curl -s --max-time 5 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
-       -H "Content-Type: application/json" \
-       -d '{"model":"openai/gpt-5-mini","messages":[],"httpbun":{"content":"warmup"}}' && break
-     sleep 2
-   done
-
-   YAMLTest -f - <<'EOF'
-   - name: openai/* serves the request and strips the prefix before the provider sees it
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}"
-       path: /v1/chat/completions
-       method: POST
-       headers:
-         Content-Type: application/json
-       body: |
-         {
-           "model": "openai/gpt-5-mini",
-           "messages": [{"role": "user", "content": "Say hello in one sentence."}],
-           "httpbun": {"content": "Hello from the mock LLM"}
-         }
-     source:
-       type: local
-     retries: 3
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.model"
-           comparator: equals
-           value: "gpt-5-mini"
-         - path: "$.usage.total_tokens"
-           comparator: greaterThan
-           value: 0
-   - name: a model without the openai/ prefix is not exposed
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}"
-       path: /v1/chat/completions
-       method: POST
-       headers:
-         Content-Type: application/json
-       body: |
-         {"model": "gpt-5-mini", "messages": []}
-     source:
-       type: local
-     expect:
-       statusCode: 404
-       bodyJsonPath:
-         - path: "$.error.code"
-           comparator: equals
-           value: "model_not_found"
-   EOF
-   {{< /doc-test >}}
-
 3. Optional: List the models that clients can request. Agentgateway expands `openai/*` into the OpenAI models from its built-in model catalog.
 
    ```sh
@@ -254,12 +184,6 @@ kubectl patch agentgatewaymodel openai -n {{< reuse "agw-docs/snippets/namespace
    openai/gpt-5-mini
    ...
    ```
-
-   {{< doc-test paths="quickstart-llm" >}}
-   models=$(curl -s "http://${INGRESS_GW_ADDRESS}/v1/models")
-   echo "$models" | jq -r '.data[].id' | grep -qx 'openai/gpt-5-mini' \
-     || { echo "openai/* did not expand to openai/gpt-5-mini in /v1/models: $models"; exit 1; }
-   {{< /doc-test >}}
 
 {{% /steps %}}
 

@@ -21,6 +21,10 @@ Google Cloud Model Armor guardrails are model-agnostic and can be applied to any
    ```sh
    gcloud model-armor templates list --location=<location>
    ```
+5. Get a [Gemini API key](https://aistudio.google.com/apikey) and save it in the `GEMINI_API_KEY` environment variable. The example configuration reads the key from this variable.
+   ```sh
+   export GEMINI_API_KEY=<your-api-key>
+   ```
 
 ## Configure Google Model Armor
 
