@@ -223,7 +223,7 @@ Fetch the OpenAPI schema from a remote URL. Agentgateway retrieves the schema at
 
 {{< tabs >}}
 {{% tab name="UI" %}}
-1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**). For the `openapi` server that you added in [Configure the agentgateway](#agentgateway), click the **Edit server** pencil icon.
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**). For the `openapi` server that you added in [Configure the agentgateway](#agentgateway), click the **Edit server** icon.
 2. For **Schema source**, select **URL**.
 3. Replace the **Schema** value with the schema URL, such as `http://localhost:8080/api/v3/openapi.json`.
 
@@ -258,7 +258,7 @@ Embed the OpenAPI schema directly as an inline string.
 
 {{< tabs >}}
 {{% tab name="UI" %}}
-1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**). For the `openapi` server that you added in [Configure the agentgateway](#agentgateway), click the **Edit server** pencil icon.
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**). For the `openapi` server that you added in [Configure the agentgateway](#agentgateway), click the **Edit server** icon.
 2. For **Schema source**, select **Inline**.
 3. In the **Schema** editor, replace any existing value with your OpenAPI document, such as the JSON in the **Config file** tab. The editor keeps the previous schema path or URL until you replace it.
 

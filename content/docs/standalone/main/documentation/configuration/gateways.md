@@ -96,15 +96,22 @@ You can define a gateway in the UI or in the configuration file.
 
 {{< tabs >}}
 {{% tab name="UI" %}}
-To add a gateway in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps.
+The following steps use the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}) to create the same `default` gateway and route as the **Config file** tab.
 
 1. Open **Traffic** > **Gateways**, and click **Add gateway**.
-2. Enter a **Name** and a **Port**, such as `http-proxy` and `8080`.
-3. Select the **Protocol**. To preview the change to your configuration file, click **View diff**.
+2. Select **Default gateway**. The UI sets the **Name** to `default`. The UI accepts the name `default` only when you select this option. The option is unavailable when another gateway is already the default gateway.
+3. Enter `3000` for the **Port**.
+4. Select **HTTP** as the **Protocol**. To preview the change to your configuration file, click **View diff**.
 
    {{< reuse-image src="img/ui-add-gateway.png" srcDark="img/ui-add-gateway-dark.png" >}}
 
-4. Click **Save gateway**.
+5. Click **Save gateway**.
+6. Open **Traffic** > **Routes**, and click **Add route**.
+7. Select the `default` **Gateway**, and enter `local-backend` for the **Name**. The UI requires a route name.
+8. In the **Backends** section, click **Add backend**, and enter `localhost:8000` for the **Host**.
+9. Click **Save route**.
+
+The UI writes `gateways: default` and a `/` path prefix match on the route. Both values are the defaults, so the route behaves the same as the route in the **Config file** tab.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}
@@ -117,7 +124,8 @@ gateways:
   default:
     port: 3000
 routes:
-- backends:
+- name: local-backend
+  backends:
   - host: localhost:8000
 ```
 
@@ -137,7 +145,8 @@ gateways:
   default:
     port: 3000
 routes:
-- backends:
+- name: local-backend
+  backends:
   - host: localhost:8000
 EOF
 agentgateway -f config.yaml --validate-only
@@ -285,9 +294,9 @@ The following steps create the same gateway and routes as the **Config file** ta
 3. Select **Multiple listeners**, and click **Save gateway**. The gateway gets one listener named `listener1`.
 
    > [!NOTE]
-   > Select **Multiple listeners** before you change other fields. The option is unavailable after you set a protocol, TLS, or a policy on the gateway.
+   > Select **Multiple listeners** before you change other fields. The option is unavailable after you select HTTPS or TLS, or add a policy to the gateway.
 
-4. In the listener table of the `web` gateway, click the edit icon for `listener1`, and fill out the **Edit listener** drawer.
+4. In the listener table of the `web` gateway, click the **Edit listener** icon for `listener1`, and fill out the **Edit listener** drawer.
    1. Enter `discrete` for the **Name**.
    2. Select **HTTPS** as the **Protocol**. The **TLS** section appears.
    3. Enter `a.example.com` for the **Hostname**.
@@ -296,7 +305,12 @@ The following steps create the same gateway and routes as the **Config file** ta
    {{< reuse-image src="img/ui-gateways-listener.png" srcDark="img/ui-gateways-listener-dark.png" >}}
 
 5. Click **Save listener**.
-6. In the header of the `web` gateway, click the **Add listener** icon. Repeat the previous steps for a `wildcard` listener with the `*.example.com` hostname and the `cert-wildcard.pem` and `key-wildcard.pem` files.
+6. In the header of the `web` gateway, click the **Add listener** icon. In the **Add listener** drawer, create the `wildcard` listener in the same way as the `discrete` listener.
+   1. Enter `wildcard` for the **Name**.
+   2. Select **HTTPS** as the **Protocol**.
+   3. Enter `*.example.com` for the **Hostname**.
+   4. Expand the **TLS** section. Enter `./certs/cert-wildcard.pem` for the **Certificate** and `./certs/key-wildcard.pem` for the **Key**.
+   5. Click **Save listener**.
 7. Open **Traffic** > **Routes**, and add the two routes. For each route, click **Add route**, enter the **Name**, select the **Gateway**, add a backend **Host**, and click **Save route**.
    * `a-only`: Select the `web/discrete` gateway, and enter `a-backend.example.com:443`.
    * `everything-else`: Select **web (all HTTP listeners)**, and enter `shared-backend.example.com:443`.
@@ -387,9 +401,11 @@ TCP and TLS gateways serve `tcpRoutes` instead of `routes`.
 
 4. Open **Traffic** > **Routes**, and click **Add route**.
 5. Select **TCP** as the **Kind**, and select the `tcp` **Gateway**.
-6. Enter a **Name**, such as `tcp-backend`. The UI requires a route name.
+6. Enter `tcp-backend` for the **Name**. The UI requires a route name.
 7. Click **Add backend**, and enter `localhost:8000` for the **Host**.
 8. Click **Save route**.
+
+The UI writes `gateways` as a single value, `gateways: tcp`, instead of a list. Both forms attach the route to the `tcp` gateway.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
@@ -399,7 +415,8 @@ gateways:
     port: 9000
     protocol: TCP
 tcpRoutes:
-- gateways: [tcp]
+- name: tcp-backend
+  gateways: [tcp]
   backends:
   - host: localhost:8000
 ```
@@ -421,7 +438,8 @@ gateways:
     port: 9000
     protocol: TCP
 tcpRoutes:
-- gateways: [tcp]
+- name: tcp-backend
+  gateways: [tcp]
   backends:
   - host: localhost:8000
 EOF
@@ -544,7 +562,7 @@ Gateways and listeners accept the same policies that listeners accepted under `b
 {{% tab name="UI" %}}
 The following steps add the CORS policy from the **Config file** tab to an existing `default` gateway.
 
-1. Open **Traffic** > **Gateways**, and click the edit icon for the `default` gateway.
+1. Open **Traffic** > **Gateways**, and click the **Edit gateway** icon for the `default` gateway.
 2. Click **Gateway policies**, and then click the **CORS** tile.
 3. Fill out the CORS form.
    1. In **Allowed origins**, enter `https://app.example.com`, and click **Add**.
@@ -556,7 +574,7 @@ The following steps add the CORS policy from the **Config file** tab to an exist
 4. Click **Save**, and close the **Gateway policies** drawer.
 5. Click **Save gateway**.
 
-To attach a policy to one listener instead, click the edit icon for the listener, and use its **Listener policies** section.
+To attach a policy to one listener instead, click the **Edit listener** icon for the listener, and use its **Listener policies** section.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
@@ -661,7 +679,7 @@ You can convert a configuration in the UI or by editing your configuration file.
 
 3. Review the diff, and click **Save**.
 
-For the previous example, the UI writes the same `gateways` configuration, without the default `protocol: HTTP` field.
+For the example `binds` configuration in this section, the UI writes the same `gateways` configuration, without the default `protocol: HTTP` field.
 
 The UI leaves the following binds in `binds`. Convert them by editing the configuration file.
 * Binds with a non-default `mode` or `tunnelProtocol`.

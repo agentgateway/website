@@ -96,7 +96,7 @@ The following steps add the same `oidc` policy as the **Simplified (LLM)** examp
 2. Start agentgateway with this configuration, in a shell where `OIDC_COOKIE_SECRET` is set. Otherwise, the save fails with an `OIDC_COOKIE_SECRET is required` error.
 3. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **OIDC** tile.
 4. In the **Provider** section, fill out the following fields.
-   1. Below **Issuer**, click **Keycloak**. The UI fills in `http://localhost:7080/realms/{realm}`. Replace `{realm}` with `agentgateway`.
+   1. In the **Issuer** suggestions, click **Keycloak**. The UI fills in `http://localhost:7080/realms/{realm}`. Replace `{realm}` with `agentgateway`.
    2. Keep **Discovery** for the **Provider metadata**, and keep the default **Discovery override** of **None**.
 5. In the **Client** section, enter the following values.
    1. **Client ID**: `agentgateway-browser`

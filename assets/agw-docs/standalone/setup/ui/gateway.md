@@ -25,13 +25,15 @@ You can make this change in the UI or in your configuration file.
 {{% tab name="UI" %}}
 The UI must be able to save changes, which depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 
+In Docker or Helm, publish port `4001` before you start. The UI cannot publish a port, and the request in step 5 fails without it. For the steps, see the **Docker** or **Helm** tab in the **Config file** tab.
+
 1. Add a gateway for the UI.
    1. Open **Traffic** > **Gateways**, and click **Add gateway**.
    2. Enter `ui-gateway` for the **Name** and `4001` for the **Port**, and click **Save gateway**.
 2. Open the **Settings** > **UI** page, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui).
 3. From the **Public gateway** dropdown, select `ui-gateway`. To serve the UI only on the admin interface, select **None** instead.
 
-   {{< reuse-image src="img/ui-settings-public-gateway.png" srcDark="img/ui-settings-public-gateway-dark.png" >}}
+   {{< reuse-image src="img/ui-settings-public-gateway.png" srcDark="img/ui-settings-public-gateway-dark.png" alt="Settings UI page with the Public gateway dropdown set to ui-gateway, the Save UI gateway button, and the UI access policy cards" >}}
 
 4. Click **Save UI gateway**. If the UI is already served on a gateway, confirm the change in the **Change UI gateway?** dialog.
 
@@ -49,7 +51,6 @@ The UI must be able to save changes, which depends on your storage mode. For mor
    200
    ```
 
-In Docker or Helm, you must also publish the new port, and the UI cannot do that for you. To publish port `4001`, see the **Docker** or **Helm** tab in the **Config file** tab.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 {{< reuse "agw-docs/standalone/setup/ui/gateway-config.md" >}}

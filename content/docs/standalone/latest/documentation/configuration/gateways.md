@@ -96,15 +96,22 @@ You can define a gateway in the UI or in the configuration file.
 
 {{< tabs >}}
 {{% tab name="UI" %}}
-To add a gateway in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps.
+The following steps use the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}) to create the same `default` gateway and route as the **Config file** tab.
 
 1. Open **Traffic** > **Gateways**, and click **Add gateway**.
-2. Enter a **Name** and a **Port**, such as `http-proxy` and `8080`.
-3. Select the **Protocol**. The **Resulting YAML** shows the gateway entry that the UI writes.
+2. Select **Default gateway**. The UI sets the **Name** to `default`. The UI accepts the name `default` only when you select this option. The option is unavailable when another gateway is already the default gateway.
+3. Enter `3000` for the **Port**.
+4. Select **HTTP** as the **Protocol**. The **Resulting YAML** shows the gateway entry that the UI writes.
 
    {{< reuse-image src="img/ui-add-gateway.png" srcDark="img/ui-add-gateway-dark.png" >}}
 
-4. Click **Save gateway**.
+5. Click **Save gateway**.
+6. Open **Traffic** > **Routes**, and click **Add route**.
+7. Select the `default` **Gateway**, and enter `local-backend` for the **Name**. The UI requires a route name.
+8. In the **Backends** section, click **Add backend**, and enter `localhost:8000` for the **Host**.
+9. Click **Save route**.
+
+The UI writes `gateways: default` and a `/` path prefix match on the route. Both values are the defaults, so the route behaves the same as the route in the **Config file** tab.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}
@@ -117,7 +124,8 @@ gateways:
   default:
     port: 3000
 routes:
-- backends:
+- name: local-backend
+  backends:
   - host: localhost:8000
 ```
 
@@ -137,7 +145,8 @@ gateways:
   default:
     port: 3000
 routes:
-- backends:
+- name: local-backend
+  backends:
   - host: localhost:8000
 EOF
 agentgateway -f config.yaml --validate-only

@@ -53,7 +53,7 @@ To add a route with a path match in the [UI]({{< link-hextra path="/documentatio
 5. In the **Backends** section, click **Add backend**, and enter `api.example.com:8080` for the **Host**.
 6. Click **Save route**.
 
-To add a path match to an existing route, click the edit icon for the route instead. The UI edits only the first entry in `matches`. To add more entries, click the **Raw** icon (`<>`) in the drawer header and edit the YAML, or use the **Config file** tab.
+To add a path match to an existing route, click the **Edit route** icon for the route instead. The UI edits only the first entry in `matches`. To add more entries, click the **Raw** icon (`<>`) in the drawer header and edit the YAML, or use the **Config file** tab.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}

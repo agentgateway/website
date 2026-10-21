@@ -86,7 +86,7 @@ To learn more about CEL, see the following resources:
    3. Expand **Advanced** > **Model policies** > **Transformation**.
    4. In the **LLM request fields** section, enter `max_tokens` as the field name and `min(llmRequest.max_tokens, 10)` as the CEL expression, and click **Add**.
 
-      {{< reuse-image src="img/ui-llm-model-transformation.png" srcDark="img/ui-llm-model-transformation-dark.png" >}}
+      {{< reuse-image src="img/ui-llm-model-transformation.png" srcDark="img/ui-llm-model-transformation-dark.png" alt="Edit model drawer with the Transformation section expanded, showing the max_tokens field set to min(llmRequest.max_tokens, 10)" >}}
 
    5. Click **Save model**.
 
@@ -368,7 +368,7 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
       * `max_completion_tokens`: `min(llmRequest.max_completion_tokens, 10)`
       * `reasoning_effort`: `fail("remove")`
 
-      {{< reuse-image src="img/ui-llm-model-final-transformation.png" srcDark="img/ui-llm-model-final-transformation-dark.png" >}}
+      {{< reuse-image src="img/ui-llm-model-final-transformation.png" srcDark="img/ui-llm-model-final-transformation-dark.png" alt="Edit model drawer with the Final transformation section expanded, showing max_completion_tokens and reasoning_effort provider request fields" >}}
 
    5. Click **Save model**.
 
@@ -487,6 +487,8 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
 Use `requestTransformation` to change the HTTP request that agentgateway sends to the provider, such as its headers or metadata. For a header with a fixed value, use `requestHeaders` instead, which needs no CEL. If both set the same header, the `requestHeaders` value is sent, because `requestHeaders` runs after `requestTransformation`.
 
 The `requestTransformation` expressions can read the HTTP request, such as `request.headers`. For parsed JSON LLM request bodies, they can read fields such as `llmRequest.model`. They can also read `llm.requestModel`, the model from the incoming URL or body before provider overrides. To change individual fields in the LLM request body, use `transformation` or `finalTransformation`. You can set either one together with `requestTransformation` on the same provider or model.
+
+The UI has no field for `requestTransformation`. Use your configuration file for the steps in this section.
 
 1. Create a configuration file that selects an OpenAI project from a client header. The provider default sets the `openai-project` header based on the `x-team` request header, and removes `x-team` so that it is not sent to OpenAI. The `gpt-4o-batch` model sets its own `requestTransformation`, which replaces the provider default for that model.
 

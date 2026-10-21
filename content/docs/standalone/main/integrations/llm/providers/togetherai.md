@@ -45,20 +45,24 @@ You can add the model in the UI or in your configuration file.
 {{% tab name="UI" %}}
 To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same model as the **Config file** tab.
 
-1. Start agentgateway with the `TOGETHER_API_KEY` environment variable set. The UI checks that the variable exists when you save the model.
-2. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
-3. From the **Provider** dropdown, select **Together AI**.
-4. In the **Incoming model match** field, replace the default `togetherai/*` with `*`.
-5. For the **Provider API key**, select **Env var**, and enter `TOGETHER_API_KEY`.
-6. Keep **Incoming model** as the **Outgoing model**. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
+1. Set your API key in the `TOGETHER_API_KEY` environment variable. The UI checks that the variable exists when you save the model.
 
-   {{< reuse-image src="img/ui-llm-add-model-togetherai.png" srcDark="img/ui-llm-add-model-togetherai-dark.png" >}}
+   ```sh
+   export TOGETHER_API_KEY='<your-api-key>'
+   ```
 
-7. Click **Save model**.
+2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
+3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+4. From the **Provider** dropdown, select **Together AI**.
+5. In the **Incoming model match** field, replace the default `togetherai/*` with `*`.
+6. For the **Provider API key**, select **Env var**, and enter `TOGETHER_API_KEY`.
+7. For **Outgoing model**, keep **Incoming model**. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
 
-The form has no field for `params.baseUrl`. To override the base URL, click the **Raw** icon (`<>`) in the drawer header and add the field, or use the **Config file** tab.
+   {{< reuse-image src="img/ui-llm-add-model-togetherai.png" srcDark="img/ui-llm-add-model-togetherai-dark.png" alt="Add model drawer with Together AI selected as the provider, the * wildcard as the incoming model match, and TOGETHER_API_KEY as the environment variable for the provider API key" >}}
 
-Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+8. Click **Save model**.
+
+{{< reuse "agw-docs/standalone/llm/providers/ui-add-model-notes.md" >}}
 {{% /tab %}}
 {{% tab name="Config file" %}}
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -72,6 +76,8 @@ llm:
     params:
       apiKey: "$TOGETHER_API_KEY"
 ```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Setting | Description |
 |---------|-------------|

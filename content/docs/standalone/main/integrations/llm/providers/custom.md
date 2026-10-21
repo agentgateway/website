@@ -56,18 +56,24 @@ Below shows an example of connecting to [Perplexity](https://www.perplexity.ai/)
 {{% tab name="UI" %}}
 To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same model as the **Config file** tab.
 
-1. Start agentgateway with the `PERPLEXITY_API_KEY` environment variable set. The UI checks that the variable exists when you save the model.
-2. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
-3. From the **Provider** dropdown, select **Custom**.
-4. In the **Incoming model match** field, replace the default `custom/*` with `*`.
-5. For the **Provider API key**, select **Env var**, and enter `PERPLEXITY_API_KEY`.
-6. In the **Custom provider** section, enter `https://api.perplexity.ai` for the **Base URL**.
-7. In the **Route formats** list, keep **Chat completions (/chat/completions)** selected. Select any other format that the upstream supports, and optionally enter a path override for it.
-8. For the **Outgoing model**, select **Explicit**, and enter `llama-3.1-sonar-large-128k-online`.
+1. Set your API key in the `PERPLEXITY_API_KEY` environment variable. The UI checks that the variable exists when you save the model.
 
-   {{< reuse-image src="img/ui-llm-add-model-custom-perplexity.png" srcDark="img/ui-llm-add-model-custom-perplexity-dark.png" >}}
+   ```sh
+   export PERPLEXITY_API_KEY='<your-api-key>'
+   ```
 
-9. Click **Save model**.
+2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
+3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+4. From the **Provider** dropdown, select **Custom**.
+5. In the **Incoming model match** field, replace the default `custom/*` with `*`.
+6. For the **Provider API key**, select **Env var**, and enter `PERPLEXITY_API_KEY`.
+7. In the **Custom provider** section, enter `https://api.perplexity.ai` for the **Base URL**.
+8. In the **Route formats** list, keep **Chat completions (/chat/completions)** selected. Select any other format that the upstream supports, and optionally enter a path override for it.
+9. For the **Outgoing model**, select **Explicit**, and enter `llama-3.1-sonar-large-128k-online`.
+
+   {{< reuse-image src="img/ui-llm-add-model-custom-perplexity.png" srcDark="img/ui-llm-add-model-custom-perplexity-dark.png" alt="Add model drawer with Custom selected as the provider, the * wildcard as the incoming model match, PERPLEXITY_API_KEY as the environment variable for the provider API key, and https://api.perplexity.ai as the base URL" >}}
+
+10. Click **Save model**.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}

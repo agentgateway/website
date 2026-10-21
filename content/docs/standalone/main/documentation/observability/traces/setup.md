@@ -24,7 +24,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
    2. **Protocol**: Keep **gRPC**. The UI does not write the default `protocol: grpc` value to your configuration.
    3. **Random sampling**: Enter `true`.
 
-   {{< reuse-image src="img/ui-tracing-enable.png" srcDark="img/ui-tracing-enable-dark.png" >}}
+   {{< reuse-image src="img/ui-tracing-enable.png" srcDark="img/ui-tracing-enable-dark.png" alt="Tracing drawer with the gRPC protocol in the Export section and random sampling set to true in the Sampling section" >}}
 
 4. Click **Save policy**. The **Tracing** card shows **enabled**.
 
@@ -48,8 +48,29 @@ frontendPolicies:
 
 ## Set up authentication and TLS
 
-When connecting to an OTLP backend that requires authentication, such as a SaaS observability platform, use the `policies.requestHeaderModifier` section to add required authentication headers and `policies.backendTLS` to enable TLS for the connection.
+When connecting to an OTLP backend that requires authentication, such as a SaaS observability platform, use the `policies.requestHeaderModifier` section to add required authentication headers and `policies.backendTLS` to enable TLS for the connection. You can set them in the UI or in your configuration file.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+
+1. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability), and click the **Tracing** card.
+2. In the **Tracing** drawer, configure the following fields.
+   1. **Host**: Enter the hostname and port of your OTLP backend, such as `<your-otlp-endpoint>.com:443`.
+   2. **Backend policies**: Enter the following YAML to enable TLS and set the authentication header.
+      ```yaml
+      backendTLS: {}
+      requestHeaderModifier:
+        set:
+          Authorization: "Basic <api-key>"
+      ```
+   3. **Protocol**: Select **HTTP**. If your backend uses a path other than the default, enter it in the **Path** field.
+   4. **Random sampling**: Enter `true`.
+3. Click **Save policy**.
+
+For a complete example, see the [Langfuse integration]({{< link-hextra path="/integrations/llm/observability/langfuse/" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -63,6 +84,8 @@ frontendPolicies:
         set:
           Authorization: "Basic <api-key>"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 | Field | Description |
 |-------|-------------|
@@ -114,7 +137,7 @@ The following example exports only spans for requests with an HTTP response code
 1. Open the **Settings** > **Observability** page, and click the **Tracing** card.
 2. In the **Sampling** section, enter `response.code >= 400` in the **Filter** field.
 
-   {{< reuse-image src="img/ui-tracing-filter.png" srcDark="img/ui-tracing-filter-dark.png" >}}
+   {{< reuse-image src="img/ui-tracing-filter.png" srcDark="img/ui-tracing-filter-dark.png" alt="Tracing drawer with random sampling set to true and the filter response.code >= 400" >}}
 
 3. Click **Save policy**.
 {{% /tab %}}
@@ -164,7 +187,7 @@ The following example sets a custom service name and deployment environment in `
    1. Enter `user.id` as the name and `request.headers["x-user-id"]` as the value, and click **Add**.
    2. Enter `request.path` as the name and `request.path` as the value, and click **Add**.
 
-   {{< reuse-image src="img/ui-tracing-attributes.png" srcDark="img/ui-tracing-attributes-dark.png" >}}
+   {{< reuse-image src="img/ui-tracing-attributes.png" srcDark="img/ui-tracing-attributes-dark.png" alt="Tracing drawer Attributes section with user.id and request.path span attributes, and service.name and deployment.environment resource attributes" >}}
 
 4. Click **Save policy**.
 {{% /tab %}}
@@ -198,7 +221,7 @@ The following example removes the HTTP protocol version and client address from 
    1. Enter `client.address`, and click **Add**.
    2. Enter `network.protocol.version`, and click **Add**.
 
-   {{< reuse-image src="img/ui-tracing-remove.png" srcDark="img/ui-tracing-remove-dark.png" >}}
+   {{< reuse-image src="img/ui-tracing-remove.png" srcDark="img/ui-tracing-remove-dark.png" alt="Tracing drawer Attributes section with client.address and network.protocol.version in the remove attributes list" >}}
 
 3. Click **Save policy**.
 {{% /tab %}}

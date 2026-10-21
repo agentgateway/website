@@ -279,9 +279,9 @@ The following steps add the same `transformations` policy as the **Simplified (L
 
 For the **Routing-based** example, add the policy at the gateway level instead.
 
-1. Open **Traffic** > **Gateways**, and click **Edit gateway** for the `default` gateway.
+1. Open **Traffic** > **Gateways**, and click the **Edit gateway** icon for the `default` gateway.
 2. Click **Gateway policies**, and then click the **Transformations** tile.
-3. Add the `x-gateway` header as described in step 4, and click **Save**.
+3. Expand **Request transformations**. In **Add headers**, enter `x-gateway` for the header name and `"agentgateway"` for the CEL expression, and click **Add**. Then, click **Save**.
 4. Close the **Gateway policies** drawer, and click **Save gateway**.
 {{% /tab %}}
 {{% tab name="Config file" %}}

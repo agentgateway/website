@@ -1,8 +1,7 @@
-import { test, expect, dismissWelcome, scrollDrawerTo, scrollIntoViewChecked } from '../fixtures/test';
+import { test, expect, dismissWelcome, scrollDrawerTo } from '../fixtures/test';
 
 /**
- * "Do it in the UI" captures for the standalone configuration guides: gateways, routes, and
- * backends. Runs under CAPTURE_MODE=tour against fixtures/tour-config.yaml.
+ * "Do it in the UI" captures for the standalone configuration guides: backends. Runs under CAPTURE_MODE=tour against fixtures/tour-config.yaml.
  *
  * The add drawers are filled in but NEVER saved, so the fixture is unchanged between runs and
  * the captures stay deterministic (the same approach as llm-add-model.spec.ts). The values match
@@ -11,8 +10,8 @@ import { test, expect, dismissWelcome, scrollDrawerTo, scrollIntoViewChecked } f
  * The fields have no labels that Playwright can address, so they are found by placeholder. If a
  * UI release renames a placeholder, the fill times out here rather than capturing an empty form.
  *
- * Produces (light + dark per project): ui-add-gateway.png, ui-add-route.png,
- * ui-add-route-backend.png, ui-route-weighted-backends.png.
+ * Produces (light + dark per project): ui-route-weighted-backends.png. The Add gateway and Add
+ * route captures need a config with no default gateway, so they live in traffic-add.spec.ts.
  */
 test.describe('Traffic drawers', () => {
   async function openRoutes(page) {
@@ -21,44 +20,6 @@ test.describe('Traffic drawers', () => {
     await dismissWelcome(page);
     await expect(page.getByRole('heading', { name: /traffic routes/i })).toBeVisible();
   }
-
-  // configuration/gateways.md, "Define a gateway" — the http-proxy gateway on port 8080.
-  test('add gateway', async ({ page }) => {
-    await page.goto('/ui/traffic/gateways');
-    await page.waitForLoadState('networkidle');
-    await dismissWelcome(page);
-    await page.getByRole('button', { name: /add gateway/i }).click();
-    const drawer = page.getByRole('dialog');
-    await drawer.getByPlaceholder('public', { exact: true }).fill('http-proxy');
-    const port = drawer.getByPlaceholder('443', { exact: true });
-    await port.fill('8080');
-    // Drop the focus ring so the published image shows a filled form, not a field mid-edit.
-    await port.blur();
-    await expect(drawer.getByRole('combobox', { name: 'Protocol' })).toHaveText(/HTTP/);
-    await expect(page).toHaveScreenshot('ui-add-gateway.png');
-  });
-
-  // configuration/routes.md, "HTTP routes" — the http-backend route. Two captures because the
-  // drawer is taller than the viewport: the match fields, then the backend.
-  test('add route', async ({ page }) => {
-    await openRoutes(page);
-    await page.getByRole('button', { name: /add route/i }).click();
-    const drawer = page.getByRole('dialog');
-    await drawer.getByPlaceholder('api', { exact: true }).fill('http-backend');
-    await drawer.getByPlaceholder('example.com, *.example.com', { exact: true }).fill('example.com');
-    await expect(drawer.getByPlaceholder('/', { exact: true })).toHaveValue('/');
-    await drawer.getByRole('button', { name: /add backend/i }).click();
-    const host = drawer.getByPlaceholder('localhost:8080', { exact: true });
-    await host.fill('http.example.com:8080');
-    await host.blur();
-
-    await scrollIntoViewChecked(drawer.getByText(/^name$/i).first());
-    await expect(page).toHaveScreenshot('ui-add-route.png');
-
-    await scrollIntoViewChecked(drawer.getByText('Backends', { exact: true }));
-    await expect(drawer.getByPlaceholder('localhost:8080', { exact: true })).toHaveValue('http.example.com:8080');
-    await expect(page).toHaveScreenshot('ui-add-route-backend.png');
-  });
 
   // configuration/backends.md, "Static Hosts" — a route that splits traffic between two hosts
   // by weight. Uses the fixture's saved api-v2 route (80/20), so nothing is filled in.

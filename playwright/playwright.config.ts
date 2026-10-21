@@ -128,6 +128,9 @@ export default defineConfig({
     // modes also start host servers (npx server-everything, Petstore mock) first
     stdout: 'pipe',
     stderr: 'pipe',
+    // Send SIGTERM and wait, rather than the default SIGKILL, so the launcher's `trap cleanup`
+    // runs and removes the containers it started. Without this, a single-spec run leaves them up.
+    gracefulShutdown: { signal: 'SIGTERM', timeout: 10_000 },
     env: BIN
       ? {
           ADMIN_ADDR,

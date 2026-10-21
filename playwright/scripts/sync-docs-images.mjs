@@ -96,6 +96,7 @@ let copied = 0;
 let shared = 0;
 let missing = 0;
 let skipped = 0;
+let otherVersion = 0;
 const divergedImages = [];
 const convergedImages = [];
 
@@ -103,6 +104,13 @@ for (const [name, dests] of Object.entries(map)) {
   // Not captured by this target — leave it to the run that owns it.
   if (!ownedByTarget(name)) {
     skipped++;
+    continue;
+  }
+  // Captured by this target, but only for another version, such as the main-only ui-tabs
+  // images on a latest run. Skip without a warning, or every latest run reports each of them
+  // as missing. A version with only one variant captured still warns below.
+  if (!['light', 'dark'].some((variant) => findBaseline(name, VERSION, variant))) {
+    otherVersion++;
     continue;
   }
   for (const variant of ['light', 'dark']) {
@@ -158,7 +166,8 @@ for (const [name, dests] of Object.entries(map)) {
 console.log(`\n${dryRun ? 'would copy' : 'copied'} ${copied} image(s) for ${TARGET}/${VERSION}` +
   (VERSION === 'main' ? `, ${shared} unchanged (shared with latest)` : '') +
   (missing ? `, ${missing} missing` : '') +
-  (skipped ? `, ${skipped} not captured by ${TARGET}` : ''));
+  (skipped ? `, ${skipped} not captured by ${TARGET}` : '') +
+  (otherVersion ? `, ${otherVersion} captured only for another version` : ''));
 
 if (VERSION === 'main' && divergedImages.length) {
   console.log('\nmain diverged from latest for these images — reuse-image now resolves img/main/ for main pages automatically, no content edit needed:');

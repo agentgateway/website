@@ -94,7 +94,7 @@ Open the [agentgateway UI on the default port 15000](http://localhost:15000/ui) 
 
 You can change the target and port configurations in the UI. Any updates you make apply immediately without restarting agentgateway.
 
-{{< reuse-image src="img/1.2-earlier/agentgateway-ui-home.png" >}}
+{{< reuse-image src="img/1.2-earlier/agentgateway-ui-home.png" alt="Earlier agentgateway UI Overview page with port bind, listener, route, and backend counts" >}}
 
 ### Step 5: Connect and list tools in the Playground
 
@@ -102,7 +102,7 @@ You can change the target and port configurations in the UI. Any updates you mak
 2. In the **Testing** card, check the **Connection** URL (such as `http://localhost:3000/`) and click **Connect**. The UI connects to the MCP target and lists its tools.
 3. Confirm that **Available Tools** shows tools from the server, such as `echo` or various `get` commands.
 
-{{< reuse-image src="img/1.2-earlier/ui-playground-tools.png" >}}
+{{< reuse-image src="img/1.2-earlier/ui-playground-tools.png" alt="Earlier agentgateway UI Playground page with a connected MCP route and a list of available tools" >}}
 
 ### Step 6: Run a tool
 
@@ -111,7 +111,7 @@ You can change the target and port configurations in the UI. Any updates you mak
 3. Click **Run Tool**.
 4. Check the **Response** card for the echoed message.
 
-{{< reuse-image src="img/1.2-earlier/ui-playground-tool-echo.png" >}}
+{{< reuse-image src="img/1.2-earlier/ui-playground-tool-echo.png" alt="Earlier agentgateway UI Playground page with the echo tool selected and its JSON response" >}}
 
 {{% /steps %}}
 {{< /version >}}
@@ -151,8 +151,8 @@ Because you add the MCP server from the UI, you can start agentgateway without a
 
 2. Open the [agentgateway UI](http://localhost:4000/ui/). The first time that you run the UI, the **Welcome to Agentgateway** wizard opens. Click **Enable MCP**, and then click **Continue**. If you already did this, skip to the next step.
 
-   {{< reuse-image-light src="img/ui-welcome-wizard.png" >}}
-   {{< reuse-image-dark srcDark="img/ui-welcome-wizard-dark.png" >}}
+   {{< reuse-image-light src="img/ui-welcome-wizard.png" alt="Welcome to Agentgateway dialog with Enable LLM, Enable MCP, and Traffic enabled options and a Continue button" >}}
+   {{< reuse-image-dark srcDark="img/ui-welcome-wizard-dark.png" alt="Welcome to Agentgateway dialog with Enable LLM, Enable MCP, and Traffic enabled options and a Continue button" >}}
 
    The **Gateway Overview** home page opens, with the **MCP** row enabled.
 
@@ -162,8 +162,8 @@ Because you add the MCP server from the UI, you can start agentgateway without a
    3. Keep the **Streamable HTTP** transport. For the **URL**, enter `http://localhost:3005/mcp`.
    4. Click **Save server**.
 
-   {{< reuse-image-light src="img/ui-mcp-add-server.png" >}}
-   {{< reuse-image-dark srcDark="img/ui-mcp-add-server-dark.png" >}}
+   {{< reuse-image-light src="img/ui-mcp-add-server.png" alt="Add MCP server drawer with the server name server-everything, the Streamable HTTP transport, and the URL http://localhost:3005/mcp" >}}
+   {{< reuse-image-dark srcDark="img/ui-mcp-add-server-dark.png" alt="Add MCP server drawer with the server name server-everything, the Streamable HTTP transport, and the URL http://localhost:3005/mcp" >}}
 {{% /tab %}}
 {{% tab name="Config file" %}}
 1. Create a configuration file with the MCP server as a target. The configuration also serves the UI on the same gateway, so that you can use the playground in the next step.
@@ -217,12 +217,40 @@ mcp:
       host: http://localhost:3005/mcp
 ui: {}
 EOF
+agentgateway -f config.yaml --validate-only
 agentgateway -f config.yaml >/tmp/agentgateway.log 2>&1 &
 AGW_PID=$!
 # On exit, reap the whole process tree. npx spawns a node child for the server, and
 # killing npx alone orphans that child, which holds the pipe open and hangs the job.
 trap 'kill $AGW_PID 2>/dev/null || true; pkill -P $MCP_PID 2>/dev/null || true; kill $MCP_PID 2>/dev/null || true; pkill -f "server-everything" 2>/dev/null || true' EXIT
 sleep 3
+YAMLTest -f - <<'EOF'
+- name: MCP endpoint on the gateway accepts an initialize request
+  http:
+    url: "http://localhost:4000"
+    path: /mcp
+    method: POST
+    headers:
+      content-type: application/json
+      accept: "application/json, text/event-stream"
+    body: |
+      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
+  source:
+    type: local
+  expect:
+    statusCode: 200
+  retries: 10
+- name: UI is served on the gateway port
+  http:
+    url: "http://localhost:4000"
+    path: /ui/
+    method: GET
+  source:
+    type: local
+  expect:
+    statusCode: 200
+  retries: 3
+EOF
 {{< /doc-test >}}
 
 ### Step 3: Try a tool in the playground {#step-5-try-a-tool-in-the-playground}
@@ -231,15 +259,15 @@ sleep 3
 2. If you see a **Browser access is not allowed** notice, click **Apply CORS** so the playground can call the MCP listener from the UI.
 3. Click **Initialize** to open an MCP session. The playground lists the tools that the server exposes, such as `echo` and various `get` commands.
 
-   {{< reuse-image-light src="img/ui-playground-tools.png" >}}
-   {{< reuse-image-dark srcDark="img/ui-playground-tools-dark.png" >}}
+   {{< reuse-image-light src="img/ui-playground-tools.png" alt="MCP Playground with the echo tool selected and a list of 13 discovered tools in the Result panel" >}}
+   {{< reuse-image-dark srcDark="img/ui-playground-tools-dark.png" alt="MCP Playground with the echo tool selected and a list of 13 discovered tools in the Result panel" >}}
 
 4. From the **Tool** dropdown list, select the `echo` tool. 
 5. In the **Message** field, enter a string, such as `This is my first agentgateway setup`, and click **Call tool**.
 6. Verify that the **Result** card shows an `HTTP 200` response with your message echoed back.
 
-   {{< reuse-image-light src="img/ui-playground-tool-echo.png" >}}
-   {{< reuse-image-dark srcDark="img/ui-playground-tool-echo-dark.png" >}}
+   {{< reuse-image-light src="img/ui-playground-tool-echo.png" alt="MCP Playground with the echo tool selected, a message entered, and the tool output Echo: This is my first agentgateway setup." >}}
+   {{< reuse-image-dark srcDark="img/ui-playground-tool-echo-dark.png" alt="MCP Playground with the echo tool selected, a message entered, and the tool output Echo: This is my first agentgateway setup." >}}
 
 {{% /steps %}}
 {{< /version >}}

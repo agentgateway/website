@@ -53,16 +53,22 @@ You can add the model in the UI or in your configuration file.
 {{% tab name="UI" %}}
 To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same model as the **Config file** tab.
 
-1. Start agentgateway with the `ANTHROPIC_API_KEY` environment variable set. The UI checks that the variable exists when you save the model.
-2. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
-3. From the **Provider** dropdown, select **Anthropic**.
-4. In the **Incoming model match** field, replace the default `anthropic/*` with `*`.
-5. For the **Provider API key**, select **Env var**, and enter `ANTHROPIC_API_KEY`.
-6. Keep **Incoming model** as the **Outgoing model**. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
+1. Set your API key in the `ANTHROPIC_API_KEY` environment variable. The UI checks that the variable exists when you save the model.
 
-   {{< reuse-image src="img/ui-llm-add-model-anthropic.png" srcDark="img/ui-llm-add-model-anthropic-dark.png" >}}
+   ```sh
+   export ANTHROPIC_API_KEY='<your-api-key>'
+   ```
 
-7. Click **Save model**.
+2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
+3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+4. From the **Provider** dropdown, select **Anthropic**.
+5. In the **Incoming model match** field, replace the default `anthropic/*` with `*`.
+6. For the **Provider API key**, select **Env var**, and enter `ANTHROPIC_API_KEY`.
+7. For **Outgoing model**, keep **Incoming model**. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
+
+   {{< reuse-image src="img/ui-llm-add-model-anthropic.png" srcDark="img/ui-llm-add-model-anthropic-dark.png" alt="Add model drawer with Anthropic selected as the provider, the * wildcard as the incoming model match, and ANTHROPIC_API_KEY as the environment variable for the provider API key" >}}
+
+8. Click **Save model**.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}
@@ -78,6 +84,8 @@ llm:
     params:
       apiKey: "$ANTHROPIC_API_KEY"
 ```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Setting | Description |
 |---------|-------------|

@@ -209,7 +209,17 @@ When you combine MCP authorization with [MCP authentication]({{< link-hextra pat
 
 {{< tabs >}}
 {{% tab name="UI" %}}
-1. Start agentgateway with the MCP target configuration from the previous **UI** tab.
+1. Start agentgateway with a configuration that has an MCP target, but no policies. You add the policies in the UI.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   mcp:
+     port: 3000
+     targets:
+     - name: everything
+       stdio:
+         cmd: npx
+         args: ["@modelcontextprotocol/server-everything"]
+   ```
 2. Open [http://localhost:15000/ui/mcp/policies](http://localhost:15000/ui/mcp/policies) (**MCP** > **Policies**), and click the **MCP authentication** tile.
    1. In the **Signing keys** section, select **Remote URL**, and enter `http://localhost:9000/.well-known/jwks.json` for the **JWKS URL**.
    2. Enter `http://localhost:9000` for the **Issuer**.
@@ -223,7 +233,11 @@ When you combine MCP authorization with [MCP authentication]({{< link-hextra pat
       - header
       ```
    5. Click **Save policy**. The authorization server must be running, because agentgateway fetches the JWKS when it loads the policy.
-3. Click the **MCP authorization** tile, and add the three **Allow** rules from the previous **UI** tab. Then, click **Save policy**.
+3. Click the **MCP authorization** tile, and add each of the following rules. For each rule, click **Add rule**, keep the **Allow** effect, and replace the example expression in the editor.
+   1. `mcp.tool.name == "echo"`
+   2. `jwt.sub == "test-user" && mcp.tool.name == "add"`
+   3. `mcp.tool.name == "printEnv" && jwt.nested.key == "value"`
+4. Click **Save policy**.
 
 For more information about the authentication form, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}).
 {{% /tab %}}

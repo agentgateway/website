@@ -15,6 +15,7 @@
     "test:costs": "CAPTURE_MODE=costs playwright test tests/costs.spec.ts",
     "test:logs": "CAPTURE_MODE=costs playwright test tests/logs.spec.ts",
     "test:tour": "CAPTURE_MODE=tour playwright test tests/tour.spec.ts tests/traffic-drawers.spec.ts",
+    "test:traffic-add": "CAPTURE_MODE=fixture FIXTURE=traffic-add.yaml playwright test tests/traffic-add.spec.ts",
     "test:kube": "CAPTURE_TARGET=kube playwright test tests/kube-readonly.spec.ts",
     "test:kube-costs": "CAPTURE_TARGET=kube playwright test tests/kube-costs.spec.ts",
     "clean:ui": "docker ps -aq --filter publish=15100 | xargs -I{} docker rm -f {}",

@@ -317,25 +317,27 @@
       "dark": "assets/img/ui-tour-client-setup-dark.png"
     },
     "ui-add-gateway.png": {
-      "$note": "configuration/gateways, Define a gateway: Add gateway drawer filled in for the http-proxy gateway on port 8080. Never saved. Captured by tests/traffic-drawers.spec.ts under CAPTURE_MODE=tour. syncDiffRatio 0: main's drawer has no Resulting YAML panel, a change of only ~0.1% of the pixels, so main always publishes its own copy.",
+      "$note": "configuration/gateways, Define a gateway: Add gateway drawer with Default gateway selected, so the name is default, on port 3000. Never saved. Captured by tests/traffic-add.spec.ts under CAPTURE_MODE=fixture FIXTURE=traffic-add.yaml, which has no default gateway. syncDiffRatio 0: main's drawer has no Resulting YAML panel, a change of only ~0.1% of the pixels, so main always publishes its own copy.",
       "light": "assets/img/ui-add-gateway.png",
       "dark": "assets/img/ui-add-gateway-dark.png",
       "syncDiffRatio": 0
     },
     "ui-add-route.png": {
-      "$note": "configuration/routes, HTTP routes: Add route drawer filled in for the http-backend route (match fields). Never saved. Captured by tests/traffic-drawers.spec.ts under CAPTURE_MODE=tour.",
+      "$note": "configuration/routes, HTTP routes: Add route drawer filled in for the http-backend route on the http-proxy gateway (match fields). Never saved. Captured by tests/traffic-add.spec.ts under CAPTURE_MODE=fixture FIXTURE=traffic-add.yaml. syncDiffRatio 0: the latest and main drawers differ by less than the default ratio (mostly the sidebar version label), so without it main falls back to the bare image, whose sidebar reads the latest version.",
       "light": "assets/img/ui-add-route.png",
-      "dark": "assets/img/ui-add-route-dark.png"
+      "dark": "assets/img/ui-add-route-dark.png",
+      "syncDiffRatio": 0
     },
     "ui-add-route-backend.png": {
-      "$note": "configuration/routes, HTTP routes: the same Add route drawer scrolled to its http.example.com:8080 backend. Captured by tests/traffic-drawers.spec.ts under CAPTURE_MODE=tour.",
+      "$note": "configuration/routes, HTTP routes: the same Add route drawer scrolled to its http.example.com:8080 backend. Captured by tests/traffic-add.spec.ts under CAPTURE_MODE=fixture FIXTURE=traffic-add.yaml.",
       "light": "assets/img/ui-add-route-backend.png",
       "dark": "assets/img/ui-add-route-backend-dark.png"
     },
     "ui-route-weighted-backends.png": {
-      "$note": "configuration/backends, Static Hosts: Edit route drawer for the fixture api-v2 route, showing two host backends weighted 80 and 20. Captured by tests/traffic-drawers.spec.ts under CAPTURE_MODE=tour.",
+      "$note": "configuration/backends, Static Hosts: Edit route drawer for the fixture api-v2 route, showing two host backends weighted 80 and 20. Captured by tests/traffic-drawers.spec.ts under CAPTURE_MODE=tour. syncDiffRatio 0: the latest and main drawers differ by less than the default ratio (mostly the sidebar version label), so without it main falls back to the bare image, whose sidebar reads the latest version.",
       "light": "assets/img/ui-route-weighted-backends.png",
-      "dark": "assets/img/ui-route-weighted-backends-dark.png"
+      "dark": "assets/img/ui-route-weighted-backends-dark.png",
+      "syncDiffRatio": 0
     },
     "ui-llm-policy-cors.png": {
       "$note": "content/docs/standalone/main/documentation/configuration/security/cors.md, UI tab, step 4: the LLM CORS drawer filled in with the origin, POST and OPTIONS methods, and the authorization and content-type header allowlist (top of the drawer). Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",

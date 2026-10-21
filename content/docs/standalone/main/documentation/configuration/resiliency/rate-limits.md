@@ -203,7 +203,13 @@ To enable token-based rate limiting, set the rate limiting type to `tokens`. Thi
 
 {{< tabs >}}
 {{% tab name="UI" %}}
-In the **Local rate limit** policy drawer, such as in **LLM** > **Policies**, select **Tokens** for the **Limit type**. Then, enter `60s` for the **Fill interval**, `10` for the **Max tokens**, and `1` for the **Tokens per fill**, and click **Save policy**.
+1. Open the **Local rate limit** policy drawer, such as in **LLM** > **Policies**.
+2. Select **Tokens** for the **Limit type**.
+3. Fill out the other fields.
+   1. **Fill interval**: `60s`
+   2. **Max tokens**: `10`
+   3. **Tokens per fill**: `1`
+4. Click **Save policy**.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml

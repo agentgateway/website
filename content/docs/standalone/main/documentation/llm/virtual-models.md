@@ -122,8 +122,8 @@ Use `routing.weighted.targets` to split traffic between targets with `weight`.
 3. Enter `smart` for the **Virtual model name**.
 4. For the **Routing strategy**, keep **Weighted**.
 5. In the **Weighted targets** section, configure the targets.
-   1. From the first **Model** dropdown, select `gpt-4o-primary`, and enter `90` for the **Weight**.
-   2. Click **Add target**. Select `gpt-4o-fallback`, and enter `10` for the **Weight**.
+   1. In the target row that the UI adds, select `gpt-4o-primary` from the **Model** dropdown, and enter `90` for the **Weight**.
+   2. Click **Add target**. In the new target row, select `gpt-4o-fallback` from the **Model** dropdown, and enter `10` for the **Weight**.
 
    {{< reuse-image src="img/ui-llm-virtual-model-weighted.png" srcDark="img/ui-llm-virtual-model-weighted-dark.png" >}}
 

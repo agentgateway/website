@@ -269,7 +269,7 @@ The following steps add the model-level rules from the **Config file** tab to th
          model: gpt-4o
          apiKey: "$OPENAI_API_KEY"
    ```
-2. Open [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models) (**LLM** > **Models**), and click **Edit model** for the `gpt-4` model.
+2. Open [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models) (**LLM** > **Models**), and click the **Edit model** icon for the `gpt-4` model.
 3. Expand **Advanced** > **Model policies** > **Authorization**.
 4. Add each of the following rules. For each rule, click **Add rule**, select the effect from the rule's dropdown, and replace the example expression in the editor.
 
@@ -283,7 +283,7 @@ The following steps add the model-level rules from the **Config file** tab to th
 
 5. Click **Apply authorization**, and then click **Save model**.
 
-The UI saves the last rule as `allow: request.headers["x-org"] == "engineering"` instead of the legacy string form. Both forms behave the same. To add the policy-layer rules in `llm.policies.authorization`, use the **Authorization** tile in **LLM** > **Policies**, as described earlier on this page.
+The UI saves the last rule as `allow: request.headers["x-org"] == "engineering"` instead of the legacy string form. Both forms behave the same. To add the policy-layer rules in `llm.policies.authorization`, open **LLM** > **Policies**, and click the **Authorization** tile. Add each rule with **Add rule**, and click **Save policy**.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml

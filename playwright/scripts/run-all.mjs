@@ -23,6 +23,7 @@ const MODES = [
   'test:costs',
   'test:logs',
   'test:tour',
+  'test:traffic-add',
   'test:ui-tabs-a',
   'test:ui-tabs-b',
   'test:ui-tabs-c',

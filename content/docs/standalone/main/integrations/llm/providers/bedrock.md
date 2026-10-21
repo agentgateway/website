@@ -71,18 +71,19 @@ You can add the model in the UI or in your configuration file.
 {{% tab name="UI" %}}
 To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same model as the **Config file** tab.
 
-1. Start agentgateway in an environment that has AWS credentials, such as an AWS profile or environment variables.
-2. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
-3. From the **Provider** dropdown, select **Amazon Bedrock**.
-4. In the **Incoming model match** field, replace the default `bedrock/*` with `*`.
-5. Keep **Ambient** for the **AWS credentials**. To enter an access key instead, select **Static**. This option writes the key to an `auth.aws` block.
-6. For the **AWS region**, enter or select `us-west-2`.
-7. From the **Bedrock endpoint** dropdown, select **Prefer Runtime**. The UI preselects **Prefer Mantle** for a new Bedrock model, and saves the choice as `params.bedrockEndpointPreference`. For more information, see [Bedrock Mantle](#bedrock-mantle).
-8. Keep **Incoming model** as the **Outgoing model**. To send every request to one model instead, select **Explicit**, and enter the model ID. This option sets `params.model`.
+1. Set up AWS credentials in the terminal where you run agentgateway, such as an AWS profile or environment variables.
+2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
+3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+4. From the **Provider** dropdown, select **Amazon Bedrock**.
+5. In the **Incoming model match** field, replace the default `bedrock/*` with `*`.
+6. Keep **Ambient** for the **AWS credentials**. To enter an access key instead, select **Static**. This option writes the key to an `auth.aws` block.
+7. For the **AWS region**, enter or select `us-west-2`.
+8. From the **Bedrock endpoint** dropdown, select **Prefer Runtime**. The UI preselects **Prefer Mantle** for a new Bedrock model, and saves the choice as `params.bedrockEndpointPreference`. For more information, see [Bedrock Mantle](#bedrock-mantle).
+9. For **Outgoing model**, keep **Incoming model**. To send every request to one model instead, select **Explicit**, and enter the model ID. This option sets `params.model`.
 
-   {{< reuse-image src="img/ui-llm-add-model-bedrock-runtime.png" srcDark="img/ui-llm-add-model-bedrock-runtime-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-add-model-bedrock-runtime.png" srcDark="img/ui-llm-add-model-bedrock-runtime-dark.png" alt="Add model drawer with Amazon Bedrock selected as the provider, the * wildcard as the incoming model match, Ambient as the AWS credentials, us-west-2 as the AWS region, and Prefer Runtime as the Bedrock endpoint" >}}
 
-9. Click **Save model**.
+10. Click **Save model**.
 
 The UI writes `bedrockEndpointPreference: runtimePreferred` in addition to the fields in the **Config file** tab. Runtime is also the default when the field is not set, so both configurations behave the same.
 
@@ -100,6 +101,8 @@ llm:
     params:
       awsRegion: us-west-2
 ```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Setting | Description |
 |---------|-------------|
@@ -239,7 +242,7 @@ Set `params.bedrockEndpointPreference` to choose how the tags are applied. You c
 
 {{< tabs >}}
 {{% tab name="UI" %}}
-1. Open **LLM** > **Models**, and click the edit icon for the Bedrock model. To create a model, click **Add model**, and select **Amazon Bedrock** from the **Provider** dropdown.
+1. Open **LLM** > **Models**, and click the **Edit model** icon for the Bedrock model. To create a model, click **Add model**, and select **Amazon Bedrock** from the **Provider** dropdown.
 2. From the **Bedrock endpoint** dropdown, select an option. **Prefer Runtime** writes `runtimePreferred`, **Prefer Mantle** writes `mantlePreferred`, **Runtime only (advanced)** writes `runtimeOnly`, and **Mantle only (advanced)** writes `mantleOnly`.
 3. Click **Save model**.
 

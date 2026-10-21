@@ -11,7 +11,7 @@ By default, all access logs are written to stdout. To persist access logs, you c
 
 ## Set up the database
 
-Agentgateway supports **SQLite** and **PostgreSQL** as log storage backends. Set `config.logging.database.url` to the connection URL for your database. Agentgateway detects the backend from the URL. A `postgres://` or `postgresql://` URL uses PostgreSQL and any other value is treated as a SQLite file path.
+Agentgateway supports **SQLite** and **PostgreSQL** as log storage backends. Set `config.logging.database.url` to the connection URL for your database. Agentgateway detects the backend from the URL. A `postgres://` or `postgresql://` URL uses PostgreSQL and any other value is treated as a SQLite file path. The UI has no field for `config.logging.database`, so set it in your configuration file.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -70,7 +70,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 1. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability), and click the **Access logs** card.
 2. In the **Database** section, select **Full** from the **LLM detail** dropdown.
 
-   {{< reuse-image src="img/ui-access-logs-database-llm.png" srcDark="img/ui-access-logs-database-llm-dark.png" >}}
+   {{< reuse-image src="img/ui-access-logs-database-llm.png" srcDark="img/ui-access-logs-database-llm-dark.png" alt="Access logs drawer with the Database section, where the LLM detail dropdown is set to Full" >}}
 
 3. Click **Save policy**.
 
@@ -129,7 +129,7 @@ Use the `frontendPolicies.accessLog.database.add` field to store additional acce
 1. Open the **Settings** > **Observability** page, and click the **Access logs** card.
 2. In the **Database** section, under **Database fields**, enter `user_id` as the name and `request.headers["x-user-id"]` as the value, and click **Add**.
 
-   {{< reuse-image src="img/ui-access-logs-database-fields.png" srcDark="img/ui-access-logs-database-fields-dark.png" >}}
+   {{< reuse-image src="img/ui-access-logs-database-fields.png" srcDark="img/ui-access-logs-database-fields-dark.png" alt="Access logs drawer with the Database section, where the database fields list has a user_id field set to the x-user-id request header" >}}
 
 3. Click **Save policy**.
 {{% /tab %}}

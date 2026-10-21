@@ -219,7 +219,7 @@ For example:
 
 {{< tabs >}}
 {{% tab name="UI" %}}
-The following steps add the `authorization` policy from the **Simplified (LLM)** example in the **Config file** tab. Add the **JWT auth** policy first, as described in the previous **UI** tab.
+The following steps add the `authorization` policy from the **Simplified (LLM)** example in the **Config file** tab. First, add the `jwtAuth` policy with the **JWT auth** tile. For the steps, see the **UI** tab that adds the `jwtAuth` policy on this page.
 
 1. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **Authorization** tile.
 2. Click **Add rule**. Keep the **Allow** effect.

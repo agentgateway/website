@@ -52,18 +52,19 @@ You can add the model in the UI or in your configuration file.
 {{% tab name="UI" %}}
 To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same model as the **Config file** tab.
 
-1. Start agentgateway in an environment that has GCP Application Default Credentials (ADC).
-2. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
-3. From the **Provider** dropdown, select **Gemini Enterprise (GCP Vertex)**.
-4. In the **Incoming model match** field, replace the default `vertex/*` with `gemini-2.5-flash`.
-5. Keep **ADC** for the **Google credentials**. To use a service account key file instead, select **File**, and enter the path to the file.
-6. Enter `my-project-id` for the **Vertex project**.
-7. For the **Vertex region**, enter or select `us-west2`. If you leave the field empty, Vertex uses `global`.
-8. For the **Outgoing model**, select **Explicit**, and enter `google/gemini-2.5-flash-lite-preview-06-17`.
+1. Set up GCP Application Default Credentials (ADC) in the terminal where you run agentgateway.
+2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
+3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+4. From the **Provider** dropdown, select **Gemini Enterprise (GCP Vertex)**.
+5. In the **Incoming model match** field, replace the default `vertex/*` with `gemini-2.5-flash`.
+6. Keep **ADC** for the **Google credentials**. To use a service account key file instead, select **File**, and enter the path to the file.
+7. Enter `my-project-id` for the **Vertex project**.
+8. For the **Vertex region**, enter or select `us-west2`. If you leave the field empty, Vertex uses `global`.
+9. For the **Outgoing model**, select **Explicit**, and enter `google/gemini-2.5-flash-lite-preview-06-17`.
 
-   {{< reuse-image src="img/ui-llm-add-model-vertex-explicit.png" srcDark="img/ui-llm-add-model-vertex-explicit-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-add-model-vertex-explicit.png" srcDark="img/ui-llm-add-model-vertex-explicit-dark.png" alt="Add model drawer with Gemini Enterprise (GCP Vertex) selected as the provider, gemini-2.5-flash as the incoming model match, ADC as the Google credentials, my-project-id as the Vertex project, us-west2 as the Vertex region, and google/gemini-2.5-flash-lite-preview-06-17 as the explicit outgoing model" >}}
 
-9. Click **Save model**.
+10. Click **Save model**.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}
@@ -81,6 +82,8 @@ llm:
       vertexProject: my-project-id
       vertexRegion: us-west2
 ```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Setting | Description |
 |---------|-------------|

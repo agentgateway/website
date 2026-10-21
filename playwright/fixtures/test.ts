@@ -147,10 +147,18 @@ export async function blurAll(page: Page, park?: { x: number; y: number }): Prom
 /**
  * Scroll a drawer body so that `target` sits at its top (or as far as the body scrolls), and wait
  * until the body has moved. A scroll issued while the drawer is still rendering is undone when it
- * finishes, so wait for the content that you need before you call this.
+ * finishes, so wait for the content that you need before you call this. When `target` already
+ * sits at the top of an unscrolled body, the body has nowhere to move, so return without waiting.
  */
 export async function scrollDrawerTo(drawer: Locator, target: Locator): Promise<void> {
   const body = drawer.locator('.drawer-body');
+  const alreadyAtTop = await target.evaluate((el) => {
+    const scroller = el.closest('.drawer-body');
+    if (!scroller) return false;
+    const offset = el.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+    return scroller.scrollTop === 0 && offset <= 1;
+  });
+  if (alreadyAtTop) return;
   await target.evaluate((el) => el.scrollIntoView({ block: 'start' }));
   await expect.poll(() => body.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
 }

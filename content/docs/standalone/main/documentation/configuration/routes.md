@@ -51,18 +51,21 @@ You can configure two types of routes: HTTP routes (`routes`) and TCP routes (`t
 {{% tab name="UI" %}}
 To add an HTTP route in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same `http-backend` route as the **Config file** tab.
 
-1. Open **Traffic** > **Routes**, and click **Add route**.
-2. Select the **Gateway** that the route attaches to.
-3. Enter a **Name** and the **Hostnames** to match, such as `http-backend` and `example.com`.
-4. Select a **Path match** type, and enter the **Path**, such as **Prefix** and `/`.
+1. Add the `http-proxy` gateway, if you do not have one yet. The gateway must exist before you can select it in a route. Open **Traffic** > **Gateways**, click **Add gateway**, enter `http-proxy` and `8080` for the **Name** and **Port**, keep **HTTP** as the **Protocol**, and click **Save gateway**.
+2. Open **Traffic** > **Routes**, and click **Add route**.
+3. Select the `http-proxy` **Gateway**.
+4. Enter `http-backend` for the **Name**, and `example.com` for the **Hostnames**.
+5. Select **Prefix** as the **Path match**, and enter `/` for the **Path**.
 
    {{< reuse-image src="img/ui-add-route.png" srcDark="img/ui-add-route-dark.png" >}}
 
-5. In the **Backends** section, click **Add backend**, and enter the **Host**, such as `http.example.com:8080`.
+6. In the **Backends** section, click **Add backend**, and enter `http.example.com:8080` for the **Host**. Keep the **Weight** of `1`.
 
    {{< reuse-image src="img/ui-add-route-backend.png" srcDark="img/ui-add-route-backend-dark.png" >}}
 
-6. Click **Save route**.
+7. Click **Save route**.
+
+The UI leaves out the default `protocol: HTTP` on the gateway and the default `weight: 1` on the backend. The UI also writes `gateways` as a single value instead of a list.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}

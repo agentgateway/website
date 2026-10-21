@@ -24,30 +24,24 @@ You can add the model in the UI or in your configuration file.
 {{% tab name="UI" %}}
 To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same model as the **Config file** tab.
 
-1. Set your API key, create a configuration file with an empty `llm` section, and start agentgateway. The UI checks that the `META_API_KEY` environment variable exists when you save the model.
+1. Set your API key in the `META_API_KEY` environment variable. The UI checks that the variable exists when you save the model.
 
    ```sh
    export META_API_KEY='<your-api-key>'
-   cat > config.yaml <<'EOF'
-   llm:
-     models: []
-   EOF
-   agentgateway -f config.yaml
    ```
 
-2. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
-3. From the **Provider** dropdown, select **Meta**.
-4. In the **Incoming model match** field, replace the default `meta/*` with `*`.
-5. For the **Provider API key**, select **Env var**, and enter `META_API_KEY`.
-6. Keep **Incoming model** as the **Outgoing model**. To send every request to one model instead, select **Explicit**, and enter the model name, such as `muse-spark-1.3`. This option sets `params.model`.
+2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
+3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+4. From the **Provider** dropdown, select **Meta**.
+5. In the **Incoming model match** field, replace the default `meta/*` with `*`.
+6. For the **Provider API key**, select **Env var**, and enter `META_API_KEY`.
+7. For **Outgoing model**, keep **Incoming model**. To send every request to one model instead, select **Explicit**, and enter the model name, such as `muse-spark-1.3`. This option sets `params.model`.
 
-   {{< reuse-image src="img/ui-llm-add-model-meta.png" srcDark="img/ui-llm-add-model-meta-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-add-model-meta.png" srcDark="img/ui-llm-add-model-meta-dark.png" alt="Add model drawer with Meta selected as the provider, the * wildcard as the incoming model match, and META_API_KEY as the environment variable for the provider API key" >}}
 
-7. Click **Save model**.
+8. Click **Save model**.
 
-The form has no field for `params.baseUrl`. To override the provider URL, click the **Raw** icon (`<>`) in the drawer header and add the field, or use the **Config file** tab.
-
-Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{< reuse "agw-docs/standalone/llm/providers/ui-add-model-notes.md" >}}
 {{% /tab %}}
 {{% tab name="Config file" %}}
 {{< reuse "agw-docs/standalone/llm/providers/meta-config.md" >}}

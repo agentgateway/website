@@ -32,7 +32,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
    * **Binary**: The paths are paths on the host that agentgateway runs on, such as `/etc/agentgateway/tls/tls.crt` and `/etc/agentgateway/tls/tls.key`.
    * **Docker**: The paths are paths inside the container. Mount the directory that holds the certificate and key, such as with `-v "$PWD/tls:/etc/agentgateway/tls:ro"`, and publish the UI gateway port with `-p 4001:4001`. The UI cannot add a mount or publish a port, so set both when you start the container. For the full command, see the **Docker** tab in the **Config file** tab.
 2. Open the UI on the admin interface, such as [http://localhost:15000/ui/traffic/gateways](http://localhost:15000/ui/traffic/gateways) (**Traffic** > **Gateways**). If you open the UI through the `ui-gateway` instead, the page stops loading when the gateway switches to HTTPS.
-3. For the `ui-gateway`, click the pencil icon (**Edit gateway**).
+3. For the `ui-gateway`, click the **Edit gateway** icon.
 4. In the **Edit gateway** drawer, add the certificate.
    1. From the **Protocol** dropdown, select **HTTPS**.
    2. Expand **TLS**.

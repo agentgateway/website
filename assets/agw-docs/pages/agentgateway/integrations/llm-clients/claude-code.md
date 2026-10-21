@@ -18,6 +18,8 @@ The primary use case is routing Claude Code to non-Anthropic LLM backends (such 
 
 Route Claude Code to any OpenAI-compatible LLM provider (such as vLLM, Ollama, or local language models). This is the recommended approach for cost-effective and flexible deployment.
 
+### Set up agentgateway {#openai-setup}
+
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 You can configure agentgateway in the UI or in your configuration file.
 
@@ -59,7 +61,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
 
-Then, connect Claude Code to agentgateway.
+### Connect Claude Code {#openai-connect}
 
 1. Configure Claude Code to point to your agentgateway instance.
 
@@ -77,6 +79,8 @@ Then, connect Claude Code to agentgateway.
 
 Alternatively, route Claude Code directly to Anthropic's API through agentgateway. This is useful if you want to leverage Anthropic's latest models or features directly.
 
+### Get an Anthropic API key {#anthropic-api-key}
+
 1. Get an Anthropic API key from the [Anthropic Console](https://platform.claude.com).
 
 2. Export your Anthropic API key.
@@ -84,6 +88,8 @@ Alternatively, route Claude Code directly to Anthropic's API through agentgatewa
    ```bash
    export ANTHROPIC_API_KEY="sk-ant-your-key-here"
    ```
+
+### Set up agentgateway {#anthropic-setup}
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 You can configure agentgateway in the UI or in your configuration file.
@@ -107,7 +113,7 @@ To create the same configuration in the [UI]({{< link-hextra path="/documentatio
 4. In the **Incoming model match** field, replace the default `anthropic/*` with `*`.
 5. For the **Provider API key**, select **Env var**, and enter `ANTHROPIC_API_KEY`.
 
-   {{< reuse-image src="img/ui-llm-add-model-anthropic.png" srcDark="img/ui-llm-add-model-anthropic-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-add-model-anthropic.png" srcDark="img/ui-llm-add-model-anthropic-dark.png" alt="Add model drawer with the Anthropic provider selected and the provider API key read from the ANTHROPIC_API_KEY environment variable" >}}
 
 6. Click **Save model**.
 
@@ -127,7 +133,7 @@ export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-test}"
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
 
-Then, connect Claude Code to agentgateway.
+### Connect Claude Code {#anthropic-connect}
 
 1. Configure Claude Code.
 

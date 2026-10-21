@@ -91,7 +91,7 @@ Turn on API key authentication, and create two virtual keys, one for Alice and o
    {{< reuse-image-dark srcDark="img/ui-virtual-keys-new-dark.png" alt="Create virtual key drawer with name, key value, and metadata" >}}
 
 6. Copy the key. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}In the **Copy your new API key** dialog, click **Copy**, and click **Done**. The UI does not show the key again.{{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}In the key list, click **Copy** for the key.{{< /version >}}
-7. Repeat the previous two steps for Bob, with the name `bob`, the key `sk-bob-xyz789uvw012`, and the metadata `user` and `bob`.
+7. Click **New key**, and create Bob's key in the same way as Alice's key. Enter `bob` for the **Name**, the custom key `sk-bob-xyz789uvw012`, and the metadata `user` and `bob`. Then, copy the key.
 
    The **Virtual API Keys** page lists both keys. From here, you can show, copy, edit, or delete each one.
 

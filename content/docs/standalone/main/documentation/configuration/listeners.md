@@ -36,10 +36,10 @@ You can add an HTTP listener in the UI or in your configuration file.
 
 {{< tabs >}}
 {{% tab name="UI" %}}
-To add a gateway with an HTTP listener in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps.
+To add a gateway with an HTTP listener in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same `http` gateway as the **Config file** tab.
 
 1. Open **Traffic** > **Gateways**, and click **Add gateway**.
-2. Enter a **Name** and a **Port**, such as `http` and `3000`.
+2. Enter `http` for the **Name** and `3000` for the **Port**.
 3. Keep **HTTP** as the **Protocol**.
 
    {{< reuse-image src="img/ui-listeners-http.png" srcDark="img/ui-listeners-http-dark.png" >}}
@@ -55,7 +55,7 @@ For example:
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
-  default:
+  http:
     port: 3000
     protocol: HTTP
 routes: []
@@ -72,7 +72,7 @@ routes: []
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
-  default:
+  http:
     port: 3000
     protocol: HTTP
 routes: []
@@ -86,8 +86,10 @@ Serving {{< gloss "HTTPS (HTTP Secure)" >}}HTTPS{{< /gloss >}} traffic requires 
 
 {{< tabs >}}
 {{% tab name="UI" %}}
+The following steps create the same `https` gateway as the **Config file** tab.
+
 1. Open **Traffic** > **Gateways**, and click **Add gateway**.
-2. Enter a **Name** and a **Port**, such as `https` and `443`.
+2. Enter `https` for the **Name** and `443` for the **Port**.
 3. Select **HTTPS** as the **Protocol**.
 4. Expand the **TLS** section, and enter the paths to your files.
    * **Certificate**: `examples/tls/certs/cert.pem`
@@ -103,7 +105,7 @@ The certificate and key files must exist when you save. Relative paths resolve f
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
-  default:
+  https:
     port: 443
     protocol: HTTPS
     tls:
@@ -123,7 +125,7 @@ routes: []
 cat <<'EOF' > config2.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
-  default:
+  https:
     port: 443
     protocol: HTTPS
     tls:
@@ -151,9 +153,9 @@ The most exact match will be used, as well as the corresponding TLS certificates
 3. Select **Multiple listeners**, and click **Save gateway**. The gateway gets one listener named `listener1`.
 
    > [!NOTE]
-   > Select **Multiple listeners** before you change other fields. The option is unavailable after you set a protocol, TLS, or a policy on the gateway.
+   > Select **Multiple listeners** before you change other fields. The option is unavailable after you select HTTPS or TLS, or add a policy to the gateway.
 
-4. In the listener table of the `web` gateway, click the edit icon for `listener1`, and fill out the **Edit listener** drawer.
+4. In the listener table of the `web` gateway, click the **Edit listener** icon for `listener1`, and fill out the **Edit listener** drawer.
    1. Enter `discrete` for the **Name**.
    2. Select **HTTPS** as the **Protocol**.
    3. Enter `a.example.com` for the **Hostname**.
@@ -162,7 +164,12 @@ The most exact match will be used, as well as the corresponding TLS certificates
    {{< reuse-image src="img/ui-listeners-hostname.png" srcDark="img/ui-listeners-hostname-dark.png" >}}
 
 5. Click **Save listener**.
-6. In the header of the `web` gateway, click the **Add listener** icon. Repeat the previous steps for a `wildcard` listener with the `*.example.com` hostname and the `cert-wildcard.pem` and `key-wildcard.pem` files.
+6. In the header of the `web` gateway, click the **Add listener** icon. In the **Add listener** drawer, create the `wildcard` listener in the same way as the `discrete` listener.
+   1. Enter `wildcard` for the **Name**.
+   2. Select **HTTPS** as the **Protocol**.
+   3. Enter `*.example.com` for the **Hostname**.
+   4. Expand the **TLS** section. Enter `examples/tls/certs/cert-wildcard.pem` for the **Certificate** and `examples/tls/certs/key-wildcard.pem` for the **Key**.
+   5. Click **Save listener**.
 
 The UI leaves out `protocol: HTTPS` on each listener, because setting `tls` implies it.
 {{% /tab %}}
@@ -337,7 +344,7 @@ A TLS listener without a certificate passes TLS through. A TLS listener with a c
 1. Open **Traffic** > **Gateways**, and click **Add gateway**.
 2. Enter a **Name** and a **Port**, such as `tls` and `8443`.
 3. Select **Multiple listeners**, and click **Save gateway**. The gateway gets one listener named `listener1`.
-4. In the listener table of the `tls` gateway, click the edit icon for `listener1`, and add the passthrough listener.
+4. In the listener table of the `tls` gateway, click the **Edit listener** icon for `listener1`, and add the passthrough listener.
    1. Enter `passthrough` for the **Name**.
    2. Select **TLS** as the **Protocol**.
    3. Enter `passthrough.example.com` for the **Hostname**.

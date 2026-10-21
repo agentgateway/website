@@ -38,7 +38,7 @@ You can set the provider API key in the UI or in your configuration file.
 5. For the **Provider API key**, select one of the following options.
    * **API key**: Enter the key itself, such as `sk-proj....`. The UI writes the key inline in the `params.apiKey` field. This option is the least secure. Only use this option for quick tests.
    * **Env var**: Enter the name of the environment variable, such as `OPENAI_API_KEY`. The UI writes `apiKey: $OPENAI_API_KEY`. The variable must be set in the environment that agentgateway runs in, or the save fails.
-   * **File**: Enter the path to a file that holds the key, such as `/etc/agentgateway/openai-key.txt`. The UI writes `apiKey: {file: <path>}`, and agentgateway reads the key from the file. This option differs from the **File** steps in the **Config file** tab, which load the file into an environment variable.
+   * **File**: Enter the path to a file that holds the key, such as `/etc/agentgateway/openai-key.txt`. The UI writes `apiKey: {file: <path>}`. Agentgateway reads this file only when it loads the configuration, so a changed key takes effect after the next configuration reload or restart. This option differs from the **File** steps in the **Config file** tab, which use `auth.key.value.file` and pick up a changed key on the next request.
    * **Unset**: Configure no provider credential.
 
    {{< reuse-image src="img/ui-llm-model-passthrough.png" srcDark="img/ui-llm-model-passthrough-dark.png" >}}

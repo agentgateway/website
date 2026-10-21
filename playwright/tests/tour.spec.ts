@@ -60,7 +60,7 @@ test.describe('UI tour', () => {
 
   test('llm policies', async ({ page }) => {
     await open(page, 'llm/policies', /llm policies/i);
-    await expect(page.getByText('enabled').first()).toBeVisible();
+    await expect(page.getByText('enabled', { exact: true }).first()).toBeVisible();
     // The page is a long grid of policy cards. Capture the viewport only: the first rows show
     // enabled and disabled cards side by side, which is the point of the shot.
     await expect(page).toHaveScreenshot('ui-tour-llm-policies.png');
@@ -70,13 +70,13 @@ test.describe('UI tour', () => {
     await open(page, 'mcp/servers', /mcp servers/i);
     // The state badge comes from a live connection to mock-mcp-time. Wait for it so the
     // capture never catches a transient "connecting" state.
-    await expect(page.getByText('ready')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText('ready', { exact: true })).toBeVisible({ timeout: 15_000 });
     await expect(page).toHaveScreenshot('ui-tour-mcp-servers.png', { fullPage: true });
   });
 
   test('mcp policies', async ({ page }) => {
     await open(page, 'mcp/policies', /mcp policies/i);
-    await expect(page.getByText('enabled').first()).toBeVisible();
+    await expect(page.getByText('enabled', { exact: true }).first()).toBeVisible();
     await expect(page).toHaveScreenshot('ui-tour-mcp-policies.png');
   });
 
