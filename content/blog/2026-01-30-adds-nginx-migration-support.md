@@ -265,7 +265,9 @@ curl -s --head http://httpbin.example.com/get --resolve httpbin.example.com:80:$
 Here is the output:
 
 ```
-HTTP/1.1 301 Moved Permanentlylocation: https://httpbin.example.com/getdate: Tue, 27 Jan 2026 23:25:33 GMT
+HTTP/1.1 301 Moved Permanently
+location: https://httpbin.example.com/get
+date: Tue, 27 Jan 2026 23:25:33 GMT
 ```
 
 ### Cleanup
