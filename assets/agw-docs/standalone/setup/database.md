@@ -533,6 +533,40 @@ Agentgateway records LLM requests only, so send a request to an LLM model to con
 
 4. Open the **LLM** > **Analytics** page in the UI, such as <http://localhost:15000/ui/llm/analytics>. The request appears in the chart and in the breakdown. For more information about the controls on the page, see [Cost dashboard]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/" >}}).
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Verify database logging with agctl {#agctl}
+
+After you send the LLM request in [Verify that agentgateway records requests](#verify), use agctl to confirm that agentgateway stored the request. First, [install agctl and connect it to your gateway]({{< link-hextra path="/documentation/operations/config-resources/#connect" >}}). For a Helm installation, keep the port-forward to the admin address running.
+
+1. List the recorded requests.
+
+   ```sh
+   agctl standalone logs --limit 10
+   ```
+
+   Example output:
+
+   ```text
+   TIME                 STATUS  DURATION  PROVIDER  MODEL        TOKENS(IN/OUT)  COST       ID
+   2026-10-20 15:57:26  200     26ms      openai    gpt-4o-mini  10/9            $0.000007  01a15ae3-e0db-7096-9132-9f7b45a0238a
+   ```
+
+2. Summarize the recorded traffic.
+
+   ```sh
+   agctl standalone analytics --since 1h
+   ```
+
+   Example output:
+
+   ```text
+   REQUESTS  ERRORS  TOKENS  COST       AVG TTFT  TOK/S  CACHE HIT
+   1         0       19      $0.000007  -         -      0.0%
+   ```
+
+Agentgateway writes to the database asynchronously. An empty result can mean that agentgateway did not store the request yet. If the CLI reports that no database is configured, connect the gateway to a database and restart it, as described earlier on this page. For filters and request details, see [View LLM request logs with agctl]({{< link-hextra path="/documentation/observability/access-logs/view/#cli" >}}).
+{{< /version >}}
+
 <!--TODO troubleshooting
 
 ## Troubleshooting
