@@ -1,74 +1,49 @@
-Issue API keys with per-key token budgets and cost tracking (also known as virtual keys).
+Keep provider API keys on the gateway and give each client a revocable virtual key. Add token budgets and usage tracking as needed.
 
 ## About
 
-Virtual key management is a common feature in AI gateway solutions that allows you to issue API keys to users or applications, each with independent token budgets and cost tracking. Competitors like LiteLLM and Portkey offer this as a single "virtual keys" abstraction.
+Clients use virtual keys to authenticate to {{< reuse "agw-docs/snippets/agentgateway.md" >}}. The proxy replaces each virtual key with the provider key stored in a Kubernetes Secret before forwarding the request. Clients never receive the provider key, and the provider never receives the virtual key.
 
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} achieves the same outcome by composing three existing capabilities:
-- **API key authentication**: Identify incoming requests by API key
-- **Token-based rate limiting**: Enforce per-key token budgets
-- **Observability metrics**: Track per-key spending and usage
-
-This composable approach gives you more flexibility in how you configure and apply virtual key management policies, while maintaining compatibility with standard Kubernetes patterns.
+Each client has its own key, so you can revoke one client's access without rotating the provider key or reconfiguring other clients. Provider-key rotation happens in the cluster.
 
 ### How virtual keys work
 
-Virtual keys combine authentication, rate limiting, and observability to create isolated token budgets for each API key:
+{{% reuse "agw-docs/snippets/llm-provider-key-flow.md" %}}
 
-```mermaid
-flowchart LR
-  A[Request with key] --> B[Validate key, extract user ID, check budget]
-  B --> C{Budget available?}
-  C -->|Yes| D[Forward to LLM]
-  D --> E[Track token usage]
-  E --> F[Deduct from budget]
-  C -->|No| I[Reject with 429]
-  subgraph refill["Budget refills periodically"]
-    F
-  end
-```
+### Security considerations
 
-When a request arrives:
+All clients depend on the provider key in the Secret. Protect it as you would any other production credential.
 
-1. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} validates the API key, extracts the user ID from the key's metadata, and checks the request against the user's token budget.
-2. If budget is available:
-   1. The request proceeds to the LLM.
-   2. Agentgateway tracks token usage and deducts tokens from the user's budget.
-   3. Budgets refill at the configured interval (such as daily, hourly).
-3. If budget is exhausted, the request is rejected with a 429 status code
-
-### More considerations
-
-**Evaluation order**: Rate limiting is evaluated *before* prompt guards (content safety checks). This means that requests rejected by guardrails (403 Forbidden) still consume quota from the user's token budget. In contrast, authentication (JWT/OPA) is evaluated before rate limiting, so unauthenticated requests do not consume quota.
-
-**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/policy.md" >}} resources target the same Gateway or HTTPRoute, one policy silently overwrites the other based on creation order, even though both report `ACCEPTED/ATTACHED` status. There is no error to indicate that one policy's settings are not taking effect. To avoid this conflict, combine the settings that apply to the same target into a single policy. For example, this guide puts API key authentication and per-key rate limiting in one policy rather than two.
+* **Restrict who can read the Secret.** Limit the Kubernetes RBAC permissions to read Secrets in the namespace of the {{< reuse "agw-docs/snippets/backend.md" >}}.
+* **Encrypt client traffic.** Virtual keys are bearer credentials. Serve clients over [HTTPS]({{< link-hextra path="/documentation/setup/listeners/https/" >}}), or keep the Gateway on a private network.
+* **Keep {{< reuse "agw-docs/snippets/agentgateway.md" >}} up to date** with security patches.
+* **Multiple policies:** Keep authentication, model authorization, and rate limits in the same policy when they target the same Gateway. Separate policies can overwrite one another even when both report `ACCEPTED/ATTACHED`.
 
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
+The OpenAI provider guide stores the provider key in `openai-secret`. For other ways to provide it, see [Provider API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
+
 ## Set up virtual keys
 
-This example creates two virtual keys (for Alice and Bob) with independent daily token budgets. The budget is deliberately small (100 tokens per day) so that you can exhaust it in a few requests and see the enforcement in action. For production-sized budgets, see [Advanced configuration](#advanced-configuration).
+Create virtual keys for Alice and Bob, configure authentication, and verify their access. This setup does not require a rate limit server. Complete the following steps in order.
+
+{{% steps %}}
 
 ### Create API keys for users
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-Store your virtual keys in a Kubernetes ConfigMap, with one entry per user. Because a ConfigMap is not confidential, each entry stores a SHA-256 *hash* of the API key (`keyHash`) rather than the raw key. Clients still send the raw key in the `Authorization: Bearer` header. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} hashes the presented key and compares it to the stored hash, so the plaintext key never has to exist in the cluster.
+Store a SHA-256 hash of each virtual key in a ConfigMap. The proxy hashes each incoming key and compares it to the stored hash. You do not need to store raw virtual keys in the cluster.
 
-> [!IMPORTANT]
-> ConfigMaps with hashed keys (as opposed to Secrets) are the recommended way to store virtual keys. If you need to use Kubernetes Secrets, refer to the [API key authentication guide]({{< link-hextra path="/documentation/security/apikey/" >}}) for an example.
->
-> Already storing virtual keys in a Secret? Instead of recreating them by hand, use the [`agctl migrate`]({{< link-hextra path="/reference/agctl/agctl-migrate/" >}}) command to convert your existing Secrets into the recommended ConfigMap format.
-
-1. Generate a `sha256:<hex>` hash for each user's API key. The hash is computed over the exact key bytes, so do not include a trailing newline.
+1. Generate a hash for each virtual key. This example creates keys for Alice and Bob. Do not include a trailing newline.
 
    ```sh
-   printf '%s' 'sk-alice-abc123def456' | sha256sum | awk '{print "sha256:"$1}'   # alice
-   printf '%s' 'sk-bob-xyz789uvw012' | sha256sum | awk '{print "sha256:"$1}'     # bob
+   printf '%s' 'vk-alice-4f9c2a' | sha256sum | awk '{print "sha256:"$1}'   # alice
+   printf '%s' 'vk-bob-8d1e7b' | sha256sum | awk '{print "sha256:"$1}'     # bob
    ```
 
-2. Create a ConfigMap that stores the hash and metadata for each user. Add a label so that the authentication policy can select the ConfigMap in the next step.
+2. Create a ConfigMap with the hash and metadata of each key. The label lets the authentication policy in the next step select the ConfigMap.
 
    ```yaml,paths="virtual-keys"
    kubectl apply -f- <<EOF
@@ -82,14 +57,14 @@ Store your virtual keys in a Kubernetes ConfigMap, with one entry per user. Beca
    data:
      alice: |
        {
-         "keyHash": "sha256:477fe4bee6e6d46cc4fa5827b4c375f045b01701de265deea7c26a74d4f86d1f",
+         "keyHash": "sha256:84d589f2439e4d9ff4438aa840e63ffcbf231a87e7fef929f975d2bde03dc78c",
          "metadata": {
            "user_id": "alice"
          }
        }
      bob: |
        {
-         "keyHash": "sha256:b2bd46e01122f51b540cc49cfdd020484776e67f5d3966c099e689eac4b8d93e",
+         "keyHash": "sha256:8373319fb10e2e023343d98ade630529f49c53f567cbc6626d09aaf650b2e58c",
          "metadata": {
            "user_id": "bob"
          }
@@ -97,17 +72,17 @@ Store your virtual keys in a Kubernetes ConfigMap, with one entry per user. Beca
    EOF
    ```
 
-   > [!TIP]
-   > If you already store virtual keys in a Kubernetes Secret, you do not have to build this ConfigMap by hand. Use the [`agctl migrate`]({{< link-hextra path="/reference/agctl/agctl-migrate/" >}}) command to generate an equivalent ConfigMap (with hashed keys) from your existing Secrets, for example `agctl migrate --apply virtualkeys-to-configmap -n {{< reuse "agw-docs/snippets/namespace.md" >}} | kubectl apply -f -`.
+{{% reuse "agw-docs/snippets/review-table.md" %}}
 
-   {{% reuse "agw-docs/snippets/review-table.md" %}}
+| Setting | Description |
+| -- | -- |
+| `metadata.labels` | The label that the authentication policy uses to select the ConfigMap. |
+| `data.<name>` | One JSON entry per user, with a `keyHash` and optional `metadata`. |
+| `keyHash` | A SHA-256 hash in `sha256:<hex>` format. Clients send the raw key in the `Authorization: Bearer <key>` header. |
+| `metadata.user_id` | The user identifier that budget and metrics policies read as `apiKey.user_id`. |
 
-   | Setting     | Description |
-   |-------------|-------------|
-   | `metadata.labels` | A label that the authentication policy uses to select this ConfigMap. Because ConfigMap sources are selected by label, this label is required. |
-   | `data.<name>` | Each entry in `data` represents a user. The value is a JSON object with a `keyHash` and optional `metadata`. |
-   | `keyHash` | A SHA-256 hash of the user's API key, in `sha256:<hex>` format. The raw key is never stored. |
-   | `metadata.user_id` | The user identifier that rate limiting and metrics policies read (as `apiKey.user_id`) to attribute usage per user. |
+> [!TIP]
+> ConfigMaps with hashed keys are the recommended storage format. If you already store keys in Secrets, use [`agctl migrate`]({{< link-hextra path="/reference/agctl/agctl-migrate/" >}}) to convert them, or see [API key authentication]({{< link-hextra path="/documentation/security/apikey/" >}}) for Secret-based configuration.
 
 {{< /version >}}
 
@@ -125,14 +100,14 @@ type: Opaque
 stringData:
   alice: |
     {
-      "key": "sk-alice-abc123def456",
+      "key": "vk-alice-4f9c2a",
       "metadata": {
         "user_id": "alice"
       }
     }
   bob: |
     {
-      "key": "sk-bob-xyz789uvw012",
+      "key": "vk-bob-8d1e7b",
       "metadata": {
         "user_id": "bob"
       }
@@ -256,14 +231,6 @@ EOF
 | `secretSelector.matchLabels` | Selects all Secrets that carry the given labels, combining their keys. Use instead of `secretRef` when keys are spread across multiple Secrets. Secret-only. |
 {{< /version >}}
 
-### Configure per-key token budgets
-
-{{% reuse "agw-docs/snippets/rate-limit-token-budget-step.md" %}}
-
-### Deploy the rate limit server
-
-{{% reuse "agw-docs/snippets/rate-limit-step.md" %}}
-
 ### Set up an LLM backend
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} that connects to your LLM provider.
@@ -301,7 +268,7 @@ For detailed instructions on creating backends and storing provider API keys, se
 
 ### Create a route to the backend
 
-Create an HTTPRoute that routes requests to your LLM backend. The following example creates an `/openai` route that is rewritten to the OpenAI default `v1/chat/completions` that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}}.
+Create an HTTPRoute that forwards all paths to the OpenAI {{< reuse "agw-docs/snippets/backend.md" >}}. Clients can use the standard `/v1/chat/completions` path.
 
 ```yaml,paths="virtual-keys"
 kubectl apply -f- <<EOF
@@ -315,17 +282,7 @@ spec:
     - name: agentgateway-proxy
       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
   rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /openai
-      filters:
-      - type: URLRewrite
-        urlRewrite:
-          path:
-            type: ReplacePrefixMatch
-            replacePrefixMatch: /v1/chat/completions
-      backendRefs:
+    - backendRefs:
         - name: openai
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
           group: {{< reuse "agw-docs/snippets/group.md" >}}
@@ -335,8 +292,7 @@ EOF
 
 ### Test the virtual keys
 
-> [!NOTE]
-> The following steps verify API key authentication, routing, and per-key token budget enforcement. Budget enforcement requires the rate limit server from the [previous step](#deploy-the-rate-limit-server).
+Verify that a valid key succeeds and an unknown key gets a `401` response. No token budget is configured yet.
 
 {{< doc-test paths="virtual-keys-openai-test" >}}
 # Test virtual key authentication and routing against the OpenAI route
@@ -358,11 +314,11 @@ YAMLTest -f - <<'EOF'
 
 - name: verify request with Alice's virtual key succeeds
   http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/openai"
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
     method: POST
     headers:
       content-type: application/json
-      Authorization: "Bearer sk-alice-abc123def456"
+      Authorization: "Bearer vk-alice-4f9c2a"
     body: |
       {
         "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
@@ -375,11 +331,11 @@ YAMLTest -f - <<'EOF'
 
 - name: verify request with Bob's virtual key succeeds independently
   http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/openai"
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
     method: POST
     headers:
       content-type: application/json
-      Authorization: "Bearer sk-bob-xyz789uvw012"
+      Authorization: "Bearer vk-bob-8d1e7b"
     body: |
       {
         "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
@@ -392,7 +348,7 @@ YAMLTest -f - <<'EOF'
 
 - name: verify request without valid API key is rejected
   http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/openai"
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
     method: POST
     headers:
       content-type: application/json
@@ -433,7 +389,7 @@ YAMLTest -f - <<'EOF'
     method: POST
     headers:
       content-type: application/json
-      Authorization: "Bearer sk-alice-abc123def456"
+      Authorization: "Bearer vk-alice-4f9c2a"
     body: |
       {
         "model": "gpt-4",
@@ -451,7 +407,7 @@ YAMLTest -f - <<'EOF'
     method: POST
     headers:
       content-type: application/json
-      Authorization: "Bearer sk-bob-xyz789uvw012"
+      Authorization: "Bearer vk-bob-8d1e7b"
     body: |
       {
         "model": "gpt-4",
@@ -482,62 +438,13 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-{{< doc-test paths="virtual-keys-ratelimit-test" >}}
-# Drain Alice's 100-token daily budget. httpbun returns ~20-30 tokens per response,
-# so a handful of requests pushes Alice over the budget.
-for i in $(seq 1 10); do
-  curl -s -o /dev/null \
-    "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions" \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer sk-alice-abc123def456" \
-    -d '{"model":"gpt-4","messages":[{"role":"user","content":"Say hello"}]}'
-  sleep 0.3
-done
-
-YAMLTest -f - <<'EOF'
-- name: Alice is rejected with 429 after exhausting her token budget
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
-    method: POST
-    headers:
-      Content-Type: application/json
-      Authorization: "Bearer sk-alice-abc123def456"
-    body: |
-      {
-        "model": "gpt-4",
-        "messages": [{"role": "user", "content": "Say hello"}]
-      }
-  source:
-    type: local
-  retries: 3
-  expect:
-    statusCode: 429
-- name: Bob still succeeds because he has an independent budget
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
-    method: POST
-    headers:
-      Content-Type: application/json
-      Authorization: "Bearer sk-bob-xyz789uvw012"
-    body: |
-      {
-        "model": "gpt-4",
-        "messages": [{"role": "user", "content": "Say hello"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
-
 1. Send a request with Alice's API key. Verify that the request succeeds.
 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl "$INGRESS_GW_ADDRESS/openai" \
-     -H "Authorization: Bearer sk-alice-abc123def456" \
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" \
+     -H "Authorization: Bearer vk-alice-4f9c2a" \
       -H "Content-Type: application/json" \
      -d '{
        "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
@@ -547,8 +454,8 @@ EOF
    {{% /tab %}}
    {{% tab name="Port-forward for local testing" %}}
    ```sh
-   curl "localhost:8080/openai" \
-     -H "Authorization: Bearer sk-alice-abc123def456" \
+   curl "localhost:8080/v1/chat/completions" \
+     -H "Authorization: Bearer vk-alice-4f9c2a" \
       -H "Content-Type: application/json" \
      -d '{
        "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
@@ -581,13 +488,171 @@ EOF
    }
    ```
 
-2. Send several more requests with Alice's API key until her 100-token daily budget is exhausted. Because the LLM provider returns roughly 20-30 tokens per response, a handful of requests pushes Alice over the budget. The request that crosses the budget still completes; subsequent requests are rejected with a 429 status code.
+2. Send a request with an unknown key. Verify that the proxy returns `401`.
+
+   ```sh
+   curl -s -o /dev/null -w "%{http_code}\n" "$INGRESS_GW_ADDRESS/v1/chat/completions" \
+     -H "Authorization: Bearer vk-unknown" \
+     -H "Content-Type: application/json" \
+     -d '{"model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}", "messages": [{"role": "user", "content": "Hello!"}]}'
+   ```
+
+   Expected response:
+
+   ```
+   401
+   ```
+
+Configure other clients with the Gateway base URL, such as `http://$INGRESS_GW_ADDRESS/v1`, and their virtual key. See [LLM clients]({{< link-hextra path="/integrations/llm/clients/" >}}) for client-specific settings.
+
+{{% /steps %}}
+
+## Manage client access
+
+Choose a task to restrict model access, revoke a client key, or rotate provider credentials.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+### Restrict model access {#restrict-model-access}
+
+By default, a key can request any model the provider offers.
+
+1. Add an authorization rule to the existing `api-key-auth` policy. Include the model used by this guide.
+
+   ```sh
+   kubectl patch {{< reuse "agw-docs/snippets/policy.md" >}} api-key-auth -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --type=merge --patch-file=/dev/stdin <<'EOF'
+   spec:
+     traffic:
+       authorization:
+         action: Require
+         policy:
+           matchExpressions:
+             - 'request.method != "POST" || json(request.body).model in ["{{< reuse "agw-docs/snippets/openai-model.md" >}}", "gpt-4o-mini", "gpt-4o"]'
+   EOF
+   ```
+
+   The rule allows `POST` requests only for listed models. Other methods, such as `GET` to list models, are allowed. To set access per user, combine the model expression with a metadata check such as `apiKey.user_id == "bob"`.
+
+2. Request an unlisted model, such as `o3`. Verify that the proxy returns `403`.
+
+   ```sh
+   curl -s -w "\n%{http_code}\n" "$INGRESS_GW_ADDRESS/v1/chat/completions" \
+     -H "Authorization: Bearer vk-alice-4f9c2a" \
+     -H "Content-Type: application/json" \
+     -d '{"model": "o3", "messages": [{"role": "user", "content": "Hello!"}]}'
+   ```
+
+   Example output:
+
+   ```
+   authorization failed
+   403
+   ```
+{{< /version >}}
+
+{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+### Revoke a virtual key {#revoke-a-virtual-key}
+
+Revoke one client's access without restarting the proxy or changing other keys.
+
+1. Remove Bob's entry from the ConfigMap.
+
+   ```sh
+   kubectl patch configmap llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --type=json -p='[{"op": "remove", "path": "/data/bob"}]'
+   ```
+
+2. Send a request with Bob's key. Verify that the proxy returns `401`.
+
+   ```sh
+   curl -s -o /dev/null -w "%{http_code}\n" "$INGRESS_GW_ADDRESS/v1/chat/completions" \
+     -H "Authorization: Bearer vk-bob-8d1e7b" \
+     -H "Content-Type: application/json" \
+     -d '{"model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}", "messages": [{"role": "user", "content": "Hello!"}]}'
+   ```
+
+3. To continue with the budget examples, restore Bob's key by reapplying the ConfigMap from [Create API keys for users](#create-api-keys-for-users).
+{{< /version >}}
+
+### Rotate a provider key {#rotate-a-provider-key}
+
+Replace the provider credential in the cluster. Clients keep their virtual keys.
+
+1. Follow [Rotate a provider key]({{< link-hextra path="/documentation/llm/api-keys/#rotate" >}}) to replace the credential and revoke the old provider key.
+2. Send a request with an existing virtual key. Verify that it still succeeds.
+
+## Configure token budgets {#configure-token-budgets}
+
+Token budgets are optional. Continue here to give Alice and Bob independent daily budgets, shared across proxy replicas. This example uses only 100 tokens per day so that you can test enforcement quickly.
+
+Rate limiting runs before prompt guards, so requests rejected by those guards can still consume quota. Requests rejected during authentication do not consume a token budget.
+
+### Configure per-key token budgets
+
+{{% reuse "agw-docs/snippets/rate-limit-token-budget-step.md" %}}
+
+### Deploy the rate limit server
+
+{{% reuse "agw-docs/snippets/rate-limit-step.md" %}}
+
+### Verify budget enforcement
+
+{{< doc-test paths="virtual-keys-ratelimit-test" >}}
+# Drain Alice's 100-token daily budget. httpbun returns ~20-30 tokens per response,
+# so a handful of requests pushes Alice over the budget.
+for i in $(seq 1 10); do
+  curl -s -o /dev/null \
+    "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer vk-alice-4f9c2a" \
+    -d '{"model":"gpt-4","messages":[{"role":"user","content":"Say hello"}]}'
+  sleep 0.3
+done
+
+YAMLTest -f - <<'EOF'
+- name: Alice is rejected with 429 after exhausting her token budget
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
+    method: POST
+    headers:
+      Content-Type: application/json
+      Authorization: "Bearer vk-alice-4f9c2a"
+    body: |
+      {
+        "model": "gpt-4",
+        "messages": [{"role": "user", "content": "Say hello"}]
+      }
+  source:
+    type: local
+  retries: 3
+  expect:
+    statusCode: 429
+- name: Bob still succeeds because he has an independent budget
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
+    method: POST
+    headers:
+      Content-Type: application/json
+      Authorization: "Bearer vk-bob-8d1e7b"
+    body: |
+      {
+        "model": "gpt-4",
+        "messages": [{"role": "user", "content": "Say hello"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
+
+1. Send requests with Alice's API key until her 100-token daily budget is exhausted. Because the LLM provider returns roughly 20-30 tokens per response, a handful of requests pushes Alice over the budget. The request that crosses the budget still completes; subsequent requests are rejected with a 429 status code.
 
    ```sh
    for i in $(seq 1 10); do
      STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-       "$INGRESS_GW_ADDRESS/openai" \
-       -H "Authorization: Bearer sk-alice-abc123def456" \
+       "$INGRESS_GW_ADDRESS/v1/chat/completions" \
+       -H "Authorization: Bearer vk-alice-4f9c2a" \
        -H "Content-Type: application/json" \
        -d '{"model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}", "messages": [{"role": "user", "content": "Hello!"}]}')
      echo "Request $i: HTTP $STATUS"
@@ -604,13 +669,13 @@ EOF
    rate limit exceeded
    ```
 
-3. Verify that Bob can still send requests with his own budget, independent of Alice's usage.
+2. Verify that Bob can still send requests with his own budget, independent of Alice's usage.
 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl "$INGRESS_GW_ADDRESS/openai" \
-     -H "Authorization: Bearer sk-bob-xyz789uvw012" \
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" \
+     -H "Authorization: Bearer vk-bob-8d1e7b" \
       -H "Content-Type: application/json" \
      -d '{
        "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
@@ -620,8 +685,8 @@ EOF
    {{% /tab %}}
    {{% tab name="Port-forward for local testing" %}}
    ```sh
-   curl "localhost:8080/openai" \
-     -H "Authorization: Bearer sk-bob-xyz789uvw012" \
+   curl "localhost:8080/v1/chat/completions" \
+     -H "Authorization: Bearer vk-bob-8d1e7b" \
       -H "Content-Type: application/json" \
      -d '{
        "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
@@ -635,7 +700,7 @@ EOF
 
 ## Monitor per-key spending
 
-Track token usage and spending for each virtual key by using Prometheus metrics.
+Usage tracking is optional and does not require a token budget. Add per-user labels to Prometheus metrics to attribute token usage and estimate spending.
 
 By default, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} token usage metric (`agentgateway_gen_ai_client_token_usage`) is broken down by dimensions such as the model and token type, but *not* by user. To attribute usage to each virtual key, add a `user_id` label to the metrics with a metrics policy, then query Prometheus.
 
@@ -650,20 +715,12 @@ Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway
 
 You can add a per-key metric label such as to track metrics by user ID. Note that the `user_id` label is high cardinality: every unique value creates a new metric series, which increases Prometheus memory and storage. This is acceptable for tens or hundreds of keys, but avoid attaching unbounded identifiers at large scale. Prefer lower-cardinality dimensions like tier or team when possible.
 
-1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that adds the `user_id` from each API key as a label on all Prometheus metrics. The `frontend.metrics` field can only be set on a policy that targets the Gateway.
+1. Update the existing `api-key-auth` policy to add the key's `user_id` as a Prometheus label. The merge patch keeps authentication, model restrictions, and any budgets already configured on the Gateway.
 
    ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-   metadata:
-     name: per-user-metrics
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl patch {{< reuse "agw-docs/snippets/policy.md" >}} api-key-auth -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --type=merge --patch-file=/dev/stdin <<'EOF'
    spec:
-     targetRefs:
-       - group: gateway.networking.k8s.io
-         kind: Gateway
-         name: agentgateway-proxy
      frontend:
        metrics:
          attributes:
@@ -774,168 +831,14 @@ For more information on cost tracking, see the [cost tracking guide]({{< link-he
 
 ## Advanced configuration
 
-### Tiered budgets based on user type
-
-Provide different budget tiers for free, standard, and premium users.
-
-{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-1. Add tier metadata to each API key. Store the keys in a ConfigMap, using the `keyHash` of each key. Generate each hash with `printf '%s' '<key>' | sha256sum | awk '{print "sha256:"$1}'`.
-
-   ```yaml
-   apiVersion: v1
-   kind: ConfigMap
-   metadata:
-     name: llm-api-keys
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     labels:
-       agentgateway.dev/apikey: "true"
-   data:
-     alice: |
-       {
-         "keyHash": "sha256:477fe4bee6e6d46cc4fa5827b4c375f045b01701de265deea7c26a74d4f86d1f",
-         "metadata": {
-           "user_id": "alice",
-           "tier": "premium"
-         }
-       }
-     charlie: |
-       {
-         "keyHash": "sha256:1dfa4e699a31bc3bdcb34c74b43f7a4e58d38c51cec243b4add27b16de599355",
-         "metadata": {
-           "user_id": "charlie",
-           "tier": "free"
-         }
-       }
-   ```
-{{< /version >}}
-{{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-1. Add tier metadata to each API key. Store the keys in a Secret, with one entry per user.
-
-   ```yaml
-   apiVersion: v1
-   kind: Secret
-   metadata:
-     name: llm-api-keys
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   type: Opaque
-   stringData:
-     alice: |
-       {
-         "key": "sk-alice-abc123def456",
-         "metadata": {
-           "user_id": "alice",
-           "tier": "premium"
-         }
-       }
-     charlie: |
-       {
-         "key": "sk-charlie-ghi345jkl678",
-         "metadata": {
-           "user_id": "charlie",
-           "tier": "free"
-         }
-       }
-   ```
-{{< /version >}}
-
-2. Configure rate limiting to use the tier and user_id from API key metadata.
-
-   ```yaml
-   traffic:
-     rateLimit:
-       global:
-         domain: agentgateway
-         backendRef:
-           kind: Service
-           name: ratelimit
-           namespace: ratelimit
-           port: 8081
-         descriptors:
-           - entries:
-               - name: tier
-                 expression: 'apiKey.tier'
-               - name: user_id
-                 expression: 'apiKey.user_id'
-             unit: Tokens
-   ```
-
-3. Configure the rate limit server with tier-based budgets.
-
-   ```yaml
-   domain: agentgateway
-   descriptors:
-     - key: tier
-       value: "free"
-       descriptors:
-         - key: user_id
-           rate_limit:
-             unit: day
-             requests_per_unit: 10000  # 10K tokens/day for free tier
-     - key: tier
-       value: "standard"
-       descriptors:
-         - key: user_id
-           rate_limit:
-             unit: day
-             requests_per_unit: 100000  # 100K tokens/day for standard tier
-     - key: tier
-       value: "premium"
-       descriptors:
-         - key: user_id
-           rate_limit:
-             unit: day
-             requests_per_unit: 500000  # 500K tokens/day for premium tier
-   ```
-
-### Hourly budget limits
-
-Set a smaller budget that refreshes every hour for tighter cost control.
-
-```yaml
-# In the ratelimit-config ConfigMap
-domain: agentgateway
-descriptors:
-  - key: user_id
-    rate_limit:
-      unit: hour
-      requests_per_unit: 10000  # 10,000 tokens per hour
-```
-
-### Multi-tenant virtual keys
-
-Create virtual keys scoped to both user and tenant for multi-tenant applications. Add tenant_id to the API key metadata.
-
-```yaml
-# In TrafficPolicy
-descriptors:
-  - entries:
-      - name: tenant_id
-        expression: 'apiKey.tenant_id'
-      - name: user_id
-        expression: 'apiKey.user_id'
-    unit: Tokens
-```
-
-```yaml
-# In the ratelimit-config ConfigMap
-domain: agentgateway
-descriptors:
-  - key: tenant_id
-    descriptors:
-      - key: user_id
-        rate_limit:
-          unit: day
-          requests_per_unit: 50000
-```
-
-For more advanced rate limiting patterns, see the [budget and spend limits guide]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}).
+For tiered, hourly, and multi-tenant token budgets, see [Advanced per-key budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/#advanced-per-key-budgets" >}}).
 
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} api-key-auth per-user-metrics -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} api-key-auth -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete configmap llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete secret llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
