@@ -219,11 +219,13 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3826 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3903 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4066 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3821 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3936 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3864 -->
 
 - **OIDC with bearer tokens**: Set `credentials: sessionOrBearer` on an OIDC policy to accept a bearer ID token as well as a browser session. One policy then covers both browser and API clients. With `credentials: permissive`, browsers still sign in, and other requests fall through to other authentication policies. Pair `permissive` with an `authorization` policy, because it does not reject unauthenticated requests by itself. For more information, see [Bearer tokens for API clients]({{< link-hextra path="/documentation/configuration/security/oidc/#bearer-id-tokens" >}}).
+- **OIDC session lifetime**: Set `sessionTtl` on an OIDC policy to change the lifetime of the browser session cookie from the 7-day default. The session never outlives the expiry of the ID token. For more information, see [Session cookies]({{< link-hextra path="/documentation/configuration/security/oidc/#session-cookies" >}}).
 - **Backend credentials from CEL**: A backend authentication key can be computed from a CEL expression, such as a value that an external authorization server returns. Set `backendAuth.key.expression`, or `expression` in a `backendAuth.credentials` entry. For more information, see [Compute the key from the request]({{< link-hextra path="/documentation/configuration/security/backend-authn/key/#key-expression" >}}).
 - **MCP authentication with token passthrough**: MCP authentication now works with a JWT policy that sets `preserveToken: true`. For more information, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn/" >}}).
 - **Callout proxy**: Send the requests that agentgateway makes on its own behalf, such as JWKS fetches, OIDC discovery, external authorization, and cloud provider credential fetches, through an HTTP proxy. Set `config.callouts.tunnel`, or use the standard proxy environment variables. For more information, see [Callout proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/" >}}).
