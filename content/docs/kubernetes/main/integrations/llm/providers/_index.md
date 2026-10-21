@@ -27,3 +27,5 @@ Many providers expose the OpenAI Chat Completions API but do not have a first-cl
 ## Custom providers
 
 Use [custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) for unsupported, non-standard, or self-hosted targets when you need to declare formats, upstream paths, or backend targets explicitly.
+
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}

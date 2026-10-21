@@ -309,6 +309,8 @@ A match must use one of the following forms. Wildcards in any other position are
 
 A wildcard model usually pairs with a `model` transformation, because the provider expects its own model name rather than the client-facing one. For an example, see [Serve a model]({{< link-hextra path="/documentation/llm/models/serve/" >}}).
 
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
+
 ### Model aliasing
 
 A model resource is an alias by construction. The name that clients request is `metadata.name` or `match.model`, and the name that the provider receives comes from a `model` transformation. To publish `fast` as an alias for `gpt-3.5-turbo`, create a model named `fast` that rewrites the field.

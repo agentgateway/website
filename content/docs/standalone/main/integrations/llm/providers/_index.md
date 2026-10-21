@@ -17,6 +17,8 @@ Use the dedicated provider pages when agentgateway already knows the upstream ba
 
 Use [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) only for providers that do not have a first-class shortcut. Examples include vLLM, LM Studio, or another service that exposes a compatible [API format]({{< link-hextra path="/documentation/llm/api-types/" >}}).
 
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
+
 ## Authentication
 
 For simplified `llm` configuration, upstream provider authentication is configured per model via `llm.models[]` (typically `params.apiKey` for API-key providers, and `auth` for cloud-native flows). In routing-based configurations, use `policies.backendAuth` on a route instead.
@@ -73,23 +75,39 @@ llm:
 
 These are the default auth mechanisms for the corresponding built-in providers, so you usually only need to override them when you need custom credential handling.
 
+This example sets authentication explicitly for each cloud provider. It uses [provider prefixes]({{< link-hextra path="/documentation/llm/about/#provider-prefix" >}}), such as `bedrock/*`, to route requests to the matching provider.
+
 ```yaml
 llm:
   models:
-  - name: "*"
+  - name: "vertex/*"
     provider: vertex
+    params:
+      vertexProject: my-project-id
+      vertexRegion: us-central1
     auth:
       gcp:
         type: accessToken
-  - name: "*"
+    transformation:
+      model: llmRequest.model.stripPrefix("vertex/")
+  - name: "bedrock/*"
     provider: bedrock
+    params:
+      awsRegion: us-west-2
     auth:
       aws: {}
-  - name: "*"
+    transformation:
+      model: llmRequest.model.stripPrefix("bedrock/")
+  - name: "azure/*"
     provider: azure
+    params:
+      azureResourceName: my-resource-name
+      azureResourceType: openAI
     auth:
       azure:
         implicit: {}
+    transformation:
+      model: llmRequest.model.stripPrefix("azure/")
 ```
 
 ## Standalone upstream TLS

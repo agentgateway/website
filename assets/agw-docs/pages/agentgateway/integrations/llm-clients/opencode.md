@@ -19,7 +19,7 @@ To connect OpenCode to MCP servers through agentgateway instead, see [OpenCode M
 
 Configure an OpenAI model and a virtual key for OpenCode. Agentgateway replaces the virtual key with the OpenAI API key when forwarding requests.
 
-1. Create a configuration file. List each model that OpenCode can use. A request for any other model is rejected.
+1. Create a configuration file. List each model that OpenCode can use. A request for any other model is rejected. To expose all of a provider's models with one entry instead, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
 
    ```yaml
    cat > config.yaml << 'EOF'
