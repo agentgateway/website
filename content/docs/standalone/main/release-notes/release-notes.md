@@ -15,10 +15,8 @@ Review the release notes for agentgateway standalone.
 ### Traffic management and operations {#v17-operations}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3842 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3797 -->
 
 - **Standalone Helm session key Secret**: Set `session.secretName` to load the AES-256-GCM session key from an existing Kubernetes Secret. The chart passes the Secret's `key` entry to the proxy as the `SESSION_KEY` environment variable, which takes precedence over `config.session.key`. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
-- **Helm monitoring controls**: The `monitoring.podMonitor` Helm values now include `scrapeNativeHistograms`, `scrapeClassicHistograms`, `relabelings`, and `metricRelabelings`, which the chart passes to the PodMonitor that it creates. Native histogram scraping is off by default and requires Prometheus v3.8.0 or later and Prometheus Operator v0.88.0 or later. Classic histogram scraping stays on by default. The chart now sets `scrapeProtocols` on the PodMonitor, even with the default values. For more information, see [Scrape native histograms]({{< link-hextra path="/documentation/observability/metrics/prometheus/#native-histograms" >}}) and [Relabel scraped metrics]({{< link-hextra path="/documentation/observability/metrics/prometheus/#relabel-metrics" >}}).
 
 ## 🐛 Fixes {#v17-fixes}
 

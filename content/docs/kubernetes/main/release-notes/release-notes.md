@@ -17,18 +17,11 @@ Review the release notes for agentgateway on Kubernetes.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3763 -->
 
 - **Optional chart-created RBAC**: Set `rbac.create` to `false` in the controller Helm chart to skip the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the chart creates, for clusters that manage role-based access control (RBAC) outside of Helm. For more information, see [Chart-created RBAC resources]({{< link-hextra path="/documentation/install/advanced/#rbac-create" >}}).
-
 ### MCP {#v17-mcp}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3824 -->
 
 - **Conditional virtual MCP targets**: Set `spec.mcp.targets[].condition` on an {{< reuse "agw-docs/snippets/backend.md" >}} to a CEL expression to select which targets take part in a request before agentgateway initializes or contacts them. A backend whose only target is a `static` target cannot set a condition. For more information, see [Select targets with conditions]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
-
-### Traffic management and operations {#v17-traffic}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3797 -->
-
-- **Helm monitoring controls**: The `monitoring.serviceMonitor` and `monitoring.proxy.podMonitor` Helm values now include `scrapeNativeHistograms`, `scrapeClassicHistograms`, `relabelings`, and `metricRelabelings`, which the chart passes to the ServiceMonitor and PodMonitor that it creates. Native histogram scraping is off by default and requires Prometheus v3.8.0 or later and Prometheus Operator v0.88.0 or later. Classic histogram scraping stays on by default. The chart now sets `scrapeProtocols` on both resources, even with the default values. For more information, see [Scrape native histograms]({{< link-hextra path="/documentation/observability/metrics/overview/#native-histograms" >}}) and [Relabel scraped metrics]({{< link-hextra path="/documentation/observability/metrics/overview/#relabel-metrics" >}}).
 
 ## 🐛 Fixes {#v17-fixes}
 
