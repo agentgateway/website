@@ -113,6 +113,7 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3618 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3270 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3731 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3516 -->
 
 - **Meta provider**: Set `spec.provider: Meta` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} to use the Meta Model API preset. For the backend configuration, see [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}).
 - **`AgentgatewayModel` on by default**: The `agentgatewayModels.enabled` Helm value now defaults to `true`. For more information, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
@@ -123,7 +124,7 @@ Agentgateway now includes a built-in model cost catalog. Requests to common publ
 - **Larger LLM buffer**: LLM requests can now buffer up to 32 MiB by default, up from 2 MiB. The larger buffer supports long-context prompts. To change the limit, set `spec.frontend.http.maxBufferSize` in an {{< reuse "agw-docs/snippets/policy.md" >}}. For more information, see [Buffer limits]({{< link-hextra path="/documentation/traffic-management/buffering/" >}}).
 - **Per-page pricing**: To price OCR and document models that bill per processed page, set `rates.perPage` in the model's cost catalog entry. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
 - **Bedrock Mantle routing**: The Bedrock provider chooses the Runtime or Mantle endpoint for each model. To set the preference, use `spec.bedrock.endpointPreference` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} or `spec.ai.provider.bedrock.endpointPreference` on an {{< reuse "agw-docs/snippets/backend.md" >}}. For more information, see [Bedrock Mantle]({{< link-hextra path="/integrations/llm/providers/bedrock/#bedrock-mantle" >}}).
-- **More accurate Messages conversion**: Conversion between the Messages and OpenAI formats now carries citations, refusals, the `strict` setting of tool schemas, reasoning effort, and images in tool results. A context overflow error from the provider is translated so that Claude Code can compact and retry. For more information, see [Converted replies and errors]({{< link-hextra path="/integrations/llm/providers/custom/#converted-replies-and-errors" >}}).
+- **More accurate Messages conversion**: Conversion between the Messages and OpenAI formats now carries citations, refusals, the `strict` setting of tool schemas, reasoning effort, prompt cache breakpoints for GPT 5.6 and later models, and images in tool results. A context overflow error from the provider is translated so that Claude Code can compact and retry. For more information, see [Converted replies and errors]({{< link-hextra path="/integrations/llm/providers/custom/#converted-replies-and-errors" >}}).
 - **Guardrails**: The `openAIModeration`, `bedrockGuardrails`, and `googleModelArmor` guards now support `failureMode`. Set this field on a guard in `spec.backend.ai.promptGuard` of an {{< reuse "agw-docs/snippets/policy.md" >}}. The built-in credit card pattern now checks the Luhn checksum. For more information, see [Provider failures]({{< link-hextra path="/documentation/llm/guardrails/overview/#provider-failures" >}}).
 
 ### Security {#v16-security}
@@ -185,6 +186,8 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3214 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3726 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3699 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3722 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3518 -->
 
 **Traffic management**
 
@@ -193,10 +196,12 @@ You can now opt in to OpenTelemetry field names for stdout access logs. Set `pre
 **LLM**
 
 - Vertex AI catalog lookups resolve Anthropic model aliases such as `claude-sonnet-4-5-20250929`, `anthropic/claude-sonnet-4-5@20250929`, and `publishers/anthropic/models/claude-sonnet-4-5@20250929`.
+- Messages requests that use `thinking.budget_tokens` now translate the budget to the matching OpenAI reasoning effort when they are converted to Responses or Chat Completions.
 
 **MCP**
 
 - Access-log CEL expressions can now read dynamic metadata that ExtMCP request-phase guardrails return through `mcpGuardrails`, including on resumed stateful MCP sessions. For more information, see [Log MCP guardrail metadata]({{< link-hextra path="/documentation/observability/access-logs/view/#mcp-guardrails" >}}).
+- OpenAPI MCP tools return `image/*` responses as MCP image content instead of UTF-8-decoded text.
 
 **Security**
 
