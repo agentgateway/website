@@ -138,7 +138,7 @@ The `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable is removed, 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4010 -->
 
 - **OpenAI Decisions and TypeSafe SystemOne**: Agentgateway supports the OpenAI Decisions API at `/v1/decisions` and the TypeSafe SystemOne API at `/v1/systemone` natively, and translates between them in both directions. To connect to TypeSafe, set `provider: typesafe` in an `llm.models` entry. A `custom` provider can declare the `decisions` or `systemOne` format. Azure supports both APIs for the `foundry` resource type.
-- **Perplexity provider**: Set `provider: perplexity` in an `llm.models` entry to connect to Perplexity with built-in defaults. The provider accepts Responses and Messages requests, but not Chat Completions requests.
+- **Perplexity provider**: Set `provider: perplexity` in an `llm.models` entry to connect to Perplexity with built-in defaults. The provider accepts Responses and Messages requests, but not Chat Completions requests. For more information, see [Perplexity]({{< link-hextra path="/integrations/llm/providers/perplexity/" >}}).
 - **Callout router for virtual models**: A virtual model can select its target model by calling an external HTTP service. Set `routing.callout` in an `llm.virtualModels` entry. For more information, see [Virtual models]({{< link-hextra path="/documentation/llm/virtual-models/" >}}).
 - **Per-model HTTP transformations**: Set `requestTransformation` on an `llm.models` entry, or in `llm.providers[].defaults` for every model of a provider, to modify the headers, body, and metadata of requests. A model's value replaces the provider default. For more information, see [LLM request transformation]({{< link-hextra path="/documentation/llm/transformations/#llm-request-transformation" >}}).
 - **More accurate token counting**: A new tokenizer estimates token counts more accurately, runs about 10 times faster, and uses less memory.
@@ -158,7 +158,7 @@ The `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable is removed, 
 
 The model catalog now describes models as well as pricing them. Catalog entries can include a display name, release date, lifecycle status, token limits, modalities, capabilities, and reasoning controls.
 
-- **Model metadata in `/v1/models`**: `/v1/models` returns the catalog metadata, so that clients can discover what each model supports. The following excerpt shows an entry.
+- **Model metadata in `/v1/models`**: `/v1/models` returns the catalog metadata, so that clients can discover what each model supports. Clients can limit the list with the `limit` query parameter, or fetch one model at `/v1/models/<model-id>`. The following excerpt shows an entry.
 
   ```json
   {
@@ -176,8 +176,8 @@ The model catalog now describes models as well as pricing them. Catalog entries 
   ```
 
   For more information, see [Models]({{< link-hextra path="/documentation/llm/api-types/models/" >}}).
-- **Model metadata in CEL**: The catalog entry of the model that served a request is available in CEL as `llm.model`, such as `llm.model.limits.context`. Agentgateway sets `llm.model` when it calculates the cost of the response. The value is unset when the model has no catalog entry.
-- **Service-tier pricing**: Agentgateway records the service tier that served each request as `llm.serviceTier` for OpenAI, Azure, Anthropic, Bedrock, Vertex AI, and Gemini. A catalog pricing tier can set `serviceTier` alongside `contextOver`, so that flex or priority requests are priced at their actual rates. The built-in catalog includes service-tier prices for models such as those from OpenAI, Azure, and Vertex AI. You can configure rates for other models.
+- **Model metadata in CEL**: The catalog entry of the model that served a request is available in CEL as `llm.model`, such as `llm.model.limits.context`. Agentgateway sets `llm.model` when it calculates the cost of the response. The value is unset when the model has no catalog entry. For more information, see [Use cost data]({{< link-hextra path="/documentation/llm/cost-controls/costs/#use-cost-data" >}}).
+- **Service-tier pricing**: Agentgateway records the service tier that served each request as `llm.serviceTier` for OpenAI, Azure, Anthropic, Bedrock, Vertex AI, and Gemini. A catalog pricing tier can set `serviceTier` alongside `contextOver`, so that flex or priority requests are priced at their actual rates. The built-in catalog includes service-tier prices for models such as those from OpenAI, Azure, and Vertex AI, and `agctl catalog import` adds Vertex AI Gemini tier rates from its default `vertex-pricing` source. You can configure rates for other models.
 
   ```yaml
   tiers:
@@ -240,7 +240,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
   agctl standalone analytics --by model,ttft
   ```
 
-  For more information, see the [`agctl standalone analytics` reference]({{< link-hextra path="/reference/agctl/agctl-standalone-analytics/" >}}).
+  For more information, see [Query analytics with agctl]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/#cli" >}}).
 
 ### MCP {#v17-mcp}
 
@@ -270,36 +270,12 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3923 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3919 -->
 
-- **`agctl standalone`**: Manage a standalone agentgateway through its admin API. Use `get`, `apply`, and `delete` for resources such as models, policies, and MCP targets. Use `keys` and `budgets` to manage API keys and check their budgets. For more information, see the [`agctl standalone` reference]({{< link-hextra path="/reference/agctl/agctl-standalone/" >}}).
+- **`agctl standalone`**: Manage a standalone agentgateway through its admin API. Use `get`, `apply`, and `delete` for resources such as models, policies, and MCP targets. Use `keys` and `budgets` to manage API keys and check their budgets. For more information, see [Manage resources with agctl]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
 - **Raw editing**: Every form editor in the UI has a raw YAML mode. Fields that the form does not support are kept when you save.
 - **Clearer forms**: Required fields and schema help are shown consistently, and errors are reported next to the field.
 - **Settings page**: A top-level **Settings** page groups gateway-wide settings for the UI and observability.
 - **Client Setup for Continue**: Client Setup includes a recipe for Continue. For more information, see [Client Setup]({{< link-hextra path="/documentation/setup/ui/launch-ui/#client-setup" >}}).
 - **More UI improvements**: You can rotate an API key with an auto-generated value, and search the values of the **Users** and **Groups** log filters.
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3960 -->
-
-- **Model catalogs include descriptive model metadata**: Model catalog entries can now include display names, lifecycle status, release dates, token limits, modalities, capabilities, and reasoning controls in addition to pricing fields. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#advanced-catalog-format" >}}).
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3965 -->
-
-- **Model discovery responses include catalog metadata**: The Models API now returns catalog-backed metadata such as context limits, modalities, capabilities, and supported parameters from `/v1/models` and `/models`. Clients can also limit list responses and fetch one model by ID with `/v1/models/<model-id>` or `/models/<model-id>`. For more information, see [Models]({{< link-hextra path="/documentation/llm/api-types/models/" >}}).
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3981 -->
-
-- **Model catalog metadata in CEL**: CEL expressions can read `llm.model` for the catalog entry that served a completed LLM request, including model IDs, tags, limits, modalities, capabilities, and reasoning metadata. Use the fields to log, trace, or emit metrics based on the resolved model. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#use-cost-data" >}}).
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3661 -->
-
-- **Service-tier pricing in the model catalog**: The model catalog can price requests by normalized service tier, such as `standard`, `flex`, `priority`, or `reserved`. The `agctl catalog import` default sources now include `vertex-pricing`, which adds Vertex AI Gemini service-tier rates. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#advanced-catalog-format" >}}).
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3825 -->
-
-- **Anthropic 1-hour cache writes can use a separate catalog rate**: Set `cacheWrite1h` in a model cost catalog to price Anthropic prompt-cache writes with a 1-hour TTL separately from 5-minute cache writes. If `cacheWrite1h` is omitted, those tokens use the `cacheWrite` rate. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#advanced-catalog-format" >}}).
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3970 -->
-
-- **Per-key budgets can run without a reset window**: Omit `budgets[].window` to create an API key budget whose usage accumulates for the lifetime of the budget and never resets. For more information, see [Per-key dollar or token budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/" >}}).
 
 ## 🐛 Fixes {#v17-fixes}
 
