@@ -121,7 +121,7 @@ llm:
         metadata:
           name: team-b
         budgets:
-        - name: daily-tokens
+        - name: lifetime-tokens
           limit:
             unit: Tokens
             amount: 250
@@ -430,7 +430,7 @@ The `team-b` key that you configured in Step 2 caps tokens rather than dollars. 
 2. Check the gateway logs. The gateway logs each request that it receives while the budget is over its limit, so you can alert on the `budget` target in your log pipeline. A `Tokens` budget reports its amounts as whole tokens. If you query the admin API for this budget, `window.end` and `window.durationMs` are `null`.
 
    ```
-   warn budget API key budget exceeded api_key="team-b" budget="daily-tokens" used=303 limit_unit="Tokens" limit_amount=250 exceeded=true
+   warn budget API key budget exceeded api_key="team-b" budget="lifetime-tokens" used=303 limit_unit="Tokens" limit_amount=250 exceeded=true
    ```
 
 {{< doc-test paths="apikey-budgets" >}}
@@ -446,7 +446,7 @@ YAMLTest -f - <<'EOF'
   expect:
     statusCode: 200
     bodyJsonPath:
-      - path: "$.budgets[?(@.name=='daily-tokens')].usage.exceeded"
+      - path: "$.budgets[?(@.name=='lifetime-tokens')].usage.exceeded"
         comparator: equals
         value: true
 

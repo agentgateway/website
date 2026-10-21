@@ -64,7 +64,7 @@ For general LLM telemetry setup, see [Observe traffic]({{< link-hextra path="/do
      include/exclude as a complete, matching pair — shortening either to "1.5.x"
      would also match 1.4.x and older, and adding "main" would need an edit every
      release. -->
-Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` to generate a catalog file. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}The command reads from a supported pricing source, and the default source is `models.dev`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}The `--source` flag takes a comma-separated list, and the sources merge in the order that you list them, so a later source overlays an earlier one. The default is `models.dev,aws-bedrock-mantle`, which prices every provider that the proxy supports and then tags the Amazon Bedrock models.{{< /version >}}{{< version exclude-if="1.5.x,1.6.x" >}}The default also includes `vertex-pricing`, which adds Vertex AI service-tier prices.{{< /version >}}
+Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` to generate a catalog file. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}The command reads from a supported pricing source, and the default source is `models.dev`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}The `--source` flag takes a comma-separated list, and the sources merge in the order that you list them, so a later source overlays an earlier one. The default is `models.dev,aws-bedrock-mantle`, which prices every provider that the proxy supports and then tags the Amazon Bedrock models.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}The default also includes `vertex-pricing`, which adds Vertex AI service-tier prices.{{< /version >}}
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
 A source is a catalog to import from, not an LLM provider: each source covers one or more providers and contributes rates, tags, or both. Use `--providers` to import a subset of the providers that a source covers.
@@ -73,7 +73,7 @@ A source is a catalog to import from, not an LLM provider: each source covers on
 |--------|---------------------|
 | `models.dev` | Rates for every provider that the proxy supports, from [models.dev](https://models.dev). |
 | `aws-bedrock-mantle` | Tags for Amazon Bedrock models only, read from the AWS model cards. This source contributes no rates. The tags record which endpoint serves a model, `runtime` or `mantle`, and which request formats the Mantle endpoint accepts. |
-| `github` | The curated catalog that the agentgateway project publishes at [agentgateway.dev/model-catalog](https://agentgateway.dev/model-catalog), which covers the models that the agentgateway project tracks rather than everything that models.dev lists. Not imported by default. |{{< version exclude-if="1.5.x,1.6.x" >}}
+| `github` | The curated catalog that the agentgateway project publishes at [agentgateway.dev/model-catalog](https://agentgateway.dev/model-catalog), which covers the models that the agentgateway project tracks rather than everything that models.dev lists. Not imported by default. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 | `vertex-pricing` | Service-tier rates for Vertex AI Gemini models, read from Google Cloud pricing. This source augments models that earlier sources already added. |{{< /version >}}
 {{% /version %}}
 
@@ -230,8 +230,6 @@ The model catalog provides pricing data for spend visibility. To block or thrott
 Usually, you do not need to write catalog JSON by hand. Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` or the UI to generate the base catalog, then add overrides only when needed.
 
 {{< reuse "agw-docs/snippets/model-catalog-json-format.md" >}}
-
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}To price Anthropic 1-hour cache writes separately, add `cacheWrite1h` to a model's `rates` or tier `rates`, beside `cacheWrite`. If you omit `cacheWrite1h`, 1-hour cache writes use the `cacheWrite` rate.{{< /version >}}
 
 {{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 ## Model tags

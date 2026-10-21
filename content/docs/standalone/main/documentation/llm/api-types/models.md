@@ -11,7 +11,13 @@ The Models API (`/v1/models`) lists the models that clients can request through 
 
 Agentgateway supports the OpenAI-compatible Models API. Use this endpoint when clients need to discover available model IDs, such as web UIs, SDKs, or developer tools that populate model selectors from `/v1/models`.
 
-Each listed model includes the OpenAI model object fields, such as `id`, `object`, `created`, and `owned_by`. When the model catalog has metadata for a model, the response also includes the display name and context limits. The response can also include input and output modalities, capabilities, and supported request parameters.
+Each listed model includes the OpenAI model object fields `id`, `object`, `created`, and `owned_by`. When the model catalog has metadata for a model, the entry also includes the following fields, and `created` is set to the model's release date from the catalog. Fields that the catalog does not record are left out.
+
+- `name`: The display name.
+- `context_window`, `context_length`, `max_input_tokens`, and `max_tokens`: The token limits.
+- `architecture.input_modalities` and `architecture.output_modalities`: The accepted input and output types, such as `text`, `image`, and `file`.
+- `capabilities`: Whether the model supports `reasoning`, `structured_outputs`, `tools`, and `temperature`.
+- `supported_parameters`: The request parameters that the model accepts, derived from its limits and capabilities.
 
 ## Route type configuration
 

@@ -38,31 +38,21 @@ Review the release notes for agentgateway on Kubernetes.
 
 - **CEL can read LLM request fields before provider routing**: Request-phase CEL expressions on LLM traffic can read `llm.requestModel` before provider overrides and `llmRequest` for the parsed JSON request body. For more information, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
 
-### LLM {#v17-llm}
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3960 -->
+
+- **Model catalogs include descriptive model metadata**: Model catalog entries can now include display names, lifecycle status, release dates, token limits, modalities, capabilities, and reasoning controls in addition to pricing fields. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-json-format" >}}).
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3965 -->
 
-- **Model discovery responses include catalog metadata**: The Models API now returns catalog-backed metadata such as context limits, modalities, capabilities, and supported parameters from `/v1/models` and `/models`. Clients can also limit list responses and fetch one model by ID with `/v1/models/<model-id>` or `/models/<model-id>`. For more information, see {{< conditional-text include-if="standalone" >}}[Models]({{< link-hextra path="/documentation/llm/api-types/models/" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[Serve a model]({{< link-hextra path="/documentation/llm/models/serve/" >}}){{< /conditional-text >}}.
-
-### LLM {#v17-llm}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3661 -->
-
-- **Service-tier pricing in the model catalog**: The model catalog can price requests by normalized service tier, such as `standard`, `flex`, `priority`, or `reserved`. The `agctl catalog import` default sources now include `vertex-pricing`, which adds Vertex AI Gemini service-tier rates.
-
-### LLM {#v17-llm}
+- **Model discovery responses include catalog metadata**: The Models API now returns catalog-backed metadata such as context limits, modalities, capabilities, and supported parameters from `/v1/models` and `/models`. Clients can also limit list responses and fetch one model by ID with `/v1/models/<model-id>` or `/models/<model-id>`. For more information, see [Serve a model]({{< link-hextra path="/documentation/llm/models/serve/#verify-model-discovery" >}}).
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3981 -->
 
-- **Model catalog metadata in CEL**: CEL expressions can read `llm.model` for the catalog entry that served a completed LLM request, including model IDs, tags, limits, modalities, capabilities, and reasoning metadata. Use the fields to log, trace, or emit metrics based on the resolved model.
+- **Model catalog metadata in CEL**: CEL expressions can read `llm.model` for the catalog entry that served a completed LLM request, including model IDs, tags, limits, modalities, capabilities, and reasoning metadata. Use the fields to log, trace, or emit metrics based on the resolved model. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#step-4-use-cost-data-in-cel-logs-traces-and-metrics" >}}).
 
-### LLM {#v17-llm}
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3661 -->
 
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3960 -->
-
-- **Model catalogs include descriptive model metadata**: Model catalog entries can now include display names, lifecycle status, release dates, token limits, modalities, capabilities, and reasoning controls in addition to pricing fields. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
-
-### LLM {#v17-llm}
+- **Service-tier pricing in the model catalog**: The model catalog can price requests by normalized service tier, such as `standard`, `flex`, `priority`, or `reserved`. The `agctl catalog import` default sources now include `vertex-pricing`, which adds Vertex AI Gemini service-tier rates. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-json-format" >}}).
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3825 -->
 
