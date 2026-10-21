@@ -70,6 +70,8 @@ Use `llm.virtualModels[]` to define the virtual entrypoint and `llm.models[]` as
 
 To see which target served a request, check the access log or the trace span. The `agw.ai.original_model` attribute records the virtual model name that the client sent, and `gen_ai.request.model` records the model that the selected target sends to the provider. For more information, see [Generative AI attributes]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#generative-ai-attributes-llm" >}}).
 
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
+
 ## Public and internal models
 
 Use `llm.models[].visibility` to control whether a model is directly exposed to clients or kept as an internal target.

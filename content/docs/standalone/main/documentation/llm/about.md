@@ -143,16 +143,13 @@ The model configurations shown in this section live under the `llm.models` key.
 Agentgateway routes requests by matching an incoming model name, and then sending it to the configured model.
 The outgoing model can be passed through from the incoming model, be transformed, or be a static model.
 
-Some examples:
-
-* Match `fast` and send to `gpt-mini`.
-* Match `*` and forward the model as-is.
-* Match `openai/*` and strip the `openai/` prefix, forwarding the remaining model as-is.
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
 
 | Field | Purpose |
 |-------|---------|
 | `models.name` | The model name to match in incoming client requests. Agentgateway compares this value against the `model` field in the request body. Use a wildcard `*` to match any model name. |
 | `params.model` | The model name sent to the upstream provider. If set, this overrides the model from the request. If not set, the model from the request is passed through. |
+| `transformation.model` | CEL expression for the upstream model name, such as `llmRequest.model.stripPrefix("openai/")`. Runs after `params.model` and overrides its value. |
 
 Agentgateway recognizes the standard LLM serving paths, such as `/v1/chat/completions`, `/v1/messages`, `/v1/responses`, `/v1/audio/transcriptions`, and `/v1/models`, only when the request path matches exactly. Provider-specific paths that carry the model in the path, such as the Gemini and Vertex AI `:generateContent` paths, match by their pattern instead. A request to any other path, such as `/other/v1/messages` or `/v1/messages/extra`, is not rejected. Agentgateway still selects the model from the request body, but forwards the request to the provider as passthrough, without format conversion and without the `params.model` override.
 
@@ -160,92 +157,4 @@ To serve the standard LLM paths under a base path, set `llm.pathPrefix`. For exa
 
 When the selected model changes the upstream model name, the gateway rewrites the model before forwarding the request. The rewrite applies to JSON request bodies and multipart form data, such as `/v1/audio/transcriptions`. For multipart requests, file fields and non-model fields are preserved while each `model` form field is rewritten.
 
-### Passthrough
-
-Use `name: "*"` without setting `params.model` to accept any model name and pass it directly to the provider. This is the simplest configuration for single-provider setups.
-
-```yaml
-llm:
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-```
-
-Clients specify the actual model in their requests, such as `"model": "gpt-4o-mini"`, and agentgateway forwards it to the provider as-is.
-
-### Prefixed Passthrough
-
-Use `name: "openai/*"` without setting `params.model` to accept model requests like `openai/gpt-4o-mini` and forward to OpenAI as `gpt-4o-mini`.
-This is the recommended approach when you want to expose all models from multiple providers.
-
-```yaml
-llm:
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-    transformation:
-      model: llmRequest.model.stripPrefix("openai/")
-```
-
-Clients specify the provider and model in their requests, such as `"model": "openai/gpt-4o-mini"`, and agentgateway forwards to `gpt-4o-mini`
-
-### Model aliases
-
-Set `name` to a user-friendly alias and `params.model` to the actual provider model.
-This lets you decouple client-facing model names from provider-specific identifiers, making it easier to swap models without updating client code.
-
-```yaml
-llm:
-  models:
-  - name: fast
-    provider: openAI
-    params:
-      model: gpt-4o-mini
-      apiKey: "$OPENAI_API_KEY"
-  - name: smart
-    provider: openAI
-    params:
-      model: gpt-4o
-      apiKey: "$OPENAI_API_KEY"
-```
-
-Clients send `"model": "fast"` or `"model": "smart"`, and agentgateway translates these to the corresponding provider models.
-
-### Route priority
-
-When multiple models match a request, the more precise match takes precedence.
-For example, with the configuration below, requests with `accounts/fireworks/*` will match the `fireworks` provider first:
-
-```yaml
-llm:
-  models:
-  # Specific route: wins ties against the wildcard
-  - name: "accounts/fireworks/*"
-    provider: fireworks
-    matches:
-    - headers:
-      - name: "x-org"
-        value:
-          exact: "eng"
-    params:
-      apiKey: "$FIREWORKS_API_KEY"
-  # Catch-all route: matches anything, but lower priority
-  - name: "*"
-    provider: openAI
-    matches:
-    - headers:
-      - name: "x-org"
-        value:
-          exact: "engineering"
-    params:
-      apiKey: "$OPENAI_API_KEY"
-```
-
-In this example, both routes have one header matcher, so they have equal specificity. Because the Fireworks route is listed first, it takes priority when both routes match.
-
-> [!NOTE]
-> For advanced routing based on request body fields like the `model` name, see [Virtual models]({{< link-hextra path="/documentation/llm/virtual-models/" >}}).
+{{< reuse "agw-docs/pages/agentgateway/llm/model-exposure-patterns.md" >}}
