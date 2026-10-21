@@ -12,16 +12,27 @@ Review the release notes for agentgateway on Kubernetes.
 
 ## 🌟 New features {#v17-new-features}
 
+### Security {#v17-security}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3763 -->
+
+- **Optional chart-created RBAC**: Set `rbac.create` to `false` in the controller Helm chart to skip the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the chart creates, for clusters that manage role-based access control (RBAC) outside of Helm. For more information, see [Chart-created RBAC resources]({{< link-hextra path="/documentation/install/advanced/#rbac-create" >}}).
+
+### MCP {#v17-mcp}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3824 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3830 -->
+
+- **Conditional virtual MCP targets**: Set `spec.mcp.targets[].condition` on an {{< reuse "agw-docs/snippets/backend.md" >}} to a CEL expression to select which targets take part in a request before agentgateway initializes or contacts them. A backend whose only target is a `static` target cannot set a condition. For more information, see [Include targets conditionally]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
+- **CEL MCP guardrails**: Set `spec.backend.mcp.guardrails.processors[].expression` on an {{< reuse "agw-docs/snippets/policy.md" >}} to reject or transform MCP messages inside the proxy. No external policy server is required. For more information, see [Set up CEL guardrails]({{< link-hextra path="/documentation/mcp/guardrails/cel/" >}}).
+
+### Observability {#v17-observability}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3850 -->
+
+- **Agent session detection**: CEL expressions can read detected agent session IDs as `request.agent.session`. For more information, see [Agent sessions]({{< link-hextra path="/reference/cel/variables/#agent-sessions" >}}).
+
 ### LLM {#v17-llm}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3832 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3839 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3852 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3854 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3928 -->
-
-- **OpenAI Decisions API**: Requests to the OpenAI Decisions API at `/v1/decisions` have their own `Decisions` route type and provider format. Add `"/v1/decisions": "Decisions"` to the `routes` of an OpenAI backend, or declare the `Decisions` format on a custom provider, so that LLM telemetry records the model and token usage. For more information, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}).
-- **TypeSafe and Decisions API support in Kubernetes**: Kubernetes `AgentgatewayModel` resources can now use the `Typesafe` provider preset, and custom providers can declare `Decisions` and `SystemOne` formats for OpenAI Decisions and TypeSafe Jev APIs. SystemOne requests on `/v1/systemone` have their own `SystemOne` route type, and agentgateway translates between the `Decisions` and `SystemOne` formats in both directions. For more information, see [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}) and [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4010 -->
 
@@ -46,26 +57,6 @@ Review the release notes for agentgateway on Kubernetes.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3825 -->
 
 - **Anthropic 1-hour cache writes can use a separate catalog rate**: Set `cacheWrite1h` in a model cost catalog to price Anthropic prompt-cache writes with a 1-hour TTL separately from 5-minute cache writes. If `cacheWrite1h` is omitted, those tokens use the `cacheWrite` rate. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-json-format" >}}).
-
-### Security {#v17-security}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3763 -->
-
-- **Optional chart-created RBAC**: Set `rbac.create` to `false` in the controller Helm chart to skip the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the chart creates, for clusters that manage role-based access control (RBAC) outside of Helm. For more information, see [Chart-created RBAC resources]({{< link-hextra path="/documentation/install/advanced/#rbac-create" >}}).
-
-### MCP {#v17-mcp}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3824 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3830 -->
-
-- **Conditional virtual MCP targets**: Set `spec.mcp.targets[].condition` on an {{< reuse "agw-docs/snippets/backend.md" >}} to a CEL expression to select which targets take part in a request before agentgateway initializes or contacts them. A backend whose only target is a `static` target cannot set a condition. For more information, see [Include targets conditionally]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
-- **CEL MCP guardrails**: Set `spec.backend.mcp.guardrails.processors[].expression` on an {{< reuse "agw-docs/snippets/policy.md" >}} to reject or transform MCP messages inside the proxy. No external policy server is required. For more information, see [Set up CEL guardrails]({{< link-hextra path="/documentation/mcp/guardrails/cel/" >}}).
-
-### Observability {#v17-observability}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3850 -->
-
-- **Agent session detection**: CEL expressions can read detected agent session IDs as `request.agent.session`. For more information, see [Agent sessions]({{< link-hextra path="/reference/cel/variables/#agent-sessions" >}}).
 
 ## 🐛 Fixes {#v17-fixes}
 
