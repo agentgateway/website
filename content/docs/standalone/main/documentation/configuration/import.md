@@ -160,7 +160,7 @@ The importer currently handles the following common file-based LiteLLM settings.
 
 | LiteLLM configuration | Imported agentgateway configuration |
 | -- | -- |
-| Common provider prefixes | First-class providers for OpenAI, Azure OpenAI, Azure AI Foundry, Anthropic, Bedrock, Gemini, Vertex AI, Ollama, Cohere, Hugging Face, Groq, Mistral, OpenRouter, Together AI, xAI, DeepInfra, DeepSeek, and Fireworks |
+| Common provider prefixes | First-class providers for OpenAI, Azure OpenAI, Azure AI Foundry, Anthropic, Bedrock, Gemini, Vertex AI, Ollama, Cohere, Hugging Face, Groq, Mistral, OpenRouter, Together AI, xAI, DeepInfra, DeepSeek, Fireworks, and Perplexity |
 | `model_name` and `litellm_params.model` | Public model names and provider-specific upstream model names |
 | Multiple deployments with the same `model_name` | Internal models behind a generated virtual model |
 | `credential_list` and `litellm_credential_name` | Reusable providers when the credential can be shared safely; otherwise, supported values are applied inline |
