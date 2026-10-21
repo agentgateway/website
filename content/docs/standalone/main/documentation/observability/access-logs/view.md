@@ -123,6 +123,20 @@ frontendPolicies:
 
 For the full list of available fields, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables/" >}}). 
 
+### Log the agent session {#agent-session}
+
+Add `request.agent.session` to correlate requests from the same agent session. This example records an empty string when no session is available.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    add:
+      agent_session: 'has(request.agent.session) ? request.agent.session : ""'
+```
+
+Agentgateway detects sessions from recognized agent headers. To override detection, use `config.standardAttributes.session`. For details, see [Agent sessions]({{< link-hextra path="/reference/cel/variables/#agent-sessions" >}}).
+
 ### Log the selected backend endpoint {#backend-endpoint}
 
 Use `backend.endpoint` to record the resolved destination of a directly addressed backend, such as a static hostname, including its port for a network endpoint. This complements `backend.name`, which identifies the configured backend. Service backends leave `backend.endpoint` unset because their workload endpoints are selected separately. The endpoint is available only after the target is resolved, so guard the lookup for Service backends and requests rejected earlier in processing.

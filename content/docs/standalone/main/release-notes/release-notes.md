@@ -10,7 +10,43 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🔥 Breaking changes {#v17-breaking-changes}
+
+### Standalone generates an MCP session key by default {#v17-session-key}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4031 -->
+
+Agentgateway allows defining an MCP session key that encrypts MCP session IDs. The agentgateway Kubernetes control plane already generated this key. Standalone deployments now match this.
+
+When you set neither `SESSION_KEY` nor `config.session.key`, agentgateway generates a key. In `file` storage mode, the default, agentgateway writes the key to `config.session.key` in your configuration file. In `hybrid` mode, agentgateway stores the key in the database. In `readOnly` mode, or when agentgateway cannot write the configuration file, such as in the default `readonly` mode of the Helm chart, session IDs stay unencrypted and agentgateway logs a warning.
+
+If agentgateway generates a key during the upgrade, MCP sessions established before the upgrade are rejected, and clients must establish new sessions.
+
+**Actions to take**:
+
+* If you keep your configuration file in version control, set `SESSION_KEY` before you upgrade, so that agentgateway does not write a secret into the file.
+* If you install with the Helm chart in the default `readonly` mode, set `session.secretName` to encrypt session IDs. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
+* To keep sessions unencrypted, set `SESSION_KEY` or `config.session.key` to `disabled`.
+
+For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
+
 ## 🌟 New features {#v17-new-features}
+
+### MCP {#v17-mcp}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3711 -->
+
+- **CEL MCP guardrails**: Use `kind: expression` in `mcpGuardrails.processors` to reject or transform MCP messages inside the proxy. No external policy server is required. For more information, see [Set up CEL guardrails]({{< link-hextra path="/documentation/mcp/guardrails/cel/" >}}).
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3973 -->
+
+- **OpenAPI MCP targets can override schema server paths**: Standalone OpenAPI MCP targets can now use a non-root `host` URI or `path` value as the request prefix. Previously, the OpenAPI schema server path controlled the prefix even when the target URL included a path. Omitted, empty, and root paths keep using the schema server path; to route to root, update the schema server URL. For more information, see [Override the schema server path]({{< link-hextra path="/integrations/mcp/servers/openapi/#override-schema-server-path" >}}).
+
+### Observability {#v17-observability}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3850 -->
+
+- **Agent session detection**: CEL expressions can read detected agent session IDs as `request.agent.session`. Override detection with `config.standardAttributes.session`. For more information, see [Agent sessions]({{< link-hextra path="/reference/cel/variables/#agent-sessions" >}}).
 
 ### Traffic management and operations {#v17-operations}
 
@@ -19,6 +55,10 @@ Review the release notes for agentgateway standalone.
 - **Standalone Helm session key Secret**: Set `session.secretName` to load the AES-256-GCM session key from an existing Kubernetes Secret. The chart passes the Secret's `key` entry to the proxy as the `SESSION_KEY` environment variable, which takes precedence over `config.session.key`. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
 
 ### LLM {#v17-llm}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4010 -->
+
+- **CEL can read LLM request fields before provider routing**: Request-phase CEL expressions on LLM traffic can read `llm.requestModel` before provider overrides and `llmRequest` for the parsed JSON request body. For more information, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3965 -->
 
@@ -38,6 +78,8 @@ Review the release notes for agentgateway standalone.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3774 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3812 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3976 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3894 -->
 
 **Traffic management**
 
@@ -45,7 +87,7 @@ Review the release notes for agentgateway standalone.
 
 **LLM**
 
-- Gemini OpenAI-compatible responses count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
+- OpenAI-compatible responses, such as from Gemini, count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
 - Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
 - Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 - Bedrock Runtime requests now send client `tool_choice` settings as Converse `toolChoice`, so forced tool choices can take effect and models that reject them return Bedrock errors.
@@ -56,6 +98,8 @@ Review the release notes for agentgateway standalone.
 - Stateful MCP requests with a session ID that the proxy cannot decode, such as after the session key changes, now return `404` instead of `400`, so clients start a new session.
 - MCP authentication derives JWKS URLs without a double slash when an issuer value ends with `/`.
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
+- Stateful Streamable HTTP `DELETE /mcp` requests now resume encoded sessions before closing upstream sessions, so any replica with the same session key can close the upstream sessions.
+- MCP responses now honor the `responseIdleTimeout` response idle timeout, which previously did not apply on MCP routes. A response, including an SSE stream, that sends no data for longer than the timeout is now ended.
 
 **Operations**
 
