@@ -65,6 +65,7 @@ Review the following details about session cookies.
 - Session cookies written before compression continue to decode.
 - A protected response can include its own cookies and the OIDC session cookie.
 - The gateway always requests the `openid` scope to obtain an ID token.
+- A session cookie lasts 7 days by default. To change the lifetime, set `sessionTtl` to a duration such as `12h`. The session never outlives the expiry of the ID token.
 - If the identity provider returns a refresh token, a separate encrypted cookie stores it. The browser session refreshes when the ID token expires. Add the `offline_access` scope when your provider requires that scope to issue refresh tokens.
 - The refresh response must include a new ID token for the same `sub` claim. If the provider omits the ID token, the user must sign in again. If the provider returns an ID token for a different subject, the user must sign in again.
 - The gateway uses PKCE automatically to protect against authorization code interception.
@@ -346,6 +347,7 @@ All `login` and `logout` endpoint and redirect values must be safe local paths. 
 | `tokenEndpointAuth` | No | Client authentication method for the token endpoint. Discovery mode derives this from provider metadata. Explicit mode defaults to `clientSecretBasic`. |
 | `jwks` | No | JWKS source for ID token validation. If omitted, uses the `jwks_uri` from discovery. |
 | `credentials` | No | Credentials that the policy accepts: `session`, `sessionOrBearer`, or `permissive`. Defaults to `session`, or to `sessionOrBearer` for `ui.policies.oidc`. For the behavior of each value, see [Bearer tokens for API clients](#bearer-id-tokens). |
+| `sessionTtl` | No | Lifetime of the browser session cookie, as a duration such as `12h`. Defaults to 7 days. The effective expiry is capped at the `exp` claim of the ID token. |
 | `login` | No | Optional explicit login endpoint and pre-login redirect block. Omit to keep automatic redirects to the identity provider. |
 | `login.path` | Yes, when `login` is set | Endpoint that starts the OIDC flow, handled by the policy without forwarding to your application. The configured path must have no query string and differ from `logout.path` and the callback path. Requests can include `returnTo` to select the destination after login; missing or unsafe values default to `/`. |
 | `login.redirect` | No | Application page shown before authentication, separate from the callback and the destination after login. Serve it and its assets on public routes; this setting does not make them public. Must differ from the login, logout, and callback paths. The gateway appends `returnTo` with the original path and query. Omit to start the identity provider flow directly. For fetch behavior, see [Navigation and fetch requests](#navigation-and-fetch-requests). |
