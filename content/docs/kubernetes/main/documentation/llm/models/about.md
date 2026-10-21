@@ -307,6 +307,8 @@ A match must use one of the following forms. Wildcards in any other position are
 | Prefix wildcard | `*-latest` | Any model name that ends with `-latest`. |
 | Catch-all | `*` | Any model name. |
 
+When multiple concrete models match one request, the model router uses the most specific match. For example, `openai/gpt-5.5` takes precedence over `openai/*`. The `openai/*` match takes precedence over `*`.
+
 A wildcard model usually pairs with a `model` transformation, because the provider expects its own model name rather than the client-facing one. For an example, see [Serve a model]({{< link-hextra path="/documentation/llm/models/serve/" >}}).
 
 ### Model aliasing

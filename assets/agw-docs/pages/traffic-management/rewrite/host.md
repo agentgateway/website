@@ -211,6 +211,77 @@ EOF
    }   
    ```
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+## Backend-specific host rewrites
+
+When a rule splits traffic between backends that expect different hosts, rewrite the host for one backend only. To do so, add the `URLRewrite` filter to the `backendRefs` entry of that backend instead of to the rule. Requests to the other backends in the rule keep their original host.
+
+1. Create an HTTPRoute that splits traffic on the `backend-host-rewrite.example` domain between the in-cluster httpbin app and the `httpbin.org` {{< reuse "/agw-docs/snippets/backend.md" >}} that you created in the [external service](#external-service-host-rewrites) section. Only the requests to `httpbin.org` are rewritten to the `httpbin.org` host.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: backend-host-rewrite
+     namespace: httpbin
+   spec:
+     parentRefs:
+     - name: agentgateway-proxy
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     hostnames:
+       - backend-host-rewrite.example
+     rules:
+       - backendRefs:
+           - name: httpbin
+             port: 8000
+             weight: 50
+           - name: httpbin
+             kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
+             group: agentgateway.dev
+             weight: 50
+             filters:
+               - type: URLRewrite
+                 urlRewrite:
+                   hostname: "httpbin.org"
+   EOF
+   ```
+
+   |Setting|Description|
+   |--|--|
+   |`spec.rules.backendRefs.weight`| The share of requests that each backend gets. In this example, each backend gets half of the requests. |
+   |`spec.rules.backendRefs.filters.type`| The filter that applies only to the requests that the gateway forwards to this backend. In this example, the `URLRewrite` filter is used. The in-cluster httpbin backend has no filter, so its requests keep the `backend-host-rewrite.example` host. |
+   |`spec.rules.backendRefs.filters.urlRewrite.hostname`| The hostname that you want to rewrite to for the requests that the gateway forwards to this backend. |
+
+2. Send six requests to the `backend-host-rewrite.example` domain, and print the `Host` header that each backend received. Verify that the requests to the in-cluster httpbin app keep the `backend-host-rewrite.example` host, and that the requests to `httpbin.org` have the `httpbin.org` host.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   for i in $(seq 1 6); do
+     curl -s http://$INGRESS_GW_ADDRESS:80/headers -H "host: backend-host-rewrite.example" | jq -c '.headers.Host'
+   done
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   for i in $(seq 1 6); do
+     curl -s localhost:8080/headers -H "host: backend-host-rewrite.example" | jq -c '.headers.Host'
+   done
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output: The in-cluster httpbin app returns the host as a list, and `httpbin.org` returns it as a string. Because the gateway splits the traffic by weight, the order of your output differs.
+   ```console
+   ["backend-host-rewrite.example"]
+   "httpbin.org"
+   "httpbin.org"
+   ["backend-host-rewrite.example"]
+   "httpbin.org"
+   ["backend-host-rewrite.example"]
+   ```
+{{< /version >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
@@ -220,6 +291,14 @@ kubectl delete httproute httpbin-rewrite -n httpbin
 kubectl delete httproute backend-rewrite -n httpbin
 kubectl delete {{< reuse "/agw-docs/snippets/backend.md" >}} httpbin -n httpbin
 ```
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+If you created the backend-specific host rewrite, delete its HTTPRoute.
+
+```sh
+kubectl delete httproute backend-host-rewrite -n httpbin
+```
+{{< /version >}}
 
 
 

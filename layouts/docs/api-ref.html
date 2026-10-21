@@ -31,7 +31,7 @@
           {{ partial "docs-llms-directive.html" . }}
           {{ partial "copy-markdown.html" . }}
           {{ if .Title }}<h1>{{ .Title }}</h1>{{ end }}
-          {{ partial "test-status-badge.html" . }}
+          {{ partial "components/test-status-badge.html" . }}
           {{- with .Description }}<p class="page-description">{{ . | markdownify }}</p>{{ end }}
           {{- /*
             Split .Content on the widget slot sentinel so the kubespec HTML can

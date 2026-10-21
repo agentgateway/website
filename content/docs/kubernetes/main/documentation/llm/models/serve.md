@@ -393,6 +393,16 @@ Real providers require credentials. Use `spec.policies.auth` to read them from a
 
 Every public model on a listener appears in the OpenAI-compatible discovery endpoint. The endpoint requires no configuration.
 
+Each entry includes the OpenAI model object fields `id`, `object`, `created`, and `owned_by`. When the model catalog has metadata for a model, the entry also includes the following fields, and `created` is set to the model's release date from the catalog. Fields that the catalog does not record are left out.
+
+- `name`: The display name.
+- `context_window`, `context_length`, `max_input_tokens`, and `max_tokens`: The token limits.
+- `architecture.input_modalities` and `architecture.output_modalities`: The accepted input and output types, such as `text`, `image`, and `file`.
+- `capabilities`: Whether the model supports `reasoning`, `structured_outputs`, `tools`, and `temperature`.
+- `supported_parameters`: The request parameters that the model accepts, derived from its limits and capabilities.
+
+To return only the first listed models, add the `limit` query parameter. To look up one model by ID, send a request to `/v1/models/<model-id>` or `/models/<model-id>`.
+
 ```sh
 curl -s http://$INGRESS_GW_ADDRESS/v1/models
 ```
@@ -403,14 +413,28 @@ Example output:
 {
   "data": [
     {"id": "gpt-4", "object": "model", "created": 1785166485, "owned_by": "openai"},
-    {"id": "gpt-5-mini", "object": "model", "created": 1785166485, "owned_by": "openai"},
-    {"id": "openai/gpt-4.1", "object": "model", "created": 1785166485, "owned_by": "openai"},
-    {"id": "openai/gpt-4o", "object": "model", "created": 1785166485, "owned_by": "openai"},
+    {
+      "id": "gpt-5-mini",
+      "object": "model",
+      "created": 1754524800,
+      "owned_by": "openai",
+      "name": "GPT-5 Mini",
+      "context_window": 400000,
+      "context_length": 400000,
+      "max_input_tokens": 272000,
+      "max_tokens": 128000,
+      "architecture": {"input_modalities": ["text", "image"], "output_modalities": ["text"]},
+      "capabilities": {"reasoning": true, "structured_outputs": true, "tools": true, "temperature": false},
+      "supported_parameters": ["max_tokens", "reasoning", "reasoning_effort", "response_format", "structured_outputs", "tool_choice", "tools"]
+    },
+    {"id": "openai/gpt-4.1", "object": "model", "created": 1744588800, "owned_by": "openai", "name": "GPT-4.1", ...},
     ...
   ],
   "object": "list"
 }
 ```
+
+The built-in catalog has no metadata for `gpt-4`, so that entry has only the four OpenAI fields, and `created` is the time that the model was configured.
 
 {{< doc-test paths="serve-model" >}}
 # YAMLTest evaluates "$.data[*].id" to the first array element only, so a
@@ -435,7 +459,7 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-Wildcard models expand to matching IDs from the [model catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) for their `provider`. For example, `openai/*` expands to IDs such as `openai/gpt-4o`. The catalog combines the built-in catalog with any catalogs that you configure.
+Wildcard models expand to matching IDs from the [model catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) for their `provider`. For example, `openai/*` expands to IDs such as `openai/gpt-4o`. The catalog combines the built-in catalog with any catalogs that you configure. The discovery response uses catalog metadata for the extra fields.
 
 - **Model transformations**: Agentgateway reverses transformations that strip or add a fixed string, such as `stripPrefix("openai/")`. The list then uses the model names that clients send.
 - **Unexpanded patterns**: Agentgateway lists the pattern itself if the provider has no catalog entries. It also keeps the pattern if the model overrides the upstream model or uses a transformation that cannot be reversed.

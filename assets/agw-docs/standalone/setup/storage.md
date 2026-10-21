@@ -47,6 +47,10 @@ The database holds only the resource types in the following table. Everything el
 | Traffic | Gateways, routes, and TCP routes |
 | UI | Policies and the model catalog |
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+Besides these resources, the database holds the MCP session key that agentgateway generates when you do not set one, so every instance that shares the database encrypts session IDs with the same key. The key is not a configuration resource, so the UI and the config resource API do not show it. Anyone with read access to the database can read the key. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
+{{< /version >}}
+
 The overlay only adds resources. It does not replace a resource that your configuration file already defines. For example, in `hybrid` mode you can add a gateway in the UI, and agentgateway serves it alongside the gateways in your file. But if the resource that you store has the same name as one in your file, agentgateway rejects the write with a `409` response.
 
 ```txt
@@ -139,6 +143,10 @@ Agentgateway preserves the schema comment at the top of the file, and reloads th
 
 > [!IMPORTANT]
 > In this mode the UI is a writer of your configuration file, not only a reader. If you keep your configuration in version control, or if you generate it from another tool, use `readOnly` or `hybrid` mode so that a UI edit cannot overwrite it.
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+Agentgateway also writes to your configuration file at startup when you do not set an MCP session key. It generates a key and saves it in the `config.session.key` field, with a comment that marks the key as generated. The UI and the `/api/config` admin endpoint show your configuration file as it is, including the key and any other secrets in the file. For more information, see [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}). To keep the key out of your file, set the `SESSION_KEY` environment variable. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
+{{< /version >}}
 
 ### `hybrid` mode {#binary-hybrid}
 
@@ -376,75 +384,9 @@ config:
 
 ### Deploy PostgreSQL {#deploy-postgresql}
 
-For a production deployment, use a managed PostgreSQL instance or an operator that handles backups and failover. The following example deploys a single instance for testing.
+Deploy PostgreSQL in the namespace of your agentgateway release. For production, use a managed PostgreSQL service or an operator that handles backups and failover. The following steps deploy one PostgreSQL instance for testing.
 
-> [!WARNING]
-> This example stores the database on an `emptyDir` volume, so the data exists only for the lifetime of the PostgreSQL pod. If that pod restarts or is rescheduled, the configuration that you saved in the UI is lost, and agentgateway falls back to the ConfigMap baseline. For anything beyond testing, back the database with a PersistentVolumeClaim, or use a managed PostgreSQL instance.
-
-1. Create a Secret for the database credentials. The following example creates the `agw` user with a `password` password.
-
-   ```sh
-   kubectl create secret generic agentgateway-postgres \
-     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --from-literal=POSTGRES_USER=agw \
-     --from-literal=POSTGRES_PASSWORD='password' \
-     --from-literal=POSTGRES_DB=agw
-   ```
-
-2. Deploy PostgreSQL.
-
-   ```sh
-   kubectl apply -n {{< reuse "agw-docs/snippets/namespace.md" >}} -f - <<'EOF'
-   apiVersion: apps/v1
-   kind: Deployment
-   metadata:
-     name: postgres
-   spec:
-     replicas: 1
-     selector:
-       matchLabels:
-         app: postgres
-     template:
-       metadata:
-         labels:
-           app: postgres
-       spec:
-         containers:
-         - name: postgres
-           image: postgres:{{< reuse "agw-docs/versions/postgres.md" >}}
-           envFrom:
-           - secretRef:
-               name: agentgateway-postgres
-           env:
-           - name: PGDATA
-             value: /var/lib/postgresql/data/pgdata
-           ports:
-           - containerPort: 5432
-           volumeMounts:
-           - name: data
-             mountPath: /var/lib/postgresql/data
-         volumes:
-         - name: data
-           emptyDir: {}
-   ---
-   apiVersion: v1
-   kind: Service
-   metadata:
-     name: postgres
-   spec:
-     selector:
-       app: postgres
-     ports:
-     - port: 5432
-       targetPort: 5432
-   EOF
-   ```
-
-3. Verify that PostgreSQL is running.
-
-   ```sh
-   kubectl rollout status deploy/postgres -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   ```
+{{< reuse "agw-docs/standalone/helm-postgres-deploy.md" >}}
 
 ### Switch to database mode
 
@@ -459,7 +401,13 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
    mode: database
    database:
      postgres:
-       url: postgres://agw:password@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+       url: postgres://agw:${POSTGRES_PASSWORD}@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+   extraEnv:
+   - name: POSTGRES_PASSWORD
+     valueFrom:
+       secretKeyRef:
+         name: agentgateway-postgres
+         key: POSTGRES_PASSWORD
    EOF
    ```
    {{% /tab %}}
@@ -471,7 +419,13 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
    mode: database
    database:
      postgres:
-       url: postgres://agw:password@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+       url: postgres://agw:${POSTGRES_PASSWORD}@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+   extraEnv:
+   - name: POSTGRES_PASSWORD
+     valueFrom:
+       secretKeyRef:
+         name: agentgateway-postgres
+         key: POSTGRES_PASSWORD
    config:
      gateways:
        default:
@@ -495,8 +449,11 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
    {{% /tab %}}
    {{< /tabs >}}
 
-   > [!NOTE]
-   > The chart rejects a `database.postgres.url` value that does not begin with `postgres://` or `postgresql://`, and rejects the value entirely when `mode` is `readonly`. The URL is rendered into the ConfigMap, so use a database user with only the privileges that agentgateway needs.
+   | Setting | Description |
+   | --- | --- |
+   | `mode` | Set to `database`. The chart rejects `database.postgres.url` in `readonly` mode. |
+   | `database.postgres.url` | Must start with `postgres://` or `postgresql://`. The `${POSTGRES_PASSWORD}` reference keeps the password out of the ConfigMap. Startup logs contain the resolved URL, including the password. Limit access to proxy logs and use a database user with only the required privileges. |
+   | `extraEnv` | Loads `POSTGRES_PASSWORD` from the PostgreSQL Secret. The proxy resolves the password reference at startup. |
 
 2. Upgrade the release with your values file.
 
@@ -616,7 +573,13 @@ Both storage modes support running more than one agentgateway proxy pod. In `rea
    mode: database
    database:
      postgres:
-       url: postgres://agw:password@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+       url: postgres://agw:${POSTGRES_PASSWORD}@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+   extraEnv:
+   - name: POSTGRES_PASSWORD
+     valueFrom:
+       secretKeyRef:
+         name: agentgateway-postgres
+         key: POSTGRES_PASSWORD
    config:
      gateways:
        default:
@@ -682,10 +645,10 @@ Both storage modes support running more than one agentgateway proxy pod. In `rea
      --set mode=readonly
    ```
 
-3. Delete PostgreSQL and its Secret.
+3. Delete PostgreSQL, its data, and its Secret.
 
    ```sh
-   kubectl delete deploy/postgres svc/postgres secret/agentgateway-postgres \
+   kubectl delete deploy/postgres svc/postgres pvc/postgres-data secret/agentgateway-postgres \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 {{% /tab %}}

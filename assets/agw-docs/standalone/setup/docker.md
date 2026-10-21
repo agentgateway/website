@@ -23,7 +23,9 @@ docker run -d \
   {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}}
 ```
 
-The `--user` flag runs the container as your own user so that the container can read and write the mounted directory. The generated configuration points agentgateway at a SQLite database, defines a `default` gateway, serves the UI on that default gateway, and looks similar to the following example. The database powers the **Analytics** and **Logs** pages in the UI, and the other features that record data while agentgateway runs. For more information, see [Database]({{< link-hextra path="/documentation/setup/database/" >}}).
+The `--user` flag lets the container read and write the mounted directory as your user. The generated configuration includes a SQLite database and serves the UI on the `default` gateway. The database stores LLM analytics, logs, and other runtime data. For details, see [Database]({{< link-hextra path="/documentation/setup/database/" >}}).
+
+The generated configuration looks like this:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -37,26 +39,46 @@ ui:
   gateways: default
 ```
 
-Because the generated configuration attaches the UI to the `default` gateway, the UI is served on the gateway port, not only on the admin interface.
-
 {{% /tab %}}
 {{% tab name="Mount a configuration file" %}}
 
-Mount your own configuration file and pass it with `-f`. For a runnable starting point, try [this example configuration file](https://agentgateway.dev/examples/mcp-basic/config.yaml).
+Mount your configuration file and pass the file with `-f`. Include the database and UI settings, because supplied files receive no generated defaults.
 
-```sh
-docker run -d \
-  --name agentgateway \
-  --user "$(id -u):$(id -g)" \
-  -v "$PWD/config.yaml:/config.yaml" \
-  -p 4000:4000 \
-  {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
-  -f /config.yaml
-```
+1. Create a configuration file with the database and UI settings shown in this example.
 
-Agentgateway does not add anything to a file that you supply, so the UI is served only on the admin interface unless your file includes a `ui` section that attaches it to a gateway. A file that you supply also has no database, so the **Analytics** and **Logs** pages are unavailable until you add one. Because the SQLite file needs a writable directory, mount a directory for it as well as the configuration file. For more information, see [Database]({{< link-hextra path="/documentation/setup/database/#own-file" >}}).
+   The `config.database.url` field sets the SQLite file path. The `ui.gateways` field serves the UI on the `default` gateway. For a fuller starting point, add these settings to the [example configuration file](https://agentgateway.dev/examples/mcp-basic/config.yaml).
 
-Keep the mount writable if you want to save configuration changes that you make in the UI. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
+   ```sh
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   config:
+     database:
+       url: sqlite:///data/data.db
+   gateways:
+     default:
+       port: 4000
+   ui:
+     gateways: default
+   EOF
+   ```
+
+2. Start the container with the configuration file and a writable `/data` directory for SQLite.
+
+   Keep the configuration mount writable to save UI changes. For database details, see [Database]({{< link-hextra path="/documentation/setup/database/#own-file" >}}).
+
+   ```sh
+   mkdir -p data
+   docker run -d \
+     --name agentgateway \
+     --user "$(id -u):$(id -g)" \
+     -v "$PWD/config.yaml:/config.yaml" \
+     -v "$PWD/data:/data" \
+     -p 4000:4000 \
+     {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
+     -f /config.yaml
+   ```
+
+For details about saving UI changes, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
 > [!IMPORTANT]
 > The admin interface defaults to `localhost:15000`, which is the container's own loopback interface, so publishing port 15000 does not make it reachable from your host. Reach the UI on a gateway port instead, as the generated configuration does. That is the supported path, and it is the only one that you can authenticate. For more information, see [Reach the UI in a container]({{< link-hextra path="/documentation/operations/debug/#docker-admin-addr" >}}).
