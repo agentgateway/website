@@ -18,12 +18,6 @@ Review the release notes for agentgateway standalone.
 
 - **Standalone Helm session key Secret**: Set `session.secretName` to load the AES-256-GCM session key from an existing Kubernetes Secret. The chart passes the Secret's `key` entry to the proxy as the `SESSION_KEY` environment variable, which takes precedence over `config.session.key`. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
 
-### LLM {#v17-llm}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3691 -->
-
-- **Vertex AI accepts HTTP file URIs**: Vertex AI provider requests can now send OpenAI-compatible `file` content parts with `http://` or `https://` URI values in `file_data` or `file_id`. For more information, see [Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/#send-file-content-by-uri" >}}).
-
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->

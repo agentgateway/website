@@ -23,12 +23,6 @@ Review the release notes for agentgateway on Kubernetes.
 
 - **Conditional virtual MCP targets**: Set `spec.mcp.targets[].condition` on an {{< reuse "agw-docs/snippets/backend.md" >}} to a CEL expression to select which targets take part in a request before agentgateway initializes or contacts them. A backend whose only target is a `static` target cannot set a condition. For more information, see [Select targets with conditions]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
 
-### LLM {#v17-llm}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3691 -->
-
-- **Vertex AI accepts HTTP file URIs**: Vertex AI provider requests can now send OpenAI-compatible `file` content parts with `http://` or `https://` URI values in `file_data` or `file_id`. For more information, see [Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/#send-file-content-by-uri" >}}).
-
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->
