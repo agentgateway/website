@@ -84,6 +84,10 @@ For more information, see [Session key]({{< link-hextra path="/integrations/mcp/
 
 - **Per-key budgets can run without a reset window**: Omit `budgets[].window` to create an API key budget whose usage accumulates for the lifetime of the budget and never resets. For more information, see [Per-key dollar or token budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/" >}}).
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3769 -->
+
+- **Callout routing for virtual models**: A virtual model can set `routing.callout` to ask an external HTTP service which model serves each request, with an optional fallback model and response cache. For more information, see [Callout routing]({{< link-hextra path="/documentation/llm/virtual-models/#callout-routing" >}}).
+
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->
