@@ -38,7 +38,7 @@ To see which target served a request, check the access log or the trace span. Th
 
 Targets are usually `Internal` models, so clients cannot request them directly and they stay out of `/v1/models`. For more on visibility, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
 
-If a target does not resolve, the control plane still generates the virtual model with the targets that do. The virtual model's status reports the `ResolvedRefs` condition as `False` with the `Invalid` reason, and valid targets keep serving requests. If weighted routing selects an invalid target, the request fails with a `404` and the `virtual_model_target_not_found` error code. If conditional routing matches an invalid target, the request fails the same way instead of falling through to the next target. Failover leaves invalid targets out of its priority groups. If every failover target is invalid, the control plane does not generate the virtual model, and requests for it return `404` with the `model_not_found` error code. Callout routing treats a selected model that does not exist as a failed callout. The fallback model serves the request, or, without a fallback, the request fails with a `503` and the `virtual_model_callout_failed` error code.
+If a target does not resolve, the control plane still generates the virtual model with the targets that do. The virtual model's status reports the `ResolvedRefs` condition as `False` with the `Invalid` reason, and valid targets keep serving requests. If weighted routing selects an invalid target, the request fails with a `404` and the `virtual_model_target_not_found` error code. If conditional routing matches an invalid target, the request fails the same way instead of falling through to the next target. Failover leaves invalid targets out of its priority groups. If every failover target is invalid, the control plane does not generate the virtual model, and requests for it return `404` with the `model_not_found` error code.
 
 > [!NOTE]
 > Virtual models must be `Public`, and they cannot set `spec.policies`. Configure policies on the concrete target models instead.
@@ -512,9 +512,14 @@ Use `virtualModel.callout` to let a routing service select the target model for 
 
 For each request to the virtual model, the gateway sends a `POST` request to the routing service. The service must return a `2xx` response with a JSON body. The `transformation` expressions read that response from the `callout` CEL variable, and the `model` expression selects the target. If the callout fails, the fallback model serves the request.
 
+The callout request carries a `content-type` header and only the headers that you set in `headers`. Client request headers, such as `Authorization` or `x-session-id`, are not forwarded. To pass a client header to the routing service, read it in a `headers` expression, such as `x-session-id: request.headers["x-session-id"]`.
+
 In this guide, the httpbun mock LLM stands in for the routing service. Its `/mix` endpoint returns the response that you encode in the URL, so the service always selects `internal-premium` with a `medium` reasoning effort. For routing services that make real decisions, see the [`llm-callout-jev`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-jev) and [`llm-callout-switchyard`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-switchyard) examples.
 
-For your own in-cluster routing service, set `backendRef` instead of `url`. A `url` that names a cluster hostname does not get the `Service` policies or load balancing. A `backendRef` has no path, so set the `:path` pseudo-header in `headers`, such as `":path": '"/v1/route"'`. Each `headers` value is a CEL expression, so quote a literal string twice. A `backendRef` in another namespace needs a ReferenceGrant. Without one, the model status reports the error, and every callout fails.
+For your own in-cluster routing service, set `backendRef` instead of `url`. A `url` that names a cluster hostname does not get the `Service` policies or load balancing. Keep the following in mind for a `backendRef`:
+
+- A `backendRef` has no path, so the callout goes to `/`. To call another path, set the `:path` pseudo-header in `headers`, such as `":path": '"/v1/route"'`. Each `headers` value is a CEL expression, so quote a literal string twice.
+- A `backendRef` in another namespace needs a ReferenceGrant. Without one, the model status reports the error, and every callout fails.
 
 1. Create a virtual model that asks the routing service which model to use and falls back to `internal-fast`.
 
@@ -557,6 +562,7 @@ For your own in-cluster routing service, set `backendRef` instead of `url`. A `u
    | `transformation.model` | `callout.body.model` | Required. A CEL expression that returns the target model name as a string. `callout.body` is the decoded JSON response body and `callout.headers` holds the response headers. The routing service must return the model name that the target matches. That name is the target's `match.model` value or the target's resource name when `match.model` is not set. In this guide, the names are `internal-fast` and `internal-premium`. The target must be attached to the same parent as the virtual model. |
    | `transformation.reasoning_effort` | `callout.body.reasoning_effort` | Optional. Each key other than `model` sets that field in the request body and overrides the client's value. If the expression fails, such as when the response does not contain the field, the field is removed from the request. These keys apply only to requests that carry the model in a JSON body. |
    | `fallback.modelRef.name` | `internal-fast` | Optional. A model in the same namespace that serves the request when the callout fails. A callout fails when the service cannot be reached or does not respond within 10 seconds, when the response is not `2xx` or not JSON, when the `model` expression fails, or when the selected model does not exist. The fallback model gets the request without the `transformation` changes. If you omit `fallback`, a failed callout returns a `503` response with the `virtual_model_callout_failed` error code. |
+   | `fallback.model` | Not set | Optional. The concrete model name to use from the referenced model. Set `model` when `modelRef` points to a model with a wildcard `match.model`, such as `internal-*`. Without it, the virtual model reports `ResolvedRefs: False`, and a failed callout returns `503`. The name must match the referenced model's `match.model`. Otherwise, a failed callout returns `404` with the `virtual_model_target_not_found` error code instead of using the fallback. |
    | `cache.key` | `request.headers["x-session-id"]` | One or more CEL expressions that make up the cache key. Requests with the same key reuse the first response, so a session identifier keeps a session on one model. If a key expression fails, such as when the header is missing, the response is not cached. On a cache hit, `transformation` runs against the cached response. To limit the cache size, set `cache.maxEntries`, which defaults to `10000`. |
    | `cache.ttl` | `10m` | How long a cached response is reused. Set a duration string, or a CEL expression that can read `callout` and returns a duration or the time at which the response expires. |
 
@@ -612,7 +618,7 @@ For your own in-cluster routing service, set `backendRef` instead of `url`. A `u
      -p='[{"op": "replace", "path": "/spec/virtualModel/callout/url", "value": "http://httpbun.default.svc.cluster.local:3090/status/503"}]'
    ```
 
-4. Send the request again. Updating the callout clears the cached routing responses, so the same session sends a new callout. The callout fails, and the fallback model serves the request.
+4. Send the request again. Changing the virtual model's spec clears its cached routing responses, so the same session sends a new callout. Changes to other models and metadata-only changes, such as labels, keep the cache. The callout fails, and the fallback model serves the request.
 
    ```sh
    curl -s -X POST http://$INGRESS_GW_ADDRESS/v1/chat/completions \
