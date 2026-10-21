@@ -270,6 +270,9 @@ When you multiplex several MCP servers behind a single agentgateway listener, yo
 - Only users with `admin` in the JWT `roles` claim can access tools on the `admin-tools` target.
 - The JWT is validated against a local authorization server running on port 9000.
 
+> [!NOTE]
+> Per-target rules filter tools after each target responds. Agentgateway still initializes `admin-tools` and lists its tools for clients without the admin role. Add a [target condition]({{< link-hextra path="/integrations/mcp/servers/virtual/#target-conditions" >}}) to exclude the target for those clients. See [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}) to compare the options.
+
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 mcp:

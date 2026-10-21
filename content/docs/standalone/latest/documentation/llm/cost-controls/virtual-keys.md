@@ -1,7 +1,7 @@
 ---
-title: Virtual key management
+title: Virtual keys
 weight: 10
-description: Issue API keys with per-key token budgets and cost tracking (also known as virtual keys).
+description: Protect provider credentials with virtual keys, then add optional token budgets and usage tracking.
 test:
   virtual-keys:
   - file: ${versionRoot}/documentation/llm/cost-controls/virtual-keys.md
