@@ -625,6 +625,12 @@ If your MCP client runs in a browser, also add its origin to the realm's **Allow
 
 To run both as containers instead of running the agentgateway binary on your host, use the following Compose file with the `config.yaml` from [Step 4](#configure) next to it. Set `issuer` to `http://keycloak:8080/realms/mcp` so that agentgateway resolves Keycloak by its service name.
 
+The Compose file mounts `config.yaml` read-only, so agentgateway cannot save a generated MCP session key to it. Generate a key in the `SESSION_KEY` environment variable before you start the containers, so that agentgateway encrypts session IDs. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
+
+```sh
+export SESSION_KEY=$(openssl rand -hex 32)
+```
+
 ```yaml
 services:
   agentgateway:
@@ -633,6 +639,8 @@ services:
       - "3000:3000"
     volumes:
       - ./config.yaml:/config.yaml:ro
+    environment:
+      - SESSION_KEY
     command: ["-f", "/config.yaml"]
     depends_on:
       - keycloak

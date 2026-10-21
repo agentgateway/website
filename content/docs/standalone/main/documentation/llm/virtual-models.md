@@ -68,6 +68,8 @@ Virtual models let you publish one client-facing model name and route requests a
 
 Use `llm.virtualModels[]` to define the virtual entrypoint and `llm.models[]` as the concrete upstream targets.
 
+To see which target served a request, check the access log or the trace span. The `agw.ai.original_model` attribute records the virtual model name that the client sent, and `gen_ai.request.model` records the model that the selected target sends to the provider. For more information, see [Generative AI attributes]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#generative-ai-attributes-llm" >}}).
+
 ## Public and internal models
 
 Use `llm.models[].visibility` to control whether a model is directly exposed to clients or kept as an internal target.
@@ -368,3 +370,5 @@ assert_models config-conditional.yaml '["adaptive","openai-public"]'
 
 > [!NOTE]
 > For reusable provider defaults in simplified mode, see [Multiple LLM providers]({{< link-hextra path="/integrations/llm/providers/multiple-llms/" >}}).
+
+To inspect or update virtual models and their target models on a running gateway from the command line, see [Manage config resources with agctl]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).

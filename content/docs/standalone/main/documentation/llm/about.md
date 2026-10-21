@@ -35,6 +35,7 @@ Many providers now have dedicated integrations with preconfigured base URLs and 
 - [OpenRouter]({{< link-hextra path="/integrations/llm/providers/openrouter/" >}})
 - [Fireworks AI]({{< link-hextra path="/integrations/llm/providers/fireworks/" >}})
 - [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}})
+- [Perplexity]({{< link-hextra path="/integrations/llm/providers/perplexity/" >}})
 
 ### Self-hosted solutions
 
@@ -45,7 +46,7 @@ Run models locally or in your own infrastructure:
 
 ### Custom providers
 
-Use [Custom provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) for other providers without direct support such as Perplexity, vLLM, or LM Studio.
+Use [Custom provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) for other providers without direct support, such as vLLM or LM Studio.
 Agentgateway supports all of the common LLM formats and can generally integrate with any provider ([file an issue](https://github.com/agentgateway/agentgateway/issues/new) if one is missing!).
 
 ## Using the API
@@ -122,6 +123,16 @@ console.log(response);
 
 {{% /tab %}}
 {{< /tabs >}}
+
+### Query strings on converted requests
+
+A client query string belongs to the API format that the client called. For the Chat Completions, Messages, Responses, and Gemini formats, the client query string is kept when the provider receives the same format, and is dropped when the request is converted to another format. For example, a Messages request to `/v1/messages?beta=true` that is converted to Chat Completions for a Gemini provider reaches the provider without `?beta=true`.
+
+These cases differ:
+
+- An Amazon Bedrock request on the Runtime endpoint always drops the client query string, because Runtime serves only the Bedrock APIs.
+- A built-in provider that sets `params.hostOverride` without `params.pathPrefix` receives the client path and query string unchanged. This provider path prefix is a different setting from `llm.pathPrefix`, which sets the base path that clients call.
+- A request on a path that is forwarded without format conversion keeps the client query string.
 
 ## Model routing and aliases
 
