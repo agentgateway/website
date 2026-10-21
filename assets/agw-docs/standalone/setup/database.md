@@ -407,7 +407,7 @@ In the default `readonly` mode, the chart sets the storage mode and nothing else
 
 ### Add PostgreSQL in database mode {#helm-postgres}
 
-The chart's `database` mode sets both `config.database.url` and `config.storage.mode: hybrid` for you. One PostgreSQL instance then serves the request log, the configuration overlay, and API key budgets.
+The chart's `database` mode sets both `config.database.url` and `config.storage.mode: hybrid` for you. One PostgreSQL instance then serves the request log, the configuration overlay, and API key budgets.{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} If you do not set an MCP session key, agentgateway also generates one and stores it in the `agw_config_resources` table. Every replica then encrypts session IDs with the same key. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).{{< /version >}}
 
 Deploy PostgreSQL in the namespace of your agentgateway release. For production, use a managed PostgreSQL service or an operator that handles backups and failover. The following steps deploy one PostgreSQL instance for testing.
 

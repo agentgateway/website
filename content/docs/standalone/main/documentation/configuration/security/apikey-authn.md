@@ -359,7 +359,8 @@ llm:
 | `budgets` | List of budgets that are charged independently after each LLM response. |
 | `budgets[].name` | Names the budget within its key. The name must be unique among that key's budgets. |
 | `budgets[].limit.unit` | `USD` to cap realized cost, or `Tokens` to cap token usage. |
-| `budgets[].limit.amount` | The maximum usage in the window. A `Tokens` amount must be a whole number. A `USD` amount takes up to nine decimal places. |
+| `budgets[].limit.amount` | The maximum usage for the budget. A `Tokens` amount must be a whole number. A `USD` amount takes up to nine decimal places. |
+| `budgets[].window` | Optional rolling-window block. Omit this block when the budget must keep accumulating usage and never reset. |
 | `budgets[].window.rolling` | Length of the fixed usage window, such as `1h`, `24h`, or `30d`. Windows are aligned to the Unix epoch rather than to the key's first request. |
 | `budgets[].onBudgetExceeded` | `Block` to reject requests with a `429` after the limit is passed, or `Audit` to record the overage and allow the request. |
 
