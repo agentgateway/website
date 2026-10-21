@@ -14,7 +14,7 @@ test:
     path: costs
 ---
 
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} computes the realized USD cost of each LLM request from a model cost catalog. For each priced request, {{< reuse "agw-docs/snippets/agentgateway.md" >}} records the cost in access logs, traces, and metrics, and exposes the values to CEL expressions as `llm.cost` and `llm.costRates`.
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} computes the realized USD cost of each LLM request from a model cost catalog. For each request that matches a catalog entry, CEL expressions can use `llm.model` to read the resolved model metadata. For each priced request, {{< reuse "agw-docs/snippets/agentgateway.md" >}} also records the cost in access logs, traces, and metrics, and exposes the values to CEL expressions as `llm.cost` and `llm.costRates`.
 
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} ships with a built-in catalog, so requests to common public models are priced without any configuration. The built-in catalog is fixed when your {{< reuse "agw-docs/snippets/agentgateway.md" >}} version is built. To price newer models, set contracted rates, or add your own models, add catalog sources as described in the following steps.
 
@@ -42,12 +42,13 @@ Prepare a catalog by creating your own JSON file or using the `agctl catalog imp
 
 Use `agctl catalog import` to generate a catalog JSON file, then load it into a ConfigMap.
 
-1. Generate a catalog from one or more supported sources. The `--source` flag takes a comma-separated list, and the sources merge in the order that you list them, so a later source overlays an earlier one. By default, `agctl catalog import` imports `models.dev,aws-bedrock-mantle`, which prices every provider that the proxy supports and then tags the Amazon Bedrock models. A source is a catalog to import from, not an LLM provider: each source covers one or more providers and contributes rates, tags, or both. To import only a subset of the providers that a source covers, pass a comma-separated list to `--providers`.
+1. Generate a catalog from one or more supported sources. The `--source` flag takes a comma-separated list, and the sources merge in the order that you list them, so a later source overlays an earlier one. By default, `agctl catalog import` imports `models.dev,aws-bedrock-mantle,vertex-pricing`, which prices every provider that the proxy supports, tags the Amazon Bedrock models, and adds Vertex AI service-tier prices. A source is a catalog to import from, not an LLM provider: each source covers one or more providers and contributes rates, tags, or both. To import only a subset of the providers that a source covers, pass a comma-separated list to `--providers`.
 
    | Source | What it contributes |
    |--------|---------------------|
    | `models.dev` | Rates for every provider that the proxy supports, from [models.dev](https://models.dev). |
    | `aws-bedrock-mantle` | Tags for Amazon Bedrock models only, read from the AWS model cards. This source contributes no rates. The tags record which endpoint serves a model, `runtime` or `mantle`, and which request formats the Mantle endpoint accepts. |
+   | `vertex-pricing` | Service-tier rates for Vertex AI Gemini models, read from Google Cloud pricing. This source augments models that earlier sources already added. |
    | `github` | The curated catalog that the agentgateway project publishes at [agentgateway.dev/model-catalog](https://agentgateway.dev/model-catalog), which covers the models that the agentgateway project tracks rather than everything that models.dev lists. Not imported by default. |
 
    ```sh
@@ -189,8 +190,11 @@ Generate traffic through agentgateway that matches a model entry from the catalo
 
 When a request matches an entry in the catalog, {{< reuse "agw-docs/snippets/agentgateway.md" >}} populates the following CEL fields:
 
-- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-usage-type components: `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, `outputAudio`, and `pages` for page-billed document models. Unset when the model cannot be priced.
+- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-usage-type components: `input`, `output`, `cacheRead`, `cacheWrite`, `cacheWrite1h`, `reasoning`, `inputAudio`, `outputAudio`, and `pages` for page-billed document models. Unset when the model cannot be priced.
 - `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied, after tier selection. For page-billed document models, `perPage` holds the USD-per-page rate instead. Unset when the model cannot be priced.
+- `llm.model`: The resolved model's catalog metadata, including `id`, `tags`, `limits`, `modalities`, `capabilities`, and `reasoning`. Unset when no catalog entry matches the request provider and model.
+
+For Anthropic prompt-cache writes with a 1-hour time to live (TTL), `llm.cost.cacheWrite1h` reports the 1-hour cache-write cost, and `llm.cost.cacheWrite` reports the cost of the other cache writes, such as 5-minute cache writes. When the catalog sets `cacheWrite1h`, `llm.costRates.cacheWrite1h` reports the effective rate. Traces record the 1-hour component as `agw.ai.usage.cost.cache_write_1h`.
 
 The request access log includes `agw.ai.usage.cost.total` only for priced LLM requests. When the model cannot be priced, which is a lookup status of `Unpriced` or `Missing` as described in the next step, the access log leaves out the field. For how to view logs and add cost fields, see [Metrics and logs]({{< link-hextra path="/documentation/llm/observability/" >}}).
 

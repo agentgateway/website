@@ -367,6 +367,9 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
    * **Test the `mcp-server-everything-3001_echo` tool**: Click **List Tools** and select the `echo` tool. In the **Message** field, enter any string, such as `Hello world`, and click **Run Tool**. Verify that your string is echoed back. 
    * **Test the `mcp-website-fetcher_fetch` tool**: Click **List Tools** and select the `fetch` tool. In the **url** field, enter a website URL, such as `https://lipsum.com/`, and click **Run Tool**.
    
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+{{< reuse "agw-docs/pages/agentgateway/mcp/virtual-target-conditions.md" >}}
+{{< /version >}}
 
 ## Cleanup
 
