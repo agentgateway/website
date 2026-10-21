@@ -317,6 +317,8 @@ agentgateway -f config2-mcp.yaml --validate-only
 
 ## LLM budgets and model access
 
+To generate hashed LLM keys and manage their restrictions at runtime, see [Set up virtual keys (agctl)]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl" >}}). The `agctl standalone keys` command manages the keys in `llm.policies.apiKey.keys`. An API key policy that you attach directly to an HTTP route or to the MCP configuration stays part of the resource that contains it.
+
 An API key entry can carry two fields that apply to LLM traffic. The `budgets` field sets a per-key budget that caps what the key spends. The `allowedModels` field limits which models the key can reach. Both fields work with a `key` entry and with a `keyHash` entry.
 
 ```yaml
@@ -357,7 +359,8 @@ llm:
 | `budgets` | List of budgets that are charged independently after each LLM response. |
 | `budgets[].name` | Names the budget within its key. The name must be unique among that key's budgets. |
 | `budgets[].limit.unit` | `USD` to cap realized cost, or `Tokens` to cap token usage. |
-| `budgets[].limit.amount` | The maximum usage in the window. A `Tokens` amount must be a whole number. A `USD` amount takes up to nine decimal places. |
+| `budgets[].limit.amount` | The maximum usage for the budget. A `Tokens` amount must be a whole number. A `USD` amount takes up to nine decimal places. |
+| `budgets[].window` | Optional rolling-window block. Omit this block when the budget must keep accumulating usage and never reset. |
 | `budgets[].window.rolling` | Length of the fixed usage window, such as `1h`, `24h`, or `30d`. Windows are aligned to the Unix epoch rather than to the key's first request. |
 | `budgets[].onBudgetExceeded` | `Block` to reject requests with a `429` after the limit is passed, or `Audit` to record the overage and allow the request. |
 

@@ -35,6 +35,7 @@ Many providers now have dedicated integrations with preconfigured base URLs and 
 - [OpenRouter]({{< link-hextra path="/integrations/llm/providers/openrouter/" >}})
 - [Fireworks AI]({{< link-hextra path="/integrations/llm/providers/fireworks/" >}})
 - [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}})
+- [Perplexity]({{< link-hextra path="/integrations/llm/providers/perplexity/" >}})
 
 ### Self-hosted solutions
 
@@ -45,7 +46,7 @@ Run models locally or in your own infrastructure:
 
 ### Custom providers
 
-Use [Custom provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) for other providers without direct support such as Perplexity, vLLM, or LM Studio.
+Use [Custom provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) for other providers without direct support, such as vLLM or LM Studio.
 Agentgateway supports all of the common LLM formats and can generally integrate with any provider ([file an issue](https://github.com/agentgateway/agentgateway/issues/new) if one is missing!).
 
 ## Using the API

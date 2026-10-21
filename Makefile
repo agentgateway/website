@@ -49,6 +49,13 @@ deps:
 DOCS_TESTS_DIR ?= ../docs-tests
 DOCS_TESTS_REPO ?= https://github.com/solo-io/docs-tests.git
 
+# Local CLI smoke tests use main binaries and a mock LLM, without a cluster.
+# Override PYTHON to select an environment with PyYAML installed.
+PYTHON ?= python3
+.PHONY: test-agctl-standalone
+test-agctl-standalone:
+	$(PYTHON) scripts/test-agctl-standalone.py
+
 # Clone docs-tests if it's missing. An existing checkout is left alone.
 $(DOCS_TESTS_DIR):
 	git clone --depth 1 $(DOCS_TESTS_REPO) $(DOCS_TESTS_DIR)
