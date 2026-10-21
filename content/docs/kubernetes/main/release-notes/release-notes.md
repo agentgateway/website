@@ -79,6 +79,8 @@ The `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable is removed, 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3897 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3793 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3957 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3992 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3953 -->
 
 - **Proxy environment variables**: Callouts from the proxy, such as external authorization requests, guardrail requests, and AWS and Azure credential fetches, now use the `HTTPS_PROXY`, `HTTP_PROXY`, `ALL_PROXY`, and `NO_PROXY` environment variables to configure a forward proxy that these requests must be routed through. In 1.6, only Google Cloud Platform (GCP) credential fetches used these variables. If you set these variables in `spec.env` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource for another purpose, callouts go through that forward proxy after you upgrade. To keep all callouts direct, set `NO_PROXY` to `*`. For more information, see [Callout proxy]({{< link-hextra path="/documentation/setup/customize/callout-proxy/" >}}).
 - **Normalized service tier**: `llm.serviceTier` is now one of `standard`, `flex`, `priority`, or `reserved`, whatever the provider's own naming. A provider tier that agentgateway does not recognize leaves the value unset. Update CEL expressions and dashboards that compare against provider-specific values such as `default`.
@@ -91,9 +93,11 @@ The `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable is removed, 
 - **Google Model Armor errors**: A non-success response from Model Armor is now a guard failure and follows the guard's `failureMode`.
 - **Backend mirrors**: Request mirror filters in the `backendRefs` of an `HTTPRoute` now run after backend policies, so requests that backend authorization rejects are no longer mirrored. Mirror filters on a route rule still run before backend policies.
 - **MCP session errors**: Stateful MCP requests with a session ID that the proxy cannot decode, such as after the session key changes, now return `404` instead of `400`. Clients then start a new session.
-- **gRPC health**: Errors that agentgateway itself returns to gRPC clients now record their `grpc-status`. Only server-side gRPC errors, such as `UNAVAILABLE` or `INTERNAL`, mark a backend unhealthy. This change matches how agentgateway treats `5xx` and `4xx` responses for HTTP.
+- **gRPC health**: Errors that agentgateway itself returns to gRPC clients now record their `grpc-status`. Only server-side gRPC errors, such as `UNAVAILABLE` or `INTERNAL`, mark a backend unhealthy. A client-side gRPC status from an LLM provider no longer evicts the target from a failover group. This change matches how agentgateway treats `5xx` and `4xx` responses for HTTP.
 - **gRPC policy calls**: When a gRPC policy call, such as to an external processing server, fails before it reaches the service, agentgateway now reports the mapped gRPC status instead of `UNKNOWN`. For example, DNS errors, refused connections, and timeouts report `UNAVAILABLE`.
-- **Anthropic version header**: Agentgateway forwards the client's `anthropic-version` header instead of replacing it. When the client does not send the header, agentgateway still sets a default value.
+- **Anthropic version header**: Agentgateway forwards the client's `anthropic-version` header instead of replacing it. When the client does not send the header, agentgateway still sets the default value `2023-06-01`.
+- **Controller reconciliation metrics**: The controller no longer reports `agentgateway_controller_reconcile_duration_seconds` or `agentgateway_controller_reconciliations_running`. `agentgateway_controller_reconciliations_total` reports only the controller and result, without the `name` and `namespace` labels. Update dashboards and alerts that use these metrics.
+- **Configuration warning Events**: Configuration warnings in the proxy's xDS responses now publish Kubernetes Events with the reason `AgentGatewayConfigWarning` and increment `agentgateway_xds_warnings_total`. Warnings do not count the response as rejected.
 
 ## 🌟 New features {#v17-new-features}
 
@@ -114,11 +118,11 @@ The `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable is removed, 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3691 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4010 -->
 
-- **OpenAI Decisions and TypeSafe SystemOne**: Agentgateway supports the OpenAI Decisions API and the TypeSafe SystemOne API natively, and translates between them in both directions. Route `/v1/decisions` and `/v1/systemone` with the `Decisions` and `SystemOne` route types of an {{< reuse "agw-docs/snippets/backend.md" >}}. To connect to TypeSafe, set `spec.provider: Typesafe` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}. Azure supports both APIs for the `Foundry` resource type.
+- **OpenAI Decisions and TypeSafe SystemOne**: Agentgateway supports the OpenAI Decisions API and the TypeSafe SystemOne API natively, and translates between them in both directions. Route `/v1/decisions` and `/v1/systemone` with the `Decisions` and `SystemOne` route types of an {{< reuse "agw-docs/snippets/backend.md" >}}. To connect to TypeSafe, set `spec.provider: Typesafe` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}. For more information, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}) and [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}). Azure supports both APIs for the `Foundry` resource type.
 - **Perplexity provider**: Set `spec.provider: Perplexity` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} to connect to Perplexity with built-in defaults. The provider accepts Responses and Messages requests, but not Chat Completions requests. For other ways to connect, see [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/#perplexity" >}}).
 - **Copilot on Kubernetes**: Set `spec.ai.provider.copilot` on an {{< reuse "agw-docs/snippets/backend.md" >}}, or `spec.provider: Copilot` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, to use the Copilot provider with credentials from a Kubernetes Secret. For more information, see [Copilot]({{< link-hextra path="/integrations/llm/providers/copilot/" >}}).
-- **Callout router for virtual models**: A virtual model can select its target model by calling an external HTTP service. Set `spec.virtualModel.callout` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}. For more information, see [Virtual models]({{< link-hextra path="/documentation/llm/models/virtual/" >}}).
-- **Better format conversion**: Reasoning from vLLM and OpenRouter is preserved when agentgateway converts Chat Completions responses to Messages or Responses. Bedrock reasoning streams as reasoning items in Responses, and Bedrock redacted reasoning is preserved. Vertex AI Gemini models accept `http://` and `https://` URIs in file content.
+- **Callout router for virtual models**: A virtual model can select its target model by calling an external HTTP service. Set `spec.virtualModel.callout` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, with an optional fallback model and response cache. For more information, see [Choose a model with an HTTP callout]({{< link-hextra path="/documentation/llm/models/virtual/#callout-routing" >}}).
+- **Better format conversion**: Reasoning from vLLM and OpenRouter is preserved when agentgateway converts Chat Completions responses to Messages or Responses. Bedrock reasoning streams as reasoning items in Responses, and Bedrock redacted reasoning is preserved. Vertex AI Gemini models accept `http://` and `https://` URIs in file content. For more information, see [Send file content by URI]({{< link-hextra path="/integrations/llm/providers/vertex/#send-file-content-by-uri" >}}).
 - **More CEL during request policies**: Request-phase CEL expressions on LLM traffic can read `llm.requestModel` before provider overrides and `llmRequest` for the parsed JSON request body. For more information, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
 
 ### Model catalog and cost {#v17-catalog}
@@ -227,7 +231,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4020 -->
 
 - **Shared HTTPS and TLS ports**: HTTPS and TLS passthrough listeners on the same Gateway can share a port. Agentgateway selects the listener by SNI hostname.
-- **Native histogram scraping**: In the controller Helm chart, the controller ServiceMonitor (`monitoring.serviceMonitor`) and the proxy PodMonitor (`monitoring.proxy.podMonitor`) support native histogram scraping, relabelings, and metric relabelings. Native histogram scraping is off by default. For the values, see the [Helm reference]({{< link-hextra path="/reference/helm/agentgateway/" >}}).
+- **Native histogram scraping**: In the controller Helm chart, the controller ServiceMonitor (`monitoring.serviceMonitor`) and the proxy PodMonitor (`monitoring.proxy.podMonitor`) support native histogram scraping, relabelings, and metric relabelings. Native histogram scraping is off by default and requires Prometheus v3.8.0 or later and Prometheus Operator v0.88.0 or later. For more information, see [Scrape native histograms]({{< link-hextra path="/documentation/observability/metrics/overview/#native-histograms" >}}).
 - **Graceful HTTP/1 drain**: When a proxy drains or a connection reaches its maximum connection duration, HTTP/1 clients receive `Connection: close` on the next response, so that they close the connection cleanly.
 - **Faster controller**: The controller does less work when unrelated resources change. Status and xDS output are more stable, which reduces unnecessary writes and pushes.
 - **`agctl bug-report`**: Collect cluster resources, logs, and metrics into a single archive to share for troubleshooting. For more information, see [Collect a bug report]({{< link-hextra path="/documentation/operations/debug/#bug-report" >}}).
@@ -253,6 +257,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3572 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3817 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3896 -->
 
 **Traffic management**
 
@@ -264,6 +269,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 - Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
 - Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 - Mid-stream system messages no longer invalidate the Bedrock prompt cache.
+- LLM stream conversions now enforce buffer limits. Responses namespace tool descriptions larger than 8 MiB are rejected with `RequestTooLarge`, and tool-call arguments are buffered only when tool-call logging is on.
 - Built-in OpenAI-compatible providers, such as Groq and DeepInfra, no longer duplicate the base path, such as `/v1/v1/...`, on Detect and Passthrough routes.
 - Gemini tool schemas that use `oneOf` no longer return empty tool calls.
 - Passthrough no longer fails on SSE streams with an unterminated final event.
