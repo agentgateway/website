@@ -1,4 +1,4 @@
-Cloud provider credentials authenticate requests to AWS, Azure, GitHub Copilot, and Google Cloud. AWS, Azure, and Google Cloud can use the gateway's workload identity. GitHub Copilot uses an existing token.
+Some backends do not accept a credential that you can hold. A managed cloud service issues its own short-lived tokens, and it expects the caller to prove an identity that the cloud itself recognizes. The AWS, Azure, and Google Cloud methods cover that case: the gateway authenticates as itself and exchanges its own identity for a token that the service accepts. The GitHub Copilot method works differently, because the gateway sends an existing Copilot token instead of exchanging an identity.
 
 ## When to use a provider method
 
@@ -25,14 +25,5 @@ The AWS, Azure, and Google Cloud methods resolve implicit credentials on the fir
 
 ## Guides
 
-{{% conditional-text include-if="kubernetes" %}}
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}
-The following guides cover AWS, Azure, GitHub Copilot, and Google Cloud. The [GitHub Copilot guide]({{< link-hextra path="/documentation/security/backend-authn/providers/copilot/" >}}) uses a Kubernetes Secret to supply the token.
-{{< /version >}}
-{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}
-The following guides cover AWS, Azure, and Google Cloud.
-{{< /version >}}
-{{% /conditional-text %}}
-{{% conditional-text include-if="standalone" %}}
-The following guides cover each of the four provider methods, including GitHub Copilot.
-{{% /conditional-text %}}
+{{% conditional-text include-if="kubernetes" %}}The following guides cover AWS, Azure, and Google Cloud.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}} The [GitHub Copilot guide]({{< link-hextra path="/documentation/security/backend-authn/providers/copilot/" >}}) shows how to supply the token from a Kubernetes Secret.{{< /version >}}{{% /conditional-text %}}
+{{% conditional-text include-if="standalone" %}}The following guides cover each of the four provider methods, including GitHub Copilot.{{% /conditional-text %}}
