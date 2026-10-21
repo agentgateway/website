@@ -354,7 +354,7 @@ Generate, restrict, update, and revoke virtual keys from the command line with `
 
 ### Step 2: Create a key {#agctl-create}
 
-The CLI prints the generated key once, and stores only a SHA-256 hash of the key. Save the key when you create it. You cannot retrieve it later.
+The CLI prints the generated key once, and stores only a SHA-256 hash of the key. You cannot retrieve the key later.
 
 1. Create a key named `team-a` that can use `gpt-4o` models and has a daily token budget. The command saves the key in the `VIRTUAL_KEY` environment variable.
 
@@ -370,6 +370,8 @@ The CLI prints the generated key once, and stores only a SHA-256 hash of the key
    ```text
    API key "team-a" created. Save it now; it cannot be shown again.
    ```
+
+   The `VIRTUAL_KEY` variable exists only in your current shell. Before you close the terminal, store the key somewhere safe, such as a secrets manager, and give it to the client that uses it.
 
    | Flag | Description |
    | -- | -- |

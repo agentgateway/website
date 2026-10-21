@@ -409,7 +409,7 @@ EOF
    }
    ```
 
-The CLI and the API report usage only. To edit a budget, update the key in your configuration file, or use the built-in [UI]({{< link-hextra path="/documentation/setup/ui/" >}}) on the same **LLM > Virtual API Keys** page that lists your keys.
+The `agctl standalone budgets` command and the API report usage only. To change a budget, [update the key with agctl]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl-update" >}}), edit your configuration file, or use the built-in [UI]({{< link-hextra path="/documentation/setup/ui/" >}}) on the same **LLM > Virtual API Keys** page that lists your keys.
 
 ### Step 7: Try a token budget
 
@@ -487,18 +487,6 @@ EOF
 
 ## Limit model access per key
 
-To issue a new key with model restrictions and a budget at runtime, use the [virtual key CLI workflow]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl-create" >}}). For example, after configuring the API-key policy and database:
-
-```sh
-CI_KEY="$(agctl standalone keys create ci \
-  --model 'gpt-5*' \
-  --budget 5usd/24h \
-  --budget-action block)"
-agctl standalone budgets --key ci
-```
-
-The CLI names this budget `usd-24h` and stores a hash of the generated key. It defaults to `audit` unless you pass `--budget-action block`. Capture the key on creation, and revoke this optional example key with `agctl standalone delete llm.apiKey ci` when you finish. For existing keys or custom budget names, [export, edit, and apply the key resource]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl-update" >}}).
-
 The `allowedModels` field limits which models an API key can reach. The field is independent of budgets, so it needs no database and no catalog, and you can use it on its own.
 
 ```yaml
@@ -516,6 +504,8 @@ llm:
 ```
 
 Each entry is an exact model name or a pattern with one `*` wildcard, such as a `gpt-5*` prefix or a `*-mini` suffix. Agentgateway rejects a request for any other model with a `403` response and the `model_not_allowed` code, before the request reaches a provider.
+
+To create a key with model restrictions and a budget from the command line, see [Set up virtual keys (agctl)]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl-create" >}}).
 
 | Value | Effect |
 | -- | -- |

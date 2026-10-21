@@ -72,8 +72,6 @@ To see which target served a request, check the access log or the trace span. Th
 
 ## Public and internal models
 
-To inspect the configured virtual models, use `agctl standalone get llm.virtualModel -o yaml`. For the definitions of their target models, use `agctl standalone get llm.model -o yaml`. These commands show the stored configuration. To verify the models that clients can discover, use the `/v1/models` checks later on this page. To update the resources, see [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
-
 Use `llm.models[].visibility` to control whether a model is directly exposed to clients or kept as an internal target.
 
 - `public`: The model can be requested directly by clients and can also be used as a virtual model target.
@@ -372,3 +370,5 @@ assert_models config-conditional.yaml '["adaptive","openai-public"]'
 
 > [!NOTE]
 > For reusable provider defaults in simplified mode, see [Multiple LLM providers]({{< link-hextra path="/integrations/llm/providers/multiple-llms/" >}}).
+
+To inspect or update virtual models and their target models on a running gateway from the command line, see [Manage config resources with agctl]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).

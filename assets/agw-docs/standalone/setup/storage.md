@@ -619,7 +619,7 @@ You can run the same resource operations as the API examples on this page with `
    agctl standalone apply -f target.yaml
    ```
 
-2. Verify the stored resource. In file mode, the target is in your configuration file. In hybrid mode, the target is in the database, and the baseline file does not change.
+2. Verify the stored resource.
 
    ```sh
    agctl standalone get mcp.target cli-target -o yaml
@@ -631,7 +631,7 @@ You can run the same resource operations as the API examples on this page with `
    agctl standalone delete mcp.target cli-target
    ```
 
-In file mode, the CLI requires a writable configuration file. In `readOnly` mode, agentgateway rejects writes. With the standalone Helm chart, writes succeed only in the `database` mode. For the resources that the CLI lists in each mode, see [Storage behavior]({{< link-hextra path="/documentation/operations/config-resources/#storage-behavior" >}}).
+For where the CLI writes and what it lists in each storage mode, see [Storage behavior]({{< link-hextra path="/documentation/operations/config-resources/#storage-behavior" >}}).
 {{< /version >}}
 
 ## Cleanup

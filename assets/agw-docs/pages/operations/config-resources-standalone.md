@@ -271,7 +271,7 @@ The following steps use the `llm.apiKey` kind. The same endpoints work for every
    ```
    {{< /version >}}
    {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
-   Example response in `hybrid` mode. In `file` mode, the response contains only `kind`, `id`, and `value`. The `id` of a key that you define in the file is its position in the list, such as `@index:0`.
+   Example response in `hybrid` mode. In `file` mode, the response contains only `kind`, `id`, and `value`. A key in the file that has no `agentgateway.dev/id` metadata field gets an `id` from its position in the list, such as `@index:0`.
 
    ```json
    {"resources": [{

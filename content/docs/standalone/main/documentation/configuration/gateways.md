@@ -92,8 +92,6 @@ flowchart LR
 
 ## Define a gateway {#define}
 
-To inspect the gateways of a running standalone instance, use `agctl standalone get traffic.gateway -o yaml`. To create, update, or delete gateways from the command line, and for the limits of each storage mode, see [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
-
 Each key in the `gateways` map is the gateway name, and each gateway needs a `port`. The following configuration listens for HTTP traffic on port 3000 and forwards it to a backend on `localhost:8000`.
 
 ```yaml
@@ -145,6 +143,8 @@ routes:
 | --- | --- |
 | `gateways.default.bindAddress` | Local IP address to listen on. Use `127.0.0.1` for IPv4 loopback or `"::1"` for IPv6 loopback. Hostnames are not accepted. A loopback listener cannot accept connections sent to the pod IP or a Kubernetes Service. Use an address reachable by those clients when you expose a gateway through a Service. |
 | `gateways.default.port` | Listening port, shared by all listeners on this gateway. |
+
+To list, create, update, or delete gateways on a running instance from the command line, see [Manage config resources with agctl]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
 
 ## Attach routes to a gateway {#attach-routes}
 

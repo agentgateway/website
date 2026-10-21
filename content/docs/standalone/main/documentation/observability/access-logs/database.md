@@ -7,7 +7,7 @@ aliases:
   - ../../../integrations/observability/database/
 ---
 
-By default, access logs are written to stdout. To persist LLM request logs, configure agentgateway to write records to a `request_logs` table. The current database logger captures LLM traffic, rather than every HTTP or MCP access log. Agentgateway can use the configuration database or a separate request-log database.
+By default, access logs are written to stdout. To persist LLM request logs, configure agentgateway to write records to a `request_logs` table. The database logger captures LLM traffic, rather than every HTTP or MCP access log. Agentgateway can use the configuration database or a separate request-log database.
 
 ## Set up the database
 
@@ -160,4 +160,4 @@ psql "postgres://user:password@host:5432/dbname" \
 
 ## Disable database logging
 
-To stop writing access logs to a database, remove both `config.logging.database` and `config.database`, then restart agentgateway. Remove the primary database only if you no longer need features that depend on it, such as budgets or hybrid configuration storage. Access logs continue to go to stdout. Database-backed UI pages and `agctl standalone logs` and `analytics` become unavailable.
+Agentgateway writes request logs to `config.logging.database`. If that field is not set, agentgateway writes request logs to `config.database` instead. To stop writing access logs to a database, remove both fields, and then restart agentgateway. If you keep `config.database` for other features, such as budgets or hybrid configuration storage, agentgateway keeps writing request logs to that database. After you remove both fields, access logs continue to go to stdout, and the database-backed UI pages and the `agctl standalone logs` and `agctl standalone analytics` commands become unavailable.

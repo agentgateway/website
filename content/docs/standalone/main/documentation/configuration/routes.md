@@ -41,8 +41,6 @@ test:
 
 ## Types of routes
 
-To inspect the routes of a running gateway, use agctl. The `agctl standalone get traffic.route -o yaml` command lists HTTP routes, and the `agctl standalone get traffic.tcpRoute -o yaml` command lists TCP routes. To create, update, or delete routes from the command line, see [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
-
 You can configure two types of routes: HTTP routes (`routes`) and TCP routes (`tcpRoutes`).
 
 ### HTTP routes
@@ -225,4 +223,5 @@ After you configure routes, you might want to apply policies to them or learn mo
   {{< card path="/documentation/configuration/traffic-management/" title="Traffic management" >}}
   {{< card path="/documentation/configuration/resiliency/" title="Resiliency" >}}
   {{< card path="/documentation/configuration/security/" title="Security" >}}
+  {{< card path="/documentation/operations/config-resources/" title="Manage routes with agctl" >}}
 {{< /cards >}}

@@ -107,5 +107,5 @@ agctl standalone get llm.model -o yaml
 agctl standalone get traffic.route -o yaml
 ```
 
-The output shows the saved resource definitions. It does not show the runtime health of endpoints, or the translated configuration from the config dump. In hybrid mode, the output lists the resources from the database only. To investigate the configuration that the proxy loaded, use the config dump steps earlier on this page. For resource kinds and storage behavior, see [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
+The output shows the saved resource definitions. It does not show the runtime health of endpoints, or the translated configuration from the config dump. For the resources that the output includes in each storage mode, see [Storage behavior]({{< link-hextra path="/documentation/operations/config-resources/#storage-behavior" >}}). To investigate the configuration that the proxy loaded, use the config dump steps earlier on this page. For resource kinds, see [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
 {{< /version >}}

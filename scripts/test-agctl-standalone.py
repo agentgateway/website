@@ -6,6 +6,12 @@ Requires Python 3, PyYAML, and matching main agentgateway/agctl binaries:
 
 Extracts configuration/resource examples from the docs. Uses temporary files,
 loopback ports, and a local mock LLM. No user config or running gateway is changed.
+
+This script checks CLI behavior, not the exact steps that a reader follows. Before it
+runs the documented config, it patches the config: it adds a `gateways` block,
+loopback admin/stats/readiness ports, a mock provider base URL, and
+`frontendPolicies.accessLog.database`. It also creates the key with a 250-token
+budget instead of the documented 1000, so that a few mock requests exhaust it.
 """
 
 import json

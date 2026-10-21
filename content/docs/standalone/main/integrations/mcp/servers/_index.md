@@ -5,11 +5,11 @@ description: Connect agentgateway proxies to MCP tool servers via various transp
 test: skip
 ---
 
-Connect agentgateway to an MCP tool server. 
+Connect agentgateway to an MCP tool server.
+
+To manage MCP targets on a running gateway from the command line, see [Manage config resources with agctl]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
 
 ## Why put agentgateway in front of an MCP server?
-
-To inspect the targets in the top-level `mcp` section from the terminal, use `agctl standalone get mcp.target -o yaml`. A target that you nest inside a route is part of the `traffic.route` resource instead. To add or remove targets from the command line, see [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
 
 | Without agentgateway | With agentgateway |
 |----------------------|-------------------|

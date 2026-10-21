@@ -207,7 +207,7 @@ Whether the upgrade restarts the pods depends on what you changed. The chart has
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 ## Update resources with agctl {#agctl}
 
-To update individual resources through the API of the running gateway, use `agctl standalone apply`. In file mode, the CLI writes to your configuration file. In hybrid mode, the CLI writes to the database.
+To update individual resources through the API of the running gateway, use `agctl standalone apply`. For where the CLI writes in each storage mode, see [Storage behavior]({{< link-hextra path="/documentation/operations/config-resources/#storage-behavior" >}}).
 
 1. [Install agctl and connect it to your gateway]({{< link-hextra path="/documentation/operations/config-resources/#connect" >}}).
 2. Export the resource that you want to change. Replace `example-model` with a model from the output of `agctl standalone get llm.model`.
@@ -223,7 +223,7 @@ To update individual resources through the API of the running gateway, use `agct
    agctl standalone get llm.model example-model -o yaml
    ```
 
-The `apply` command takes resource documents with a `kind` and a `value`, as shown in [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/#apply" >}}). It does not accept a complete `config.yaml` file. To change startup settings, such as `config.database` or `config.adminAddr`, edit the configuration file and restart agentgateway as described earlier on this page. In hybrid mode, to change a resource that the baseline file owns, edit the file.
+The `apply` command takes resource documents with a `kind` and a `value`, as shown in [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/#apply" >}}). It does not accept a complete `config.yaml` file. To change startup settings, such as `config.database` or `config.adminAddr`, edit the configuration file and restart agentgateway as described earlier on this page.
 {{< /version >}}
 
 ## Next steps
