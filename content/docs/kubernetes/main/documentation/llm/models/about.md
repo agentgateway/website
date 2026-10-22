@@ -21,7 +21,7 @@ The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API removes the sca
 Every model that attaches to the same parent is aggregated into a single model table, called a *model router*. From that table, agentgateway serves the following behavior.
 
 - Model extraction from the request body.
-- The standard LLM API paths, such as `/v1/chat/completions` and `/v1/audio/transcriptions`.
+- The standard LLM API paths, such as `/v1/chat/completions`, `/v1/decisions`, `/v1/systemone`, and `/v1/audio/transcriptions`.
 - Model discovery on `/v1/models`.
 - Per-model provider routing.
 - OpenAI-compatible error responses for unknown models.
@@ -51,7 +51,7 @@ Each `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` lists one or more 
 
 | Parent kind | Model router | Paths |
 |-------------|--------------|-------|
-| `Gateway` | The listener's default router, shared by every model that attaches to the same listener. | The standard LLM paths at the listener root, such as `/v1/chat/completions` and `/v1/models`. |
+| `Gateway` | The listener's default router, shared by every model that attaches to the same listener. | The standard LLM paths at the listener root, such as `/v1/chat/completions`, `/v1/decisions`, and `/v1/models`. |
 | `ListenerSet` | The same as a `Gateway` parent, for a listener that a `ListenerSet` contributes. | The standard LLM paths at the listener root. |
 | `HTTPRoute` | A separate router for the referenced route rule, with its own model table. | The standard LLM paths under the rule's path prefix, such as `/tenant-a/v1/chat/completions`. |
 
