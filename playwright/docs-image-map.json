@@ -524,6 +524,91 @@
       "light": "assets/img/ui-llm-add-model-anthropic-wildcard.png",
       "dark": "assets/img/ui-llm-add-model-anthropic-wildcard-dark.png"
     },
+    "ui-llm-add-model-openai-prefix.png": {
+      "$note": "providers/openai.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default openai/* match, the provider's API key from an env var, and Strip openai/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-openai-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-openai-prefix-dark.png"
+    },
+    "ui-llm-add-model-anthropic-prefix.png": {
+      "$note": "providers/anthropic.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default anthropic/* match, the provider's API key from an env var, and Strip anthropic/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-anthropic-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-anthropic-prefix-dark.png"
+    },
+    "ui-llm-add-model-gemini-prefix.png": {
+      "$note": "providers/gemini.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default gemini/* match, the provider's API key from an env var, and Strip gemini/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-gemini-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-gemini-prefix-dark.png"
+    },
+    "ui-llm-add-model-baseten-prefix.png": {
+      "$note": "providers/baseten.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default baseten/* match, the provider's API key from an env var, and Strip baseten/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-baseten-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-baseten-prefix-dark.png"
+    },
+    "ui-llm-add-model-cerebras-prefix.png": {
+      "$note": "providers/cerebras.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default cerebras/* match, the provider's API key from an env var, and Strip cerebras/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-cerebras-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-cerebras-prefix-dark.png"
+    },
+    "ui-llm-add-model-cohere-prefix.png": {
+      "$note": "providers/cohere.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default cohere/* match, the provider's API key from an env var, and Strip cohere/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-cohere-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-cohere-prefix-dark.png"
+    },
+    "ui-llm-add-model-deepinfra-prefix.png": {
+      "$note": "providers/deepinfra.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default deepinfra/* match, the provider's API key from an env var, and Strip deepinfra/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-deepinfra-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-deepinfra-prefix-dark.png"
+    },
+    "ui-llm-add-model-deepseek-prefix.png": {
+      "$note": "providers/deepseek.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default deepseek/* match, the provider's API key from an env var, and Strip deepseek/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-deepseek-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-deepseek-prefix-dark.png"
+    },
+    "ui-llm-add-model-fireworks-prefix.png": {
+      "$note": "providers/fireworks.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default fireworks/* match, the provider's API key from an env var, and Strip fireworks/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-fireworks-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-fireworks-prefix-dark.png"
+    },
+    "ui-llm-add-model-groq-prefix.png": {
+      "$note": "providers/groq.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default groq/* match, the provider's API key from an env var, and Strip groq/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-groq-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-groq-prefix-dark.png"
+    },
+    "ui-llm-add-model-huggingface-prefix.png": {
+      "$note": "providers/huggingface.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default huggingface/* match, the provider's API key from an env var, and Strip huggingface/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-huggingface-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-huggingface-prefix-dark.png"
+    },
+    "ui-llm-add-model-meta-prefix.png": {
+      "$note": "providers/meta.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default meta/* match, the provider's API key from an env var, and Strip meta/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-meta-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-meta-prefix-dark.png"
+    },
+    "ui-llm-add-model-mistral-prefix.png": {
+      "$note": "providers/mistral.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default mistral/* match, the provider's API key from an env var, and Strip mistral/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-mistral-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-mistral-prefix-dark.png"
+    },
+    "ui-llm-add-model-openrouter-prefix.png": {
+      "$note": "providers/openrouter.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default openrouter/* match, the provider's API key from an env var, and Strip openrouter/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-openrouter-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-openrouter-prefix-dark.png"
+    },
+    "ui-llm-add-model-togetherai-prefix.png": {
+      "$note": "providers/togetherai.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default togetherai/* match, the provider's API key from an env var, and Strip togetherai/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-togetherai-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-togetherai-prefix-dark.png"
+    },
+    "ui-llm-add-model-xai-prefix.png": {
+      "$note": "providers/xai.md (or agw-docs/standalone/llm/providers/meta.md), \"Configuration\" UI tab: the Add model drawer with the default xai/* match, the provider's API key from an env var, and Strip xai/ selected, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-xai-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-xai-prefix-dark.png"
+    },
+    "ui-llm-add-model-ollama-prefix.png": {
+      "$note": "agw-docs/pages/agentgateway/llm/providers/ollama-standalone.md, UI tab: the Add model drawer with the default ollama/* match, no provider API key, and the explicit outgoing model llama3.2, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-ollama-prefix.png",
+      "dark": "assets/img/ui-llm-add-model-ollama-prefix-dark.png"
+    },
     "ui-llm-add-model-vertex-explicit.png": {
       "$note": "providers/vertex.md, \"Configuration\" UI tab: the Add model drawer with model match gemini-2.5-flash, Gemini Enterprise (GCP Vertex), ADC, project my-project-id, region us-west2, explicit outgoing model google/gemini-2.5-flash-lite-preview-06-17, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
       "light": "assets/img/ui-llm-add-model-vertex-explicit.png",

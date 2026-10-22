@@ -45,7 +45,7 @@ To create the same configuration in the [UI]({{< link-hextra path="/documentatio
    5. If Ollama runs somewhere other than `http://localhost:11434/v1`, enter the **Base URL**, such as `http://192.168.1.20:11434/v1`. Otherwise, leave the field empty.
    6. For the **Outgoing model**, select **Explicit**, and enter `llama3.2`.
 
-      {{< reuse-image src="img/ui-llm-add-model-ollama.png" srcDark="img/ui-llm-add-model-ollama-dark.png" alt="Add model drawer with the Ollama provider, ollama/* as the incoming model match, and the base URL http://localhost:11434/v1" >}}
+      {{< reuse-image src="img/ui-llm-add-model-ollama-prefix.png" srcDark="img/ui-llm-add-model-ollama-prefix-dark.png" alt="Add model drawer with the Ollama provider, ollama/* as the incoming model match, no provider API key, and llama3.2 as the explicit outgoing model" >}}
 
    7. Click **Save model**.
 3. Serve LLM traffic on port `3000`.

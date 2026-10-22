@@ -26,7 +26,7 @@ import { test, expect, dismissWelcome, uiTabsOnly, blurAll, escapeRegExp, openAd
  * Produces (light + dark per project): ui-llm-add-provider.png, ui-llm-settings-port.png,
  * ui-llm-add-model-azure-foundry.png, ui-llm-add-model-bedrock-runtime.png,
  * ui-llm-add-model-vertex-explicit.png, ui-llm-add-model-custom-perplexity.png,
- * ui-llm-add-model-anthropic-wildcard.png.
+ * ui-llm-add-model-anthropic-wildcard.png, ui-llm-add-model-<provider>-prefix.png (17 providers).
  */
 
 /**
@@ -180,5 +180,52 @@ test.describe('LLM provider, client, and web UI tabs', () => {
     await expect.poll(() => body.evaluate((el) => el.scrollTop)).toBe(0);
     await expect(drawer.getByPlaceholder('ENV_VAR_NAME')).toHaveValue('PERPLEXITY_API_KEY');
     await expect(page).toHaveScreenshot('ui-llm-add-model-custom-perplexity.png', { animations: 'disabled' });
+  });
+  // providers/<provider>.md, "Configuration" UI tab (and agw-docs/standalone/llm/providers/meta.md):
+  // the default <provider>/* match that the UI fills in, the Strip <provider>/ outgoing model that
+  // it selects with it, and the provider's API key from an env var. The quickstart types an exact
+  // model name instead, so it embeds the llm-add-model.spec.ts images, not these.
+  const PREFIX_PROVIDERS: { label: string; prefix: string; envVar: string }[] = [
+    { label: 'OpenAI', prefix: 'openai', envVar: 'OPENAI_API_KEY' },
+    { label: 'Anthropic', prefix: 'anthropic', envVar: 'ANTHROPIC_API_KEY' },
+    { label: 'Gemini', prefix: 'gemini', envVar: 'GEMINI_API_KEY' },
+    { label: 'Baseten', prefix: 'baseten', envVar: 'BASETEN_API_KEY' },
+    { label: 'Cerebras', prefix: 'cerebras', envVar: 'CEREBRAS_API_KEY' },
+    { label: 'Cohere', prefix: 'cohere', envVar: 'COHERE_API_KEY' },
+    { label: 'DeepInfra', prefix: 'deepinfra', envVar: 'DEEPINFRA_API_KEY' },
+    { label: 'DeepSeek', prefix: 'deepseek', envVar: 'DEEPSEEK_API_KEY' },
+    { label: 'Fireworks AI', prefix: 'fireworks', envVar: 'FIREWORKS_API_KEY' },
+    { label: 'Groq', prefix: 'groq', envVar: 'GROQ_API_KEY' },
+    { label: 'Hugging Face', prefix: 'huggingface', envVar: 'HUGGINGFACE_API_KEY' },
+    { label: 'Meta', prefix: 'meta', envVar: 'META_API_KEY' },
+    { label: 'Mistral AI', prefix: 'mistral', envVar: 'MISTRAL_API_KEY' },
+    { label: 'OpenRouter', prefix: 'openrouter', envVar: 'OPENROUTER_API_KEY' },
+    { label: 'Together AI', prefix: 'togetherai', envVar: 'TOGETHER_API_KEY' },
+    { label: 'xAI (Grok)', prefix: 'xai', envVar: 'XAI_API_KEY' },
+  ];
+
+  for (const p of PREFIX_PROVIDERS) {
+    test(`add model ${p.prefix} prefix`, async ({ page }) => {
+      const drawer = await openAddModel(page, p.label);
+      await expect(drawer.getByRole('textbox', { name: 'Incoming model match', exact: true })).toHaveValue(`${p.prefix}/*`);
+      await drawer.getByRole('button', { name: 'Env var', exact: true }).click();
+      const env = drawer.getByPlaceholder('ENV_VAR_NAME');
+      await env.fill(p.envVar);
+      await blurAll(page);
+      await expect(env).toHaveValue(p.envVar);
+      await expect(drawer.getByRole('button', { name: `Strip ${p.prefix}/`, exact: true })).toHaveClass(/active/);
+      await expect(page).toHaveScreenshot(`ui-llm-add-model-${p.prefix}-prefix.png`, { animations: 'disabled' });
+    });
+  }
+
+  // agw-docs/pages/agentgateway/llm/providers/ollama-standalone.md, step 2: the default ollama/*
+  // match, no API key, the default base URL, and the explicit outgoing model llama3.2.
+  test('add model ollama prefix', async ({ page }) => {
+    const drawer = await openAddModel(page, 'Ollama');
+    await expect(drawer.getByRole('textbox', { name: 'Incoming model match', exact: true })).toHaveValue('ollama/*');
+    await expect(page.getByText('No provider credential configured.')).toBeVisible();
+    await explicitModel(drawer, 'llama3.2');
+    await scrollIntoViewChecked(drawer.getByText('Outgoing model', { exact: true }));
+    await expect(page).toHaveScreenshot('ui-llm-add-model-ollama-prefix.png', { animations: 'disabled' });
   });
 });

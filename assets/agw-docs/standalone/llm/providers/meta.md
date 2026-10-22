@@ -37,7 +37,7 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 6. For the **Provider API key**, select **Env var**, and enter `META_API_KEY`.
 7. For **Outgoing model**, keep **Strip meta/**. This option removes the `meta/` prefix before the request is forwarded. To send every request to one model instead, select **Explicit**, and enter the model name, such as `muse-spark-1.3`. This option sets `params.model`.
 
-   {{< reuse-image src="img/ui-llm-add-model-meta.png" srcDark="img/ui-llm-add-model-meta-dark.png" alt="Add model drawer with Meta selected as the provider, meta/* as the incoming model match, and META_API_KEY as the environment variable for the provider API key" >}}
+   {{< reuse-image src="img/ui-llm-add-model-meta-prefix.png" srcDark="img/ui-llm-add-model-meta-prefix-dark.png" alt="Add model drawer with Meta selected as the provider, meta/* as the incoming model match, and META_API_KEY as the environment variable for the provider API key" >}}
 
 8. Click **Save model**.
 

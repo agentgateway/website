@@ -58,7 +58,7 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 6. For the **Provider API key**, select **Env var**, and enter `HUGGINGFACE_API_KEY`.
 7. For **Outgoing model**, keep **Strip huggingface/**. This option removes the `huggingface/` prefix before the request is forwarded. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
 
-   {{< reuse-image src="img/ui-llm-add-model-huggingface.png" srcDark="img/ui-llm-add-model-huggingface-dark.png" alt="Add model drawer with Hugging Face selected as the provider, huggingface/* as the incoming model match, and HUGGINGFACE_API_KEY as the environment variable for the provider API key" >}}
+   {{< reuse-image src="img/ui-llm-add-model-huggingface-prefix.png" srcDark="img/ui-llm-add-model-huggingface-prefix-dark.png" alt="Add model drawer with Hugging Face selected as the provider, huggingface/* as the incoming model match, and HUGGINGFACE_API_KEY as the environment variable for the provider API key" >}}
 
 8. Click **Save model**.
 

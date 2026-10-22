@@ -58,7 +58,7 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 6. For the **Provider API key**, select **Env var**, and enter `GROQ_API_KEY`.
 7. For **Outgoing model**, keep **Strip groq/**. This option removes the `groq/` prefix before the request is forwarded. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
 
-   {{< reuse-image src="img/ui-llm-add-model-groq.png" srcDark="img/ui-llm-add-model-groq-dark.png" alt="Add model drawer with Groq selected as the provider, groq/* as the incoming model match, and GROQ_API_KEY as the environment variable for the provider API key" >}}
+   {{< reuse-image src="img/ui-llm-add-model-groq-prefix.png" srcDark="img/ui-llm-add-model-groq-prefix-dark.png" alt="Add model drawer with Groq selected as the provider, groq/* as the incoming model match, and GROQ_API_KEY as the environment variable for the provider API key" >}}
 
 8. Click **Save model**.
 

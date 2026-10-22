@@ -18,11 +18,11 @@ import { test, expect, dismissWelcome } from '../fixtures/test';
  * the drawer, fills it, captures, and navigates away — so the gateway config is untouched
  * and the captures cannot influence each other.
  *
- * The values below are the ones the guides tell the reader to type. The same image is
- * embedded on the provider page (integrations/llm/providers/<provider>.md) and in the
- * quickstart tab (llm-ui-providers.md), so both pages must give the same incoming model
- * match. If a page changes its model match or env var, change it here too, or the
- * screenshot stops matching the numbered steps printed directly above it.
+ * The values below are the ones the guide tells the reader to type. Keep them in sync with
+ * llm-ui-providers.md: if a tab changes its model name or env var, change it here too, or
+ * the screenshot stops matching the numbered steps printed directly above it. The provider
+ * pages (integrations/llm/providers/<provider>.md) keep the default `<provider>/*` match
+ * instead, so they embed the `-prefix` images from ui-tabs-c.spec.ts, not these.
  *
  * Provider list and display names come from ui/src/config.ts (`providerNames` and
  * `providerDisplayName`) in the agentgateway repo, in the order the Provider dropdown
@@ -40,10 +40,7 @@ type Credential =
 interface Provider {
   /** Exactly the label in the UI's Provider dropdown, and the guide's tab name. */
   label: string;
-  /**
-   * Value for "Incoming model match", as the guide's numbered step says to type or keep it.
-   * A value equal to the provider's default is asserted but not typed.
-   */
+  /** Value for "Incoming model match", as the guide's numbered step says to type it. */
   modelMatch: string;
   credential: Credential;
   /** Only the providers whose form exposes a Base URL field. */
@@ -56,36 +53,23 @@ interface Provider {
   image: string;
 }
 
-/**
- * The match that the provider pages tell the reader to keep
- * (content/docs/standalone/main/integrations/llm/providers/*.md, UI tab: "Keep the default
- * `<provider>/*`"), which is also the `name: "<provider>/*"` in each page's Config file tab.
- * The UI fills it in when the provider is selected, and selects **Strip <provider>/** for the
- * outgoing model. Every provider whose image is embedded on a provider page uses it. Vertex,
- * Bedrock, Azure, Copilot, and Custom still type a specific model name: their provider
- * pages embed separate images from ui-tabs-c.spec.ts, so these images appear only in the
- * quickstart. Ollama is a known mismatch: the Ollama page tells the reader to keep `ollama/*`
- * and set an explicit outgoing model of `llama3.2`, which this spec does not fill in yet.
- */
-const providerDefault = (prefix: string): string => `${prefix}/*`;
-
 const PROVIDERS: Provider[] = [
   // The eight core providers, in dropdown order.
   {
     label: 'OpenAI',
-    modelMatch: providerDefault('openai'),
+    modelMatch: 'gpt-3.5-turbo',
     credential: { kind: 'envVar', name: 'OPENAI_API_KEY' },
     image: 'ui-llm-add-model.png',
   },
   {
     label: 'Anthropic',
-    modelMatch: providerDefault('anthropic'),
+    modelMatch: 'claude-haiku-4-5',
     credential: { kind: 'envVar', name: 'ANTHROPIC_API_KEY' },
     image: 'ui-llm-add-model-anthropic.png',
   },
   {
     label: 'Gemini',
-    modelMatch: providerDefault('gemini'),
+    modelMatch: 'gemini-2.5-flash',
     credential: { kind: 'envVar', name: 'GEMINI_API_KEY' },
     image: 'ui-llm-add-model-gemini.png',
   },
@@ -125,61 +109,61 @@ const PROVIDERS: Provider[] = [
   // The remaining providers, alphabetized by display name, as the dropdown renders them.
   {
     label: 'Baseten',
-    modelMatch: providerDefault('baseten'),
+    modelMatch: 'openai/gpt-oss-120b',
     credential: { kind: 'envVar', name: 'BASETEN_API_KEY' },
     image: 'ui-llm-add-model-baseten.png',
   },
   {
     label: 'Cerebras',
-    modelMatch: providerDefault('cerebras'),
+    modelMatch: 'gpt-oss-120b',
     credential: { kind: 'envVar', name: 'CEREBRAS_API_KEY' },
     image: 'ui-llm-add-model-cerebras.png',
   },
   {
     label: 'Cohere',
-    modelMatch: providerDefault('cohere'),
+    modelMatch: 'command-a-03-2025',
     credential: { kind: 'envVar', name: 'COHERE_API_KEY' },
     image: 'ui-llm-add-model-cohere.png',
   },
   {
     label: 'DeepInfra',
-    modelMatch: providerDefault('deepinfra'),
+    modelMatch: 'Qwen/Qwen3-32B',
     credential: { kind: 'envVar', name: 'DEEPINFRA_API_KEY' },
     image: 'ui-llm-add-model-deepinfra.png',
   },
   {
     label: 'DeepSeek',
-    modelMatch: providerDefault('deepseek'),
+    modelMatch: 'deepseek-v4-flash',
     credential: { kind: 'envVar', name: 'DEEPSEEK_API_KEY' },
     image: 'ui-llm-add-model-deepseek.png',
   },
   {
     label: 'Fireworks AI',
-    modelMatch: providerDefault('fireworks'),
+    modelMatch: 'accounts/fireworks/models/gpt-oss-120b',
     credential: { kind: 'envVar', name: 'FIREWORKS_API_KEY' },
     image: 'ui-llm-add-model-fireworks.png',
   },
   {
     label: 'Groq',
-    modelMatch: providerDefault('groq'),
+    modelMatch: 'llama-3.1-8b-instant',
     credential: { kind: 'envVar', name: 'GROQ_API_KEY' },
     image: 'ui-llm-add-model-groq.png',
   },
   {
     label: 'Hugging Face',
-    modelMatch: providerDefault('huggingface'),
+    modelMatch: 'Qwen/Qwen3-32B',
     credential: { kind: 'envVar', name: 'HUGGINGFACE_API_KEY' },
     image: 'ui-llm-add-model-huggingface.png',
   },
   {
     label: 'Meta',
-    modelMatch: providerDefault('meta'),
+    modelMatch: 'muse-spark-1.3',
     credential: { kind: 'envVar', name: 'META_API_KEY' },
     image: 'ui-llm-add-model-meta.png',
   },
   {
     label: 'Mistral AI',
-    modelMatch: providerDefault('mistral'),
+    modelMatch: 'mistral-small-latest',
     credential: { kind: 'envVar', name: 'MISTRAL_API_KEY' },
     image: 'ui-llm-add-model-mistral.png',
   },
@@ -194,20 +178,20 @@ const PROVIDERS: Provider[] = [
   },
   {
     label: 'OpenRouter',
-    modelMatch: providerDefault('openrouter'),
+    modelMatch: 'anthropic/claude-haiku-4.5',
     credential: { kind: 'envVar', name: 'OPENROUTER_API_KEY' },
     image: 'ui-llm-add-model-openrouter.png',
   },
   {
     label: 'Together AI',
-    modelMatch: providerDefault('togetherai'),
+    modelMatch: 'meta-llama/Llama-3.3-70B-Instruct-Turbo',
     credential: { kind: 'envVar', name: 'TOGETHER_API_KEY' },
     image: 'ui-llm-add-model-togetherai.png',
   },
   {
     // Renamed from "xAI" in the dropdown as of 1.6; the image name is unchanged.
     label: 'xAI (Grok)',
-    modelMatch: providerDefault('xai'),
+    modelMatch: 'grok-4.3',
     credential: { kind: 'envVar', name: 'XAI_API_KEY' },
     image: 'ui-llm-add-model-xai.png',
   },
@@ -341,11 +325,7 @@ for (const provider of PROVIDERS) {
     await selectProvider(page, provider.label);
 
     const modelMatch = field(page, 'Incoming model match');
-    // Typing over the auto-filled default would turn off the UI's default Strip <provider>/
-    // outgoing model, so only type a value that differs from the default.
-    if ((await modelMatch.inputValue()) !== provider.modelMatch) {
-      await modelMatch.fill(provider.modelMatch);
-    }
+    await modelMatch.fill(provider.modelMatch);
 
     await applyCredential(page, provider.credential);
 
