@@ -243,3 +243,40 @@ Configure [Vertex AI](https://cloud.google.com/products/gemini-enterprise-agent-
    ```
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+## Send file content by URI {#send-file-content-by-uri}
+
+In an OpenAI-compatible Chat Completions request, you can put a `gs://`, `http://`, or `https://` URI in a `file` content part's `file_data` or `file_id`. The request to Vertex AI uses `fileData`.
+
+For HTTP(S) signed URLs, MIME type detection uses the extension before the query string or fragment. If the URI does not have a recognized extension, set `filename`, `mime_type`, or `content_type` on the file object.
+
+Use the following request body with the route that you created.
+
+```json
+{
+  "model": "",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        { "type": "text", "text": "Compare these documents." },
+        {
+          "type": "file",
+          "file": {
+            "file_id": "https://storage.googleapis.com/my-bucket/report.pdf?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Signature=abc"
+          }
+        },
+        {
+          "type": "file",
+          "file": {
+            "filename": "summary.pdf",
+            "file_data": "https://example.com/download/123"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+{{% /version %}}

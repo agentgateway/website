@@ -11,14 +11,14 @@ Learn how to configure agentgateway for a particular LLM.
 
 Prefer the dedicated provider pages when the {{< reuse "agw-docs/snippets/backend.md" >}} API has a first-class provider type for the upstream, with built-in host, path, and request-format defaults.
 
+- [OpenAI]({{< link-hextra path="/integrations/llm/providers/openai/" >}})
 - [Anthropic]({{< link-hextra path="/integrations/llm/providers/anthropic/" >}})
 - [Azure OpenAI]({{< link-hextra path="/integrations/llm/providers/azure/" >}})
 - [Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}})
 - [Gemini]({{< link-hextra path="/integrations/llm/providers/gemini/" >}})
 - [GitHub Copilot]({{< link-hextra path="/integrations/llm/providers/copilot/" >}})
-- [Ollama]({{< link-hextra path="/integrations/llm/providers/ollama/" >}})
-- [OpenAI]({{< link-hextra path="/integrations/llm/providers/openai/" >}})
 - [Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/" >}})
+- [Ollama]({{< link-hextra path="/integrations/llm/providers/ollama/" >}})
 
 ## OpenAI-compatible providers
 

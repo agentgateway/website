@@ -2,8 +2,10 @@
 
 The `copilot` backend authentication method sends a GitHub Copilot token and the request headers that the Copilot API expects. Agentgateway finds the token itself, from an environment variable or from the configuration that the GitHub Copilot tools and the GitHub CLI already wrote to disk, so no credential appears in the configuration file.
 
+{{% version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
 > [!IMPORTANT]
 > The `copilot` method is available in the standalone binary only. The method reads its token from the environment of the agentgateway process, which has no Kubernetes equivalent, so the field does not exist in the custom resources.
+{{% /version %}}
 
 ## Configuration example
 
