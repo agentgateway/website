@@ -1,8 +1,8 @@
 ---
 title: About MCP guardrails
 weight: 10
-description: Apply MCP-aware external authorization and external processing to MCP requests with ExtMCP guardrails.
+description: Control MCP server access, authorize individual tools, and inspect request and response content.
 test: skip
 ---
 
-{{< reuse "agw-docs/pages/agentgateway/mcp/mcp-guardrails-about.md" >}}
+{{< reuse "agw-docs/pages/agentgateway/mcp/mcp-guardrails-overview.md" >}}

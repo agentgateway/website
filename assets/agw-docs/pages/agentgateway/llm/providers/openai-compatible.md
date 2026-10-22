@@ -27,7 +27,8 @@ For an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, use the case-sens
 | Hugging Face | `Huggingface` | `router.huggingface.co` | `/v1/chat/completions` |
 | Meta | `Meta` | `api.meta.ai` | `/v1/chat/completions` |
 | Mistral AI | `Mistral` | `api.mistral.ai` | `/v1/chat/completions` |
-| OpenRouter | `Openrouter` | `openrouter.ai` | `/api/v1/chat/completions` |
+| OpenRouter | `Openrouter` | `openrouter.ai` | `/api/v1/chat/completions` |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+| [Perplexity](#perplexity) | `Perplexity` | `api.perplexity.ai` | `/v1/chat/completions` |{{< /version >}}
 | Together AI | `TogetherAI` | `api.together.xyz` | `/v1/chat/completions` |
 | xAI | `XAI` | `api.x.ai` | `/v1/chat/completions` |
 
@@ -837,7 +838,99 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
 
 ### Perplexity example {#perplexity}
 
-[Perplexity](https://www.perplexity.ai/) exposes an OpenAI-compatible API for search-augmented models and uses the standard chat completions path, so you do not need to set `path`.
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+You can configure [Perplexity](https://www.perplexity.ai/) with an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} or an {{< reuse "agw-docs/snippets/backend.md" >}}. The two approaches accept different request formats. Choose the approach that matches the requests that your clients send.
+
+| Approach | Requests that clients can send | Requests that fail |
+|----------|--------------------------------|--------------------|
+| {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} with `provider: Perplexity` | `/v1/responses`, sent to Perplexity unchanged. `/v1/messages`, converted to the Responses format. | `/v1/chat/completions`, embeddings, and rerank. Perplexity receives only Responses requests from this model. |
+| {{< reuse "agw-docs/snippets/backend.md" >}} with the `openai` provider | Chat Completions requests on the route path, such as `/llm`. | Requests in other formats. Perplexity receives Chat Completions requests at `https://api.perplexity.ai/v1/chat/completions`. |
+
+#### Responses requests with an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} {#perplexity-model}
+
+1. Create the following {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}. The model serves `perplexity/sonar` on the `http` listener and uses the `llm-provider-secret` Secret from [Set up provider credentials](#set-up-provider-credentials).
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: perplexity
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: perplexity/sonar
+     provider: Perplexity
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   EOF
+   ```
+
+   | Setting | Description |
+   |---------|-------------|
+   | `spec.match.model` | The model name that clients send in requests. Perplexity model names include the vendor prefix, such as `perplexity/sonar`. |
+   | `spec.provider` | The `Perplexity` preset. The preset supplies the default URL, `https://api.perplexity.ai/v1`, and the Responses request format. |
+
+2. Send a Responses request to the model. Do not use the `/v1/chat/completions` request from the [AgentgatewayModel steps](#configure-an-agentgatewaymodel) because that request fails for Perplexity.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl "http://$INGRESS_GW_ADDRESS/v1/responses" \
+     -H 'Content-Type: application/json' \
+     -d '{"model": "perplexity/sonar", "input": "Explain retrieval-augmented generation in one sentence."}' | jq
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   Use the port-forward from the listener setup guide.
+
+   ```sh
+   curl http://localhost:8080/v1/responses \
+     -H 'Content-Type: application/json' \
+     -d '{"model": "perplexity/sonar", "input": "Explain retrieval-augmented generation in one sentence."}' | jq
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+#### Chat Completions requests with an {{< reuse "agw-docs/snippets/backend.md" >}} {#perplexity-backend}
+
+1. Create the following {{< reuse "agw-docs/snippets/backend.md" >}}. Perplexity exposes an OpenAI-compatible API for search-augmented models and uses the standard chat completions path, so you do not need to set `path`.
+
+   ```yaml {paths="openai-compatible-validate"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: perplexity
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: sonar
+         host: api.perplexity.ai
+         port: 443
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+       tls:
+         sni: api.perplexity.ai
+   EOF
+   ```
+
+2. Create an HTTPRoute to the {{< reuse "agw-docs/snippets/backend.md" >}} and send a Chat Completions request, as described in [Configure an AgentgatewayBackend](#set-up-access-to-an-openai-compatible-provider). In those steps, replace `llm-backend` with `perplexity`.
+{{< /version >}}
+
+{{< version include-if="1.6.x,2.2.x" >}}
+Perplexity exposes an OpenAI-compatible API for search-augmented models and uses the standard chat completions path, so you do not need to set `path`.
 
 ```yaml {paths="openai-compatible-validate"}
 kubectl apply -f- <<EOF
@@ -856,11 +949,12 @@ spec:
   policies:
     auth:
       secretRef:
-        name: perplexity-secret
+        name: llm-provider-secret
     tls:
       sni: api.perplexity.ai
 EOF
 ```
+{{< /version >}}
 
 ### Generic OpenAI-compatible endpoint {#generic-openai-compatible-endpoint}
 

@@ -204,6 +204,28 @@ Whether the upgrade restarts the pods depends on what you changed. The chart has
 > [!IMPORTANT]
 > The upgrade replaces the whole configuration file, not just the fields that you changed. A value that you leave out of the values file returns to its chart default, so pass your complete values file on every upgrade, or use `--reuse-values` to keep the values from the previous revision. In `database` storage mode, the upgrade replaces only the ConfigMap baseline, and the resources that the UI stored in the database are unaffected.
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Update resources with agctl {#agctl}
+
+To update individual resources through the API of the running gateway, use `agctl standalone apply`. For where the CLI writes in each storage mode, see [Storage behavior]({{< link-hextra path="/documentation/operations/config-resources/#storage-behavior" >}}).
+
+1. [Install agctl and connect it to your gateway]({{< link-hextra path="/documentation/operations/config-resources/#connect" >}}).
+2. Export the resource that you want to change. Replace `example-model` with a model from the output of `agctl standalone get llm.model`.
+
+   ```sh
+   agctl standalone get llm.model example-model -o yaml --no-metadata > model.yaml
+   ```
+
+3. Edit the `value` fields of the resource, and then apply the resource.
+
+   ```sh
+   agctl standalone apply -f model.yaml
+   agctl standalone get llm.model example-model -o yaml
+   ```
+
+The `apply` command takes resource documents with a `kind` and a `value`, as shown in [Manage config resources]({{< link-hextra path="/documentation/operations/config-resources/#apply" >}}). It does not accept a complete `config.yaml` file. To change startup settings, such as `config.database` or `config.adminAddr`, edit the configuration file and restart agentgateway as described earlier on this page.
+{{< /version >}}
+
 ## Next steps
 
 * [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}) to change whether the UI can write to your configuration.

@@ -1,7 +1,7 @@
 ---
 title: Cloud provider credentials
 weight: 20
-description: Authenticate to AWS, Azure, or Google Cloud with the gateway's own identity.
+description: Authenticate to AWS, Azure, Google Cloud, or GitHub Copilot from the gateway.
 test: skip
 ---
 
