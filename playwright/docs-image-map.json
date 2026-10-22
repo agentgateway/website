@@ -435,24 +435,24 @@
       "dark": "assets/img/ui-llm-policy-local-rate-limit-dark.png"
     },
     "ui-llm-model-passthrough.png": {
-      "$note": "llm/about.md, \"Passthrough\" UI tab (also reused by llm/api-keys.md, UI tab): Add model drawer with OpenAI, match *, env var OPENAI_API_KEY, Incoming model; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "$note": "llm/about.md (model-exposure-patterns.md snippet), \"Catch-all\" UI tab (also reused by llm/api-keys.md, UI tab): Add model drawer with OpenAI, match *, env var OPENAI_API_KEY, Incoming model; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
       "light": "assets/img/ui-llm-model-passthrough.png",
       "dark": "assets/img/ui-llm-model-passthrough-dark.png"
     },
     "ui-llm-model-prefixed.png": {
-      "$note": "llm/about.md, \"Prefixed Passthrough\" UI tab: Add model drawer with OpenAI, the default openai/* match, env var OPENAI_API_KEY, Strip openai/; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "$note": "llm/about.md (model-exposure-patterns.md snippet), \"Provider prefix\" UI tab: Add model drawer with OpenAI, the default openai/* match, env var OPENAI_API_KEY, Strip openai/; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
       "light": "assets/img/ui-llm-model-prefixed.png",
       "dark": "assets/img/ui-llm-model-prefixed-dark.png"
     },
     "ui-llm-model-alias.png": {
-      "$note": "llm/about.md, \"Model aliases\" UI tab: Add model drawer for the fast alias, Explicit outgoing model gpt-4o-mini; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "$note": "llm/about.md (model-exposure-patterns.md snippet), \"Custom model name\" UI tab: Add model drawer for fast, Explicit outgoing model gpt-5-mini; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
       "light": "assets/img/ui-llm-model-alias.png",
       "dark": "assets/img/ui-llm-model-alias-dark.png"
     },
-    "ui-llm-model-priority.png": {
-      "$note": "llm/about.md, \"Route priority\" UI tab: Add model drawer for Fireworks AI accounts/fireworks/*, scrolled to Advanced > Matches with header x-org exact eng; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
-      "light": "assets/img/ui-llm-model-priority.png",
-      "dark": "assets/img/ui-llm-model-priority-dark.png"
+    "ui-llm-model-exact.png": {
+      "$note": "llm/about.md (model-exposure-patterns.md snippet), \"Exact model name\" UI tab: Add model drawer with OpenAI, match gpt-5.6-luna, env var OPENAI_API_KEY, Incoming model; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",
+      "light": "assets/img/ui-llm-model-exact.png",
+      "dark": "assets/img/ui-llm-model-exact-dark.png"
     },
     "ui-llm-virtual-model-weighted.png": {
       "$note": "llm/virtual-models.md, \"Weighted routing\" UI tab: Add virtual model drawer, smart, gpt-4o-primary 90 and gpt-4o-fallback 10; never saved. Captured by tests/ui-tabs-b.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.",

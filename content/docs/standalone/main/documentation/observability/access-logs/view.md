@@ -110,6 +110,85 @@ To view access logs in the UI:
 
    {{< reuse-image src="img/agentgateway-ui-log-detail.png" srcDark="img/agentgateway-ui-log-detail-dark.png" >}}
 
+## View LLM request logs with agctl {#cli}
+
+Use `agctl standalone logs` to inspect recorded LLM requests without the UI or a database client. Before you begin, [install agctl and connect it to your gateway]({{< link-hextra path="/documentation/operations/config-resources/#connect" >}}), and [configure a request-log database]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}).
+
+The command reads the records in the database, not the output of the gateway process. Agentgateway records only LLM requests in the database. For startup errors, configuration reloads, and the access logs of HTTP or MCP traffic, use the logs of the gateway process or container. To change the log level of the process, use `agctl proxy log`.
+
+1. List recent requests. By default, the command shows the 20 most recent records, oldest first. Each record shows the status, duration, provider, model, tokens, cost, and request ID.
+
+   ```sh
+   agctl standalone logs --limit 10
+   ```
+
+   Example output:
+
+   ```text
+   TIME                 STATUS  DURATION  PROVIDER  MODEL        TOKENS(IN/OUT)  COST       ID
+   2026-10-20 15:58:05  200     2ms       openai    gpt-4o-mini  1/250           $0.000150  01a15ae4-7924-7147-89b4-8dde2ae7404b
+   2026-10-20 15:58:05  200     0ms       openai    gpt-4o-mini  1/120           $0.000072  01a15ae4-792f-75d8-a1ec-598d1614d6ad
+   2026-10-20 15:58:05  200     0ms       openai    gpt-4o       1/300           $0.003002  01a15ae4-7939-72dd-b477-2f5648b31f3a
+   ```
+
+2. Filter the requests by time, HTTP status, provider, or requested model. The first example shows the requests that returned a `429` or a `500` status.
+
+   ```sh
+   agctl standalone logs --since 1h --status 429 --status 500
+   agctl standalone logs --provider openai --model gpt-4o
+   ```
+
+   To filter by the model in the provider response, use `--response-model`. To find the requests of a recorded trace, use `--trace-id`. The `--since` flag takes durations such as `5m` and `24h`.
+
+3. Follow new requests as they complete. To stop following, press `Ctrl+C`.
+
+   ```sh
+   agctl standalone logs -f --model gpt-4o
+   ```
+
+4. Inspect one request with an ID from the list. By default, the details are in YAML format. For JSON, add `-o json`.
+
+   ```sh
+   agctl standalone logs <request-id>
+   ```
+
+   Example output, shortened:
+
+   ```yaml
+   attributes:
+     agentgateway.user: alice
+     agw.ai.usage.cost.total: 0.003002
+     gen_ai.provider.name: openai
+     gen_ai.request.model: gpt-4o
+     http.path: /v1/chat/completions
+     http.status: 200
+     # ...
+   cost: 0.003002
+   durationMs: 0
+   hasPayload: false
+   httpStatus: 200
+   id: 01a15ae4-7939-72dd-b477-2f5648b31f3a
+   payload:
+     requestPrompt: null
+     responseCompletion: null
+   usage:
+     inputTokens: 1
+     outputTokens: 300
+     totalTokens: 301
+   ```
+
+   The `payload` fields contain the prompt and completion only if payload capture was on for the request. To capture payloads for later requests, set `frontendPolicies.accessLog.database.llm` to `full`, as described in [Access log data storage]({{< link-hextra path="/documentation/observability/access-logs/database/#access-log-data-storage" >}}). Payload capture does not add content to older records.
+
+5. Include custom database attributes in structured output.
+
+   ```sh
+   agctl standalone logs --since 1h --attributes -o json
+   ```
+
+   Configure custom attributes in `frontendPolicies.accessLog.database.add`. Fields that you add only to the stdout access log with `accessLog.add` do not appear in these records.
+
+The `--limit` flag accepts up to 500 records. In JSON format, the list output has a `logs` array, and `logs -f -o json` streams one JSON record per line. For request counts, token usage, and cost, use [CLI analytics]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/#cli" >}}). For all flags, see the [`logs` reference]({{< link-hextra path="/reference/agctl/agctl-standalone-logs/" >}}).
+
 ## Filter requests
 
 Use a [CEL]({{< link-hextra path="/reference/cel/" >}}) expression to log only a subset of requests. Requests that do not match the expression are not logged. The following example produces access logs only for requests with a response code of 400 or greater.

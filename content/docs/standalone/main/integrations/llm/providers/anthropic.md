@@ -359,8 +359,7 @@ agentgateway -f config-claude-platform-apikey.yaml --validate-only
 | Setting                                     | Description |
 |---------------------------------------------|-------------|
 | `requestHeaders.set.anthropic-workspace-id` | The Anthropic workspace ID that scopes the request. Replace `wrkspc_XXXXX` with your workspace ID. |
-| `params.hostOverride`                       | The Claude Platform endpoint host and port. Use the form `aws-external-anthropic.{region}.api.aws:443`. |
-| `params.pathPrefix`                         | The Anthropic API path prefix on Claude Platform, set to `/v1`. |
+| `params.baseUrl`                            | Full Claude Platform URL, including the scheme and `/v1`: `https://aws-external-anthropic.{region}.api.aws/v1`. |
 | `params.apiKey`                             | API key. |
 
 {{% /tab %}}
@@ -384,6 +383,8 @@ llm:
     auth:
       aws:
         serviceName: aws-external-anthropic
+    transformation:
+      model: llmRequest.model.stripPrefix("claude-platform/")
 ```
 
 {{< doc-test paths="anthropic" >}}
@@ -403,6 +404,8 @@ llm:
     auth:
       aws:
         serviceName: aws-external-anthropic
+    transformation:
+      model: llmRequest.model.stripPrefix("claude-platform/")
 EOF
 agentgateway -f config-claude-platform-sigv4.yaml --validate-only
 {{< /doc-test >}}
@@ -410,6 +413,7 @@ agentgateway -f config-claude-platform-sigv4.yaml --validate-only
 | Setting | Description |
 |---------|-------------|
 | `name` | Matches model names that start with `claude-platform/`, so you can route Claude Platform traffic alongside other Anthropic models. |
+| `transformation.model` | Strips `claude-platform/` so the provider receives a name such as `claude-sonnet-4-5`. |
 | `requestHeaders.set.anthropic-workspace-id` | The Anthropic workspace ID that scopes the request. Replace `wrkspc_XXXXX` with your workspace ID. |
 | `params.baseUrl` | The full Claude Platform base URL, including scheme and `/v1` path prefix. |
 | `auth.aws.serviceName` | The SigV4 service name. Claude Platform requires `aws-external-anthropic`. Implicit AWS credentials from the workload environment are used to sign each request. |

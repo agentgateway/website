@@ -7,13 +7,17 @@ test: skip
 
 Learn how to configure agentgateway for a particular LLM {{< gloss "Provider" >}}provider{{< /gloss >}}.
 
+To manage models and providers on a running gateway from the command line, see [Manage config resources with agctl]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
+
 ## First-class providers
 
 Use the dedicated provider pages when agentgateway already knows the upstream base URL and request format. This list includes Anthropic, OpenAI, and many more!
 
 ## Custom providers
 
-Use [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) only for providers that do not have a first-class shortcut, such as Perplexity, vLLM, LM Studio, or another service that exposes a compatible [API format]({{< link-hextra path="/documentation/llm/api-types/" >}}).
+Use [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) only for providers that do not have a first-class shortcut. Examples include vLLM, LM Studio, or another service that exposes a compatible [API format]({{< link-hextra path="/documentation/llm/api-types/" >}}).
+
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
 
 ## Authentication
 
@@ -91,23 +95,39 @@ llm:
 
 These are the default auth mechanisms for the corresponding built-in providers, so you usually only need to override them when you need custom credential handling.
 
+This example sets authentication explicitly for each cloud provider. It uses [provider prefixes]({{< link-hextra path="/documentation/llm/about/#provider-prefix" >}}), such as `bedrock/*`, to route requests to the matching provider.
+
 ```yaml
 llm:
   models:
-  - name: "*"
+  - name: "vertex/*"
     provider: vertex
+    params:
+      vertexProject: my-project-id
+      vertexRegion: us-central1
     auth:
       gcp:
         type: accessToken
-  - name: "*"
+    transformation:
+      model: llmRequest.model.stripPrefix("vertex/")
+  - name: "bedrock/*"
     provider: bedrock
+    params:
+      awsRegion: us-west-2
     auth:
       aws: {}
-  - name: "*"
+    transformation:
+      model: llmRequest.model.stripPrefix("bedrock/")
+  - name: "azure/*"
     provider: azure
+    params:
+      azureResourceName: my-resource-name
+      azureResourceType: openAI
     auth:
       azure:
         implicit: {}
+    transformation:
+      model: llmRequest.model.stripPrefix("azure/")
 ```
 
 ## Standalone upstream TLS

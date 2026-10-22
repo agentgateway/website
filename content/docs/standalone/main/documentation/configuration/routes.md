@@ -267,4 +267,5 @@ After you configure routes, you might want to apply policies to them or learn mo
   {{< card path="/documentation/configuration/traffic-management/" title="Traffic management" >}}
   {{< card path="/documentation/configuration/resiliency/" title="Resiliency" >}}
   {{< card path="/documentation/configuration/security/" title="Security" >}}
+  {{< card path="/documentation/operations/config-resources/" title="Manage routes with agctl" >}}
 {{< /cards >}}

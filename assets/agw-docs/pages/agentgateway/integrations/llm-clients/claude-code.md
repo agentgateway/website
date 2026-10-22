@@ -41,8 +41,9 @@ To create the same configuration in the [UI]({{< link-hextra path="/documentatio
 3. From the **Provider** dropdown, select **OpenAI**.
 4. In the **Incoming model match** field, replace the default `openai/*` with `*`.
 5. For the **Provider API key**, select **API key**, and enter `mock-key`.
-6. The form has no field for `params.baseUrl`. Click the **Raw** icon (`<>`) in the drawer header, and add `baseUrl: "http://localhost:8000/v1"` under `params`. Replace the URL with your OpenAI-compatible provider's endpoint.
-7. Click **Save model**.
+6. For the **Outgoing model**, select **Explicit**. In the **Explicit outgoing model** field, enter `Qwen/Qwen3-32B`. Replace the model with the model that your backend serves.
+7. The form has no field for `params.baseUrl`. Click the **Raw** icon (`<>`) in the drawer header, and add `baseUrl: "http://localhost:8000/v1"` under `params`. Replace the URL with your OpenAI-compatible provider's endpoint.
+8. Click **Save model**.
 
 The UI writes the provider as `openai` instead of `openAI`. Agentgateway accepts both values. If you prefer a form field for the base URL, select the **Custom** provider instead. That provider has a **Base URL** field, and writes a `custom` provider block instead of `openAI`.
 

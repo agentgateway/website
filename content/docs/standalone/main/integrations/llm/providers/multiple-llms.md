@@ -39,6 +39,8 @@ export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
 
 Reuse provider configuration to avoid duplicating connection and authentication parameters across multiple model definitions. Define named provider defaults once in `llm.providers[]` and reference them from multiple `llm.models[]` entries with `provider.reference`. You can set up the shared provider in the UI or in your configuration file.
 
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
+
 {{< tabs >}}
 {{% tab name="UI" %}}
 To create the shared provider and the two models in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same configuration as the **Config file** tab.

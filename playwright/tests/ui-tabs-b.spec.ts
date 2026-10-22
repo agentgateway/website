@@ -3,8 +3,9 @@ import { test, expect, dismissWelcome, uiTabsOnly, escapeRegExp, openAddModel, s
 
 /**
  * "UI" tab captures for the standalone LLM core guides (docs 1.7 and later):
- *   - llm/about.md: Passthrough, Prefixed Passthrough, Model aliases, Route priority
- *     (the Add model drawer). The Passthrough capture is reused by llm/api-keys.md.
+ *   - llm/about.md (the shared model-exposure-patterns.md snippet): Provider prefix, Exact model
+ *     name, Catch-all, and Custom model name (the Add model drawer). The Catch-all capture
+ *     (ui-llm-model-passthrough.png) is reused by llm/api-keys.md.
  *   - llm/virtual-models.md: Weighted, Failover, and Conditional routing (Add virtual model).
  *   - llm/transformations.md: the request and the final transformation (Edit model).
  *   - llm/cost-controls/budget-limits/per-key.md: a key with a budget, and a key's model access.
@@ -19,7 +20,7 @@ import { test, expect, dismissWelcome, uiTabsOnly, escapeRegExp, openAddModel, s
  * describe the same thing.
  *
  * Produces (light + dark): ui-llm-model-passthrough.png, ui-llm-model-prefixed.png,
- * ui-llm-model-alias.png, ui-llm-model-priority.png, ui-llm-virtual-model-weighted.png,
+ * ui-llm-model-alias.png, ui-llm-model-exact.png, ui-llm-virtual-model-weighted.png,
  * ui-llm-virtual-model-failover.png, ui-llm-virtual-model-conditional.png,
  * ui-llm-virtual-model-conditional-rule-2.png, ui-llm-model-transformation.png,
  * ui-llm-model-final-transformation.png, ui-llm-key-budget.png, ui-llm-key-model-access.png,
@@ -111,7 +112,7 @@ async function customKey(page: Page, drawer, name: string, value: string): Promi
 test.describe('UI tabs: LLM core', () => {
   uiTabsOnly();
 
-  // llm/about.md, "Passthrough" (also referenced from llm/api-keys.md): OpenAI, "*", env var.
+  // llm/about.md, "Catch-all" (also referenced from llm/api-keys.md): OpenAI, "*", env var.
   test('model passthrough', async ({ page }) => {
     const drawer = await openAddModel(page, 'OpenAI');
     await modelMatch(page, '*');
@@ -120,7 +121,7 @@ test.describe('UI tabs: LLM core', () => {
     await expect(page).toHaveScreenshot('ui-llm-model-passthrough.png');
   });
 
-  // llm/about.md, "Prefixed Passthrough": the default openai/* match and Strip openai/.
+  // llm/about.md, "Provider prefix": the default openai/* match and Strip openai/.
   test('model prefixed passthrough', async ({ page }) => {
     const drawer = await openAddModel(page, 'OpenAI');
     await expect(page.getByRole('textbox', { name: /^Incoming model match/ })).toHaveValue('openai/*');
@@ -129,42 +130,42 @@ test.describe('UI tabs: LLM core', () => {
     await expect(page).toHaveScreenshot('ui-llm-model-prefixed.png');
   });
 
-  // llm/about.md, "Model aliases": the fast alias with gpt-4o-mini as the explicit model.
+  // llm/about.md, "Custom model name": fast, with gpt-5-mini as the explicit model.
   test('model alias', async ({ page }) => {
     const drawer = await openAddModel(page, 'OpenAI');
     await modelMatch(page, 'fast');
     await envVar(page, 'OPENAI_API_KEY');
     await drawer.getByRole('button', { name: 'Explicit', exact: true }).click();
     const outgoing = drawer.getByRole('textbox', { name: 'Explicit outgoing model' });
-    await outgoing.fill('gpt-4o-mini');
+    await outgoing.fill('gpt-5-mini');
     // The field is a combobox: picking the option is what closes its menu.
     const menu = page.getByRole('listbox', { name: 'Explicit outgoing model' });
     if (await menu.isVisible().catch(() => false)) {
-      await menu.getByRole('option', { name: /(^|\s)gpt-4o-mini$/ }).first().click();
+      await menu.getByRole('option', { name: /(^|\s)gpt-5-mini$/ }).first().click();
     }
     await outgoing.blur();
     await expect(menu).toBeHidden();
     // The combobox keeps its focus ring after blur(); clicking the drawer title moves focus off it.
     await drawer.getByRole('heading', { name: 'Add model' }).click();
-    await expect(outgoing).toHaveValue('gpt-4o-mini');
+    await expect(outgoing).toHaveValue('gpt-5-mini');
     await expect(page).toHaveScreenshot('ui-llm-model-alias.png');
   });
 
-  // llm/about.md, "Route priority": the Fireworks model with the x-org: eng header match.
-  test('model route priority', async ({ page }) => {
-    const drawer = await openAddModel(page, 'Fireworks AI');
-    await modelMatch(page, 'accounts/fireworks/*');
-    await envVar(page, 'FIREWORKS_API_KEY');
-    await drawer.getByRole('button', { name: 'Incoming model', exact: true }).click();
-    await drawer.getByRole('button', { name: /^Advanced/ }).click();
-    await drawer.getByRole('button', { name: /^Matches/ }).click();
-    await drawer.getByRole('button', { name: 'Add match', exact: true }).click();
-    await drawer.getByRole('textbox', { name: 'Header name' }).fill('x-org');
-    const value = drawer.getByRole('textbox', { name: 'Header value' });
-    await value.fill('eng');
-    await value.blur();
-    await scrollDrawerTo(drawer, drawer.getByText('Outgoing model', { exact: true }));
-    await expect(page).toHaveScreenshot('ui-llm-model-priority.png');
+  // llm/about.md, "Exact model name": OpenAI, gpt-5.6-luna, env var, Incoming model.
+  test('model exact name', async ({ page }) => {
+    const drawer = await openAddModel(page, 'OpenAI');
+    await modelMatch(page, 'gpt-5.6-luna');
+    await envVar(page, 'OPENAI_API_KEY');
+    await expect(drawer.getByRole('button', { name: 'Incoming model', exact: true })).toHaveClass(/active/);
+    await expect(page).toHaveScreenshot('ui-llm-model-exact.png');
+  });
+
+  // llm/about.md, "Provider prefix", step 6: Anthropic gets the anthropic/* match and
+  // Strip anthropic/. Not a docs image; it checks the claim in the step.
+  test('model provider prefix anthropic', async ({ page }) => {
+    const drawer = await openAddModel(page, 'Anthropic');
+    await expect(page.getByRole('textbox', { name: /^Incoming model match/ })).toHaveValue('anthropic/*');
+    await expect(drawer.getByRole('button', { name: 'Strip anthropic/', exact: true })).toHaveClass(/active/);
   });
 
   // llm/virtual-models.md, "Weighted routing": smart, 90/10 between primary and fallback.

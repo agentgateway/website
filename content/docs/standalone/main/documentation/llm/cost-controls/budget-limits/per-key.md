@@ -166,12 +166,10 @@ llm:
         metadata:
           name: team-b
         budgets:
-        - name: daily-tokens
+        - name: lifetime-tokens
           limit:
             unit: Tokens
             amount: 250
-          window:
-            rolling: 24h
           onBudgetExceeded: Audit
   models:
   - name: "*"
@@ -183,7 +181,7 @@ EOF
 {{% /tab %}}
 {{< /tabs >}}
 
-The `team-a` key has a dollar budget that blocks requests when the budget is exhausted, and the `team-b` key has a token budget that only records the overage. Review the following table to understand this configuration. Both limits are small so that you can reach them in a few requests. Use realistic limits in production.
+The `team-a` key has a dollar budget that blocks requests when the budget is exhausted. The `team-b` key omits `window`, so its token budget never resets and only records the overage. Review the following table to understand this configuration. Both limits are small so that you can reach them in a few requests. Use realistic limits in production.
 
 | Setting | Description |
 | -- | -- |
@@ -193,7 +191,8 @@ The `team-a` key has a dollar budget that blocks requests when the budget is exh
 | `budgets` | List of budgets that are charged independently. A key can have several budgets, such as an hourly dollar cap and a monthly dollar cap. |
 | `budgets[].name` | Names the budget within its key. The name must be unique among that key's budgets. |
 | `budgets[].limit.unit` | `USD` to cap realized cost, or `Tokens` to cap token usage. |
-| `budgets[].limit.amount` | The maximum usage in the window. A `Tokens` amount must be a whole number. A `USD` amount takes up to nine decimal places. |
+| `budgets[].limit.amount` | The maximum usage for the budget. A `Tokens` amount must be a whole number. A `USD` amount takes up to nine decimal places. |
+| `budgets[].window` | Optional rolling-window block. Omit this block when the budget must keep accumulating usage and never reset. |
 | `budgets[].window.rolling` | Length of the fixed usage window, such as `1h`, `24h`, or `30d`. Windows are aligned to the Unix epoch rather than to the key's first request. |
 | `budgets[].onBudgetExceeded` | `Block` to reject requests with a `429` after the limit is passed, or `Audit` to record the overage and allow the request. |
 | `allowedModels` | Model name patterns that the key can reach. Omit the field to leave the key unconstrained. For more information, see [Limit model access per key](#limit-model-access-per-key). |
@@ -406,50 +405,63 @@ EOF
 
 ### Step 6: Check budget usage
 
-Query the admin API for the current usage of a key. To return every budget, omit the `apiKeyName` parameter.
+1. Check the budget usage of the key with [agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}). To list the budgets of every key, omit the `--key` flag.
 
-```sh {paths="apikey-budgets"}
-curl -s "http://localhost:15000/api/budgets/status?apiKeyName=team-a" | jq .
-```
+   ```sh
+   agctl standalone budgets --key team-a
+   ```
 
-The `used` value is a dollar amount, and it is higher than the limit, because agentgateway charged the request that crossed the limit after it completed.
+   The `USED` value is higher than the limit, because agentgateway charged the request that crossed the limit after the request completed. The `RESETS` column shows the end of the current window in your local time.
 
-Example output:
+   Example output:
 
-```json
-{
-  "observedAt": 1787773624201,
-  "budgets": [
-    {
-      "apiKeyName": "team-a",
-      "name": "daily-spend",
-      "limit": {
-        "unit": "USD",
-        "amount": "0.008"
-      },
-      "usage": {
-        "used": "0.00903",
-        "remaining": "0",
-        "exceeded": true
-      },
-      "window": {
-        "start": 1787702400000,
-        "end": 1787788800000,
-        "durationMs": 86400000,
-        "expired": false
-      },
-      "onBudgetExceeded": "Block",
-      "updatedAt": 1787773623159
-    }
-  ]
-}
-```
+   ```text
+   KEY     BUDGET       USED      LIMIT   REMAINING  RESETS            STATUS    ACTION
+   team-a  daily-spend  $0.00903  $0.008  $0         2026-10-20 20:00  exceeded  block
+   ```
 
-You can also review and edit budgets in the built-in [Admin UI]({{< link-hextra path="/documentation/setup/ui/" >}}), on the same **LLM > Virtual API Keys** page that lists your keys.
+2. For the full budget status, query the admin API. The response adds the window start and end as Unix timestamps in milliseconds, and the time of the last update. To return every budget, omit the `apiKeyName` parameter.
+
+   ```sh {paths="apikey-budgets"}
+   curl -s "http://localhost:15000/api/budgets/status?apiKeyName=team-a" | jq .
+   ```
+
+   Example output:
+
+   ```json
+   {
+     "observedAt": 1787773624201,
+     "budgets": [
+       {
+         "apiKeyName": "team-a",
+         "name": "daily-spend",
+         "limit": {
+           "unit": "USD",
+           "amount": "0.008"
+         },
+         "usage": {
+           "used": "0.00903",
+           "remaining": "0",
+           "exceeded": true
+         },
+         "window": {
+           "start": 1787702400000,
+           "end": 1787788800000,
+           "durationMs": 86400000,
+           "expired": false
+         },
+         "onBudgetExceeded": "Block",
+         "updatedAt": 1787773623159
+       }
+     ]
+   }
+   ```
+
+The `agctl standalone budgets` command and the API report usage only. To change a budget, [update the key with agctl]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl-update" >}}), edit your configuration file, or use the built-in [UI]({{< link-hextra path="/documentation/setup/ui/" >}}) on the same **LLM > Virtual API Keys** page that lists your keys.
 
 ### Step 7: Try a token budget
 
-The `team-b` key that you configured in Step 2 caps tokens rather than dollars, and it uses the `Audit` action. An `Audit` budget records usage and logs the overage, but it never rejects a request. Use an `Audit` budget to size a limit before you enforce it, or to alert on a team that goes over its allocation without interrupting its work.
+The `team-b` key that you configured in Step 2 caps tokens rather than dollars. The budget omits `window` and uses the `Audit` action. Because the budget has no window, the budget keeps accumulating usage and never resets. An `Audit` budget records usage and logs the overage, but it never rejects a request.
 
 1. Send four requests with the `team-b` key. Each request uses 101 tokens, so four requests use more than the 250-token limit allows.
 
@@ -477,10 +489,10 @@ The `team-b` key that you configured in Step 2 caps tokens rather than dollars, 
    request 4: 200
    ```
 
-2. Check the gateway logs. Agentgateway logs each request that it receives while the budget is over its limit, so you can alert on the `budget` target in your log pipeline. A `Tokens` budget reports its amounts as whole tokens.
+2. Check the gateway logs. The gateway logs each request that it receives while the budget is over its limit, so you can alert on the `budget` target in your log pipeline. A `Tokens` budget reports its amounts as whole tokens. If you query the admin API for this budget, `window.end` and `window.durationMs` are `null`.
 
    ```
-   warn budget API key budget exceeded api_key="team-b" budget="daily-tokens" used=303 limit_unit="Tokens" limit_amount=250 exceeded=true
+   warn budget API key budget exceeded api_key="team-b" budget="lifetime-tokens" used=303 limit_unit="Tokens" limit_amount=250 exceeded=true
    ```
 
 {{< doc-test paths="apikey-budgets" >}}
@@ -496,7 +508,7 @@ YAMLTest -f - <<'EOF'
   expect:
     statusCode: 200
     bodyJsonPath:
-      - path: "$.budgets[?(@.name=='daily-tokens')].usage.exceeded"
+      - path: "$.budgets[?(@.name=='lifetime-tokens')].usage.exceeded"
         comparator: equals
         value: true
 
@@ -555,6 +567,8 @@ llm:
 {{< /tabs >}}
 
 Each entry is an exact model name or a pattern with one `*` wildcard, such as a `gpt-5*` prefix or a `*-mini` suffix. Agentgateway rejects a request for any other model with a `403` response and the `model_not_allowed` code, before the request reaches a provider.
+
+To create a key with model restrictions and a budget from the command line, see [Set up virtual keys (agctl)]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl-create" >}}).
 
 | Value | Effect |
 | -- | -- |

@@ -53,7 +53,7 @@ You also need an OpenAI API key. The examples read it from `OPENAI_API_KEY`.{{< 
 
 <span id="set-up-virtual-keys-ui"></span><span id="set-up-virtual-keys-config-file"></span>
 
-Turn on API key authentication, and create two virtual keys, one for Alice and one for Bob. You can do this interactively in the built-in [UI]({{< link-hextra path="/documentation/setup/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes. The config file is the source of truth for GitOps workflows.
+Turn on API key authentication, and create two virtual keys, one for Alice and one for Bob. You can do this interactively in the built-in [UI]({{< link-hextra path="/documentation/setup/ui/" >}}), {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}from the command line with [agctl](#agctl), {{< /version >}}or declaratively in your config file. The UI is convenient for exploring and one-off changes. The config file is the source of truth for GitOps workflows.
 
 ### Step 1: Create the virtual keys {#step-1-configure-api-key-authentication}
 
@@ -335,6 +335,230 @@ Replace the provider credential on the gateway host. Clients keep their virtual 
 
 1. Follow [Rotate a provider key]({{< link-hextra path="/documentation/llm/api-keys/#rotate" >}}) to replace the credential and revoke the old provider key.
 2. Send a request with an existing virtual key. Verify that it still succeeds.
+{{< /version >}}
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Set up virtual keys (agctl) {#agctl}
+
+Generate, restrict, update, and revoke virtual keys from the command line with `agctl standalone`. The CLI can also give each key a dollar or token budget, and report the budget usage and spending of each key. Before you begin, [install agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}).
+
+### Step 1: Configure the gateway {#agctl-configure}
+
+1. Create a separate configuration file with a database and an API key policy that has no keys yet. The database stores the budget usage of each key, and records LLM requests for analytics. In the default `file` storage mode, the CLI writes the keys that you create into this configuration file.
+
+   ```yaml
+   cat <<'EOF' > config-agctl.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   config:
+     database:
+       url: sqlite://virtual-keys.db
+   llm:
+     policies:
+       apiKey:
+         mode: strict
+         keys: []
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   EOF
+   ```
+
+   | Setting | Description |
+   | -- | -- |
+   | `config.database.url` | The database that stores budget usage and request logs. A budget requires this field. Setting only `config.logging.database.url` does not meet this requirement. |
+   | `apiKey.keys` | The keys that you define in the file. Start with an empty list, and create the keys with the CLI. |
+
+2. Start agentgateway. If agentgateway still runs from a previous section, stop it first. Keep agentgateway running, and run the CLI commands in another terminal.
+
+   ```sh
+   agentgateway -f config-agctl.yaml
+   ```
+
+### Step 2: Create a key {#agctl-create}
+
+The CLI prints the generated key once, and stores only a SHA-256 hash of the key. You cannot retrieve the key later.
+
+1. Create a key named `team-a` that can use `gpt-4o` models and has a daily token budget. The command saves the key in the `VIRTUAL_KEY` environment variable.
+
+   ```sh
+   VIRTUAL_KEY="$(agctl standalone keys create team-a \
+     --model 'gpt-4o*' \
+     --budget 1000tokens/24h \
+     --budget-action block)"
+   ```
+
+   Example output:
+
+   ```text
+   API key "team-a" created. Save it now; it cannot be shown again.
+   ```
+
+   The `VIRTUAL_KEY` variable exists only in your current shell. Before you close the terminal, store the key somewhere safe, such as a secrets manager, and give it to the client that uses it.
+
+   | Flag | Description |
+   | -- | -- |
+   | `--model` | A model name or wildcard pattern that the key can use, such as `gpt-4o*`. Repeat the flag for several patterns. If you omit the flag, the key can use every model. |
+   | `--budget` | The amount and window of a budget, such as `1000tokens/24h` or `10usd/24h`. If you omit the window, it defaults to `30d`. Repeat the flag to add independent budgets. The CLI names each budget after its unit and window, such as `tokens-24h`. A `usd` budget charges a request only if the [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) prices its model. |
+   | `--budget-action` | `block` rejects requests after the key uses up a budget. The default, `audit`, records the overage but allows the requests. |
+
+2. List the keys. The `KEY` column shows a hint of the key, not the full value.
+
+   ```sh
+   agctl standalone keys
+   ```
+
+   Example output:
+
+   ```text
+   NAME    KEY             MODELS   BUDGETS          CREATED           ID
+   team-a  agw_sk_...8mk2  gpt-4o*  1000 tokens/24h  2026-10-20 15:50  2672111b-2804-471c-8575-763e41c2d91c
+   ```
+
+Budget windows are aligned to the Unix epoch, not to the time that you create the key. For more information about how budgets charge requests, see [Per-key budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/" >}}).
+
+### Step 3: Test the key {#agctl-test}
+
+1. Send a request for a model that the key can use. Agentgateway forwards the request to the provider, and charges the token usage of the response to the budget of the key. If the request returns a `401` status right after you create the key, retry the request. New keys reach the traffic path asynchronously.
+
+   ```sh
+   curl -s http://localhost:4000/v1/chat/completions \
+     -H "Authorization: Bearer $VIRTUAL_KEY" \
+     -H 'Content-Type: application/json' \
+     -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello!"}]}'
+   ```
+
+   Example output:
+
+   ```json
+   {
+     "model": "gpt-4o-mini",
+     "choices": [{
+       "message": {
+         "role": "assistant",
+         "content": "Hello! How can I help you today?"
+       }
+     }],
+     "usage": {
+       "prompt_tokens": 10,
+       "completion_tokens": 9,
+       "total_tokens": 19
+     }
+   }
+   ```
+
+2. Send a request for a model that the key cannot use. Agentgateway rejects the request with a `403` status before the request reaches the provider.
+
+   ```sh
+   curl -s http://localhost:4000/v1/chat/completions \
+     -H "Authorization: Bearer $VIRTUAL_KEY" \
+     -H 'Content-Type: application/json' \
+     -d '{"model":"gpt-5","messages":[{"role":"user","content":"Hello!"}]}'
+   ```
+
+   Example output:
+
+   ```json
+   {"error":{"message":"Model is not allowed for this API key","type":"invalid_request_error","code":"model_not_allowed"}}
+   ```
+
+### Step 4: Check usage and spending {#agctl-usage}
+
+1. Check the budget usage of the key. To list the budgets of every key, omit the `--key` flag.
+
+   ```sh
+   agctl standalone budgets --key team-a
+   ```
+
+   Example output:
+
+   ```text
+   KEY     BUDGET      USED       LIMIT        REMAINING   RESETS            STATUS  ACTION
+   team-a  tokens-24h  19 tokens  1000 tokens  981 tokens  2026-10-20 20:00  ok      block
+   ```
+
+   The `RESETS` column shows the end of the current window in your local time. The command reports per-key budgets only, not `localRateLimit` token buckets.
+
+2. Summarize the requests, tokens, and cost of each user. The rejected request from the previous step counts as an error.
+
+   ```sh
+   agctl standalone analytics --by agentgateway.user --since 24h
+   ```
+
+   Example output:
+
+   ```text
+   AGENTGATEWAY.USER  REQUESTS  ERRORS  TOKENS  COST       AVG TTFT  TOK/S  CACHE HIT
+   team-a             2         1       19      $0.000007  -         -      0.0%
+   ```
+
+   Agentgateway attributes each request to the `user` or `name` metadata of the key. For more groupings, see [CLI analytics]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/#cli" >}}).
+
+3. List the requests that agentgateway recorded.
+
+   ```sh
+   agctl standalone logs --since 1h
+   ```
+
+   Example output:
+
+   ```text
+   TIME                 STATUS  DURATION  PROVIDER  MODEL        TOKENS(IN/OUT)  COST       ID
+   2026-10-20 15:50:34  200     1ms       openai    gpt-4o-mini  10/9            $0.000007  01a15add-9aa1-73ee-bc2a-b7fe5c9a70a6
+   2026-10-20 15:50:34  403     0ms       -         -            -               -          01a15add-9aba-720e-a3dd-a11287a94806
+   ```
+
+   For filters and request details, see [View LLM request logs with agctl]({{< link-hextra path="/documentation/observability/access-logs/view/#cli" >}}).
+
+### Step 5: Update a key {#agctl-update}
+
+To change the metadata, model restrictions, or budgets of a key without changing the key itself, export the key, edit it, and apply it again. The update replaces the whole value of the key, so keep every field that you want to retain.
+
+1. Export the key.
+
+   ```sh
+   agctl standalone get llm.apiKey team-a -o yaml --no-metadata > team-a.yaml
+   ```
+
+2. Edit `team-a.yaml`. For example, add `group: engineering` under `value.metadata`. Keep the top-level `id`, the `value.keyHash` field, and the existing metadata. Do not change the metadata fields that start with `agentgateway.dev/`. To change a budget, edit its `value.budgets[].limit.amount` field. Keep the name and window of the budget so that agentgateway keeps its usage count.
+3. Apply the update.
+
+   ```sh
+   agctl standalone apply -f team-a.yaml
+   ```
+
+   Example output:
+
+   ```text
+   llm.apiKey/2672111b-2804-471c-8575-763e41c2d91c applied
+   ```
+
+The key in `VIRTUAL_KEY` still works, because its hash did not change. The `keys create` command has no flags for other metadata, such as `user` or `group`. To add this metadata to a key, use this update workflow.
+
+### Step 6: Revoke a key {#agctl-revoke}
+
+1. Delete the key by name. If several keys have the same name, use the ID from `agctl standalone keys` instead.
+
+   ```sh
+   agctl standalone delete llm.apiKey team-a
+   ```
+
+   Example output:
+
+   ```text
+   llm.apiKey/team-a deleted
+   ```
+
+2. Repeat the request from [Step 3](#agctl-test). Agentgateway rejects the request with a `401` status. Requests that are already in progress when you delete the key can still complete.
+
+   Example output:
+
+   ```text
+   api key authentication failure: invalid credentials
+   ```
+
+To rotate a key, create a replacement key with a new name, update the client, and then revoke the old key.
 {{< /version >}}
 
 ## Configure token budgets

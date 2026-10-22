@@ -24,6 +24,7 @@ Agentgateway supports native, OpenAI-compatible, and self-hosted LLM providers.
 Many providers now have dedicated integrations with preconfigured base URLs and request formats:
 - [Baseten]({{< link-hextra path="/integrations/llm/providers/baseten/" >}})
 - [Cerebras]({{< link-hextra path="/integrations/llm/providers/cerebras/" >}})
+- [GitHub Copilot]({{< link-hextra path="/integrations/llm/providers/copilot/" >}})
 - [DeepInfra]({{< link-hextra path="/integrations/llm/providers/deepinfra/" >}})
 - [xAI (Grok)]({{< link-hextra path="/integrations/llm/providers/xai/" >}})
 - [Cohere]({{< link-hextra path="/integrations/llm/providers/cohere/" >}})
@@ -35,6 +36,7 @@ Many providers now have dedicated integrations with preconfigured base URLs and 
 - [OpenRouter]({{< link-hextra path="/integrations/llm/providers/openrouter/" >}})
 - [Fireworks AI]({{< link-hextra path="/integrations/llm/providers/fireworks/" >}})
 - [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}})
+- [Perplexity]({{< link-hextra path="/integrations/llm/providers/perplexity/" >}})
 
 ### Self-hosted solutions
 
@@ -45,7 +47,7 @@ Run models locally or in your own infrastructure:
 
 ### Custom providers
 
-Use [Custom provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) for other providers without direct support such as Perplexity, vLLM, or LM Studio.
+Use [Custom provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) for other providers without direct support, such as vLLM or LM Studio.
 Agentgateway supports all of the common LLM formats and can generally integrate with any provider ([file an issue](https://github.com/agentgateway/agentgateway/issues/new) if one is missing!).
 
 ## Using the API
@@ -142,16 +144,13 @@ The model configurations shown in this section live under the `llm.models` key.
 Agentgateway routes requests by matching an incoming model name, and then sending it to the configured model.
 The outgoing model can be passed through from the incoming model, be transformed, or be a static model.
 
-Some examples:
-
-* Match `fast` and send to `gpt-mini`.
-* Match `*` and forward the model as-is.
-* Match `openai/*` and strip the `openai/` prefix, forwarding the remaining model as-is.
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
 
 | Field | Purpose |
 |-------|---------|
 | `models.name` | The model name to match in incoming client requests. Agentgateway compares this value against the `model` field in the request body. Use a wildcard `*` to match any model name. |
 | `params.model` | The model name sent to the upstream provider. If set, this overrides the model from the request. If not set, the model from the request is passed through. |
+| `transformation.model` | CEL expression for the upstream model name, such as `llmRequest.model.stripPrefix("openai/")`. Runs after `params.model` and overrides its value. |
 
 Agentgateway recognizes the standard LLM serving paths, such as `/v1/chat/completions`, `/v1/messages`, `/v1/responses`, `/v1/audio/transcriptions`, and `/v1/models`, only when the request path matches exactly. Provider-specific paths that carry the model in the path, such as the Gemini and Vertex AI `:generateContent` paths, match by their pattern instead. A request to any other path, such as `/other/v1/messages` or `/v1/messages/extra`, is not rejected. Agentgateway still selects the model from the request body, but forwards the request to the provider as passthrough, without format conversion and without the `params.model` override.
 
@@ -159,169 +158,4 @@ To serve the standard LLM paths under a base path, set `llm.pathPrefix`. For exa
 
 When the selected model changes the upstream model name, the gateway rewrites the model before forwarding the request. The rewrite applies to JSON request bodies and multipart form data, such as `/v1/audio/transcriptions`. For multipart requests, file fields and non-model fields are preserved while each `model` form field is rewritten.
 
-### Passthrough
-
-Use `name: "*"` without setting `params.model` to accept any model name and pass it directly to the provider. This is the simplest configuration for single-provider setups.
-
-You can configure the model in the UI or in your configuration file.
-
-{{< tabs >}}
-{{% tab name="UI" %}}
-1. Open **LLM** > **Models** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
-2. From the **Provider** dropdown, select **OpenAI**. The UI fills in a default **Incoming model match**, such as `openai/*`.
-3. Replace the **Incoming model match** with `*`.
-4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`. The variable must be set in the environment that agentgateway runs in, or the save fails.
-5. For the **Outgoing model**, make sure that **Incoming model** is selected.
-
-   {{< reuse-image src="img/ui-llm-model-passthrough.png" srcDark="img/ui-llm-model-passthrough-dark.png" >}}
-
-6. Click **Save model**.
-
-The UI writes the same model as the **Config file** tab, but spells the provider `openai`. Agentgateway accepts both spellings.
-
-Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
-{{% /tab %}}
-{{% tab name="Config file" %}}
-```yaml
-llm:
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-```
-{{% /tab %}}
-{{< /tabs >}}
-
-Clients specify the actual model in their requests, such as `"model": "gpt-4o-mini"`, and agentgateway forwards it to the provider as-is.
-
-### Prefixed Passthrough
-
-Use `name: "openai/*"` without setting `params.model` to accept model requests like `openai/gpt-4o-mini` and forward to OpenAI as `gpt-4o-mini`.
-This is the recommended approach when you want to expose all models from multiple providers.
-
-{{< tabs >}}
-{{% tab name="UI" %}}
-1. Open **LLM** > **Models**, and click **Add model**.
-2. From the **Provider** dropdown, select **OpenAI**. The UI fills in `openai/*` for the **Incoming model match**.
-3. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
-4. For the **Outgoing model**, make sure that **Strip openai/** is selected. This option writes the `stripPrefix("openai/")` transformation.
-
-   {{< reuse-image src="img/ui-llm-model-prefixed.png" srcDark="img/ui-llm-model-prefixed-dark.png" >}}
-
-5. Click **Save model**.
-{{% /tab %}}
-{{% tab name="Config file" %}}
-```yaml
-llm:
-  models:
-  - name: "openai/*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-    transformation:
-      model: llmRequest.model.stripPrefix("openai/")
-```
-{{% /tab %}}
-{{< /tabs >}}
-
-Clients specify the provider and model in their requests, such as `"model": "openai/gpt-4o-mini"`, and agentgateway forwards to `gpt-4o-mini`
-
-### Model aliases
-
-Set `name` to a user-friendly alias and `params.model` to the actual provider model.
-This lets you decouple client-facing model names from provider-specific identifiers, making it easier to swap models without updating client code.
-
-{{< tabs >}}
-{{% tab name="UI" %}}
-1. Open **LLM** > **Models**, and click **Add model**.
-2. From the **Provider** dropdown, select **OpenAI**.
-3. Replace the **Incoming model match** with `fast`.
-4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
-5. For the **Outgoing model**, select **Explicit**. In the **Explicit outgoing model** field, enter or select `gpt-4o-mini`.
-
-   {{< reuse-image src="img/ui-llm-model-alias.png" srcDark="img/ui-llm-model-alias-dark.png" >}}
-
-6. Click **Save model**.
-7. Repeat the previous steps for the `smart` alias, with `gpt-4o` as the explicit outgoing model.
-{{% /tab %}}
-{{% tab name="Config file" %}}
-```yaml
-llm:
-  models:
-  - name: fast
-    provider: openAI
-    params:
-      model: gpt-4o-mini
-      apiKey: "$OPENAI_API_KEY"
-  - name: smart
-    provider: openAI
-    params:
-      model: gpt-4o
-      apiKey: "$OPENAI_API_KEY"
-```
-{{% /tab %}}
-{{< /tabs >}}
-
-Clients send `"model": "fast"` or `"model": "smart"`, and agentgateway translates these to the corresponding provider models.
-
-### Route priority
-
-When multiple models match a request, the more precise match takes precedence.
-For example, with the configuration below, requests with `accounts/fireworks/*` will match the `fireworks` provider first:
-
-{{< tabs >}}
-{{% tab name="UI" %}}
-The UI adds each new model to the end of the list, and cannot reorder models. Add the models in the order that you want them listed.
-
-1. Add the Fireworks model.
-   1. Open **LLM** > **Models**, and click **Add model**.
-   2. From the **Provider** dropdown, select **Fireworks AI**.
-   3. Replace the **Incoming model match** with `accounts/fireworks/*`.
-   4. For the **Provider API key**, select **Env var**, and enter `FIREWORKS_API_KEY`.
-   5. For the **Outgoing model**, select **Incoming model**. Otherwise, the UI keeps the default **Strip accounts/** option.
-   6. Expand **Advanced** > **Matches**, and click **Add match**.
-   7. Enter `x-org` for the header name and `eng` for the exact value.
-
-      {{< reuse-image src="img/ui-llm-model-priority.png" srcDark="img/ui-llm-model-priority-dark.png" >}}
-
-   8. Click **Save model**.
-2. Add the catch-all model in the same way, with the following values.
-   * **Provider**: **OpenAI**
-   * **Incoming model match**: `*`
-   * **Provider API key**: **Env var** `OPENAI_API_KEY`
-   * **Outgoing model**: **Incoming model**
-   * **Matches**: header `x-org` with the exact value `engineering`
-{{% /tab %}}
-{{% tab name="Config file" %}}
-```yaml
-llm:
-  models:
-  # Specific route: wins ties against the wildcard
-  - name: "accounts/fireworks/*"
-    provider: fireworks
-    matches:
-    - headers:
-      - name: "x-org"
-        value:
-          exact: "eng"
-    params:
-      apiKey: "$FIREWORKS_API_KEY"
-  # Catch-all route: matches anything, but lower priority
-  - name: "*"
-    provider: openAI
-    matches:
-    - headers:
-      - name: "x-org"
-        value:
-          exact: "engineering"
-    params:
-      apiKey: "$OPENAI_API_KEY"
-```
-{{% /tab %}}
-{{< /tabs >}}
-
-In this example, both routes have one header matcher, so they have equal specificity. Because the Fireworks route is listed first, it takes priority when both routes match.
-
-> [!NOTE]
-> For advanced routing based on request body fields like the `model` name, see [Virtual models]({{< link-hextra path="/documentation/llm/virtual-models/" >}}).
+{{< reuse "agw-docs/pages/agentgateway/llm/model-exposure-patterns.md" >}}
