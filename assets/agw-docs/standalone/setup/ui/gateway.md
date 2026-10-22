@@ -284,6 +284,18 @@ kill $AGW_UI_GW_PID 2>/dev/null || true
 > [!NOTE]
 > The UI gateway is an addition, not a replacement. Agentgateway still serves a copy of the UI on the admin interface, which is loopback-only and which you do not need to change. Adding this gateway does not put the admin interface's debugging endpoints on it. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/documentation/setup/ui/#admin-interface" >}}).
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+## Change the UI gateway in the UI {#change-in-ui}
+
+You can also change the gateway that serves the UI from the UI itself. The UI must be able to save changes, which depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+
+1. Open the **Settings** > **UI** page, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui).
+2. From the **Public gateway** dropdown, select the gateway that you want to serve the UI, or **None** to serve the UI only on the admin interface.
+3. Click **Save UI gateway**. If the UI is already served on a gateway, confirm the change in the **Change UI gateway?** dialog.
+
+If you opened the UI through the gateway that you changed or removed, the page stops loading. Open the UI on the new gateway or on the admin interface. If you chose **None**, the UI also removes the `ui` section from your configuration, including any `ui.policies`.
+{{% /version %}}
+
 ## Next steps
 
 * [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}) with an OIDC login on the gateway that you created.

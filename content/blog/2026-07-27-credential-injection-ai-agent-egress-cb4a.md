@@ -144,7 +144,3 @@ The CB4A draft doesn't sugarcoat where this leaves you. Its threat model rates b
 > The broker (CDP) is the highest-value target in the architecture. It MUST be hardened with no shell access, restricted network, and credential zeroing after minting (TM-1).
 
 So before going down this path you need a real answer for hardening the component holding the credentials, and for removing any standing decrypt permission from it. In [part 2](/blog/2026-08-03-protecting-token-vault-kms-credential-injection/), I get specific about how we do that in Solo Enterprise for agentgateway: envelope encryption with KEK/DEK wrapping, the master key in KMS rather than the cluster, and a separate broker that must authorize every individual unwrap, so the component holding the ciphertext cannot decrypt it with its own credentials. Including where it still leaks. Follow along / [connect on LinkedIn](https://linkedin.com/in/ceposta) if you are working through credential isolation for agent egress in your own stack.
-
----
-
-_A version of this post first appeared on [blog.christianposta.com](https://blog.christianposta.com/credential-brokering-patterns-for-ai-agent-egress/). This one focuses on the agentgateway implementation._
