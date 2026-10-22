@@ -73,8 +73,8 @@ test('virtual keys — create drawer', async ({ page }) => {
   await drawer.getByRole('combobox', { name: 'Key value' }).click();
   await page.getByRole('option', { name: 'Use custom key' }).click();
   const keyValue = drawer.getByRole('textbox', { name: 'Key value' });
-  await keyValue.fill('sk-alice-abc123def456');
-  await expect(keyValue).toHaveValue('sk-alice-abc123def456');
+  await keyValue.fill('vk-alice-4f9c2a');
+  await expect(keyValue).toHaveValue('vk-alice-4f9c2a');
   // Metadata: the two inputs are addressed by their placeholders (owner / platform).
   await drawer.getByRole('button', { name: /^Metadata/ }).click();
   await drawer.getByRole('textbox', { name: 'owner' }).fill('user');

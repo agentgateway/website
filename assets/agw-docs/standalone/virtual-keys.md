@@ -33,7 +33,7 @@ You also need an OpenAI API key. The examples read it from `OPENAI_API_KEY`.{{< 
 # WHAT THIS TEST VALIDATES:
 #   * "Step 1": the virtual keys config is accepted by agentgateway
 #     (--validate-only), so the apiKey policy fields are correct.
-#   * "Step 2": a request with either virtual key is authenticated and proxied
+#   * "Step 3": a request with either virtual key is authenticated and proxied
 #     to the provider (200), and a request with an unknown key is rejected (401),
 #     which is the behavior the strict apiKey mode describes.
 #
@@ -83,7 +83,7 @@ Turn on API key authentication, and create two virtual keys, one for Alice and o
 4. Click **Enable API key auth**. For the **Validation mode**, select **Strict**, and click **Enable API key auth** again. Strict mode requires a valid API key for all requests.
 5. Click **New key**, and create Alice's key.
    1. Enter `alice` for the **Name**.
-   2. For the **Key value**, select **Use custom key**, and enter `sk-alice-abc123def456`. To have agentgateway generate the key instead, keep the auto-generate option, and use the generated value in the later steps.
+   2. For the **Key value**, select **Use custom key**, and enter `vk-alice-4f9c2a`. To have agentgateway generate the key instead, keep the auto-generate option, and use the generated value in the later steps.
    3. Expand **Metadata**, enter `user` and `alice`, and click **Add**.
    4. Click **Save key**.
 
@@ -91,7 +91,7 @@ Turn on API key authentication, and create two virtual keys, one for Alice and o
    {{< reuse-image-dark srcDark="img/ui-virtual-keys-new-dark.png" alt="Create virtual key drawer with name, key value, and metadata" >}}
 
 6. Copy the key. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}In the **Copy your new API key** dialog, click **Copy**, and click **Done**. The UI does not show the key again.{{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}In the key list, click **Copy** for the key.{{< /version >}}
-7. Click **New key**, and create Bob's key in the same way as Alice's key. Enter `bob` for the **Name**, the custom key `sk-bob-xyz789uvw012`, and the metadata `user` and `bob`. Then, copy the key.
+7. Click **New key**, and create Bob's key in the same way as Alice's key. Enter `bob` for the **Name**, the custom key `vk-bob-8d1e7b`, and the metadata `user` and `bob`. Then, copy the key.
 
    The **Virtual API Keys** page lists both keys. From here, you can show, copy, edit, or delete each one.
 
@@ -153,6 +153,23 @@ sleep 3
 
 ### Step 2: Test the virtual keys {#step-3-test-the-virtual-keys}
 
+You can test the keys in the UI playground or with curl. Both work the same way, whether you created the keys in the UI or in the config file.
+
+{{< tabs >}}
+{{% tab name="Playground" %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+1. Open **LLM** > **Chat Playground** in the UI, such as [http://localhost:15000/ui/llm/playground](http://localhost:15000/ui/llm/playground).
+2. If you see a **Browser access is not allowed** notice, click **Apply CORS**. The UI adds a CORS policy for the UI's address to `llm.policies`, so that the playground can call the gateway from the browser.
+3. In the **Specific model** field, enter `gpt-3.5-turbo`. The `*` model accepts any model name, so the playground needs a specific name to send.
+4. From the **Virtual API key** dropdown, select Alice's key. The dropdown lists only the keys that are stored as raw values. If the UI saved the key as a hash, select **Raw value**, and paste Alice's key into the **Raw API key** field.
+5. In the **User message** field, enter `Hello!`, and click **Send**. Verify that the reply from the model appears.
+6. From the **Virtual API key** dropdown, select **Raw value**, and enter `invalid-key` in the **Raw API key** field. Send the message again. Verify that the playground shows **Playground request failed** with the error `api key authentication failure: invalid credentials`.
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+The playground steps need agentgateway 1.7 or later. Use the **curl** tab.
+{{% /version %}}
+{{% /tab %}}
+{{% tab name="curl" %}}
 1. Send a request with Alice's API key. Verify that the request succeeds.
 
    ```sh {paths="virtual-keys"}
@@ -198,6 +215,8 @@ sleep 3
    ```
    HTTP/1.1 401 Unauthorized
    ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="virtual-keys" >}}
 YAMLTest -f - <<'EOF'
@@ -266,6 +285,20 @@ Control access for individual clients without reconfiguring the others.{{< versi
 
 The `*` model serves every model the provider offers. To restrict access for all clients, replace it with named model entries.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+1. Open **LLM** > **Virtual API Keys**, and click the **Edit key** icon for Bob's key.
+2. Expand **Model access**, and select **Selected models**.
+3. In the **Allowed model patterns** field, enter `gpt-3.5-turbo`, and click **Add**.
+4. Click **Save key**.
+5. In the **Chat Playground**, select Bob's key, enter `gpt-4o` in the **Specific model** field, and send a message. Verify that the playground shows **Playground request failed** with the message `Model is not allowed for this API key`.
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+The UI steps for this section need agentgateway 1.7 or later. Use the **Config file** tab.
+{{% /version %}}
+{{% /tab %}}
+{{% tab name="Config file" %}}
 1. To restrict a specific key, add `allowedModels` to that key. This example keeps Bob's access to the model used by this guide.
 
    ```yaml
@@ -294,6 +327,8 @@ The `*` model serves every model the provider offers. To restrict access for all
    ```json
    {"error":{"message":"Model is not allowed for this API key","type":"invalid_request_error","code":"model_not_allowed"}}
    ```
+{{% /tab %}}
+{{< /tabs >}}
 
 For model patterns and budget interactions, see [Limit model access per key]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/#limit-model-access-per-key" >}}).
 {{< /version >}}
@@ -302,6 +337,18 @@ For model patterns and budget interactions, see [Limit model access per key]({{<
 
 Revoke one client's access without restarting agentgateway or changing other keys.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+1. Open **LLM** > **Virtual API Keys**, and click the **Delete key** icon for Bob's key. In the **Delete virtual API key?** dialog, click **Delete key**.
+2. In the **Chat Playground**, select **Raw value** from the **Virtual API key** dropdown, and enter Bob's key, `vk-bob-8d1e7b`. Send a message. Verify that the playground shows **Playground request failed** with the error `api key authentication failure: invalid credentials`.
+3. Restore Bob's key before continuing with the budget examples. Click **New key**, and create Bob's key again in the same way as in [Step 1](#step-1-configure-api-key-authentication).
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+The UI steps for this section need agentgateway 1.7 or later. Use the **Config file** tab.
+{{% /version %}}
+{{% /tab %}}
+{{% tab name="Config file" %}}
 1. Remove Bob's entry from `llm.policies.apiKey.keys` and save the configuration. Keep Alice's entry:
 
    ```yaml
@@ -327,6 +374,8 @@ Revoke one client's access without restarting agentgateway or changing other key
    ```
 
 3. Restore Bob's key before continuing with the budget examples.
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ### Rotate a provider key {#rotate-a-provider-key}
@@ -582,6 +631,24 @@ Agentgateway checks token-based rate limits in two phases:
 
 ### Step 1: Add a token budget
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+1. Open **LLM** > **Policies**, such as [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies), and click the **Local rate limit** tile.
+2. Select **Tokens** for the **Limit type**.
+3. Fill out the other fields.
+   1. **Fill interval**: `60s`
+   2. **Max tokens**: `10`
+   3. **Tokens per fill**: `1`
+4. Click **Save policy**.
+
+The UI writes the same `localRateLimit` rule as the **Config file** tab.
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+The UI steps for this section need agentgateway 1.7 or later. Use the **Config file** tab.
+{{% /version %}}
+{{% /tab %}}
+{{% tab name="Config file" %}}
 Add `localRateLimit` under `llm.policies` in `config.yaml`. Keep the existing `apiKey` policy and model configuration.
 
 ```yaml
@@ -593,6 +660,8 @@ llm:
       fillInterval: 60s
       type: tokens
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 | Setting | Description |
 | -- | -- |
@@ -604,7 +673,7 @@ llm:
 
 ### Step 2: Verify rate limits
 
-1. Start agentgateway with the updated configuration.
+1. Start agentgateway with the updated configuration.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} If you saved the policy in the UI, skip this step, because the UI applies the change without a restart.{{< /version >}}
    ```sh
    agentgateway -f config.yaml
    ```
@@ -676,6 +745,18 @@ By default, agentgateway does not estimate token counts at request time. To reje
 
 For more information about rate limiting configuration options, see [Rate limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/" >}}).
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+1. Open **LLM** > **Models**, and click the **Edit model** icon for the `*` model.
+2. The form has no field for `tokenize`. Click the **Raw** icon (`<>`) in the drawer header, and add `tokenize: true` under `params`.
+3. Click **Save model**. Requests are rejected immediately if the estimated prompt tokens exceed the available budget.
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+The UI steps for this section need agentgateway 1.7 or later. Use the **Config file** tab.
+{{% /version %}}
+{{% /tab %}}
+{{% tab name="Config file" %}}
 1. Add `tokenize: true` to the model's `params` in `config.yaml`. Keep the existing provider credentials. Requests are rejected immediately if the estimated prompt tokens exceed the available budget.
    
    ```yaml
@@ -687,8 +768,12 @@ For more information about rate limiting configuration options, see [Rate limits
          apiKey: "$OPENAI_API_KEY"
          tokenize: true
    ```
+{{% /tab %}}
+{{< /tabs >}}
 
-2. Send a request. Use Bob's virtual key because Alice's virtual key already reached the rate limit in the previous step. This time, the request is rate limited because the estimated tokens exceed the budget.
+Then, verify the change.
+
+1. Send a request. Use Bob's virtual key because Alice's virtual key already reached the rate limit in the previous step. This time, the request is rate limited because the estimated tokens exceed the budget.
    
    ```sh
    curl http://localhost:4000/v1/chat/completions \
@@ -715,6 +800,21 @@ For more information about rate limiting configuration options, see [Rate limits
 
 So far, all of the virtual keys share one token budget, so the busiest key exhausts the budget for everyone else. To give each key its own budget, add a `key` field to the rate limit rule. The `key` field takes a CEL expression, and each distinct value that the expression returns gets its own token bucket with the limits of that rule. Use `apiKey.user` to read the `user` metadata from the authenticated key.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+1. Open **LLM** > **Policies**, and click the **Local rate limit** tile.
+2. The form edits a rule without a `key`. Click the **Raw** icon (`<>`) in the drawer header, and add `key: apiKey.user` to the rule.
+3. Click **Save policy**.
+4. Remove `tokenize: true` from the `*` model to compare the result with [Step 1](#step-1-add-a-token-budget). Use the **Raw** editor of the model, as in [Step 3](#step-3-enable-request-time-token-estimation), and click **Save model**.
+
+The UI applies the changes without a restart.
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+The UI steps for this section need agentgateway 1.7 or later. Use the **Config file** tab.
+{{% /version %}}
+{{% /tab %}}
+{{% tab name="Config file" %}}
 1. Add `key: apiKey.user` to the rate limit rule. Remove `tokenize: true` from the model to compare the result with [Step 1](#step-1-add-a-token-budget). Keep the other authentication and model settings.
 
    ```yaml
@@ -733,8 +833,12 @@ So far, all of the virtual keys share one token budget, so the busiest key exhau
    ```sh
    agentgateway -f config.yaml
    ```
+{{% /tab %}}
+{{< /tabs >}}
 
-3. Send a prompt with Alice's virtual key. The request is allowed, because Alice's bucket is full after the restart.
+Then, verify that each key has its own budget.
+
+1. Send a prompt with Alice's virtual key. The request is allowed, because the keyed rule starts Alice with a full bucket.
 
    ```sh
    curl http://localhost:4000/v1/chat/completions \
@@ -771,7 +875,7 @@ So far, all of the virtual keys share one token budget, so the busiest key exhau
    }
    ```
 
-4. Repeat the same request to exhaust Alice's budget. The tokens that the first response used exceed the 10-token bucket, so this request is rate limited.
+2. Repeat the same request to exhaust Alice's budget. The tokens that the first response used exceed the 10-token bucket, so this request is rate limited.
 
    ```sh
    curl http://localhost:4000/v1/chat/completions \
@@ -793,7 +897,7 @@ So far, all of the virtual keys share one token budget, so the busiest key exhau
    rate limit exceeded
    ```
 
-5. Send the same request with Bob's virtual key. Unlike in Step 3, where Alice's usage rate limited Bob, the request succeeds, because Bob's key now has its own token bucket that Alice's requests do not draw from.
+3. Send the same request with Bob's virtual key. Unlike in [Step 3](#step-3-enable-request-time-token-estimation), where Alice's usage rate limited Bob, the request succeeds, because Bob's key now has its own token bucket that Alice's requests do not draw from.
 
    ```sh
    curl http://localhost:4000/v1/chat/completions \
@@ -841,6 +945,8 @@ For more information, including how to key a limit on a JWT claim or on the requ
 ## Monitor per-key spending
 
 Usage tracking is optional and does not require a token budget.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}The UI cannot set the `config.metrics` fields that this section uses, so the steps use the configuration file only. To see the spending of each key in the UI instead, use the [cost dashboard]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/" >}}).{{< /version >}}
 
 Agentgateway exposes token usage as Prometheus metrics on its stats endpoint, which listens on port `15020` by default (not the `15000` admin port). The `agentgateway_gen_ai_client_token_usage` metric is a histogram that records the tokens used per request.
 

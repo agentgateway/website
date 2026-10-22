@@ -124,8 +124,8 @@ You add the gateway and route from the UI, so you can start agentgateway without
 {{< /tabs >}}
 
 {{< doc-test paths="httpbin" >}}
-# Hidden test: runs the Config file tab's setup. The UI tab produces the same gateway
-# and route, but its clicks are not scriptable.
+# Hidden test: the UI steps above (Add gateway/route) are not scriptable, so this block
+# reproduces the equivalent config they produce, to keep the resulting setup tested.
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:

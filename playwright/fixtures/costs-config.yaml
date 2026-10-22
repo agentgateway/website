@@ -25,11 +25,11 @@ llm:
     apiKey:
       mode: strict
       keys:
-        - key: sk-alice-abc123def456
+        - key: vk-alice-4f9c2a
           metadata:
             name: alice
             user: alice
-        - key: sk-bob-xyz789uvw012
+        - key: vk-bob-8d1e7b
           metadata:
             name: bob
             user: bob

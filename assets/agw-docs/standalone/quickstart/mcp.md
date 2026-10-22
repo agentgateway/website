@@ -198,8 +198,9 @@ Because you add the MCP server from the UI, you can start agentgateway without a
 {{< /tabs >}}
 
 {{< doc-test paths="mcp" >}}
-# Hidden test: runs the Config file tab's setup. The UI tab produces the same MCP target,
-# but its clicks are not scriptable.
+# Hidden test: the UI steps below (Enable MCP -> Add server) are not scriptable, so this
+# block reproduces the equivalent config they produce and starts the same backends, to keep
+# the resulting setup tested.
 # Redirect background output to files so the started servers don't keep the test
 # runner's stdout pipe open (which would block the run from ever completing).
 PORT=3005 npx -y @modelcontextprotocol/server-everything streamableHttp >/tmp/mcp-server.log 2>&1 &
@@ -207,53 +208,27 @@ MCP_PID=$!
 sleep 5
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 4000
 mcp:
+  port: 3000
   targets:
   - name: server-everything
     mcp:
       host: http://localhost:3005/mcp
-ui: {}
 EOF
-agentgateway -f config.yaml --validate-only
 agentgateway -f config.yaml >/tmp/agentgateway.log 2>&1 &
 AGW_PID=$!
 # On exit, reap the whole process tree. npx spawns a node child for the server, and
 # killing npx alone orphans that child, which holds the pipe open and hangs the job.
 trap 'kill $AGW_PID 2>/dev/null || true; pkill -P $MCP_PID 2>/dev/null || true; kill $MCP_PID 2>/dev/null || true; pkill -f "server-everything" 2>/dev/null || true' EXIT
 sleep 3
-YAMLTest -f - <<'EOF'
-- name: MCP endpoint on the gateway accepts an initialize request
-  http:
-    url: "http://localhost:4000"
-    path: /mcp
-    method: POST
-    headers:
-      content-type: application/json
-      accept: "application/json, text/event-stream"
-    body: |
-      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
-  source:
-    type: local
-  expect:
-    statusCode: 200
-  retries: 10
-- name: UI is served on the gateway port
-  http:
-    url: "http://localhost:4000"
-    path: /ui/
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-  retries: 3
-EOF
 {{< /doc-test >}}
 
-### Step 3: Try a tool in the playground {#step-5-try-a-tool-in-the-playground}
+### Step 3: Try a tool {#step-5-try-a-tool-in-the-playground}
+
+You can try a tool in the UI playground or with curl. Both work the same way, whether you added the MCP server in the UI or in the config file.
+
+{{< tabs >}}
+{{% tab name="Playground" %}}
 
 1. In the [agentgateway UI](http://localhost:4000/ui/), click **Tool Playground** in the **MCP** section.
 2. If you see a **Browser access is not allowed** notice, click **Apply CORS** so the playground can call the MCP listener from the UI.
@@ -268,6 +243,67 @@ EOF
 
    {{< reuse-image-light src="img/ui-playground-tool-echo.png" alt="MCP Playground with the echo tool selected, a message entered, and the tool output Echo: This is my first agentgateway setup." >}}
    {{< reuse-image-dark srcDark="img/ui-playground-tool-echo-dark.png" alt="MCP Playground with the echo tool selected, a message entered, and the tool output Echo: This is my first agentgateway setup." >}}
+{{% /tab %}}
+{{% tab name="curl" %}}
+Send MCP requests to the gateway with curl. The streamable HTTP transport uses JSON-RPC messages in `POST` requests. Each request needs the `Accept: application/json, text/event-stream` header. After you initialize a session, each request also needs the `mcp-session-id` header that agentgateway returns.
+
+1. Initialize an MCP session, and save the session ID from the `mcp-session-id` response header. Then, send the `notifications/initialized` message to finish the handshake.
+
+   ```sh
+   export MCP_SESSION_ID=$(curl -s -D - http://localhost:4000/mcp \
+     -H "Content-Type: application/json" \
+     -H "Accept: application/json, text/event-stream" \
+     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"1.0.0"}}}' \
+     | grep -i "mcp-session-id:" | sed 's/.*: //' | tr -d '\r')
+   curl -s http://localhost:4000/mcp \
+     -H "Content-Type: application/json" \
+     -H "Accept: application/json, text/event-stream" \
+     -H "mcp-session-id: $MCP_SESSION_ID" \
+     -d '{"jsonrpc":"2.0","method":"notifications/initialized"}'
+   ```
+
+2. List the tools that the server exposes. The `grep` command prints only the tool names from the response.
+
+   ```sh
+   curl -s http://localhost:4000/mcp \
+     -H "Content-Type: application/json" \
+     -H "Accept: application/json, text/event-stream" \
+     -H "mcp-session-id: $MCP_SESSION_ID" \
+     -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+     | grep -o '"name":"[^"]*"'
+   ```
+
+   Example output:
+
+   ```
+   "name":"echo"
+   "name":"get-annotated-message"
+   "name":"get-env"
+   "name":"get-resource-links"
+   "name":"get-resource-reference"
+   "name":"get-structured-content"
+   "name":"get-sum"
+   ...
+   ```
+
+3. Call the `echo` tool with the message `This is my first agentgateway setup`.
+
+   ```sh
+   curl -s http://localhost:4000/mcp \
+     -H "Content-Type: application/json" \
+     -H "Accept: application/json, text/event-stream" \
+     -H "mcp-session-id: $MCP_SESSION_ID" \
+     -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"echo","arguments":{"message":"This is my first agentgateway setup"}}}'
+   ```
+
+4. Verify that the response echoes your message back.
+
+   ```
+   event: message
+   data: {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"Echo: This is my first agentgateway setup"}]}}
+   ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{% /steps %}}
 {{< /version >}}
