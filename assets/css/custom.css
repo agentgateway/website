@@ -181,7 +181,8 @@ h6 {
 .dark body,
 .dark .hextra-footer,
 .dark .sidebar-container,
-.dark .hextra-toc {
+.dark .hextra-toc,
+.dark .docs-tabs-band {
     background-color: #030712 !important;
 }
 
