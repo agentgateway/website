@@ -15,6 +15,7 @@
 | dnsConfig | object | The DNS configuration for the agentgateway proxy pod, which is merged with the settings that the kubelet derives from the pod's dnsPolicy. For example, 'options: [{name: ndots, value: "3"}]'.<br/><br/>The default value is `{}`. |
 | extraContainers | list | Additional containers to run in the agentgateway proxy pod, such as a sidecar.<br/><br/>The default value is `[]`. |
 | extraEnv | list | Additional environment variables to set on the agentgateway proxy container.<br/><br/>The default value is `[]`. |
+| extraInitContainers | list | Additional init containers to run in the agentgateway proxy pod.<br/><br/>The default value is `[]`. |
 | extraVolumeMounts | list | Additional volume mounts to add to the agentgateway proxy container.<br/><br/>The default value is `[]`. |
 | extraVolumes | list | Additional volumes to add to the agentgateway proxy pod.<br/><br/>The default value is `[]`. |
 | fullnameOverride | string | Override the full name of the resources that the Helm chart creates.<br/><br/>The default value is `""`. |

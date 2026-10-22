@@ -59,7 +59,7 @@ The most expensive failure mode is also the least visible: busting the provider'
 
 ## Try it out yourself
 
-Testing with real examples is the only way to measure what compression actually saves and to find which of your use cases carry the best return. The repo ships a runnable example, [examples/llm-context-compression](https://github.com/agentgateway/agentgateway/tree/yuval-k/compression-extension-point/examples/llm-context-compression), to get you started with Headroom as a pluggable compression provider:
+Testing with real examples is the only way to measure what compression actually saves and to find which of your use cases carry the best return. The repo ships a runnable example, [examples/llm-context-compression](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-context-compression), to get you started with Headroom as a pluggable compression provider:
 
 ```shell
 # start Headroom, the example compression engine
@@ -80,6 +80,6 @@ As you transition from this example to evaluating your own use cases, keep the f
 
 Compression outcomes and token counts appear in agentgateway's request telemetry; cache-read tokens come back in each provider's usage response.
 
-The extension point makes this evaluation cheap: enable it per-route, compare, and swap or disable the engine in configuration if the numbers don't hold. The [example README](https://github.com/agentgateway/agentgateway/tree/yuval-k/compression-extension-point/examples/llm-context-compression) has the full walkthrough, including Headroom's cache-stable settings and a note on buffer sizes for very large contexts.
+The extension point makes this evaluation cheap: enable it per-route, compare, and swap or disable the engine in configuration if the numbers don't hold. The [example README](https://github.com/agentgateway/agentgateway/blob/main/examples/llm-context-compression/README.md) has the full walkthrough, including Headroom's cache-stable settings and a note on buffer sizes for very large contexts.
 
 Try it out, and [let the community know](https://discord.gg/y9efgEmppm) about your results and which compression implementations you've found to work best!

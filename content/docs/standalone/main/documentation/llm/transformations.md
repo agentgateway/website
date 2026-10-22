@@ -406,7 +406,7 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
 
 Use `requestTransformation` to change the HTTP request that agentgateway sends to the provider, such as its headers or metadata. For a header with a fixed value, use `requestHeaders` instead, which needs no CEL. If both set the same header, the `requestHeaders` value is sent, because `requestHeaders` runs after `requestTransformation`.
 
-The `requestTransformation` expressions can read the HTTP request, such as `request.headers`. They cannot read the LLM request body, because the `llmRequest` CEL variable is not set for them. To read or change fields in the LLM request body, use `transformation` or `finalTransformation`. You can set either one together with `requestTransformation` on the same provider or model.
+The `requestTransformation` expressions can read the HTTP request, such as `request.headers`. For parsed JSON LLM request bodies, they can read fields such as `llmRequest.model`. They can also read `llm.requestModel`, the model from the incoming URL or body before provider overrides. To change individual fields in the LLM request body, use `transformation` or `finalTransformation`. You can set either one together with `requestTransformation` on the same provider or model.
 
 1. Create a configuration file that selects an OpenAI project from a client header. The provider default sets the `openai-project` header based on the `x-team` request header, and removes `x-team` so that it is not sent to OpenAI. The `gpt-4o-batch` model sets its own `requestTransformation`, which replaces the provider default for that model.
 

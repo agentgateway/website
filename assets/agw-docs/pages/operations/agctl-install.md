@@ -1,4 +1,4 @@
-Install `agctl`, the command-line tool that you use to inspect and debug agentgateway.
+Install `agctl`, the command-line tool that you use to inspect and debug agentgateway{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}{{< conditional-text include-if="standalone" >}} and to manage standalone configuration resources, virtual keys, and recorded LLM traffic{{< /conditional-text >}}{{< /version >}}.
 
 ## About
 
@@ -15,12 +15,36 @@ Install `agctl`, the command-line tool that you use to inspect and debug agentga
 | `agctl controller log` | Get or set log levels for the agentgateway controller at runtime. |{{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 | `agctl costs` | Manage the model cost catalogs that price LLM requests, including importing catalog data from supported pricing sources. |{{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 | `agctl catalog` | Manage the model catalogs that price LLM requests, including importing catalog data from supported pricing sources. |{{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-| `agctl migrate` | Migrate agentgateway resources to newer configurations. |{{< /version >}}
+| `agctl migrate` | Migrate agentgateway resources to newer configurations. |{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}{{< conditional-text include-if="standalone" >}}
+| `agctl standalone` | Manage the configuration resources, virtual keys, budgets, and recorded LLM traffic of a standalone agentgateway. For more information, see [Manage standalone agentgateway](#standalone). |{{< /conditional-text >}}{{< /version >}}
 | `agctl version` | Print version information for the `agctl` CLI. |{{< version include-if="main" >}}{{< conditional-text include-if="kubernetes" >}}
 | `agctl bug-report` | Collect agentgateway resources, logs, and metrics from your cluster into an archive that you can attach to a bug report. Secret values are redacted. |{{< /conditional-text >}}{{< /version >}}
 | `agctl completion` | Turn on autocompletion for your shell in `bash`, `zsh`, `fish`, or `powershell`. |
 
 For a complete list of subcommands and flags, see the [`agctl` CLI reference]({{< link-hextra path="/reference/agctl/" >}}).
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+{{< conditional-text include-if="standalone" >}}
+### Manage standalone agentgateway {#standalone}
+
+Use `agctl standalone` to manage agentgateway that runs as a binary, in Docker, or through the standalone Helm chart. The commands call the configuration and observability APIs of the gateway. They do not manage Kubernetes Gateway API resources.
+
+| Command | Description |
+| -- | -- |
+| `agctl standalone get` | List configuration resources, or inspect a resource by name or ID. |
+| `agctl standalone apply` | Create or update resources from YAML or JSON resource documents. |
+| `agctl standalone delete` | Remove a configuration resource. |
+| `agctl standalone keys` | List LLM virtual keys. To generate a key, use `agctl standalone keys create`. |
+| `agctl standalone budgets` | Check the usage of per-key dollar and token budgets. |
+| `agctl standalone logs` | Query or follow the LLM request logs that agentgateway stores in a database. |
+| `agctl standalone analytics` | Summarize recorded requests, tokens, cost, and performance. |
+
+To get started, [connect agctl to your gateway]({{< link-hextra path="/documentation/operations/config-resources/#connect" >}}). Then, [manage virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl" >}}) or [view request logs]({{< link-hextra path="/documentation/observability/access-logs/view/#cli" >}}).
+
+> [!NOTE]
+> The `agctl standalone logs` command reads the LLM requests that are stored in the database. To change the log level of the running proxy, use `agctl proxy log` instead.
+{{< /conditional-text >}}
+{{< /version >}}
 
 ## Before you begin
 

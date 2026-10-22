@@ -828,8 +828,15 @@ jobs:
           # Slack Block Kit payload
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           SLACK_PAYLOAD=$(python3 docs-tests/scripts/report_summary.py --slack --run-url "$RUN_URL" "$RESULTS_FILE")
+          # Name the product in the header. Other repos post doc test results
+          # to the same channels, and report_summary.py's header does not say
+          # which product the results are for.
           echo "slack_blocks<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$SLACK_PAYLOAD" | jq '.main' >> "$GITHUB_OUTPUT"
+          echo "$SLACK_PAYLOAD" | jq --arg product "agentgateway OSS" '
+            .main
+            | .text |= sub("Doc Test Results"; "Doc Test Results (\($product))")
+            | .blocks[0].text.text |= (sub("Doc Test Results"; "Doc Test Results (\($product))") | .[:150])
+          ' >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
           echo "slack_thread_blocks<<EOF" >> "$GITHUB_OUTPUT"
           echo "$SLACK_PAYLOAD" | jq '.thread // empty' >> "$GITHUB_OUTPUT"
@@ -839,7 +846,7 @@ jobs:
         if: always() && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.slack_notification))
         uses: ./.github/actions/notify-slack
         with:
-          message: "Doc Test Results"
+          message: "Doc Test Results (agentgateway OSS)"
           blocks: ${{ steps.summary.outputs.slack_blocks }}
           thread_blocks: ${{ steps.summary.outputs.slack_thread_blocks }}
           channel: ${{ github.event_name == 'workflow_dispatch' && inputs.slack_channel || 'product-excellence-test-notifications,doctopus-tests' }}

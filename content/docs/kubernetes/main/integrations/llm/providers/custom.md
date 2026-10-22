@@ -27,9 +27,14 @@ Custom providers are useful when:
 
 For first-class providers such as OpenAI, Anthropic, Gemini, Vertex AI, Azure,
 Bedrock, and Ollama, use the dedicated provider page unless you need explicit
-format or backend target control. For providers that expose the standard OpenAI
-API shape without a first-class type, such as Cohere, DeepSeek, Groq, Mistral,
-Together AI, and xAI, use [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}) before using a custom provider.
+format or backend target control. Some providers expose the standard OpenAI API
+shape but have no first-class {{< reuse "agw-docs/snippets/backend.md" >}} type,
+such as Cohere, DeepSeek, Groq, Mistral, Perplexity, Together AI, and xAI. For
+these providers, use [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}) before using a custom provider.
+
+For TypeSafe Jev with an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}},
+set `spec.provider: Typesafe` unless you need custom target control. Use
+`SystemOne` only when you declare a custom provider format.
 
 ## Supported targets
 
@@ -56,6 +61,8 @@ non-default path for that format.
 | `Completions` | `/v1/chat/completions` |
 | `Messages` | `/v1/messages` |
 | `Responses` | `/v1/responses` |
+| `Decisions` | `/v1/decisions` |
+| `SystemOne` | `/v1/systemone` |
 | `Embeddings` | `/v1/embeddings` |
 | `AnthropicTokenCount` | `/v1/messages/count_tokens` |
 | `Realtime` | `/v1/realtime` |
@@ -71,6 +78,8 @@ shapes, declare each supported format and optionally set a per-format path.
 | OpenAI chat completions | `Completions`, then `Messages` |
 | Anthropic messages | `Messages`, then `Responses`, then `Completions` |
 | OpenAI responses | `Responses`, then `Completions` |
+| OpenAI decisions | `Decisions`, then `SystemOne` |
+| TypeSafe SystemOne | `SystemOne`, then `Decisions` |
 | OpenAI embeddings | `Embeddings` |
 | Anthropic token count | `AnthropicTokenCount` |
 | OpenAI realtime | `Realtime` |
@@ -78,6 +87,12 @@ shapes, declare each supported format and optionally set a per-format path.
 
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
+
+Use `SystemOne` for a TypeSafe SystemOne upstream. With `SystemOne`, OpenAI
+Decisions requests from `/v1/decisions` go to `/v1/systemone` on the upstream.
+The conversion returns the upstream response in the Decisions format. The
+conversion also works in the other direction: SystemOne requests from
+`/v1/systemone` can go to a `Decisions` upstream.
 
 An error such as `failed to parse Messages request` names the route type that
 parsed the client request before provider conversion. Check that the request
@@ -151,15 +166,30 @@ When an Anthropic messages request is converted to the `Responses` or the
 
 The Responses conversion covers text, system instructions, images, function
 tools, tool-use history, tool results that are text or images, structured
-output, prompt cache breakpoints, and streaming. A function tool that omits
+output, prompt cache breakpoints, and streaming. Prompt cache breakpoints are
+kept on system text, input text, input images, assistant text, tool result text,
+and tool result images. They are kept only when the model name starts with
+`gpt-` and its major and minor version is `5.6` or later. A function tool that omits
 `strict` is sent with `strict: false`, so that the optional properties of its
 input schema stay optional. A structured output JSON schema is sent with
 `text.format.strict` set to `false`, so that optional schema properties stay
 optional. The reasoning effort, from `output_config.effort` or
 from a `thinking` budget, is sent as `reasoning.effort`. A request that sets
-`thinking.type` to `disabled` sends no reasoning setting. Older OpenAI chat
+`thinking.type` to `disabled` sends no reasoning setting. An adaptive `thinking`
+request without an effort uses `high` as the reasoning effort. Older OpenAI chat
 models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o` also receive no
 reasoning setting, because those models reject reasoning parameters.
+
+When `output_config.effort` is omitted, a `thinking` budget maps to these
+OpenAI effort buckets.
+
+| `thinking.budget_tokens` | OpenAI effort |
+|--------------------------|---------------|
+| `0` through `2047` | `low` |
+| `2048` through `4095` | `medium` |
+| `4096` through `8191` | `high` |
+| `8192` through `16383` | `xhigh` |
+| `16384` or higher | `max` |
 
 The following Messages features are dropped from the converted request, with no
 error and no warning to the client.
@@ -221,7 +251,7 @@ fields.
 
 | Field | What happens |
 |-------|--------------|
-| `output_config.effort` | Sent as `reasoning_effort`, even when the request omits `thinking`. Without `output_config.effort`, the effort comes from the `thinking` budget. A request that sets `thinking.type` to `disabled` sends no `reasoning_effort`. Some models get a different reasoning effort, as described after this table. |
+| `output_config.effort` | Sent as `reasoning_effort`, even when the request omits `thinking`. Without `output_config.effort`, the effort comes from the `thinking` budget, using the same OpenAI effort buckets as the Responses conversion. A request that sets `thinking.type` to `disabled` sends no `reasoning_effort`. An adaptive `thinking` request without an effort sends `reasoning_effort: "high"`. Some models get a different reasoning effort, as described after this table. |
 | `tools[].strict` | Kept as set. A tool that omits `strict` is sent without it. |
 | `stop_sequences` | Sent as `stop`. When the reply has `finish_reason: "stop"` and a string in the vLLM `stop_reason` field or the SGLang `matched_stop` field, the Messages reply has `stop_reason: "stop_sequence"` and that string in `stop_sequence`. A numeric stop-token ID is ignored, so a natural end of turn still returns `stop_reason: "end_turn"`. |
 

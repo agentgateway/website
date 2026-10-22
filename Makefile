@@ -49,6 +49,13 @@ deps:
 DOCS_TESTS_DIR ?= ../docs-tests
 DOCS_TESTS_REPO ?= https://github.com/solo-io/docs-tests.git
 
+# Local CLI smoke tests use main binaries and a mock LLM, without a cluster.
+# Override PYTHON to select an environment with PyYAML installed.
+PYTHON ?= python3
+.PHONY: test-agctl-standalone
+test-agctl-standalone:
+	$(PYTHON) scripts/test-agctl-standalone.py
+
 # Clone docs-tests if it's missing. An existing checkout is left alone.
 $(DOCS_TESTS_DIR):
 	git clone --depth 1 $(DOCS_TESTS_REPO) $(DOCS_TESTS_DIR)
@@ -112,9 +119,17 @@ test-status: deps | $(DOCS_TESTS_DIR)
 check-node-deps:
 	@test -d node_modules/tailwindcss || { echo "node_modules is missing. Run 'npm install' in $(CURDIR) first."; exit 1; }
 
+# On a Cloudflare Pages preview (CF_PAGES is set and the branch isn't main), skip
+# the version trees that aren't in hugo.yaml's `params.versions`, unless the
+# branch changed one of them. Production (main) and plain local builds still
+# build everything. PREVIEW=1 tries the preview build locally.
+PREVIEW ?= $(if $(CF_PAGES),$(filter-out main,$(CF_PAGES_BRANCH)))
+
 .PHONY: build
 build: check-node-deps
-	hugo --gc --minify
+	$(if $(PREVIEW),pip3 install -q pyyaml || true)
+	$(if $(PREVIEW),python3 scripts/local-version-config.py --preview-base origin/main)
+	hugo --gc --minify $(if $(PREVIEW),--config hugo.yaml$(COMMA)hugo-local-versions.yaml)
 
 # The local servers build only the versions listed in hugo.yaml's
 # `params.versions`. content/docs/ also holds every older version tree, which
@@ -122,6 +137,7 @@ build: check-node-deps
 # writes hugo-local-versions.yaml (gitignored). FULL=1 builds everything.
 # VERSION=<linkVersion> builds only that listed version (VERSION=latest for the
 # `latest` entry), for a faster preview.
+COMMA := ,
 LOCAL_VERSIONS_CONFIG = $(if $(FULL),,--config hugo.yaml,hugo-local-versions.yaml)
 
 # NO_SEARCH=1 builds without the search index (the search box does nothing),
