@@ -4,8 +4,8 @@ import { test, expect, dismissWelcome, uiTabsOnly, escapeRegExp, openAddModel, s
 /**
  * "UI" tab captures for the standalone LLM core guides (docs 1.7 and later):
  *   - llm/about.md (the shared model-exposure-patterns.md snippet): Provider prefix, Exact model
- *     name, Catch-all, and Custom model name (the Add model drawer). The Catch-all capture
- *     (ui-llm-model-passthrough.png) is reused by llm/api-keys.md.
+ *     name, Catch-all, and Custom model name (the Add model drawer). The Provider prefix capture
+ *     (ui-llm-model-prefixed.png) is reused by llm/api-keys.md.
  *   - llm/virtual-models.md: Weighted, Failover, and Conditional routing (Add virtual model).
  *   - llm/transformations.md: the request and the final transformation (Edit model).
  *   - llm/cost-controls/budget-limits/per-key.md: a key with a budget, and a key's model access.
@@ -112,7 +112,7 @@ async function customKey(page: Page, drawer, name: string, value: string): Promi
 test.describe('UI tabs: LLM core', () => {
   uiTabsOnly();
 
-  // llm/about.md, "Catch-all" (also referenced from llm/api-keys.md): OpenAI, "*", env var.
+  // llm/about.md, "Catch-all": OpenAI, "*", env var.
   test('model passthrough', async ({ page }) => {
     const drawer = await openAddModel(page, 'OpenAI');
     await modelMatch(page, '*');
@@ -121,7 +121,7 @@ test.describe('UI tabs: LLM core', () => {
     await expect(page).toHaveScreenshot('ui-llm-model-passthrough.png');
   });
 
-  // llm/about.md, "Provider prefix": the default openai/* match and Strip openai/.
+  // llm/about.md, "Provider prefix" (also referenced from llm/api-keys.md): the default openai/* match and Strip openai/.
   test('model prefixed passthrough', async ({ page }) => {
     const drawer = await openAddModel(page, 'OpenAI');
     await expect(page.getByRole('textbox', { name: /^Incoming model match/ })).toHaveValue('openai/*');

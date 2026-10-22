@@ -53,11 +53,11 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
 3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
 4. From the **Provider** dropdown, select **OpenAI**.
-5. In the **Incoming model match** field, replace the default `openai/*` with `*`.
+5. Keep the default `openai/*` in the **Incoming model match** field.
 6. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
-7. For **Outgoing model**, keep **Incoming model**. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
+7. For **Outgoing model**, keep **Strip openai/**. This option removes the `openai/` prefix before the request is forwarded. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
 
-   {{< reuse-image src="img/ui-llm-add-model.png" srcDark="img/ui-llm-add-model-dark.png" alt="Add model drawer with OpenAI selected as the provider, the * wildcard as the incoming model match, and OPENAI_API_KEY as the environment variable for the provider API key" >}}
+   {{< reuse-image src="img/ui-llm-add-model.png" srcDark="img/ui-llm-add-model-dark.png" alt="Add model drawer with OpenAI selected as the provider, openai/* as the incoming model match, and OPENAI_API_KEY as the environment variable for the provider API key" >}}
 
 8. Click **Save model**.
 
@@ -72,20 +72,23 @@ Whether the UI can save depends on your storage mode. For more information, see 
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
   models:
-  - name: "*"
+  - name: "openai/*"
     provider: openAI
     params:
       apiKey: "$OPENAI_API_KEY"
+    transformation:
+      model: llmRequest.model.stripPrefix("openai/")
 ```
 
 {{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. The `openai/*` pattern matches any model name that starts with `openai/`. |
 | `provider` | The LLM provider, set to `openAI` for OpenAI models. |
 | `params.model` | The specific OpenAI model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.apiKey` | The OpenAI API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
+| `transformation.model` | Removes the `openai/` prefix from the model name before the request is forwarded, so the provider receives its own model name. |
 {{% /tab %}}
 {{< /tabs >}}
 
@@ -95,10 +98,12 @@ cat <<'EOF' > config.yaml
 
 llm:
   models:
-  - name: "*"
+  - name: "openai/*"
     provider: openAI
     params:
       apiKey: "$OPENAI_API_KEY"
+    transformation:
+      model: llmRequest.model.stripPrefix("openai/")
 EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
@@ -118,8 +123,8 @@ AGW_PID=$!
 trap 'kill $AGW_PID 2>/dev/null' EXIT
 sleep 3
 
-# The default `llm.discovery: catalog` expands `*` into catalog model IDs, so
-# check for a non-empty list rather than a literal `*`.
+# The default `llm.discovery: catalog` expands `openai/*` into prefixed catalog
+# model IDs, so check for a non-empty list rather than a literal `openai/*`.
 SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '.data | length')
 if [ "${SERVED:-0}" -eq 0 ]; then
   echo "FAIL: /v1/models lists no models for the example config"
@@ -135,5 +140,5 @@ if [ "$PROVIDER" != "openAI" ]; then
   echo "FAIL: expected provider openAI but agentgateway resolved $PROVIDER"
   exit 1
 fi
-echo "✓ The wildcard model is served and resolves to the openAI provider"
+echo "✓ The prefixed model is served and resolves to the openAI provider"
 {{< /doc-test >}}

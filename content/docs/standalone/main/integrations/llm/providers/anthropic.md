@@ -62,11 +62,11 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
 3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
 4. From the **Provider** dropdown, select **Anthropic**.
-5. In the **Incoming model match** field, replace the default `anthropic/*` with `*`.
+5. Keep the default `anthropic/*` in the **Incoming model match** field.
 6. For the **Provider API key**, select **Env var**, and enter `ANTHROPIC_API_KEY`.
-7. For **Outgoing model**, keep **Incoming model**. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
+7. For **Outgoing model**, keep **Strip anthropic/**. This option removes the `anthropic/` prefix before the request is forwarded. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
 
-   {{< reuse-image src="img/ui-llm-add-model-anthropic.png" srcDark="img/ui-llm-add-model-anthropic-dark.png" alt="Add model drawer with Anthropic selected as the provider, the * wildcard as the incoming model match, and ANTHROPIC_API_KEY as the environment variable for the provider API key" >}}
+   {{< reuse-image src="img/ui-llm-add-model-anthropic.png" srcDark="img/ui-llm-add-model-anthropic-dark.png" alt="Add model drawer with Anthropic selected as the provider, anthropic/* as the incoming model match, and ANTHROPIC_API_KEY as the environment variable for the provider API key" >}}
 
 8. Click **Save model**.
 
@@ -79,20 +79,23 @@ Whether the UI can save depends on your storage mode. For more information, see 
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
   models:
-  - name: "*"
+  - name: "anthropic/*"
     provider: anthropic
     params:
       apiKey: "$ANTHROPIC_API_KEY"
+    transformation:
+      model: llmRequest.model.stripPrefix("anthropic/")
 ```
 
 {{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. The `anthropic/*` pattern matches any model name that starts with `anthropic/`. |
 | `provider` | The LLM provider, set to `anthropic` for Claude models. |
 | `params.model` | The specific Claude model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.apiKey` | The Anthropic API key for authentication. |
+| `transformation.model` | Removes the `anthropic/` prefix from the model name before the request is forwarded, so the provider receives its own model name. |
 {{% /tab %}}
 {{< /tabs >}}
 
@@ -102,10 +105,12 @@ cat <<'EOF' > config.yaml
 
 llm:
   models:
-  - name: "*"
+  - name: "anthropic/*"
     provider: anthropic
     params:
       apiKey: "$ANTHROPIC_API_KEY"
+    transformation:
+      model: llmRequest.model.stripPrefix("anthropic/")
 EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
@@ -118,7 +123,7 @@ After running agentgateway with the configuration from the previous section, you
 curl -X POST http://localhost:4000/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "claude-opus-4-6",
+    "model": "anthropic/claude-opus-4-6",
     "max_tokens": 100,
     "messages": [{"role": "user", "content": "Hello!"}]
   }'
@@ -162,7 +167,7 @@ Anthropic's `count_tokens` API is supported for estimating token usage before ma
 curl -X POST http://localhost:4000/v1/messages/count_tokens \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "claude-opus-4-6",
+    "model": "anthropic/claude-opus-4-6",
     "messages": [{"role": "user", "content": "Hello!"}],
     "system": "You are a helpful assistant."
   }'
@@ -210,7 +215,7 @@ The following example request uses adaptive extended thinking. Note that this se
 
 ```sh
 curl "localhost:4000/v1/messages" -H content-type:application/json -d '{
-  "model": "",
+  "model": "anthropic/claude-opus-4-6",
   "max_tokens": 1024,
   "thinking": {
     "type": "adaptive"
@@ -261,7 +266,7 @@ Provide the JSON schema definition in the `output_config.format` field.
 
 ```sh
 curl "localhost:4000/v1/messages" -H content-type:application/json -d '{
-  "model": "",
+  "model": "anthropic/claude-opus-4-6",
   "max_tokens": 256,
   "output_config": {
     "format": {

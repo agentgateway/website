@@ -40,12 +40,12 @@ To create the same configuration in the [UI]({{< link-hextra path="/documentatio
 2. Add the model.
    1. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
    2. From the **Provider** dropdown, select **Ollama**.
-   3. In the **Incoming model match** field, replace the default `ollama/*` with `*`.
+   3. Keep the default `ollama/*` in the **Incoming model match** field.
    4. Keep **Unset** for the **Provider API key**.
    5. If Ollama runs somewhere other than `http://localhost:11434/v1`, enter the **Base URL**, such as `http://192.168.1.20:11434/v1`. Otherwise, leave the field empty.
    6. For the **Outgoing model**, select **Explicit**, and enter `llama3.2`.
 
-      {{< reuse-image src="img/ui-llm-add-model-ollama.png" srcDark="img/ui-llm-add-model-ollama-dark.png" alt="Add model drawer with the Ollama provider, the incoming model match llama3.2, and the base URL http://localhost:11434/v1" >}}
+      {{< reuse-image src="img/ui-llm-add-model-ollama.png" srcDark="img/ui-llm-add-model-ollama-dark.png" alt="Add model drawer with the Ollama provider, ollama/* as the incoming model match, and the base URL http://localhost:11434/v1" >}}
 
    7. Click **Save model**.
 3. Serve LLM traffic on port `3000`.
@@ -65,12 +65,32 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{< /tabs >}}
 {{% /version %}}
 {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
-{{< reuse "agw-docs/pages/agentgateway/llm/providers/ollama-standalone-config.md" >}}
+{{< reuse "agw-docs/pages/agentgateway/llm/providers/ollama-standalone-config-1.6-earlier.md" >}}
 {{% /version %}}
 
 ## Test the configuration
 
-Send a request to verify that agentgateway routes to Ollama. The model name in the request must match a model you already pulled with `ollama pull`.
+Send a request to verify that agentgateway routes to Ollama.
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+The model name in the request must start with the `ollama/` prefix. Because the configuration sets `params.model`, every request goes to `llama3.2`.
+
+```sh
+curl http://localhost:3000/v1/chat/completions \
+  -H "content-type: application/json" \
+  -d '{
+    "model": "ollama/llama3.2",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Explain Ollama in one sentence."
+      }
+    ]
+  }' | jq
+```
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+The model name in the request must match a model you already pulled with `ollama pull`.
 
 ```sh
 curl http://localhost:3000/v1/chat/completions \
@@ -85,6 +105,7 @@ curl http://localhost:3000/v1/chat/completions \
     ]
   }' | jq
 ```
+{{% /version %}}
 
 ## Troubleshooting
 

@@ -75,13 +75,13 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
 3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
 4. From the **Provider** dropdown, select **Amazon Bedrock**.
-5. In the **Incoming model match** field, replace the default `bedrock/*` with `*`.
+5. Keep the default `bedrock/*` in the **Incoming model match** field.
 6. Keep **Ambient** for the **AWS credentials**. To enter an access key instead, select **Static**. This option writes the key to an `auth.aws` block.
 7. For the **AWS region**, enter or select `us-west-2`.
 8. From the **Bedrock endpoint** dropdown, select **Prefer Runtime**. The UI preselects **Prefer Mantle** for a new Bedrock model, and saves the choice as `params.bedrockEndpointPreference`. For more information, see [Bedrock Mantle](#bedrock-mantle).
-9. For **Outgoing model**, keep **Incoming model**. To send every request to one model instead, select **Explicit**, and enter the model ID. This option sets `params.model`.
+9. For **Outgoing model**, keep **Strip bedrock/**. This option removes the `bedrock/` prefix before the request is forwarded. To send every request to one model instead, select **Explicit**, and enter the model ID. This option sets `params.model`.
 
-   {{< reuse-image src="img/ui-llm-add-model-bedrock-runtime.png" srcDark="img/ui-llm-add-model-bedrock-runtime-dark.png" alt="Add model drawer with Amazon Bedrock selected as the provider, the * wildcard as the incoming model match, Ambient as the AWS credentials, us-west-2 as the AWS region, and Prefer Runtime as the Bedrock endpoint" >}}
+   {{< reuse-image src="img/ui-llm-add-model-bedrock-runtime.png" srcDark="img/ui-llm-add-model-bedrock-runtime-dark.png" alt="Add model drawer with Amazon Bedrock selected as the provider, bedrock/* as the incoming model match, Ambient as the AWS credentials, us-west-2 as the AWS region, and Prefer Runtime as the Bedrock endpoint" >}}
 
 10. Click **Save model**.
 
@@ -96,20 +96,23 @@ Whether the UI can save depends on your storage mode. For more information, see 
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
   models:
-  - name: "*"
+  - name: "bedrock/*"
     provider: bedrock
     params:
       awsRegion: us-west-2
+    transformation:
+      model: llmRequest.model.stripPrefix("bedrock/")
 ```
 
 {{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. The `bedrock/*` pattern matches any model name that starts with `bedrock/`. |
 | `provider` | The LLM provider, set to `bedrock` for Amazon Bedrock models. |
 | `params.model` | The specific Bedrock model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.awsRegion` | The AWS region where the Bedrock model is hosted. |
+| `transformation.model` | Removes the `bedrock/` prefix from the model name before the request is forwarded, so the provider receives its own model name. |
 {{% /tab %}}
 {{< /tabs >}}
 
@@ -119,10 +122,12 @@ cat <<'EOF' > config.yaml
 
 llm:
   models:
-  - name: "*"
+  - name: "bedrock/*"
     provider: bedrock
     params:
       awsRegion: us-west-2
+    transformation:
+      model: llmRequest.model.stripPrefix("bedrock/")
 EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
@@ -328,7 +333,7 @@ Agentgateway automatically handles the required formatting for Bedrock's count-t
 curl -X POST http://localhost:4000/v1/messages/count_tokens \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+    "model": "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
     "messages": [{"role": "user", "content": "Hello!"}],
     "system": "You are a helpful assistant."
   }'
@@ -369,7 +374,7 @@ Note that `max_tokens` must be greater than the thinking budget, and the minimum
 
 ```sh
 curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
-  "model": "",
+  "model": "bedrock/us.anthropic.claude-opus-4-20250514-v1:0",
   "max_tokens": 6000,
   "reasoning_effort": "high",
   "messages": [
@@ -399,7 +404,7 @@ Structured outputs constrain the model to respond with a specific JSON schema. P
 
 ```sh
 curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
-  "model": "",
+  "model": "bedrock/us.anthropic.claude-opus-4-20250514-v1:0",
   "max_tokens": 256,
   "response_format": {
     "type": "json_schema",

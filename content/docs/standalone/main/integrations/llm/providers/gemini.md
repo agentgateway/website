@@ -53,11 +53,11 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
 3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
 4. From the **Provider** dropdown, select **Gemini**.
-5. In the **Incoming model match** field, replace the default `gemini/*` with `*`.
+5. Keep the default `gemini/*` in the **Incoming model match** field.
 6. For the **Provider API key**, select **Env var**, and enter `GEMINI_API_KEY`.
-7. For **Outgoing model**, keep **Incoming model**. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
+7. For **Outgoing model**, keep **Strip gemini/**. This option removes the `gemini/` prefix before the request is forwarded. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
 
-   {{< reuse-image src="img/ui-llm-add-model-gemini.png" srcDark="img/ui-llm-add-model-gemini-dark.png" alt="Add model drawer with Gemini selected as the provider, the * wildcard as the incoming model match, and GEMINI_API_KEY as the environment variable for the provider API key" >}}
+   {{< reuse-image src="img/ui-llm-add-model-gemini.png" srcDark="img/ui-llm-add-model-gemini-dark.png" alt="Add model drawer with Gemini selected as the provider, gemini/* as the incoming model match, and GEMINI_API_KEY as the environment variable for the provider API key" >}}
 
 8. Click **Save model**.
 
@@ -70,20 +70,23 @@ Whether the UI can save depends on your storage mode. For more information, see 
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
   models:
-  - name: "*"
+  - name: "gemini/*"
     provider: gemini
     params:
       apiKey: "$GEMINI_API_KEY"
+    transformation:
+      model: llmRequest.model.stripPrefix("gemini/")
 ```
 
 {{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. The `gemini/*` pattern matches any model name that starts with `gemini/`. |
 | `provider` | The LLM provider, set to `gemini` for Google Gemini models. |
 | `params.model` | The specific Gemini model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.apiKey` | The Gemini API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
+| `transformation.model` | Removes the `gemini/` prefix from the model name before the request is forwarded, so the provider receives its own model name. |
 {{% /tab %}}
 {{< /tabs >}}
 
@@ -93,10 +96,12 @@ cat <<'EOF' > config.yaml
 
 llm:
   models:
-  - name: "*"
+  - name: "gemini/*"
     provider: gemini
     params:
       apiKey: "$GEMINI_API_KEY"
+    transformation:
+      model: llmRequest.model.stripPrefix("gemini/")
 EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
@@ -110,8 +115,8 @@ AGW_PID=$!
 trap 'kill $AGW_PID 2>/dev/null' EXIT
 sleep 3
 
-# The default `llm.discovery: catalog` expands `*` into catalog model IDs, so
-# check for a non-empty list rather than a literal `*`.
+# The default `llm.discovery: catalog` expands `gemini/*` into prefixed catalog
+# model IDs, so check for a non-empty list rather than a literal `gemini/*`.
 SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '.data | length')
 if [ "${SERVED:-0}" -eq 0 ]; then
   echo "FAIL: /v1/models lists no models for the example config"
@@ -127,5 +132,5 @@ if [ "$PROVIDER" != "gemini" ]; then
   echo "FAIL: expected provider gemini but agentgateway resolved $PROVIDER"
   exit 1
 fi
-echo "✓ The wildcard model is served and resolves to the gemini provider"
+echo "✓ The prefixed model is served and resolves to the gemini provider"
 {{< /doc-test >}}

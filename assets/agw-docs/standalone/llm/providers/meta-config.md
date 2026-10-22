@@ -11,7 +11,7 @@
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
      models:
-     - name: "*"
+     - name: "meta/*"
        provider: meta
        params:
          apiKey: "$META_API_KEY"
@@ -19,16 +19,19 @@
          # model: muse-spark-1.3
          # Optional: override the default provider URL.
          # baseUrl: https://api.meta.ai/v1
+       transformation:
+         model: llmRequest.model.stripPrefix("meta/")
    EOF
    ```
 
    | Setting | Description |
    |---------|-------------|
-   | `name` | The model name to match in incoming requests. Use `*` to accept any model name. |
+   | `name` | The model name to match in incoming requests. The `meta/*` pattern matches any model name that starts with `meta/`. |
    | `provider` | The provider preset. Set to `meta`. |
    | `params.apiKey` | Your Meta Model API key. Use `$META_API_KEY` to read the key from the environment. |
    | `params.model` | Optional. The upstream model to use for every matching request. Omit to use the model from the request. |
    | `params.baseUrl` | Optional. Overrides the provider URL. Defaults to `https://api.meta.ai/v1`. |
+   | `transformation.model` | Removes the `meta/` prefix from the model name before the request is forwarded, so the provider receives its own model name. |
 
 3. Validate the configuration.
 

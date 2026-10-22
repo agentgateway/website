@@ -54,11 +54,11 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
 3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
 4. From the **Provider** dropdown, select **OpenRouter**.
-5. In the **Incoming model match** field, replace the default `openrouter/*` with `*`.
+5. Keep the default `openrouter/*` in the **Incoming model match** field.
 6. For the **Provider API key**, select **Env var**, and enter `OPENROUTER_API_KEY`.
-7. For **Outgoing model**, keep **Incoming model**. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
+7. For **Outgoing model**, keep **Strip openrouter/**. This option removes the `openrouter/` prefix before the request is forwarded. To send every request to one model instead, select **Explicit**, and enter the model name. This option sets `params.model`.
 
-   {{< reuse-image src="img/ui-llm-add-model-openrouter.png" srcDark="img/ui-llm-add-model-openrouter-dark.png" alt="Add model drawer with OpenRouter selected as the provider, the * wildcard as the incoming model match, and OPENROUTER_API_KEY as the environment variable for the provider API key" >}}
+   {{< reuse-image src="img/ui-llm-add-model-openrouter.png" srcDark="img/ui-llm-add-model-openrouter-dark.png" alt="Add model drawer with OpenRouter selected as the provider, openrouter/* as the incoming model match, and OPENROUTER_API_KEY as the environment variable for the provider API key" >}}
 
 8. Click **Save model**.
 
@@ -71,21 +71,24 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
   models:
-  - name: "*"
+  - name: "openrouter/*"
     provider: openrouter
     params:
       apiKey: "$OPENROUTER_API_KEY"
+    transformation:
+      model: llmRequest.model.stripPrefix("openrouter/")
 ```
 
 {{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. The `openrouter/*` pattern matches any model name that starts with `openrouter/`. |
 | `provider` | The LLM provider, set to `openrouter`. |
 | `params.model` | Optional. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.apiKey` | Your OpenRouter API key. You can reference environment variables using the `$VAR_NAME` syntax. |
 | `params.baseUrl` | Optional. Overrides the provider base URL. Default: `https://openrouter.ai/api/v1`. |
+| `transformation.model` | Removes the `openrouter/` prefix from the model name before the request is forwarded, so the provider receives its own model name. |
 {{% /tab %}}
 {{< /tabs >}}
 
@@ -95,10 +98,12 @@ cat <<'EOF' > config.yaml
 
 llm:
   models:
-  - name: "*"
+  - name: "openrouter/*"
     provider: openrouter
     params:
       apiKey: "$OPENROUTER_API_KEY"
+    transformation:
+      model: llmRequest.model.stripPrefix("openrouter/")
 EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
@@ -111,7 +116,7 @@ After running agentgateway with the configuration from the previous section, you
 curl -X POST http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "openai/gpt-4o-mini",
+    "model": "openrouter/openai/gpt-4o-mini",
     "messages": [{"role": "user", "content": "Hello from OpenRouter!"}]
   }'
 ```

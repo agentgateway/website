@@ -120,7 +120,8 @@ test.describe('LLM provider, client, and web UI tabs', () => {
   // credentials, us-west-2, Prefer Runtime.
   test('add model bedrock runtime', async ({ page }) => {
     const drawer = await openAddModel(page, 'Amazon Bedrock');
-    await drawer.getByRole('textbox', { name: 'Incoming model match', exact: true }).fill('*');
+    // The guide keeps the default match, which the UI fills in when the provider is selected.
+    await expect(drawer.getByRole('textbox', { name: 'Incoming model match', exact: true })).toHaveValue('bedrock/*');
     await expect(drawer.getByRole('button', { name: 'Ambient', exact: true })).toHaveClass(/active/);
     await fillCombo(drawer, 'AWS region', 'us-west-2');
     const endpoint = drawer.getByRole('combobox', { name: 'Bedrock endpoint', exact: true });
@@ -150,7 +151,8 @@ test.describe('LLM provider, client, and web UI tabs', () => {
   // outgoing model is filled in too, so the form matches the YAML, but sits below the fold.
   test('add model custom perplexity', async ({ page }) => {
     const drawer = await openAddModel(page, 'Custom');
-    await drawer.getByRole('textbox', { name: 'Incoming model match', exact: true }).fill('*');
+    // The guide keeps the default match, which the UI fills in when the provider is selected.
+    await expect(drawer.getByRole('textbox', { name: 'Incoming model match', exact: true })).toHaveValue('custom/*');
     await drawer.getByRole('button', { name: 'Env var', exact: true }).click();
     await drawer.getByPlaceholder('ENV_VAR_NAME').fill('PERPLEXITY_API_KEY');
     await drawer.getByRole('textbox', { name: 'Base URL', exact: true }).fill('https://api.perplexity.ai');

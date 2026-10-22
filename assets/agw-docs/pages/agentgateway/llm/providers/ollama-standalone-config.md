@@ -5,7 +5,7 @@ Create a configuration file that routes requests to your local Ollama instance.
 llm:
   port: 3000
   models:
-  - name: "*"
+  - name: "ollama/*"
     provider: ollama
     params:
       model: llama3.2
@@ -18,7 +18,7 @@ llm:
 | `provider: ollama` | Uses the built-in Ollama provider shortcut instead of the older `openAI` compatibility path. |
 | `params.model` | Sets the default Ollama model. The model must already exist in your local Ollama instance. |
 | `params.baseUrl` | Optional override for non-default Ollama endpoints. If omitted, agentgateway uses `http://localhost:11434/v1`. |
-| `name: "*"` | Matches any requested model name, so clients can request any model that Ollama has pulled. |
+| `name: "ollama/*"` | Matches any requested model name that starts with `ollama/`, such as `ollama/llama3.2`. |
 
 If Ollama is running somewhere other than `http://localhost:11434/v1`, override the base URL instead of using host overrides.
 
@@ -27,7 +27,7 @@ If Ollama is running somewhere other than `http://localhost:11434/v1`, override 
 llm:
   port: 3000
   models:
-  - name: "*"
+  - name: "ollama/*"
     provider: ollama
     params:
       model: llama3.2

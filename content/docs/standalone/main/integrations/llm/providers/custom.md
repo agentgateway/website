@@ -65,13 +65,13 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
 3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
 4. From the **Provider** dropdown, select **Custom**.
-5. In the **Incoming model match** field, replace the default `custom/*` with `*`.
+5. Keep the default `custom/*` in the **Incoming model match** field.
 6. For the **Provider API key**, select **Env var**, and enter `PERPLEXITY_API_KEY`.
 7. In the **Custom provider** section, enter `https://api.perplexity.ai` for the **Base URL**.
 8. In the **Route formats** list, keep **Chat completions (/chat/completions)** selected. Select any other format that the upstream supports, and optionally enter a path override for it.
 9. For the **Outgoing model**, select **Explicit**, and enter `llama-3.1-sonar-large-128k-online`.
 
-   {{< reuse-image src="img/ui-llm-add-model-custom-perplexity.png" srcDark="img/ui-llm-add-model-custom-perplexity-dark.png" alt="Add model drawer with Custom selected as the provider, the * wildcard as the incoming model match, PERPLEXITY_API_KEY as the environment variable for the provider API key, and https://api.perplexity.ai as the base URL" >}}
+   {{< reuse-image src="img/ui-llm-add-model-custom-perplexity.png" srcDark="img/ui-llm-add-model-custom-perplexity-dark.png" alt="Add model drawer with Custom selected as the provider, custom/* as the incoming model match, PERPLEXITY_API_KEY as the environment variable for the provider API key, and https://api.perplexity.ai as the base URL" >}}
 
 10. Click **Save model**.
 
@@ -83,7 +83,7 @@ cat > /tmp/test-custom-provider.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
   models:
-  - name: "*"
+  - name: "custom/*"
     provider:
       custom:
         formats:

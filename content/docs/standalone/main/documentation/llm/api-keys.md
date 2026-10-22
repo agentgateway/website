@@ -34,14 +34,14 @@ You can set the provider API key in the UI or in your configuration file.
 
 2. Open **LLM** > **Models** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
 3. From the **Provider** dropdown, select **OpenAI**.
-4. Replace the **Incoming model match** with `*`.
+4. Keep the default `openai/*` in the **Incoming model match** field, and keep **Strip openai/** for the **Outgoing model**.
 5. For the **Provider API key**, select one of the following options.
    * **API key**: Enter the key itself, such as `sk-proj....`. The UI writes the key inline in the `params.apiKey` field. This option is the least secure. Only use this option for quick tests.
    * **Env var**: Enter the name of the environment variable, such as `OPENAI_API_KEY`. The UI writes `apiKey: $OPENAI_API_KEY`. The variable must be set in the environment that agentgateway runs in, or the save fails.
    * **File**: Enter the path to a file that holds the key, such as `/etc/agentgateway/openai-key.txt`. The UI writes `apiKey: {file: <path>}`. Agentgateway reads this file only when it loads the configuration, so a changed key takes effect after the next configuration reload or restart. This option differs from the **File** steps in the **Config file** tab, which use `auth.key.value.file` and pick up a changed key on the next request.
    * **Unset**: Configure no provider credential.
 
-   {{< reuse-image src="img/ui-llm-model-passthrough.png" srcDark="img/ui-llm-model-passthrough-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-model-prefixed.png" srcDark="img/ui-llm-model-prefixed-dark.png" >}}
 
 6. Click **Save model**.
 
@@ -62,10 +62,12 @@ You can provide your API key directly in the agentgateway configuration. This op
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
      models:
-     - name: "*"
+     - name: "openai/*"
        provider: openAI
        params:
          apiKey: "sk-proj...."
+       transformation:
+         model: llmRequest.model.stripPrefix("openai/")
    EOF
    ```
 
@@ -83,10 +85,12 @@ You can provide your API key directly in the agentgateway configuration. This op
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
      models:
-     - name: "*"
+     - name: "openai/*"
        provider: openAI
        params:
          apiKey: "$OPENAI_API_KEY"
+       transformation:
+         model: llmRequest.model.stripPrefix("openai/")
    EOF
    ```
    
@@ -107,12 +111,14 @@ Store the key in a file on the gateway host. Agentgateway watches the file for c
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
      models:
-     - name: "*"
+     - name: "openai/*"
        provider: openAI
        auth:
          key:
            value:
              file: openai-key
+       transformation:
+         model: llmRequest.model.stripPrefix("openai/")
    EOF
    ```
 
@@ -149,7 +155,7 @@ Rotate provider keys regularly, when your provider requires it, or after a suspe
    ```sh
    curl -s http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
-     -d '{"model": "gpt-4o-mini", "messages": [{"role": "user", "content": "Hello!"}]}' | jq .
+     -d '{"model": "openai/gpt-4o-mini", "messages": [{"role": "user", "content": "Hello!"}]}' | jq .
    ```
 
    Example output:
