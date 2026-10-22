@@ -116,3 +116,36 @@ if [ "$RESOLVED" != "$EXPECTED" ]; then
 fi
 echo "✓ Vertex model, project, and region resolve to the documented values"
 {{< /doc-test >}}
+
+## Send file content by URI {#send-file-content-by-uri}
+
+In an OpenAI-compatible Chat Completions request, you can put a `gs://`, `http://`, or `https://` URI in a `file` content part's `file_data` or `file_id`. The request to Vertex AI uses `fileData`.
+
+For HTTP(S) signed URLs, MIME type detection uses the extension before the query string or fragment. If the URI does not have a recognized extension, set `filename`, `mime_type`, or `content_type` on the file object.
+
+```json
+{
+  "model": "gemini-2.5-flash",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        { "type": "text", "text": "Compare these documents." },
+        {
+          "type": "file",
+          "file": {
+            "file_id": "https://storage.googleapis.com/my-bucket/report.pdf?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Signature=abc"
+          }
+        },
+        {
+          "type": "file",
+          "file": {
+            "filename": "summary.pdf",
+            "file_data": "https://example.com/download/123"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
