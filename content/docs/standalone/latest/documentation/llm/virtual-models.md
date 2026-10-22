@@ -68,6 +68,8 @@ Virtual models let you publish one client-facing model name and route requests a
 
 Use `llm.virtualModels[]` to define the virtual entrypoint and `llm.models[]` as the concrete upstream targets.
 
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
+
 ## Public and internal models
 
 Use `llm.models[].visibility` to control whether a model is directly exposed to clients or kept as an internal target.

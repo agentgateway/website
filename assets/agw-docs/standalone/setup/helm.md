@@ -255,7 +255,7 @@ For quick access to the UI, port-forward the `{{< reuse "agw-docs/standalone/hel
 
 A port-forward is a quick way to look at the UI on a cluster. To give the UI its own gateway so that you can reach it without one, secure it with OIDC, and expose it on your own hostname, see [UI]({{< link-hextra path="/documentation/setup/ui/" >}}).
 
-## Common Helm values
+## Common Helm values {#common-helm-values}
 
 {{< reuse "agw-docs/standalone/helm-standalone-values-table.md" >}}
 
@@ -356,10 +356,15 @@ Enable the chart's HorizontalPodAutoscaler (HPA) to adjust the number of proxy p
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ### Use an existing session key Secret {#helm-session-secret}
 
-Agentgateway encrypts the MCP session IDs that it issues to clients with an AES-256-GCM session key. Without a key, session IDs are encoded but not encrypted. Set `session.secretName` to read the key from an existing Kubernetes Secret instead of writing it into `config.session.key`, which the chart stores in a ConfigMap. The chart passes the Secret's `key` entry to the proxy container as the `SESSION_KEY` environment variable. `SESSION_KEY` takes precedence over `config.session.key`.
+Agentgateway encrypts the MCP session IDs that it issues to clients with an AES-256-GCM session key. When you do not set a key, what happens depends on the chart's `mode` value.
+
+* In `database` mode, agentgateway generates a key at startup and stores it in PostgreSQL, so every replica uses the same key.
+* In the default `readonly` mode, agentgateway cannot save a generated key to the read-only ConfigMap, so session IDs are encoded but not encrypted. The proxy logs `failed to write generated session key` and `no session key configured; MCP session IDs are not encrypted` at startup.
+
+Set `session.secretName` to read the key from an existing Kubernetes Secret instead of writing it into `config.session.key`, which the chart stores in a ConfigMap. The chart passes the Secret's `key` entry to the proxy container as the `SESSION_KEY` environment variable. `SESSION_KEY` takes precedence over `config.session.key` and over a key that agentgateway generates. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
 
 > [!NOTE]
-> Every proxy replica reads the same Secret, so any replica can decrypt a session ID that another replica issued. When you change the key, agentgateway returns `404 Not Found` for session IDs that were encrypted with the old key and MCP clients must start a new session.
+> Every proxy replica reads the same Secret, so any replica can decrypt a session ID that another replica issued. When you change the key, including when you set a Secret on a release that used a generated key or no key, agentgateway returns `404 Not Found` for session IDs that were encrypted with the old key and MCP clients must start a new session.
 
 1. Create a Secret with a `key` entry. The key must be 32 random bytes encoded as 64 hexadecimal characters. If the value has any other length or format, the proxy fails to start.
 
