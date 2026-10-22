@@ -515,9 +515,14 @@
       "dark": "assets/img/ui-llm-add-model-azure-foundry-dark.png"
     },
     "ui-llm-add-model-bedrock-runtime.png": {
-      "$note": "providers/bedrock.md, \"Configuration\" and \"Bedrock Mantle\" UI tabs: the Add model drawer with model match *, Amazon Bedrock, Ambient credentials, region us-west-2, Bedrock endpoint Prefer Runtime, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "$note": "providers/bedrock.md, \"Configuration\" and \"Bedrock Mantle\" UI tabs: the Add model drawer with model match bedrock/*, Amazon Bedrock, Ambient credentials, region us-west-2, Bedrock endpoint Prefer Runtime, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
       "light": "assets/img/ui-llm-add-model-bedrock-runtime.png",
       "dark": "assets/img/ui-llm-add-model-bedrock-runtime-dark.png"
+    },
+    "ui-llm-add-model-anthropic-wildcard.png": {
+      "$note": "integrations/llm-clients/claude-code.md, Anthropic UI tab: the Add model drawer with model match *, Anthropic, Env var ANTHROPIC_API_KEY, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "light": "assets/img/ui-llm-add-model-anthropic-wildcard.png",
+      "dark": "assets/img/ui-llm-add-model-anthropic-wildcard-dark.png"
     },
     "ui-llm-add-model-vertex-explicit.png": {
       "$note": "providers/vertex.md, \"Configuration\" UI tab: the Add model drawer with model match gemini-2.5-flash, Gemini Enterprise (GCP Vertex), ADC, project my-project-id, region us-west2, explicit outgoing model google/gemini-2.5-flash-lite-preview-06-17, before Save model. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
@@ -525,7 +530,7 @@
       "dark": "assets/img/ui-llm-add-model-vertex-explicit-dark.png"
     },
     "ui-llm-add-model-custom-perplexity.png": {
-      "$note": "providers/custom.md, \"Configuring a custom provider\" UI tab: the top of the Add model drawer for Perplexity through the Custom provider (model match *, Env var PERPLEXITY_API_KEY, base URL https://api.perplexity.ai, Chat completions format checked), before Save model. The explicit outgoing model is filled in below the fold. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
+      "$note": "providers/custom.md, \"Configuring a custom provider\" UI tab: the top of the Add model drawer for Perplexity through the Custom provider (model match custom/*, Env var PERPLEXITY_API_KEY, base URL https://api.perplexity.ai, Chat completions format checked), before Save model. The explicit outgoing model is filled in below the fold. Captured by tests/ui-tabs-c.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-c.yaml.",
       "light": "assets/img/ui-llm-add-model-custom-perplexity.png",
       "dark": "assets/img/ui-llm-add-model-custom-perplexity-dark.png"
     },

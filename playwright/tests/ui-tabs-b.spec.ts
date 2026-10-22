@@ -5,7 +5,9 @@ import { test, expect, dismissWelcome, uiTabsOnly, escapeRegExp, openAddModel, s
  * "UI" tab captures for the standalone LLM core guides (docs 1.7 and later):
  *   - llm/about.md (the shared model-exposure-patterns.md snippet): Provider prefix, Exact model
  *     name, Catch-all, and Custom model name (the Add model drawer). The Provider prefix capture
- *     (ui-llm-model-prefixed.png) is reused by llm/api-keys.md.
+ *     (ui-llm-model-prefixed.png) is reused by llm/api-keys.md. The Catch-all capture
+ *     (ui-llm-model-passthrough.png) is reused by the OpenAI `*` steps in llm-clients/codex.md,
+ *     web-uis/chatbot-ui.md, and agw-docs/standalone/llm/clients/ui-openai-port-3000.md.
  *   - llm/virtual-models.md: Weighted, Failover, and Conditional routing (Add virtual model).
  *   - llm/transformations.md: the request and the final transformation (Edit model).
  *   - llm/cost-controls/budget-limits/per-key.md: a key with a budget, and a key's model access.
@@ -112,7 +114,7 @@ async function customKey(page: Page, drawer, name: string, value: string): Promi
 test.describe('UI tabs: LLM core', () => {
   uiTabsOnly();
 
-  // llm/about.md, "Catch-all": OpenAI, "*", env var.
+  // llm/about.md, "Catch-all" (also referenced from codex, chatbot-ui, and ui-openai-port-3000.md): OpenAI, "*", env var.
   test('model passthrough', async ({ page }) => {
     const drawer = await openAddModel(page, 'OpenAI');
     await modelMatch(page, '*');

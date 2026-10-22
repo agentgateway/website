@@ -114,7 +114,7 @@ To create the same configuration in the [UI]({{< link-hextra path="/documentatio
 4. In the **Incoming model match** field, replace the default `anthropic/*` with `*`.
 5. For the **Provider API key**, select **Env var**, and enter `ANTHROPIC_API_KEY`.
 
-   {{< reuse-image src="img/ui-llm-add-model-anthropic.png" srcDark="img/ui-llm-add-model-anthropic-dark.png" alt="Add model drawer with the Anthropic provider selected and the provider API key read from the ANTHROPIC_API_KEY environment variable" >}}
+   {{< reuse-image src="img/ui-llm-add-model-anthropic-wildcard.png" srcDark="img/ui-llm-add-model-anthropic-wildcard-dark.png" alt="Add model drawer with the Anthropic provider selected, * as the incoming model match, and the provider API key read from the ANTHROPIC_API_KEY environment variable" >}}
 
 6. Click **Save model**.
 

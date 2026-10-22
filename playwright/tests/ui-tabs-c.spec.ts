@@ -25,7 +25,8 @@ import { test, expect, dismissWelcome, uiTabsOnly, blurAll, escapeRegExp, openAd
  *
  * Produces (light + dark per project): ui-llm-add-provider.png, ui-llm-settings-port.png,
  * ui-llm-add-model-azure-foundry.png, ui-llm-add-model-bedrock-runtime.png,
- * ui-llm-add-model-vertex-explicit.png, ui-llm-add-model-custom-perplexity.png.
+ * ui-llm-add-model-vertex-explicit.png, ui-llm-add-model-custom-perplexity.png,
+ * ui-llm-add-model-anthropic-wildcard.png.
  */
 
 /**
@@ -130,6 +131,21 @@ test.describe('LLM provider, client, and web UI tabs', () => {
     await blurAll(page);
     await expect(endpoint).toHaveText(/Prefer Runtime/);
     await expect(page).toHaveScreenshot('ui-llm-add-model-bedrock-runtime.png', { animations: 'disabled' });
+  });
+
+  // integrations/llm-clients/claude-code.md, Anthropic UI tab: the * match and Env var
+  // ANTHROPIC_API_KEY. Claude Code sends bare model names, so this guide replaces the default
+  // anthropic/* match, unlike the provider page that ui-llm-add-model-anthropic.png illustrates.
+  test('add model anthropic wildcard', async ({ page }) => {
+    const drawer = await openAddModel(page, 'Anthropic');
+    const match = drawer.getByRole('textbox', { name: 'Incoming model match', exact: true });
+    await match.fill('*');
+    await drawer.getByRole('button', { name: 'Env var', exact: true }).click();
+    await drawer.getByPlaceholder('ENV_VAR_NAME').fill('ANTHROPIC_API_KEY');
+    await blurAll(page);
+    await expect(match).toHaveValue('*');
+    await expect(drawer.getByPlaceholder('ENV_VAR_NAME')).toHaveValue('ANTHROPIC_API_KEY');
+    await expect(page).toHaveScreenshot('ui-llm-add-model-anthropic-wildcard.png', { animations: 'disabled' });
   });
 
   // providers/vertex.md, "Configuration" UI tab: ADC, my-project-id, us-west2, and the
