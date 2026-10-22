@@ -182,7 +182,7 @@ Each `cache_control` marker becomes a Bedrock cache point after the content that
 
 Messages that are left empty after the conversion drops unsupported blocks are not sent to Bedrock. The conversion adds at most four cache points to a request, so a marker is dropped when four cache points are already set.
 
-On the way back, Bedrock reasoning text becomes a `thinking` block. In a buffered reply, Bedrock encrypted reasoning becomes a `redacted_thinking` block that keeps the encrypted payload for the next turn. A streamed reply does not keep the payload. The encrypted reasoning arrives as a `thinking` block with the text `[REDACTED]`, which cannot be replayed. For the same behavior on other Bedrock endpoints, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}).
+On the way back, Bedrock reasoning text becomes a `thinking` block. In a buffered reply, Bedrock encrypted reasoning becomes a `redacted_thinking` block that keeps the encrypted payload for the next turn. A streamed reply does not keep the payload. The encrypted reasoning arrives as a `thinking` block with the text `[REDACTED]`, which cannot be replayed. If redacted reasoning fragments in a streamed Bedrock Runtime reply exceed the stream buffer limit before the block ends, the stream emits an `api_error` event with the message `Stream processing error`. The stream then stops. For the same behavior on other Bedrock endpoints, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}).
 
 ## Using the API
 
