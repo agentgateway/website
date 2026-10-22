@@ -24,6 +24,7 @@ Agentgateway supports native, OpenAI-compatible, and self-hosted LLM providers.
 Many providers now have dedicated integrations with preconfigured base URLs and request formats:
 - [Baseten]({{< link-hextra path="/integrations/llm/providers/baseten/" >}})
 - [Cerebras]({{< link-hextra path="/integrations/llm/providers/cerebras/" >}})
+- [GitHub Copilot]({{< link-hextra path="/integrations/llm/providers/copilot/" >}})
 - [DeepInfra]({{< link-hextra path="/integrations/llm/providers/deepinfra/" >}})
 - [xAI (Grok)]({{< link-hextra path="/integrations/llm/providers/xai/" >}})
 - [Cohere]({{< link-hextra path="/integrations/llm/providers/cohere/" >}})
