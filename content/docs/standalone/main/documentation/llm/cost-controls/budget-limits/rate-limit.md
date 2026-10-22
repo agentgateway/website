@@ -102,7 +102,7 @@ To track how much of each budget a user has consumed, query the Prometheus metri
 curl http://localhost:15020/metrics
 ```
 
-Query token usage by user with the `agentgateway_gen_ai_client_token_usage_sum` metric, or realized cost with `agw.ai.usage.cost.total`. For per-key spending queries and cost tracking, see [Virtual key management]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#monitor-per-key-spending" >}}) and [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
+Query token usage by user with the `agentgateway_gen_ai_client_token_usage_sum` metric, or realized cost with `agw.ai.usage.cost.total`. For per-key spending queries and cost tracking, see [Virtual key management]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#monitor-per-key-spending" >}}) and [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). The `agctl standalone budgets` command reports [per-key budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/" >}}), not the token buckets on this page.
 
 > [!WARNING]
 > When you sum token usage, do not add the `input_cache_read` or `input_cache_write` token types to the `input` type. The `input` series already includes the cached tokens, so adding them double counts.

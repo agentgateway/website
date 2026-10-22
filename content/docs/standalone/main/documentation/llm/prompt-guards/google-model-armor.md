@@ -21,6 +21,10 @@ Google Cloud Model Armor guardrails are model-agnostic and can be applied to any
    ```sh
    gcloud model-armor templates list --location=<location>
    ```
+5. Get a [Gemini API key](https://aistudio.google.com/apikey) and save it in the `GEMINI_API_KEY` environment variable. The example configuration reads the key from this variable.
+   ```sh
+   export GEMINI_API_KEY=<your-api-key>
+   ```
 
 ## Configure Google Model Armor
 
@@ -32,10 +36,10 @@ cat <<'EOF' > config.yaml
 llm:
   models:
   - name: "*"
-    provider: openAI
+    provider: gemini
     params:
-      model: gemini-1.5-flash
-      apiKey: "$GOOGLE_API_KEY"
+      model: gemini-2.5-flash
+      apiKey: "$GEMINI_API_KEY"
     guardrails:
       request:
       - googleModelArmor:
@@ -67,8 +71,8 @@ EOF
 ## Test the guardrail
 
 ```sh
-curl "localhost:4000/v1beta/openai/chat/completions" -H content-type:application/json  -d '{
-  "model": "",
+curl "localhost:4000/v1/chat/completions" -H content-type:application/json  -d '{
+  "model": "gemini-2.5-flash",
   "messages": [
    {"role": "user", "content": "I want to harm myself"}
  ]

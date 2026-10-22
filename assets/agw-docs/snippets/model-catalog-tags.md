@@ -38,7 +38,7 @@ The tags apply as follows.
 <!-- Bedrock tag support is new in 1.6. The include/exclude lists must stay a
      complete, matching pair — shortening either to "1.5.x" would also match
      1.4.x and older, and adding "main" would need an edit every release. -->
-{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}These tags apply only to the `copilot` provider, which is available in standalone mode. Tag values that are not listed in this table are stored and merged, but {{< reuse "agw-docs/snippets/agentgateway.md" >}} does not act on them yet.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}These tags apply to the `copilot` provider, which is available in standalone mode, and to Amazon Bedrock. The `aws-bedrock-mantle` import source sets them on Bedrock models for you.{{< /version >}}
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}These tags apply only to the `copilot` provider, which is available in standalone mode. Tag values that are not listed in this table are stored and merged, but {{< reuse "agw-docs/snippets/agentgateway.md" >}} does not act on them yet.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}These tags apply to the `copilot` provider{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}, which is available in standalone mode,{{< /version >}} and to Amazon Bedrock. The `aws-bedrock-mantle` import source sets them on Bedrock models for you.{{< /version >}}
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
 #### Bedrock

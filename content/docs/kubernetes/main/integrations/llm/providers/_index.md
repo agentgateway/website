@@ -16,13 +16,16 @@ Prefer the dedicated provider pages when the {{< reuse "agw-docs/snippets/backen
 - [Azure OpenAI]({{< link-hextra path="/integrations/llm/providers/azure/" >}})
 - [Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}})
 - [Gemini]({{< link-hextra path="/integrations/llm/providers/gemini/" >}})
+- [GitHub Copilot]({{< link-hextra path="/integrations/llm/providers/copilot/" >}})
 - [Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/" >}})
 - [Ollama]({{< link-hextra path="/integrations/llm/providers/ollama/" >}})
 
 ## OpenAI-compatible providers
 
-Many providers, such as Cohere, DeepSeek, Groq, Mistral, Together AI, and xAI, expose the OpenAI Chat Completions API but do not have a first-class type in the {{< reuse "agw-docs/snippets/backend.md" >}} API. Configure these with the `ai.provider.openai` shape. For the list of supported hosts and paths, see [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}).
+Many providers expose the OpenAI Chat Completions API but do not have a first-class type in the {{< reuse "agw-docs/snippets/backend.md" >}} API. Examples include Cohere, DeepSeek, Groq, Mistral, Perplexity, Together AI, and xAI. Configure these providers with the `ai.provider.openai` shape. For the list of supported hosts and paths, see [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}).
 
 ## Custom providers
 
 Use [custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) for unsupported, non-standard, or self-hosted targets when you need to declare formats, upstream paths, or backend targets explicitly.
+
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
