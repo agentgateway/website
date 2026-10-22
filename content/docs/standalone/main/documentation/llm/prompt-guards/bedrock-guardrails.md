@@ -13,7 +13,7 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. Create a guardrail in the [AWS console](https://console.aws.amazon.com/bedrock/home#/guardrails) or via the AWS CLI.
 3. Retrieve your guardrail identifier by running: `aws bedrock list-guardrails --region <aws-region>`
-4. Authenticate with AWS Bedrock using the standard [AWS authentication sources](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html). Make sure that you have permission to invoke the Bedrock Guardrails API.
+4. Authenticate with AWS Bedrock using the standard [AWS authentication sources](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html). Make sure that you have permission to invoke the Bedrock Guardrails API and the Amazon Nova Lite model (`amazon.nova-lite-v1:0`) in the `us-west-2` region.
 
 ## Configure Bedrock Guardrails
 
@@ -28,10 +28,10 @@ cat <<'EOF' > config.yaml
 llm:
   models:
   - name: "*"
-    provider: openAI
+    provider: bedrock
     params:
-      model: amazon.titan-text-express-v1
-      apiKey: "$BEDROCK_API_KEY"
+      model: amazon.nova-lite-v1:0
+      awsRegion: us-west-2
     guardrails:
       request:
       - bedrockGuardrails:

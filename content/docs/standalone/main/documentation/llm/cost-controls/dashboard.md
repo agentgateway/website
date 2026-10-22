@@ -91,6 +91,81 @@ curl -s http://localhost:4000/v1/chat/completions \
 
 Refresh the **Analytics** page and the request appears: tokens counted, cost calculated against the catalog, and attributed to the model, provider, and (if present) user. The realized `cost` is recorded alongside token counts, which is why the same fields you see in [logs and metrics]({{< link-hextra path="/documentation/llm/observability/" >}}) also drive the dashboard.
 
+## Query analytics with agctl {#cli}
+
+Use `agctl standalone analytics` to query the same request-log database as the dashboard. Before you run these commands, [install agctl and connect it to your gateway]({{< link-hextra path="/documentation/operations/config-resources/#connect" >}}). The database must contain LLM requests. A configured model without traffic has no analytics to report.
+
+1. Summarize the past 24 hours. The table reports requests, errors, tokens, realized cost, average time to first token (TTFT), generated tokens per second, and the share of input tokens that the provider read from its prompt cache.
+
+   ```sh
+   agctl standalone analytics
+   ```
+
+   Example output:
+
+   ```text
+   REQUESTS  ERRORS  TOKENS  COST       AVG TTFT  TOK/S  CACHE HIT
+   5         0       905     $0.004775  -         -      0.0%
+   ```
+
+   The TTFT and tokens-per-second columns are empty for requests that do not stream the response.
+
+2. Group the results by provider and requested model. The `--since` flag takes durations such as `30m` and `24h`, not days. For seven days, use `168h`.
+
+   ```sh
+   agctl standalone analytics --by provider,model --since 168h
+   ```
+
+   Example output:
+
+   ```text
+   PROVIDER  MODEL        REQUESTS  ERRORS  TOKENS  COST       AVG TTFT  TOK/S  CACHE HIT
+   openai    gpt-4o       2         0       452     $0.004505  -         -      0.0%
+   openai    gpt-4o-mini  3         0       453     $0.000270  -         -      0.0%
+   TOTAL                  5         0       905     $0.004775  -         -      0.0%
+   ```
+
+3. Compare the spending of users or groups. These groupings use the stored attributes, including the standard identity mappings of the gateway.
+
+   ```sh
+   agctl standalone analytics --by agentgateway.user --since 24h
+   agctl standalone analytics --by agentgateway.group --since 24h
+   ```
+
+   Example output of the first command:
+
+   ```text
+   AGENTGATEWAY.USER  REQUESTS  ERRORS  TOKENS  COST       AVG TTFT  TOK/S  CACHE HIT
+   alice              3         0       673     $0.003225  -         -      0.0%
+   bob                2         0       232     $0.001551  -         -      0.0%
+   TOTAL              5         0       905     $0.004775  -         -      0.0%
+   ```
+
+4. Split the results into hourly buckets, and filter by provider.
+
+   ```sh
+   agctl standalone analytics --by model --provider openai --since 6h --interval 1h
+   ```
+
+   Example output:
+
+   ```text
+   TIME              MODEL        REQUESTS  ERRORS  TOKENS  COST       AVG TTFT  TOK/S  CACHE HIT
+   2026-10-20 14:58  gpt-4o       2         0       452     $0.004505  -         -      0.0%
+   2026-10-20 14:58  gpt-4o-mini  3         0       453     $0.000270  -         -      0.0%
+   TOTAL                          5         0       905     $0.004775  -         -      0.0%
+   ```
+
+5. Export the summary as JSON for further processing.
+
+   ```sh
+   agctl standalone analytics --by provider,model --since 24h -o json > analytics.json
+   ```
+
+To group by the model in the provider response, use `--by response-model`. For TTFT histogram buckets per requested model, use `--by model,ttft`. You can also group by a custom attribute, such as `--by team`, when you [store that attribute in the database logs]({{< link-hextra path="/documentation/observability/access-logs/database/#add-custom-fields-to-database-logs" >}}).
+
+Analytics describes recorded traffic. It does not show budget enforcement or the invoice of a provider. Requests that a log filter excludes do not count, and requests without a price add no cost. For the budget usage of each key, use [`agctl standalone budgets`]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/#step-6-check-budget-usage" >}}). For all filters and formats, see the [`analytics` reference]({{< link-hextra path="/reference/agctl/agctl-standalone-analytics/" >}}).
+
 ## Persistence and scaling
 
 The dashboard reads from the database at `config.database.url`. Agentgateway supports SQLite (default, single instance) and PostgreSQL. See [Request Log]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}) for full configuration details, including connection string format, credentials, and schema reference.

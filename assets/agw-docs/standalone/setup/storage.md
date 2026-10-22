@@ -609,6 +609,39 @@ Both storage modes support running more than one agentgateway proxy pod. In `rea
      -l app.kubernetes.io/name={{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}
    ```
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Manage stored resources with agctl {#agctl}
+
+You can run the same resource operations as the API examples on this page with `agctl standalone`. [Install agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}) and [connect it]({{< link-hextra path="/documentation/operations/config-resources/#connect" >}}) to the API address of your installation. For Helm, keep the port-forward to the admin address running.
+
+1. Create an MCP target resource. Replace the example host with the URL of your MCP server.
+
+   ```sh
+   cat <<'EOF' > target.yaml
+   kind: mcp.target
+   value:
+     name: cli-target
+     mcp:
+       host: http://example.com/mcp
+   EOF
+   agctl standalone apply -f target.yaml
+   ```
+
+2. Verify the stored resource.
+
+   ```sh
+   agctl standalone get mcp.target cli-target -o yaml
+   ```
+
+3. Remove the target when you finish testing.
+
+   ```sh
+   agctl standalone delete mcp.target cli-target
+   ```
+
+For where the CLI writes and what it lists in each storage mode, see [Storage behavior]({{< link-hextra path="/documentation/operations/config-resources/#storage-behavior" >}}).
+{{< /version >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
