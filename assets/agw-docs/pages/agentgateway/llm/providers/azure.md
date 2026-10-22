@@ -14,7 +14,7 @@ Azure supports two endpoint types:
 You can authenticate to Azure with an API key or with implicit Entra ID authentication through `DefaultAzureCredential`. On Kubernetes, implicit authentication can obtain a token from managed identity or workload identity. It does not require a Kubernetes secret or `policies.auth`.
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.1.x,2.2.x,2.3.x" >}}
-You can also configure explicit managed identity or workload identity authentication in the {{< reuse "agw-docs/snippets/backend.md" >}}. Managed identity and workload identity use different credential sources. For either source, the proxy must be able to reach an Azure managed identity endpoint.
+You can also configure explicit managed identity or workload identity authentication in the {{< reuse "agw-docs/snippets/backend.md" >}}. Managed identity requires access to an Azure managed identity endpoint. Workload identity exchanges the projected ServiceAccount token with Microsoft Entra ID.
 
 ### Use Microsoft Entra Workload ID on AKS
 
@@ -517,5 +517,153 @@ To authenticate with Microsoft Entra Workload ID, prepare the AKS cluster and th
      ]
    }' | jq
    ```
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}
+## Use Microsoft Decision models on Azure AI Foundry
+
+[Azure AI Foundry](https://ai.azure.com/) hosts Microsoft Decision models, which answer classification questions about a text, such as which of several choices fits best or how likely a statement is true. {{< reuse "agw-docs/snippets/agentgateway.md" >}} accepts two request formats for these models:
+
+- **Decisions API** (`/v1/decisions`): The OpenAI-compatible format. {{< reuse "agw-docs/snippets/agentgateway.md" >}} converts the request and the response to and from the native SystemOne format.
+- **SystemOne** (`/v1/systemone`): The native format of the model. {{< reuse "agw-docs/snippets/agentgateway.md" >}} forwards the request unchanged.
+
+Both formats use the Foundry resource endpoint, `https://{resourceName}.cognitiveservices.azure.com/providers/microsoft/v1/systemone`. In SystemOne, a question of type `noul` returns the probability that a statement is true. The Decisions API calls this question type `predicate`.
+
+Before you begin, deploy Microsoft-Decision-1 in your Foundry resource. Then complete the [AKS Workload Identity setup](#use-microsoft-entra-workload-id-on-aks) for the `agentgateway-proxy` Gateway.
+
+1. Create a {{< reuse "agw-docs/snippets/backend.md" >}} and an HTTPRoute for Decisions and SystemOne traffic. Replace the resource, project, and deployment names with your own values.
+
+   ```yaml
+   kubectl apply --server-side -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: azure-decisions
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         azure:
+           model: my-decision-deployment
+           projectName: my-project
+           resourceName: my-foundry-resource
+           resourceType: Foundry
+     policies:
+       ai:
+         routes:
+           /v1/decisions: Decisions
+           /v1/systemone: SystemOne
+       auth:
+         azure:
+           workloadIdentity: {}
+   ---
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: azure-decisions
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - name: agentgateway-proxy
+     rules:
+     - backendRefs:
+       - group: {{< reuse "agw-docs/snippets/group.md" >}}
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+         name: azure-decisions
+       matches:
+       - method: POST
+         path:
+           type: Exact
+           value: /v1/decisions
+       - method: POST
+         path:
+           type: Exact
+           value: /v1/systemone
+   EOF
+   ```
+
+   {{% reuse "agw-docs/snippets/review-table.md" %}}
+
+   | Setting | Description |
+   |---------|-------------|
+   | `azure.resourceName` | The Azure AI Foundry resource name used to construct the endpoint hostname. |
+   | `azure.resourceType` | Set to `Foundry` to use Azure AI Foundry endpoints. |
+   | `azure.projectName` | The Foundry project name. The CRD requires this field for the `Foundry` resource type, even though Decisions and SystemOne requests go to the resource endpoint and do not use the project. |
+   | `azure.model` | The name of your Foundry deployment, such as `my-decision-deployment`. {{< reuse "agw-docs/snippets/agentgateway.md" >}} sends this name upstream and replaces the `model` value in the client request. |
+   | `policies.ai.routes` | Maps each request path to a request format, `Decisions` or `SystemOne`. The HTTPRoute must match the same paths. |
+   | `policies.auth.azure.workloadIdentity` | Authenticate to Azure with the workload identity that you set up for the proxy. Leave the object empty. |
+
+2. Set the address of the gateway.
+
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   export GATEWAY_URL=http://$INGRESS_GW_ADDRESS
+   ```
+
+   **Localhost**: Forward the gateway Service in one terminal. Then set the address in another terminal.
+   ```sh
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     service/agentgateway-proxy 8080:80
+   ```
+   ```sh
+   export GATEWAY_URL=http://localhost:8080
+   ```
+
+3. Send a choice question through the Decisions API.
+
+   ```sh
+   curl --fail-with-body --max-time 120 "$GATEWAY_URL/v1/decisions" \
+     -H 'Content-Type: application/json' \
+     -d '{
+       "input": "I was charged twice for my subscription.",
+       "model": "my-decision-deployment",
+       "questions": [{
+         "choices": [
+           {"description": "Payments and invoices", "value": "billing"},
+           {"description": "Software problems", "value": "technical"}
+         ],
+         "instructions": "Which team should handle this support ticket?",
+         "name": "department",
+         "type": "choice"
+       }]
+     }'
+   ```
+
+   The response includes a `department` choice with a probability for each value, and token usage. The Decisions API also supports `predicate` and `score` questions.
+
+4. Send the same question in the native SystemOne format. SystemOne takes the text in `state` and the questions as a map keyed by name, and returns an `answers` map. Its question types are `noul`, `choice`, and `score`.
+
+   ```sh
+   curl --fail-with-body --max-time 120 "$GATEWAY_URL/v1/systemone" \
+     -H 'Content-Type: application/json' \
+     -d '{
+       "model": "my-decision-deployment",
+       "questions": {
+         "department": {
+           "criteria": {
+             "billing": "Payments and invoices",
+             "technical": "Software problems"
+           },
+           "instructions": "Which team should handle this support ticket?",
+           "type": "choice"
+         }
+       },
+       "state": "I was charged twice for my subscription."
+     }'
+   ```
+
+   > [!NOTE]
+   > Prompt guards are disabled for requests in the native SystemOne format.
+
+### Clean up {#decisions-cleanup}
+
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
+
+```sh
+kubectl delete httproute azure-decisions -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} azure-decisions -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+```
+
+If you forwarded the Service, stop the port-forward with Ctrl+C.
+{{< /version >}}
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

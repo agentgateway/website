@@ -356,46 +356,59 @@ EOF
 
 ### Step 6: Check budget usage
 
-Query the admin API for the current usage of a key. To return every budget, omit the `apiKeyName` parameter.
+1. Check the budget usage of the key with [agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}). To list the budgets of every key, omit the `--key` flag.
 
-```sh {paths="apikey-budgets"}
-curl -s "http://localhost:15000/api/budgets/status?apiKeyName=team-a" | jq .
-```
+   ```sh
+   agctl standalone budgets --key team-a
+   ```
 
-The `used` value is a dollar amount, and it is higher than the limit, because agentgateway charged the request that crossed the limit after it completed.
+   The `USED` value is higher than the limit, because agentgateway charged the request that crossed the limit after the request completed. The `RESETS` column shows the end of the current window in your local time.
 
-Example output:
+   Example output:
 
-```json
-{
-  "observedAt": 1787773624201,
-  "budgets": [
-    {
-      "apiKeyName": "team-a",
-      "name": "daily-spend",
-      "limit": {
-        "unit": "USD",
-        "amount": "0.008"
-      },
-      "usage": {
-        "used": "0.00903",
-        "remaining": "0",
-        "exceeded": true
-      },
-      "window": {
-        "start": 1787702400000,
-        "end": 1787788800000,
-        "durationMs": 86400000,
-        "expired": false
-      },
-      "onBudgetExceeded": "Block",
-      "updatedAt": 1787773623159
-    }
-  ]
-}
-```
+   ```text
+   KEY     BUDGET       USED      LIMIT   REMAINING  RESETS            STATUS    ACTION
+   team-a  daily-spend  $0.00903  $0.008  $0         2026-10-20 20:00  exceeded  block
+   ```
 
-You can also review and edit budgets in the built-in [Admin UI]({{< link-hextra path="/documentation/setup/ui/" >}}), on the same **LLM > Virtual API Keys** page that lists your keys.
+2. For the full budget status, query the admin API. The response adds the window start and end as Unix timestamps in milliseconds, and the time of the last update. To return every budget, omit the `apiKeyName` parameter.
+
+   ```sh {paths="apikey-budgets"}
+   curl -s "http://localhost:15000/api/budgets/status?apiKeyName=team-a" | jq .
+   ```
+
+   Example output:
+
+   ```json
+   {
+     "observedAt": 1787773624201,
+     "budgets": [
+       {
+         "apiKeyName": "team-a",
+         "name": "daily-spend",
+         "limit": {
+           "unit": "USD",
+           "amount": "0.008"
+         },
+         "usage": {
+           "used": "0.00903",
+           "remaining": "0",
+           "exceeded": true
+         },
+         "window": {
+           "start": 1787702400000,
+           "end": 1787788800000,
+           "durationMs": 86400000,
+           "expired": false
+         },
+         "onBudgetExceeded": "Block",
+         "updatedAt": 1787773623159
+       }
+     ]
+   }
+   ```
+
+The `agctl standalone budgets` command and the API report usage only. To change a budget, [update the key with agctl]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl-update" >}}), edit your configuration file, or use the built-in [UI]({{< link-hextra path="/documentation/setup/ui/" >}}) on the same **LLM > Virtual API Keys** page that lists your keys.
 
 ### Step 7: Try a token budget
 
@@ -490,6 +503,8 @@ llm:
 ```
 
 Each entry is an exact model name or a pattern with one `*` wildcard, such as a `gpt-5*` prefix or a `*-mini` suffix. Agentgateway rejects a request for any other model with a `403` response and the `model_not_allowed` code, before the request reaches a provider.
+
+To create a key with model restrictions and a budget from the command line, see [Set up virtual keys (agctl)]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl-create" >}}).
 
 | Value | Effect |
 | -- | -- |

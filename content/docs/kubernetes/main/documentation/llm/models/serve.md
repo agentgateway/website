@@ -23,6 +23,8 @@ In this guide, you verify that the API is enabled, turn on LLM serving for a lis
 
 For more information, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
 
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
+
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).

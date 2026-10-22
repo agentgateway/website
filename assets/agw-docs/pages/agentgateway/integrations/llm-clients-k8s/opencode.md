@@ -7,6 +7,9 @@ Route LLM requests from [OpenCode](https://opencode.ai/) through {{< reuse "agw-
 3. Require [virtual key authentication]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#set-up-virtual-keys" >}}) for the Gateway. This guide uses the `vk-alice-4f9c2a` example key. Token budgets are optional.
 4. [Install OpenCode](https://opencode.ai/docs/). This guide was tested with OpenCode 1.18.35.
 
+> [!TIP]
+> The OpenAI provider guide sets up a route that passes the model that OpenCode requests through to OpenAI. If you publish models with `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources instead, OpenCode must request a model name that one of the resources publishes. For the naming options, see [Choose how to expose models]({{< link-hextra path="/documentation/llm/about/#choose-how-to-expose-models" >}}).
+
 ## Set the gateway URL and virtual key
 
 1. Set the base URL with the required `/v1` suffix. Use `INGRESS_GW_ADDRESS` from the [installation quickstart]({{< link-hextra path="/documentation/quickstart/install/" >}}), or `http://localhost:8080/v1` for port-forwarding.

@@ -317,6 +317,8 @@ agentgateway -f config2-mcp.yaml --validate-only
 
 ## LLM budgets and model access
 
+To generate hashed LLM keys and manage their restrictions at runtime, see [Set up virtual keys (agctl)]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl" >}}). The `agctl standalone keys` command manages the keys in `llm.policies.apiKey.keys`. An API key policy that you attach directly to an HTTP route or to the MCP configuration stays part of the resource that contains it.
+
 An API key entry can carry two fields that apply to LLM traffic. The `budgets` field sets a per-key budget that caps what the key spends. The `allowedModels` field limits which models the key can reach. Both fields work with a `key` entry and with a `keyHash` entry.
 
 ```yaml
