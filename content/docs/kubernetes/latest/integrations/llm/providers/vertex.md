@@ -1,6 +1,7 @@
 ---
 title: Vertex AI
 weight: 20
+icon: /integrations/providers/bw/vertex.svg
 description: Configure Google Vertex AI as an LLM provider for agentgateway.
 ---
 
