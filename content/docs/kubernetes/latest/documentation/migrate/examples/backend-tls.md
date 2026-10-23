@@ -50,7 +50,30 @@ ingress2gateway print --providers=ingress-nginx --emitter=agentgateway \
 cat backend-tls-agentgateway.yaml
 ```
 
-The tool generates a Gateway, HTTPRoute(s), and an **AgentgatewayPolicy** per backend Service. The policy name is `<service-name>-backend-tls`. With verification enabled (`proxy-ssl-verify: "on"`), the emitter configures mTLS via `mtlsCertificateRef` and does not set `insecureSkipVerify`:
+The tool generates a Gateway, an HTTPRoute, a Gateway API `BackendTLSPolicy`, and an **AgentgatewayPolicy**. Both policies are named `<service-name>-backend-tls`.
+
+The `BackendTLSPolicy` sets `spec.validation.caCertificateRefs` to a ConfigMap with the secret name. The command warns that mTLS will not be configured, and that you must create that ConfigMap in the same namespace with the CA certificate under the key `ca.crt`.
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: secure-api-backend-tls
+  namespace: default
+spec:
+  targetRefs:
+  - group: ""
+    kind: Service
+    name: secure-api
+  validation:
+    caCertificateRefs:
+    - group: ""
+      kind: ConfigMap
+      name: backend-tls-secret
+    hostname: internal-api.example.com
+```
+
+The AgentgatewayPolicy still sets `mtlsCertificateRef` to the secret name. With verification enabled (`proxy-ssl-verify: "on"`), it does not set `insecureSkipVerify`:
 
 ```yaml
 apiVersion: agentgateway.dev/v1alpha1

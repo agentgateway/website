@@ -176,7 +176,7 @@ Set `nginx.ingress.kubernetes.io/backend-protocol` to `HTTPS` or `GRPCS` to enab
 - `nginx.ingress.kubernetes.io/proxy-ssl-name`
 - `nginx.ingress.kubernetes.io/proxy-ssl-verify`
 
-Mapped into **AgentgatewayPolicy** using agentgateway’s `BackendSimple.TLS` model: `proxy-ssl-name` → `spec.backend.tls.sni`; `proxy-ssl-verify: "off"` → `spec.backend.tls.insecureSkipVerify = All`; `proxy-ssl-secret` → `spec.backend.tls.mtlsCertificateRef[0].name`. Backend TLS is emitted as **one AgentgatewayPolicy per referenced backend Service**. If `proxy-ssl-secret` is given as `namespace/name`, the emitter uses only `name` (Secret must be in the same namespace as the policy).
+Mapped into **AgentgatewayPolicy** using agentgateway’s `BackendSimple.TLS` model: `proxy-ssl-name` → `spec.backend.tls.sni`; `proxy-ssl-verify: "off"` → `spec.backend.tls.insecureSkipVerify = All`; `proxy-ssl-secret` → `spec.backend.tls.mtlsCertificateRef[0].name`. Backend TLS is emitted as **one AgentgatewayPolicy per referenced backend Service**. v0.5.0 also emits a Gateway API `BackendTLSPolicy` with the same name. Its `validation.caCertificateRefs` entry is a ConfigMap of that secret name, and the command warns that mTLS will not be configured until you create that ConfigMap with the CA certificate under the key `ca.crt`. If `proxy-ssl-secret` is given as `namespace/name`, the emitter uses only `name` (Secret must be in the same namespace as the policy).
 
 #### Proxy Connect Timeout
 
@@ -191,7 +191,7 @@ Annotations for rate limit, timeouts, CORS, rewrite target, basic auth, and ext 
 - **HTTPRoute-scoped policies** for traffic-level behavior (rate limit, request timeouts, CORS, rewrite target, basic auth, ext auth).
 - **Service-scoped policies** for backend behavior (backend TLS and proxy connect timeout).
 
-In v0.5.0, the emitter also maps body size annotations to `spec.frontend.http.maxBufferSize` (bytes, with `proxy-body-size` taking precedence over `client-body-buffer-size`) and explicit `enable-access-log` settings to `spec.frontend.accessLog`. A false access log setting emits `filter: "false"`. Backend HTTP version policies target the Service or generated AgentgatewayBackend.
+In v0.5.0, the emitter writes body size annotations to `spec.frontend.http.maxBufferSize` (bytes, with `proxy-body-size` taking precedence over `client-body-buffer-size`) and explicit `enable-access-log` settings to `spec.frontend.accessLog`. A false access log setting emits `filter: "false"`. A true setting emits an empty `accessLog` object. These policies target the HTTPRoute. agentgateway accepts `spec.frontend` only when every `targetRefs` entry is a Gateway, so apply fails with `the 'frontend' field can only target a Gateway`. Backend HTTP version policies target the Service or generated AgentgatewayBackend, and those policies do apply.
 
 ### Naming
 

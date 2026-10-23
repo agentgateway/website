@@ -36,12 +36,15 @@ The `ingress-nginx` provider currently supports an Ingress with the following an
 
 ### Request / Body Size
 
-- `nginx.ingress.kubernetes.io/client-body-buffer-size`: Sets `AgentgatewayPolicy.spec.frontend.http.maxBufferSize` when `proxy-body-size` is not present. Quantities are converted to bytes.
+- `nginx.ingress.kubernetes.io/client-body-buffer-size`: v0.5.0 writes `AgentgatewayPolicy.spec.frontend.http.maxBufferSize` when `proxy-body-size` is not present. Quantities are converted to bytes.
 
 - **Note (regex-mode constraint):** Ingress NGINX session cookie paths do not support regex. If regex-mode is enabled for a host (via `use-regex: "true"` or
   `rewrite-target`) and cookie affinity is used, `session-cookie-path` must be set; the provider validates this and emits an error if it is missing.
 
-- `nginx.ingress.kubernetes.io/proxy-body-size`: Sets `AgentgatewayPolicy.spec.frontend.http.maxBufferSize` in bytes and takes precedence over `client-body-buffer-size`. The resolved size must be greater than zero and fit in a signed 32-bit integer.
+- `nginx.ingress.kubernetes.io/proxy-body-size`: v0.5.0 writes `AgentgatewayPolicy.spec.frontend.http.maxBufferSize` in bytes and takes precedence over `client-body-buffer-size`. The resolved size must be greater than zero and fit in a signed 32-bit integer.
+
+> [!WARNING]
+> The generated policy targets the HTTPRoute. agentgateway accepts `spec.frontend` only when every target is a Gateway, so `kubectl apply` rejects the policy: `the 'frontend' field can only target a Gateway`.
 
 ---
 
@@ -120,11 +123,11 @@ The `ingress-nginx` provider currently supports an Ingress with the following an
 
 ### Access Logging
 
-- `nginx.ingress.kubernetes.io/enable-access-log`: When explicitly set, maps to `AgentgatewayPolicy.spec.frontend.accessLog`. A value of `"true"` enables default access logs; `"false"` sets `filter: "false"` to disable them. When absent, no access log policy is emitted.
+- `nginx.ingress.kubernetes.io/enable-access-log`: When explicitly set, v0.5.0 writes `AgentgatewayPolicy.spec.frontend.accessLog` on an HTTPRoute target. A value of `"true"` emits an empty `accessLog` object. A value of `"false"` sets `filter: "false"`. When the annotation is absent, no access log policy is emitted. Apply fails with the same Gateway-target error as body size.
 
 ### TLS Passthrough
 
-- `nginx.ingress.kubernetes.io/ssl-passthrough: "true"`: Converts the affected HTTPRoute to a TLSRoute and configures a Gateway listener with `protocol: TLS` and `tls.mode: Passthrough`. The backend must terminate TLS. HTTP path matching and HTTP policies do not apply to passthrough traffic.
+- `nginx.ingress.kubernetes.io/ssl-passthrough: "true"`: Converts the affected HTTPRoute to a TLSRoute (`apiVersion: gateway.networking.k8s.io/v1alpha2`) and configures a Gateway listener with `protocol: TLS` and `tls.mode: Passthrough`. The backend must terminate TLS. HTTP path matching and HTTP policies do not apply to passthrough traffic. Clusters that serve TLSRoute `v1` and not `v1alpha2` reject the resource: `no matches for kind "TLSRoute" in version "gateway.networking.k8s.io/v1alpha2"`.
 
 ---
 
@@ -140,7 +143,7 @@ Set `nginx.ingress.kubernetes.io/backend-protocol` to `HTTPS` or `GRPCS` to enab
 
 - `nginx.ingress.kubernetes.io/proxy-ssl-server-name`: When set to `"on"`, enables SNI; the SNI value still comes from `proxy-ssl-name`. For agentgateway, the emitter projects SNI via `proxy-ssl-name`.
 
-**Note:** For agentgateway, backend TLS is emitted as one **AgentgatewayPolicy per backend Service** (name `<service-name>-backend-tls`), targeting the Service via `spec.targetRefs`. Conflicting settings for the same Service may result in warnings.
+**Note:** For agentgateway, backend TLS is emitted as one **AgentgatewayPolicy per backend Service** (name `<service-name>-backend-tls`), targeting the Service via `spec.targetRefs`. v0.5.0 also emits a Gateway API `BackendTLSPolicy` with the same name. Its `validation.caCertificateRefs` entry is a ConfigMap of that secret name. The command warns that mTLS will not be configured and that you must create the ConfigMap with the CA certificate under the key `ca.crt`. Conflicting settings for the same Service may result in warnings.
 
 ---
 
