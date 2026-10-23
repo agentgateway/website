@@ -160,7 +160,12 @@ A provider error is not a verdict, so `action: audit` does not change how an err
 
 ## Guard scope {#scope}
 
-A guard does not inspect the whole request or response by default. A request guard reads the system prompt, the text of regular user and assistant messages, and the tool call results that are fed back to the model. A response guard reads regular message text, including plaintext reasoning blocks. Tool call arguments are not read by default, so a Social Security number in the arguments of a tool call reaches the provider or client unmasked.
+By default, guards inspect the following content:
+
+- **Request guards:** The system prompt, regular user and assistant message text, and tool call results.
+- **Response guards:** Regular message text, including plaintext reasoning blocks.
+
+Guards do not scan tool call arguments by default. Sensitive data in those arguments can pass through unmasked.
 
 Set the `scope` field on a request or response guard to choose what the guard reads.
 
@@ -194,18 +199,27 @@ llm:
 | `toolOutput` | Tool call results that are fed back to the model, including results from server-side tools. |
 
 > [!WARNING]
-> A `scope` **replaces** the default, it does not add to it. A guard with `scope: [toolInput]` reads tool call arguments and stops reading the system prompt, messages, and tool results, so content that the guard used to catch passes through. To add `toolInput` to the default, list all four values, as in the previous example.
+> Setting `scope` **replaces** the default. For example, `scope: [toolInput]` scans only tool call arguments. The guard no longer checks the system prompt, messages, or tool results. To include `toolInput` alongside the request defaults, list all four values as shown in the previous example.
 
 These rules govern the field:
 
 - **Omit `scope` to keep the default.** The request default is `systemPrompt`, `messages`, and `toolOutput`. The response default is `messages`. An empty list is rejected with `scope must not be empty; omit it to use the default (systemPrompt + messages + toolOutput)`.
-- **Every guard type except `webhook` accepts a scope.** You can set `scope` on `regex`, `openAIModeration`, `bedrockGuardrails`, `googleModelArmor`, and `azureContentSafety` guards. A provider guard, such as `openAIModeration`, sends the provider only the text in scope. If a request has no text in scope, the guard does not call the provider.
-- **A `webhook` guard does not support scope.** A webhook always receives the request messages or the response choices, as described in [Webhooks]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/" >}}). A request webhook accepts an omitted `scope`, the default list, or exactly `[systemPrompt, messages]`. Any other value fails to load with `scope: webhook guards do not support scope; they always inspect systemPrompt + messages`. A response webhook accepts only `[messages]`.
+- **Supported guards:** `regex`, `openAIModeration`, `bedrockGuardrails`, `googleModelArmor`, and `azureContentSafety` accept `scope`.
+- **Provider calls use only text in scope.** If a request has no text in scope, the guard skips the provider call.
 - **Streaming response guards support only message scope.** If `streaming: Enabled` and a response guard sets `scope`, every value must be `messages`.
 - **Encrypted payloads are excluded.** Signed response payloads are scanned, but a `mask` action that would change signed content rejects the response instead.
 - **Masking `toolInput` can produce invalid JSON.** In APIs that carry tool arguments as opaque JSON, such as chat completions, the whole argument string is treated as one piece of text. A rule that matches across the JSON punctuation rewrites the arguments into something the provider cannot parse. Prefer `toolOutput`, or write a `toolInput` pattern that matches only a value.
 
 For a worked example, see [Regex filters]({{< link-hextra path="/documentation/llm/prompt-guards/regex/#scope" >}}).
+
+### Webhook scope
+
+A webhook always receives the request messages or response choices. You cannot change this content with `scope`. See [Webhooks]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/" >}}).
+
+- **Request webhook:** Omit `scope`, use the default list, or set exactly `[systemPrompt, messages]`.
+- **Response webhook:** Omit `scope` or set only `[messages]`.
+
+Other values prevent the configuration from loading.
 
 ## Shared and model-specific guardrails
 

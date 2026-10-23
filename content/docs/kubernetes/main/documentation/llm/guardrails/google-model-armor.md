@@ -277,7 +277,9 @@ In your GKE cluster, set up workload identity.
 
 ## Guard scope {#scope}
 
-By default, a request guard sends Model Armor the system prompt, the message text, and the tool call results in the request. A response guard sends the message text of the response. To change what a guard sends, set the `scope` field on the guard. For example, the following request guard leaves tool call results out.
+By default, a request guard sends Model Armor the system prompt, message text, and tool call results. A response guard sends only response message text.
+
+Set `scope` to change which text the guard sends. This example excludes tool call results from the request guard.
 
 ```yaml
 promptGuard:
@@ -295,7 +297,7 @@ promptGuard:
             type: AccessToken
 ```
 
-If a request or response has no text in scope, the guard does not call Model Armor. For each scope value and the rules for the field, see [Guard scope]({{< link-hextra path="/documentation/llm/guardrails/overview/#scope" >}}).
+If no text is in scope, the guard skips the call to Model Armor. For supported values and restrictions, see [Guard scope]({{< link-hextra path="/documentation/llm/guardrails/overview/#scope" >}}).
 
 ## Backend connection and authentication policies
 

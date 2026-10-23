@@ -48,7 +48,7 @@ By default, agentgateway calls `POST /request` and `POST /response` on the webho
 
 ## Pass content from a webhook {#pass}
 
-To let a request or a response continue unchanged, the webhook replies with an `action` object that contains only an optional `reason` field. An empty `action` object, `{"action": {}}`, also passes the content.
+To pass content unchanged, return an empty `action` object (`{"action": {}}`) or include only a `reason` field:
 
 ```json
 {
@@ -58,14 +58,16 @@ To let a request or a response continue unchanged, the webhook replies with an `
 }
 ```
 
-A pass reply must not contain any field other than `reason`. Agentgateway cannot match an `action` object with an extra field, such as a score, to any action, so it treats the reply as a webhook error. The same rule applies to a mask reply whose messages contain fields other than `role` and `content`. Fields outside the `action` object are ignored, so return extra metadata next to the `action` object instead of inside it.
+Extra fields in a pass action, such as a score, cause a webhook error. For mask actions, message fields other than `role` and `content` also cause an error.
 
-A webhook error follows the `failureMode` of the guard.
+Return extra metadata outside the `action` object, where agentgateway ignores it.
+
+The guard's `failureMode` determines how agentgateway handles webhook errors:
 
 * With the default, `failClosed`, agentgateway rejects the request with a `503` status code and the body `failed to process LLM request`. For a response guard, the body is `failed to process LLM response`.
 * With `failureMode: failOpen`, agentgateway forwards the content unchanged.
 
-The agentgateway log shows why the reply was not accepted. For example, a request guard with the default `failureMode` logs the following line.
+The agentgateway log explains the error. For example:
 
 ```console
 warn	llm	failed to call prompt guard webhook: data did not match any variant of untagged enum RequestAction at line 1 column 51

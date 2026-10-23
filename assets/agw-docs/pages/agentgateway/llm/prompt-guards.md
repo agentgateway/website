@@ -322,9 +322,9 @@ In the next step, you instruct agentgateway to mask credit card numbers that are
 By default, a request guard reads the system prompt and regular message text only. Tool call results that come back to the model are not read, so PII that a tool returns reaches the provider untouched. Set the `scope` field to include `ToolOutput`.
 {{% /version %}}
 {{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
-By default, a request guard reads the system prompt, regular message text, and the tool call results that come back to the model. The request guards earlier on this page already apply their rules to tool results. Tool call arguments that the model produces are not read unless you add `ToolInput` to the `scope` field.
+By default, a request guard reads the system prompt, regular message text, and tool call results. To also scan tool call arguments, add `ToolInput` to `scope`.
 
-Use the `scope` field to narrow or widen what one guard reads. The following example narrows a guard to tool call results only, so that PII in a tool result gets its own rejection message.
+The following example limits a guard to tool call results and sets a rejection message for PII.
 {{% /version %}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,2.2.x" >}}For what each scope value covers and the limits on the field, see [Guard scope]({{< link-hextra path="/documentation/llm/guardrails/overview/#scope" >}}).{{< /version >}}
