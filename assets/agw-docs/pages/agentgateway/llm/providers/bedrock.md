@@ -299,7 +299,7 @@ The Bedrock model decides which values it accepts. If the model rejects forced t
 {{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
 ## Service tier {#service-tier}
 
-When a `/v1/chat/completions` or `/v1/responses` request goes to Bedrock Runtime, the OpenAI `service_tier` value from the client request is converted to the Bedrock Converse `serviceTier` field. Bedrock then serves the request at that [service tier](https://docs.aws.amazon.com/bedrock/latest/userguide/service-tiers-inference.html).
+For `/v1/chat/completions` and `/v1/responses` requests to Bedrock Runtime, agentgateway converts OpenAI `service_tier` to Converse `serviceTier`. This selects the Bedrock [service tier](https://docs.aws.amazon.com/bedrock/latest/userguide/service-tiers-inference.html).
 
 | Client `service_tier` | Bedrock `serviceTier` |
 |---|---|
@@ -307,13 +307,15 @@ When a `/v1/chat/completions` or `/v1/responses` request goes to Bedrock Runtime
 | `default` | `{"type": "default"}` |
 | `flex` | `{"type": "flex"}` |
 | `auto`, or omitted | Omitted. Bedrock uses its default tier. |
-| Any other value, such as `scale` or `fast` | Omitted. Bedrock uses its default tier. For a `/v1/chat/completions` request, agentgateway also logs the warning `service tier is not supported by Bedrock`. |
+| Any other value, such as `scale` or `fast` | Omitted. Bedrock uses its default tier. For `/v1/chat/completions` requests, other values also trigger the warning `service tier is not supported by Bedrock`. |
 
 A `/v1/messages` request does not set a Bedrock service tier.
 
-The Bedrock model decides which tiers it accepts. If the model does not support the requested tier, Bedrock rejects the request with a `400` error, such as `The provided service tier is not supported for this model`. In earlier versions, agentgateway did not send the tier, so the request succeeded at the standard tier. To keep that behavior for a model that does not support a tier, omit `service_tier` from the request or set it to `auto`.
+If the Bedrock model does not support the requested tier, the request fails with `400`. For example: `The provided service tier is not supported for this model`.
 
-Bedrock reports the tier that served the request in the `x-amzn-bedrock-service-tier` response header. Agentgateway records the tier as `llm.serviceTier` and uses it to select service-tier rates from the model catalog. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
+Earlier versions omitted the tier and used the standard tier. To keep that behavior, omit `service_tier` or set it to `auto`.
+
+Bedrock reports the served tier in the `x-amzn-bedrock-service-tier` response header. Agentgateway normalizes it as `llm.serviceTier` to select model catalog rates. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
 {{% /version %}}
 
 ## Prompt caching
@@ -492,15 +494,15 @@ Some Bedrock models return encrypted reasoning in a `reasoningContent.redactedCo
 {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}A streamed reply does not keep the encrypted payload, so streamed encrypted reasoning cannot be replayed. A `/v1/messages` stream shows the encrypted reasoning as a `thinking` block with the text `[REDACTED]`.{{< /version >}}
 
 {{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
-A streamed reply keeps the encrypted payload too, so you replay streamed encrypted reasoning the same way as buffered reasoning. The stream format depends on the client API.
+Replay streamed encrypted reasoning the same way as buffered reasoning. Stream events depend on the client API.
 
 | Client API | Streamed reasoning |
 |---|---|
-| `/v1/messages` | Reasoning text streams as `thinking_delta` events, and the signature as a `signature_delta` event. Encrypted reasoning arrives as one `redacted_thinking` content block after Bedrock finishes the block. |
-| `/v1/responses` | Each reasoning block is a separate `reasoning` output item, which comes before the `message` item. Reasoning text streams as `response.reasoning_text.delta` events. The signature or the encrypted payload arrives as `encrypted_content` in the `response.output_item.done` event for that item. |
-| `/v1/chat/completions` | Reasoning text streams in `reasoning_content`, and the signature in `reasoning_signature`. Encrypted reasoning is omitted. |
+| `/v1/messages` | Text uses `thinking_delta` events; the signature uses `signature_delta`. Encrypted reasoning arrives as one `redacted_thinking` block after Bedrock finishes the block. |
+| `/v1/responses` | Each reasoning block becomes a `reasoning` output item before the `message` item. Text uses `response.reasoning_text.delta` events. The item's `response.output_item.done` event carries the signature or encrypted payload as `encrypted_content`. |
+| `/v1/chat/completions` | Text uses `reasoning_content`; the signature uses `reasoning_signature`. Encrypted reasoning is omitted. |
 
-In a streamed `/v1/messages` reply, agentgateway holds encrypted reasoning until its block ends. If the held fragments exceed the stream buffer limit, the stream emits an `api_error` event with the message `Stream processing error`. The stream then stops.
+For `/v1/messages` streams, agentgateway buffers encrypted reasoning until the block ends. If the buffer limit is exceeded, the stream emits an `api_error` event with `Stream processing error` and stops.
 {{% /version %}}
 {{% /version %}}
 
