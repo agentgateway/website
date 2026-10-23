@@ -138,6 +138,11 @@ The **LLM** area configures the models that clients can request and the policies
 
 The **LLM** area also has pages for providers, guardrails, virtual API keys, costs, analytics, and logs. For more information, see the [LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}}).
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+* **Virtual API Keys**: To rotate a key, click **Edit** for the key. For a key that starts with `agw_sk_`, click **Regenerate** to generate a new value. For other keys, click **Edit** in the **Key value** field and enter a new value. For the steps, see [Rotate a virtual key]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#rotate-a-virtual-key" >}}).
+* **Logs** and **Analytics**: Each filter dropdown, such as **Users** or **Groups**, lists the values from recorded traffic and has a search box. Type part of a value to narrow the list. The list shows an exact match first, then the values that start with the text, and then the values that contain it. Typing does not filter the results. To filter, select a value.
+{{< /version >}}
+
 ### MCP {#tour-mcp}
 
 The **MCP** area configures the MCP servers behind the gateway and the policies that apply to MCP traffic.
@@ -152,12 +157,47 @@ The **MCP** area configures the MCP servers behind the gateway and the policies 
 
 For more information, see the [MCP quickstart]({{< link-hextra path="/documentation/quickstart/mcp/" >}}).
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+### Settings {#tour-settings}
+
+The **Settings** page, under **Tools**, holds the settings that apply to the whole gateway. The page has two sub-pages, and [http://localhost:15000/ui/settings](http://localhost:15000/ui/settings) opens the first one.
+
+* **UI**: Selects the **Public gateway** that serves the UI in addition to the admin interface. The page also shows the UI access policies, such as OIDC, JWT auth, API keys, and CORS. The UI saves these settings in the `ui` section of your configuration. For more information, see [Serve the UI on its own gateway]({{< link-hextra path="/documentation/setup/ui/gateway-ui/" >}}) and [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).
+* **Observability**: Shows the **Tracing** and **Access logs** cards, which configure tracing and access logs for all traffic. The UI saves these settings in `frontendPolicies.tracing` and `frontendPolicies.accessLog`. For more information, see [Access logs]({{< link-hextra path="/documentation/observability/access-logs/view/" >}}) and [Traces]({{< link-hextra path="/documentation/observability/traces/" >}}).
+{{< /version >}}
+
 ## Try out the UI
 
 Use the UI to review what agentgateway loaded and to manage the resources that you can edit from the UI. The following guides configure agentgateway from a file first, and then you can open the same configuration in the UI to see how the UI presents it.
 
 * [MCP quickstart]({{< link-hextra path="/documentation/quickstart/mcp/" >}}) to connect an MCP server and try tools in the built-in playground.
 * [LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}}) to route requests to an LLM provider and see the model in the UI.
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Edit a resource as YAML {#raw-mode}
+
+The drawers that edit models, providers, guardrails, MCP servers, gateways, listeners, routes, policies, and virtual API keys have a **Raw** mode. Use raw mode to set a field that the form does not show, or to paste a configuration snippet. Raw mode replaces the YAML preview of earlier versions.
+
+1. Open the drawer for a resource. For example, open **LLM** > **Virtual API Keys**, and click **Edit** for a key.
+2. Click the **Raw** icon (`<>`) at the top of the drawer.
+
+   The drawer shows the YAML for that one resource, such as one key, model, route, or policy. It does not show the rest of your configuration. Expand **Help** to see the fields that the resource accepts.
+
+   ```yaml
+   key: sk-custom-bob-0001
+   metadata:
+     name: bob-key
+     user: bob
+     group: sales
+   ```
+
+3. Edit the YAML. The UI checks each edit against the configuration schema. If an edit is not valid, the drawer shows an **Invalid configuration** banner with the first error, and you cannot save. For example, if you delete the `key` field of a virtual API key, the banner reports that `key` is required.
+4. Click **Save**, such as **Save key**. To check the change first, click **View diff**.
+
+To return to the form, click the **Raw** icon again. The form keeps your last valid edit and drops any text that is not valid. If the form cannot show a value, such as a field that has no form control, the drawer stays in raw mode, and the tooltip on the **Raw** icon explains why.
+
+To work with the whole configuration instead of one resource, open **Tools** > **Raw Configuration**.
+{{< /version >}}
 
 ## Save changes from the UI {#save-changes}
 
@@ -171,7 +211,7 @@ If you edit the file outside the UI and agentgateway rejects the reload, the UI 
 
 ## Generate LLM client settings {#client-setup}
 
-For an example of using the UI to set something up, use the **LLM > Client Setup** page. It generates connection settings and snippets for curl, Claude Code, Claude Desktop, Codex CLI, OpenCode, Cursor, GitHub Copilot, Windsurf, and the OpenAI JavaScript and Python SDKs{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}. The page also includes a Pi recipe that writes `baseUrl` and `apiKey` values into `~/.pi/agent/models.json`{{< /version >}}.
+For an example of using the UI to set something up, use the **LLM > Client Setup** page. It generates connection settings and snippets for curl, Claude Code, Claude Desktop, Codex CLI, OpenCode, Goose, Cursor, GitHub Copilot, {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}Continue, {{< /version >}}Windsurf, and the OpenAI JavaScript and Python SDKs{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}. The page also includes a Pi recipe that writes `baseUrl` and `apiKey` values into `~/.pi/agent/models.json`{{< /version >}}.{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}} The Continue recipe shows a model entry for `~/.continue/config.yaml`. For the rest of the Continue setup, see [Continue]({{< link-hextra path="/integrations/llm/clients/continue/" >}}).{{< /version >}}
 
 1. Configure at least one LLM model and, if the gateway requires client authentication, a [virtual API key]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
 2. Open the **LLM** > **Client Setup** page in the UI, such as [http://localhost:15000/ui/llm/client-setup](http://localhost:15000/ui/llm/client-setup).

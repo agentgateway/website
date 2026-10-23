@@ -98,7 +98,7 @@ The agentgateway UI includes a **Logs** page that you can use to review the acce
 To view access logs in the UI: 
 
 1. Open the [agentgateway UI](http://localhost:15000/ui). This address is the copy of the UI on the admin interface, which works from the host that runs the proxy. If you serve the UI on a gateway, use that gateway's port instead. 
-2. Go to **Logs** and review the access logs that agentgateway captured for your previous requests. Use the filter options to limit the number of access logs that are shown to you. For example, you can filter logs by model, providers, or users. Note that in order to filter logs by user, you must configure authentication in agentgateway. 
+2. Go to **Logs** and review the access logs that agentgateway captured for your previous requests. Use the filter options to limit the number of access logs that are shown to you. For example, you can filter logs by model, providers, or users. Note that in order to filter logs by user, you must configure authentication in agentgateway. Each filter lists the values from recorded traffic. To find a value in a long list, type part of it in the search box at the top of the filter, and then select the value. Typing alone does not change the logs that are shown. 
 
    {{< reuse-image src="img/agentgateway-ui-logs.png" srcDark="img/agentgateway-ui-logs-dark.png" >}}
 

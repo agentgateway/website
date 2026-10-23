@@ -377,6 +377,55 @@ The UI steps for this section need agentgateway 1.7 or later. Use the **Config f
 {{% /tab %}}
 {{< /tabs >}}
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+### Rotate a virtual key {#rotate-a-virtual-key}
+
+Replace one client's key, such as after a suspected leak. The key keeps its name, metadata, model access, and budget settings. Agentgateway tracks budget usage by the key value, so the budgets of a rotated key start again from zero.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Virtual API Keys**, and click the **Edit key** icon for Alice's key.
+2. Replace the key value.
+   * If the key starts with `agw_sk_`, such as a key that the UI generated, click **Regenerate**. The UI generates a new `agw_sk_` value.
+   * For a custom key, such as `vk-alice-4f9c2a`, click **Edit**. Replace the value in the **Key value** field with the new value, such as `vk-alice-7c2e5b`.
+3. Optional: Select **Store raw key** to save the key value instead of a hash. If you keep the default, the UI saves only a hash of the key (`keyHash`).
+4. Click **Save key**. If the UI saved a hash, the **Copy your new API key** dialog shows the new key. Click **Copy**, and click **Done**. The UI does not show the key again.
+5. Give the new key to Alice. Requests with the old key now fail with `401`.
+6. To continue with the budget examples, which use Alice's original key, edit Alice's key again, click **Edit**, and replace the value with `vk-alice-4f9c2a`.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+1. Replace the `key` value of Alice's entry in `llm.policies.apiKey.keys`, and save the configuration. Agentgateway reloads the file without a restart.
+
+   ```yaml
+   keys:
+   - key: vk-alice-7c2e5b
+     metadata:
+       user: alice
+   - key: vk-bob-8d1e7b
+     metadata:
+       user: bob
+   ```
+
+2. Send a request with Alice's old key. Verify that agentgateway returns `401`.
+
+   ```sh
+   curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/v1/chat/completions \
+     -H "Authorization: Bearer vk-alice-4f9c2a" \
+     -H "Content-Type: application/json" \
+     -d '{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello!"}]}'
+   ```
+
+   Example output:
+
+   ```
+   401
+   ```
+
+3. Give the new key to Alice. To continue with the budget examples, which use Alice's original key, change the value back to `vk-alice-4f9c2a`.
+{{% /tab %}}
+{{< /tabs >}}
+{{< /version >}}
+
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ### Rotate a provider key {#rotate-a-provider-key}
 

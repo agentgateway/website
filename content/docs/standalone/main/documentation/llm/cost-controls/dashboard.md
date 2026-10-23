@@ -79,6 +79,8 @@ Toggle **Measure** between tokens, cost, and requests to view the same breakdown
 
 Use **Export** to pull the underlying numbers out for reporting.
 
+To narrow the dashboard to certain models, users, groups, providers, or user agents, use the filter dropdowns. Each filter lists the values from recorded traffic. To find a value in a long list, type part of it in the search box at the top of the filter, and then select the value. Typing alone does not change the dashboard.
+
 ## Send traffic and watch it get priced
 
 With the gateway running, send a request that matches a model in your catalog:

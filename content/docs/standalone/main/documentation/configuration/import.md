@@ -169,12 +169,110 @@ The importer currently handles the following common file-based LiteLLM settings.
 | Fixed string values in `litellm_params.extra_headers` | `requestHeaders.set` on the model or reusable provider, with model-level values overriding shared credential values |
 | `rpm` | Relative weights for generated weighted routes when the routing strategy permits it |
 | Ordinary `fallbacks` | Priority-based failover targets |
+| `default_fallbacks` in `router_settings` or `litellm_settings` | Priority-based failover targets for each model that has no `fallbacks` entry of its own. For more information, see [Import fallbacks](#fallbacks). |
+| `router_settings.max_fallbacks` | The depth limit for the failover chains that `default_fallbacks` produces. `0` turns off all fallbacks. |
 | `simple-shuffle` routing | Generated routing with an `approximate` finding because the semantics are not identical |
 | Public wildcard model names | Exact `*`, prefix patterns such as `gpt-*`, and suffix patterns such as `*-preview` |
 
 For identity mappings such as a public `*` model that targets `openai/*`, agentgateway preserves the model requested by the client instead of sending a literal wildcard upstream.
 
 The importer does not emit wildcard patterns with a wildcard in the middle, multiple wildcards, or rewrites between different public and upstream wildcard patterns. It reports these patterns as `unsupported` because they cannot be represented safely.
+
+## Import fallbacks {#fallbacks}
+
+The importer converts LiteLLM fallbacks into priority-based failover on a generated virtual model. Ordinary `fallbacks` list the backup models for one model. `default_fallbacks` lists the backup models for every model that has no `fallbacks` entry of its own. The importer reads both settings from `router_settings`. If a setting is not there, the importer reads it from `litellm_settings`.
+
+1. Review the LiteLLM configuration. The following example has three models and two default fallbacks.
+
+   ```yaml
+   model_list:
+   - model_name: chat
+     litellm_params:
+       model: openai/gpt-4o
+       api_key: os.environ/OPENAI_API_KEY
+   - model_name: backup
+     litellm_params:
+       model: anthropic/claude-haiku-4-5
+       api_key: os.environ/ANTHROPIC_API_KEY
+   - model_name: spare
+     litellm_params:
+       model: openai/gpt-4o-mini
+       api_key: os.environ/OPENAI_API_KEY
+   router_settings:
+     default_fallbacks: [backup, spare]
+   ```
+
+2. Run the importer.
+
+   ```sh
+   agentgateway import \
+     --from litellm \
+     --file litellm.yaml \
+     --output config.yaml
+   ```
+
+   Example output:
+
+   ```text
+   exact: model_list[0]: Imported model deployment for chat
+   exact: model_list[1]: Imported model deployment for backup
+   exact: model_list[2]: Imported model deployment for spare
+   approximate: router_settings.default_fallbacks: Flattened LiteLLM fallback recursion (per-hop explicit fallbacks, default_fallbacks at hops without one, attempted models skipped) into static priority-ordered failover targets
+   manual: router_settings.default_fallbacks: LiteLLM serves unknown model names via the first default fallback "backup"; agentgateway returns 404 for unmatched model names because wildcard matching applies only to concrete llm.models entries; add a "*" model manually if unknown names must be served
+   Imported litellm config: config.yaml
+   ```
+
+3. Review the generated configuration. The `llm.models` list has one internal model for each deployment, such as `imported/litellm/chat/1`. The `llm.virtualModels` list has one virtual model for each public model name, with the failover chain as priority-ordered targets. A lower `priority` value is tried first.
+
+   ```yaml
+   llm:
+     virtualModels:
+     - name: chat
+       routing:
+         failover:
+           targets:
+           - model: imported/litellm/chat/1
+             priority: 0
+           - model: imported/litellm/backup/1
+             priority: 1
+           - model: imported/litellm/spare/1
+             priority: 2
+     - name: backup
+       routing:
+         failover:
+           targets:
+           - model: imported/litellm/backup/1
+             priority: 0
+           - model: imported/litellm/spare/1
+             priority: 1
+     - name: spare
+       routing:
+         failover:
+           targets:
+           - model: imported/litellm/spare/1
+             priority: 0
+           - model: imported/litellm/backup/1
+             priority: 1
+   ```
+
+LiteLLM picks a fallback each time a request fails. Agentgateway uses a fixed list instead, so the importer flattens the LiteLLM fallbacks into one chain for each model.
+
+* At each model in the chain, the importer uses that model's own `fallbacks` entry, if it has one. Otherwise, it uses `default_fallbacks`. For example, with `fallbacks: [{chat: [backup]}]` and `default_fallbacks: [backup, spare]`, the chain for `chat` is `chat`, `backup`, and then `spare`. The `backup` model has no `fallbacks` entry, so the default list applies after it.
+* The importer skips the models that are already in the chain, so a model is never its own fallback. A model whose chain has no other model stays a regular model, not a virtual model.
+* When you set `default_fallbacks`, `router_settings.max_fallbacks` limits how deep the importer follows the fallbacks of fallbacks, in the same way that it limits fallback depth in LiteLLM. It does not shorten the fallback list of the model itself. The default is `5`. `max_fallbacks: 0` turns off fallbacks, so the importer emits no failover, not even for ordinary `fallbacks`.
+
+Agentgateway moves traffic to the next priority after it removes a failing target from the active set. The request that fails is not retried on the next target, so the client still gets that error. For more information, see [Failover routing]({{< link-hextra path="/documentation/llm/virtual-models/#failover-routing" >}}).
+
+Review the following fallback findings.
+
+| Finding | Action |
+| -- | -- |
+| `approximate` on `default_fallbacks` | Test the failover chains, because a fixed list does not match the LiteLLM fallback behavior exactly. |
+| `manual` about unknown model names | LiteLLM sends a request for an unknown model to the first default fallback. Agentgateway returns a `404` error with `model_not_found`. To serve unknown model names, add a `*` model. |
+| `manual` about a wildcard model | The importer cannot attach default fallbacks to a wildcard model, because failover needs a virtual model and virtual model names match exactly. Configure failover for that traffic yourself. |
+| `manual` on `context_window_fallbacks` or `content_policy_fallbacks` | These fallbacks apply only to certain errors, so the importer does not convert them. Configure equivalent behavior yourself. |
+| `manual` on `litellm_settings.default_fallbacks` | Both sections set `default_fallbacks`. The importer uses the `router_settings` value. |
+| `manual` on `max_fallbacks` | The value is not a non-negative whole number, so the importer uses the default of `5`. |
 
 ## Use stdin and stdout
 
@@ -199,7 +297,7 @@ The importer focuses on file-based model and routing configuration. It does not 
 - Budgets, per-user or per-team rate limits, caches, callbacks, logging, alerting, and other operational settings.
 - Secret-manager references and advanced authentication variants for individual providers.
 - Configurations split across LiteLLM `include` files unless you combine them into one input file first.
-- Model group aliases, condition-specific fallbacks, guardrails, MCP servers, custom prompt templates, and tokenizers.
+- Model group aliases, condition-specific fallbacks, default fallbacks for wildcard models, guardrails, MCP servers, custom prompt templates, and tokenizers.
 - Routing strategies other than the mappings described in this guide.
 
 Review the [`agentgateway` importer follow-on issue](https://github.com/agentgateway/agentgateway/issues/2607) for the current implementation backlog. Treat the compatibility findings produced by your installed binary as the source of truth because importer support can expand between releases.
