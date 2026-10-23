@@ -25,19 +25,22 @@ When a policy can run against both directly addressed and Service backends, chec
 
 ### Agent sessions {#agent-sessions}
 
-When agentgateway identifies an agent session, CEL expressions can read its ID as `request.agent.session`. Agentgateway detects the session before it applies any policy, so every request policy can read it.
+CEL expressions read the detected session ID as `request.agent.session`. Detection runs before all policies, making the ID available to every request policy.
 
 #### Session detection rules {#session-detection}
 
 Agentgateway checks the following headers in order and uses the first valid value.
 
-1. Any `x-<vendor>-session-id` header, such as `x-claude-code-session-id` from Claude Code. The `<vendor>` part can be any name.
-2. The Codex headers `session-id`, `session_id`, `thread-id`, and `conversation_id`, in that order. Agentgateway reads these headers only when the `User-Agent` header starts with `codex` followed by `-`, `_`, `/`, or a space, such as `codex_cli_rs/0.50.0`.
+1. Any `x-<vendor>-session-id` header, such as Claude Code's `x-claude-code-session-id`. The `<vendor>` part can be any name.
+2. The Codex headers `session-id`, `session_id`, `thread-id`, and `conversation_id`, in that order.
+
+   These headers require a `User-Agent` starting with `codex` followed by `-`, `_`, `/`, or a space. For example: `codex_cli_rs/0.50.0`.
+
 3. The `x-session-id` header, such as from opencode.
 
-A valid value has at least 8 characters and contains only letters, digits, hyphens (`-`), and underscores (`_`). Agentgateway skips an invalid value and checks the next header.
+Values must have at least 8 characters. Only letters, digits, hyphens (`-`), and underscores (`_`) are allowed. Agentgateway skips invalid values and checks the next header.
 
-The following examples show which session each set of request headers produces.
+Examples of detected sessions:
 
 | Request headers | `request.agent.session` |
 | -- | -- |
@@ -47,15 +50,15 @@ The following examples show which session each set of request headers produces.
 | `User-Agent: curl/8.7.1` and `session-id: 019a-thread-0001` | Not set, because the `User-Agent` is not Codex. |
 | `x-session-id: short` | Not set, because the value has fewer than 8 characters. |
 
-When no session is detected, `request.agent.session` is not set. To read the session with a fallback value, use the `default()` function, such as `default(request.agent.session, "none")`.
+If no session is detected, `request.agent.session` is unset. Use `default(request.agent.session, "none")` to provide a fallback value.
 
 ### Repeated request headers {#repeated-headers}
 
-A client can send the same request header more than once, such as `curl -H 'x-a: 1' -H 'x-a: 2'`. In this case, `request.headers["x-a"]` returns a list of every value, such as `["1", "2"]`. When the header appears once, the same lookup returns a string, such as `"1"`.
+Header lookups return a string for a single value and a list for repeated values. Comparing a list with a string returns `false`. String functions such as `startsWith()` fail on lists.
 
-Expressions that treat a header as a string do not work on a list. A comparison with a string returns `false`, and string functions such as `startsWith()` fail. For example, a client can skip a `Deny` authorization rule with the expression `request.headers["x-role"] == "guest"` by sending the `x-role: guest` header twice.
+For example, sending `x-role: guest` twice can bypass a `Deny` rule that checks `request.headers["x-role"] == "guest"`.
 
-The following table shows the results for a request that sends `x-a: 1` and `x-a: 2`.
+Results for a request made with `curl -H 'x-a: 1' -H 'x-a: 2'`:
 
 | Expression | Result |
 | -- | -- |
@@ -65,7 +68,7 @@ The following table shows the results for a request that sends `x-a: 1` and `x-a
 | `request.headers.raw()["x-a"][0]` | `"1"` |
 | `request.headers.join()["x-a"]` | `"1,2"` |
 
-To get the same type of result whether or not a client repeats a header, use one of the following header views.
+For a consistent result type, use a header view:
 
 * **First value**: `request.headers.raw()["x-a"][0]`. The `raw()` view always returns a list, even for a header that appears once.
 * **All values as one string**: `request.headers.join()["x-a"]` joins the values with commas.
@@ -81,7 +84,7 @@ Depending on the policy, different fields are accessible based on when in the re
 |------|-------------------|
 |Transformation| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`, and `llmRequest` for parsed JSON LLM requests |
 |Remote Rate Limit| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend`, `llm`, `llmRequest` [^1] |
-|Local Rate Limit key (`requests`)| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend`, `llm`, `llmRequest` — for example, the key `llm.requestModel` gives each model its own request count. [^1] |
+|Local Rate Limit key (`requests`)| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend`, `llm`, `llmRequest` [^1] |
 |Local Rate Limit key (`tokens`)| Same as a `requests` limit. [^1] |
 |HTTP Authorization| `source`, `request`, `jwt`, `mcp`, `backend`, `llm`, `llmRequest` [^1] |
 |External Authorization| `source`, `request`, `jwt`, `mcp`, `backend` |
@@ -92,7 +95,9 @@ Depending on the policy, different fields are accessible based on when in the re
 |Tracing| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`|
 |Metrics| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`|
 
-[^1]: For LLM requests, request policies can read `llm.requestModel`, the model that the client requested, and `llmRequest`, the parsed JSON request body. Policies with `traffic.phase: PreRouting` run before agentgateway reads the LLM request, so they cannot read these fields.
+[^1]: For LLM requests, `llm.requestModel` holds the model requested by the client. `llmRequest` holds the parsed JSON request body. A `requests` limit keyed by `llm.requestModel` counts requests separately for each model.
+
+    Policies with `traffic.phase: PreRouting` run before LLM parsing and cannot read these fields.
 
 ### When `mcp` is available {#mcp-availability}
 

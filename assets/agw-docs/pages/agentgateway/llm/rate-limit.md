@@ -358,7 +358,7 @@ Review the following behavior before you rely on claim-level budget limits.
 * **When a key is evaluated**: A `requests` limit is checked before the LLM request body is parsed, so its key cannot read `llm` fields such as `llm.requestModel`. A `tokens` limit is checked after the body is parsed, so its key can read the body tokens. A key that reads a value that is not in its context falls back to the shared bucket.
 {{% /version %}}
 {{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
-* **What a key can read**: The keys of both `requests` and `tokens` limits can read `llm.requestModel` and the parsed request body as `llmRequest`. For example, the key `llm.requestModel` on a `requests` limit gives each model its own request count. A key that reads a value that is not in its context falls back to the shared bucket.
+* **What a key can read**: Both `requests` and `tokens` keys can read `llm.requestModel` and `llmRequest` (the parsed request body). To count requests per model, set a `requests` limit's key to `llm.requestModel`.
 {{% /version %}}
 * **How usage is settled**: A `tokens` limit charges an estimate when the request is admitted. After the response, the limit settles the real input and output counts against the same per-key bucket, exactly as it does for a single shared bucket.
 * **Requests without a value**: Requests whose key is empty, or whose expression cannot be evaluated, such as an unauthenticated request, all share one bucket. An empty key does not exempt a request from the limit. To apply a budget to only some requests, use [conditional policies]({{< link-hextra path="/documentation/about/policies/conditional-policies" >}}).
