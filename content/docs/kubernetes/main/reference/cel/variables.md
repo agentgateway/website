@@ -25,7 +25,56 @@ When a policy can run against both directly addressed and Service backends, chec
 
 ### Agent sessions {#agent-sessions}
 
-When agentgateway identifies an agent session, CEL expressions can read its ID as `request.agent.session`. Agentgateway detects the ID from recognized agent headers, such as `x-claude-code-session-id` and `x-session-id`.
+CEL expressions read the detected session ID as `request.agent.session`. Detection runs before all policies, making the ID available to every request policy.
+
+#### Session detection rules {#session-detection}
+
+Agentgateway checks the following headers in order and uses the first valid value.
+
+1. Any `x-<vendor>-session-id` header, such as Claude Code's `x-claude-code-session-id`. The `<vendor>` part can be any name.
+2. The Codex headers `session-id`, `session_id`, `thread-id`, and `conversation_id`, in that order.
+
+   These headers require a `User-Agent` starting with `codex` followed by `-`, `_`, `/`, or a space. For example: `codex_cli_rs/0.50.0`.
+
+3. The `x-session-id` header, such as from opencode.
+
+Values must have at least 8 characters. Only letters, digits, hyphens (`-`), and underscores (`_`) are allowed. Agentgateway skips invalid values and checks the next header.
+
+Examples of detected sessions:
+
+| Request headers | `request.agent.session` |
+| -- | -- |
+| `x-claude-code-session-id: e96634a3-fa28-4083` and `x-session-id: opencode-1234` | `e96634a3-fa28-4083` |
+| `x-session-id: opencode-1234` | `opencode-1234` |
+| `User-Agent: codex_cli_rs/0.50.0` and `thread-id: 019a-thread-0001` | `019a-thread-0001` |
+| `User-Agent: curl/8.7.1` and `session-id: 019a-thread-0001` | Not set, because the `User-Agent` is not Codex. |
+| `x-session-id: short` | Not set, because the value has fewer than 8 characters. |
+
+If no session is detected, `request.agent.session` is unset. Use `default(request.agent.session, "none")` to provide a fallback value.
+
+### Repeated request headers {#repeated-headers}
+
+Header lookups return a string for a single value and a list for repeated values. Comparing a list with a string returns `false`. String functions such as `startsWith()` fail on lists.
+
+For example, sending `x-role: guest` twice can bypass a `Deny` rule that checks `request.headers["x-role"] == "guest"`.
+
+Results for a request made with `curl -H 'x-a: 1' -H 'x-a: 2'`:
+
+| Expression | Result |
+| -- | -- |
+| `request.headers["x-a"]` | `["1", "2"]` |
+| `request.headers["x-a"] == "1"` | `false` |
+| `request.headers["x-a"].startsWith("1")` | Error |
+| `request.headers.raw()["x-a"][0]` | `"1"` |
+| `request.headers.join()["x-a"]` | `"1,2"` |
+
+For a consistent result type, use a header view:
+
+* **First value**: `request.headers.raw()["x-a"][0]`. The `raw()` view always returns a list, even for a header that appears once.
+* **All values as one string**: `request.headers.join()["x-a"]` joins the values with commas.
+* **All values as a list**: `request.headers.split()["x-a"]` also splits each value on commas, so `x-a: 1,2` and `x-a: 3` return `["1", "2", "3"]`.
+
+For the full list of header views, see [Header Views](https://github.com/agentgateway/agentgateway/blob/main/schema/cel-functions.md#header-views) in the agentgateway CEL schema.
 
 ## Variables by policy type
 
@@ -34,10 +83,10 @@ Depending on the policy, different fields are accessible based on when in the re
 |Policy|Available Variables|
 |------|-------------------|
 |Transformation| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`, and `llmRequest` for parsed JSON LLM requests |
-|Remote Rate Limit| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend` |
-|Local Rate Limit key (`requests`)| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend` — the rule is checked before the LLM request is parsed, so a key cannot read `llm`. |
-|Local Rate Limit key (`tokens`)| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend`, `llm` — the rule is charged after the LLM request is parsed, so a key can read fields such as `llm.requestModel`. |
-|HTTP Authorization| `source`, `request`, `jwt`, `mcp`, `backend` |
+|Remote Rate Limit| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend`, `llm`, `llmRequest` [^1] |
+|Local Rate Limit key (`requests`)| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend`, `llm`, `llmRequest` [^1] |
+|Local Rate Limit key (`tokens`)| Same as a `requests` limit. [^1] |
+|HTTP Authorization| `source`, `request`, `jwt`, `mcp`, `backend`, `llm`, `llmRequest` [^1] |
 |External Authorization| `source`, `request`, `jwt`, `mcp`, `backend` |
 |MCP Authorization| `source`, `request`, `jwt`, `mcp`, `backend` — `mcp.methodName` distinguishes methods such as `tools/list` and `tools/call`. For list methods, rules run once per listed item. `mcp.sessionId` and `mcp.tool.arguments` aren't set. |
 |MCP guardrails (`expression`)| The same variables as MCP Authorization, plus `mcp.params` in request-phase processors and `mcp.result` in response-phase processors. For `tools/call`, `mcp.params.name` is the tool name without a target-name prefix. |
@@ -45,6 +94,10 @@ Depending on the policy, different fields are accessible based on when in the re
 |Logging| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`|
 |Tracing| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`|
 |Metrics| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`|
+
+[^1]: For LLM requests, `llm.requestModel` holds the model requested by the client. `llmRequest` holds the parsed JSON request body. A `requests` limit keyed by `llm.requestModel` counts requests separately for each model.
+
+    Policies with `traffic.phase: PreRouting` run before LLM parsing and cannot read these fields.
 
 ### When `mcp` is available {#mcp-availability}
 
