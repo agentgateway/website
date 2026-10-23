@@ -192,7 +192,7 @@ Agentgateway generates one MCP tool for each operation in your OpenAPI spec. Eac
 
 ## Tool response content {#tool-response-content}
 
-Agentgateway converts each OpenAPI response into an MCP tool result. The HTTP status code decides whether the client gets a tool result or an error. The `Content-Type` header and the body bytes decide the type of content in the result.
+Agentgateway converts OpenAPI responses into MCP tool results or errors based on HTTP status. The `Content-Type` header and body determine the result content.
 
 | Upstream response | MCP tool result |
 | ----------------- | --------------- |
@@ -201,26 +201,30 @@ Agentgateway converts each OpenAPI response into an MCP tool result. The HTTP st
 | Text that is not valid JSON | A `text` block with the body. |
 | Binary body with an `image/*` type | An `image` block with the base64-encoded body and the response media type, such as `image/png`. |
 | Binary body with an `audio/*` type | An `audio` block with the base64-encoded body and the response media type, such as `audio/wav`. |
-| Any other binary body | A `resource` block with the base64-encoded body in `blob`, the response media type, and the URI `tool://<tool name>`. A response without a `Content-Type` header gets `application/octet-stream`. |
+| Any other binary body | A `resource` block with the base64-encoded body in `blob`, the response media type, and URI `tool://<tool name>`. |
 | Empty body | A result with an empty `content` list. |
 
-Agentgateway treats a body as text in either of the following cases:
+Binary responses without a `Content-Type` header use `application/octet-stream`.
 
-* The `Content-Type` is a text-like media type: any `text/*` type, any type with a `json`, `xml`, or `yaml` subtype or suffix, `application/javascript`, `application/x-www-form-urlencoded`, or `application/x-ndjson`. For example, an `image/svg+xml` response is text because of its `xml` suffix.
-* The body is valid UTF-8 and contains no NUL bytes, whatever the `Content-Type`.
+Agentgateway treats a body as text if either condition holds:
 
-Agentgateway tries to parse every text body as JSON first, because some servers label JSON responses as `text/plain`.
+* The `Content-Type` is `text/*`, has a `json`, `xml`, or `yaml` subtype or suffix, or is `application/javascript`, `application/x-www-form-urlencoded`, or `application/x-ndjson`.
+* The body is valid UTF-8 and contains no NUL bytes, regardless of `Content-Type`.
+
+For example, `image/svg+xml` is text because of its `xml` suffix. Agentgateway first tries to parse all text bodies as JSON, including those labeled `text/plain`.
 
 ### Error responses {#tool-response-errors}
 
 The status code changes the result as follows:
 
-* **`5xx` responses**: The client gets an HTTP `500` response with a JSON-RPC error instead of a tool result. The error code is `-32603` (internal error), and the message is `failed to send message`. The agentgateway log records the upstream status and body.
-* **All other responses, including `4xx`**: The client gets a tool result with the same content types as a `2xx` response. The result sets `isError` to `false` and does not include the status code. For example, a `404` response with the plain text body `Pet not found` becomes a `text` block with `Pet not found`. To help a model recognize a failed call, return an error body that describes the failure.
+* **`5xx` responses**: The client receives HTTP `500` with JSON-RPC error code `-32603` (internal error) and message `failed to send message`. Agentgateway logs the upstream status and body.
+* **All other responses, including `4xx`**: The client receives a tool result with the content types described above. The result sets `isError` to `false` and omits the HTTP status code.
+
+To help a model recognize a failed call, return an error body that describes the failure.
 
 ### Example tool results {#tool-response-examples}
 
-The following results come from an OpenAPI server that returns a different response type for each operation.
+These examples show how upstream responses map to MCP tool results.
 
 * A `200` response with `Content-Type: application/json` and a JSON object body:
 
@@ -289,13 +293,13 @@ Agentgateway rejects the tool call before it sends any request to the upstream s
 - A path parameter value is neither a string nor a number.
 - A string value contains an empty, `.`, or `..` path segment when split on `/` or `\`.
 
-The client receives an HTTP `500` response with a JSON-RPC error instead of a tool result. The error code is `-32603` (internal error), and the message is `failed to send message`.
+The client receives HTTP `500` with JSON-RPC error code `-32603` (internal error) and message `failed to send message`:
 
 ```json
 {"jsonrpc":"2.0","id":2,"error":{"code":-32603,"message":"failed to send message"}}
 ```
 
-The agentgateway log names the parameter and the reason, such as in the following example for a missing parameter.
+The agentgateway log identifies the parameter and cause. For example:
 
 ```
 error="mcp: failed to send message: invalid request: path parameter 'petId' is missing"

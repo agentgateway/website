@@ -1,21 +1,23 @@
 ## Capabilities and change notifications {#capabilities}
 
-When a client initializes a session with more than one target, agentgateway merges the capabilities of the targets into one `initialize` result. The result always enables tools, prompts, and resources. Change notifications come only from the upstream MCP servers, so agentgateway advertises a notification capability only when at least one target in the session offers it.
+For sessions with multiple targets, agentgateway merges their capabilities into one `initialize` result. Tools, prompts, and resources are always enabled.
 
-| Capability | Advertised when |
-| ---------- | --------------- |
-| `tools.listChanged` | At least one target advertises `tools.listChanged`. |
-| `prompts.listChanged` | At least one target advertises `prompts.listChanged`. |
-| `resources.listChanged` | At least one target advertises `resources.listChanged`. |
-| `resources.subscribe` | At least one target advertises `resources.subscribe`. |
+Each capability below is advertised only if at least one session target offers it:
 
-With `sessionRouting: Stateless`, the `initialize` result advertises none of these capabilities, even for a single target. A stateless session has no stream to deliver notifications on.
+- `tools.listChanged`
+- `prompts.listChanged`
+- `resources.listChanged`
+- `resources.subscribe`
 
-Clients that use the `server/discover` method instead of `initialize` get the same merged capabilities. These clients receive notifications on a `subscriptions/listen` stream, so the capabilities do not depend on `sessionRouting`. Agentgateway skips targets that do not support `subscriptions/listen` instead of failing the stream.
+With `sessionRouting: Stateless`, `initialize` omits all four capabilities, even for a single target. Stateless sessions have no notification stream.
 
-The targets in this guide offer different capabilities. The `mcp-server-everything` server advertises all four notification capabilities. The `mcp-website-fetcher` server advertises none.
+Clients using `server/discover` get the same merged capabilities, regardless of `sessionRouting`. They receive notifications through `subscriptions/listen`.
 
-1. Initialize a session with the `x-include-fetcher: true` header so that both targets take part. Then, review the capabilities in the result.
+Agentgateway skips targets that do not support `subscriptions/listen` without failing the stream.
+
+The `mcp-server-everything` target advertises all four capabilities. The `mcp-website-fetcher` target advertises none.
+
+1. Initialize a session with `x-include-fetcher: true` to include both targets. Review the returned capabilities.
 
    ```sh
    curl -s $MCP_URL \
@@ -43,7 +45,7 @@ The targets in this guide offer different capabilities. The `mcp-server-everythi
    }
    ```
 
-2. Optional: Compare the result for a backend whose targets offer no change notifications, such as two `mcp-website-fetcher` targets. The result enables tools, prompts, and resources without any notification capabilities.
+2. Optional: Compare with two `mcp-website-fetcher` targets, which advertise no notification capabilities:
 
    ```json
    {

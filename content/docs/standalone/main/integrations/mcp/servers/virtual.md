@@ -369,9 +369,11 @@ mcp:
 
 Configure your MCP client to send `x-include-time: true` on its requests, including initialization, to expose tools such as `time_get_current_time` alongside `everything_echo`. Without that header, or with a different value, only the `everything` target participates.
 
-Keep the following behaviors in mind when you write target conditions:
+Conditions run on every request. Keep these behaviors in mind:
 
-* **Evaluation timing**: Conditions run on every request. In stateful mode (the default), the session keeps the targets that its conditions selected at initialization. If a later request in the session selects a different set of targets, such as when the client drops the `x-include-time` header, agentgateway returns a `404` response with `session not found`. Requests that still select the same targets keep working in that session. Per the MCP specification, a client that gets a `404` for its session starts a new session, which gets the targets that its new requests select. In stateless mode, each request gets the targets that its conditions select.
+* **Stateful sessions (default)**: Each request must select the same targets as at initialization. A change, such as dropping the `x-include-time` header, returns `404` with `session not found`.
+* **Session recovery**: After a session `404`, the MCP specification requires the client to start a new session. Its requests determine the new target selection.
+* **Stateless sessions**: In stateless mode, each request uses the targets its conditions select.
 * **Stable names**: Tool and prompt names keep their target-name prefix even when only one target remains.
 * **Excluded targets**: Their tools are absent from lists. Calls to those tools fail because the target is not part of the session.
 * **Evaluation errors**: Agentgateway excludes the target if its condition fails to evaluate, such as when it reads a missing JWT claim.
@@ -415,22 +417,24 @@ mcp:
 
 ## Capabilities and change notifications {#capabilities}
 
-When a client initializes a session with more than one target, agentgateway merges the capabilities of the targets into one `initialize` result. The result always enables tools, prompts, and resources. Change notifications come only from the upstream MCP servers, so agentgateway advertises a notification capability only when at least one target in the session offers it.
+For sessions with multiple targets, agentgateway merges their capabilities into one `initialize` result. Tools, prompts, and resources are always enabled.
 
-| Capability | Advertised when |
-| ---------- | --------------- |
-| `tools.listChanged` | At least one target advertises `tools.listChanged`. |
-| `prompts.listChanged` | At least one target advertises `prompts.listChanged`. |
-| `resources.listChanged` | At least one target advertises `resources.listChanged`. |
-| `resources.subscribe` | At least one target advertises `resources.subscribe`. |
+Each capability below is advertised only if at least one session target offers it:
 
-With `statefulMode: stateless`, the `initialize` result advertises none of these capabilities, even for a single target. A stateless session has no stream to deliver notifications on.
+- `tools.listChanged`
+- `prompts.listChanged`
+- `resources.listChanged`
+- `resources.subscribe`
 
-Clients that use the `server/discover` method instead of `initialize` get the same merged capabilities. These clients receive notifications on a `subscriptions/listen` stream, so the capabilities do not depend on `statefulMode`. Agentgateway skips targets that do not support `subscriptions/listen` instead of failing the stream.
+With `statefulMode: stateless`, `initialize` omits all four capabilities, even for a single target. Stateless sessions have no notification stream.
 
-The `time` and `everything` targets in this guide offer different capabilities. The `everything` server advertises all four notification capabilities. The `time` server advertises none.
+Clients using `server/discover` get the same merged capabilities, regardless of `statefulMode`. They receive notifications through `subscriptions/listen`.
 
-1. With the configuration from [Configure the agentgateway](#configure-the-agentgateway) running, initialize a session and review the capabilities in the result.
+Agentgateway skips targets that do not support `subscriptions/listen` without failing the stream.
+
+The `everything` target advertises all four capabilities. The `time` target advertises none.
+
+1. Run the configuration from [Configure the agentgateway](#configure-the-agentgateway). Initialize a session and review the returned capabilities.
 
    ```sh
    curl -s http://localhost:3000/mcp \
@@ -457,7 +461,7 @@ The `time` and `everything` targets in this guide offer different capabilities. 
    }
    ```
 
-2. Optional: Compare the result for targets that offer no change notifications, such as `time` and a `fetch` target that runs `uvx mcp-server-fetch`. The result enables tools, prompts, and resources without any notification capabilities.
+2. Optional: Compare with `time` and a `fetch` target running `uvx mcp-server-fetch`. Neither advertises notification capabilities:
 
    ```json
    {
