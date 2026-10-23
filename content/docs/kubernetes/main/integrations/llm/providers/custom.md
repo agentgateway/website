@@ -32,6 +32,10 @@ shape but have no first-class {{< reuse "agw-docs/snippets/backend.md" >}} type,
 such as Cohere, DeepSeek, Groq, Mistral, Perplexity, Together AI, and xAI. For
 these providers, use [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}) before using a custom provider.
 
+For TypeSafe Jev with an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}},
+set `spec.provider: Typesafe` unless you need custom target control. Use
+`SystemOne` only when you declare a custom provider format.
+
 ## Supported targets
 
 A custom provider must specify exactly one upstream target.
@@ -57,6 +61,8 @@ non-default path for that format.
 | `Completions` | `/v1/chat/completions` |
 | `Messages` | `/v1/messages` |
 | `Responses` | `/v1/responses` |
+| `Decisions` | `/v1/decisions` |
+| `SystemOne` | `/v1/systemone` |
 | `Embeddings` | `/v1/embeddings` |
 | `AnthropicTokenCount` | `/v1/messages/count_tokens` |
 | `Realtime` | `/v1/realtime` |
@@ -72,6 +78,8 @@ shapes, declare each supported format and optionally set a per-format path.
 | OpenAI chat completions | `Completions`, then `Messages` |
 | Anthropic messages | `Messages`, then `Responses`, then `Completions` |
 | OpenAI responses | `Responses`, then `Completions` |
+| OpenAI decisions | `Decisions`, then `SystemOne` |
+| TypeSafe SystemOne | `SystemOne`, then `Decisions` |
 | OpenAI embeddings | `Embeddings` |
 | Anthropic token count | `AnthropicTokenCount` |
 | OpenAI realtime | `Realtime` |
@@ -79,6 +87,12 @@ shapes, declare each supported format and optionally set a per-format path.
 
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
+
+Use `SystemOne` for a TypeSafe SystemOne upstream. With `SystemOne`, OpenAI
+Decisions requests from `/v1/decisions` go to `/v1/systemone` on the upstream.
+The conversion returns the upstream response in the Decisions format. The
+conversion also works in the other direction: SystemOne requests from
+`/v1/systemone` can go to a `Decisions` upstream.
 
 An error such as `failed to parse Messages request` names the route type that
 parsed the client request before provider conversion. Check that the request

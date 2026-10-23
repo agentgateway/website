@@ -4,6 +4,10 @@ To require users to authenticate, apply a browser [OIDC]({{< link-hextra path="/
 
 The `ui.policies` section takes the same policies that a route takes, so you can also use [JWT]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}), [basic]({{< link-hextra path="/documentation/configuration/security/basic-authn/" >}}), or [API key]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}) authentication for programmatic access. To restrict which authenticated users get in, add an [authorization policy]({{< link-hextra path="/documentation/configuration/security/http-authz/" >}}) alongside the authentication policy.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+The `oidc` policy in `ui.policies` also accepts bearer ID tokens, so CLI clients can call the UI's API without a browser session. The client sends an ID token from the same identity provider and client in the `Authorization: Bearer <token>` header. This default is `credentials: sessionOrBearer`. To accept only browser sessions, set `credentials: session`. For more information, see [Bearer tokens for API clients]({{< link-hextra path="/documentation/configuration/security/oidc/#bearer-id-tokens" >}}).
+{{< /version >}}
+
 > [!NOTE]
 > A policy in `ui.policies` applies only to the gateways that the `ui` section lists. It does not apply to the copy of the UI on the admin interface, which stays unauthenticated. That is safe by default, because the admin address is loopback-only, but it is a reason not to move it. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/documentation/setup/ui/#admin-interface" >}}).
 

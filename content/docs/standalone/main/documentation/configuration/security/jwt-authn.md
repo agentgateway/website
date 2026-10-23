@@ -48,7 +48,7 @@ Additionally, authentication can run in three different modes:
 
 After it validates a token, agentgateway removes the token from the location that it was read from, so that the backend never receives the client's credential. Two settings change that.
 
-* Set `preserveToken: true` on the `jwtAuth` policy to leave the validated token where it was found. Use this setting when another policy on the same route reads the token from the request, such as an [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/standard/" >}}) that takes it as the subject token.
+* Set `preserveToken: true` on the `jwtAuth` policy to leave the validated token where it was found. Use this setting when another policy on the same route reads the token from the request, such as an [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/standard/" >}}) that takes it as the subject token. In an MCP route, this setting also lets `mcpAuthentication` validate the same token after `jwtAuth` validates the token.
 * Set the `passthrough` [backend authentication]({{< link-hextra path="/documentation/configuration/security/backend-authn/" >}}) method to forward the validated token to one backend. Prefer this form when only the backend needs the token, because it does not expose the credential to every policy that runs later.
 
 You can configure JWT authentication in the UI or in your configuration file.

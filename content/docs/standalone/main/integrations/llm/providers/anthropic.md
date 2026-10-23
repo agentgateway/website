@@ -117,7 +117,7 @@ agentgateway -f config.yaml --validate-only
 
 ## Example request
 
-After running agentgateway with the configuration from the previous section, you can send a request to the `v1/messages` endpoint. Agentgateway automatically adds the `x-api-key` authorization and `anthropic-version` headers to the request. The request is forwarded to the Anthropic API and the response is returned to the client.
+After you run agentgateway with the configuration from the previous section, send a request to the `v1/messages` endpoint. The forwarded request includes the `x-api-key` authorization header. If the client sends no `anthropic-version` header, the request uses the default `2023-06-01` version. If the client sends its own `anthropic-version` header, that value is forwarded to Anthropic. The Anthropic API returns the response to the client.
 
 ```sh
 curl -X POST http://localhost:4000/v1/messages \
@@ -161,7 +161,7 @@ Example response:
 
 ## Token counting
 
-Anthropic's `count_tokens` API is supported for estimating token usage before making a request. Agentgateway automatically handles the required `anthropic-version` header and formats the request correctly for Anthropic's API.
+Use Anthropic's `count_tokens` API to estimate token usage before you make a request. If the client sends an `anthropic-version` header, the request uses that value. If the client sends no version header, the request uses the default `2023-06-01` version. The request is formatted for Anthropic's API.
 
 ```bash
 curl -X POST http://localhost:4000/v1/messages/count_tokens \

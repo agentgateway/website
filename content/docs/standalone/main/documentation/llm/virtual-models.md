@@ -1,7 +1,7 @@
 ---
 title: Virtual models
 weight: 47
-description: Configure virtual models with weighted, failover, and conditional routing in simplified LLM mode.
+description: Configure virtual models with weighted, failover, conditional, and callout routing in simplified LLM mode.
 test:
   virtual-models:
   - file: ${versionRoot}/documentation/llm/virtual-models.md
@@ -13,7 +13,7 @@ test:
 # Doc test coverage for this guide (these comments are not rendered on the page)
 # ============================================================================
 # WHAT THIS TEST VALIDATES:
-#   * All three example configs are accepted by agentgateway (--validate-only),
+#   * The weighted, failover, and conditional example configs are accepted by agentgateway (--validate-only),
 #     covering `llm.virtualModels[].routing.weighted.targets[].weight`,
 #     `routing.failover.targets[].priority`, `llm.models[].health.eviction`,
 #     and `routing.conditional.targets[].when`.
@@ -38,6 +38,9 @@ test:
 #     config/traffic the page omits; the page shows no request example, and
 #     confirming which internal target served a response needs a live provider
 #     call.
+#   * That callout routing selects a target model: external dependency. The
+#     callout example needs a running HTTP router service and live provider
+#     calls.
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 
 # The example configs read API keys from the environment. --validate-only and the
@@ -222,7 +225,7 @@ Configure health on the concrete `llm.models[]` entries that the virtual model t
 
 | Setting | What it does |
 | -- | -- |
-| No `health` policy | The default unhealthy classifier covers `5xx` responses, non-zero gRPC statuses, and connection failures. When the virtual model has more than one priority group, these failures use default eviction: a single unhealthy response evicts the endpoint for `3s`, and each repeated eviction lasts longer. Traffic fails over to the next priority. |
+| No `health` policy | The default unhealthy classifier covers `5xx` responses, server-side gRPC failures (`UNKNOWN`, `DEADLINE_EXCEEDED`, `INTERNAL`, `UNAVAILABLE`, and `DATA_LOSS`), and connection failures. When the virtual model has more than one priority group, these failures use default eviction: a single unhealthy response evicts the endpoint for `3s`, and each repeated eviction lasts longer. Traffic fails over to the next priority. |
 | `health` without `eviction` | Setting `health` replaces the default eviction instead of adding to it. You can use `health.unhealthyExpression` to classify additional responses, such as `429`, as unhealthy. Without an `eviction` block, the endpoint is evicted only when a retry policy's `backoff`, or a `Retry-After` header on a response that is classified as unhealthy, supplies an eviction duration. To keep the default eviction settings, add `eviction: {}`. |
 | `health.eviction` | Override how long an unhealthy endpoint leaves the active set, and which thresholds trigger eviction. When every endpoint in a priority group is evicted, later requests use the next priority. |
 
@@ -230,7 +233,7 @@ You do not need a `health` policy for basic failover on server errors or connect
 
 Useful `health` fields:
 
-- `unhealthyExpression`: Optional CEL expression; `true` marks the response unhealthy. When unset, any `5xx`, non-zero gRPC status, or connection failure is unhealthy.
+- `unhealthyExpression`: Optional CEL expression; `true` marks the response unhealthy. When unset, any `5xx`, server-side gRPC failure, or connection failure is unhealthy.
 - `eviction.duration`: Base time to keep an endpoint evicted. When you omit `duration`, agentgateway uses the `Retry-After` value from a 429 response, then the `backoff` from a retry policy, and then a default of `3s`. Repeated evictions use multiplicative backoff, with no upper bound.
 - `eviction.consecutiveFailures`: Unhealthy responses required before eviction. When this and `healthThreshold` are both unset, a single unhealthy response can evict.
 - `eviction.healthThreshold`: Evict when the endpoint health score (0.0–1.0) is below this value. Either this or `consecutiveFailures` can trigger eviction when both are set.
@@ -520,6 +523,70 @@ EOF
 agentgateway -f config-conditional.yaml --validate-only
 assert_models config-conditional.yaml '["adaptive","openai-public"]'
 {{< /doc-test >}}
+
+### Callout routing {#callout-routing}
+
+Use `routing.callout` to send each request to an external HTTP service that selects the target model. Use callout routing when the routing decision depends on logic outside the configuration, such as a service that scores the complexity of the prompt or tracks the state of an agent session.
+
+Each request to the virtual model triggers a `POST` request to the callout service, which must return a `2xx` response with a JSON body. The callout request carries a `content-type` header and only the headers that you set in `headers`. Client request headers, such as `Authorization` or a session header, are not forwarded. The `transformation` expressions read that response from the `callout` CEL variable. `callout.body` is the decoded JSON body and `callout.headers` holds the response headers. The `model` expression selects the target. The other `transformation` keys set fields in the request body before the request goes to the selected model.
+
+```yaml
+llm:
+  models:
+  - name: gpt-5.6-luna
+    visibility: internal
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+  - name: gpt-5.6-terra
+    visibility: internal
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+
+  virtualModels:
+  - name: auto
+    routing:
+      callout:
+        host: http://127.0.0.1:8000/route
+        body: '{"messages": llmRequest.messages}'
+        transformation:
+          model: callout.body.model
+          reasoning_effort: callout.body.reasoning_effort
+        failureMode:
+          fallback: gpt-5.6-luna
+        cache:
+          key:
+          - request.headers["x-session-id"]
+          ttl: 10m
+```
+
+In this example, a client requests the `auto` virtual model. The callout service at `http://127.0.0.1:8000/route` receives the request messages and returns a body such as `{"model": "gpt-5.6-terra", "reasoning_effort": "medium"}`. The request goes to `gpt-5.6-terra` with `reasoning_effort` set to `medium`. Requests with the same `x-session-id` header reuse the first response for 10 minutes, so the session stays on one model.
+
+The request goes to the fallback model `gpt-5.6-luna` when one of the following happens:
+
+- The callout service cannot be reached, or does not respond within the timeout.
+- The response status is not `2xx`, or the response body is not JSON.
+- The `model` expression fails or does not return a string.
+- The selected model does not match an entry in `llm.models[]`.
+
+The fallback model gets the request without the `transformation` changes.
+
+Use the following fields to configure callout routing:
+
+| Field | Description |
+| -- | -- |
+| `host` | The callout service, as a URL that can include the request path, such as `https://router.example.com/v1/route`. An `https` URL turns on TLS. Without a path, the request goes to `/`. |
+| `backend` | Instead of `host`, a backend from the top-level `backends` list, written as `/<name>`, such as `/router`. A bare name such as `router` fails every callout with a `service not found` error. |
+| `name` and `port` | Instead of `host`, a service from the top-level `services` list and the port to call, set directly on `callout`. |
+| `policies` | Optional backend policies for the connection to the callout service, such as TLS, authentication, and timeouts. The default request timeout is 10 seconds. |
+| `body` | Optional CEL expression that builds the callout request body. A string or bytes value is sent as is, and any other value is sent as JSON. If you omit `body`, the callout service receives the original request body. |
+| `headers` | Optional map of headers to set on the callout request. Each value is a CEL expression, so quote a literal string twice, such as `'"Bearer router-token"'`. To pass a client header to the callout service, read it from the request, such as `x-session-id: request.headers["x-session-id"]`. If an expression fails, such as when the client did not send that header, the header is left out. Keys can also be the `:path`, `:method`, and `:authority` pseudo-headers. A `backend` or service target has no path, so set `":path": '"/v1/route"'` to call a path other than `/`. |
+| `transformation` | Required map of request body fields to CEL expressions that read `callout`. The `model` key is required. The other keys override fields in the request body. If a key's expression fails, such as when the response does not contain the field, that field is removed from the request. The keys apply only to requests that carry the model in a JSON body. |
+| `failureMode` | Optional. The default, `failClosed`, rejects the request with a `503` response and the `virtual_model_callout_failed` error code. Set `fallback` to the name of an `llm.models[]` entry to route to that model instead. The configuration is rejected if the fallback model does not exist. |
+| `cache` | Optional cache for callout responses. `key` is a list of CEL expressions that make up the cache key. If a key expression fails, such as when the header is missing, the response is not cached. `ttl` is a duration such as `10m`, or a CEL expression that can read `callout` and returns a duration or a timestamp. `maxEntries` sets the maximum number of cached responses. On a cache hit, `transformation` runs against the cached response. |
+
+For complete examples that include a callout service, see [`llm-callout-jev`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-jev) and [`llm-callout-switchyard`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-switchyard) in the agentgateway repository.
 
 > [!NOTE]
 > For reusable provider defaults in simplified mode, see [Multiple LLM providers]({{< link-hextra path="/integrations/llm/providers/multiple-llms/" >}}).
