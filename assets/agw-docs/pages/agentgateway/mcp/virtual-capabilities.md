@@ -2,7 +2,7 @@
 
 For sessions with multiple targets, agentgateway merges their capabilities into one `initialize` result. Tools, prompts, and resources are always enabled.
 
-Each capability below is advertised only if at least one session target offers it:
+Each of the followign capabilities is advertised only if at least one session target offers it:
 
 - `tools.listChanged`
 - `prompts.listChanged`
