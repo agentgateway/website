@@ -95,6 +95,7 @@ Dynamic backends now reject destinations that resolve to loopback, link-local, o
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4011 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3973 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3815 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4054 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3802 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3873 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3897 -->
@@ -114,7 +115,8 @@ Dynamic backends now reject destinations that resolve to loopback, link-local, o
 - **Google Model Armor errors**: A non-success response from Model Armor is now a guard failure and follows the guard's `failureMode`.
 - **Backend mirrors**: Request mirrors that are attached to a backend now run after backend policies, so requests that backend authorization rejects are no longer mirrored. Mirrors that are attached to a route still run before backend policies.
 - **MCP OpenAPI paths**: A non-root path in the `host` URL or `path` field of an OpenAPI MCP target now overrides the server path prefix from the schema. Previously, the path was ignored. An omitted, empty, or root path keeps the schema server path. For more information, see [Override the schema server path]({{< link-hextra path="/integrations/mcp/servers/openapi/#override-schema-server-path" >}}).
-- **MCP OpenAPI responses**: Non-JSON responses from an OpenAPI MCP target are returned as typed MCP content, such as text, audio, or a binary resource, instead of a `{code, message}` wrapper.
+- **MCP OpenAPI responses**: Non-JSON responses from an OpenAPI MCP target are returned as typed MCP content, such as text, audio, or a binary resource, instead of a `{code, message}` wrapper. The HTTP status code of a `4xx` response is no longer part of the tool result. For more information, see [Tool response content]({{< link-hextra path="/integrations/mcp/servers/openapi/#tool-response-content" >}}).
+- **MCP capabilities**: Multiplexed MCP sessions now advertise `listChanged` and `subscribe` only when at least one upstream target offers them. In 1.6, agentgateway always advertised them. Stateless sessions advertise none. For more information, see [Capabilities and change notifications]({{< link-hextra path="/integrations/mcp/servers/virtual/#capabilities" >}}).
 - **MCP session errors**: Stateful MCP requests with a session ID that the proxy cannot decode, such as after the session key changes, now return `404` instead of `400`. Clients then start a new session.
 - **gRPC health**: Errors that agentgateway itself returns to gRPC clients now record their `grpc-status`. Only server-side gRPC errors, such as `UNAVAILABLE` or `INTERNAL`, mark a backend unhealthy. A client-side gRPC status from an LLM provider no longer evicts the target from a failover group. This change matches how agentgateway treats `5xx` and `4xx` responses for HTTP.
 - **gRPC policy calls**: When a gRPC policy call, such as to an external processing server, fails before it reaches the service, agentgateway now reports the mapped gRPC status instead of `UNKNOWN`. For example, DNS errors, refused connections, and timeouts report `UNAVAILABLE`.
@@ -332,7 +334,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 - MCP authentication derives JWKS URLs without a double slash when an issuer value ends with `/`.
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 - MCP responses now honor the `responseIdleTimeout` response idle timeout, which previously did not apply on MCP routes. A response, including an SSE stream, that sends no data for longer than the timeout is now ended.
-- MCP target conditions are now checked on each request of a session, not only when the session is initialized.
+- MCP target conditions are now checked on each request of a session, not only when the session is initialized. A request whose conditions select different targets than the session returns `404`, and the client starts a new session. For more information, see [Target conditions]({{< link-hextra path="/integrations/mcp/servers/virtual/#target-conditions" >}}).
 - Resumed MCP sessions no longer keep outdated settings after a configuration change.
 
 **UI**

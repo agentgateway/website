@@ -75,6 +75,7 @@ An {{< reuse "agw-docs/snippets/backend.md" >}} with `spec.dynamicForwardProxy` 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3925 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4011 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3802 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4054 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3873 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3897 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3793 -->
@@ -94,6 +95,7 @@ An {{< reuse "agw-docs/snippets/backend.md" >}} with `spec.dynamicForwardProxy` 
 - **Google Model Armor errors**: A non-success response from Model Armor is now a guard failure and follows the guard's `failureMode`.
 - **Backend mirrors**: Request mirror filters in the `backendRefs` of an `HTTPRoute` now run after backend policies, so requests that backend authorization rejects are no longer mirrored. Mirror filters on a route rule still run before backend policies.
 - **MCP session errors**: Stateful MCP requests with a session ID that the proxy cannot decode, such as after the session key changes, now return `404` instead of `400`. Clients then start a new session.
+- **MCP capabilities**: Multiplexed MCP sessions now advertise `listChanged` and `subscribe` only when at least one upstream target offers them. In 1.6, agentgateway always advertised them. Stateless sessions advertise none. For more information, see [Capabilities and change notifications]({{< link-hextra path="/documentation/mcp/virtual/#capabilities" >}}).
 - **gRPC health**: Errors that agentgateway itself returns to gRPC clients now record their `grpc-status`. Only server-side gRPC errors, such as `UNAVAILABLE` or `INTERNAL`, mark a backend unhealthy. A client-side gRPC status from an LLM provider no longer evicts the target from a failover group. This change matches how agentgateway treats `5xx` and `4xx` responses for HTTP.
 - **gRPC policy calls**: When a gRPC policy call, such as to an external processing server, fails before it reaches the service, agentgateway now reports the mapped gRPC status instead of `UNKNOWN`. For example, DNS errors, refused connections, and timeouts report `UNAVAILABLE`.
 - **Anthropic version header**: Agentgateway forwards the client's `anthropic-version` header instead of replacing it. When the client does not send the header, agentgateway still sets the default value `2023-06-01`.
@@ -214,9 +216,11 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 ### MCP {#v17-mcp}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3824 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4060 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4062 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3976 -->
 
-- **Conditional virtual MCP targets**: Set `spec.mcp.targets[].condition` on an {{< reuse "agw-docs/snippets/backend.md" >}} to a CEL expression to select which targets take part in a request before agentgateway initializes or contacts them. A backend whose only target is a `static` target cannot set a condition. For more information, see [Include targets conditionally]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
+- **Conditional virtual MCP targets**: Set `spec.mcp.targets[].condition` on an {{< reuse "agw-docs/snippets/backend.md" >}} to a CEL expression to select which targets take part in a request before agentgateway initializes or contacts them. A backend whose only target is a `static` target cannot set a condition. Conditions are checked on each request, and an invalid CEL condition reports `PartiallyValid` in the backend status. For more information, see [Include targets conditionally]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
 - **Session cleanup across replicas**: Closing a stateful MCP session now resumes the encoded session before agentgateway closes the upstream sessions. Any replica with the same session key can close the upstream sessions.
 
 ### Kubernetes and operations {#v17-operations}
