@@ -14,12 +14,15 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: backend-tls-demo
+  namespace: default
   annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/proxy-ssl-secret: "default/backend-tls-secret"
     nginx.ingress.kubernetes.io/proxy-ssl-verify: "on"
     nginx.ingress.kubernetes.io/proxy-ssl-name: "internal-api.example.com"
+    nginx.ingress.kubernetes.io/proxy-ssl-server-name: "on"
 spec:
-  ingressClassName: agentgateway
+  ingressClassName: nginx
   rules:
   - host: app.example.com
     http:
