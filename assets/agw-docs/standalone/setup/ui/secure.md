@@ -43,9 +43,9 @@ Whether the UI can save depends on your storage mode. For more information, see 
    4. **Redirect URI**: `${REDIRECT_URI}`
    5. **Additional scopes**: Click the `profile` and `email` suggestions.
 
-   {{< reuse-image src="img/ui-settings-oidc.png" srcDark="img/ui-settings-oidc-dark.png" >}}
+   {{< reuse-image src="img/ui-settings-oidc.png" srcDark="img/ui-settings-oidc-dark.png" alt="UI OIDC settings drawer with the issuer URL from the ISSUER_URL environment variable" >}}
 
-   {{< reuse-image src="img/ui-settings-oidc-client.png" srcDark="img/ui-settings-oidc-client-dark.png" >}}
+   {{< reuse-image src="img/ui-settings-oidc-client.png" srcDark="img/ui-settings-oidc-client-dark.png" alt="UI OIDC settings drawer scrolled to the client ID, client secret, and redirect URI environment variables and the profile and email scopes" >}}
 
 5. Click **Save policy**. The save fails if agentgateway cannot fetch the OIDC discovery document from the issuer, or if a referenced environment variable is not set.
 6. Optional: Restrict access to users whose email address ends in `@example.com`.

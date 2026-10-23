@@ -33,7 +33,7 @@ In the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), stat
 4. Enter `api-v2.example.com:8080` for the **Host** of the first backend, and `80` for its **Weight**.
 5. Enter `api-v1.example.com:8080` for the **Host** of the second backend, and `20` for its **Weight**.
 
-   {{< reuse-image src="img/ui-route-weighted-backends.png" srcDark="img/ui-route-weighted-backends-dark.png" >}}
+   {{< reuse-image src="img/ui-route-weighted-backends.png" srcDark="img/ui-route-weighted-backends-dark.png" alt="Edit route drawer for the api-v2 route with two host backends weighted 80 and 20" >}}
 
 6. Click **Save route**.
 

@@ -99,7 +99,7 @@ These steps assume an MCP server that you already added, as described in [Config
 1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**.
 2. For **State mode**, select **Stateless**.
 
-   {{< reuse-image src="img/ui-mcp-settings-stateless.png" srcDark="img/ui-mcp-settings-stateless-dark.png" >}}
+   {{< reuse-image src="img/ui-mcp-settings-stateless.png" srcDark="img/ui-mcp-settings-stateless-dark.png" alt="MCP servers settings drawer with the state mode set to Stateless" >}}
 
 3. Click **Save settings**.
 
@@ -264,14 +264,14 @@ Then, connect agentgateway to your MCP server. You can use the UI or a configura
 3. Enter `mcp` for the **Server name**, and keep the **Streamable HTTP** transport.
 4. Enter `http://localhost:3005/mcp/` for the **URL**, and click **Save server**.
 
-   {{< reuse-image src="img/ui-mcp-servers-add-http.png" srcDark="img/ui-mcp-servers-add-http-dark.png" >}}
+   {{< reuse-image src="img/ui-mcp-servers-add-http.png" srcDark="img/ui-mcp-servers-add-http-dark.png" alt="Add MCP server drawer for the mcp target with the Streamable HTTP transport and the http://localhost:3005/mcp/ URL" >}}
 
 5. Open **MCP** > **Policies**, and click **CORS**. Expose the `Mcp-Session-Id` header so that clients keep their session.
    1. In **Allowed origins**, enter `*`, and click **Add**.
    2. Keep **Allow all request headers** selected.
    3. In **Expose headers**, enter `Mcp-Session-Id`, and click **Add**.
 
-      {{< reuse-image src="img/ui-mcp-cors-session-id.png" srcDark="img/ui-mcp-cors-session-id-dark.png" >}}
+      {{< reuse-image src="img/ui-mcp-cors-session-id.png" srcDark="img/ui-mcp-cors-session-id-dark.png" alt="MCP CORS policy drawer with the * allowed origin and the Mcp-Session-Id expose header" >}}
 
    4. Click **Save policy**.
 

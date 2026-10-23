@@ -188,7 +188,7 @@ The UI adds both targets to the top-level `mcp` section, as in the [example mult
    2. Enter `time` for the **Server name**, and select the **Command Line** transport. Target names cannot include underscores (`_`).
    3. Enter `uvx` for the **Command** and `--with mcp<2 mcp-server-time` for the **Arguments**.
 
-      {{< reuse-image src="img/ui-mcp-servers-add-time.png" srcDark="img/ui-mcp-servers-add-time-dark.png" >}}
+      {{< reuse-image src="img/ui-mcp-servers-add-time.png" srcDark="img/ui-mcp-servers-add-time-dark.png" alt="Add MCP server drawer for the time target with the uvx command and the mcp-server-time arguments" >}}
 
    4. Click **Save server**.
 3. Add the `everything` server.
@@ -311,7 +311,7 @@ You can set the prefix mode in the UI or in your configuration file.
 2. For **Prefix mode**, select **Never**.
 3. For **State mode**, select **Stateful** to keep the default session behavior. The list shows **Stateless** when `statefulMode` is not set, and the drawer saves the selected value.
 
-   {{< reuse-image src="img/ui-mcp-settings-prefix-never.png" srcDark="img/ui-mcp-settings-prefix-never-dark.png" >}}
+   {{< reuse-image src="img/ui-mcp-settings-prefix-never.png" srcDark="img/ui-mcp-settings-prefix-never-dark.png" alt="MCP servers settings drawer with the prefix mode set to Never and the state mode set to Stateful" >}}
 
 4. Click **Save settings**.
 

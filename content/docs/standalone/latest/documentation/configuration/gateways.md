@@ -103,7 +103,7 @@ The following steps use the [UI]({{< link-hextra path="/documentation/setup/ui/l
 3. Enter `3000` for the **Port**.
 4. Select **HTTP** as the **Protocol**. The **Resulting YAML** shows the gateway entry that the UI writes.
 
-   {{< reuse-image src="img/ui-add-gateway.png" srcDark="img/ui-add-gateway-dark.png" >}}
+   {{< reuse-image src="img/ui-add-gateway.png" srcDark="img/ui-add-gateway-dark.png" alt="Add gateway drawer with Default gateway selected, so that the gateway is named default and listens on port 3000" >}}
 
 5. Click **Save gateway**.
 6. Open **Traffic** > **Routes**, and click **Add route**.

@@ -29,7 +29,7 @@ Match names with a provider prefix, such as `openai/gpt-5-mini`, and strip the p
 3. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`. The variable must be set in the environment that agentgateway runs in, or the save fails.
 4. For the **Outgoing model**, make sure that **Strip openai/** is selected. This option writes the `stripPrefix("openai/")` transformation.
 
-   {{< reuse-image src="img/ui-llm-model-prefixed.png" srcDark="img/ui-llm-model-prefixed-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-model-prefixed.png" srcDark="img/ui-llm-model-prefixed-dark.png" alt="Add model drawer with the OpenAI provider, the default openai/* match, the OPENAI_API_KEY environment variable, and Strip openai/ as the outgoing model" >}}
 
 5. Click **Save model**.
 6. Repeat the previous steps with the **Anthropic** provider and the `ANTHROPIC_API_KEY` environment variable. The UI fills in `anthropic/*` and selects **Strip anthropic/**.
@@ -93,7 +93,7 @@ Match a single model name and forward it unchanged. Add an entry for each model 
 4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
 5. For the **Outgoing model**, make sure that **Incoming model** is selected.
 
-   {{< reuse-image src="img/ui-llm-model-exact.png" srcDark="img/ui-llm-model-exact-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-model-exact.png" srcDark="img/ui-llm-model-exact-dark.png" alt="Add model drawer with the OpenAI provider, the gpt-5.6-luna match, the OPENAI_API_KEY environment variable, and Incoming model as the outgoing model" >}}
 
 6. Click **Save model**.
 7. Repeat the previous steps with the **Anthropic** provider, the `claude-sonnet-4-5` match, and the `ANTHROPIC_API_KEY` environment variable.
@@ -199,7 +199,7 @@ Match any model name with `*` and forward it unchanged. Use this pattern to expo
 4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
 5. For the **Outgoing model**, make sure that **Incoming model** is selected.
 
-   {{< reuse-image src="img/ui-llm-model-passthrough.png" srcDark="img/ui-llm-model-passthrough-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-model-passthrough.png" srcDark="img/ui-llm-model-passthrough-dark.png" alt="Add model drawer with the OpenAI provider, the * match, the OPENAI_API_KEY environment variable, and Incoming model as the outgoing model" >}}
 
 6. Click **Save model**.
 {{% /tab %}}
@@ -254,7 +254,7 @@ Publish a custom name, such as `fast` or `support-bot`, and map it to a provider
 4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
 5. For the **Outgoing model**, select **Explicit**. In the **Explicit outgoing model** field, enter or select `gpt-5-mini`.
 
-   {{< reuse-image src="img/ui-llm-model-alias.png" srcDark="img/ui-llm-model-alias-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-model-alias.png" srcDark="img/ui-llm-model-alias-dark.png" alt="Add model drawer for the fast model, with the explicit outgoing model gpt-5-mini" >}}
 
 6. Click **Save model**.
 7. Repeat the previous steps for `support-bot`, with the **Anthropic** provider, the `ANTHROPIC_API_KEY` environment variable, and `claude-haiku-4-5` as the explicit outgoing model.

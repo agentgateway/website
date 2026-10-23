@@ -49,7 +49,7 @@ To create the same configuration in the [UI]({{< link-hextra path="/documentatio
 4. In the **Incoming model match** field, replace the default `openai/*` with `*`.
 5. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
 
-   {{< reuse-image src="img/ui-llm-model-passthrough.png" srcDark="img/ui-llm-model-passthrough-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-model-passthrough.png" srcDark="img/ui-llm-model-passthrough-dark.png" alt="Add model drawer with the OpenAI provider, the * match, the OPENAI_API_KEY environment variable, and Incoming model as the outgoing model" >}}
 
 6. Click **Save model**.
 

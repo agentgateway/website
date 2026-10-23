@@ -51,7 +51,7 @@ The following steps add the same `mcpAuthorization` policy as the **Simplified (
    2. `jwt.sub == "test-user" && mcp.tool.name == "add"` allows only `test-user` to call the `add` tool.
    3. `mcp.tool.name == "printEnv" && jwt.nested.key == "value"` allows users with the claim `nested.key == value` to call the `printEnv` tool.
 
-   {{< reuse-image src="img/ui-mcp-policy-authorization.png" srcDark="img/ui-mcp-policy-authorization-dark.png" >}}
+   {{< reuse-image src="img/ui-mcp-policy-authorization.png" srcDark="img/ui-mcp-policy-authorization-dark.png" alt="MCP authorization drawer with three allow rules for the echo, add, and printEnv tools" >}}
 
 5. Click **Save policy**.
 

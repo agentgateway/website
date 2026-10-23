@@ -127,7 +127,7 @@ Use `routing.weighted.targets` to split traffic between targets with `weight`.
    1. In the target row that the UI adds, select `gpt-4o-primary` from the **Model** dropdown, and enter `90` for the **Weight**.
    2. Click **Add target**. In the new target row, select `gpt-4o-fallback` from the **Model** dropdown, and enter `10` for the **Weight**.
 
-   {{< reuse-image src="img/ui-llm-virtual-model-weighted.png" srcDark="img/ui-llm-virtual-model-weighted-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-virtual-model-weighted.png" srcDark="img/ui-llm-virtual-model-weighted-dark.png" alt="Add virtual model drawer for the smart virtual model with gpt-4o-primary weighted 90 and gpt-4o-fallback weighted 10" >}}
 
 6. Click **Save virtual model**.
 
@@ -289,7 +289,7 @@ Failover is driven by eviction of the active set, not by rewriting a single in-f
 6. Click **Add fallback group**. In the new group, select `claude-backup-a`.
 7. In the same group, click **Add target**, and select `claude-backup-b`. Both targets in this group get `priority: 1`.
 
-   {{< reuse-image src="img/ui-llm-virtual-model-failover.png" srcDark="img/ui-llm-virtual-model-failover-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-virtual-model-failover.png" srcDark="img/ui-llm-virtual-model-failover-dark.png" alt="Add virtual model drawer for the resilient virtual model with claude-primary as the first attempt and claude-backup-a and claude-backup-b as the fallback group" >}}
 
 8. Click **Save virtual model**.
 {{% /tab %}}
@@ -439,11 +439,11 @@ Use `routing.conditional.targets` and `when` expressions to select targets by re
 4. For the **Routing strategy**, select **Conditional**. The UI adds a **Rule 1** card and a **Fallback** card, each with a **Condition** and a **Target model**.
 5. In **Rule 1**, replace the **Condition** with `request.headers["x-tier"] == "free"`, and select `openai-fast` as the **Target model**.
 
-   {{< reuse-image src="img/ui-llm-virtual-model-conditional.png" srcDark="img/ui-llm-virtual-model-conditional-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-virtual-model-conditional.png" srcDark="img/ui-llm-virtual-model-conditional-dark.png" alt="Add virtual model drawer for the adaptive virtual model with rule 1 that sends x-tier free requests to openai-fast" >}}
 
 6. In the **Fallback** card, enter `request.headers["x-tier"] == "pro"` as the **Condition**, and select `openai-smart` as the **Target model**. With a condition, the card becomes **Rule 2**.
 
-   {{< reuse-image src="img/ui-llm-virtual-model-conditional-rule-2.png" srcDark="img/ui-llm-virtual-model-conditional-rule-2-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-virtual-model-conditional-rule-2.png" srcDark="img/ui-llm-virtual-model-conditional-rule-2-dark.png" alt="Add virtual model drawer scrolled to rule 2, which sends x-tier pro requests to openai-smart" >}}
 
 7. Click **Save virtual model**.
 

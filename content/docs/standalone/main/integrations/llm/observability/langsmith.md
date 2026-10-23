@@ -68,7 +68,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
    3. **Protocol**: Select **HTTP**, and enter `/otel/v1/traces` for the **Path**.
    4. **Random sampling**: Enter `true`.
 
-   {{< reuse-image src="img/ui-tracing-langsmith.png" srcDark="img/ui-tracing-langsmith-dark.png" >}}
+   {{< reuse-image src="img/ui-tracing-langsmith.png" srcDark="img/ui-tracing-langsmith-dark.png" alt="Tracing drawer with the api.smith.langchain.com:443 host, backendTLS and x-api-key header backend policies, the HTTP protocol, and the /otel/v1/traces path" >}}
 
 5. Click **Save policy**.
 {{% /tab %}}

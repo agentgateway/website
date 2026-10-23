@@ -77,7 +77,7 @@ The following steps add the same `jwtAuth` policy as the **Simplified (LLM)** ex
    2. In **Audiences**, enter `test.agentgateway.dev`, and click **Add**.
    3. Keep the default **Required claims** selection, `exp`.
 
-   {{< reuse-image src="img/ui-llm-policy-jwt-auth.png" srcDark="img/ui-llm-policy-jwt-auth-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-policy-jwt-auth.png" srcDark="img/ui-llm-policy-jwt-auth-dark.png" alt="JWT authentication drawer with a local JWKS file, the agentgateway.dev issuer, and the test.agentgateway.dev audience" >}}
 
 8. Click **Save policy**.
 
@@ -225,7 +225,7 @@ The following steps add the `authorization` policy from the **Simplified (LLM)**
 2. Click **Add rule**. Keep the **Allow** effect.
 3. Replace the example expression with `request.path == "/admin" && jwt.groups.contains("admins")`.
 
-   {{< reuse-image src="img/ui-llm-policy-jwt-authorization.png" srcDark="img/ui-llm-policy-jwt-authorization-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-policy-jwt-authorization.png" srcDark="img/ui-llm-policy-jwt-authorization-dark.png" alt="Authorization policy drawer with one allow rule for the /admin path and the admins group" >}}
 
 4. Click **Save policy**.
 

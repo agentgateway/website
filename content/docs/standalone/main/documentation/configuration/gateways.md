@@ -103,7 +103,7 @@ The following steps use the [UI]({{< link-hextra path="/documentation/setup/ui/l
 3. Enter `3000` for the **Port**.
 4. Select **HTTP** as the **Protocol**. To preview the change to your configuration file, click **View diff**.
 
-   {{< reuse-image src="img/ui-add-gateway.png" srcDark="img/ui-add-gateway-dark.png" >}}
+   {{< reuse-image src="img/ui-add-gateway.png" srcDark="img/ui-add-gateway-dark.png" alt="Add gateway drawer with Default gateway selected, so that the gateway is named default and listens on port 3000" >}}
 
 5. Click **Save gateway**.
 6. Open **Traffic** > **Routes**, and click **Add route**.
@@ -304,7 +304,7 @@ The following steps create the same gateway and routes as the **Config file** ta
    3. Enter `a.example.com` for the **Hostname**.
    4. Expand the **TLS** section. Enter `./certs/cert-a.pem` for the **Certificate** and `./certs/key-a.pem` for the **Key**.
 
-   {{< reuse-image src="img/ui-gateways-listener.png" srcDark="img/ui-gateways-listener-dark.png" >}}
+   {{< reuse-image src="img/ui-gateways-listener.png" srcDark="img/ui-gateways-listener-dark.png" alt="Edit listener drawer for listener1 on the web gateway, set up as an HTTPS listener for a.example.com with the cert-a.pem certificate and key-a.pem key" >}}
 
 5. Click **Save listener**.
 6. In the header of the `web` gateway, click the **Add listener** icon. In the **Add listener** drawer, create the `wildcard` listener in the same way as the `discrete` listener.
@@ -399,7 +399,7 @@ TCP and TLS gateways serve `tcpRoutes` instead of `routes`.
 2. Enter a **Name** and a **Port**, such as `tcp` and `9000`.
 3. Select **TCP** as the **Protocol**, and click **Save gateway**.
 
-   {{< reuse-image src="img/ui-listeners-tcp.png" srcDark="img/ui-listeners-tcp-dark.png" >}}
+   {{< reuse-image src="img/ui-listeners-tcp.png" srcDark="img/ui-listeners-tcp-dark.png" alt="Add gateway drawer for the tcp gateway on port 9000 with the TCP protocol" >}}
 
 4. Open **Traffic** > **Routes**, and click **Add route**.
 5. Select **TCP** as the **Kind**, and select the `tcp` **Gateway**.
@@ -571,7 +571,7 @@ The following steps add the CORS policy from the **Config file** tab to an exist
    2. In **Allowed methods**, keep **GET** and **POST** selected.
    3. In **Allowed headers**, clear **Allow all request headers**.
 
-   {{< reuse-image src="img/ui-gateways-cors.png" srcDark="img/ui-gateways-cors-dark.png" >}}
+   {{< reuse-image src="img/ui-gateways-cors.png" srcDark="img/ui-gateways-cors-dark.png" alt="CORS policy form for the default gateway with the https://app.example.com origin, the GET and POST methods, and Allow all request headers cleared" >}}
 
 4. Click **Save**, and close the **Gateway policies** drawer.
 5. Click **Save gateway**.
@@ -677,7 +677,7 @@ You can convert a configuration in the UI or by editing your configuration file.
 1. Start agentgateway with your `binds` configuration, and open **Traffic** > **Gateways**. A **Detected legacy binds config** banner appears when the configuration has `binds` but no `gateways`.
 2. Click **Review migration**. The **Migrate binds to gateways** drawer shows your current configuration next to the converted one.
 
-   {{< reuse-image src="img/ui-gateways-migrate-binds.png" srcDark="img/ui-gateways-migrate-binds-dark.png" >}}
+   {{< reuse-image src="img/ui-gateways-migrate-binds.png" srcDark="img/ui-gateways-migrate-binds-dark.png" alt="Migrate binds to gateways drawer showing the binds configuration next to the converted gateways configuration" >}}
 
 3. Review the diff, and click **Save**.
 

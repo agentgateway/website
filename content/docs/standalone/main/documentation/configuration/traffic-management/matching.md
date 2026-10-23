@@ -48,7 +48,7 @@ To add a route with a path match in the [UI]({{< link-hextra path="/documentatio
 3. Select **Exact** as the **Path match** type. For the other examples, select **Prefix** or **Regex**.
 4. Enter `/api/v1/users` for the **Path**.
 
-   {{< reuse-image src="img/ui-matching-path.png" srcDark="img/ui-matching-path-dark.png" >}}
+   {{< reuse-image src="img/ui-matching-path.png" srcDark="img/ui-matching-path-dark.png" alt="Add route drawer for the api-exact route with an exact path match on /api/v1/users" >}}
 
 5. In the **Backends** section, click **Add backend**, and enter `api.example.com:8080` for the **Host**.
 6. Click **Save route**.
@@ -131,7 +131,7 @@ The following steps create the same `multi-header` route as the **Multiple heade
    1. Enter `Authorization` for the header name and `^Bearer .*` for the value. Then, click **Regex** to match the value as a regular expression.
    2. Enter `Content-Type` for the header name and `application/json` for the value. Leave **Regex** off for an exact match.
 
-   {{< reuse-image src="img/ui-matching-headers.png" srcDark="img/ui-matching-headers-dark.png" >}}
+   {{< reuse-image src="img/ui-matching-headers.png" srcDark="img/ui-matching-headers-dark.png" alt="Add route drawer for the multi-header route with a regex Authorization header condition, an exact Content-Type header condition, and the backend" >}}
 
 4. In the **Backends** section, click **Add backend**, and enter `api.example.com:8080` for the **Host**.
 5. Click **Save route**.
@@ -224,7 +224,7 @@ The following steps create the same `get-only` route as the **GET method matchin
 2. Select the **Gateway**, enter `get-only` for the **Name**, and enter `/api` for the **Path**.
 3. Enter `GET` for the **Method**.
 
-   {{< reuse-image src="img/ui-matching-method.png" srcDark="img/ui-matching-method-dark.png" >}}
+   {{< reuse-image src="img/ui-matching-method.png" srcDark="img/ui-matching-method-dark.png" alt="Add route drawer for the get-only route with the /api path and the GET method" >}}
 
 4. In the **Backends** section, click **Add backend**, and enter `api.example.com:8080` for the **Host**.
 5. Click **Save route**.
@@ -315,7 +315,7 @@ The following steps create the same `multi-query` route as the **Multiple query 
    1. Enter `version` for the query name and `v1` for the value. Leave **Regex** off for an exact match.
    2. Enter `format` for the query name and `^(json|xml)$` for the value. Then, click **Regex** to match the value as a regular expression.
 
-   {{< reuse-image src="img/ui-matching-query.png" srcDark="img/ui-matching-query-dark.png" >}}
+   {{< reuse-image src="img/ui-matching-query.png" srcDark="img/ui-matching-query-dark.png" alt="Add route drawer for the multi-query route with an exact version query condition, a regex format query condition, and the backend" >}}
 
 4. In the **Backends** section, click **Add backend**, and enter `api.example.com:8080` for the **Host**.
 5. Click **Save route**.
@@ -467,7 +467,7 @@ The following steps assume that you have a TCP gateway named `database-proxy`. T
 3. Enter `database-backend` for the **Name** and `db.example.com` for the **Hostnames**. To match more than one hostname, separate them with commas.
 4. In the **Backends** section, click **Add backend**, and enter `postgres.example.com:5432` for the **Host**.
 
-   {{< reuse-image src="img/ui-matching-tcp-hostname.png" srcDark="img/ui-matching-tcp-hostname-dark.png" >}}
+   {{< reuse-image src="img/ui-matching-tcp-hostname.png" srcDark="img/ui-matching-tcp-hostname-dark.png" alt="Add route drawer with the TCP kind, the database-proxy gateway, the database-backend route name, the db.example.com hostname, and the postgres.example.com:5432 backend" >}}
 
 5. Click **Save route**.
 {{% /tab %}}
@@ -510,7 +510,7 @@ The following steps assume that you have a TCP gateway named `redis-proxy`. To a
    * `redis-2.example.com:6379` with a weight of `2`
    * `redis-3.example.com:6379` with a weight of `1`
 
-   {{< reuse-image src="img/ui-matching-tcp-weights.png" srcDark="img/ui-matching-tcp-weights-dark.png" >}}
+   {{< reuse-image src="img/ui-matching-tcp-weights.png" srcDark="img/ui-matching-tcp-weights-dark.png" alt="Add route drawer for the redis-cluster TCP route on the redis-proxy gateway with three backends weighted 1, 2, and 1" >}}
 
 4. Click **Save route**.
 

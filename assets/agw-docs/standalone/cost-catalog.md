@@ -41,7 +41,7 @@ You can load a catalog in the UI or in your configuration file.
 1. Open **LLM** > **Costs** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/costs](http://localhost:15000/ui/llm/costs).
 2. Click **Refresh base costs**. The UI downloads the agentgateway model catalog to a `base-costs.json` file in the same directory as your configuration file, and adds the file to `config.modelCatalog`. The **Catalog sources** table lists the file.
 
-   {{< reuse-image src="img/ui-cost-catalog.png" srcDark="img/ui-cost-catalog-dark.png" >}}
+   {{< reuse-image src="img/ui-cost-catalog.png" srcDark="img/ui-cost-catalog-dark.png" alt="LLM Costs page with the cost catalog sources and custom cost overrides" >}}
 
    > [!CAUTION]
    > If `config.modelCatalog` already lists a file, the refresh writes the downloaded catalog to the first listed file instead, and replaces its contents. Keep your own rates in a later file or in **Custom costs**, not in the first file.
@@ -142,7 +142,7 @@ If your provider pricing differs from the imported public catalog, add another c
 2. Click **Add model cost**, and enter the **Provider** and **Model**, such as `openai` and `gpt-4o-mini`.
 3. Enter the rates in USD per 1M tokens for **Input** and **Output**, such as `0.15` and `0.60`, and optionally for **Cache read** and **Cache write**.
 
-   {{< reuse-image src="img/ui-llm-costs-custom.png" srcDark="img/ui-llm-costs-custom-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-costs-custom.png" srcDark="img/ui-llm-costs-custom-dark.png" alt="LLM Costs page with Custom costs in edit mode and an openai gpt-4o-mini row with input cost 0.15 and output cost 0.60" >}}
 
 4. Click **Save**.
 

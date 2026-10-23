@@ -63,7 +63,7 @@ The following steps add the same `authorization` policy as the **Simplified (LLM
    | **Require** | `jwt.aud == "my-service"` |
    | **Allow** | `request.headers["x-allow"] == "true"` |
 
-   {{< reuse-image src="img/ui-llm-policy-authorization.png" srcDark="img/ui-llm-policy-authorization-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-policy-authorization.png" srcDark="img/ui-llm-policy-authorization-dark.png" alt="Authorization policy drawer with allow, deny, require, and allow rules" >}}
 
 5. Click **Save policy**.
 
@@ -279,7 +279,7 @@ The following steps add the model-level rules from the **Config file** tab to th
    | **Deny** | `request.headers["x-org"] == "blocked"` |
    | **Allow** | `request.headers["x-org"] == "engineering"` |
 
-   {{< reuse-image src="img/ui-llm-model-authorization.png" srcDark="img/ui-llm-model-authorization-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-model-authorization.png" srcDark="img/ui-llm-model-authorization-dark.png" alt="Edit model drawer for gpt-4 with the Authorization model policy and its require, deny, and allow rules" >}}
 
 5. Click **Apply authorization**, and then click **Save model**.
 

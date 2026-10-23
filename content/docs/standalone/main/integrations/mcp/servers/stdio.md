@@ -76,7 +76,7 @@ You can add the MCP server in the UI or in a configuration file.
 3. Enter `everything` for the **Server name**, and select the **Command Line** transport.
 4. Enter `npx` for the **Command** and `@modelcontextprotocol/server-everything` for the **Arguments**.
 
-   {{< reuse-image src="img/ui-mcp-servers-add-stdio.png" srcDark="img/ui-mcp-servers-add-stdio-dark.png" >}}
+   {{< reuse-image src="img/ui-mcp-servers-add-stdio.png" srcDark="img/ui-mcp-servers-add-stdio-dark.png" alt="Add MCP server drawer for the everything target with the npx command and the @modelcontextprotocol/server-everything argument" >}}
 
 5. Click **Save server**.
 

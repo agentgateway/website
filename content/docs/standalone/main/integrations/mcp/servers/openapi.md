@@ -110,7 +110,7 @@ Then, connect agentgateway to the Petstore server. You can use the UI or a confi
 4. Replace the **URL** with `localhost:8080`, the address of the Petstore server.
 5. For **Schema source**, select **File**. Then, enter `openapi.json` for the **Schema**. A relative path resolves from the directory where you run agentgateway.
 
-   {{< reuse-image src="img/ui-mcp-servers-add-openapi-file.png" srcDark="img/ui-mcp-servers-add-openapi-file-dark.png" >}}
+   {{< reuse-image src="img/ui-mcp-servers-add-openapi-file.png" srcDark="img/ui-mcp-servers-add-openapi-file-dark.png" alt="Add MCP server drawer for the openapi target with the OpenAPI transport, the localhost:8080 URL, and the openapi.json schema file" >}}
 
 6. Click **Save server**.
 
@@ -227,7 +227,7 @@ Fetch the OpenAPI schema from a remote URL. Agentgateway retrieves the schema at
 2. For **Schema source**, select **URL**.
 3. Replace the **Schema** value with the schema URL, such as `http://localhost:8080/api/v3/openapi.json`.
 
-   {{< reuse-image src="img/ui-mcp-servers-edit-openapi-url.png" srcDark="img/ui-mcp-servers-edit-openapi-url-dark.png" >}}
+   {{< reuse-image src="img/ui-mcp-servers-edit-openapi-url.png" srcDark="img/ui-mcp-servers-edit-openapi-url-dark.png" alt="Edit MCP server drawer for the openapi target with the schema URL http://localhost:8080/api/v3/openapi.json" >}}
 
 4. Click **Save server**.
 {{% /tab %}}
@@ -262,7 +262,7 @@ Embed the OpenAPI schema directly as an inline string.
 2. For **Schema source**, select **Inline**.
 3. In the **Schema** editor, replace any existing value with your OpenAPI document, such as the JSON in the **Config file** tab. The editor keeps the previous schema path or URL until you replace it.
 
-   {{< reuse-image src="img/ui-mcp-servers-edit-openapi-inline.png" srcDark="img/ui-mcp-servers-edit-openapi-inline-dark.png" >}}
+   {{< reuse-image src="img/ui-mcp-servers-edit-openapi-inline.png" srcDark="img/ui-mcp-servers-edit-openapi-inline-dark.png" alt="Edit MCP server drawer for the openapi target with an inline Petstore OpenAPI schema" >}}
 
 4. Click **Save server**.
 
@@ -339,7 +339,7 @@ OpenAPI backends are inherently stateless because they translate standard REST e
 1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**.
 2. For **State mode**, select **Stateless**.
 
-   {{< reuse-image src="img/ui-mcp-settings-stateless.png" srcDark="img/ui-mcp-settings-stateless-dark.png" >}}
+   {{< reuse-image src="img/ui-mcp-settings-stateless.png" srcDark="img/ui-mcp-settings-stateless-dark.png" alt="MCP servers settings drawer with the state mode set to Stateless" >}}
 
 3. Click **Save settings**.
 

@@ -54,7 +54,7 @@ The following steps add the same `extAuthz` policy as the **Simplified (LLM)** e
 5. In the **Authorization behavior** section, keep **gRPC** for the **Protocol** and **Deny** for the **Failure mode**.
 6. Optional: In the **gRPC details** section, add the metadata to send to the authorization service. In **Metadata**, enter `dev.agentgateway.jwt` as the key and `{"claims": jwt}` as the CEL expression, and click **Add**.
 
-   {{< reuse-image src="img/ui-llm-policy-ext-authz-grpc.png" srcDark="img/ui-llm-policy-ext-authz-grpc-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-policy-ext-authz-grpc.png" srcDark="img/ui-llm-policy-ext-authz-grpc-dark.png" alt="External authorization drawer with the gRPC details and the dev.agentgateway.jwt metadata entry" >}}
 
 7. Click **Save policy**.
 
@@ -254,12 +254,12 @@ Example configuration: For the full set of options, see the [configuration refer
 3. In the **Authorization behavior** section, select **HTTP** for the **Protocol**.
 4. In **Include request headers**, enter `cookie`, and click **Add**. By default, only the `Authorization` header is included.
 
-   {{< reuse-image src="img/ui-llm-policy-ext-authz-http.png" srcDark="img/ui-llm-policy-ext-authz-http-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-policy-ext-authz-http.png" srcDark="img/ui-llm-policy-ext-authz-http-dark.png" alt="External authorization drawer with the HTTP protocol and the cookie request header" >}}
 
 5. In the **HTTP details** section, enter `"/auth" + request.path` for the **Path expression**. This expression sends the authorization request to `/auth/<original request path>`.
 6. In **Include response headers**, enter `x-auth-request-user`, and click **Add**. This step is optional. It passes the user from the authorization response to the upstream service.
 
-   {{< reuse-image src="img/ui-llm-policy-ext-authz-http-details.png" srcDark="img/ui-llm-policy-ext-authz-http-details-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-policy-ext-authz-http-details.png" srcDark="img/ui-llm-policy-ext-authz-http-details-dark.png" alt="External authorization drawer with the HTTP path expression and the x-auth-request-user response header" >}}
 
 7. Click **Save policy**.
 {{% /tab %}}

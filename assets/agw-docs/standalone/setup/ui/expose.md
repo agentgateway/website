@@ -38,7 +38,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
    2. Expand **TLS**.
    3. Enter `/etc/agentgateway/tls/tls.crt` for the **Certificate** and `/etc/agentgateway/tls/tls.key` for the **Key**.
 
-      {{< reuse-image src="img/ui-gateway-tls.png" srcDark="img/ui-gateway-tls-dark.png" >}}
+      {{< reuse-image src="img/ui-gateway-tls.png" srcDark="img/ui-gateway-tls-dark.png" alt="Edit gateway drawer for the ui-gateway gateway, set to HTTPS with the certificate and key from /etc/agentgateway/tls" >}}
 
    4. Click **Save gateway**. The gateway shows the **HTTPS** and **TLS** badges. You do not need to restart agentgateway.
 5. Open the **Settings** > **UI** page, and confirm that the **Public gateway** dropdown shows `ui-gateway`. If it does not, select `ui-gateway`, and click **Save UI gateway**.

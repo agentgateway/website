@@ -94,7 +94,7 @@ The following steps add the same `mcpAuthentication` policy as the **Simplified 
 5. In the **Signing keys** section, select **Remote URL** for the **JWKS source**. Then, enter `http://localhost:7080/realms/mcp/protocol/openid-connect/certs` for the **JWKS URL**.
 6. In the **Token validation** section, enter `http://localhost:7080/realms/mcp` for the **Issuer**. In **Audiences**, enter `http://localhost:3000/mcp`, and click **Add**.
 
-   {{< reuse-image src="img/ui-mcp-policy-authn-keycloak.png" srcDark="img/ui-mcp-policy-authn-keycloak-dark.png" >}}
+   {{< reuse-image src="img/ui-mcp-policy-authn-keycloak.png" srcDark="img/ui-mcp-policy-authn-keycloak-dark.png" alt="MCP authentication drawer with the Keycloak JWKS URL, issuer, and audience" >}}
 
 7. In the **Protected resource metadata** section, enter the following YAML in **Resource metadata YAML**.
    ```yaml
@@ -109,7 +109,7 @@ The following steps add the same `mcpAuthentication` policy as the **Simplified 
    resourcePolicyUri: http://localhost:3000/stdio/policies
    ```
 
-   {{< reuse-image src="img/ui-mcp-policy-authn-keycloak-metadata.png" srcDark="img/ui-mcp-policy-authn-keycloak-metadata-dark.png" >}}
+   {{< reuse-image src="img/ui-mcp-policy-authn-keycloak-metadata.png" srcDark="img/ui-mcp-policy-authn-keycloak-metadata-dark.png" alt="MCP authentication drawer scrolled to the resource metadata YAML for the Keycloak setup" >}}
 
 8. The form has no field for `provider`. Click the **Raw** icon (`<>`) in the drawer header, and add the following lines at the end of the YAML.
    ```yaml
@@ -326,7 +326,7 @@ The following steps add the same `mcpAuthentication` policy as the **Simplified 
 5. In the **Signing keys** section, select **Remote URL** for the **JWKS source**. Then, enter `http://localhost:9000/.well-known/jwks.json` for the **JWKS URL**.
 6. In the **Token validation** section, enter `http://localhost:9000` for the **Issuer**. In **Audiences**, enter `http://localhost:3000/mcp`, and click **Add**.
 
-   {{< reuse-image src="img/ui-mcp-policy-authn-resource-server.png" srcDark="img/ui-mcp-policy-authn-resource-server-dark.png" >}}
+   {{< reuse-image src="img/ui-mcp-policy-authn-resource-server.png" srcDark="img/ui-mcp-policy-authn-resource-server-dark.png" alt="MCP authentication drawer with the localhost:9000 JWKS URL, issuer, and audience" >}}
 
 7. In the **Protected resource metadata** section, enter the following YAML in **Resource metadata YAML**.
    ```yaml
@@ -339,7 +339,7 @@ The following steps add the same `mcpAuthentication` policy as the **Simplified 
    - query
    ```
 
-   {{< reuse-image src="img/ui-mcp-policy-authn-resource-server-metadata.png" srcDark="img/ui-mcp-policy-authn-resource-server-metadata-dark.png" >}}
+   {{< reuse-image src="img/ui-mcp-policy-authn-resource-server-metadata.png" srcDark="img/ui-mcp-policy-authn-resource-server-metadata-dark.png" alt="MCP authentication drawer scrolled to the resource metadata YAML for the resource server setup" >}}
 
 8. Click **Save policy**.
 

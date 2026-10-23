@@ -57,11 +57,11 @@ To add an HTTP route in the [UI]({{< link-hextra path="/documentation/setup/ui/l
 4. Enter `http-backend` for the **Name**, and `example.com` for the **Hostnames**.
 5. Select **Prefix** as the **Path match**, and enter `/` for the **Path**.
 
-   {{< reuse-image src="img/ui-add-route.png" srcDark="img/ui-add-route-dark.png" >}}
+   {{< reuse-image src="img/ui-add-route.png" srcDark="img/ui-add-route-dark.png" alt="Add route drawer for the http-backend route on the http-proxy gateway, showing the match fields" >}}
 
 6. In the **Backends** section, click **Add backend**, and enter `http.example.com:8080` for the **Host**. Keep the **Weight** of `1`.
 
-   {{< reuse-image src="img/ui-add-route-backend.png" srcDark="img/ui-add-route-backend-dark.png" >}}
+   {{< reuse-image src="img/ui-add-route-backend.png" srcDark="img/ui-add-route-backend-dark.png" alt="Add route drawer scrolled to the http.example.com:8080 host backend" >}}
 
 7. Click **Save route**.
 
@@ -133,7 +133,7 @@ To add a TCP route in the [UI]({{< link-hextra path="/documentation/setup/ui/lau
 4. Select the `postgres-proxy` **Gateway**, and enter `postgres-backend` for the **Name**.
 5. In the **Backends** section, click **Add backend**, and enter `postgres.example.com:5432` for the **Host**. Keep the **Weight** of `1`.
 
-   {{< reuse-image src="img/ui-routes-tcp.png" srcDark="img/ui-routes-tcp-dark.png" >}}
+   {{< reuse-image src="img/ui-routes-tcp.png" srcDark="img/ui-routes-tcp-dark.png" alt="Add route drawer with the TCP kind, the postgres-proxy gateway, the postgres-backend route name, and the postgres.example.com:5432 backend with weight 1" >}}
 
 6. Click **Save route**.
 

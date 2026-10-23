@@ -71,7 +71,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
    2. **Protocol**: Keep **gRPC**. The UI does not write the default `protocol: grpc` value to your configuration.
    3. **Random sampling**: Enter `true`.
 
-   {{< reuse-image src="img/ui-tracing-enable.png" srcDark="img/ui-tracing-enable-dark.png" >}}
+   {{< reuse-image src="img/ui-tracing-enable.png" srcDark="img/ui-tracing-enable-dark.png" alt="Tracing drawer scrolled to the export and sampling settings, with the gRPC protocol, random sampling enabled, and the default localhost:4317 host" >}}
 
 4. Click **Save policy**.
 {{% /tab %}}

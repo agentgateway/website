@@ -119,7 +119,7 @@ You can configure the keys and budgets in the UI or in your configuration file.
    2. From the **Key value** dropdown, select **Use custom key**, and enter `sk-team-a-abc123def456`.
    3. Expand **Budgets**, and click **Add budget**. Enter `daily-spend` for the **Name**, `24h` for the **Rolling window**, and `0.008` for the **Limit amount**. Select **USD** for the **Limit unit** and **Block requests** for **When limit is reached**.
 
-      {{< reuse-image src="img/ui-llm-key-budget.png" srcDark="img/ui-llm-key-budget-dark.png" >}}
+      {{< reuse-image src="img/ui-llm-key-budget.png" srcDark="img/ui-llm-key-budget-dark.png" alt="Create virtual key drawer for team-a scrolled to a daily spend budget of 0.008 USD every 24h that blocks requests" >}}
 
    4. Expand **Model access**, and select **Selected models**. Enter `gpt-5*` in the **Allowed model patterns** field, and click **Add**.
    5. Click **Save key**.
@@ -543,7 +543,7 @@ The `allowedModels` field limits which models an API key can reach. The field is
 2. Expand **Model access**, and select **Selected models**.
 3. In the **Allowed model patterns** field, enter `gpt-5*`, and click **Add**. Then add `claude-sonnet-5` in the same way.
 
-   {{< reuse-image src="img/ui-llm-key-model-access.png" srcDark="img/ui-llm-key-model-access-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-key-model-access.png" srcDark="img/ui-llm-key-model-access-dark.png" alt="Create virtual key drawer with model access limited to the gpt-5* and claude-sonnet-5 models" >}}
 
 4. Click **Save key**.
 

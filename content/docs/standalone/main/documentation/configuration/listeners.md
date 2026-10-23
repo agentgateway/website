@@ -42,7 +42,7 @@ To add a gateway with an HTTP listener in the [UI]({{< link-hextra path="/docume
 2. Enter `http` for the **Name** and `3000` for the **Port**.
 3. Keep **HTTP** as the **Protocol**.
 
-   {{< reuse-image src="img/ui-listeners-http.png" srcDark="img/ui-listeners-http-dark.png" >}}
+   {{< reuse-image src="img/ui-listeners-http.png" srcDark="img/ui-listeners-http-dark.png" alt="Add gateway drawer for the http gateway on port 3000 with the HTTP protocol" >}}
 
 4. Click **Save gateway**.
 
@@ -95,7 +95,7 @@ The following steps create the same `https` gateway as the **Config file** tab.
    * **Certificate**: `examples/tls/certs/cert.pem`
    * **Key**: `examples/tls/certs/key.pem`
 
-   {{< reuse-image src="img/ui-listeners-https.png" srcDark="img/ui-listeners-https-dark.png" >}}
+   {{< reuse-image src="img/ui-listeners-https.png" srcDark="img/ui-listeners-https-dark.png" alt="Add gateway drawer for the https gateway on port 443 with the HTTPS protocol and the certificate and key from examples/tls/certs" >}}
 
 5. Click **Save gateway**.
 
@@ -161,7 +161,7 @@ The most exact match will be used, as well as the corresponding TLS certificates
    3. Enter `a.example.com` for the **Hostname**.
    4. Expand the **TLS** section. Enter `examples/tls/certs/cert-a.pem` for the **Certificate** and `examples/tls/certs/key-a.pem` for the **Key**.
 
-   {{< reuse-image src="img/ui-listeners-hostname.png" srcDark="img/ui-listeners-hostname-dark.png" >}}
+   {{< reuse-image src="img/ui-listeners-hostname.png" srcDark="img/ui-listeners-hostname-dark.png" alt="Edit listener drawer for listener1 on the web gateway, set up as an HTTPS listener for a.example.com with the cert-a.pem certificate and key-a.pem key" >}}
 
 5. Click **Save listener**.
 6. In the header of the `web` gateway, click the **Add listener** icon. In the **Add listener** drawer, create the `wildcard` listener in the same way as the `discrete` listener.
@@ -292,7 +292,7 @@ TCP listeners are useful when serving traffic that is not HTTP based.
 2. Enter a **Name** and a **Port**, such as `tcp` and `9000`.
 3. Select **TCP** as the **Protocol**.
 
-   {{< reuse-image src="img/ui-listeners-tcp.png" srcDark="img/ui-listeners-tcp-dark.png" >}}
+   {{< reuse-image src="img/ui-listeners-tcp.png" srcDark="img/ui-listeners-tcp-dark.png" alt="Add gateway drawer for the tcp gateway on port 9000 with the TCP protocol" >}}
 
 4. Click **Save gateway**.
 {{% /tab %}}
@@ -356,7 +356,7 @@ A TLS listener without a certificate passes TLS through. A TLS listener with a c
    3. Enter `termination.example.com` for the **Hostname**.
    4. Expand the **TLS** section. Enter `examples/tls/certs/cert.pem` for the **Certificate** and `examples/tls/certs/key.pem` for the **Key**.
 
-   {{< reuse-image src="img/ui-listeners-tls.png" srcDark="img/ui-listeners-tls-dark.png" >}}
+   {{< reuse-image src="img/ui-listeners-tls.png" srcDark="img/ui-listeners-tls-dark.png" alt="Add listener drawer for the tls gateway, set up as a TLS termination listener for termination.example.com with the cert.pem certificate and key.pem key" >}}
 
 7. Click **Save listener**.
 {{% /tab %}}

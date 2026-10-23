@@ -129,9 +129,9 @@ The following steps add the same CORS policy as the **Simplified (LLM)** example
    5. Select **Allow credentials**.
    6. Enter `10m` for the **Max age**.
 
-   {{< reuse-image src="img/ui-llm-policy-cors.png" srcDark="img/ui-llm-policy-cors-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-policy-cors.png" srcDark="img/ui-llm-policy-cors-dark.png" alt="CORS policy drawer with the allowed origin, the POST and OPTIONS methods, and the authorization and content-type allowed headers" >}}
 
-   {{< reuse-image src="img/ui-llm-policy-cors-bottom.png" srcDark="img/ui-llm-policy-cors-bottom-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-policy-cors-bottom.png" srcDark="img/ui-llm-policy-cors-bottom-dark.png" alt="CORS policy drawer scrolled to the x-request-id expose header, Allow credentials, and a 10m max age" >}}
 
 5. Click **Save policy**.
 

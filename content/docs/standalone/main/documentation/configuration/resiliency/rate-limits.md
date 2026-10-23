@@ -60,7 +60,7 @@ The following steps add the same `localRateLimit` policy as the **Simplified (LL
    3. **Max tokens**: `10`
    4. **Tokens per fill**: `1`
 
-   {{< reuse-image src="img/ui-llm-policy-local-rate-limit.png" srcDark="img/ui-llm-policy-local-rate-limit-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-policy-local-rate-limit.png" srcDark="img/ui-llm-policy-local-rate-limit-dark.png" alt="Local rate limit drawer with the Requests type, a 60s fill interval, 10 maximum tokens, and 1 token per fill" >}}
 
 5. Click **Save policy**.
 

@@ -46,7 +46,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 2. Click the **Access logs** card.
 3. In the **Log fields** section, select **OpenTelemetry** from the **Stdout preset** dropdown.
 
-   {{< reuse-image src="img/ui-access-logs-preset.png" srcDark="img/ui-access-logs-preset-dark.png" >}}
+   {{< reuse-image src="img/ui-access-logs-preset.png" srcDark="img/ui-access-logs-preset-dark.png" alt="Access logs drawer with OpenTelemetry selected as the stdout preset" >}}
 
 4. Click **Save policy**. The **Access logs** card shows **enabled**.
 
@@ -226,7 +226,7 @@ The following example adds 3 fields to every access log entry:
    2. `env` with the value `"production"`. Keep the double quotes, because the value is a CEL string.
    3. `cost` with the value `string(llm.cost)`
 
-   {{< reuse-image src="img/ui-access-logs-add-fields.png" srcDark="img/ui-access-logs-add-fields-dark.png" >}}
+   {{< reuse-image src="img/ui-access-logs-add-fields.png" srcDark="img/ui-access-logs-add-fields-dark.png" alt="Access logs drawer with the user_id, env, and cost fields added" >}}
 
 3. Click **Save policy**.
 {{% /tab %}}
@@ -296,7 +296,7 @@ The following filter includes all requests with guardrail results, even when eve
    1. `guardrails` with the value `guardrails`
    2. `guardrail_action` with the value `guardrails[0].action`
 
-   {{< reuse-image src="img/ui-access-logs-guardrails.png" srcDark="img/ui-access-logs-guardrails-dark.png" >}}
+   {{< reuse-image src="img/ui-access-logs-guardrails.png" srcDark="img/ui-access-logs-guardrails-dark.png" alt="Access logs drawer with the guardrails.size() > 0 filter and the guardrails and guardrail_action fields" >}}
 
 4. Click **Save policy**.
 {{% /tab %}}

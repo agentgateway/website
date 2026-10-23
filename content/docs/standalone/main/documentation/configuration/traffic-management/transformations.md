@@ -58,13 +58,13 @@ The following steps add the same `transformations` policy as the **Simplified (L
    1. `x-request-path` with `request.path`
    2. `x-client-ip` with `source.address`
 
-   {{< reuse-image src="img/ui-llm-policy-transformations.png" srcDark="img/ui-llm-policy-transformations-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-policy-transformations.png" srcDark="img/ui-llm-policy-transformations-dark.png" alt="Transformations drawer with the request section setting the x-request-path and x-client-ip headers" >}}
 
 5. Expand **Response transformations**.
    1. In **Add headers**, enter `x-response-code` and `string(response.code)`, and click **Add**.
    2. In **Remove headers**, add `server` and `x-content-type-options`. For each header, enter the name, and click **Add**.
 
-   {{< reuse-image src="img/ui-llm-policy-transformations-response.png" srcDark="img/ui-llm-policy-transformations-response-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-policy-transformations-response.png" srcDark="img/ui-llm-policy-transformations-response-dark.png" alt="Transformations drawer with the response section setting the x-response-code header and removing two headers" >}}
 
 6. Click **Save policy**.
 
@@ -273,7 +273,7 @@ The following steps add the same `transformations` policy as the **Simplified (L
 3. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **Transformations** tile.
 4. Expand **Request transformations**. In **Add headers**, enter `x-gateway` for the header name and `"agentgateway"` for the CEL expression, and click **Add**. The double quotes make the value a string. The UI saves the value as `'"agentgateway"'`.
 
-   {{< reuse-image src="img/ui-llm-policy-transformations-listener.png" srcDark="img/ui-llm-policy-transformations-listener-dark.png" >}}
+   {{< reuse-image src="img/ui-llm-policy-transformations-listener.png" srcDark="img/ui-llm-policy-transformations-listener-dark.png" alt="Transformations drawer with the request section setting the x-gateway header" >}}
 
 5. Click **Save policy**.
 
