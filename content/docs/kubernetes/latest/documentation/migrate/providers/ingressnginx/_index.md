@@ -9,6 +9,8 @@ The `ingress-nginx` provider defines the source resources to be translated, e.g.
 
 **Note:** Some annotations may be translated into agentgateway resources or user-facing notifications.
 
+The mappings on this page describe [ingress2gateway v0.5.0](https://github.com/kgateway-dev/ingress2gateway/releases/tag/v0.5.0).
+
 ## Ingress class selection
 
 The provider selects the `nginx` Ingress class by default. To convert Ingresses with another class, set
@@ -36,15 +38,17 @@ The `ingress-nginx` provider currently supports an Ingress with the following an
 
 ### Request / Body Size
 
-- `nginx.ingress.kubernetes.io/client-body-buffer-size`: v0.5.0 writes `AgentgatewayPolicy.spec.frontend.http.maxBufferSize` when `proxy-body-size` is not present. Quantities are converted to bytes.
+- `nginx.ingress.kubernetes.io/client-body-buffer-size`: The emitter writes `AgentgatewayPolicy.spec.frontend.http.maxBufferSize` when `proxy-body-size` is not present. Quantities are converted to bytes.
 
 - **Note (regex-mode constraint):** Ingress NGINX session cookie paths do not support regex. If regex-mode is enabled for a host (via `use-regex: "true"` or
   `rewrite-target`) and cookie affinity is used, `session-cookie-path` must be set; the provider validates this and emits an error if it is missing.
 
-- `nginx.ingress.kubernetes.io/proxy-body-size`: v0.5.0 writes `AgentgatewayPolicy.spec.frontend.http.maxBufferSize` in bytes and takes precedence over `client-body-buffer-size`. The resolved size must be greater than zero and fit in a signed 32-bit integer.
+- `nginx.ingress.kubernetes.io/proxy-body-size`: The emitter writes `AgentgatewayPolicy.spec.frontend.http.maxBufferSize` in bytes and takes precedence over `client-body-buffer-size`. The resolved size must be greater than zero and fit in a signed 32-bit integer.
 
 > [!WARNING]
 > The generated policy targets the HTTPRoute. agentgateway accepts `spec.frontend` only when every target is a Gateway, so `kubectl apply` rejects the policy: `the 'frontend' field can only target a Gateway`.
+>
+> Change `targetRefs` so the policy targets the generated Gateway, or move `spec.frontend` into a separate policy that targets that Gateway. A Gateway target applies the setting to every route on the Gateway.
 
 ---
 
@@ -123,11 +127,11 @@ The `ingress-nginx` provider currently supports an Ingress with the following an
 
 ### Access Logging
 
-- `nginx.ingress.kubernetes.io/enable-access-log`: When explicitly set, v0.5.0 writes `AgentgatewayPolicy.spec.frontend.accessLog` on an HTTPRoute target. A value of `"true"` emits an empty `accessLog` object. A value of `"false"` sets `filter: "false"`. When the annotation is absent, no access log policy is emitted. Apply fails with the same Gateway-target error as body size.
+- `nginx.ingress.kubernetes.io/enable-access-log`: When explicitly set, the emitter writes `AgentgatewayPolicy.spec.frontend.accessLog` on an HTTPRoute target. A value of `"true"` emits an empty `accessLog` object. A value of `"false"` sets `filter: "false"`. When the annotation is absent, no access log policy is emitted. Apply fails with the same Gateway-target error as body size. Use the same workaround: retarget the policy to the generated Gateway.
 
 ### TLS Passthrough
 
-- `nginx.ingress.kubernetes.io/ssl-passthrough: "true"`: Converts the affected HTTPRoute to a TLSRoute (`apiVersion: gateway.networking.k8s.io/v1alpha2`) and configures a Gateway listener with `protocol: TLS` and `tls.mode: Passthrough`. The backend must terminate TLS. HTTP path matching and HTTP policies do not apply to passthrough traffic. Clusters that serve TLSRoute `v1` and not `v1alpha2` reject the resource: `no matches for kind "TLSRoute" in version "gateway.networking.k8s.io/v1alpha2"`.
+- `nginx.ingress.kubernetes.io/ssl-passthrough: "true"`: Converts the affected HTTPRoute to a TLSRoute (`apiVersion: gateway.networking.k8s.io/v1alpha2`) and configures a Gateway listener with `protocol: TLS` and `tls.mode: Passthrough`. The backend must terminate TLS. HTTP path matching and HTTP policies do not apply to passthrough traffic. Clusters that serve TLSRoute `v1` and not `v1alpha2` reject the resource: `no matches for kind "TLSRoute" in version "gateway.networking.k8s.io/v1alpha2"`. If apply fails with that error, change the TLSRoute `apiVersion` to `gateway.networking.k8s.io/v1`. Leave the other fields as generated. A server-side dry run accepts that change.
 
 ---
 
@@ -143,7 +147,7 @@ Set `nginx.ingress.kubernetes.io/backend-protocol` to `HTTPS` or `GRPCS` to enab
 
 - `nginx.ingress.kubernetes.io/proxy-ssl-server-name`: When set to `"on"`, enables SNI; the SNI value still comes from `proxy-ssl-name`. For agentgateway, the emitter projects SNI via `proxy-ssl-name`.
 
-**Note:** For agentgateway, backend TLS is emitted as one **AgentgatewayPolicy per backend Service** (name `<service-name>-backend-tls`), targeting the Service via `spec.targetRefs`. v0.5.0 also emits a Gateway API `BackendTLSPolicy` with the same name. Its `validation.caCertificateRefs` entry is a ConfigMap of that secret name. The command warns that mTLS will not be configured and that you must create the ConfigMap with the CA certificate under the key `ca.crt`. Conflicting settings for the same Service may result in warnings.
+**Note:** For agentgateway, backend TLS is emitted as one **AgentgatewayPolicy per backend Service** (name `<service-name>-backend-tls`), targeting the Service via `spec.targetRefs`. The emitter also emits a Gateway API `BackendTLSPolicy` with the same name. Its `validation.caCertificateRefs` entry is a ConfigMap with the same name as the secret. The command prints a warning that the `BackendTLSPolicy` cannot configure mTLS and only verifies the server CA. It also prints a notice that you must create that ConfigMap with the CA certificate under the key `ca.crt`. Creating the ConfigMap enables that server CA verification. It does not enable mTLS. If `proxy-ssl-secret` is given as `namespace/name`, the emitter uses only `name` (Secret must be in the same namespace as the policy). Conflicting settings for the same Service may result in warnings.
 
 ---
 

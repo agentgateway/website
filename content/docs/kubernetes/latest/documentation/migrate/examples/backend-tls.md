@@ -4,7 +4,7 @@ description: Migrate NGINX backend TLS annotations to agentgateway backend TLS p
 weight: 80
 ---
 
-When your backend requires TLS (re-encryption or mTLS), NGINX's `proxy-ssl-*` annotations are translated by the agentgateway emitter into an **AgentgatewayPolicy** with `spec.backend.tls` settings. The policy targets the backend Service.
+When your backend requires TLS (re-encryption or mTLS), the agentgateway emitter translates NGINX `proxy-ssl-*` annotations into two policies that target the backend Service: an **AgentgatewayPolicy** with `spec.backend.tls`, and a Gateway API **BackendTLSPolicy** with the same name.
 
 ## Before: Ingress with backend TLS
 
@@ -44,7 +44,7 @@ ingress2gateway print --providers=ingress-nginx --emitter=agentgateway \
   --input-file backend-tls-ingress.yaml > backend-tls-agentgateway.yaml
 ```
 
-## After: AgentgatewayPolicy with backend TLS
+## After: BackendTLSPolicy and AgentgatewayPolicy
 
 ```bash
 cat backend-tls-agentgateway.yaml
@@ -52,7 +52,7 @@ cat backend-tls-agentgateway.yaml
 
 The tool generates a Gateway, an HTTPRoute, a Gateway API `BackendTLSPolicy`, and an **AgentgatewayPolicy**. Both policies are named `<service-name>-backend-tls`.
 
-The `BackendTLSPolicy` sets `spec.validation.caCertificateRefs` to a ConfigMap with the secret name. The command warns that mTLS will not be configured, and that you must create that ConfigMap in the same namespace with the CA certificate under the key `ca.crt`.
+The `BackendTLSPolicy` sets `spec.validation.caCertificateRefs` to a ConfigMap with the same name as the secret. The command prints a warning that the `BackendTLSPolicy` cannot configure mTLS and only verifies the server CA. It also prints a notice that you must create that ConfigMap in the same namespace with the CA certificate under the key `ca.crt`. Creating the ConfigMap enables that server CA verification. It does not enable mTLS.
 
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1
@@ -73,7 +73,7 @@ spec:
     hostname: internal-api.example.com
 ```
 
-The AgentgatewayPolicy still sets `mtlsCertificateRef` to the secret name. With verification enabled (`proxy-ssl-verify: "on"`), it does not set `insecureSkipVerify`:
+The AgentgatewayPolicy sets `mtlsCertificateRef` to the secret name. With verification enabled (`proxy-ssl-verify: "on"`), it does not set `insecureSkipVerify`:
 
 ```yaml
 apiVersion: agentgateway.dev/v1alpha1
@@ -93,7 +93,11 @@ spec:
       sni: internal-api.example.com
 ```
 
-If you set `proxy-ssl-verify: "off"`, the emitter would set `spec.backend.tls.insecureSkipVerify: All` instead of mTLS.
+agentgateway reads `tls.crt` and `tls.key` from that Secret and presents them as the client certificate. The AgentgatewayPolicy supplies that client certificate. The ConfigMap supplies the server CA for the BackendTLSPolicy.
+
+To use the AgentgatewayPolicy as the only TLS configuration for the Service, delete the generated BackendTLSPolicy. The [Backend TLS]({{< link-hextra path="/documentation/security/backendtls/#secret-ca" >}}) guide uses the same step when an AgentgatewayPolicy supplies the TLS settings. Until the ConfigMap exists, the BackendTLSPolicy cannot resolve its CA reference.
+
+If you set `proxy-ssl-verify: "off"`, the emitter sets `spec.backend.tls.insecureSkipVerify: All` on the AgentgatewayPolicy.
 
 ## Apply
 
