@@ -390,6 +390,311 @@ test "${HTTP_CODE}" = "200"
    ...
    ```
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Share the HTTPS port with a TLS passthrough listener {#tls-passthrough-shared-port}
+
+An HTTPS listener and a TLS passthrough listener can share a port on one Gateway, such as port 443. The proxy reads the Server Name Indication (SNI) hostname of each TLS connection and selects the listener that claims it. The HTTPS listener terminates TLS at the gateway. The TLS listener passes the encrypted connection through to a backend that terminates TLS itself, such as a service that manages its own certificates or requires end-to-end mutual TLS.
+
+Without a shared port, passthrough traffic needs a second Gateway, and often a second load balancer and IP address. The two listeners must claim different hostnames. For the rules that decide which listener wins a conflict, see [Listener precedence]({{< link-hextra path="/documentation/setup/listeners/overview/#listener-precedence" >}}).
+
+The following steps reuse the root certificate, the `https` Secret, and the httpbin app from the previous sections.
+
+1. Create a server certificate for the `passthrough.example.com` hostname, signed by the root certificate that you created earlier. The passthrough backend presents this certificate, not the gateway.
+   ```sh
+   openssl req -new -nodes -newkey rsa:2048 \
+     -keyout example_certs/passthrough.key -out example_certs/passthrough.csr \
+     -subj "/CN=passthrough.example.com"
+   printf "subjectAltName=DNS:passthrough.example.com\n" > example_certs/passthrough.ext
+   openssl x509 -req -sha256 -days 365 \
+     -CA example_certs/root.crt -CAkey example_certs/root.key -set_serial 1 \
+     -in example_certs/passthrough.csr -out example_certs/passthrough.crt \
+     -extfile example_certs/passthrough.ext
+   ```
+
+   Example output of the last command:
+   ```console
+   Certificate request self-signature ok
+   subject=CN=passthrough.example.com
+   ```
+
+2. Store the certificate in a Secret in the `httpbin` namespace, where the passthrough backend runs.
+   ```sh
+   kubectl create secret tls passthrough-server-certs -n httpbin \
+     --key example_certs/passthrough.key \
+     --cert example_certs/passthrough.crt
+   kubectl label secret passthrough-server-certs -n httpbin example=httpbin-https
+   ```
+
+   Example output:
+   ```console
+   secret/passthrough-server-certs created
+   secret/passthrough-server-certs labeled
+   ```
+
+3. Deploy an nginx server that terminates TLS with that certificate.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: passthrough-nginx
+     namespace: httpbin
+   data:
+     nginx.conf: |
+       events {}
+       http {
+         server {
+           listen 8443 ssl;
+           server_name passthrough.example.com;
+           ssl_certificate /etc/nginx-server-certs/tls.crt;
+           ssl_certificate_key /etc/nginx-server-certs/tls.key;
+           location / {
+             default_type text/plain;
+             return 200 "hello from the TLS passthrough backend\n";
+           }
+         }
+       }
+   ---
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: passthrough-nginx
+     namespace: httpbin
+   spec:
+     replicas: 1
+     selector:
+       matchLabels:
+         app: passthrough-nginx
+     template:
+       metadata:
+         labels:
+           app: passthrough-nginx
+       spec:
+         containers:
+         - name: nginx
+           image: nginx:1.27
+           ports:
+           - containerPort: 8443
+           volumeMounts:
+           - name: config
+             mountPath: /etc/nginx/nginx.conf
+             subPath: nginx.conf
+             readOnly: true
+           - name: certs
+             mountPath: /etc/nginx-server-certs
+             readOnly: true
+         volumes:
+         - name: config
+           configMap:
+             name: passthrough-nginx
+         - name: certs
+           secret:
+             secretName: passthrough-server-certs
+   ---
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: passthrough-nginx
+     namespace: httpbin
+   spec:
+     selector:
+       app: passthrough-nginx
+     ports:
+     - name: https
+       port: 443
+       targetPort: 8443
+   EOF
+   ```
+
+   Example output:
+   ```console
+   configmap/passthrough-nginx created
+   deployment.apps/passthrough-nginx created
+   service/passthrough-nginx created
+   ```
+
+4. Create a Gateway with an HTTPS listener and a TLS passthrough listener on port 443.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: Gateway
+   metadata:
+     name: https-passthrough
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       example: httpbin-https
+   spec:
+     gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
+     listeners:
+     - name: https
+       protocol: HTTPS
+       port: 443
+       hostname: https.example.com
+       tls:
+         mode: Terminate
+         certificateRefs:
+         - name: https
+           kind: Secret
+       allowedRoutes:
+         namespaces:
+           from: All
+     - name: tls-passthrough
+       protocol: TLS
+       port: 443
+       hostname: passthrough.example.com
+       tls:
+         mode: Passthrough
+       allowedRoutes:
+         namespaces:
+           from: All
+   EOF
+   ```
+
+   {{< reuse "agw-docs/snippets/review-table.md" >}}
+
+   |Setting|Description|
+   |---|---|
+   |`spec.listeners[].port`|Both listeners use port 443. Only an `HTTPS` listener and a `TLS` listener can share a port this way. Any other mix of protocols on one port is a `ProtocolConflict`.|
+   |`spec.listeners[].hostname`|The SNI hostname that selects the listener. Each listener on the port must claim a different hostname.|
+   |`spec.listeners[0].tls.mode`|`Terminate` for the HTTPS listener. The gateway decrypts the connection with the `https` Secret and routes the HTTP request.|
+   |`spec.listeners[1].tls.mode`|`Passthrough` for the TLS listener. The gateway forwards the encrypted connection without decrypting it.|
+
+5. Create an HTTPRoute for the HTTPS listener and a TLSRoute for the TLS passthrough listener.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: httpbin-shared-port
+     namespace: httpbin
+     labels:
+       example: httpbin-https
+   spec:
+     parentRefs:
+     - name: https-passthrough
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+       sectionName: https
+     hostnames:
+     - https.example.com
+     rules:
+     - backendRefs:
+       - name: httpbin
+         port: 8000
+   ---
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: TLSRoute
+   metadata:
+     name: passthrough-nginx
+     namespace: httpbin
+   spec:
+     parentRefs:
+     - name: https-passthrough
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+       sectionName: tls-passthrough
+     hostnames:
+     - passthrough.example.com
+     rules:
+     - backendRefs:
+       - name: passthrough-nginx
+         port: 443
+   EOF
+   ```
+
+   Example output:
+   ```console
+   httproute.gateway.networking.k8s.io/httpbin-shared-port created
+   tlsroute.gateway.networking.k8s.io/passthrough-nginx created
+   ```
+
+6. Verify that both listeners are accepted and programmed, and that each has one route attached.
+   ```sh
+   kubectl get gateway https-passthrough -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -o jsonpath='{range .status.listeners[*]}{.name}{": attachedRoutes="}{.attachedRoutes}{"\n"}{range .conditions[*]}{"  "}{.type}={.status} ({.reason}){"\n"}{end}{end}'
+   ```
+
+   Example output:
+   ```console
+   https: attachedRoutes=1
+     Accepted=True (Accepted)
+     Conflicted=False (NoConflicts)
+     Programmed=True (Programmed)
+     ResolvedRefs=True (ResolvedRefs)
+   tls-passthrough: attachedRoutes=1
+     Accepted=True (Accepted)
+     Conflicted=False (NoConflicts)
+     Programmed=True (Programmed)
+     ResolvedRefs=True (ResolvedRefs)
+   ```
+
+7. Get the address of the Gateway.
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} https-passthrough -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+   echo $INGRESS_GW_ADDRESS
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   kubectl port-forward svc/https-passthrough -n {{< reuse "agw-docs/snippets/namespace.md" >}} 9443:443
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+8. Send a request to the HTTPS hostname. The gateway presents its own `*.example.com` certificate and returns the httpbin response.
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -v --cacert example_certs/root.crt --resolve "https.example.com:443:${INGRESS_GW_ADDRESS}" https://https.example.com/status/200
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -v --cacert example_certs/root.crt --connect-to https.example.com:443:localhost:9443 https://https.example.com/status/200
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+   ```console
+   * ALPN: server accepted h2
+   * Server certificate:
+   *  subject: CN=*.example.com; O=any domain
+   *  subjectAltName: host "https.example.com" matched cert's "*.example.com"
+   *  issuer: O=any domain; CN=*
+   ...
+   < HTTP/2 200
+   ```
+
+9. Send a request to the passthrough hostname. The nginx server presents its own `passthrough.example.com` certificate and answers the request, because the gateway did not decrypt the connection.
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -v --cacert example_certs/root.crt --resolve "passthrough.example.com:443:${INGRESS_GW_ADDRESS}" https://passthrough.example.com/
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -v --cacert example_certs/root.crt --connect-to passthrough.example.com:443:localhost:9443 https://passthrough.example.com/
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+   ```console
+   * ALPN: server accepted http/1.1
+   * Server certificate:
+   *  subject: CN=passthrough.example.com
+   *  subjectAltName: host "passthrough.example.com" matched cert's "passthrough.example.com"
+   *  issuer: O=any domain; CN=*
+   ...
+   < HTTP/1.1 200 OK
+   < Server: nginx/1.27.5
+   ...
+   hello from the TLS passthrough backend
+   ```
+{{< /version >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
@@ -408,6 +713,14 @@ rm -rf example_certs
 ```
 {{% /tab %}}
 {{< /tabs >}}
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+If you shared the HTTPS port with a TLS passthrough listener, also delete the TLSRoute and the nginx server.
+
+```sh
+kubectl delete tlsroute passthrough-nginx -n httpbin
+kubectl delete deployment,service,configmap passthrough-nginx -n httpbin
+```
+{{< /version >}}
 
 
 
