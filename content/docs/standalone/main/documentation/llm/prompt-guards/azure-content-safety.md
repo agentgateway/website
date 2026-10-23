@@ -78,6 +78,23 @@ To authenticate with explicit credentials instead of the environment, add a `pol
               client_secret: $AZURE_CLIENT_SECRET
 ```
 
+## Guard scope {#scope}
+
+By default, a request guard sends Azure AI Content Safety the system prompt, the message text, and the tool call results in the request. Both `analyzeText` and `detectJailbreak` check the same text. A response guard sends the message text of the response. To change what a guard sends, set the `scope` field on the guard. For example, the following request guard leaves tool call results out.
+
+```yaml
+guardrails:
+  request:
+  - scope: [systemPrompt, messages]
+    azureContentSafety:
+      endpoint: <resource-name>.cognitiveservices.azure.com
+      analyzeText:
+        severityThreshold: 2
+      detectJailbreak: {}
+```
+
+If a request or response has no text in scope, the guard does not call Azure AI Content Safety. For each scope value and the rules for the field, see [Guard scope]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#scope" >}}).
+
 ## Test the guardrail
 
 1. Send a request with content that violates one of the harmful content categories.

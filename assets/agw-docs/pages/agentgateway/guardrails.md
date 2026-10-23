@@ -79,6 +79,31 @@ When implementing a guardrail webhook server, consider the following performance
 * **Implementation challenges**: Your webhook server must handle requests synchronously and respond quickly to avoid user experience degradation. The requests might be streaming or non-streaming.
 * **Operational responsibilities**: You are responsible for developing, integrating, and operating your own guardrail webhook server.
 
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
+### Webhook response actions {#webhook-response-actions}
+
+The webhook replies with an `action` object. The fields in the object decide what {{< reuse "agw-docs/snippets/agentgateway.md" >}} does with the content.
+
+| Action | Fields in the `action` object | Result |
+| -- | -- | -- |
+| Pass | `reason` only, which is optional. An empty object also passes. | The content continues unchanged. |
+| Mask | `body` and an optional `reason`. The `body` holds the masked `messages` of a request or the masked `choices` of a response. | {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} replaces the content with the masked version. |
+| Reject | `status_code`, `body`, and an optional `reason`. | {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} returns the status code and body to the client. |
+
+A pass reply must not contain any field other than `reason`. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} cannot match an `action` object with an extra field, such as a score, to any action, so it treats the reply as a webhook error. The same rule applies to a mask reply whose messages contain fields other than `role` and `content`. Fields outside the `action` object are ignored, so return extra metadata next to the `action` object instead of inside it.
+
+A webhook error follows the `failureMode` of the guard.
+
+* With the default, `FailClosed`, {{< reuse "agw-docs/snippets/agentgateway.md" >}} rejects the request with a `503` status code and the body `failed to process LLM request`. For a response guard, the body is `failed to process LLM response`.
+* With `failureMode: FailOpen`, {{< reuse "agw-docs/snippets/agentgateway.md" >}} forwards the content unchanged.
+
+The proxy log shows why the reply was not accepted. For example, a request guard with the default `failureMode` logs the following line.
+
+```console
+warn	llm	failed to call prompt guard webhook: data did not match any variant of untagged enum RequestAction at line 1 column 51
+```
+{{% /version %}}
+
 ### Optimize guardrail webhook performance {#optimize-performance}
 
 To optimize guardrail webhook performance, you can update the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} for {{< reuse "agw-docs/snippets/agentgateway.md" >}} with the following settings.

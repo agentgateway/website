@@ -46,6 +46,31 @@ EOF
 
 By default, agentgateway calls `POST /request` and `POST /response` on the webhook target.
 
+## Pass content from a webhook {#pass}
+
+To let a request or a response continue unchanged, the webhook replies with an `action` object that contains only an optional `reason` field. An empty `action` object, `{"action": {}}`, also passes the content.
+
+```json
+{
+  "action": {
+    "reason": "No policy violations found."
+  }
+}
+```
+
+A pass reply must not contain any field other than `reason`. Agentgateway cannot match an `action` object with an extra field, such as a score, to any action, so it treats the reply as a webhook error. The same rule applies to a mask reply whose messages contain fields other than `role` and `content`. Fields outside the `action` object are ignored, so return extra metadata next to the `action` object instead of inside it.
+
+A webhook error follows the `failureMode` of the guard.
+
+* With the default, `failClosed`, agentgateway rejects the request with a `503` status code and the body `failed to process LLM request`. For a response guard, the body is `failed to process LLM response`.
+* With `failureMode: failOpen`, agentgateway forwards the content unchanged.
+
+The agentgateway log shows why the reply was not accepted. For example, a request guard with the default `failureMode` logs the following line.
+
+```console
+warn	llm	failed to call prompt guard webhook: data did not match any variant of untagged enum RequestAction at line 1 column 51
+```
+
 ## Reject content from a webhook {#reject}
 
 To reject a request or a response, the webhook replies with an `action` object that sets `status_code` and `body`. Agentgateway returns that status code and body to the client instead of the request or response. The guard's `rejection` setting does not apply to a webhook guard.

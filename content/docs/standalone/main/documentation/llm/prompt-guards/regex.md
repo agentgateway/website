@@ -469,7 +469,9 @@ agentgateway -f config-mask.yaml --validate-only
 
 ## Scan tool call content {#scope}
 
-By default, a request guard reads the system prompt and regular message text only. Tool call results that come back to the model are not read, so PII that a tool returns reaches the provider untouched. Set the `scope` field to include `toolOutput`.
+By default, a request guard reads the system prompt, regular message text, and the tool call results that come back to the model. The request guards earlier on this page already apply their rules to tool results. Tool call arguments that the model produces are not read unless you add `toolInput` to the `scope` field.
+
+Use the `scope` field to narrow or widen what one guard reads. The following example narrows a guard to tool call results only, so that PII in a tool result gets its own rejection message.
 
 For what each scope value covers and the limits on the field, see [Guard scope]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#scope" >}}).
 

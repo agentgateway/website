@@ -68,6 +68,25 @@ EOF
 | `location` | The region where the Model Armor template is deployed. Defaults to `us-central1`. |
 | `policies.backendAuth.gcp` | GCP authentication configuration. Agentgateway uses the credentials available in the environment, such as Application Default Credentials. |
 
+## Guard scope {#scope}
+
+By default, a request guard sends Model Armor the system prompt, the message text, and the tool call results in the request. A response guard sends the message text of the response. To change what a guard sends, set the `scope` field on the guard. For example, the following request guard leaves tool call results out.
+
+```yaml
+guardrails:
+  request:
+  - scope: [systemPrompt, messages]
+    googleModelArmor:
+      templateId: <your-template-id>
+      projectId: <your-project-id>
+      location: <location>
+      policies:
+        backendAuth:
+          gcp: {}
+```
+
+If a request or response has no text in scope, the guard does not call Model Armor. For each scope value and the rules for the field, see [Guard scope]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#scope" >}}).
+
 ## Test the guardrail
 
 ```sh
