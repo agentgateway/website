@@ -289,10 +289,16 @@ Agentgateway rejects the tool call before it sends any request to the upstream s
 - A path parameter value is neither a string nor a number.
 - A string value contains an empty, `.`, or `..` path segment when split on `/` or `\`.
 
-The client receives an HTTP `500` response with a JSON-RPC error instead of a tool result. The error code is `-32603` (internal error), and the message names the parameter and the reason, such as in the following example for a missing parameter.
+The client receives an HTTP `500` response with a JSON-RPC error instead of a tool result. The error code is `-32603` (internal error), and the message is `failed to send message`.
 
 ```json
-{"jsonrpc":"2.0","id":2,"error":{"code":-32603,"message":"failed to send message: invalid request: path parameter 'user_id' is missing"}}
+{"jsonrpc":"2.0","id":2,"error":{"code":-32603,"message":"failed to send message"}}
+```
+
+The agentgateway log names the parameter and the reason, such as in the following example for a missing parameter.
+
+```
+error="mcp: failed to send message: invalid request: path parameter 'petId' is missing"
 ```
 
 ## Other configurations
