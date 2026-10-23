@@ -249,17 +249,65 @@ To record the tier in the access log, follow these steps.
    agentgatewaypolicy.agentgateway.dev/service-tier-log created
    ```
 
-2. Send an LLM request, and then check the proxy logs for the `service_tier` field.
+2. Send a chat completion request that asks OpenAI for the priority tier. The request uses the `openai/*` model and the gateway address from the [LLM getting started]({{< link-hextra path="/documentation/quickstart/llm/" >}}).
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -s "http://$INGRESS_GW_ADDRESS/v1/chat/completions" \
+     -H content-type:application/json \
+     -d '{
+       "model": "openai/gpt-5-mini",
+       "service_tier": "priority",
+       "messages": [{"role": "user", "content": "Say hello."}]
+     }' | jq '.service_tier'
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -s "http://localhost:8080/v1/chat/completions" \
+     -H content-type:application/json \
+     -d '{
+       "model": "openai/gpt-5-mini",
+       "service_tier": "priority",
+       "messages": [{"role": "user", "content": "Say hello."}]
+     }' | jq '.service_tier'
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+
+   ```console
+   "priority"
+   ```
+
+3. Check the proxy logs for the `service_tier` field.
 
    ```sh
    kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} | grep service_tier
    ```
 
-   Example output for a request that OpenAI serves at the priority tier:
+   Example output:
 
    ```console
-   ... gen_ai.provider.name=openai gen_ai.request.model=gpt-4.1 gen_ai.response.model=gpt-4.1
-   gen_ai.usage.input_tokens=10 gen_ai.usage.output_tokens=2 agw.ai.usage.cost.total=0.000063 service_tier="priority"
+   ... gen_ai.provider.name=openai gen_ai.request.model=gpt-5-mini gen_ai.response.model=gpt-5-mini
+   agw.ai.original_model=openai/gpt-5-mini gen_ai.usage.input_tokens=10 gen_ai.usage.output_tokens=2
+   agw.ai.usage.cost.total=0.0000117 service_tier="priority"
+   ```
+
+   A request without `service_tier` logs `service_tier="standard"`. A request to a provider that is not in the table has no `service_tier` field.
+
+4. Optional: Remove the access log policy.
+
+   ```sh
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} service-tier-log -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+   Example output:
+
+   ```console
+   agentgatewaypolicy.agentgateway.dev "service-tier-log" deleted from {{< reuse "agw-docs/snippets/namespace.md" >}} namespace
    ```
 
 ## Step 5: Monitor catalog lookups

@@ -184,7 +184,7 @@ Messages that are left empty after the conversion drops unsupported blocks are n
 
 In replies, Bedrock reasoning text becomes a `thinking` block. Encrypted reasoning becomes a `redacted_thinking` block that preserves the payload for replay. This applies to both buffered and streamed replies.
 
-A stream sends the encrypted block in one `content_block_start` event after Bedrock finishes the block. If the buffer limit is exceeded, the stream emits an `api_error` event with `Stream processing error` and stops.
+A stream sends the encrypted block in one `content_block_start` event after Bedrock finishes the block. If the buffered fragments exceed the LLM buffer limit, the stream emits an `api_error` event with `Stream processing error` and stops. The limit is 32 MiB unless you set `frontendPolicies.http.maxBufferSize`. For more information, see [Body buffering]({{< link-hextra path="/documentation/configuration/traffic-management/buffer/" >}}).
 
 For other client APIs, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}).
 

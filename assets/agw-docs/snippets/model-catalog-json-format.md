@@ -93,7 +93,8 @@ Key points:
 - If a rate is omitted, that token type is not priced for the model.
 - `tiers[]` is optional. Each tier selects alternate `rates` when the request context length is **over** the tier's `contextOver` value. Tiers must be ordered by strictly increasing `contextOver`.
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}- Set `serviceTier` to `standard`, `flex`, `priority`, or `reserved` to select rates by served tier. Omit it to match any tier. Omit `contextOver` to apply the rule from zero context tokens. See [Service tiers](#service-tiers) for tier detection.
-- Within each `serviceTier` group, `contextOver` values must strictly increase. Entries without `serviceTier` form a separate group. Different groups can reuse `contextOver` values.{{< /version >}}
+- Within each `serviceTier` group, `contextOver` values must strictly increase. Entries without `serviceTier` form a separate group. Different groups can reuse `contextOver` values.
+- A `serviceTier` tier overlays the rates for the request's context length. A rate that the `serviceTier` tier omits falls back to the standard rate for that context length.{{< /version >}}
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}- To price Anthropic 1-hour cache writes separately, add `cacheWrite1h` beside `cacheWrite` in a model's `rates` or a tier's `rates`. If you omit `cacheWrite1h`, 1-hour cache writes use the `cacheWrite` rate.{{< /version >}}
 {{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 - `tags[]` is optional. Tags describe a model instead of pricing it, so a model entry can carry tags with no rates at all.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,2.2.x" >}} For more information, see [Model tags](#model-tags).{{< /version >}}

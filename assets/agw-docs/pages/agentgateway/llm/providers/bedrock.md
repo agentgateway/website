@@ -307,7 +307,8 @@ For `/v1/chat/completions` and `/v1/responses` requests to Bedrock Runtime, agen
 | `default` | `{"type": "default"}` |
 | `flex` | `{"type": "flex"}` |
 | `auto`, or omitted | Omitted. Bedrock uses its default tier. |
-| Any other value, such as `scale` or `fast` | Omitted. Bedrock uses its default tier. For `/v1/chat/completions` requests, other values also trigger the warning `service tier is not supported by Bedrock`. |
+| `scale`, `fast`, or `ultrafast` | Omitted. Bedrock uses its default tier. For `/v1/chat/completions` requests, these values also trigger the warning `service tier is not supported by Bedrock`. |
+| Any other value | For `/v1/chat/completions` requests, omitted with the same warning. For `/v1/responses` requests, the request fails with `400` before it reaches Bedrock. For example: ``unknown variant `bogus` ``. |
 
 A `/v1/messages` request does not set a Bedrock service tier.
 
@@ -315,7 +316,7 @@ If the Bedrock model does not support the requested tier, the request fails with
 
 Earlier versions omitted the tier and used the standard tier. To keep that behavior, omit `service_tier` or set it to `auto`.
 
-Bedrock reports the served tier in the `x-amzn-bedrock-service-tier` response header. Agentgateway normalizes it as `llm.serviceTier` to select model catalog rates. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
+Bedrock reports the served tier in the `x-amzn-bedrock-service-tier` response header. Agentgateway normalizes it as `llm.serviceTier` to select model catalog rates. The built-in catalog has no Bedrock service-tier rates. To price Bedrock tiers differently, add `serviceTier` tiers for your Bedrock models to your own catalog. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
 {{% /version %}}
 
 ## Prompt caching
@@ -502,7 +503,7 @@ Replay streamed encrypted reasoning the same way as buffered reasoning. Stream e
 | `/v1/responses` | Each reasoning block becomes a `reasoning` output item before the `message` item. Text uses `response.reasoning_text.delta` events. The item's `response.output_item.done` event carries the signature or encrypted payload as `encrypted_content`. |
 | `/v1/chat/completions` | Text uses `reasoning_content`; the signature uses `reasoning_signature`. Encrypted reasoning is omitted. |
 
-For `/v1/messages` streams, agentgateway buffers encrypted reasoning until the block ends. If the buffer limit is exceeded, the stream emits an `api_error` event with `Stream processing error` and stops.
+For `/v1/messages` streams, agentgateway buffers encrypted reasoning until the block ends. If the buffered fragments exceed the LLM buffer limit, the stream emits an `api_error` event with `Stream processing error` and stops. The limit is 32 MiB unless you set `frontend.http.maxBufferSize`. For more information, see [Buffering]({{< link-hextra path="/documentation/traffic-management/buffering/#about-buffer-limits" >}}).
 {{% /version %}}
 {{% /version %}}
 
