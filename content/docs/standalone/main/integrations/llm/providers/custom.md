@@ -40,7 +40,9 @@ export CUSTOM_PROVIDER_API_KEY="${CUSTOM_PROVIDER_API_KEY:-test}"
 With a custom provider, you provide the API endpoint and a list of formats it supports.
 Agentgateway will automatically handle mapping between the incoming format and the supported formats.
 
-The `formats` list controls how agentgateway converts incoming requests. Each conversion supports different features. For Messages requests, agentgateway always uses `responses` when the provider declares both `responses` and `completions`. The Responses conversion drops extended-thinking history without an error. To preserve thinking history across turns, declare `completions` and omit `responses`.
+The `formats` list controls request conversion. For Messages requests, agentgateway always uses `responses` when the provider declares both `responses` and `completions`.
+
+The Responses conversion drops extended-thinking history without an error. To preserve it across turns, declare `completions` and omit `responses`.
 
 Declare only the formats that the upstream server supports. For example, include `responses` only if the server supports `/v1/responses`. Include `decisions` only if the server supports `/v1/decisions`. For details about each conversion, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
 

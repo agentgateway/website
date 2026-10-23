@@ -108,7 +108,9 @@ EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
 
-With the OpenAI provider, you can send OpenAI Decisions API requests to `/v1/decisions`. When the response includes OpenAI usage fields, LLM telemetry records the model and token usage. Besides the OpenAI provider, the TypeSafe provider, the Azure provider for the `foundry` resource type, and custom providers that declare the `decisions` or `systemOne` format accept these requests. Guardrails do not apply to them. For the configuration and examples, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}).
+Send Decisions API requests to `/v1/decisions`. When responses include OpenAI usage fields, LLM telemetry records the model and token usage. Guardrails do not apply to these requests.
+
+For supported providers, configuration, and examples, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}).
 
 > [!NOTE]
 > For advanced routing scenarios that require path-based routing or custom endpoints, use the `gateways` and `routes` configuration format. See the [Routing-based configuration guide]({{< link-hextra path="/documentation/llm/configuration-modes/" >}}) for more information.

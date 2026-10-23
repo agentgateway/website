@@ -8,45 +8,45 @@ Route OpenAI Decisions API requests through {{< reuse "agw-docs/snippets/agentga
 
 ## About
 
-The OpenAI Decisions API (`/v1/decisions`) answers a list of questions about an input. Each question is a predicate, a choice, or a score, and the response returns one answer for each question.
+The OpenAI Decisions API (`/v1/decisions`) answers a list of questions about an input. Each question is a predicate, a choice, or a score. The response returns one answer per question.
 
-The TypeSafe SystemOne API (`/v1/systemone`) asks the same kinds of questions in a different shape. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} translates between the two formats in both directions. A client can send either format, and the provider receives the format that it supports.
+The TypeSafe SystemOne API (`/v1/systemone`) uses a different format for the same question types. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} translates requests and replies between the two formats to match the client and provider.
 
 Review the following behavior of Decisions and SystemOne requests.
 
 | Behavior | Detail |
 | -- | -- |
 | Model | The request must name a model, unless the provider sets a default model. |
-| Telemetry | When the response includes usage fields, LLM telemetry records the model and token usage, with the operation name `decisions`. SystemOne requests use the same operation name. |
+| Telemetry | Both formats use the telemetry operation name `decisions`. When a response includes usage fields, telemetry records the model and token usage. |
 | Policies | Request and response guardrails and the `prompts` policy do not apply to Decisions or SystemOne requests. |
 
 ### Supported providers {#supported-providers}
 
-The following providers accept Decisions and SystemOne requests. Every other provider rejects them.
+These providers accept Decisions and SystemOne requests. Other providers reject them.
 
 | Provider | Decisions requests (`/v1/decisions`) | SystemOne requests (`/v1/systemone`) |
 |----------|--------------------------------------|--------------------------------------|
 | [`openAI`]({{< link-hextra path="/integrations/llm/providers/openai/" >}}) | Sent natively. | Translated to the Decisions format. |
 | [`typesafe`]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}) | Translated to the SystemOne format. | Sent natively. |
 | [`azure`]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `foundry` resource type | Translated to the SystemOne format. | Sent natively. |
-| [`custom`]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) that declares the `decisions` format | Sent natively. | Translated to the Decisions format, unless the provider also declares `systemOne`. |
-| [`custom`]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) that declares the `systemOne` format | Translated to the SystemOne format, unless the provider also declares `decisions`. | Sent natively. |
+| [`custom`]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `decisions`, without `systemOne` | Sent natively. | Translated to the Decisions format. |
+| [`custom`]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `systemOne`, without `decisions` | Translated to the SystemOne format. | Sent natively. |
 
-A rejected request returns a `400` error that names the request format and the provider, such as the following.
+If a custom provider declares both formats, each request uses its original format.
+
+### Custom provider requirements {#custom-providers-without-formats}
+
+A `custom` provider must declare `decisions` or `systemOne` in `formats`. If `formats` is omitted or contains only other formats, both endpoints return `400`. The error names the request format and provider:
 
 ```console
 failed to process LLM request: unsupported conversion: from Decisions to provider custom
 ```
 
-### Custom providers without a Decisions format {#custom-providers-without-formats}
-
-A `custom` provider accepts Decisions and SystemOne requests only when its `formats` list declares `decisions` or `systemOne`. A `custom` provider without `formats` returns `400` on `/v1/decisions` and on `/v1/systemone`. So does a `custom` provider that declares only other formats, such as `completions`.
-
-In version 1.6, agentgateway forwarded both paths to the provider without conversion. To keep serving these requests after you upgrade, add the format that the upstream server supports to the `formats` list.
+In version 1.6, agentgateway forwarded both paths without conversion. After upgrading, add the format your upstream server supports to `formats` to keep serving these requests.
 
 ## Route type configuration
 
-In the simplified `llm` configuration, agentgateway automatically maps `/v1/decisions` requests to the `decisions` route type, and `/v1/systemone` requests to the `systemOne` route type. You do not need to configure routes.
+With the simplified `llm` configuration, no route setup is needed. Agentgateway maps `/v1/decisions` to `decisions` and `/v1/systemone` to `systemOne`.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -58,7 +58,7 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
-To use a `custom` provider, declare the format that the upstream server supports. The following example declares `decisions`. For a SystemOne upstream, declare `systemOne` instead. Agentgateway appends `/decisions` or `/systemone` to the `baseUrl`.
+For a `custom` provider, declare the upstream format: `decisions` or `systemOne`. Agentgateway appends `/decisions` or `/systemone` to `baseUrl`. This example uses `decisions`.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -74,7 +74,9 @@ llm:
       baseUrl: "https://api.example.com/v1"
 ```
 
-To configure the route type explicitly, use the `gateways` and `routes` format and set the `decisions` route type in the `policies.ai.routes` map. Without this entry, requests default to the `completions` route type, and a Decisions request fails with `failed to parse Completions request`.
+For explicit routing, use the `gateways` and `routes` configuration. Map `/v1/decisions` to `decisions` in `policies.ai.routes`.
+
+Without this map, requests default to `completions`. A Decisions request then fails with `failed to parse Completions request`.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -133,7 +135,9 @@ Example output:
 }
 ```
 
-To send the same question in the SystemOne format, send the input as `state` and the questions as a map keyed by name. In SystemOne, a `noul` question returns the probability that a statement is true. The Decisions API calls this question type `predicate`.
+To ask the same question in SystemOne, use `state` for the input and a map keyed by name for the questions.
+
+The `noul` question type returns the probability that a statement is true. It corresponds to `predicate` in the Decisions API.
 
 ```sh
 curl http://localhost:4000/v1/systemone \

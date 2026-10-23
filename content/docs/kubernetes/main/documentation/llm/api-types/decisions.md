@@ -8,31 +8,33 @@ Route OpenAI Decisions API requests through {{< reuse "agw-docs/snippets/agentga
 
 ## About
 
-The OpenAI Decisions API answers a list of questions about an input. Each question is a predicate, a choice, or a score, and the response returns one answer for each question.
+The OpenAI Decisions API answers a list of questions about an input. Each question is a predicate, a choice, or a score. The response returns one answer per question.
 
-The TypeSafe SystemOne API (`/v1/systemone`) asks the same kinds of questions in a different shape. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} translates between the two formats in both directions. A client can send either format, and the provider receives the format that it supports.
+The TypeSafe SystemOne API (`/v1/systemone`) uses a different format for the same question types. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} translates requests and replies between the two formats to match the client and provider.
 
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} processes a request as a Decisions request only when the request path maps to the `Decisions` route type, and as a SystemOne request only when the path maps to the `SystemOne` route type. Review the following behavior of Decisions requests.
+The following settings apply to both request formats.
 
 | Behavior | Detail |
 | -- | -- |
 | Model | The request must name a model, unless the backend sets a default model. |
-| Telemetry | When the response includes OpenAI usage fields, LLM telemetry records the model and token usage, with the operation name `decisions`. SystemOne requests use the same operation name. |
+| Telemetry | Both formats use the telemetry operation name `decisions`. When a response includes OpenAI usage fields, telemetry records the model and token usage. |
 | Policies | Request and response guardrails and the `prompts` policy do not apply to Decisions or SystemOne requests. |
 
 ### Supported providers {#supported-providers}
 
-The following providers accept Decisions and SystemOne requests. Every other provider rejects them.
+These providers accept Decisions and SystemOne requests. Other providers reject them.
 
 | Provider | Decisions requests (`/v1/decisions`) | SystemOne requests (`/v1/systemone`) |
 |----------|--------------------------------------|--------------------------------------|
 | [OpenAI]({{< link-hextra path="/integrations/llm/providers/openai/" >}}) | Sent natively. | Translated to the Decisions format. |
 | [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}) | Translated to the SystemOne format. | Sent natively. |
 | [Azure]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `Foundry` resource type | Translated to the SystemOne format. | Sent natively. |
-| [Custom]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) that declares the `Decisions` format | Sent natively. | Translated to the Decisions format, unless the provider also declares `SystemOne`. |
-| [Custom]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) that declares the `SystemOne` format | Translated to the SystemOne format, unless the provider also declares `Decisions`. | Sent natively. |
+| [Custom]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `Decisions`, without `SystemOne` | Sent natively. | Translated to the Decisions format. |
+| [Custom]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `SystemOne`, without `Decisions` | Translated to the SystemOne format. | Sent natively. |
 
-A custom provider that declares neither `Decisions` nor `SystemOne`, such as one that declares only `Completions`, rejects both request formats. A rejected request returns a `400` error that names the request format and the provider, such as the following.
+If a custom provider declares both formats, each request uses its original format.
+
+A custom provider must declare `Decisions` or `SystemOne`. Otherwise, it rejects both request formats with a `400` error. The error names the request format and provider:
 
 ```console
 failed to process LLM request: unsupported conversion: from Decisions to provider custom
@@ -45,7 +47,12 @@ failed to process LLM request: unsupported conversion: from Decisions to provide
 
 ## Map the Decisions route type
 
-Requests default to the `Completions` route type, so map the `/v1/decisions` path to the `Decisions` route type, and the `/v1/systemone` path to the `SystemOne` route type, on your OpenAI {{< reuse "agw-docs/snippets/backend.md" >}}. If you already set up [multiple endpoints]({{< link-hextra path="/integrations/llm/providers/multiple-endpoints/" >}}), add the `/v1/decisions` path to your existing {{< reuse "agw-docs/snippets/backend.md" >}} instead.
+Requests default to the `Completions` route type. On your OpenAI {{< reuse "agw-docs/snippets/backend.md" >}}, map these paths:
+
+- `/v1/decisions` to `Decisions`.
+- `/v1/systemone` to `SystemOne`.
+
+If you already set up [multiple endpoints]({{< link-hextra path="/integrations/llm/providers/multiple-endpoints/" >}}), add both paths to your existing {{< reuse "agw-docs/snippets/backend.md" >}}.
 
 1. Update the `openai` {{< reuse "agw-docs/snippets/backend.md" >}} from the OpenAI setup guide. This command replaces that {{< reuse "agw-docs/snippets/backend.md" >}}.
 
@@ -125,7 +132,9 @@ Send a request with an input and a list of questions to the `/v1/decisions` path
    }
    ```
 
-2. Optional: Send the same question in the SystemOne format. SystemOne takes the input as `state` and the questions as a map keyed by name. In SystemOne, a `noul` question returns the probability that a statement is true. The Decisions API calls this question type `predicate`.
+2. Optional: Send the same question in SystemOne. Use `state` for the input and a map keyed by name for the questions.
+
+   The `noul` question type returns the probability that a statement is true. It corresponds to `predicate` in the Decisions API.
 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
@@ -182,4 +191,6 @@ For more information about LLM metrics, see [LLM cost tracking]({{< link-hextra 
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-To restore the original {{< reuse "agw-docs/snippets/backend.md" >}}, apply the `openai` {{< reuse "agw-docs/snippets/backend.md" >}} from [OpenAI]({{< link-hextra path="/integrations/llm/providers/openai/" >}}) again. To keep the {{< reuse "agw-docs/snippets/backend.md" >}} but stop processing Decisions and SystemOne requests, remove the `"/v1/decisions": "Decisions"` and `"/v1/systemone": "SystemOne"` entries from its `routes`.
+To restore the original {{< reuse "agw-docs/snippets/backend.md" >}}, apply the `openai` {{< reuse "agw-docs/snippets/backend.md" >}} from [OpenAI]({{< link-hextra path="/integrations/llm/providers/openai/" >}}) again.
+
+To keep the {{< reuse "agw-docs/snippets/backend.md" >}} but stop processing Decisions and SystemOne requests, remove the `"/v1/decisions": "Decisions"` and `"/v1/systemone": "SystemOne"` entries from its `routes`.

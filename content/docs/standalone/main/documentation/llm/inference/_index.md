@@ -53,16 +53,18 @@ See the [agentgateway llm-standalone-epp example](https://github.com/agentgatewa
 
 ### Hostname destinations {#hostname-destinations}
 
-The EPP returns the selected endpoint in the `x-gateway-destination-endpoint` header, as `host:port`. The host can be an IP address or a DNS hostname, such as `model-east.example.com:443`. A hostname lets a global EPP steer requests to a front door in another cluster, such as a shared gateway or a cloud load balancer, instead of to a fixed IP address.
+The EPP returns the selected endpoint as `host:port` in the `x-gateway-destination-endpoint` header. The host can be an IP address or a DNS hostname, such as `model-east.example.com:443`.
 
-The `destinationMode` setting decides which values agentgateway accepts.
+A hostname lets a global EPP route requests to a shared gateway or cloud load balancer in another cluster.
+
+Set `destinationMode` to control which destinations agentgateway accepts.
 
 | `destinationMode` | IP address | DNS hostname |
 |-------------------|------------|--------------|
-| `validated` (default) | Accepted when the address matches an endpoint of the local service. | Rejected with a `503` error, because a hostname cannot match a local endpoint. The log reports that the destination requires `destinationMode` `passthrough`. |
-| `passthrough` | Accepted and forwarded to directly. | Accepted. Agentgateway resolves the hostname through DNS and forwards the request to it. |
+| `validated` (default) | Accepted when the address matches an endpoint of the local service. | Rejected with `503`: hostnames cannot match local endpoints. The log indicates that `passthrough` mode is required. |
+| `passthrough` | Accepted. | Accepted. Agentgateway resolves the hostname through DNS. |
 
-Agentgateway rejects a `unix:` socket path in the header, in both modes, so an EPP cannot point the proxy at a local socket.
+Both modes reject `unix:` socket paths. An EPP cannot route requests to a local socket.
 
 The following configuration accepts hostname destinations. The EPP itself is also reached by hostname.
 
@@ -98,7 +100,7 @@ routes:
 |---------|-------------|
 | `services` | The synthetic service that the route backend references. The EPP picks the real endpoint, so the service lists no addresses. |
 | `inferenceRouting.endpointPicker.host` | The address of the EPP, as `host:port`. |
-| `inferenceRouting.destinationMode` | Set to `passthrough` to accept hostname destinations from the EPP. The value is lowercase. |
+| `inferenceRouting.destinationMode` | Set to `passthrough` (lowercase) to accept hostname destinations. |
 
 Check the configuration before you start agentgateway.
 

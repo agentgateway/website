@@ -104,20 +104,20 @@ format, the client query string is dropped. For details, see
 [Query strings on converted requests]({{< link-hextra path="/documentation/llm/about/#query-strings-on-converted-requests" >}}).
 
 When a provider declares both `Responses` and `Completions`, agentgateway always
-converts Anthropic messages requests to Responses. The order of the `formats`
-list does not change this, and no setting overrides it. The same rule applies to
-the built-in `openai` provider and to `azure` for models other than Claude. On an
-{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, it also applies to
-`Ollama`, `Groq`, `Huggingface`, and `XAI`.
+converts Anthropic messages requests to Responses. This rule is fixed, regardless
+of the `formats` list order.
 
-The Responses conversion drops extended-thinking history. The Chat Completions
-conversion preserves it. To preserve this history, declare `Completions` and
-omit `Responses`.
+The same rule applies to the built-in `openai` provider and to `azure` for models
+other than Claude. On an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}},
+it also applies to `Ollama`, `Groq`, `Huggingface`, and `XAI`.
+
+The Responses conversion drops extended-thinking history. Chat Completions
+preserves it.
 
 Use the `openai` provider only for the OpenAI API. For other OpenAI-compatible
 servers, use a custom provider with the formats that the server supports.
-If the server does not support `/v1/responses`, declare `Completions` and omit
-`Responses`.
+To preserve thinking history or connect to a server without `/v1/responses`,
+declare `Completions` and omit `Responses`.
 
 ### Converted replies and errors
 
@@ -237,8 +237,7 @@ The following cases do not round-trip.
 ### Anthropic messages to the Completions format
 
 Agentgateway converts an Anthropic messages request to Chat Completions only when
-the provider declares `Completions` and omits `Responses`. A provider that
-declares both formats always gets the Responses conversion. The conversion
+the provider declares `Completions` and omits `Responses`. This conversion
 preserves reasoning history and handles the following fields.
 
 | Field | What happens |

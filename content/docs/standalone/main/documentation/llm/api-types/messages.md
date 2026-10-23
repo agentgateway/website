@@ -74,7 +74,9 @@ The first three rows are values that a `custom` provider declares in its `format
 
 Bedrock Converse is not a `formats` value. A [`bedrock` provider]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) supports only Converse, so agentgateway always converts Messages requests to that format.
 
-When a provider supports both `responses` and `completions`, agentgateway always converts Messages requests to Responses. The order of the `formats` list does not change this, and no setting overrides it. The Responses conversion drops extended-thinking history. The Chat Completions conversion preserves it.
+When a provider supports both `responses` and `completions`, agentgateway always converts Messages requests to Responses. This rule is fixed, regardless of the `formats` list order.
+
+The Responses conversion drops extended-thinking history. The Chat Completions conversion preserves it.
 
 Use the `openAI` provider only for the OpenAI API. For other OpenAI-compatible servers, use a [`custom` provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with the formats that the server supports. If the server does not support `/v1/responses`, declare `completions` and omit `responses`. Use the same configuration to preserve extended-thinking history.
 
@@ -130,7 +132,7 @@ The reply is converted back with these differences:
 
 ### Converting to the Chat Completions format
 
-Agentgateway converts a Messages request to Chat Completions only when the provider declares `completions` and omits `responses`. A provider that declares both formats always gets the Responses conversion. To configure the supported formats, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
+Agentgateway converts a Messages request to Chat Completions only when the provider declares `completions` and omits `responses`. To configure the supported formats, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
 The Chat Completions conversion carries extended-thinking history in both directions, so a thinking session on a converted route keeps its prior reasoning from one turn to the next. Self-hosted engines that report reasoning as `reasoning_content` also accept it back on an assistant message, which is what makes the carryover possible.
 
