@@ -198,6 +198,64 @@ For Anthropic prompt-cache writes with a 1-hour time to live (TTL), `llm.cost.ca
 
 The request access log includes `agw.ai.usage.cost.total` only for priced LLM requests. When the model cannot be priced, which is a lookup status of `Unpriced` or `Missing` as described in the next step, the access log leaves out the field. For how to view logs and add cost fields, see [Metrics and logs]({{< link-hextra path="/documentation/llm/observability/" >}}).
 
+### Service tiers {#service-tiers}
+
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} records the service tier that the provider reports for each LLM response, and normalizes it to `standard`, `flex`, `priority`, or `reserved`. CEL expressions read the normalized value as `llm.serviceTier`. The cost calculation uses the same value to select catalog tiers that set `serviceTier`. Requests without a recorded tier are priced at the `standard` rates.
+
+| Provider | Provider tier and the `llm.serviceTier` value |
+|---|---|
+| OpenAI and Azure | `default` becomes `standard`. `flex` stays `flex`. `priority` and `fast` become `priority`. `scale` becomes `reserved`. |
+| Anthropic | `standard` and `priority` stay the same. |
+| Amazon Bedrock | `default` and `standard` become `standard`. `flex`, `priority`, and `reserved` stay the same. |
+| Gemini | `standard`, `flex`, and `priority` stay the same. |
+| Vertex AI | `ON_DEMAND` becomes `standard`. `ON_DEMAND_FLEX` becomes `flex`. `ON_DEMAND_PRIORITY` becomes `priority`. `PROVISIONED_THROUGHPUT` becomes `reserved`. Claude models report the Anthropic tiers, `standard` and `priority`. |
+
+A tier that is not in the table leaves `llm.serviceTier` unset. Other providers also leave it unset. In earlier versions, `llm.serviceTier` held the tier name that the provider reported, such as `default` or `ON_DEMAND`. Update CEL expressions that compare against those names. Bedrock reports the tier in the `x-amzn-bedrock-service-tier` response header. For how to request a tier from Bedrock, see [Service tier]({{< link-hextra path="/integrations/llm/providers/bedrock/#service-tier" >}}).
+
+To record the tier in the access log, follow these steps.
+
+1. Add `llm.serviceTier` as an access log attribute.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: service-tier-log
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     frontend:
+       accessLog:
+         attributes:
+           add:
+           - name: service_tier
+             expression: llm.serviceTier
+   EOF
+   ```
+
+   Example output:
+
+   ```console
+   agentgatewaypolicy.agentgateway.dev/service-tier-log created
+   ```
+
+2. Send an LLM request, and then check the proxy logs for the `service_tier` field.
+
+   ```sh
+   kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} | grep service_tier
+   ```
+
+   Example output for a request that OpenAI serves at the priority tier:
+
+   ```console
+   ... gen_ai.provider.name=openai gen_ai.request.model=gpt-4.1 gen_ai.response.model=gpt-4.1
+   gen_ai.usage.input_tokens=10 gen_ai.usage.output_tokens=2 agw.ai.usage.cost.total=0.000063 service_tier="priority"
+   ```
+
 ## Step 5: Monitor catalog lookups
 
 Every cost lookup increments the `agentgateway_cost_catalog_lookups_total` counter, labeled with the lookup `status` and the request's `gen_ai_system` (provider), `gen_ai_request_model`, and `gen_ai_response_model`. Use the lookup to confirm that your catalog prices your traffic.

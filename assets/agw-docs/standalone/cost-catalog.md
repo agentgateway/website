@@ -222,6 +222,39 @@ A priced request produces an access log entry that includes cost data.
 gen_ai.usage.input_tokens=14 gen_ai.usage.output_tokens=6 agw.ai.usage.cost.total=0.0000057 ...
 ```
 
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
+### Service tiers {#service-tiers}
+
+Agentgateway records the service tier that the provider reports for each LLM response, and normalizes it to `standard`, `flex`, `priority`, or `reserved`. CEL expressions read the normalized value as `llm.serviceTier`. The cost calculation uses the same value to select catalog tiers that set `serviceTier`. Requests without a recorded tier are priced at the `standard` rates.
+
+| Provider | Provider tier and the `llm.serviceTier` value |
+|---|---|
+| OpenAI and Azure | `default` becomes `standard`. `flex` stays `flex`. `priority` and `fast` become `priority`. `scale` becomes `reserved`. |
+| Anthropic | `standard` and `priority` stay the same. |
+| Amazon Bedrock | `default` and `standard` become `standard`. `flex`, `priority`, and `reserved` stay the same. |
+| Gemini | `standard`, `flex`, and `priority` stay the same. |
+| Vertex AI | `ON_DEMAND` becomes `standard`. `ON_DEMAND_FLEX` becomes `flex`. `ON_DEMAND_PRIORITY` becomes `priority`. `PROVISIONED_THROUGHPUT` becomes `reserved`. Claude models report the Anthropic tiers, `standard` and `priority`. |
+
+A tier that is not in the table leaves `llm.serviceTier` unset. Other providers also leave it unset. In earlier versions, `llm.serviceTier` held the tier name that the provider reported, such as `default` or `ON_DEMAND`. Update CEL expressions that compare against those names. Bedrock reports the tier in the `x-amzn-bedrock-service-tier` response header. For how to request a tier from Bedrock, see [Service tier]({{< link-hextra path="/integrations/llm/providers/bedrock/#service-tier" >}}).
+
+To record the tier in the access log, add `llm.serviceTier` as a field.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    add:
+      service_tier: llm.serviceTier
+```
+
+A request that OpenAI serves at the priority tier produces an access log entry such as the following.
+
+```console
+... gen_ai.provider.name=openai gen_ai.request.model=gpt-4.1 gen_ai.response.model=gpt-4.1
+gen_ai.usage.input_tokens=10 gen_ai.usage.output_tokens=2 agw.ai.usage.cost.total=0.000063 service_tier="priority"
+```
+{{% /version %}}
+
 ## Monitor catalog lookups
 
 Every cost lookup increments the `agentgateway_cost_catalog_lookups_total` counter. The metric is labeled with lookup `status`, provider, request model, and response model.
