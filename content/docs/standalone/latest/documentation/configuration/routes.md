@@ -47,7 +47,30 @@ You can configure two types of routes: HTTP routes (`routes`) and TCP routes (`t
 
 [HTTP or HTTPS gateways](../listeners/) use `routes` to configure HTTP routes. HTTP routes support all HTTP features such as path, header, method, or query {{< gloss "Matching" >}}matching{{< /gloss >}}, and HTTP-specific filters and {{< gloss "Policy" >}}policies{{< /gloss >}}.
 
-Example configuration:
+{{< tabs >}}
+{{% tab name="UI" %}}
+To add an HTTP route in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same `http-backend` route as the **Config file** tab.
+
+1. Add the `http-proxy` gateway, if you do not have one yet. The gateway must exist before you can select it in a route. Open **Traffic** > **Gateways**, click **Add gateway**, enter `http-proxy` and `8080` for the **Name** and **Port**, keep **HTTP** as the **Protocol**, and click **Save gateway**.
+2. Open **Traffic** > **Routes**, and click **Add route**.
+3. Select the `http-proxy` **Gateway**.
+4. Enter `http-backend` for the **Name**, and `example.com` for the **Hostnames**.
+5. Select **Prefix** as the **Path match**, and enter `/` for the **Path**.
+
+   {{< reuse-image src="img/ui-add-route.png" srcDark="img/ui-add-route-dark.png" alt="Add route drawer for the http-backend route on the http-proxy gateway, showing the match fields" >}}
+
+6. In the **Backends** section, click **Add backend**, and enter `http.example.com:8080` for the **Host**. Keep the **Weight** of `1`.
+
+   {{< reuse-image src="img/ui-add-route-backend.png" srcDark="img/ui-add-route-backend-dark.png" alt="Add route drawer scrolled to the http.example.com:8080 host backend" >}}
+
+7. Click **Save route**.
+
+The UI leaves out the default `protocol: HTTP` on the gateway and the default `weight: 1` on the backend. The UI also writes `gateways` as a single value instead of a list.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+The following configuration creates the `http-backend` route.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -67,6 +90,8 @@ routes:
   - host: http.example.com:8080
     weight: 1
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="routes" >}}
 cat <<'EOF' > config-http.yaml

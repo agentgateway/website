@@ -319,9 +319,11 @@ WITHDBTEST
 
 ## Helm {#helm}
 
-The Helm chart renders your configuration into a ConfigMap and mounts it read-only, and the chart sets no database for you. As a result, a default installation starts with no database, and the **Analytics** and **Logs** pages report `request log database is not configured`.
+The Helm chart mounts your configuration as a read-only ConfigMap. The chart does not install a database. Without a database, the **Analytics** and **Logs** pages report `request log database is not configured`.
 
-To add a database, choose one of the following options.
+For a new installation, follow [Set up a database]({{< link-hextra path="/documentation/setup/install/helm/#database" >}}) in the Helm installation guide.
+
+For an existing installation, choose one of the following options.
 
 | Option | Storage mode | Use it when |
 | --- | --- | --- |
@@ -405,18 +407,30 @@ In the default `readonly` mode, the chart sets the storage mode and nothing else
 
 ### Add PostgreSQL in database mode {#helm-postgres}
 
-The chart's `database` mode sets both `config.database.url` and `config.storage.mode: hybrid` for you. One PostgreSQL instance then serves the request log, the configuration overlay, and API key budgets.
+The chart's `database` mode sets both `config.database.url` and `config.storage.mode: hybrid` for you. One PostgreSQL instance then serves the request log, the configuration overlay, and API key budgets.{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} If you do not set an MCP session key, agentgateway also generates one and stores it in the `agw_config_resources` table. Every replica then encrypts session IDs with the same key. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).{{< /version >}}
 
-1. Deploy PostgreSQL. For the example manifests, see [Deploy PostgreSQL]({{< link-hextra path="/documentation/setup/storage/#deploy-postgresql" >}}).
+Deploy PostgreSQL in the namespace of your agentgateway release. For production, use a managed PostgreSQL service or an operator that handles backups and failover. The following steps deploy one PostgreSQL instance for testing.
 
-2. Create a values file that sets the mode and the connection URL.
+{{< reuse "agw-docs/standalone/helm-postgres-deploy.md" >}}
+
+Then, switch the release to `database` mode.
+
+1. Create a values file with the mode, connection URL, and password environment variable.
+
+   The `extraEnv` value loads `POSTGRES_PASSWORD` from the Secret. At startup, the proxy replaces `${POSTGRES_PASSWORD}` in the URL with that environment variable's value. The ConfigMap contains the reference instead of the password.
 
    ```yaml
    cat <<'EOF' > values.yaml
    mode: database
    database:
      postgres:
-       url: postgres://agw:password@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+       url: postgres://agw:${POSTGRES_PASSWORD}@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+   extraEnv:
+   - name: POSTGRES_PASSWORD
+     valueFrom:
+       secretKeyRef:
+         name: agentgateway-postgres
+         key: POSTGRES_PASSWORD
    config:
      gateways:
        default:
@@ -432,28 +446,29 @@ The chart's `database` mode sets both `config.database.url` and `config.storage.
    > [!NOTE]
    > Do not set `config.config.database` in `database` mode. The chart derives the field from the `mode` and `database.postgres.url` values, and overwrites anything that you set for it yourself.
 
-3. Upgrade the release with your values file.
+2. Upgrade the release with your values file.
 
    {{< reuse "agw-docs/standalone/helm-upgrade-command.md" >}}
 
-4. Confirm that the tables exist. Agentgateway creates them on the first startup.
+3. Confirm that the tables exist. Agentgateway creates them on the first startup.
 
    ```sh
    kubectl exec -n {{< reuse "agw-docs/snippets/namespace.md" >}} deploy/postgres \
      -- psql -U agw -d agw -c '\dt'
    ```
 
-   Example output: The `request_logs` and `request_log_payloads` tables hold the data for the **Analytics** page, `budget_usage` holds API key budgets, and `agw_config_resources` holds the configuration that you save in the UI.
+   Expect the following tables, including `request_logs` for LLM logs and `agw_config_resources` for UI configuration changes:
 
    ```txt
-                  List of relations
-    Schema |         Name         | Type  | Owner
-   --------+----------------------+-------+-------
-    public | agw_config_resources | table | agw
-    public | budget_usage         | table | agw
-    public | request_log_payloads | table | agw
-    public | request_logs         | table | agw
-   (4 rows)
+                          List of relations
+    Schema |                 Name                 | Type  | Owner
+   --------+--------------------------------------+-------+-------
+    public | _agentgateway_request_log_migrations | table | agw
+    public | agw_config_resources                 | table | agw
+    public | budget_usage                         | table | agw
+    public | request_log_payloads                 | table | agw
+    public | request_logs                         | table | agw
+   (5 rows)
    ```
 
 ## Verify that agentgateway records requests {#verify}
@@ -517,6 +532,40 @@ Agentgateway records LLM requests only, so send a request to an LLM model to con
    ```
 
 4. Open the **LLM** > **Analytics** page in the UI, such as <http://localhost:15000/ui/llm/analytics>. The request appears in the chart and in the breakdown. For more information about the controls on the page, see [Cost dashboard]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/" >}}).
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Verify database logging with agctl {#agctl}
+
+After you send the LLM request in [Verify that agentgateway records requests](#verify), use agctl to confirm that agentgateway stored the request. First, [install agctl and connect it to your gateway]({{< link-hextra path="/documentation/operations/config-resources/#connect" >}}). For a Helm installation, keep the port-forward to the admin address running.
+
+1. List the recorded requests.
+
+   ```sh
+   agctl standalone logs --limit 10
+   ```
+
+   Example output:
+
+   ```text
+   TIME                 STATUS  DURATION  PROVIDER  MODEL        TOKENS(IN/OUT)  COST       ID
+   2026-10-20 15:57:26  200     26ms      openai    gpt-4o-mini  10/9            $0.000007  01a15ae3-e0db-7096-9132-9f7b45a0238a
+   ```
+
+2. Summarize the recorded traffic.
+
+   ```sh
+   agctl standalone analytics --since 1h
+   ```
+
+   Example output:
+
+   ```text
+   REQUESTS  ERRORS  TOKENS  COST       AVG TTFT  TOK/S  CACHE HIT
+   1         0       19      $0.000007  -         -      0.0%
+   ```
+
+Agentgateway writes to the database asynchronously. An empty result can mean that agentgateway did not store the request yet. If the CLI reports that no database is configured, connect the gateway to a database and restart it, as described earlier on this page. For filters and request details, see [View LLM request logs with agctl]({{< link-hextra path="/documentation/observability/access-logs/view/#cli" >}}).
+{{< /version >}}
 
 <!--TODO troubleshooting
 

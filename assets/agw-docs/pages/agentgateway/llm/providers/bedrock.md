@@ -273,8 +273,27 @@ The preference applies to chat completions, messages, responses, and Anthropic t
 
 Whether the preference changes the request format that a model accepts depends on the endpoint that it selects. A model that resolves to Runtime accepts the Bedrock Converse format only, and its chat format tags do not apply. A model that resolves to Mantle accepts the formats in its tags, except for `anthropic.claude*` models, which always take the Anthropic Messages format. For more information, see [Chat format tags]({{< link-hextra path="/documentation/llm/cost-controls/costs/#chat-format-tags" >}}).
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+When a `/v1/messages` or `/v1/messages/count_tokens` request reaches Bedrock Mantle in the Anthropic Messages format, the request keeps the client `anthropic-version` header. If the client sends no version header, the request uses the default `2023-06-01` version.
+{{< /version >}}
+
 > [!NOTE]
 > Requests to the Mantle endpoint are signed for the `bedrock-mantle` service rather than `bedrock`. If you scope an IAM policy by service name, grant both before you switch a route to Mantle.
+{{% /version %}}
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+## Tool choice
+
+When a chat request goes to Bedrock Runtime, the `tool_choice` value from the client request is converted to the Bedrock Converse `toolChoice` field.
+
+| Client `tool_choice` | Bedrock `toolChoice` |
+|---|---|
+| `auto` | `auto` |
+| `required` (Chat Completions, Responses) or `any` (Messages) | `any` |
+| A named function or tool | `tool`, with that name |
+| `none`, or omitted | Omitted. Bedrock Converse has no `none` option. The tools are still sent, so the model can still call them. |
+
+The Bedrock model decides which values it accepts. If the model rejects forced tool use, such as `any` or a named tool, the client receives the Bedrock error. For example, Anthropic models reject forced tool use when [extended thinking](https://platform.claude.com/docs/en/build-with-claude/thinking#thinking-with-tool-use) is enabled. The tool choice is not changed for requests that use extended thinking.
 {{% /version %}}
 
 ## Prompt caching
@@ -450,7 +469,7 @@ Some Bedrock models return encrypted reasoning in a `reasoningContent.redactedCo
 | `/v1/responses` | A reasoning item with `encrypted_content`. | Send the reasoning item back in the input. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
 | `/v1/chat/completions` | Omitted, because the Chat Completions format has no field for encrypted reasoning. Signed reasoning text still arrives in `reasoning_content` and `reasoning_signature`. | Not possible. |
 
-A streamed reply does not keep the encrypted payload, so streamed encrypted reasoning cannot be replayed. A `/v1/messages` stream shows the encrypted reasoning as a `thinking` block with the text `[REDACTED]`.
+A streamed reply does not keep the encrypted payload, so streamed encrypted reasoning cannot be replayed. A `/v1/messages` stream shows the encrypted reasoning as a `thinking` block with the text `[REDACTED]`.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} If redacted reasoning fragments in a streamed Bedrock Runtime reply exceed the stream buffer limit before the block ends, the stream emits an `api_error` event with the message `Stream processing error`. The stream then stops.{{< /version >}}
 {{% /version %}}
 
 ## Structured outputs

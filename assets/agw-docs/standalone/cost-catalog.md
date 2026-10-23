@@ -33,28 +33,33 @@ The proxy combines the built-in catalog and your catalog sources into one catalo
 > The proxy ignores imported catalogs that are older than its built-in catalog, without a warning. You can remove your imported catalog if the built-in catalog has the rates that you need. To customize rates, omit `metadata` from your catalog. The proxy then applies your catalog as an overlay, regardless of its age.
 {{% /version %}}
 
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+You can load a catalog in the UI or in your configuration file.
 
-config:
-  modelCatalog:
-  - file: ./costs/catalog.json
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Costs** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/costs](http://localhost:15000/ui/llm/costs).
+2. Click **Refresh base costs**. The UI downloads the agentgateway model catalog to a `base-costs.json` file in the same directory as your configuration file, and adds the file to `config.modelCatalog`. The **Catalog sources** table lists the file.
 
-llm:
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-```
+   {{< reuse-image src="img/ui-cost-catalog.png" srcDark="img/ui-cost-catalog-dark.png" alt="LLM Costs page with the cost catalog sources and custom cost overrides" >}}
 
-Run agentgateway with the config file.
+   > [!CAUTION]
+   > If `config.modelCatalog` already lists a file, the refresh writes the downloaded catalog to the first listed file instead, and replaces its contents. Keep your own rates in a later file or in **Custom costs**, not in the first file.
 
-```sh
-agentgateway -f config.yaml
-```
+The UI cannot add a catalog file that you wrote yourself. To load your own catalog files, use the **Config file** tab. For more information about the refresh, see [Import costs (UI)](#import-costs-ui).
 
-After the catalog is loaded, priced requests include cost data. The access log includes `agw.ai.usage.cost.total`, and CEL exposes cost data as `llm.cost` and `llm.costRates`.
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/cost-catalog-configure.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/standalone/cost-catalog-configure.md" >}}
+{{% /version %}}
+
+After the catalog is loaded, priced requests include cost data. The access log includes `agw.ai.usage.cost.total`, and CEL exposes cost data as `llm.cost` and `llm.costRates`. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}Catalog metadata for the resolved model is available as `llm.model`.{{< /version >}}
 
 For general LLM telemetry setup, see [Observe traffic]({{< link-hextra path="/documentation/llm/observability/" >}}).
 
@@ -64,7 +69,7 @@ For general LLM telemetry setup, see [Observe traffic]({{< link-hextra path="/do
      include/exclude as a complete, matching pair — shortening either to "1.5.x"
      would also match 1.4.x and older, and adding "main" would need an edit every
      release. -->
-Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` to generate a catalog file. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}The command reads from a supported pricing source, and the default source is `models.dev`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}The `--source` flag takes a comma-separated list, and the sources merge in the order that you list them, so a later source overlays an earlier one. The default is `models.dev,aws-bedrock-mantle`, which prices every provider that the proxy supports and then tags the Amazon Bedrock models.{{< /version >}}
+Use `agctl {{< reuse "agw-docs/versions/agctl-catalog-cmd.md" >}} import` to generate a catalog file. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}The command reads from a supported pricing source, and the default source is `models.dev`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}The `--source` flag takes a comma-separated list, and the sources merge in the order that you list them, so a later source overlays an earlier one. The default is `models.dev,aws-bedrock-mantle`, which prices every provider that the proxy supports and then tags the Amazon Bedrock models.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}The default also includes `vertex-pricing`, which adds Vertex AI service-tier prices.{{< /version >}}
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
 A source is a catalog to import from, not an LLM provider: each source covers one or more providers and contributes rates, tags, or both. Use `--providers` to import a subset of the providers that a source covers.
@@ -73,7 +78,8 @@ A source is a catalog to import from, not an LLM provider: each source covers on
 |--------|---------------------|
 | `models.dev` | Rates for every provider that the proxy supports, from [models.dev](https://models.dev). |
 | `aws-bedrock-mantle` | Tags for Amazon Bedrock models only, read from the AWS model cards. This source contributes no rates. The tags record which endpoint serves a model, `runtime` or `mantle`, and which request formats the Mantle endpoint accepts. |
-| `github` | The curated catalog that the agentgateway project publishes at [agentgateway.dev/model-catalog](https://agentgateway.dev/model-catalog), which covers the models that the agentgateway project tracks rather than everything that models.dev lists. Not imported by default. |
+| `github` | The curated catalog that the agentgateway project publishes at [agentgateway.dev/model-catalog](https://agentgateway.dev/model-catalog), which covers the models that the agentgateway project tracks rather than everything that models.dev lists. Not imported by default. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+| `vertex-pricing` | Service-tier rates for Vertex AI Gemini models, read from Google Cloud pricing. This source augments models that earlier sources already added. |{{< /version >}}
 {{% /version %}}
 
 ```sh
@@ -129,12 +135,27 @@ After you load a catalog, the same UI visualizes your priced traffic. For more i
 
 If your provider pricing differs from the imported public catalog, add another catalog file after the imported one. Later catalog sources override earlier sources. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Leave out the `metadata` field in the override file so that the file is applied as an overlay. For more information, see [Configure a model catalog](#configure-a-model-catalog).{{< /version >}}
 
-```yaml
-config:
-  modelCatalog:
-  - file: ./costs/catalog.json
-  - file: ./costs/overrides.json
-```
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Costs**, and click **Edit** in the **Custom costs** section.
+2. Click **Add model cost**, and enter the **Provider** and **Model**, such as `openai` and `gpt-4o-mini`.
+3. Enter the rates in USD per 1M tokens for **Input** and **Output**, such as `0.15` and `0.60`, and optionally for **Cache read** and **Cache write**.
+
+   {{< reuse-image src="img/ui-llm-costs-custom.png" srcDark="img/ui-llm-costs-custom-dark.png" alt="LLM Costs page with Custom costs in edit mode and an openai gpt-4o-mini row with input cost 0.15 and output cost 0.60" >}}
+
+4. Click **Save**.
+
+The UI writes the custom costs as an `inline` catalog source at the end of `config.modelCatalog`, not as a separate file. Like a later file, the inline source overrides the earlier sources.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/cost-catalog-override.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/standalone/cost-catalog-override.md" >}}
+{{% /version %}}
 
 Use overrides for contracted pricing, internally hosted models, or models that do not appear in the imported catalog.
 
@@ -160,6 +181,11 @@ When a request matches an entry in the catalog, agentgateway populates these CEL
 
 - `llm.cost`: The realized USD cost of the request. Includes `total` plus per-token-type components such as `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, and `outputAudio`. Unset when the model cannot be priced.
 - `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied. Includes the same per-token-type fields when available. Unset when the model cannot be priced.
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+- `llm.model`: The resolved model's catalog metadata, including `id`, `tags`, `limits`, `modalities`, `capabilities`, and `reasoning`. Unset when no catalog entry matches the request provider and model.
+{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}For Anthropic prompt-cache writes with a 1-hour time to live (TTL), `llm.cost.cacheWrite1h` reports the 1-hour cache-write cost. `llm.cost.cacheWrite` reports the cost for cache writes that do not use a 1-hour TTL, such as 5-minute cache writes. When the catalog includes `cacheWrite1h`, `llm.costRates.cacheWrite1h` reports the effective rate.{{< /version >}}
 
 {{< version exclude-if="1.5.x" >}}For page-billed document models, `llm.cost.pages` reports the page-cost component, and `llm.costRates.perPage` reports the USD-per-page rate that was applied.{{< /version >}}
 
@@ -170,6 +196,7 @@ Traces always include the full breakdown:
 * `agw.ai.usage.cost.output`
 * `agw.ai.usage.cost.cache_read`
 * `agw.ai.usage.cost.cache_write`
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}* `agw.ai.usage.cost.cache_write_1h`{{< /version >}}
 * `agw.ai.usage.cost.reasoning`
 * `agw.ai.usage.cost.input_audio`
 * `agw.ai.usage.cost.output_audio`
@@ -210,6 +237,26 @@ A rising `Missing` or `Unpriced` count means requests are flowing through models
 
 > [!NOTE]
 > In traces, the corresponding cost-resolution `status` attribute uses lowercase values: `exact`, `unpriced`, `missing`, and `noCatalog`.
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Check priced traffic with agctl {#agctl}
+
+After you send an LLM request, use [agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}) to inspect the recorded costs. These commands require a [request-log database]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}).
+
+```sh
+agctl standalone logs --limit 10
+agctl standalone analytics --by provider,model --since 1h
+```
+
+Example output of the `analytics` command:
+
+```text
+PROVIDER  MODEL        REQUESTS  ERRORS  TOKENS  COST       AVG TTFT  TOK/S  CACHE HIT
+openai    gpt-4o-mini  1         0       19      $0.000007  -         -      0.0%
+```
+
+The `COST` column of the log table shows the cost of each request, and the analytics summary adds up the recorded costs. A request that the catalog does not price shows no cost. Therefore, a low or zero total does not prove that the catalog priced every request. To find unpriced requests, use the catalog lookup metrics in the previous section. For time buckets and identity breakdowns, see [CLI analytics]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/#cli" >}}).
+{{< /version >}}
 
 ## Enforce budgets
 

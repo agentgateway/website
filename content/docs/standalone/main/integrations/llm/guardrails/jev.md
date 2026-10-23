@@ -314,7 +314,7 @@ Review the telemetry data for the evaluation calls through agentgateway. For mor
 ## More information {#more-information}
 
 - The full [Jev and OpenAI guardrail example](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-guardrail-jev-openai), including the tracing setup that links each evaluation to the client request.
-- [Virtual models]({{< link-hextra path="/documentation/llm/virtual-models/" >}}) for the weighted, failover, and conditional routing modes.
+- [Virtual models]({{< link-hextra path="/documentation/llm/virtual-models/" >}}) for the weighted, failover, conditional, and callout routing modes.
 - [Custom webhooks]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/" >}}) for the webhook timeout, the `failureMode` setting, and how to change the request path and headers.
 - [Prompt guards]({{< link-hextra path="/documentation/llm/prompt-guards/overview/" >}}) for the built-in regex and moderation guards, which you can run alongside a webhook.
 - [TypeSafe documentation](https://docs.typesafe.ai/introduction) for the question types, the rate limits, and the context size.

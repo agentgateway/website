@@ -1,19 +1,15 @@
 ---
-title: Manage API keys
+title: Provider API keys
 weight: 40
-description: Manage API keys for LLM provider authentication.
+description: Provide and rotate the API keys that agentgateway uses to authenticate to your LLM providers.
 prev: /llm/providers
 ---
 
-Managing API keys is an important security mechanism to prevent unauthorized access to your LLM provider. If API keys are compromised, attackers can deliberately run expensive queries, such as large and recursive prompts, at your expense.
+Provider API keys authenticate agentgateway to LLM providers such as OpenAI or Anthropic. A leaked key lets attackers run requests at your expense.
 
-You can choose between the following options to provide an API key to agentgateway: 
-* Inline
-* Environment variable
-* File
-* Kubernetes secret or passthrough token
+Clients can authenticate with [virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}). Agentgateway replaces each virtual key with the provider key before forwarding the request.
 
-Follow the instructions in this guide to learn how to use these different methods. 
+This guide covers inline keys, environment variables, files, and Kubernetes secrets or passthrough tokens. To replace an existing key, see [Rotate a provider key](#rotate).
 
 ## Before you begin
 
@@ -21,7 +17,38 @@ Follow the instructions in this guide to learn how to use these different method
 
 ## Configure your agentgateway proxy
 
-Browse through the tabs to learn about different ways for how to provide your API key to agentgateway. 
+You can set the provider API key in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Start agentgateway with a configuration that has an `llm` section. You add the model and its API key in the UI.
+
+   ```sh
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models: []
+   EOF
+   agentgateway -f config.yaml
+   ```
+
+2. Open **LLM** > **Models** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+3. From the **Provider** dropdown, select **OpenAI**.
+4. Keep the default `openai/*` in the **Incoming model match** field, and keep **Strip openai/** for the **Outgoing model**.
+5. For the **Provider API key**, select one of the following options.
+   * **API key**: Enter the key itself, such as `sk-proj....`. The UI writes the key inline in the `params.apiKey` field. This option is the least secure. Only use this option for quick tests.
+   * **Env var**: Enter the name of the environment variable, such as `OPENAI_API_KEY`. The UI writes `apiKey: $OPENAI_API_KEY`. The variable must be set in the environment that agentgateway runs in, or the save fails.
+   * **File**: Enter the path to a file that holds the key, such as `/etc/agentgateway/openai-key.txt`. The UI writes `apiKey: {file: <path>}`. Agentgateway reads this file only when it loads the configuration, so a changed key takes effect after the next configuration reload or restart. This option differs from the **File** steps in the **Config file** tab, which use `auth.key.value.file` and pick up a changed key on the next request.
+   * **Unset**: Configure no provider credential.
+
+   {{< reuse-image src="img/ui-llm-model-prefixed.png" srcDark="img/ui-llm-model-prefixed-dark.png" alt="Add model drawer with the OpenAI provider, the default openai/* match, the OPENAI_API_KEY environment variable, and Strip openai/ as the outgoing model" >}}
+
+6. Click **Save model**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+Choose how to provide the key.
 
 {{< tabs >}}
 
@@ -35,10 +62,12 @@ You can provide your API key directly in the agentgateway configuration. This op
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
      models:
-     - name: "*"
+     - name: "openai/*"
        provider: openAI
        params:
          apiKey: "sk-proj...."
+       transformation:
+         model: llmRequest.model.stripPrefix("openai/")
    EOF
    ```
 
@@ -56,39 +85,44 @@ You can provide your API key directly in the agentgateway configuration. This op
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
      models:
-     - name: "*"
+     - name: "openai/*"
        provider: openAI
        params:
          apiKey: "$OPENAI_API_KEY"
+       transformation:
+         model: llmRequest.model.stripPrefix("openai/")
    EOF
    ```
    
 {{% /tab %}}
 {{% tab name="File" %}}
 
-You can store your API key in a file and load the file into agentgateway during startup.
+Store the key in a file on the gateway host. Agentgateway watches the file for changes, so rotation does not require a restart.
 
-1. Save your API key in a file, such as `key.txt`.
+1. Save the key in a file readable only by the user who runs agentgateway.
    ```sh
-   echo "<your-apikey>" >> key.txt
+   printf '%s' "<your-api-key>" > openai-key
+   chmod 600 openai-key
    ```
 
-2. Load the key from the file into an environment variable and configure the agentgateway proxy.
-   ```sh
-   export OPENAI_API_KEY=$(cat key.txt)
-   ```
-
+2. Configure agentgateway to read the file. Relative paths resolve from the directory where you start agentgateway. Use an absolute path in production.
    ```yaml
    cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
      models:
-     - name: "*"
+     - name: "openai/*"
        provider: openAI
-       params:
-         apiKey: "$OPENAI_API_KEY"
+       auth:
+         key:
+           value:
+             file: openai-key
+       transformation:
+         model: llmRequest.model.stripPrefix("openai/")
    EOF
    ```
+
+   Clients authenticate with separate keys. See [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) for setup.
 {{% /tab %}}
 {{% tab name="Kubernetes secret or passthrough token" %}}
 
@@ -98,3 +132,49 @@ For more information, see the [agentgateway on Kubernetes docs](https://agentgat
 
 {{% /tab %}}
 {{< /tabs >}}
+{{% /tab %}}
+{{< /tabs >}}
+
+## Rotate a provider key {#rotate}
+
+Rotate provider keys regularly, when your provider requires it, or after a suspected leak. Clients that use [virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) need no configuration changes.
+
+1. Create a new API key in the console of your LLM provider. Keep the old key active for now.
+2. Replace the key on the gateway using the method that matches your configuration.
+
+   | Option | How to replace the key | Restart needed |
+   | -- | -- | -- |
+   | File (`auth.key.value.file`) | Replace the file contents. Agentgateway uses the new key for the next request. | No |
+   | Inline | Edit the key in the configuration file. Agentgateway reloads the file when it changes. | No |
+   | Environment variable | Set the variable to the new key and restart agentgateway. | Yes |
+
+   For file references in `params.apiKey`, agentgateway reads the key only when loading the configuration. After replacing the key file, save the configuration file to trigger a reload, or restart agentgateway.
+
+3. Send a request through agentgateway, and verify that it succeeds with the new key. If your gateway requires [virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}), add an `Authorization: Bearer <virtual-key>` header.
+
+   ```sh
+   curl -s http://localhost:4000/v1/chat/completions \
+     -H "Content-Type: application/json" \
+     -d '{"model": "openai/gpt-4o-mini", "messages": [{"role": "user", "content": "Hello!"}]}' | jq .
+   ```
+
+   Example output:
+
+   ```json
+   {
+     "choices": [{
+       "message": {
+         "role": "assistant",
+         "content": "Hello! How can I help you today?"
+       }
+     }]
+   }
+   ```
+
+4. Revoke the old key in the console of your LLM provider.
+
+## Next steps
+
+{{< cards >}}
+  {{< card path="/documentation/llm/cost-controls/virtual-keys/" title="Virtual keys" subtitle="Protect provider keys and add optional budgets and usage tracking" >}}
+{{< /cards >}}

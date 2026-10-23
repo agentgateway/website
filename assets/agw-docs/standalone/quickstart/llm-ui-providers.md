@@ -205,7 +205,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 {{% /tab %}}
 {{% tab name="Vertex AI" %}}
 1. For **Incoming model match**, enter `gemini-2.5-flash`.
-2. From **Provider**, select **Vertex AI**.
+2. From **Provider**, select **Gemini Enterprise (GCP Vertex)**.
 3. Keep **Google credentials** set to **ADC**.
 4. For **Vertex project**, enter your Google Cloud project ID. For **Vertex region**, enter `us-central1` or your region.
 5. Click **Save model**.
@@ -354,13 +354,19 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 {{% /tab %}}
 {{% tab name="xAI" %}}
 1. For **Incoming model match**, enter `grok-4.3`.
-2. From **Provider**, select **xAI**.
+2. From **Provider**, select **xAI (Grok)**.
 3. For **Provider API key**, select **Env var** and enter `XAI_API_KEY`.
 4. Click **Save model**.
 
 {{< reuse-image src="img/ui-llm-add-model-xai.png" >}}
 {{% /tab %}}
 {{< /tabs >}}
+
+**Incoming model match** matches the request's `model` field. This quick start uses an exact name.
+
+If you leave the field empty, selecting a provider adds a prefix such as `openai/*` and a transformation to strip it. This exposes all models from that provider.
+
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
 
 ### Step 5: Send a chat completion request
 

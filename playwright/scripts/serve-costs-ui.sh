@@ -15,7 +15,8 @@ set -euo pipefail
 IMAGE="${AGW_IMAGE:-cr.agentgateway.dev/agentgateway:v1.3.1}"
 UI_PORT="${UI_HOST_PORT:-15100}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CFG_DIR="$ROOT/.agw-runtime"
+# AGW_RUNTIME_DIR moves the mounted config dir outside the repo, as in serve-fixture-ui.sh.
+CFG_DIR="${AGW_RUNTIME_DIR:-$ROOT}/.agw-runtime"
 NODE="${NODE_BIN:-node}"
 
 mkdir -p "$CFG_DIR"

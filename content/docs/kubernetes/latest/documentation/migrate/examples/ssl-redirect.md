@@ -4,7 +4,7 @@ description: Convert NGINX SSL redirect annotations to Gateway API HTTP redirect
 weight: 50
 ---
 
-The `ssl-redirect` annotation tells NGINX to redirect HTTP to HTTPS. In Gateway API, this becomes a `RequestRedirect` filter on the HTTPRoute.
+The `ssl-redirect` annotation tells NGINX to redirect HTTP to HTTPS. In Gateway API, this becomes a `RequestRedirect` filter on the HTTPRoute. The referenced TLS Secret must exist in the same namespace as the generated Gateway.
 
 ## Before: Ingress with SSL redirect
 
@@ -18,6 +18,10 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - secure.example.com
+    secretName: secure-example-tls
   rules:
   - host: secure.example.com
     http:
@@ -45,18 +49,19 @@ ingress2gateway print --providers=ingress-nginx --emitter=agentgateway \
 cat ssl-redirect-agentgateway.yaml
 ```
 
-With the agentgateway emitter, SSL redirect is implemented by **splitting** the route: an HTTP route includes a `RequestRedirect` filter (301 to HTTPS) with no backends, and a separate HTTPS route carries the backend traffic. Shown below is the HTTP redirect route:
+In v0.5.0, the provider generates an HTTP redirect route with a `RequestRedirect` filter (308 to HTTPS) and no backends. A separate HTTPS route carries the backend traffic. Shown below is the HTTP redirect route:
 
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: ssl-redirect-demo-secure-example-com
+  name: ssl-redirect-demo-secure-example-com-http
 spec:
   hostnames:
   - secure.example.com
   parentRefs:
   - name: nginx
+    port: 80
   rules:
   - matches:
     - path:
@@ -66,11 +71,11 @@ spec:
     - type: RequestRedirect
       requestRedirect:
         scheme: https
-        statusCode: 301
+        statusCode: 308
 ```
 
 > [!NOTE]
-> NGINX uses status code 308 by default, but Gateway API standardizes on 301.
+> The generated redirect preserves NGINX's default status code of 308.
 
 ## Apply
 

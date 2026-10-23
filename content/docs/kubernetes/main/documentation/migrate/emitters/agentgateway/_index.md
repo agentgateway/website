@@ -15,7 +15,7 @@ from Ingress manifests using:
 ## What it outputs
 
 - Standard **Gateway API** objects (Gateways, HTTPRoutes, etc.)
-- Agentgateway extension objects emitted as unstructured resources, e.g. **AgentgatewayPolicy**.
+- Agentgateway extension objects, including **AgentgatewayPolicy** and **AgentgatewayBackend** for Service upstreams.
 
 The emitter also ensures that any generated Gateway resources use:
 
@@ -44,9 +44,10 @@ This command:
 | Flag           | Default Value           | Required | Description                                                  |
 | -------------- | ----------------------- | -------- | ------------------------------------------------------------ |
 | all-namespaces | False                   | No       | If present, list the requested objects across all namespaces. Namespace in the current context is ignored even if specified with --namespace. |
-| input-file     |                         | No       | Path to the manifest file. When set, the tool reads ingresses from the file instead of from the cluster. Supported files are yaml and json. |
+| input-file     |                         | No       | Path to a YAML or JSON manifest file. Repeat the flag to read multiple files instead of the cluster. |
+| ingress-nginx-ingress-class | nginx | No | Select the source Ingress class. |
 | namespace      |                         | No       | If present, the namespace scope for the invocation.           |
-| output         | yaml                    | No       | The output format, either yaml or json.                       |
+| output         | yaml                    | No       | The output format: yaml, json, or kyaml.                       |
 | providers      |  | Yes       | Comma-separated list of providers (only ingress-nginx is supported). |
 | emitter      | standard | No       | The emitter to use for generating Gateway API resources (supported values: standard, agentgateway). |
 | kubeconfig     |                         | No       | The kubeconfig file to use when talking to the cluster. If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file. |
@@ -98,12 +99,12 @@ The agentgateway emitter projects many ingress-nginx annotations into **Agentgat
 - `nginx.ingress.kubernetes.io/ssl-redirect`
 - `nginx.ingress.kubernetes.io/force-ssl-redirect`
 
-When either annotation is truthy, the emitter **splits** the generated HTTPRoute into two routes:
+With TLS configured for the host, v0.5.0 generates two routes:
 
-- **HTTP redirect route** (bound to the Gateway HTTP listener): each rule includes a `RequestRedirect` filter with `scheme: https`, `statusCode: 301`, and no `backendRefs`.
+- **HTTP redirect route** (bound to port 80): each rule includes a `RequestRedirect` filter with `scheme: https`, `statusCode: 308`, and no `backendRefs`.
 - **HTTPS backend route** (bound to the Gateway HTTPS listener): preserves the original backendRefs; any existing `RequestRedirect` filters are removed.
 
-Naming: HTTP redirect route `<original-http-route-name>-http-redirect`, HTTPS backend route `<original-http-route-name>-https`. Redirect behavior uses only Gateway API objects (no agentgateway extensions).
+The HTTP redirect route is named `<original-http-route-name>-http`; the HTTPS backend route keeps the original name. Redirect behavior uses only Gateway API objects (no agentgateway extensions).
 
 #### Rewrite Target
 
@@ -161,7 +162,14 @@ Mapped into **AgentgatewayPolicy** using agentgateway’s `LocalRateLimit` model
 
 ### Backend Behavior
 
+#### Service Upstreams and Backend Protocol
+
+- `nginx.ingress.kubernetes.io/service-upstream: "true"` creates an **AgentgatewayBackend** named `<service>-service-upstream` with a static Service DNS host and port. HTTPRoute backend references are rewritten to target it.
+- `nginx.ingress.kubernetes.io/backend-protocol: GRPC` or `GRPCS` creates an **AgentgatewayPolicy** with `spec.backend.http.version: HTTP2`. It targets the Service, or the generated AgentgatewayBackend when Service upstreams are enabled. Routes remain HTTPRoutes. Configure backend TLS separately with the `proxy-ssl-*` annotations when using GRPCS.
+
 #### Backend TLS
+
+Set `nginx.ingress.kubernetes.io/backend-protocol` to `HTTPS` or `GRPCS` to enable backend TLS processing.
 
 - `nginx.ingress.kubernetes.io/proxy-ssl-secret`
 - `nginx.ingress.kubernetes.io/proxy-ssl-server-name`
@@ -182,6 +190,8 @@ Annotations for rate limit, timeouts, CORS, rewrite target, basic auth, and ext 
 
 - **HTTPRoute-scoped policies** for traffic-level behavior (rate limit, request timeouts, CORS, rewrite target, basic auth, ext auth).
 - **Service-scoped policies** for backend behavior (backend TLS and proxy connect timeout).
+
+In v0.5.0, the emitter also maps body size annotations to `spec.frontend.http.maxBufferSize` (bytes, with `proxy-body-size` taking precedence over `client-body-buffer-size`) and explicit `enable-access-log` settings to `spec.frontend.accessLog`. A false access log setting emits `filter: "false"`. Backend HTTP version policies target the Service or generated AgentgatewayBackend.
 
 ### Naming
 
@@ -215,7 +225,3 @@ Some conversions require follow-up user action that cannot be expressed safely a
 The following annotations have equivalents in agentgateway but are not (as of yet) translated by this tool:
 
 - `nginx.ingress.kubernetes.io/auth-proxy-set-headers` — supported in AgentgatewayPolicy (e.g. `spec.traffic.extAuth.httpService.authorizationRequest.headersToAdd`).
-
-## Future work
-
-The code defines GVKs for additional agentgateway extension types (e.g. `AgentgatewayBackend`), but they are not yet emitted by the current implementation.

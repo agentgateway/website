@@ -1,6 +1,6 @@
 ---
 title: "macOS installation"
-description: Install ingress2gateway on macOS systems
+description: Install ingress2gateway on macOS systems.
 weight: 10
 ---
 
@@ -9,7 +9,7 @@ weight: 10
 1. Set the environment variables.
 
     ```bash
-    VERSION=v0.4.0
+    VERSION=v0.5.0
     OS=Darwin
     # One of arm64|x86_64
     ARCH=arm64

@@ -70,8 +70,10 @@ Request and response guards run only on route types that carry an LLM conversati
 | `responses` | Yes |
 | `generateContent` | Yes |
 | `realtime` | Only when streaming guardrails are enabled. The `reject` action applies, but `mask` does not, because WebSocket frames cannot be rewritten. |
+| `systemOne` | No |
 | `embeddings` | No |
 | `rerank` | No |
+| `decisions` | No |
 | `anthropicTokenCount` | No |
 | `geminiCountTokens` | No |
 | `models` | No |

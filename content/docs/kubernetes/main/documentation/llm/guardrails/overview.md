@@ -70,8 +70,10 @@ Request and response guards run only on route types that carry an LLM conversati
 | `Responses` | Yes |
 | `GenerateContent` | Yes |
 | `Realtime` | Only when streaming guardrails are enabled. The `Reject` action applies, but `Mask` does not, because WebSocket frames cannot be rewritten. |
+| `SystemOne` | No |
 | `Embeddings` | No |
 | `Rerank` | No |
+| `Decisions` | No |
 | `AnthropicTokenCount` | No |
 | `GeminiCountTokens` | No |
 | `Models` | No |
@@ -94,7 +96,7 @@ The values that `action` takes depend on the guard, because a regex guard can ma
 
 ## Customize rejection responses
 
-When a guard rejects content, {{< reuse "agw-docs/snippets/agentgateway.md" >}} returns a `403` response by default. Set `response.message` to return a custom response body, `response.statusCode` to change the status code, or both. You can set the `response` field on any request or response guard except a `webhook` guard, which ignores it. A webhook sets the status code and body of its own rejections. For more information, see [Custom webhooks]({{< link-hextra path="/documentation/llm/guardrails/webhook/" >}}).
+When a guard rejects content, {{< reuse "agw-docs/snippets/agentgateway.md" >}} returns a `403` response by default. Set `response.message` to return a custom response body, `response.statusCode` to change the status code, and `response.headers` to add response headers. You can set the `response` field on any request or response guard except a `webhook` guard, which ignores it. A webhook sets the status code and body of its own rejections. For more information, see [Custom webhooks]({{< link-hextra path="/documentation/llm/guardrails/webhook/" >}}).
 
 For example, the following request guard returns a custom `422` response when it detects a credit card number.
 
@@ -111,6 +113,11 @@ spec:
           response:
             message: "Request contains sensitive information."
             statusCode: 422
+            headers:
+            - name: x-guardrail
+              value: regex
+            - name: content-type
+              value: application/json
 ```
 
 The `response` settings apply only when the guard rejects content. They do not apply to a guard in `Audit` mode or to a regex guard that masks content.

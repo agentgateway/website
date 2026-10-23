@@ -32,15 +32,36 @@ cp examples/tls/certs/key.pem certs/key.pem
 An HTTP listener can be configured by setting `protocol: HTTP` on the gateway.
 This is also the default protocol if no protocol is specified.
 
+You can add an HTTP listener in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+To add a gateway with an HTTP listener in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same `http` gateway as the **Config file** tab.
+
+1. Open **Traffic** > **Gateways**, and click **Add gateway**.
+2. Enter `http` for the **Name** and `3000` for the **Port**.
+3. Keep **HTTP** as the **Protocol**.
+
+   {{< reuse-image src="img/ui-listeners-http.png" srcDark="img/ui-listeners-http-dark.png" alt="Add gateway drawer for the http gateway on port 3000 with the HTTP protocol" >}}
+
+4. Click **Save gateway**.
+
+Because HTTP is the default protocol, the UI leaves the `protocol` field out of the gateway entry.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 For example:
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
-  default:
+  http:
     port: 3000
     protocol: HTTP
 routes: []
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="listeners" >}}
 # WHAT THIS TEST VALIDATES:
@@ -51,7 +72,7 @@ routes: []
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
-  default:
+  http:
     port: 3000
     protocol: HTTP
 routes: []
@@ -63,10 +84,28 @@ agentgateway -f config.yaml --validate-only
 
 Serving {{< gloss "HTTPS (HTTP Secure)" >}}HTTPS{{< /gloss >}} traffic requires TLS certificates and setting `protocol: HTTPS` on the gateway. When you set `tls`, the protocol defaults to `HTTPS`, so you can also omit the `protocol` field.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps create the same `https` gateway as the **Config file** tab.
+
+1. Open **Traffic** > **Gateways**, and click **Add gateway**.
+2. Enter `https` for the **Name** and `443` for the **Port**.
+3. Select **HTTPS** as the **Protocol**.
+4. Expand the **TLS** section, and enter the paths to your files.
+   * **Certificate**: `examples/tls/certs/cert.pem`
+   * **Key**: `examples/tls/certs/key.pem`
+
+   {{< reuse-image src="img/ui-listeners-https.png" srcDark="img/ui-listeners-https-dark.png" alt="Add gateway drawer for the https gateway on port 443 with the HTTPS protocol and the certificate and key from examples/tls/certs" >}}
+
+5. Click **Save gateway**.
+
+The certificate and key files must exist when you save. Relative paths resolve from the directory where agentgateway runs. The UI leaves out `protocol: HTTPS`, because setting `tls` implies it.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
-  default:
+  https:
     port: 443
     protocol: HTTPS
     tls:
@@ -74,6 +113,8 @@ gateways:
       key: examples/tls/certs/key.pem
 routes: []
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="listeners" >}}
 # WHAT THIS TEST VALIDATES:
@@ -84,7 +125,7 @@ routes: []
 cat <<'EOF' > config2.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
-  default:
+  https:
     port: 443
     protocol: HTTPS
     tls:
@@ -105,6 +146,34 @@ By default, a listener will match any traffic on the port.
 To serve multiple hostnames on one port, add a named listener for each one under the gateway's `listeners` field and set the `hostname` field. Traffic is then routed based on the [hostname](https://en.wikipedia.org/wiki/Server_Name_Indication).
 The most exact match will be used, as well as the corresponding TLS certificates.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **Traffic** > **Gateways**, and click **Add gateway**.
+2. Enter a **Name** and a **Port**, such as `web` and `443`.
+3. Select **Multiple listeners**, and click **Save gateway**. The gateway gets one listener named `listener1`.
+
+   > [!NOTE]
+   > Select **Multiple listeners** before you change other fields. The option is unavailable after you select HTTPS or TLS, or add a policy to the gateway.
+
+4. In the listener table of the `web` gateway, click the **Edit listener** icon for `listener1`, and fill out the **Edit listener** drawer.
+   1. Enter `discrete` for the **Name**.
+   2. Select **HTTPS** as the **Protocol**.
+   3. Enter `a.example.com` for the **Hostname**.
+   4. Expand the **TLS** section. Enter `examples/tls/certs/cert-a.pem` for the **Certificate** and `examples/tls/certs/key-a.pem` for the **Key**.
+
+   {{< reuse-image src="img/ui-listeners-hostname.png" srcDark="img/ui-listeners-hostname-dark.png" alt="Edit listener drawer for listener1 on the web gateway, set up as an HTTPS listener for a.example.com with the cert-a.pem certificate and key-a.pem key" >}}
+
+5. Click **Save listener**.
+6. In the header of the `web` gateway, click the **Add listener** icon. In the **Add listener** drawer, create the `wildcard` listener in the same way as the `discrete` listener.
+   1. Enter `wildcard` for the **Name**.
+   2. Select **HTTPS** as the **Protocol**.
+   3. Enter `*.example.com` for the **Hostname**.
+   4. Expand the **TLS** section. Enter `examples/tls/certs/cert-wildcard.pem` for the **Certificate** and `examples/tls/certs/key-wildcard.pem` for the **Key**.
+   5. Click **Save listener**.
+
+The UI leaves out `protocol: HTTPS` on each listener, because setting `tls` implies it.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -125,6 +194,8 @@ gateways:
         key: examples/tls/certs/key-wildcard.pem
 routes: []
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 To attach a route to one of these listeners instead of the whole gateway, reference it as `web/discrete` or `web/wildcard` in the route's `gateways` field.
 
@@ -215,6 +286,17 @@ TCP listeners are useful when serving traffic that is not HTTP based.
 > [!NOTE]
 > A large portion of agentgateway's functionality is specific to HTTP traffic, and not available for TCP traffic.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **Traffic** > **Gateways**, and click **Add gateway**.
+2. Enter a **Name** and a **Port**, such as `tcp` and `9000`.
+3. Select **TCP** as the **Protocol**.
+
+   {{< reuse-image src="img/ui-listeners-tcp.png" srcDark="img/ui-listeners-tcp-dark.png" alt="Add gateway drawer for the tcp gateway on port 9000 with the TCP protocol" >}}
+
+4. Click **Save gateway**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -223,6 +305,8 @@ gateways:
     protocol: TCP
 tcpRoutes: []
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="listeners" >}}
 # WHAT THIS TEST VALIDATES:
@@ -253,6 +337,30 @@ For serving TLS traffic, the `protocol: TLS` can be used.
 TLS listeners can either _terminate_ or _passthrough_ TLS traffic.
 While both a TCP and TLS passthrough listener do not terminate TLS, the latter enables the use of routing based on the hostname (utilizing [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication)).
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+A TLS listener without a certificate passes TLS through. A TLS listener with a certificate and key terminates TLS.
+
+1. Open **Traffic** > **Gateways**, and click **Add gateway**.
+2. Enter a **Name** and a **Port**, such as `tls` and `8443`.
+3. Select **Multiple listeners**, and click **Save gateway**. The gateway gets one listener named `listener1`.
+4. In the listener table of the `tls` gateway, click the **Edit listener** icon for `listener1`, and add the passthrough listener.
+   1. Enter `passthrough` for the **Name**.
+   2. Select **TLS** as the **Protocol**.
+   3. Enter `passthrough.example.com` for the **Hostname**.
+   4. Leave the **TLS** section empty.
+5. Click **Save listener**.
+6. In the header of the `tls` gateway, click the **Add listener** icon, and add the termination listener.
+   1. Enter `termination` for the **Name**.
+   2. Select **TLS** as the **Protocol**.
+   3. Enter `termination.example.com` for the **Hostname**.
+   4. Expand the **TLS** section. Enter `examples/tls/certs/cert.pem` for the **Certificate** and `examples/tls/certs/key.pem` for the **Key**.
+
+   {{< reuse-image src="img/ui-listeners-tls.png" srcDark="img/ui-listeners-tls-dark.png" alt="Add listener drawer for the tls gateway, set up as a TLS termination listener for termination.example.com with the cert.pem certificate and key.pem key" >}}
+
+7. Click **Save listener**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -270,6 +378,8 @@ gateways:
         key: examples/tls/certs/key.pem
 tcpRoutes: []
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="listeners" >}}
 # WHAT THIS TEST VALIDATES:

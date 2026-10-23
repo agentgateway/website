@@ -4,3 +4,4 @@ test-results/
 .agw-runtime/
 .agw-welcome-runtime/
 .agw-file-runtime/
+.agw-fixture-runtime-*/
