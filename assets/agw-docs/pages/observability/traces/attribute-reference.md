@@ -65,7 +65,7 @@ These attributes follow the [OTel semantic conventions for generative AI spans](
 
 | Attribute | Description |
 |-----------|-------------|
-| `gen_ai.operation.name` | {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}Operation type (for example, `chat`){{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}Operation type, based on the LLM route type. For the values, see [Operation names](#operation-names).{{< /version >}} |
+| `gen_ai.operation.name` | Operation type, such as `chat` or `embeddings` |
 | `gen_ai.provider.name` | LLM provider (for example, `openai`) |
 | `gen_ai.request.model` | Requested model |
 | `gen_ai.response.model` | Model that served the response |

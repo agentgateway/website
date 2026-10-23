@@ -17,8 +17,9 @@ Control plane metrics cannot be customized. To set up automatic scraping of thes
    curl http://localhost:9092/metrics
    ```
 
-   Example output:
    {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+   Example output:
+
    ```console
    # HELP agentgateway_controller_reconciliations_total Total number of controller reconciliations
    # TYPE agentgateway_controller_reconciliations_total counter
@@ -28,6 +29,8 @@ Control plane metrics cannot be customized. To set up automatic scraping of thes
    ```
    {{< /version >}}
    {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+   Example output:
+
    ```console
    # HELP agentgateway_controller_reconciliations_total Total number of controller reconciliations
    # TYPE agentgateway_controller_reconciliations_total counter
