@@ -280,13 +280,15 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4020 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3923 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3919 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3038 -->
 
 - **`agctl standalone`**: Manage a standalone agentgateway through its admin API. Use `get`, `apply`, and `delete` for resources such as models, policies, and MCP targets. Use `keys` and `budgets` to manage API keys and check their budgets. For more information, see [Manage resources with agctl]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
-- **Raw editing**: Every form editor in the UI has a raw YAML mode. Fields that the form does not support are kept when you save.
+- **LiteLLM default fallbacks**: `agentgateway import --from litellm` converts LiteLLM `default_fallbacks` into priority-based failover and respects `max_fallbacks`. The importer reports wildcard models and unknown model names as findings to review. For more information, see [Import fallbacks]({{< link-hextra path="/documentation/configuration/import/#fallbacks" >}}).
+- **Raw editing**: The form editors in the UI have a raw YAML mode. Fields that the form does not support are kept when you save. For more information, see [Edit a resource as YAML]({{< link-hextra path="/documentation/setup/ui/launch-ui/#raw-mode" >}}).
 - **Clearer forms**: Required fields and schema help are shown consistently, and errors are reported next to the field.
-- **Settings page**: A top-level **Settings** page groups gateway-wide settings for the UI and observability.
+- **Settings page**: A top-level **Settings** page groups gateway-wide settings for the UI and observability. For more information, see [Settings]({{< link-hextra path="/documentation/setup/ui/launch-ui/#tour-settings" >}}).
 - **Client Setup for Continue**: Client Setup includes a recipe for Continue. For more information, see [Client Setup]({{< link-hextra path="/documentation/setup/ui/launch-ui/#client-setup" >}}).
-- **More UI improvements**: You can rotate an API key with an auto-generated value, and search the values of the **Users** and **Groups** log filters.
+- **More UI improvements**: You can rotate an API key with an auto-generated value, and search the values of the filters on the **Logs** and **Analytics** pages, such as **Users** and **Groups**. For more information, see [Rotate a virtual key]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#rotate-a-virtual-key" >}}).
 
 ## 🐛 Fixes {#v17-fixes}
 
