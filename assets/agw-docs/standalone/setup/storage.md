@@ -29,7 +29,7 @@ Review the following table to understand this configuration.
 | --- | --- | --- |
 | `file` (default) | Agentgateway writes the resource into your configuration file, adding the section if the file does not have one yet. | No |
 | `hybrid` | Agentgateway keeps your configuration file as a read-only baseline and stores the resource in the database. At read time, it merges the stored resources over the baseline. | Yes |
-| `readOnly` | Agentgateway rejects the write with a `403` response and the message `UI is configured as read-only`. | No |
+| `readOnly` | Agentgateway rejects the write with a `403` response and the message `UI is configured as read-only`. The same applies to **Refresh base costs** on the **LLM Costs** page. | No |
 
 In `hybrid` mode, agentgateway never writes back to your configuration file. Instead, it stores the resource in the database that you configure in the UI or API, and layers it over the file value when it reads the configuration. Note that you can only update certain resources through the UI or API. For more information, see [What the database stores](#what-the-database-stores).
 
