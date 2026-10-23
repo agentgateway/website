@@ -212,11 +212,11 @@ These rules govern the field:
 
 For a worked example, see [Regex filters]({{< link-hextra path="/documentation/llm/prompt-guards/regex/#scope" >}}).
 
-### Webhook scope
+### Webhook scope {#webhook-scope}
 
 A webhook always receives the request messages or response choices. You cannot change this content with `scope`. See [Webhooks]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/" >}}).
 
-- **Request webhook:** Omit `scope`, use the default list, or set exactly `[systemPrompt, messages]`.
+- **Request webhook:** Omit `scope`, or set it to exactly `[systemPrompt, messages]` or `[systemPrompt, messages, toolOutput]`. Either value is accepted, and the webhook receives the same content.
 - **Response webhook:** Omit `scope` or set only `[messages]`.
 
 Other values prevent the configuration from loading.

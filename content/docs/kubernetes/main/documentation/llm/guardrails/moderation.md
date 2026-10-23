@@ -106,7 +106,7 @@ In this configuration, agentgateway calls the Moderation API for each request an
    Content blocked by moderation policy
    ```
 
-### Scope {#scope}
+## Guard scope {#scope}
 
 By default, the moderation prompt guard sends the system prompt, message text, and tool call results to the Moderation API. Set `scope` to change which text it sends.
 

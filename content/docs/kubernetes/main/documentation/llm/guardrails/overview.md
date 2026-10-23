@@ -221,7 +221,7 @@ These rules govern the field:
 
 For a worked example, see [Regex filters]({{< link-hextra path="/documentation/llm/guardrails/regex/#scope" >}}).
 
-### Webhook scope
+### Webhook scope {#webhook-scope}
 
 A webhook always receives the request messages or response choices. You cannot change this content with `scope`. See [Custom webhooks]({{< link-hextra path="/documentation/llm/guardrails/webhook/" >}}).
 

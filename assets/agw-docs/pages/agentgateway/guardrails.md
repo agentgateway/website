@@ -99,6 +99,8 @@ The guard's `failureMode` determines how {{< reuse "agw-docs/snippets/agentgatew
 * With the default, `FailClosed`, {{< reuse "agw-docs/snippets/agentgateway.md" >}} rejects the request with a `503` status code and the body `failed to process LLM request`. For a response guard, the body is `failed to process LLM response`.
 * With `failureMode: FailOpen`, {{< reuse "agw-docs/snippets/agentgateway.md" >}} forwards the content unchanged.
 
+For a streamed response, `FailClosed` ends the stream with an error event that contains `Content blocked by guardrail policy` instead of returning a `503` status code. `FailOpen` lets the stream continue.
+
 The proxy log explains the error. For example:
 
 ```console

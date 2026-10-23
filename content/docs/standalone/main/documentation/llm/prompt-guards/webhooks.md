@@ -46,7 +46,34 @@ EOF
 
 By default, agentgateway calls `POST /request` and `POST /response` on the webhook target.
 
-## Pass content from a webhook {#pass}
+## Webhook response actions {#actions}
+
+The webhook returns an `action` object whose fields determine how agentgateway handles the content.
+
+| Action | Fields in the `action` object | Result |
+| -- | -- | -- |
+| Pass | Empty object or `reason` only. | The content continues unchanged. |
+| Mask | `body` and an optional `reason`. `body` contains masked request `messages` or response `choices`. | Agentgateway replaces the content with the masked version. |
+| Reject | `status_code`, `body`, and an optional `reason`. | Agentgateway returns the status code and body to the client. |
+
+Extra fields in a pass action, such as a score, cause a webhook error. For mask actions, message fields other than `role` and `content` also cause an error.
+
+Return extra metadata outside the `action` object, where agentgateway ignores it.
+
+The guard's `failureMode` determines how agentgateway handles webhook errors:
+
+* With the default, `failClosed`, agentgateway rejects the request with a `503` status code and the body `failed to process LLM request`. For a response guard, the body is `failed to process LLM response`.
+* With `failureMode: failOpen`, agentgateway forwards the content unchanged.
+
+For a streamed response, `failClosed` ends the stream with an error event that contains `Content blocked by guardrail policy` instead of returning a `503` status code. `failOpen` lets the stream continue.
+
+The agentgateway log explains the error. For example:
+
+```console
+warn	llm	failed to call prompt guard webhook: data did not match any variant of untagged enum RequestAction at line 1 column 51
+```
+
+### Pass content from a webhook {#pass}
 
 To pass content unchanged, return an empty `action` object (`{"action": {}}`) or include only a `reason` field:
 
@@ -58,22 +85,7 @@ To pass content unchanged, return an empty `action` object (`{"action": {}}`) or
 }
 ```
 
-Extra fields in a pass action, such as a score, cause a webhook error. For mask actions, message fields other than `role` and `content` also cause an error.
-
-Return extra metadata outside the `action` object, where agentgateway ignores it.
-
-The guard's `failureMode` determines how agentgateway handles webhook errors:
-
-* With the default, `failClosed`, agentgateway rejects the request with a `503` status code and the body `failed to process LLM request`. For a response guard, the body is `failed to process LLM response`.
-* With `failureMode: failOpen`, agentgateway forwards the content unchanged.
-
-The agentgateway log explains the error. For example:
-
-```console
-warn	llm	failed to call prompt guard webhook: data did not match any variant of untagged enum RequestAction at line 1 column 51
-```
-
-## Reject content from a webhook {#reject}
+### Reject content from a webhook {#reject}
 
 To reject a request or a response, the webhook replies with an `action` object that sets `status_code` and `body`. Agentgateway returns that status code and body to the client instead of the request or response. The guard's `rejection` setting does not apply to a webhook guard.
 

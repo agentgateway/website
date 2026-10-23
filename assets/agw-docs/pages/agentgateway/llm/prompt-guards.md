@@ -316,19 +316,20 @@ In the next step, you instruct agentgateway to mask credit card numbers that are
 
 
 {{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{% version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
 ## Scan tool call content {#scope}
 
-{{% version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
 By default, a request guard reads the system prompt and regular message text only. Tool call results that come back to the model are not read, so PII that a tool returns reaches the provider untouched. Set the `scope` field to include `ToolOutput`.
 {{% /version %}}
 {{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
-By default, a request guard reads the system prompt, regular message text, and tool call results. To also scan tool call arguments, add `ToolInput` to `scope`.
+## Scan tool call arguments {#scope}
 
-The following example limits a guard to tool call results and sets a rejection message for PII.
+By default, a request guard reads the system prompt, regular message text, and tool call results. Tool call arguments are not scanned. The following example adds `ToolInput` to `scope` so that the guard also rejects PII in tool call arguments.
 {{% /version %}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,2.2.x" >}}For what each scope value covers and the limits on the field, see [Guard scope]({{< link-hextra path="/documentation/llm/guardrails/overview/#scope" >}}).{{< /version >}}
 
+{{% version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
 1. Create a {{< reuse "agw-docs/snippets/policy.md" >}} resource that rejects a request when a tool result contains a Social Security number.
 
    ```yaml
@@ -433,6 +434,105 @@ The following example limits a guard to tool call results and sets a rejection m
    ```sh
    kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} tool-output-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
+{{% /version %}}
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
+1. Create a {{< reuse "agw-docs/snippets/policy.md" >}} resource that rejects a request when the system prompt, messages, tool call results, or tool call arguments contain a Social Security number.
+
+   ```yaml
+   kubectl apply -f - <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: tool-input-guard
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app: agentgateway
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: openai
+     backend:
+       ai:
+         promptGuard:
+           request:
+           - scope:
+             - SystemPrompt
+             - Messages
+             - ToolOutput
+             - ToolInput
+             response:
+               message: "Request contains PII"
+             regex:
+               action: Reject
+               builtins:
+               - Ssn
+   EOF
+   ```
+
+   > [!NOTE]
+   > Setting `scope` replaces the default. To keep the default content and add tool call arguments, list all four values. Use `Reject` rather than `Mask` for `ToolInput`, because masking tool call arguments can produce invalid JSON.
+
+2. Verify that the {{< reuse "agw-docs/snippets/policy.md" >}} is accepted.
+
+   ```sh
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} tool-input-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.status.ancestors[0].conditions[?(@.type=="Accepted")].status}'
+   ```
+
+   Example output:
+
+   ```console
+   True
+   ```
+
+3. Send a request whose tool call arguments contain a Social Security number. The guard rejects it before the request reaches the provider.
+
+   {{< tabs >}}
+
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" \
+   -H "content-type: application/json" \
+   -d '{
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
+     "messages": [
+       {"role": "user", "content": "look up my record"},
+       {"role": "assistant", "tool_calls": [{"id": "c1", "type": "function", "function": {"name": "lookup", "arguments": "{\"ssn\": \"123-45-6789\"}"}}]},
+       {"role": "tool", "tool_call_id": "c1", "content": "record found"}
+     ]
+   }' | jq
+   ```
+   {{% /tab %}}
+
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl "localhost:8080/v1/chat/completions" \
+   -H "content-type: application/json" \
+   -d '{
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
+     "messages": [
+       {"role": "user", "content": "look up my record"},
+       {"role": "assistant", "tool_calls": [{"id": "c1", "type": "function", "function": {"name": "lookup", "arguments": "{\"ssn\": \"123-45-6789\"}"}}]},
+       {"role": "tool", "tool_call_id": "c1", "content": "record found"}
+     ]
+   }' | jq
+   ```
+   {{% /tab %}}
+
+   {{< /tabs >}}
+
+   Example output, returned with a `403` status:
+
+   ```console
+   Request contains PII
+   ```
+
+4. Delete the policy.
+
+   ```sh
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} tool-input-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+{{% /version %}}
 {{% /version %}}
 
 ## Cleanup
