@@ -68,17 +68,82 @@ Agentgateway evaluates conditions before contacting targets. Excluded targets re
      -H "Content-Type: application/json" \
      -H "Accept: application/json, text/event-stream" \
      -H "mcp-session-id: $MCP_SESSION_ID" \
-     -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
+     -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+     | sed -n 's/^data: //p' | jq -r '.result.tools[].name'
    ```
 
-5. Repeat the previous two steps, and add the `-H "x-include-fetcher: true"` header to the `initialize` request. Verify that the tool list now also includes the `mcp-website-fetcher_fetch` tool.
+   Example output:
+
+   ```
+   mcp-server-everything-3001_echo
+   mcp-server-everything-3001_get-annotated-message
+   mcp-server-everything-3001_get-env
+   ...
+   mcp-server-everything-3001_simulate-research-query
+   ```
+
+5. Initialize another session with the `x-include-fetcher: true` header, and list its tools. Send the header on every request in the session. Verify that the tool list now also includes the `mcp-website-fetcher_fetch` tool.
+
+   ```sh
+   export MCP_SESSION_ID=$(curl -s -D - $MCP_URL \
+     -H "Content-Type: application/json" \
+     -H "Accept: application/json, text/event-stream" \
+     -H "x-include-fetcher: true" \
+     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"1.0.0"}}}' \
+     | grep -i "mcp-session-id:" | sed 's/.*: //' | tr -d '\r')
+   curl -s $MCP_URL \
+     -H "Content-Type: application/json" \
+     -H "Accept: application/json, text/event-stream" \
+     -H "x-include-fetcher: true" \
+     -H "mcp-session-id: $MCP_SESSION_ID" \
+     -d '{"jsonrpc":"2.0","method":"notifications/initialized"}'
+   curl -s $MCP_URL \
+     -H "Content-Type: application/json" \
+     -H "Accept: application/json, text/event-stream" \
+     -H "x-include-fetcher: true" \
+     -H "mcp-session-id: $MCP_SESSION_ID" \
+     -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+     | sed -n 's/^data: //p' | jq -r '.result.tools[].name'
+   ```
+
+   Example output:
+
+   ```
+   mcp-server-everything-3001_echo
+   mcp-server-everything-3001_get-annotated-message
+   mcp-server-everything-3001_get-env
+   ...
+   mcp-server-everything-3001_simulate-research-query
+   mcp-website-fetcher_fetch
+   ```
+
+6. In the same session, send a request without the header. Agentgateway evaluates the conditions again for each request. Without the header, the conditions select a different set of targets than the session has, so agentgateway rejects the request.
+
+   ```sh
+   curl -i -s $MCP_URL \
+     -H "Content-Type: application/json" \
+     -H "Accept: application/json, text/event-stream" \
+     -H "mcp-session-id: $MCP_SESSION_ID" \
+     -d '{"jsonrpc":"2.0","id":3,"method":"tools/list"}'
+   ```
+
+   Example output:
+
+   ```
+   HTTP/1.1 404 Not Found
+   content-type: text/plain
+   content-length: 17
+
+   session not found
+   ```
 
 Keep the following behaviors in mind when you write target conditions:
 
-* **Evaluation timing**: With `Stateful` routing (the default), conditions run at session initialization. The selected targets apply to all later requests in that session, even without the header. Conditions run again if agentgateway rebuilds the session from its session ID, such as on another replica. With `sessionRouting: Stateless`, conditions run on every request.
+* **Evaluation timing**: Conditions run on every request. With `Stateful` routing (the default), the session keeps the targets that its conditions selected at initialization. If a later request in the session selects a different set of targets, such as when the client drops the header, agentgateway returns a `404` response with `session not found`. Requests that still select the same targets keep working in that session. Per the MCP specification, a client that gets a `404` for its session starts a new session, which gets the targets that its new requests select. With `sessionRouting: Stateless`, each request gets the targets that its conditions select.
 * **Stable names**: Tool and prompt names keep their target-name prefix even when only one target remains.
 * **Excluded targets**: Their tools are absent from lists. Calls to those tools fail because the target is not part of the session.
 * **Evaluation errors**: Agentgateway excludes the target if its condition fails to evaluate, such as when it reads a missing JWT claim.
+* **Invalid expressions**: A condition that is not valid CEL never matches, so the target is excluded from every session. The {{< reuse "agw-docs/snippets/backend.md" >}} status reports the error. For more information, see [Check for invalid conditions](#invalid-conditions).
 * **No targets**: If every condition returns `false`, clients see a virtual MCP server with no tools, prompts, or resources.
 * **Selector targets**: Conditions apply to each selected Service. The `mcp.target.name` variable holds that Service's generated name. Set the name with the `agentgateway.dev/mcp-target-name` annotation. Otherwise, it defaults to `<service>-<port name>`, or `<service>-<port>` for an unnamed port, such as `mcp-server-everything-3001`.
 * **Validation**: A condition requires at least two targets in the {{< reuse "agw-docs/snippets/backend.md" >}}, unless the target uses a `selector`.
@@ -87,3 +152,28 @@ Keep the following behaviors in mind when you write target conditions:
 | ----- | ----------- |
 | `spec.mcp.targets[].condition` | Optional CEL expression that controls whether the target participates in the virtual MCP server. The expression must return a boolean value. |
 | `mcp.target.name` | CEL variable that holds the name of the target under evaluation. |
+
+### Check for invalid conditions {#invalid-conditions}
+
+When a `condition` is not a valid CEL expression, the {{< reuse "agw-docs/snippets/backend.md" >}} reports `Accepted: True` with the `PartiallyValid` reason. The condition message names the expression. The proxy replaces the expression with one that always fails, so the target is excluded from every session. The other targets keep working.
+
+Check the status of the {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+```sh
+kubectl get {{< reuse "agw-docs/snippets/backend.md" >}} mcp -o jsonpath='{.status.conditions}' | jq
+```
+
+Example output for a condition that is missing its right operand:
+
+```json
+[
+  {
+    "lastTransitionTime": "2026-10-23T19:34:16Z",
+    "message": "failed to translate backend: MCP target condition is not a valid CEL expression: request.headers[\"x-include-fetcher\"] ==",
+    "observedGeneration": 2,
+    "reason": "PartiallyValid",
+    "status": "True",
+    "type": "Accepted"
+  }
+]
+```

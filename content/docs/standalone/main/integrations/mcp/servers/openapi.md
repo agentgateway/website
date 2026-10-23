@@ -190,11 +190,91 @@ Whether the UI can save depends on your storage mode. For more information, see 
 
 Agentgateway generates one MCP tool for each operation in your OpenAPI spec. Each tool is named after the operation's `operationId` field. For example, an operation with `operationId: addPet` becomes an MCP tool named `addPet`. Make sure each operation in your spec defines a unique `operationId` so that the generated tool names are predictable and do not collide.
 
-## Tool response content
+## Tool response content {#tool-response-content}
 
-For non-5xx OpenAPI responses, the response body and the `Content-Type` header determine the MCP tool result. A JSON object or JSON `null` response produces structured content. Other non-image, non-JSON responses also produce structured content. In that content, `code` contains the HTTP status code, and `message` contains the UTF-8-decoded body.
+Agentgateway converts each OpenAPI response into an MCP tool result. The HTTP status code decides whether the client gets a tool result or an error. The `Content-Type` header and the body bytes decide the type of content in the result.
 
-When the `Content-Type` header is an `image/*` media type, the tool result contains an MCP image content block instead. The image block uses the response media type, such as `image/png`, and base64-encoded body bytes.
+| Upstream response | MCP tool result |
+| ----------------- | --------------- |
+| JSON object or JSON `null` | Structured content in `structuredContent`. The `content` list also has a `text` block with the serialized JSON. |
+| Other JSON value, such as an array or a string | Structured content that wraps the value in a `data` field, such as `{"data":["cat","dog"]}`. |
+| Text that is not valid JSON | A `text` block with the body. |
+| Binary body with an `image/*` type | An `image` block with the base64-encoded body and the response media type, such as `image/png`. |
+| Binary body with an `audio/*` type | An `audio` block with the base64-encoded body and the response media type, such as `audio/wav`. |
+| Any other binary body | A `resource` block with the base64-encoded body in `blob`, the response media type, and the URI `tool://<tool name>`. A response without a `Content-Type` header gets `application/octet-stream`. |
+| Empty body | A result with an empty `content` list. |
+
+Agentgateway treats a body as text in either of the following cases:
+
+* The `Content-Type` is a text-like media type: any `text/*` type, any type with a `json`, `xml`, or `yaml` subtype or suffix, `application/javascript`, `application/x-www-form-urlencoded`, or `application/x-ndjson`. For example, an `image/svg+xml` response is text because of its `xml` suffix.
+* The body is valid UTF-8 and contains no NUL bytes, whatever the `Content-Type`.
+
+Agentgateway tries to parse every text body as JSON first, because some servers label JSON responses as `text/plain`.
+
+### Error responses {#tool-response-errors}
+
+The status code changes the result as follows:
+
+* **`5xx` responses**: The client gets an HTTP `500` response with a JSON-RPC error instead of a tool result. The error code is `-32603` (internal error), and the message is `failed to send message`. The agentgateway log records the upstream status and body.
+* **All other responses, including `4xx`**: The client gets a tool result with the same content types as a `2xx` response. The result sets `isError` to `false` and does not include the status code. For example, a `404` response with the plain text body `Pet not found` becomes a `text` block with `Pet not found`. To help a model recognize a failed call, return an error body that describes the failure.
+
+### Example tool results {#tool-response-examples}
+
+The following results come from an OpenAPI server that returns a different response type for each operation.
+
+* A `200` response with `Content-Type: application/json` and a JSON object body:
+
+  ```json
+  {"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"{\"available\":7,\"pending\":2,\"sold\":1}"}],"structuredContent":{"available":7,"pending":2,"sold":1},"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: application/json` and a JSON array body:
+
+  ```json
+  {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{\"data\":[\"cat\",\"dog\"]}"}],"structuredContent":{"data":["cat","dog"]},"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: text/plain` and the body `OK`:
+
+  ```json
+  {"jsonrpc":"2.0","id":4,"result":{"content":[{"type":"text","text":"OK"}],"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: image/png`:
+
+  ```json
+  {"jsonrpc":"2.0","id":5,"result":{"content":[{"type":"image","data":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAA=","mimeType":"image/png"}],"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: audio/wav`:
+
+  ```json
+  {"jsonrpc":"2.0","id":6,"result":{"content":[{"type":"audio","data":"UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=","mimeType":"audio/wav"}],"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: application/pdf` from the `getReport` tool:
+
+  ```json
+  {"jsonrpc":"2.0","id":7,"result":{"content":[{"type":"resource","resource":{"uri":"tool://getReport","mimeType":"application/pdf","blob":"JVBERi0xLjQKJeLjz9MK"}}],"isError":false}}
+  ```
+
+* A `204` response with an empty body:
+
+  ```json
+  {"jsonrpc":"2.0","id":8,"result":{"content":[],"isError":false}}
+  ```
+
+* A `404` response with `Content-Type: text/plain` and the body `Pet not found`:
+
+  ```json
+  {"jsonrpc":"2.0","id":9,"result":{"content":[{"type":"text","text":"Pet not found"}],"isError":false}}
+  ```
+
+* A `500` response:
+
+  ```json
+  {"jsonrpc":"2.0","id":10,"error":{"code":-32603,"message":"failed to send message"}}
+  ```
 
 ## Path parameters {#path-parameters}
 
