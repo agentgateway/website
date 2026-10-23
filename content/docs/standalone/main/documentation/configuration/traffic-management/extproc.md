@@ -252,8 +252,8 @@ Which CEL variables the expression can read depends on the route type.
 Review the following limits.
 
 - **The expression must return a string.** A value of any other type fails the request with `dynamic backend target expression must evaluate to a host:port string`.
-- **The string must be a `host:port` address.** A Unix socket path, such as `unix:/run/admin.sock`, fails the request with `dynamic backend target "unix:/run/admin.sock" must be a host:port`.
-- **The address cannot be loopback or link-local.** A target that resolves to an address such as `127.0.0.1` or `169.254.169.254` fails the request with `503`. For the full list and the `config.backend.allowDynamicLoopback` override, see [Loopback and link-local destinations]({{< link-hextra path="/documentation/configuration/egress-proxy/#loopback-destinations" >}}).
+- **Targets must use `host:port`.** A Unix socket path such as `unix:/run/admin.sock` fails with `dynamic backend target "unix:/run/admin.sock" must be a host:port`.
+- **Loopback and link-local destinations are blocked.** Targets resolving to addresses such as `127.0.0.1` or `169.254.169.254` fail with `503`. For blocked addresses and the `config.backend.allowDynamicLoopback` override, see [Loopback and link-local destinations]({{< link-hextra path="/documentation/configuration/egress-proxy/#loopback-destinations" >}}).
 - **`inferenceRouting` cannot be combined with a dynamic backend.** A request that hits both fails with `inferenceRouting is not supported with dynamic backends`.
 
 > [!WARNING]

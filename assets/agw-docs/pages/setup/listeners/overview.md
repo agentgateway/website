@@ -68,9 +68,11 @@ flowchart TD
 Listeners that share a port must use the same protocol and the same bind mode. Each listener must also claim a hostname that no earlier listener on that port already claimed.
 {{< /version >}}
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
-Listeners that share a port must use the same bind mode and the same protocol. The exception is `HTTPS` and `TLS`. An HTTPS listener and a TLS passthrough listener can share a port, because the proxy selects the listener by the Server Name Indication (SNI) hostname of each TLS connection. For an example, see [Share the HTTPS port with a TLS passthrough listener]({{< link-hextra path="/documentation/setup/listeners/https/#tls-passthrough-shared-port" >}}).
+Listeners sharing a port must use the same bind mode. Protocols must also match, except that an HTTPS listener and a TLS passthrough listener can share a port.
 
-Each listener must also claim a hostname that no earlier listener on that port already claimed. A listener without a hostname claims `*`, so only one such listener can be on each port.
+The proxy selects between them by the connection's Server Name Indication (SNI) hostname. For an example, see [Share the HTTPS port with a TLS passthrough listener]({{< link-hextra path="/documentation/setup/listeners/https/#tls-passthrough-shared-port" >}}).
+
+Each listener must claim a unique hostname on its port. A listener without a hostname claims `*`, so only one is allowed per port.
 {{< /version >}}
 
 Several listeners can share a port, which is how one port serves more than one hostname. Each listener is checked against the listeners that are already accepted on its port, so precedence decides which listener keeps a contested setting.
@@ -79,9 +81,11 @@ Several listeners can share a port, which is how one port serves more than one h
 The losing listener reports `Conflicted: True` and `Accepted: False` in its status, with a reason of `HostnameConflict`, `ProtocolConflict`, or `BindModeConflict`.
 {{< /version >}}
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
-The losing listener reports `Conflicted: True`, `Accepted: False`, and `Programmed: False` in its status, with a reason of `HostnameConflict`, `ProtocolConflict`, or `BindModeConflict`. The controller does not program a conflicted listener into the proxy, so the listener receives no traffic, and the winning listener keeps serving its hostname.
+The losing listener reports `Conflicted: True`, `Accepted: False`, and `Programmed: False`. The reason is `HostnameConflict`, `ProtocolConflict`, or `BindModeConflict`.
 
-For example, the following status is for a TLS listener that claims `https.example.com` on port 443, after an earlier HTTPS listener on that port already claimed the same hostname.
+The controller excludes the conflicted listener from the proxy configuration. It receives no traffic. The winning listener continues serving its hostname.
+
+Example status for a TLS listener that claims `https.example.com` on port 443 after an earlier HTTPS listener already claimed it:
 
 ```yaml
 listeners:
@@ -103,7 +107,11 @@ listeners:
     reason: ResolvedRefs
 ```
 
-The parent resource reports the conflict too, with the reason `ListenersNotValid`. A Gateway stays `Accepted: True`, and its message names each conflicted listener. A ListenerSet stays `Accepted: True` while at least one of its listeners is valid. A ListenerSet whose listeners all conflict reports `Accepted: False` and `Programmed: False`.
+The parent resource reports `ListenersNotValid`:
+
+- **Gateway**: Stays `Accepted: True`. Its message names each conflicted listener.
+- **ListenerSet with at least one valid listener**: Stays `Accepted: True`.
+- **ListenerSet whose listeners all conflict**: Reports `Accepted: False` and `Programmed: False`.
 {{< /version >}}
 
 Precedence follows the order that [GEP-1713](https://gateway-api.sigs.k8s.io/geps/gep-1713/#listener-precedence) defines:

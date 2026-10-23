@@ -133,7 +133,9 @@ EOF
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 ## Loopback and link-local destinations {#loopback-destinations}
 
-A Dynamic Forward Proxy connects to whatever host the request names. Without a limit, any client that can reach the route could also reach services that listen only inside the agentgateway proxy pod or on its node. Examples are the proxy's admin interface on `localhost:15000` and the cloud metadata server at `169.254.169.254`, which can issue cloud credentials. This attack is called server-side request forgery (SSRF).
+A Dynamic Forward Proxy uses the destination named in each request. Without restrictions, clients could reach services inside the proxy pod or on its node.
+
+Examples include the admin interface on `localhost:15000` and the cloud metadata server at `169.254.169.254`, which can issue cloud credentials. This is called server-side request forgery (SSRF).
 
 To prevent this attack, a Dynamic Forward Proxy refuses to connect to the following addresses.
 
@@ -143,17 +145,19 @@ To prevent this attack, a Dynamic Forward Proxy refuses to connect to the follow
 | Link-local, including the cloud metadata server | `169.254.0.0/16` | `fe80::/10` |
 | Unspecified, which connects to the local host | `0.0.0.0` | `::` |
 
-Review the following details about the check.
+The check has the following scope:
 
-* **The check runs after DNS resolution.** A hostname that resolves to one of these addresses, such as `localhost`, is refused too. So is an IPv4 address in IPv4-mapped IPv6 form, such as `::ffff:127.0.0.1`.
-* **In-cluster destinations are not refused.** Pod and Service IP addresses are private network addresses, not loopback addresses, so a request to a host such as `httpbin.httpbin.svc.cluster.local:8000` still works.
+* **Checks run after DNS resolution.** Hostnames resolving to blocked addresses, such as `localhost`, are also blocked. The check covers IPv4-mapped forms of blocked addresses, such as `::ffff:127.0.0.1`.
+* **Pod and Service addresses remain reachable.** For example, requests to `httpbin.httpbin.svc.cluster.local:8000` still work.
 * **Only the Dynamic Forward Proxy is checked.** Other backends, such as a Service or a static {{< reuse "agw-docs/snippets/backend.md" >}}, are not affected.
 
 A refused request fails with a `503` response and the body `backend not allowed`.
 
 ### Allow loopback destinations {#allow-dynamic-loopback}
 
-The {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource has no dedicated field for this setting. To let the Dynamic Forward Proxy connect to loopback and link-local addresses, set `config.backend.allowDynamicLoopback` in `rawConfig`. The following steps show the default behavior first. They use the proxy's readiness endpoint on `localhost:15021` as the local service.
+To allow local destinations, set `config.backend.allowDynamicLoopback` in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource's `rawConfig`. There is no dedicated field for this setting.
+
+These steps first verify the default behavior using the proxy's readiness endpoint at `localhost:15021`.
 
 1. Send a request with the host header set to the proxy's own readiness endpoint. The request is refused.
    {{< tabs >}}
@@ -208,7 +212,10 @@ The {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource has no dedic
    | -- | -- |
    | `spec.rawConfig.config.backend.allowDynamicLoopback` | Set to `true` to let every Dynamic Forward Proxy on the Gateway connect to loopback, link-local, and unspecified addresses. The default is `false`. |
 
-4. Reference the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource from the Gateway. If your Gateway already references an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, add the `rawConfig` setting to that resource instead. If the GatewayClass's {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource also sets `rawConfig`, the Gateway's `rawConfig` replaces it as a whole. The two are not merged.
+4. Reference the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource from the Gateway. If a reference already exists, add the setting to that resource instead.
+
+   The Gateway's `rawConfig` replaces the GatewayClass's entire `rawConfig`. The two are not merged.
+
    ```sh
    kubectl patch gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge \
      -p '{"spec":{"infrastructure":{"parametersRef":{"group":"{{< reuse "agw-docs/snippets/group.md" >}}","kind":"{{< reuse "agw-docs/snippets/gatewayparameters.md" >}}","name":"dfp-loopback"}}}}'
@@ -219,7 +226,7 @@ The {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource has no dedic
    gateway.gateway.networking.k8s.io/agentgateway-proxy patched
    ```
 
-5. Wait for the proxy to restart with the new configuration. The proxy reads `rawConfig` at startup, so the change rolls out new proxy pods.
+5. Wait for the proxy to restart. The `rawConfig` change rolls out new proxy pods.
    ```sh
    kubectl rollout status deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
@@ -230,7 +237,7 @@ The {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource has no dedic
    deployment "agentgateway-proxy" successfully rolled out
    ```
 
-6. Send the request again. If you use port-forwarding, restart the `kubectl port-forward` command first, because the old pod is gone. The proxy now forwards the request to the readiness endpoint.
+6. If using port-forwarding, restart `kubectl port-forward` to connect to a new pod. Send the request again. The proxy now forwards it to the readiness endpoint.
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
@@ -254,7 +261,7 @@ The {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource has no dedic
    ```
 
 > [!WARNING]
-> This setting applies to every Dynamic Forward Proxy route on the Gateway. A client that can reach one of those routes can then reach every service inside the proxy pod, including the admin interface. Limit the hosts that those routes forward to with HTTPRoute `hostnames`, and limit who can use them with an authorization policy.
+> This setting affects every Dynamic Forward Proxy route on the Gateway. Clients using these routes can reach every service inside the proxy pod, including the admin interface. Restrict destinations with HTTPRoute `hostnames` and restrict clients with an authorization policy.
 {{< /version >}}
 
 ## Cleanup

@@ -396,7 +396,9 @@ Use this pattern when agentgateway must apply HTTP policies to every outbound re
 
 ## Loopback and link-local destinations {#loopback-destinations}
 
-A dynamic backend connects to whatever destination the request names. Without a limit, any client that can reach the proxy could also reach services that listen only on the gateway host. Examples are the admin interface on `localhost:15000` and the cloud metadata server at `169.254.169.254`, which can issue cloud credentials. This attack is called server-side request forgery (SSRF).
+A dynamic backend uses the destination named in each request. Without restrictions, clients could reach services on the gateway host.
+
+Examples include the admin interface on `localhost:15000` and the cloud metadata server at `169.254.169.254`, which can issue cloud credentials. This is called server-side request forgery (SSRF).
 
 To prevent this attack, a dynamic backend refuses to connect to the following addresses.
 
@@ -406,17 +408,19 @@ To prevent this attack, a dynamic backend refuses to connect to the following ad
 | Link-local, including the cloud metadata server | `169.254.0.0/16` | `fe80::/10` |
 | Unspecified, which connects to the local host | `0.0.0.0` | `::` |
 
-Review the following details about the check.
+The check has the following scope:
 
-* **The check runs after DNS resolution.** A hostname that resolves to one of these addresses, such as `localhost`, is refused too. So is an IPv4 address in IPv4-mapped IPv6 form, such as `::ffff:127.0.0.1`.
-* **Private network ranges are not refused.** Destinations such as `10.0.0.0/8` and `192.168.0.0/16` stay reachable. To limit them, allowlist destinations with route `hostnames`.
+* **Checks run after DNS resolution.** Hostnames resolving to blocked addresses, such as `localhost`, are also blocked. The check covers IPv4-mapped forms of blocked addresses, such as `::ffff:127.0.0.1`.
+* **Private networks remain reachable.** To restrict destinations in ranges such as `10.0.0.0/8` and `192.168.0.0/16`, use route `hostnames` allowlists.
 * **Only dynamic backends are checked.** A backend with a fixed address, such as `host: localhost:8080`, still connects to loopback.
 
 A refused request fails with a `503` response and the body `backend not allowed`. The request log records the reason as `dynamic backend resolved to a loopback or link-local address`.
 
 ### Allow loopback destinations {#allow-dynamic-loopback}
 
-If a dynamic backend must reach a service on the gateway host, set `config.backend.allowDynamicLoopback` to `true`. The following steps show the default behavior first. They use the readiness endpoint of agentgateway itself, which listens on `localhost:15021`, as the local service.
+Set `config.backend.allowDynamicLoopback` to `true` to allow local destinations.
+
+These steps first verify the default behavior using agentgateway's readiness endpoint at `localhost:15021`.
 
 1. Create a configuration file that forwards proxy requests for `localhost` to a dynamic backend.
    ```yaml
@@ -469,7 +473,7 @@ If a dynamic backend must reach a service on the gateway host, set `config.backe
 
    | Setting | Description |
    | -- | -- |
-   | `config.backend.allowDynamicLoopback` | Set to `true` to let dynamic backends connect to loopback, link-local, and unspecified addresses. The default is `false`. Agentgateway reads this setting at startup only, so restart agentgateway after you change it. |
+   | `config.backend.allowDynamicLoopback` | Allows loopback, link-local, and unspecified destinations when `true`. Defaults to `false`. Read at startup; restart agentgateway after changing it. |
 
 5. Start agentgateway again.
    ```sh
@@ -491,7 +495,7 @@ If a dynamic backend must reach a service on the gateway host, set `config.backe
    ```
 
 > [!WARNING]
-> This setting applies to every dynamic backend in the configuration. A client that can reach a route with a dynamic backend can then reach every service on the gateway host, including the admin interface. Keep a `hostnames` allowlist on every route that uses a dynamic backend.
+> This setting affects every dynamic backend in the configuration. Clients using these routes can reach every service on the gateway host, including the admin interface. Keep a `hostnames` allowlist on every route with a dynamic backend.
 
 ## Choose a pattern
 

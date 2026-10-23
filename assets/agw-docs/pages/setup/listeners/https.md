@@ -393,13 +393,16 @@ test "${HTTP_CODE}" = "200"
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 ## Share the HTTPS port with a TLS passthrough listener {#tls-passthrough-shared-port}
 
-An HTTPS listener and a TLS passthrough listener can share a port on one Gateway, such as port 443. The proxy reads the Server Name Indication (SNI) hostname of each TLS connection and selects the listener that claims it. The HTTPS listener terminates TLS at the gateway. The TLS listener passes the encrypted connection through to a backend that terminates TLS itself, such as a service that manages its own certificates or requires end-to-end mutual TLS.
+An HTTPS listener and a TLS passthrough listener can share a port on one Gateway. The proxy uses each connection's Server Name Indication (SNI) hostname to select a listener.
 
-Without a shared port, passthrough traffic needs a second Gateway, and often a second load balancer and IP address. The two listeners must claim different hostnames. For the rules that decide which listener wins a conflict, see [Listener precedence]({{< link-hextra path="/documentation/setup/listeners/overview/#listener-precedence" >}}).
+- **HTTPS**: The gateway terminates TLS.
+- **TLS passthrough**: The backend terminates TLS. Use this for services that manage their own certificates or require end-to-end mutual TLS.
+
+Sharing a port avoids a second Gateway and often a second load balancer and IP address. The listeners must claim different hostnames. For conflict rules, see [Listener precedence]({{< link-hextra path="/documentation/setup/listeners/overview/#listener-precedence" >}}).
 
 The following steps reuse the root certificate, the `https` Secret, and the httpbin app from the previous sections.
 
-1. Create a server certificate for the `passthrough.example.com` hostname, signed by the root certificate that you created earlier. The passthrough backend presents this certificate, not the gateway.
+1. Create a server certificate for `passthrough.example.com`, signed by the existing root certificate. The passthrough backend presents this certificate.
    ```sh
    openssl req -new -nodes -newkey rsa:2048 \
      -keyout example_certs/passthrough.key -out example_certs/passthrough.csr \
@@ -606,7 +609,7 @@ The following steps reuse the root certificate, the `https` Secret, and the http
    tlsroute.gateway.networking.k8s.io/passthrough-nginx created
    ```
 
-6. Verify that both listeners are accepted and programmed, and that each has one route attached.
+6. Verify that both listeners are accepted and programmed. Each should have one route attached.
    ```sh
    kubectl get gateway https-passthrough -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
      -o jsonpath='{range .status.listeners[*]}{.name}{": attachedRoutes="}{.attachedRoutes}{"\n"}{range .conditions[*]}{"  "}{.type}={.status} ({.reason}){"\n"}{end}{end}'
@@ -666,7 +669,7 @@ The following steps reuse the root certificate, the `https` Secret, and the http
    < HTTP/2 200
    ```
 
-9. Send a request to the passthrough hostname. The nginx server presents its own `passthrough.example.com` certificate and answers the request, because the gateway did not decrypt the connection.
+9. Send a request to the passthrough hostname. The gateway forwards the encrypted connection. The nginx server presents its `passthrough.example.com` certificate and answers the request.
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
