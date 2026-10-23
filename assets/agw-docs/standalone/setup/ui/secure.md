@@ -19,83 +19,53 @@ The `oidc` policy in `ui.policies` also accepts bearer ID tokens, so CLI clients
 
 ## Binary and Docker {#secure-binary-docker}
 
-1. Set the `OIDC_COOKIE_SECRET` environment variable. Agentgateway requires this value to encrypt session cookies whenever an `oidc` policy is configured, and refuses to start without it. The key is an AES-256-GCM key, which is 32 random bytes encoded as 64 hexadecimal characters. It is a random value that you generate, not a value that your identity provider gives you.
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+You can add the policies in the UI or in your configuration file.
 
-   ```bash
-   export OIDC_COOKIE_SECRET="$(openssl rand -hex 32)"
-   ```
+{{< tabs >}}
+{{% tab name="UI" %}}
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}). UI access policies also require the UI to be on a gateway, such as the `ui-gateway` from [Serve the UI on its own gateway]({{< link-hextra path="/documentation/setup/ui/gateway-ui/" >}}).
 
-2. Save the details of the UI client that you created in your IdP as environment variables. The redirect URI must match the address that you serve the UI on, and it must be registered as a valid redirect URI in your IdP. The following example uses a local address so that you can test the login flow first. When you expose the UI on a hostname, change this value to that hostname and register it in your IdP.
+1. Set the environment variables for the session cookie key and the UI client that you created in your IdP.
+   * `OIDC_COOKIE_SECRET` is an AES-256-GCM key that agentgateway uses to encrypt session cookies. Generate 32 random bytes, encoded as 64 hexadecimal characters. If this key is missing, agentgateway does not start with an `oidc` policy.
+   * `REDIRECT_URI` must match the address that you serve the UI on, and it must be registered as a valid redirect URI in your IdP.
 
    ```sh
+   export OIDC_COOKIE_SECRET="$(openssl rand -hex 32)"
    export ISSUER_URL=https://keycloak.example.com/realms/agentgateway
    export UI_CLIENT_ID=agentgateway-ui
    export UI_CLIENT_SECRET=<client-secret>
    export REDIRECT_URI=http://localhost:4001/oauth/callback
    ```
 
-3. Add an `oidc` policy to the `ui` section of your configuration file. The following example redirects unauthenticated users on the `ui-gateway` to the OIDC provider to log in. The optional `authorization` policy further restricts access to users whose email address ends in `@example.com`.
+2. Restart agentgateway from the same shell, so that agentgateway has these variables in its environment. In Docker, add `-e OIDC_COOKIE_SECRET -e ISSUER_URL -e UI_CLIENT_ID -e UI_CLIENT_SECRET -e REDIRECT_URI` to your `docker run` command. For the full command, see the **Docker** tab in the **Config file** tab.
+3. Open the **Settings** > **UI** page on the admin interface, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui). The policies do not apply to the admin interface, so you keep access while you edit them. Confirm that the **Public gateway** dropdown shows `ui-gateway`.
+4. In the **UI access policies** section, click the **OIDC** card, and configure the following fields. You can enter environment variable references, which agentgateway expands when it loads the configuration. This way, the client secret is not written into the file.
+   1. **Issuer**: `${ISSUER_URL}`
+   2. **Client ID**: `${UI_CLIENT_ID}`
+   3. **Client secret**: `${UI_CLIENT_SECRET}`
+   4. **Redirect URI**: `${REDIRECT_URI}`
+   5. **Additional scopes**: Click the `profile` and `email` suggestions.
 
-   Agentgateway expands environment variables in the configuration file when it loads the file, so you can refer to the values that you exported in the previous step instead of writing the client secret into the file.
+   {{< reuse-image src="img/ui-settings-oidc.png" srcDark="img/ui-settings-oidc-dark.png" alt="UI OIDC settings drawer with the issuer URL from the ISSUER_URL environment variable" >}}
 
-   ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   gateways:
-     default:
-       port: 4000
-     ui-gateway:
-       port: 4001
-   ui:
-     gateways: [ui-gateway]
-     policies:
-       oidc:
-         issuer: ${ISSUER_URL}
-         clientId: ${UI_CLIENT_ID}
-         clientSecret: ${UI_CLIENT_SECRET}
-         redirectURI: ${REDIRECT_URI}
-         scopes:
-         - profile
-         - email
-       authorization:
-         rules:
-         - allow: jwt.email.endsWith("@example.com")
-   ```
+   {{< reuse-image src="img/ui-settings-oidc-client.png" srcDark="img/ui-settings-oidc-client-dark.png" alt="UI OIDC settings drawer scrolled to the client ID, client secret, and redirect URI environment variables and the profile and email scopes" >}}
 
-   > [!TIP]
-   > For the full list of `oidc` policy fields and a complete runnable Keycloak setup, see [OIDC browser authentication]({{< link-hextra path="/documentation/configuration/security/oidc" >}}) and the [`traffic-unified-gateway` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-unified-gateway) in the agentgateway repository.
-
-4. Start agentgateway with the updated config.
-
-   {{< tabs >}}
-   {{% tab name="Binary" %}}
-   ```sh
-   agentgateway -f config.yaml
-   ```
-   {{% /tab %}}
-   {{% tab name="Docker" %}}
-   Pass each environment variable to the container with `-e`. The container gets its own environment, so the values that you exported in your shell are not available inside it unless you pass them.
-
-   ```sh
-   docker run -d \
-     --name agentgateway \
-     --user "$(id -u):$(id -g)" \
-     -v "$PWD/config.yaml:/config.yaml" \
-     -p 4000:4000 -p 4001:4001 \
-     -e OIDC_COOKIE_SECRET \
-     -e ISSUER_URL \
-     -e UI_CLIENT_ID \
-     -e UI_CLIENT_SECRET \
-     -e REDIRECT_URI \
-     {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
-     -f /config.yaml
-   ```
-
-   > [!IMPORTANT]
-   > The container must be able to resolve and reach the `ISSUER_URL` value, and so must the browser, because agentgateway redirects the browser to that address to log in. An issuer on `localhost` refers to the container itself, not to your host. Use the IdP's routable address in both places.
-   {{% /tab %}}
-   {{< /tabs >}}
-
-5. Open the UI at the gateway's address, such as [http://localhost:4001/ui/](http://localhost:4001/ui/). Instead of loading the UI directly, agentgateway redirects you to the OIDC provider to log in. After you authenticate, you are returned to the UI.
+5. Click **Save policy**. The save fails if agentgateway cannot fetch the OIDC discovery document from the issuer, or if a referenced environment variable is not set.
+6. Optional: Restrict access to users whose email address ends in `@example.com`.
+   1. Click the **Authorization** card, and click **Add rule**.
+   2. Keep **Allow** as the effect, and replace the example expression with `jwt.email.endsWith("@example.com")`.
+   3. Click **Save policy**.
+7. Open the UI at the gateway's address, such as [http://localhost:4001/ui/](http://localhost:4001/ui/). Instead of loading the UI, agentgateway shows a **Sign in** page. Click **Sign in with SSO** to log in with your OIDC provider. After you authenticate, you are returned to the UI.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/setup/ui/secure-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/standalone/setup/ui/secure-config.md" >}}
+{{% /version %}}
 
 ## Helm {#secure-helm}
 

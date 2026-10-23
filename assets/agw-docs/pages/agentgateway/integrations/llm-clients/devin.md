@@ -11,18 +11,21 @@ Configure [Devin Desktop](https://devin.ai/desktop), the AI-powered code editor 
 
 ## Example agentgateway configuration
 
-```yaml {paths="devin-validate"}
-cat > /tmp/test-devin.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  port: 3000
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-EOF
-```
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+You can configure agentgateway in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+{{< reuse "agw-docs/standalone/llm/clients/ui-openai-port-3000.md" >}}
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/devin-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/devin-config.md" >}}
+{{% /version %}}
 
 {{< doc-test paths="devin-validate" >}}
 export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"

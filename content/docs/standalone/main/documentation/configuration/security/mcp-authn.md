@@ -71,8 +71,60 @@ For derived JWKS URLs, normalization removes trailing slashes from `issuer` befo
 
 ### Configuration example
 
-Review the following configuration example and descriptions.
+Review the following configuration example and descriptions. You can configure the policy in the UI or in your configuration file.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `mcpAuthentication` policy as the **Simplified (MCP)** example in the **Config file** tab.
+
+1. Create a configuration with an MCP target, but no authentication policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   mcp:
+     port: 3000
+     targets:
+     - name: tools
+       stdio:
+         cmd: npx
+         args: ["@modelcontextprotocol/server-everything"]
+   ```
+2. Start agentgateway with this configuration.
+3. Open [http://localhost:15000/ui/mcp/policies](http://localhost:15000/ui/mcp/policies) (**MCP** > **Policies**), and click the **MCP authentication** tile.
+4. In the **Enforcement** section, keep **Strict** for the **Validation mode**.
+5. In the **Signing keys** section, select **Remote URL** for the **JWKS source**. Then, enter `http://localhost:7080/realms/mcp/protocol/openid-connect/certs` for the **JWKS URL**.
+6. In the **Token validation** section, enter `http://localhost:7080/realms/mcp` for the **Issuer**. In **Audiences**, enter `http://localhost:3000/mcp`, and click **Add**.
+
+   {{< reuse-image src="img/ui-mcp-policy-authn-keycloak.png" srcDark="img/ui-mcp-policy-authn-keycloak-dark.png" alt="MCP authentication drawer with the Keycloak JWKS URL, issuer, and audience" >}}
+
+7. In the **Protected resource metadata** section, enter the following YAML in **Resource metadata YAML**.
+   ```yaml
+   resource: http://localhost:3000/mcp
+   scopesSupported:
+   - read:all
+   bearerMethodsSupported:
+   - header
+   - body
+   - query
+   resourceDocumentation: http://localhost:3000/stdio/docs
+   resourcePolicyUri: http://localhost:3000/stdio/policies
+   ```
+
+   {{< reuse-image src="img/ui-mcp-policy-authn-keycloak-metadata.png" srcDark="img/ui-mcp-policy-authn-keycloak-metadata-dark.png" alt="MCP authentication drawer scrolled to the resource metadata YAML for the Keycloak setup" >}}
+
+8. The form has no field for `provider`. Click the **Raw** icon (`<>`) in the drawer header, and add the following lines at the end of the YAML.
+   ```yaml
+   provider:
+     keycloak: {}
+   ```
+9. Click **Save policy**.
+
+The authorization server must be running when you save, because agentgateway fetches the JWKS when it loads the policy. If the JWKS URL is unreachable, the save fails with a `failed to load JWKS` error.
+
+The **Routing-based** example uses an inline `mcp` backend, which the UI edits only as raw YAML. For that example, use the **Config file** tab.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
@@ -147,6 +199,8 @@ routes:
         resourcePolicyUri: http://localhost:3000/stdio/policies
 ```
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 | Setting | Description |
@@ -252,6 +306,49 @@ agentgateway -f proxy-routing.yaml --validate-only
 Agentgateway acts solely as a resource server, validating tokens issued by an external authorization server.
 
 {{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `mcpAuthentication` policy as the **Simplified (MCP)** example in the **Config file** tab.
+
+1. Create a configuration with an MCP target, but no authentication policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   mcp:
+     port: 3000
+     targets:
+     - name: tools
+       stdio:
+         cmd: npx
+         args: ["@modelcontextprotocol/server-everything"]
+   ```
+2. Start agentgateway with this configuration.
+3. Open [http://localhost:15000/ui/mcp/policies](http://localhost:15000/ui/mcp/policies) (**MCP** > **Policies**), and click the **MCP authentication** tile.
+4. In the **Enforcement** section, keep **Strict** for the **Validation mode**.
+5. In the **Signing keys** section, select **Remote URL** for the **JWKS source**. Then, enter `http://localhost:9000/.well-known/jwks.json` for the **JWKS URL**.
+6. In the **Token validation** section, enter `http://localhost:9000` for the **Issuer**. In **Audiences**, enter `http://localhost:3000/mcp`, and click **Add**.
+
+   {{< reuse-image src="img/ui-mcp-policy-authn-resource-server.png" srcDark="img/ui-mcp-policy-authn-resource-server-dark.png" alt="MCP authentication drawer with the localhost:9000 JWKS URL, issuer, and audience" >}}
+
+7. In the **Protected resource metadata** section, enter the following YAML in **Resource metadata YAML**.
+   ```yaml
+   resource: http://localhost:3000/mcp
+   scopesSupported:
+   - read:all
+   bearerMethodsSupported:
+   - header
+   - body
+   - query
+   ```
+
+   {{< reuse-image src="img/ui-mcp-policy-authn-resource-server-metadata.png" srcDark="img/ui-mcp-policy-authn-resource-server-metadata-dark.png" alt="MCP authentication drawer scrolled to the resource metadata YAML for the resource server setup" >}}
+
+8. Click **Save policy**.
+
+The authorization server must be running when you save, because agentgateway fetches the JWKS when it loads the policy. If the JWKS URL is unreachable, the save fails with a `failed to load JWKS` error.
+
+The **Routing-based** example uses an inline `mcp` backend, which the UI edits only as raw YAML. For that example, use the **Config file** tab.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -313,6 +410,8 @@ routes:
         - query
 ```
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 {{< doc-test paths="mcp-authn" >}}

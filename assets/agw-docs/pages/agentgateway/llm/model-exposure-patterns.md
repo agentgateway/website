@@ -21,22 +21,31 @@ For API details, see [About models]({{< link-hextra path="/documentation/llm/mod
 Match names with a provider prefix, such as `openai/gpt-5-mini`, and strip the prefix before forwarding the request. One entry exposes all of the provider's models, including new releases.
 
 {{% conditional-text include-if="standalone" %}}
-```yaml
-llm:
-  models:
-  - name: "openai/*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-    transformation:
-      model: llmRequest.model.stripPrefix("openai/")
-  - name: "anthropic/*"
-    provider: anthropic
-    params:
-      apiKey: "$ANTHROPIC_API_KEY"
-    transformation:
-      model: llmRequest.model.stripPrefix("anthropic/")
-```
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Models** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+2. From the **Provider** dropdown, select **OpenAI**. The UI fills in `openai/*` for the **Incoming model match**.
+3. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`. The variable must be set in the environment that agentgateway runs in, or the save fails.
+4. For the **Outgoing model**, make sure that **Strip openai/** is selected. This option writes the `stripPrefix("openai/")` transformation.
+
+   {{< reuse-image src="img/ui-llm-model-prefixed.png" srcDark="img/ui-llm-model-prefixed-dark.png" alt="Add model drawer with the OpenAI provider, the default openai/* match, the OPENAI_API_KEY environment variable, and Strip openai/ as the outgoing model" >}}
+
+5. Click **Save model**.
+6. Repeat the previous steps with the **Anthropic** provider and the `ANTHROPIC_API_KEY` environment variable. The UI fills in `anthropic/*` and selects **Strip anthropic/**.
+
+The UI writes the providers as `openai` and `anthropic`. Agentgateway accepts both spellings.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/llm/model-patterns/provider-prefix-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/standalone/llm/model-patterns/provider-prefix-config.md" >}}
+{{% /version %}}
 {{% /conditional-text %}}
 {{% conditional-text include-if="kubernetes" %}}
 ```yaml
@@ -75,18 +84,28 @@ To restrict access, list [exact model names](#exact-model-name){{% conditional-t
 Match a single model name and forward it unchanged. Add an entry for each model you allow clients to use.
 
 {{% conditional-text include-if="standalone" %}}
-```yaml
-llm:
-  models:
-  - name: gpt-5.6-luna
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-  - name: claude-sonnet-4-5
-    provider: anthropic
-    params:
-      apiKey: "$ANTHROPIC_API_KEY"
-```
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Models**, and click **Add model**.
+2. From the **Provider** dropdown, select **OpenAI**.
+3. Replace the **Incoming model match** with `gpt-5.6-luna`.
+4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
+5. For the **Outgoing model**, make sure that **Incoming model** is selected.
+
+   {{< reuse-image src="img/ui-llm-model-exact.png" srcDark="img/ui-llm-model-exact-dark.png" alt="Add model drawer with the OpenAI provider, the gpt-5.6-luna match, the OPENAI_API_KEY environment variable, and Incoming model as the outgoing model" >}}
+
+6. Click **Save model**.
+7. Repeat the previous steps with the **Anthropic** provider, the `claude-sonnet-4-5` match, and the `ANTHROPIC_API_KEY` environment variable.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/llm/model-patterns/exact-model-name-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/standalone/llm/model-patterns/exact-model-name-config.md" >}}
+{{% /version %}}
 {{% /conditional-text %}}
 {{% conditional-text include-if="kubernetes" %}}
 ```yaml
@@ -122,18 +141,25 @@ This pattern has the following limits.
 - A prefix matches only the names that start with it. For example, `gpt-*` does not match the OpenAI models `o3` or `text-embedding-3-small`.
 
 {{% conditional-text include-if="standalone" %}}
-```yaml
-llm:
-  models:
-  - name: "gpt-*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-  - name: "claude-*"
-    provider: anthropic
-    params:
-      apiKey: "$ANTHROPIC_API_KEY"
-```
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Models**, and click **Add model**.
+2. From the **Provider** dropdown, select **OpenAI**.
+3. Replace the **Incoming model match** with `gpt-*`.
+4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
+5. For the **Outgoing model**, select **Incoming model**.
+6. Click **Save model**.
+7. Repeat the previous steps with the **Anthropic** provider, the `claude-*` match, and the `ANTHROPIC_API_KEY` environment variable.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/llm/model-patterns/prefix-without-provider-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/standalone/llm/model-patterns/prefix-without-provider-config.md" >}}
+{{% /version %}}
 {{% /conditional-text %}}
 {{% conditional-text include-if="kubernetes" %}}
 ```yaml
@@ -164,14 +190,27 @@ Match any model name with `*` and forward it unchanged. Use this pattern to expo
 
 {{% conditional-text include-if="standalone" %}}The `*` pattern has the lowest priority, so it can serve as a fallback for unmatched names. See [Combine patterns](#combine-patterns).
 
-```yaml
-llm:
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-```
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Models**, and click **Add model**.
+2. From the **Provider** dropdown, select **OpenAI**.
+3. Replace the **Incoming model match** with `*`.
+4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
+5. For the **Outgoing model**, make sure that **Incoming model** is selected.
+
+   {{< reuse-image src="img/ui-llm-model-passthrough.png" srcDark="img/ui-llm-model-passthrough-dark.png" alt="Add model drawer with the OpenAI provider, the * match, the OPENAI_API_KEY environment variable, and Incoming model as the outgoing model" >}}
+
+6. Click **Save model**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/llm/model-patterns/catch-all-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/standalone/llm/model-patterns/catch-all-config.md" >}}
+{{% /version %}}
 {{% /conditional-text %}}
 {{% conditional-text include-if="kubernetes" %}}
 ```yaml
@@ -206,20 +245,28 @@ spec:
 Publish a custom name, such as `fast` or `support-bot`, and map it to a provider model. Change that mapping to switch models without updating clients.
 
 {{% conditional-text include-if="standalone" %}}
-```yaml
-llm:
-  models:
-  - name: fast
-    provider: openAI
-    params:
-      model: gpt-5-mini
-      apiKey: "$OPENAI_API_KEY"
-  - name: support-bot
-    provider: anthropic
-    params:
-      model: claude-haiku-4-5
-      apiKey: "$ANTHROPIC_API_KEY"
-```
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Models**, and click **Add model**.
+2. From the **Provider** dropdown, select **OpenAI**.
+3. Replace the **Incoming model match** with `fast`.
+4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
+5. For the **Outgoing model**, select **Explicit**. In the **Explicit outgoing model** field, enter or select `gpt-5-mini`.
+
+   {{< reuse-image src="img/ui-llm-model-alias.png" srcDark="img/ui-llm-model-alias-dark.png" alt="Add model drawer for the fast model, with the explicit outgoing model gpt-5-mini" >}}
+
+6. Click **Save model**.
+7. Repeat the previous steps for `support-bot`, with the **Anthropic** provider, the `ANTHROPIC_API_KEY` environment variable, and `claude-haiku-4-5` as the explicit outgoing model.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/llm/model-patterns/custom-model-name-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/standalone/llm/model-patterns/custom-model-name-config.md" >}}
+{{% /version %}}
 
 The `params.model` field sets the model that the provider receives.
 {{% /conditional-text %}}
@@ -287,6 +334,8 @@ When patterns overlap, agentgateway selects a match in the following order.
 1. A [virtual model]({{< link-hextra path="/documentation/llm/virtual-models/" >}}) with the exact requested name.
 2. The entry with the most characters other than `*`, regardless of list order. Exact names take priority over matching wildcards, and `openai/*` takes priority over `*`.
 3. The first listed entry if matches have the same number of characters other than `*`. For example, list order breaks the tie between `claude-*` and `*-latest` for `claude-sonnet-latest`.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}The UI adds each new model to the end of the list and cannot reorder models. To set the order for ties, add the models in the UI in the order that you want them listed.{{< /version >}}
 
 Agentgateway skips entries if their `matches` headers do not match or their `authorization` rules deny the request. It returns an error only if no matching entry allows the request.
 

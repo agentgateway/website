@@ -59,6 +59,39 @@ Azure supports two endpoint types:
 - **Azure AI Foundry** (`foundry`): Connect to Azure AI Foundry project endpoints at `{resourceName}-resource.services.ai.azure.com`.
 - **Azure OpenAI** (`openAI`): Connect directly to Azure OpenAI Service deployments at `{resourceName}.openai.azure.com`.
 
+You can add the model in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same models as the **Config file** tab.
+
+1. Optional: To authenticate with an API key, set your API key in the `AZURE_API_KEY` environment variable. The UI checks that the variable exists when you save the model.
+
+   ```sh
+   export AZURE_API_KEY='<your-api-key>'
+   ```
+
+2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
+3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+4. From the **Provider** dropdown, select **Azure**.
+5. In the **Incoming model match** field, replace the default `azure/*` with the model name to match, such as `*` or `gpt-4.1`.
+6. For the **Azure credentials**, select one of the following options.
+   * **Default**: Uses implicit Entra ID authentication.
+   * **Managed**: Uses a managed identity. Optionally, enter the client ID of a user-assigned identity.
+   * **API key**: Select **Env var**, and enter `AZURE_API_KEY`.
+7. Enter the **Azure resource name**, such as `your-resource-name`.
+8. For the **Azure resource type**, select **Foundry** or **OpenAI**. For **Foundry**, also enter the **Azure project name**, such as `your-project-name`.
+9. Optional: Enter an **Azure API version**. Leave the field empty to use the default.
+
+   {{< reuse-image src="img/ui-llm-add-model-azure-foundry.png" srcDark="img/ui-llm-add-model-azure-foundry-dark.png" alt="Add model drawer with Azure selected as the provider, Default as the Azure credentials, your-resource-name as the Azure resource name, Foundry as the Azure resource type, and your-project-name as the Azure project name" >}}
+
+10. Click **Save model**.
+
+The **API key** option saves the key in `params.apiKey`. The **Foundry (API key)** example in the **Config file** tab uses an `auth.key` block instead, which sends the key in the `api-key` header. To write that block, click the **Raw** icon (`<>`) in the drawer header, or use the **Config file** tab.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 {{< tabs >}}
@@ -177,6 +210,8 @@ agentgateway -f config-azure-openai.yaml --validate-only
 | `params.azureApiVersion` | Optional API version override. Defaults to `v1`. For legacy deployments, use a dated version like `2024-04-01-preview`. |
 | `params.model` | The specific Azure model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.apiKey` | The Azure API key for authentication. If unset, implicit Entra ID authentication is used. You can reference environment variables using the `$VAR_NAME` syntax. |
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Advanced configuration
 

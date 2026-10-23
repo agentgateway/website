@@ -20,7 +20,9 @@ import { test, expect, dismissWelcome } from '../fixtures/test';
  *
  * The values below are the ones the guide tells the reader to type. Keep them in sync with
  * llm-ui-providers.md: if a tab changes its model name or env var, change it here too, or
- * the screenshot stops matching the numbered steps printed directly above it.
+ * the screenshot stops matching the numbered steps printed directly above it. The provider
+ * pages (integrations/llm/providers/<provider>.md) keep the default `<provider>/*` match
+ * instead, so they embed the `-prefix` images from ui-tabs-c.spec.ts, not these.
  *
  * Provider list and display names come from ui/src/config.ts (`providerNames` and
  * `providerDisplayName`) in the agentgateway repo, in the order the Provider dropdown
@@ -72,7 +74,8 @@ const PROVIDERS: Provider[] = [
     image: 'ui-llm-add-model-gemini.png',
   },
   {
-    label: 'Vertex AI',
+    // Renamed from "Vertex AI" in the dropdown as of 1.6; the image name is unchanged.
+    label: 'Gemini Enterprise (GCP Vertex)',
     modelMatch: 'gemini-2.5-flash',
     credential: { kind: 'gcpAdc', project: 'my-project', region: 'us-central1' },
     image: 'ui-llm-add-model-vertex.png',
@@ -186,7 +189,8 @@ const PROVIDERS: Provider[] = [
     image: 'ui-llm-add-model-togetherai.png',
   },
   {
-    label: 'xAI',
+    // Renamed from "xAI" in the dropdown as of 1.6; the image name is unchanged.
+    label: 'xAI (Grok)',
     modelMatch: 'grok-4.3',
     credential: { kind: 'envVar', name: 'XAI_API_KEY' },
     image: 'ui-llm-add-model-xai.png',
@@ -219,7 +223,7 @@ async function openAddModel(page: Page): Promise<void> {
  *
  * The option name is matched on a trailing-word boundary rather than exactly, because a
  * provider with no brand icon falls back to a text badge that lands inside the option's
- * accessible name: xAI's row reads "xA xAI", not "xAI". Anchoring the end still keeps
+ * accessible name: xAI's row reads "xA xAI (Grok)", not "xAI (Grok)". Anchoring the end still keeps
  * "OpenAI" from matching "OpenRouter".
  */
 async function selectProvider(page: Page, label: string): Promise<void> {

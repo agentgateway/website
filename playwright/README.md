@@ -165,6 +165,31 @@ When a new agentgateway release ships a changed UI and you need to refresh the d
    baselines + `assets/img/` come from the `playwright-screenshots` workflow's PR (see
    [CI](#ci)) — that's the set that gets merged, so the pixels match CI.
 
+### UI-tab captures (fixture mode, docs 1.7 and later)
+
+The standalone guides pair **UI** and **Config file** tabs. Each UI tab's screenshot comes from a
+`tests/ui-tabs-*.spec.ts` spec that fills in a drawer with the guide's values and never saves.
+These specs need no backends, so they share one launcher, `scripts/serve-fixture-ui.sh`, which
+runs the image with any one fixture named by `FIXTURE` (`CAPTURE_MODE=fixture`).
+
+- Every spec starts with `uiTabsOnly()`, because the UI tabs start in docs 1.7 (`UI_TABS_SINCE`
+  in `fixtures/test.ts`, which must match the content's version gate). On an older
+  `DOC_VERSION`, `playwright.config.ts` starts no UI and every test skips, so a fixture that an
+  older released image cannot load never stalls the nightly.
+- Until 1.7 ships, only `main` captures, so the images exist only as
+  `assets/img/main/<name>.png`. Pages still reference the bare `img/<name>.png`, and the theme
+  resolves the `main` override.
+- At the 1.7 release no spec edit is needed. The release rotates `assets/agw-docs/versions/n-patch.md`,
+  `latest` resolves to 1.7, and the `latest` pass captures too. `sync-docs` then publishes the
+  bare `assets/img/<name>.png` and removes each `img/main/` copy that matches it (`CONVERGED rm`).
+- To add one, put the capture in the batch spec for that area (or add a spec and fixture pair),
+  add its `docs-image-map.json` entry, and add the `test:ui-tabs-<name>` script to the `MODES`
+  list in `scripts/run-all.mjs`. Run several side by side with distinct `UI_HOST_PORT`s, and set
+  `AGW_RUNTIME_DIR` on macOS when the clone is under `~/Documents`.
+- An image whose `main` change is smaller than the sidebar's version label (about 0.1% of the
+  pixels) can set `"syncDiffRatio": 0` in its map entry, so `sync-docs` always publishes main's
+  copy. `ui-add-gateway.png` does this.
+
 ### Adding a backend mode
 
 For a guide whose UI talks to a server, add a self-contained capture mode:
@@ -181,7 +206,7 @@ For a guide whose UI talks to a server, add a self-contained capture mode:
    live third-party server.
 3. **Register the mode** in two places:
    - `playwright.config.ts` → add `<name>: 'serve-<name>-ui.sh'` to the `SCRIPT_FOR` map.
-   - `package.json` → add `"test:<name>": "CAPTURE_MODE=<name> playwright test tests/<name>.spec.ts --project=standalone-light --project=standalone-dark"`, and add it (with a `clean:ui` before it) to both `capture:all` and `update:all`.
+   - `package.json` → add `"test:<name>": "CAPTURE_MODE=<name> playwright test tests/<name>.spec.ts --project=standalone-light --project=standalone-dark"`, and add it to the `MODES` list in `scripts/run-all.mjs`, which both `capture:all` and `update:all` run.
 
 ---
 
@@ -294,6 +319,15 @@ Screenshots are pixel-compared, so captures must be byte-stable across runs:
   column a reader expects to see. `tests/logs.spec.ts` keeps its real timestamps and relies on
   the config's default `maxDiffPixelRatio: 0.01`; measured drift across a deliberate three-hour
   clock shift is 0.0033, so the default already has 3x headroom.
+- **Two Traffic pages have nothing to show in standalone mode.** Traffic > Policies is the
+  read-only xDS dump view, so a standalone gateway gets only a "Readonly policies unavailable"
+  notice. Traffic > Listeners lists legacy `binds` and shows an empty state when the config uses
+  `gateways`, which is what the standalone docs teach. To show route policies, capture the
+  route's edit drawer instead, as `tests/tour.spec.ts` does.
+- **Docker Desktop on macOS may refuse to mount the clone.** A clone under `~/Documents` fails
+  with `mkdir /host_mnt/Users/<you>/Documents: operation not permitted` unless Docker has the
+  macOS Files and Folders permission for that folder. Grant it, or point `AGW_RUNTIME_DIR` at a
+  directory Docker can reach, such as one under `/tmp`.
 - **Do not reach for a looser ratio to make a capture stable.** It hides content changes as
   well as clock drift, and `--update-snapshots` will then *decline to rewrite* a stale baseline
   because the old one still "passes" — which is how a masked baseline survived several
@@ -353,6 +387,8 @@ setup the `reference-docs` workflow uses.
 | `tests/llm-playground.spec.ts` | LLM playground against the mock provider |
 | `tests/llm-add-model.spec.ts` | The Add model drawer filled in for each supported provider, one capture per provider tab in the standalone LLM quickstart. Runs under `CAPTURE_MODE=llm`; the form is client-side, so it never saves and needs no provider key |
 | `tests/logs.spec.ts` | LLM > Logs list and a call's Trajectory + Conversation detail. Runs under `CAPTURE_MODE=costs`; **main only** |
+| `tests/tour.spec.ts` | The UI tour in `setup/ui/launch-ui`: Traffic Gateways and Routes, the route drawer's policies, LLM Models and Policies, MCP Servers and Policies, and Client Setup. Runs under `CAPTURE_MODE=tour` against `fixtures/tour-config.yaml` |
+| `tests/traffic-drawers.spec.ts` | Add gateway and Add route drawers filled in (never saved) for the standalone gateways and routes guides, plus a route's weighted backends for the backends guide. Runs under `CAPTURE_MODE=tour` |
 | `scripts/serve-*.sh` | Per-mode launchers: start backend(s) + UI container, clean up on exit |
 | `scripts/mock-*.mjs` | Deterministic mock backends (openai, mcp-time, petstore) |
 | `scripts/seed-costs-db.mjs` | Seeds the request-log SQLite DB for the `costs` mode: 800 rows for Analytics, plus three conversation rows with payloads for the Logs detail |
@@ -366,8 +402,8 @@ setup the `reference-docs` workflow uses.
 |---|---|
 | `test:standalone` | Capture/verify the no-backend specs (landing, cel, smoke) |
 | `test:welcome` | Capture/verify the first-run welcome wizard (no backend; pristine bootstrap config) |
-| `test:mcp` / `:a2a` / `:llm` / `:virtual` / `:openapi` / `:jwt` | Capture/verify one backend mode (brings up its backend + UI) |
-| `capture:all` | Run every mode in sequence (what CI runs); `clean:ui` between modes |
+| `test:mcp` / `:a2a` / `:llm` / `:virtual` / `:openapi` / `:jwt` / `:tour` | Capture/verify one backend mode (brings up its backend + UI) |
+| `capture:all` | Run every mode in `scripts/run-all.mjs` in sequence, with `clean:ui` between modes. A failed mode doesn't stop the run; the run prints each mode's time and exits 1 at the end if any mode failed |
 | `update:all` | Same as `capture:all` but **regenerates** baselines (`--update-snapshots`) |
 | `update` | Regenerate only the no-backend baselines (quick) |
 | `sync-docs` | Copy baselines into `assets/img/` (`--dry-run` to preview) |
@@ -386,6 +422,7 @@ Append `-- --update-snapshots` to any `test:*` to refresh just that mode's basel
 | `AGENTGATEWAY_BIN` | — | Launch a local binary instead of the docker image |
 | `CAPTURE_MODE` | `''` | Which `serve-*.sh` launcher to run (set by the `test:*` scripts) |
 | `PETSTORE_REAL` | — | `1` runs the real Petstore container instead of the mock |
+| `AGW_RUNTIME_DIR` | `.agw-runtime` | Config dir the launcher mounts into the container. Set it to a path outside the clone when Docker cannot mount the clone (see [Determinism and gotchas](#determinism-and-gotchas)). Only `serve-tour-ui.sh` reads it so far |
 
 ## Known limitations
 

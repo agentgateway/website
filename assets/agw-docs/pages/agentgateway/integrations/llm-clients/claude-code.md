@@ -18,41 +18,59 @@ The primary use case is routing Claude Code to non-Anthropic LLM backends (such 
 
 Route Claude Code to any OpenAI-compatible LLM provider (such as vLLM, Ollama, or local language models). This is the recommended approach for cost-effective and flexible deployment.
 
-1. Create a configuration file with an OpenAI-compatible provider. Use `name: "*"` to accept the model names Claude Code sends. Set `params.model` to replace those names with a model your backend serves.
+### Set up agentgateway {#openai-setup}
 
-   ```yaml {paths="claude-code-openai-validate"}
-   cat > config.yaml << 'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+You can configure agentgateway in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+To create the same configuration in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps.
+
+1. Create a configuration file with an empty `llm` section, and start agentgateway.
+
+   ```sh
+   cat > config.yaml <<'EOF'
    llm:
-     models:
-     - name: "*"
-       provider: openAI
-       params:
-         model: "Qwen/Qwen3-32B"  # The model that your backend serves
-         baseUrl: "http://localhost:8000/v1"  # vLLM or similar OpenAI-compatible endpoint
-         apiKey: "mock-key"  # Not used for local providers, but required by config
+     models: []
    EOF
-   ```
-
-   Replace `Qwen/Qwen3-32B` with your backend's model name. Set `baseUrl` to your provider's OpenAI-compatible endpoint.
-
-   {{< doc-test paths="claude-code-openai-validate" >}}
-   agentgateway -f config.yaml --validate-only
-   {{< /doc-test >}}
-
-2. Start agentgateway.
-
-   ```bash
    agentgateway -f config.yaml
    ```
 
-3. Configure Claude Code to point to your agentgateway instance.
+2. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+3. From the **Provider** dropdown, select **OpenAI**.
+4. In the **Incoming model match** field, replace the default `openai/*` with `*`.
+5. For the **Provider API key**, select **API key**, and enter `mock-key`.
+6. For the **Outgoing model**, select **Explicit**. In the **Explicit outgoing model** field, enter `Qwen/Qwen3-32B`. Replace the model with the model that your backend serves.
+7. The form has no field for `params.baseUrl`. Click the **Raw** icon (`<>`) in the drawer header, and add `baseUrl: "http://localhost:8000/v1"` under `params`. Replace the URL with your OpenAI-compatible provider's endpoint.
+8. Click **Save model**.
+
+The UI writes the provider as `openai` instead of `openAI`. Agentgateway accepts both values. If you prefer a form field for the base URL, select the **Custom** provider instead. That provider has a **Base URL** field, and writes a `custom` provider block instead of `openAI`.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/claude-code-openai-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/claude-code-openai-config.md" >}}
+{{% /version %}}
+
+{{< doc-test paths="claude-code-openai-validate" >}}
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
+
+### Connect Claude Code {#openai-connect}
+
+1. Configure Claude Code to point to your agentgateway instance.
 
    ```bash
    export ANTHROPIC_BASE_URL="http://localhost:4000"
    ```
 
-4. Verify the connection.
+2. Verify the connection.
 
    ```bash
    claude -p "Hello"
@@ -62,6 +80,8 @@ Route Claude Code to any OpenAI-compatible LLM provider (such as vLLM, Ollama, o
 
 Alternatively, route Claude Code directly to Anthropic's API through agentgateway. This is useful if you want to leverage Anthropic's latest models or features directly.
 
+### Get an Anthropic API key {#anthropic-api-key}
+
 1. Get an Anthropic API key from the [Anthropic Console](https://platform.claude.com).
 
 2. Export your Anthropic API key.
@@ -70,38 +90,59 @@ Alternatively, route Claude Code directly to Anthropic's API through agentgatewa
    export ANTHROPIC_API_KEY="sk-ant-your-key-here"
    ```
 
-3. Create a configuration file with the Anthropic provider. The wildcard `*` model name accepts any model. Claude Code sends the model in each request, so you do not need to pin a specific model.
+### Set up agentgateway {#anthropic-setup}
 
-   ```yaml {paths="claude-code-anthropic-validate"}
-   cat > config.yaml << 'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+You can configure agentgateway in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+To create the same configuration in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps in the terminal where you exported the key.
+
+1. Create a configuration file with an empty `llm` section, and start agentgateway. The UI checks that the `ANTHROPIC_API_KEY` environment variable exists when you save the model.
+
+   ```sh
+   cat > config.yaml <<'EOF'
    llm:
-     models:
-     - name: "*"
-       provider: anthropic
-       params:
-         apiKey: "$ANTHROPIC_API_KEY"
+     models: []
    EOF
-   ```
-
-   {{< doc-test paths="claude-code-anthropic-validate" >}}
-   export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-test}"
-   agentgateway -f config.yaml --validate-only
-   {{< /doc-test >}}
-
-4. Start agentgateway.
-
-   ```bash
    agentgateway -f config.yaml
    ```
 
-5. Configure Claude Code.
+2. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+3. From the **Provider** dropdown, select **Anthropic**.
+4. In the **Incoming model match** field, replace the default `anthropic/*` with `*`.
+5. For the **Provider API key**, select **Env var**, and enter `ANTHROPIC_API_KEY`.
+
+   {{< reuse-image src="img/ui-llm-add-model-anthropic-wildcard.png" srcDark="img/ui-llm-add-model-anthropic-wildcard-dark.png" alt="Add model drawer with the Anthropic provider selected, * as the incoming model match, and the provider API key read from the ANTHROPIC_API_KEY environment variable" >}}
+
+6. Click **Save model**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/claude-code-anthropic-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/claude-code-anthropic-config.md" >}}
+{{% /version %}}
+
+{{< doc-test paths="claude-code-anthropic-validate" >}}
+export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-test}"
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
+
+### Connect Claude Code {#anthropic-connect}
+
+1. Configure Claude Code.
 
    ```bash
    export ANTHROPIC_BASE_URL="http://localhost:4000"
    ```
 
-6. Verify the connection.
+2. Verify the connection.
 
    ```bash
    claude -p "Hello"

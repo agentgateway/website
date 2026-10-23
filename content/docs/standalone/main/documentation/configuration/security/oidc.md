@@ -80,6 +80,42 @@ Agentgateway requires the `OIDC_COOKIE_SECRET` environment variable to encrypt s
 export OIDC_COOKIE_SECRET="$(python3 -c 'import os; print(os.urandom(32).hex())')"
 ```
 
+You can configure the `oidc` policy in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `oidc` policy as the **Simplified (LLM)** example in the **Config file** tab.
+
+1. Create a configuration with an LLM model, but no OIDC policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   ```
+2. Start agentgateway with this configuration, in a shell where `OIDC_COOKIE_SECRET` is set. Otherwise, the save fails with an `OIDC_COOKIE_SECRET is required` error.
+3. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **OIDC** tile.
+4. In the **Provider** section, fill out the following fields.
+   1. In the **Issuer** suggestions, click **Keycloak**. The UI fills in `http://localhost:7080/realms/{realm}`. Replace `{realm}` with `agentgateway`.
+   2. Keep **Discovery** for the **Provider metadata**, and keep the default **Discovery override** of **None**.
+5. In the **Client** section, enter the following values.
+   1. **Client ID**: `agentgateway-browser`
+   2. **Client secret**: `agentgateway-secret`
+   3. **Redirect URI**: `http://localhost:3000/oauth/callback`
+6. In the **Scopes** section, click the `profile` and `email` suggestions.
+
+   {{< reuse-image src="img/ui-llm-policy-oidc.png" srcDark="img/ui-llm-policy-oidc-dark.png" alt="OIDC policy drawer scrolled to the client ID, client secret, redirect URI, and the profile and email scopes" >}}
+
+7. Click **Save policy**. The identity provider must be running, because agentgateway fetches the discovery document when it loads the policy. If the issuer is unreachable, the save fails with a `failed to decode oidc discovery response` error.
+
+The UI writes the client secret to the configuration as plain text, the same as the **Config file** tab. You can also add an OIDC policy in the **Route policies** section of a route in **Traffic** > **Routes**. The **MCP** > **Policies** page does not list the OIDC policy, so use the **Config file** tab for the **Simplified (MCP)** example.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
@@ -145,6 +181,8 @@ routes:
       - email
 ```
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 ### Keycloak example

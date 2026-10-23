@@ -16,119 +16,28 @@ A gateway of its own is also the prerequisite for the next two guides, because a
 
 ## Serve the UI on its own gateway
 
-Add a second gateway to your configuration and point the `ui` section at it. The configuration is the same in every installation method, because all three read the same file. What differs is how you deliver the file to the proxy.
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+<span id="change-in-ui"></span>
+
+You can make this change in the UI or in your configuration file.
 
 {{< tabs >}}
-{{% tab name="Binary" %}}
-1. Add a gateway for the UI to your configuration file, and point the `ui` section at it. The following example serves proxy traffic on port `4000` of the `default` gateway and the UI on port `4001` of the `ui-gateway`.
+{{% tab name="UI" %}}
+The UI must be able to save changes, which depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 
-   ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   gateways:
-     default:
-       port: 4000
-     ui-gateway:
-       port: 4001
-   ui:
-     gateways: [ui-gateway]
-   routes:
-   - matches:
-     - path:
-         pathPrefix: /
-     backends:
-     - host: httpbin.org:80
-   ```
+In Docker or Helm, publish port `4001` before you start. The UI cannot publish a port, and the request in step 5 fails without it. For the steps, see the **Docker** or **Helm** tab in the **Config file** tab.
 
-2. Start agentgateway with the updated configuration.
+1. Add a gateway for the UI.
+   1. Open **Traffic** > **Gateways**, and click **Add gateway**.
+   2. Enter `ui-gateway` for the **Name** and `4001` for the **Port**, and click **Save gateway**.
+2. Open the **Settings** > **UI** page, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui).
+3. From the **Public gateway** dropdown, select `ui-gateway`. To serve the UI only on the admin interface, select **None** instead.
 
-   ```sh
-   agentgateway -f config.yaml
-   ```
+   {{< reuse-image src="img/ui-settings-public-gateway.png" srcDark="img/ui-settings-public-gateway-dark.png" alt="Settings UI page with the Public gateway dropdown set to ui-gateway, the Save UI gateway button, and the UI access policy cards" >}}
 
-   Agentgateway logs the UI gateway address.
+4. Click **Save UI gateway**. If the UI is already served on a gateway, confirm the change in the **Change UI gateway?** dialog.
 
-   ```txt
-   INFO app  serving UI at http://localhost:4001/ui
-   ```
-
-3. Confirm that the UI answers on its own port.
-
-   ```sh
-   curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4001/ui
-   ```
-
-   Example output:
-
-   ```txt
-   200
-   ```
-
-4. Confirm that the UI no longer answers on the proxy port. The response code depends on what your route does with the `/ui` path. In this example, the request reaches httpbin, which returns a `404`.
-
-   ```sh
-   curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/ui
-   ```
-
-   Example output:
-
-   ```txt
-   404
-   ```
-{{% /tab %}}
-{{% tab name="Docker" %}}
-The container must publish the new UI port, so this change needs a container restart even though agentgateway reloads the `gateways` and `ui` sections in place.
-
-1. Add a gateway for the UI to the configuration file that you mount, and point the `ui` section at it. The following example serves proxy traffic on port `4000` of the `default` gateway and the UI on port `4001` of the `ui-gateway`.
-
-   ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   gateways:
-     default:
-       port: 4000
-     ui-gateway:
-       port: 4001
-   ui:
-     gateways: [ui-gateway]
-   routes:
-   - matches:
-     - path:
-         pathPrefix: /
-     backends:
-     - host: httpbin.org:80
-   ```
-
-2. Remove the running container.
-
-   ```sh
-   docker rm -f agentgateway
-   ```
-
-3. Start the container again, publishing both the proxy port and the new UI port.
-
-   ```sh
-   docker run -d \
-     --name agentgateway \
-     --user "$(id -u):$(id -g)" \
-     -v "$PWD/config.yaml:/config.yaml" \
-     -p 4000:4000 -p 4001:4001 \
-     {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
-     -f /config.yaml
-   ```
-
-   > [!NOTE]
-   > If you followed the **Mount a directory** option in the [Docker installation]({{< link-hextra path="/documentation/setup/install/docker/" >}}), edit `config.yaml` inside the directory that you mounted, and keep your `-v "$PWD/agentgateway-config:/config"` mount and no `-f` option instead of the file mount in this example.
-
-4. Confirm the UI gateway address in the container logs.
-
-   ```sh
-   docker logs agentgateway | grep "serving UI"
-   ```
-
-   Example output:
-
-   ```txt
-   INFO app  serving UI at http://localhost:4001/ui
-   ```
+   If you opened the UI through the gateway that you changed or removed, the page stops loading. Open the UI on the new gateway or on the admin interface. If you chose **None**, the UI also removes the `ui` section from your configuration, including any `ui.policies`.
 
 5. Confirm that the UI answers on its own port.
 
@@ -142,91 +51,15 @@ The container must publish the new UI port, so this change needs a container res
    200
    ```
 
-6. Confirm that the UI no longer answers on the proxy port, and that the proxy still serves your route. The response code for `/ui` depends on what your route does with that path. In this example, the request reaches httpbin, which returns a `404`.
-
-   ```sh
-   curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/ui
-   curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/get
-   ```
-
-   Example output:
-
-   ```txt
-   404
-   200
-   ```
 {{% /tab %}}
-{{% tab name="Helm" %}}
-1. Add a `ui-gateway` gateway to your Helm values file, and point the `ui` section at it. The following example serves proxy traffic such as httpbin routes on port `4000` of the default gateway and the UI on port `4001` of the `ui-gateway`.
-
-   ```yaml
-   cat <<'EOF' > values.yaml
-   config:
-     gateways:
-       default:
-         port: 4000
-       ui-gateway:
-         port: 4001
-     ui:
-       gateways: [ui-gateway]
-     routes:
-     - matches:
-       - path:
-           pathPrefix: /
-       backends:
-       - host: httpbin.httpbin.svc.cluster.local:8000
-   EOF
-   ```
-
-2. Upgrade the release with your values file.
-
-   {{< reuse "agw-docs/standalone/helm-upgrade-command.md" >}}
-
-3. Confirm that the UI no longer answers on the proxy port.
-
-   1. Port-forward the agentgateway Deployment on port 4000 for proxy traffic.
-
-      ```sh
-      kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-        deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} 4000:4000
-      ```
-
-   2. Send a request to the `/ui` path. Confirm that the request fails, because port `4000` now serves only your routes.
-
-      ```sh
-      curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/ui
-      ```
-
-      Example output:
-
-      ```txt
-      503
-      ```
-
-4. Confirm that the UI answers on its own port.
-
-   1. Port-forward the agentgateway Deployment on port 4001 for UI traffic.
-
-      ```sh
-      kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-        deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} 4001:4001
-      ```
-
-   2. Send a request to the `/ui` path. Confirm that the request returns a `200` success code.
-
-      ```sh
-      curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4001/ui
-      ```
-
-      Example output:
-
-      ```txt
-      200
-      ```
-
-To reach the UI port from outside the cluster instead of through a port-forward, see [Expose the UI]({{< link-hextra path="/documentation/setup/ui/expose-ui/" >}}).
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/setup/ui/gateway-config.md" >}}
 {{% /tab %}}
 {{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/standalone/setup/ui/gateway-config.md" >}}
+{{% /version %}}
 
 {{< doc-test paths="ui-standalone-gateway" >}}
 pkill -f "agentgateway -f" 2>/dev/null || true
@@ -283,18 +116,6 @@ kill $AGW_UI_GW_PID 2>/dev/null || true
 
 > [!NOTE]
 > The UI gateway is an addition, not a replacement. Agentgateway still serves a copy of the UI on the admin interface, which is loopback-only and which you do not need to change. Adding this gateway does not put the admin interface's debugging endpoints on it. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/documentation/setup/ui/#admin-interface" >}}).
-
-{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
-## Change the UI gateway in the UI {#change-in-ui}
-
-You can also change the gateway that serves the UI from the UI itself. The UI must be able to save changes, which depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
-
-1. Open the **Settings** > **UI** page, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui).
-2. From the **Public gateway** dropdown, select the gateway that you want to serve the UI, or **None** to serve the UI only on the admin interface.
-3. Click **Save UI gateway**. If the UI is already served on a gateway, confirm the change in the **Change UI gateway?** dialog.
-
-If you opened the UI through the gateway that you changed or removed, the page stops loading. Open the UI on the new gateway or on the admin interface. If you chose **None**, the UI also removes the `ui` section from your configuration, including any `ui.policies`.
-{{% /version %}}
 
 ## Next steps
 

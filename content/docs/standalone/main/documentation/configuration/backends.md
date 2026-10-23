@@ -21,6 +21,27 @@ export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
 
 ## Static Hosts
 
+You can add static hosts in the UI or in the configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+In the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), static hosts are part of a route. The following steps create the same `api-v2` route as the **Config file** tab. The route sends 80% of requests to `api-v2.example.com:8080` and 20% to `api-v1.example.com:8080`.
+
+1. Open **Traffic** > **Routes**, and click **Add route**. To change an existing route instead, click the **Edit route** icon for the route.
+2. Select the `default` **Gateway**, and enter `api-v2` for the **Name**. The UI requires a route name.
+3. In the **Backends** section, click **Add backend** two times.
+4. Enter `api-v2.example.com:8080` for the **Host** of the first backend, and `80` for its **Weight**.
+5. Enter `api-v1.example.com:8080` for the **Host** of the second backend, and `20` for its **Weight**.
+
+   {{< reuse-image src="img/ui-route-weighted-backends.png" srcDark="img/ui-route-weighted-backends-dark.png" alt="Edit route drawer for the api-v2 route with two host backends weighted 80 and 20" >}}
+
+6. Click **Save route**.
+
+The UI also writes `gateways: default` and a `/` path prefix match on a new route. Both values are the defaults, so the route behaves the same as the route in the **Config file** tab.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 The simplest form of backend is a static hostname or IP address. Static hosts are a routing-based backend, so they are configured in a `routes` entry; the simplified `llm` and `mcp` modes model only LLM providers and MCP targets. For example:
 
 ```yaml
@@ -30,12 +51,15 @@ gateways:
     port: 3000
     protocol: HTTP
 routes:
-- backends:
-  - host: example.com:8080
-    weight: 1
-  - host: 127.0.0.1:80
-    weight: 9
+- name: api-v2
+  backends:
+  - host: api-v2.example.com:8080
+    weight: 80
+  - host: api-v1.example.com:8080
+    weight: 20
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="backends" >}}
 # WHAT THIS TEST VALIDATES:
@@ -50,11 +74,12 @@ gateways:
     port: 3000
     protocol: HTTP
 routes:
-- backends:
-  - host: example.com:8080
-    weight: 1
-  - host: 127.0.0.1:80
-    weight: 9
+- name: api-v2
+  backends:
+  - host: api-v2.example.com:8080
+    weight: 80
+  - host: api-v1.example.com:8080
+    weight: 20
 EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}

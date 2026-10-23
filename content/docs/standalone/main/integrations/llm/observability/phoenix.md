@@ -35,8 +35,47 @@ Access Phoenix at [http://localhost:6006](http://localhost:6006).
 
 Phoenix accepts OpenTelemetry traces natively on port 4317 (gRPC) and port 6006 (HTTP), so agentgateway can export traces directly to Phoenix without an intermediate OpenTelemetry Collector.
 
-Configure agentgateway to send traces directly to Phoenix:
+Configure agentgateway to send traces directly to Phoenix.
 
+You can configure tracing in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+
+1. Create a configuration that routes LLM traffic, and start agentgateway.
+   ```yaml
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   gateways:
+     default:
+       port: 3000
+   routes:
+   - backends:
+     - ai:
+         name: openai
+         provider:
+           openAI:
+             model: gpt-4o-mini
+     policies:
+       backendAuth:
+         key: "$OPENAI_API_KEY"
+   EOF
+   ```
+   ```sh
+   agentgateway -f config.yaml
+   ```
+2. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability), and click the **Tracing** card.
+3. In the **Tracing** drawer, configure the following fields.
+   1. **Host**: Keep `localhost:4317`.
+   2. **Protocol**: Keep **gRPC**. The UI does not write the default `protocol: grpc` value to your configuration.
+   3. **Random sampling**: Enter `true`.
+
+   {{< reuse-image src="img/ui-tracing-enable.png" srcDark="img/ui-tracing-enable-dark.png" alt="Tracing drawer scrolled to the export and sampling settings, with the gRPC protocol, random sampling enabled, and the default localhost:4317 host" >}}
+
+4. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -44,7 +83,6 @@ frontendPolicies:
     host: localhost:4317
     protocol: grpc
     randomSampling: true
-
 gateways:
   default:
     port: 3000
@@ -59,6 +97,8 @@ routes:
     backendAuth:
       key: "$OPENAI_API_KEY"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Docker Compose example
 

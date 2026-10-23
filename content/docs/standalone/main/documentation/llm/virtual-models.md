@@ -82,6 +82,8 @@ Use `llm.models[].visibility` to control whether a model is directly exposed to 
 - `public`: The model can be requested directly by clients and can also be used as a virtual model target.
 - `internal`: The model is intended for internal routing targets and is not exposed as a direct client model.
 
+The model drawer in the UI has no field for `visibility`. To set it in the UI, open the model, click the **Raw** icon (`<>`) in the drawer header, and add the `visibility` field to the YAML. When you edit a model in the form, the UI keeps the `visibility` value that the model already has.
+
 ## Route selection modes
 
 Each virtual model defines its routing strategy under `routing`.
@@ -91,6 +93,50 @@ The routing targets in a virtual model point to concrete `llm.models[]` entries.
 
 Use `routing.weighted.targets` to split traffic between targets with `weight`.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Start agentgateway with the target models. The model drawer has no `visibility` field, so this configuration sets it for you.
+
+   ```sh
+   cat <<'EOF' > config.yaml
+   llm:
+     models:
+     - name: gpt-4o-public
+       visibility: public
+       provider: openAI
+       params:
+         model: gpt-4o
+         apiKey: "$OPENAI_API_KEY"
+     - name: gpt-4o-primary
+       visibility: internal
+       provider: openAI
+       params:
+         model: gpt-4o
+         apiKey: "$OPENAI_API_KEY"
+     - name: gpt-4o-fallback
+       visibility: internal
+       provider: openAI
+       params:
+         model: gpt-4o-mini
+         apiKey: "$OPENAI_API_KEY"
+   EOF
+   agentgateway -f config.yaml
+   ```
+
+2. Open **LLM** > **Models** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add virtual model**.
+3. Enter `smart` for the **Virtual model name**.
+4. For the **Routing strategy**, keep **Weighted**.
+5. In the **Weighted targets** section, configure the targets.
+   1. In the target row that the UI adds, select `gpt-4o-primary` from the **Model** dropdown, and enter `90` for the **Weight**.
+   2. Click **Add target**. In the new target row, select `gpt-4o-fallback` from the **Model** dropdown, and enter `10` for the **Weight**.
+
+   {{< reuse-image src="img/ui-llm-virtual-model-weighted.png" srcDark="img/ui-llm-virtual-model-weighted-dark.png" alt="Add virtual model drawer for the smart virtual model with gpt-4o-primary weighted 90 and gpt-4o-fallback weighted 10" >}}
+
+6. Click **Save virtual model**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   models:
@@ -112,7 +158,6 @@ llm:
     params:
       model: gpt-4o-mini
       apiKey: "$OPENAI_API_KEY"
-
   virtualModels:
   - name: smart
     routing:
@@ -123,6 +168,8 @@ llm:
         - model: gpt-4o-fallback
           weight: 10
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="virtual-models" >}}
 cat <<'EOF' > config-weighted.yaml
@@ -194,6 +241,62 @@ Useful `health` fields:
 
 Failover is driven by eviction of the active set, not by rewriting a single in-flight request to another target. The request that triggers eviction still fails unless you also configure retries so a later attempt can re-select a provider after eviction.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Start agentgateway with the target models and their health policies.
+
+   ```sh
+   cat <<'EOF' > config.yaml
+   llm:
+     models:
+     - name: claude-primary
+       visibility: internal
+       provider: anthropic
+       params:
+         model: claude-sonnet-4-0
+         apiKey: "$ANTHROPIC_API_KEY"
+       health:
+         eviction:
+           consecutiveFailures: 1
+           duration: 60s
+     - name: claude-backup-a
+       visibility: internal
+       provider: anthropic
+       params:
+         model: claude-3-5-haiku-20241022
+         apiKey: "$ANTHROPIC_API_KEY"
+       health:
+         eviction:
+           consecutiveFailures: 1
+           duration: 60s
+     - name: claude-backup-b
+       visibility: internal
+       provider: anthropic
+       params:
+         model: claude-3-5-haiku-20241022
+         apiKey: "$ANTHROPIC_API_KEY"
+       health:
+         eviction:
+           consecutiveFailures: 1
+           duration: 60s
+   EOF
+   agentgateway -f config.yaml
+   ```
+
+   To edit a health policy in the UI instead, open the model, and expand **Advanced** > **Model policies** > **Health**. The section has fields for the **Unhealthy expression**, **Eviction duration**, **Consecutive failures**, **Health threshold**, and **Restore health**.
+
+2. Open **LLM** > **Models**, and click **Add virtual model**.
+3. Enter `resilient` for the **Virtual model name**.
+4. For the **Routing strategy**, select **Failover**.
+5. In the **First attempt** group, select `claude-primary` from the **Model** dropdown. The UI writes this group as `priority: 0`.
+6. Click **Add fallback group**. In the new group, select `claude-backup-a`.
+7. In the same group, click **Add target**, and select `claude-backup-b`. Both targets in this group get `priority: 1`.
+
+   {{< reuse-image src="img/ui-llm-virtual-model-failover.png" srcDark="img/ui-llm-virtual-model-failover-dark.png" alt="Add virtual model drawer for the resilient virtual model with claude-primary as the first attempt and claude-backup-a and claude-backup-b as the fallback group" >}}
+
+8. Click **Save virtual model**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   models:
@@ -227,7 +330,6 @@ llm:
       eviction:
         consecutiveFailures: 1
         duration: 60s
-
   virtualModels:
   - name: resilient
     routing:
@@ -240,6 +342,8 @@ llm:
         - model: claude-backup-b
           priority: 1
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 In this example:
 
@@ -303,6 +407,52 @@ assert_models config-failover.yaml '["resilient"]'
 
 Use `routing.conditional.targets` and `when` expressions to select targets by request context.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Start agentgateway with the target models.
+
+   ```sh
+   cat <<'EOF' > config.yaml
+   llm:
+     models:
+     - name: openai-public
+       visibility: public
+       provider: openAI
+       params:
+         model: gpt-4o-mini
+         apiKey: "$OPENAI_API_KEY"
+     - name: openai-fast
+       visibility: internal
+       provider: openAI
+       params:
+         model: gpt-4o-mini
+         apiKey: "$OPENAI_API_KEY"
+     - name: openai-smart
+       visibility: internal
+       provider: openAI
+       params:
+         model: gpt-4o
+         apiKey: "$OPENAI_API_KEY"
+   EOF
+   agentgateway -f config.yaml
+   ```
+
+2. Open **LLM** > **Models**, and click **Add virtual model**.
+3. Enter `adaptive` for the **Virtual model name**.
+4. For the **Routing strategy**, select **Conditional**. The UI adds a **Rule 1** card and a **Fallback** card, each with a **Condition** and a **Target model**.
+5. In **Rule 1**, replace the **Condition** with `request.headers["x-tier"] == "free"`, and select `openai-fast` as the **Target model**.
+
+   {{< reuse-image src="img/ui-llm-virtual-model-conditional.png" srcDark="img/ui-llm-virtual-model-conditional-dark.png" alt="Add virtual model drawer for the adaptive virtual model with rule 1 that sends x-tier free requests to openai-fast" >}}
+
+6. In the **Fallback** card, enter `request.headers["x-tier"] == "pro"` as the **Condition**, and select `openai-smart` as the **Target model**. With a condition, the card becomes **Rule 2**.
+
+   {{< reuse-image src="img/ui-llm-virtual-model-conditional-rule-2.png" srcDark="img/ui-llm-virtual-model-conditional-rule-2-dark.png" alt="Add virtual model drawer scrolled to rule 2, which sends x-tier pro requests to openai-smart" >}}
+
+7. Click **Save virtual model**.
+
+To send requests that match no condition to a default model, leave the **Condition** of the last card empty. Only the last card can omit a condition.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   models:
@@ -324,7 +474,6 @@ llm:
     params:
       model: gpt-4o
       apiKey: "$OPENAI_API_KEY"
-
   virtualModels:
   - name: adaptive
     routing:
@@ -335,6 +484,8 @@ llm:
         - model: openai-smart
           when: request.headers["x-tier"] == "pro"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="virtual-models" >}}
 cat <<'EOF' > config-conditional.yaml
