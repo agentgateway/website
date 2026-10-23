@@ -103,9 +103,10 @@ API format that the client sent. When the request is converted to another
 format, the client query string is dropped. For details, see
 [Query strings on converted requests]({{< link-hextra path="/documentation/llm/about/#query-strings-on-converted-requests" >}}).
 
-When a provider declares both `Responses` and `Completions`, agentgateway prefers
-Responses for Anthropic messages requests. This order also applies to the built-in
-`openai` provider and to `azure` for models other than Claude. On an
+When a provider declares both `Responses` and `Completions`, agentgateway always
+converts Anthropic messages requests to Responses. The order of the `formats`
+list does not change this, and no setting overrides it. The same rule applies to
+the built-in `openai` provider and to `azure` for models other than Claude. On an
 {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, it also applies to
 `Ollama`, `Groq`, `Huggingface`, and `XAI`.
 
@@ -117,14 +118,6 @@ Use the `openai` provider only for the OpenAI API. For other OpenAI-compatible
 servers, use a custom provider with the formats that the server supports.
 If the server does not support `/v1/responses`, declare `Completions` and omit
 `Responses`.
-
-For providers that support both formats, the
-`AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable provides a
-temporary workaround for Responses conversion bugs. To prefer Chat Completions,
-set this variable to `true` in `spec.env` of the
-{{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
-The variable applies to every provider and is planned for removal in version 1.7.
-For an example, see [Add environment variables]({{< link-hextra path="/documentation/setup/customize/configs/#env-vars" >}}).
 
 ### Converted replies and errors
 
@@ -243,11 +236,10 @@ The following cases do not round-trip.
 
 ### Anthropic messages to the Completions format
 
-Agentgateway converts an Anthropic messages request to Chat Completions when the
-provider declares `Completions` and omits `Responses`. For providers that support
-both formats, you can use the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS=true`
-workaround. The conversion preserves reasoning history and handles the following
-fields.
+Agentgateway converts an Anthropic messages request to Chat Completions only when
+the provider declares `Completions` and omits `Responses`. A provider that
+declares both formats always gets the Responses conversion. The conversion
+preserves reasoning history and handles the following fields.
 
 | Field | What happens |
 |-------|--------------|

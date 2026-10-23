@@ -50,3 +50,64 @@ service in `services`, and the route backend references it as
 {{% github-yaml url="https://agentgateway.dev/examples/llm-standalone-epp/config.yaml" %}}
 
 See the [agentgateway llm-standalone-epp example](https://github.com/agentgateway/agentgateway/blob/main/examples/llm-standalone-epp/README.md).
+
+### Hostname destinations {#hostname-destinations}
+
+The EPP returns the selected endpoint in the `x-gateway-destination-endpoint` header, as `host:port`. The host can be an IP address or a DNS hostname, such as `model-east.example.com:443`. A hostname lets a global EPP steer requests to a front door in another cluster, such as a shared gateway or a cloud load balancer, instead of to a fixed IP address.
+
+The `destinationMode` setting decides which values agentgateway accepts.
+
+| `destinationMode` | IP address | DNS hostname |
+|-------------------|------------|--------------|
+| `validated` (default) | Accepted when the address matches an endpoint of the local service. | Rejected with a `503` error, because a hostname cannot match a local endpoint. The log reports that the destination requires `destinationMode` `passthrough`. |
+| `passthrough` | Accepted and forwarded to directly. | Accepted. Agentgateway resolves the hostname through DNS and forwards the request to it. |
+
+Agentgateway rejects a `unix:` socket path in the header, in both modes, so an EPP cannot point the proxy at a local socket.
+
+The following configuration accepts hostname destinations. The EPP itself is also reached by hostname.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+services:
+- name: my-model
+  namespace: default
+  hostname: my-model
+  vips: []
+  ports:
+    "8000": 8000
+gateways:
+  default:
+    port: 4000
+routes:
+- name: standalone-epp
+  matches:
+  - path:
+      pathPrefix: /v1/chat/completions
+  backends:
+  - service:
+      name: default/my-model
+      port: 8000
+    policies:
+      inferenceRouting:
+        endpointPicker:
+          host: epp.example.internal:9002
+        destinationMode: passthrough
+```
+
+| Setting | Description |
+|---------|-------------|
+| `services` | The synthetic service that the route backend references. The EPP picks the real endpoint, so the service lists no addresses. |
+| `inferenceRouting.endpointPicker.host` | The address of the EPP, as `host:port`. |
+| `inferenceRouting.destinationMode` | Set to `passthrough` to accept hostname destinations from the EPP. The value is lowercase. |
+
+Check the configuration before you start agentgateway.
+
+```sh
+agentgateway --validate-only -f config.yaml
+```
+
+Example output:
+
+```console
+Configuration is valid!
+```
