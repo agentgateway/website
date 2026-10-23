@@ -48,7 +48,7 @@ To set up advanced observability with Grafana, Prometheus, and OpenTelemetry for
 
 3. Look for the `agentgateway_gen_ai_client_token_usage` metric. This histogram includes labels that identify each request:
    - `gen_ai_token_type`: Whether the metric measures `input` or `output` tokens
-   - `gen_ai_operation_name`: The operation type, such as `chat` or `completion`
+   - `gen_ai_operation_name`: The operation type, such as `chat` or {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}`completion`{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}`embeddings`. For all values, see [Operation names]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#operation-names" >}}){{< /version >}}
    - `gen_ai_system`: The LLM provider, such as `openai` or `anthropic`
    - `gen_ai_request_model`: The model used for the request
    - `gen_ai_response_model`: The model that responded (may differ from requested model)

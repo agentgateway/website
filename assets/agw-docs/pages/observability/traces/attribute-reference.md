@@ -65,7 +65,7 @@ These attributes follow the [OTel semantic conventions for generative AI spans](
 
 | Attribute | Description |
 |-----------|-------------|
-| `gen_ai.operation.name` | Operation type (for example, `chat`) |
+| `gen_ai.operation.name` | {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}Operation type (for example, `chat`){{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}Operation type, based on the LLM route type. For the values, see [Operation names](#operation-names).{{< /version >}} |
 | `gen_ai.provider.name` | LLM provider (for example, `openai`) |
 | `gen_ai.request.model` | Requested model |
 | `gen_ai.response.model` | Model that served the response |
@@ -74,6 +74,25 @@ These attributes follow the [OTel semantic conventions for generative AI spans](
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 LLM requests that model routing serves also carry the `agw.ai.original_model` attribute. Model routing serves {{< conditional-text include-if="kubernetes" >}}`{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}the `llm.models` configuration, including virtual models{{< /conditional-text >}}. The attribute records the model name that the client sent, and `gen_ai.request.model` records the model that reaches the provider after routing. Use the two values together to see which target served a request for a virtual model. Access logs carry the same attribute, including for requests that fail routing, such as a request for a model that does not exist.
+{{% /version %}}
+
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
+### Operation names {#operation-names}
+
+The `gen_ai.operation.name` attribute records the type of LLM operation, based on the route type that served the request. Access logs, the `gen_ai_operation_name` metric label, and the request log database use the same values.
+
+| Value | Requests |
+|-------|----------|
+| `chat` | OpenAI Chat Completions, OpenAI Responses, and Anthropic Messages requests |
+| `generate_content` | Gemini `generateContent` and `streamGenerateContent` requests |
+| `embeddings` | OpenAI Embeddings requests |
+| `rerank` | Rerank requests |
+| `realtime` | OpenAI Realtime requests |
+| `decisions` | Decisions and SystemOne requests |
+| `count_tokens` | Anthropic and Gemini token count requests |
+| `unknown` | Requests that agentgateway handles with the Detect route type, which forwards the request without identifying the operation |
+
+Requests that agentgateway handles with the Passthrough route type do not have a `gen_ai.operation.name` attribute.
 {{% /version %}}
 
 ## MCP attributes

@@ -120,6 +120,45 @@ controller:
     minAvailable: 50%
 ```
 
+## Init containers {#extra-init-containers}
+
+Add init containers to the control plane pod with the `controller.extraInitContainers` setting. Init containers run before the controller container starts. An init container that sets `restartPolicy: Always` runs as a [native sidecar container](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/), which starts before the controller and keeps running for the life of the pod. Native sidecar containers require Kubernetes 1.29 or later. This setting changes only the control plane pod, not the gateway proxy pods.
+
+The following example adds a native sidecar container with a shell. Because the controller image has no shell, you can use the sidecar to debug from inside the pod network, such as to reach the [controller admin server]({{< link-hextra path="/documentation/operations/debug/#control-plane" >}}) on `localhost:9095`.
+
+```yaml
+controller:
+  extraInitContainers:
+  - name: debug-shell
+    image: busybox:1.36
+    restartPolicy: Always
+    command: ["sh", "-c", "sleep infinity"]
+```
+
+To check the result before you upgrade, render the controller Deployment with your values file, such as `init-values.yaml`.
+
+```sh
+helm template {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+  --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+  -f init-values.yaml \
+  --show-only templates/deployment.yaml | sed -n '/initContainers:/,/containers:/p'
+```
+
+Example output:
+
+```yaml
+      initContainers:
+        - command:
+          - sh
+          - -c
+          - sleep infinity
+          image: busybox:1.36
+          name: debug-shell
+          restartPolicy: Always
+      containers:
+```
+
 ## Namespace-scoped write permissions {#rbac-gateway-namespaces}
 
 By default, the controller holds cluster-wide write permissions for the objects that it provisions for a Gateway. To restrict those writes to the namespaces that hold your Gateways, set `rbac.gatewayNamespaces` in the controller Helm chart.

@@ -367,6 +367,87 @@ Agentgateway includes pprof endpoints to help you investigate CPU and memory iss
 > [!NOTE]
 > To profile an agentgateway binary that runs on your workstation instead of a proxy pod, use `--local`, such as `agctl proxy profile heap --local`. Note that profiling data is available only when agentgateway runs on Linux. Proxy pods always meet this requirement, but a local macOS or Windows build does not: the CPU profile endpoint is not registered, so `agctl proxy profile cpu` fails with a `404 Not Found` error, and `agctl proxy profile heap` writes a profile that contains no allocation samples.
 
+## Debug the control plane {#control-plane}
+
+The agentgateway controller runs its own admin server on port `9095`. The admin server provides the following endpoints.
+
+| Endpoint | Description |
+| -- | -- |
+| `/` | Lists the endpoints and the current log level of each controller component. |
+| `/debug/pprof/` | Go [pprof](https://pkg.go.dev/net/http/pprof) profiles of the controller, such as goroutine stack dumps and heap profiles. |
+| `/logging` | Get the log level of each controller component, or set it with a `PUT` request. The [`agctl controller log`](#controller-logs) command uses this endpoint. |
+| `/snapshots/krt` | A JSON snapshot of the Kubernetes resources that the controller processed and the resources that it generated from them. The snapshot includes the data of the Secrets that the controller watches. |
+| `/version` | The controller version and build details. |
+
+1. Port-forward the controller deployment.
+
+   ```sh
+   kubectl port-forward deploy/agentgateway -n agentgateway-system 9095
+   ```
+
+   Example output:
+
+   ```
+   Forwarding from 127.0.0.1:9095 -> 9095
+   Forwarding from [::1]:9095 -> 9095
+   ```
+
+2. In your browser, open the admin server at [http://localhost:9095/](http://localhost:9095/), and select an endpoint.
+
+### Expose the admin server on the pod network {#admin-bind-address}
+
+By default, the controller admin server listens on `localhost` inside the controller pod, so you can reach it only through a port-forward. To reach it from other pods in the cluster, such as a debugging tool, set the `AGW_UNSAFE_ADMIN_BIND_ADDRESS` environment variable on the controller.
+
+The value is an IP address, such as `0.0.0.0` for all IPv4 addresses or `::` for all IPv6 addresses, or `localhost`, which is the default. Do not include a port. The admin server always uses port `9095`. If the value is not an IP address or `localhost`, the controller does not start. The controller Service does not expose port `9095`, so clients connect to the pod IP address.
+
+> [!WARNING]
+> The admin server has no authentication. When it listens on an address other than `localhost`, any client that can reach the controller pod on port `9095` can read Secret data from the `/snapshots/krt` endpoint and change the controller log levels. Use this setting only to debug non-production environments, and restrict access to the port, such as with a NetworkPolicy.
+
+1. Create a Helm values file that sets the environment variable through `controller.extraEnv`.
+
+   ```sh
+   cat > admin-bind-values.yaml <<'EOF'
+   controller:
+     extraEnv:
+       AGW_UNSAFE_ADMIN_BIND_ADDRESS: "0.0.0.0"
+   EOF
+   ```
+
+2. Optional: Render the controller Deployment to check the environment variable.
+
+   ```sh
+   helm template {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -f admin-bind-values.yaml \
+     --show-only templates/deployment.yaml | grep -A1 AGW_UNSAFE_ADMIN_BIND_ADDRESS
+   ```
+
+   Example output:
+
+   ```
+               - name: AGW_UNSAFE_ADMIN_BIND_ADDRESS
+                 value: "0.0.0.0"
+   ```
+
+3. Upgrade the controller Helm release with the values file. The controller pod restarts.
+
+   ```sh
+   helm upgrade -i {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --reuse-values \
+     -f admin-bind-values.yaml
+   ```
+
+   Example output:
+
+   ```
+   Release "agentgateway" has been upgraded. Happy Helming!
+   ```
+
+To return to the default, upgrade the release again with `--reuse-values --set controller.extraEnv.AGW_UNSAFE_ADMIN_BIND_ADDRESS=localhost`.
+
 ## Collect a bug report {#bug-report}
 
 When you open an issue or ask for help, attach a snapshot of your setup. The `agctl bug-report` command collects the agentgateway resources, logs, and metrics from your cluster into a single `.tar.gz` archive, so you do not have to gather them one by one.

@@ -55,9 +55,25 @@ Each access log record captures the following data.
 | **Timing** | Request start and end timestamps, duration in milliseconds |
 | **HTTP** | Response status code, error message if any |
 | **Generative AI** | Operation name, provider (for example `openai`), request model, response model, input/output/total token counts, and realized USD cost if a model cost catalog is configured |
+| **Token details** | Input tokens read from and written to the prompt cache, and reasoning tokens. For more information, see [Token and latency columns](#token-latency-columns). |
+| **Latency** | Time to first token and time per output token for streamed responses |
 | **Identity** | User and group derived from API key metadata or a JWT claim, client user agent |
 | **Trace context** | OpenTelemetry trace ID and span ID, if tracing is enabled |
 | **Attributes** | All custom log attributes as a JSON blob |
+
+### Token and latency columns {#token-latency-columns}
+
+Besides the token totals, the `request_logs` table has the following columns for token details and latency. A token column is empty when the provider does not report the value. The latency columns are empty for responses that are not streamed.
+
+| Column | Description | Log attribute |
+|--------|-------------|---------------|
+| `cache_read_input_tokens` | Input tokens that the provider read from its prompt cache. | `gen_ai.usage.cache_read.input_tokens` |
+| `cache_creation_input_tokens` | Input tokens that the provider wrote to its prompt cache. | `gen_ai.usage.cache_creation.input_tokens` |
+| `reasoning_tokens` | Output tokens that the model used for reasoning. | `gen_ai.usage.reasoning_tokens` |
+| `time_to_first_token_ms` | Time to generate the first token of the response, in milliseconds. | `agw.ai.time_to_first_token` |
+| `time_per_output_token_ms` | Average time to generate each output token, in milliseconds. | `agw.ai.time_per_output_token` |
+
+The `agctl standalone analytics` command uses these columns to report the cache hit rate, the average time to first token, and the output tokens per second.
 
 When a request prompt guard rejects an LLM request before the provider call, the database still stores a log record. The **Logs** page shows the rejection. The record includes request-side LLM metadata, but no provider response fields because the request never reaches the LLM provider.
 
@@ -86,6 +102,55 @@ frontendPolicies:
 ```
 {{% /tab %}}
 {{< /tabs >}}
+
+## Schema migrations {#schema-migrations}
+
+At startup, agentgateway updates the request log schema in the database that stores request logs, which is `config.logging.database` or, if that field is not set, `config.database`. Agentgateway records each applied schema change in the `_agentgateway_request_log_migrations` table, so each change runs only once.
+
+When you upgrade from an earlier version, such as 1.6, startup adds the [token and latency columns](#token-latency-columns) to the existing `request_logs` table. Then, it fills the new columns for existing LLM request rows from the `attributes_json` column, so analytics include requests that were logged before the upgrade. On a large table, this backfill can make the first startup after the upgrade take longer.
+
+To check which schema changes are applied to a SQLite database, query the migrations table.
+
+```sh
+sqlite3 /path/to/logs.db \
+  "SELECT version, description, success FROM _agentgateway_request_log_migrations;"
+```
+
+Example output:
+
+```
+1|create request log schema|1
+2|add request log analytics columns|1
+```
+
+On PostgreSQL, the migrations table also lists version `3`, `backfill request log analytics columns`.
+
+### Downgrade to an earlier version {#downgrade}
+
+Before you upgrade, back up the database that stores request logs. After the upgrade migrates the database, downgrading behaves differently for each backend.
+
+* **SQLite**: An earlier version starts and keeps writing request logs to the migrated database. It ignores the new columns, so the rows that it writes have no values in those columns. If you upgrade again, the migration does not run again, and those rows stay empty in the new columns.
+* **PostgreSQL**: An earlier version fails to start, because the migrations table lists schema changes that it does not know. The error is similar to the following.
+
+  ```
+  Error: failed to migrate request log database schema
+      migration 2 was previously applied but is missing in the resolved migrations
+  ```
+
+  To start the earlier version on the migrated database, delete the records of the newer schema changes. The new columns stay in the table, and the earlier version ignores them.
+
+  ```sh
+  psql "postgres://user:password@host:5432/dbname" \
+    -c "DELETE FROM _agentgateway_request_log_migrations WHERE version IN (2, 3);"
+  ```
+
+  Example output:
+
+  ```
+  DELETE 2
+  ```
+
+  When you upgrade again, the migrations run again and fill the new columns for the rows that the earlier version wrote.
 
 ## Query the database
 
