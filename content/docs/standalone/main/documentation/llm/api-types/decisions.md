@@ -4,7 +4,7 @@ weight: 34
 description: Route OpenAI Decisions and TypeSafe SystemOne requests through agentgateway and track token usage.
 ---
 
-Route OpenAI Decisions API requests through {{< reuse "agw-docs/snippets/agentgateway.md" >}} to get token usage tracking and observability.
+Route OpenAI Decisions and TypeSafe SystemOne API requests through {{< reuse "agw-docs/snippets/agentgateway.md" >}} to get token usage tracking and observability.
 
 ## About
 
@@ -34,7 +34,7 @@ These providers accept Decisions and SystemOne requests. Other providers reject 
 
 If a custom provider declares both formats, each request uses its original format.
 
-### Custom provider requirements {#custom-providers-without-formats}
+### Custom provider requirements {#custom-provider-requirements}
 
 A `custom` provider must declare `decisions` or `systemOne` in `formats`. If `formats` is omitted or contains only other formats, both endpoints return `400`. The error names the request format and provider:
 
@@ -42,9 +42,9 @@ A `custom` provider must declare `decisions` or `systemOne` in `formats`. If `fo
 failed to process LLM request: unsupported conversion: from Decisions to provider custom
 ```
 
-In version 1.6, agentgateway forwarded both paths without conversion. After upgrading, add the format your upstream server supports to `formats` to keep serving these requests.
+Version 1.6 had no Decisions or SystemOne route type. With the `llm` configuration, it passed both paths through to the provider unchanged. After upgrading, add the format your upstream server supports to `formats` to keep serving these requests.
 
-## Route type configuration
+## Map the Decisions route type
 
 With the simplified `llm` configuration, no route setup is needed. Agentgateway maps `/v1/decisions` to `decisions` and `/v1/systemone` to `systemOne`.
 
@@ -58,7 +58,7 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
-For a `custom` provider, declare the upstream format: `decisions` or `systemOne`. Agentgateway appends `/decisions` or `/systemone` to `baseUrl`. This example uses `decisions`.
+For a `custom` provider, declare the upstream format as `decisions` or `systemOne`. Agentgateway appends `/decisions` or `/systemone` to `baseUrl`. This example uses `decisions`.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -74,7 +74,7 @@ llm:
       baseUrl: "https://api.example.com/v1"
 ```
 
-For explicit routing, use the `gateways` and `routes` configuration. Map `/v1/decisions` to `decisions` in `policies.ai.routes`.
+For explicit routing, use the `gateways` and `routes` configuration. Map `/v1/decisions` to `decisions` and `/v1/systemone` to `systemOne` in `policies.ai.routes`.
 
 Without this map, requests default to `completions`. A Decisions request then fails with `failed to parse Completions request`.
 
@@ -93,6 +93,7 @@ routes:
     ai:
       routes:
         "/v1/decisions": "decisions"
+        "/v1/systemone": "systemOne"
         "/v1/chat/completions": "completions"
         "*": "passthrough"
     backendAuth:
@@ -103,13 +104,14 @@ routes:
 
 | Setting | Description |
 |---------|-------------|
-| `policies.ai.routes."/v1/decisions"` | Processes requests on this path as Decisions requests. To accept SystemOne requests, also map `"/v1/systemone": "systemOne"`. |
+| `policies.ai.routes."/v1/decisions"` | Processes requests on this path as Decisions requests. |
+| `policies.ai.routes."/v1/systemone"` | Processes requests on this path as SystemOne requests. The OpenAI provider receives them translated to the Decisions format. |
 | `policies.ai.routes."*"` | Passes requests on all other paths through unchanged. |
 
-> [!NOTE]
+> [!TIP]
 > For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/documentation/llm/about/" >}}).
 
-## Using the API
+## Send a Decisions request
 
 Send a request with an input and a list of questions to the `/v1/decisions` endpoint. Replace `<decisions-model>` with an OpenAI model that supports the Decisions API.
 
@@ -137,7 +139,7 @@ Example output:
 
 To ask the same question in SystemOne, use `state` for the input and a map keyed by name for the questions.
 
-The `noul` question type returns the probability that a statement is true. It corresponds to `predicate` in the Decisions API.
+The SystemOne `noul` question type matches the Decisions `predicate` type. Both return the probability that a statement is true.
 
 ```sh
 curl http://localhost:4000/v1/systemone \

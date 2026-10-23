@@ -40,11 +40,9 @@ export CUSTOM_PROVIDER_API_KEY="${CUSTOM_PROVIDER_API_KEY:-test}"
 With a custom provider, you provide the API endpoint and a list of formats it supports.
 Agentgateway will automatically handle mapping between the incoming format and the supported formats.
 
-The `formats` list controls request conversion. For Messages requests, agentgateway always uses `responses` when the provider declares both `responses` and `completions`.
+The `formats` list controls request conversion. The Responses conversion drops extended-thinking history without an error. To preserve it across turns, declare `completions` and omit `responses`.
 
-The Responses conversion drops extended-thinking history without an error. To preserve it across turns, declare `completions` and omit `responses`.
-
-Declare only the formats that the upstream server supports. For example, include `responses` only if the server supports `/v1/responses`. Include `decisions` only if the server supports `/v1/decisions`. For details about each conversion, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
+Declare only the formats that the upstream server supports. For example, include `responses` only if the server supports `/v1/responses`. Include `decisions` only if the server supports `/v1/decisions`. For the conversion that each `formats` combination uses, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
 
 Use `systemOne` for a TypeSafe SystemOne upstream that serves `/v1/systemone`. With `systemOne`, OpenAI Decisions requests from `/v1/decisions` go to `/v1/systemone` on the upstream. The conversion returns the upstream response in the Decisions format. The conversion also works in the other direction: SystemOne requests from `/v1/systemone` can go to a `decisions` upstream. When a provider declares both formats, agentgateway prefers `systemOne` for SystemOne requests and `decisions` for Decisions requests.
 
