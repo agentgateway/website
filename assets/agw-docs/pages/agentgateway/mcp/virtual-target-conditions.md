@@ -74,7 +74,7 @@ Agentgateway evaluates conditions before contacting targets. Excluded targets re
 
    Example output:
 
-   ```
+   ```console
    mcp-server-everything-3001_echo
    mcp-server-everything-3001_get-annotated-message
    mcp-server-everything-3001_get-env
@@ -108,7 +108,7 @@ Agentgateway evaluates conditions before contacting targets. Excluded targets re
 
    Example output:
 
-   ```
+   ```console
    mcp-server-everything-3001_echo
    mcp-server-everything-3001_get-annotated-message
    mcp-server-everything-3001_get-env
@@ -129,7 +129,7 @@ Agentgateway evaluates conditions before contacting targets. Excluded targets re
 
    Example output:
 
-   ```
+   ```console
    HTTP/1.1 404 Not Found
    content-type: text/plain
    content-length: 17

@@ -131,7 +131,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
    * **OpenAPI schema**: In the `openapi` target of the configuration file, set the schema source. You can provide the schema as a local file path, an inline string, or a remote URL. This example uses a local file path. 
    * **CORS policy**: To use the agentgateway UI playground later, add the following CORS policy to your `config.yaml` file. The config automatically reloads when you save the file.
 
-   ```
+   ```sh
    open config.yaml
    ```
 
@@ -301,7 +301,7 @@ The client receives HTTP `500` with JSON-RPC error code `-32603` (internal error
 
 The agentgateway log identifies the parameter and cause. For example:
 
-```
+```console
 error="mcp: failed to send message: invalid request: path parameter 'petId' is missing"
 ```
 

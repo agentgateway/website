@@ -212,7 +212,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 
 2. Review the configuration file. 
 
-   ```
+   ```sh
    cat config.yaml
    ```
 
@@ -419,57 +419,51 @@ mcp:
 
 For sessions with multiple targets, agentgateway merges their capabilities into one `initialize` result. Tools, prompts, and resources are always enabled.
 
-Each of the followign capabilities is advertised only if at least one session target offers it:
+Each of the following capabilities is advertised only if at least one session target offers it:
 
 - `tools.listChanged`
 - `prompts.listChanged`
 - `resources.listChanged`
 - `resources.subscribe`
 
-With `statefulMode: stateless`, `initialize` omits all four capabilities, even for a single target. Stateless sessions have no notification stream.
+When you set `statefulMode: stateless`, `initialize` omits these capabilities, even for a single target. Stateless sessions have no notification stream.
 
 Clients using `server/discover` get the same merged capabilities, regardless of `statefulMode`. They receive notifications through `subscriptions/listen`.
 
 Agentgateway skips targets that do not support `subscriptions/listen` without failing the stream.
 
-The `everything` target advertises all four capabilities. The `time` target advertises none.
+If no target offers a capability, the result omits it. For example, a backend whose targets offer none of these capabilities returns `"tools": {}`, `"prompts": {}`, and `"resources": {}`.
 
-1. Run the configuration from [Configure the agentgateway](#configure-the-agentgateway). Initialize a session and review the returned capabilities.
+In this guide, the `everything` target advertises all of these capabilities, and the `time` target advertises none.
 
-   ```sh
-   curl -s http://localhost:3000/mcp \
-     -H "Content-Type: application/json" \
-     -H "Accept: application/json, text/event-stream" \
-     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"1.0.0"}}}' \
-     | sed -n 's/^data: //p' | jq '.result.capabilities'
-   ```
+Run the configuration from [Configure the agentgateway](#configure-the-agentgateway). Initialize a session and review the returned capabilities.
 
-   Example output: The capabilities come from the `everything` target.
+```sh
+curl -s http://localhost:3000/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"1.0.0"}}}' \
+  | sed -n 's/^data: //p' | jq '.result.capabilities'
+```
 
-   ```json
-   {
-     "prompts": {
-       "listChanged": true
-     },
-     "resources": {
-       "subscribe": true,
-       "listChanged": true
-     },
-     "tools": {
-       "listChanged": true
-     }
-   }
-   ```
+The capabilities come from the `everything` target.
 
-2. Optional: Compare with `time` and a `fetch` target running `uvx mcp-server-fetch`. Neither advertises notification capabilities:
+Example output:
 
-   ```json
-   {
-     "prompts": {},
-     "resources": {},
-     "tools": {}
-   }
-   ```
+```json
+{
+  "prompts": {
+    "listChanged": true
+  },
+  "resources": {
+    "subscribe": true,
+    "listChanged": true
+  },
+  "tools": {
+    "listChanged": true
+  }
+}
+```
 
 
 ## Next steps
