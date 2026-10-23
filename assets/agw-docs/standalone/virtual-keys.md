@@ -389,28 +389,28 @@ Replace the provider credential on the gateway host. Clients keep their virtual 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
 ### Key owners {#key-owners}
 
-Agentgateway records an owner for each virtual key that an authenticated user creates. This applies to keys created in the UI on a gateway, or with an `agctl` profile that authenticates to that gateway. The owner is the [signed-in user]({{< link-hextra path="/documentation/setup/ui/secure-ui/#signed-in-user" >}}) of the request, and agentgateway stores it in the `agentgateway.dev/owner` metadata field of the key. A key that you create on the admin interface, or in your configuration file, has no owner.
+Agentgateway records an owner for each virtual key that a logged-in user creates. Owners apply to keys that users create in the UI on a gateway{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}, or with an `agctl` profile that authenticates to that gateway{{< /version >}}. The owner is the [logged-in user]({{< link-hextra path="/documentation/setup/ui/secure-ui/#signed-in-user" >}}) of the request. Agentgateway stores the owner in the `agentgateway.dev/owner` metadata field of the key. A key that you create on the admin interface, or in your configuration file, has no owner.
 
-The following example shows the metadata of a key that the user `alice` created.
+The following example shows the metadata of a key that a user created in the UI. The owner is the `sub` claim of the user's OIDC session, which Keycloak sets to a UUID.
 
 ```yaml
 llm:
   policies:
     apiKey:
       keys:
-      - key: vk-alice-1234567890
+      - keyHash: sha256:84d589f2439e4d9ff4438aa840e63ffcbf231a87e7fef929f975d2bde03dc78c
         metadata:
-          name: alice-key
-          agentgateway.dev/id: 7662ff35-bf20-42d8-a700-b918e257f942
-          agentgateway.dev/createdAt: 1792780175
-          agentgateway.dev/owner: alice
+          name: alice
+          agentgateway.dev/id: 584c5773-fec2-4f63-b016-0382e47c8270
+          agentgateway.dev/createdAt: 1792785908
+          agentgateway.dev/owner: 1ed4bac1-9a81-4867-a81f-04cfc58bf0b2
 ```
 
 Keep the following behavior in mind:
 
 * **The owner is a label, not a permission.** Any user who can save changes in the UI can edit or delete any key, including keys that other users own. To limit who can change keys, see [What users can do after they log in]({{< link-hextra path="/documentation/setup/ui/secure-ui/#access-model" >}}).
 * **The owner does not change.** When another user edits the key, agentgateway keeps the original owner.
-* **Request logs and analytics use the owner.** By default, agentgateway records the owner as the `agentgateway.user` of each request that uses the key, even when the key also has `user` or `name` metadata. For example, if an administrator creates a key for `team-a`, analytics attribute the requests of `team-a` to the administrator. Request logs still record the key name in the `agw.api_key.name` attribute. To change which value analytics use as the user, set the `config.standardAttributes.user` field.
+* **Request logs and analytics use the owner.** By default, the owner becomes the `agentgateway.user` of each request that uses the key. The owner takes precedence over the `user` and `name` metadata of the key. For example, if an administrator creates a key for `team-a`, analytics attribute the requests of `team-a` to the administrator. Request logs still record the key name in the `agw.api_key.name` attribute. To change the user value, set the `config.standardAttributes.user` field. For more information, see [Check which user is logged in]({{< link-hextra path="/documentation/setup/ui/secure-ui/#signed-in-user" >}}).
 {{< /version >}}
 
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
@@ -569,7 +569,7 @@ Budget windows are aligned to the Unix epoch, not to the time that you create th
    team-a             2         1       19      $0.000007  -         -      0.0%
    ```
 
-   Agentgateway attributes each request to the `user` or `name` metadata of the key. If the key has an [owner](#key-owners), agentgateway attributes each request to the owner instead. For more groupings, see [CLI analytics]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/#cli" >}}).
+   Agentgateway attributes each request to the [owner](#key-owners) of the key. If the key has no owner, agentgateway uses the `user` or `name` metadata of the key. For more groupings, see [CLI analytics]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/#cli" >}}).
 
 3. List the requests that agentgateway recorded.
 
