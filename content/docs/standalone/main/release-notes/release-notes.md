@@ -72,7 +72,7 @@ A CEL lookup such as `request.headers["x-example"]` now returns a list when the 
 
 Dynamic backends now reject destinations that resolve to loopback, link-local, or unspecified addresses, such as cloud metadata servers. Agentgateway checks the address after DNS resolution and returns `503` for a rejected request.
 
-**Actions to take**: If a dynamic backend must reach a service that is local to the gateway, set `config.backend.allowDynamicLoopback: true`. For more information about dynamic backends, see [Egress proxy]({{< link-hextra path="/documentation/configuration/egress-proxy/" >}}).
+**Actions to take**: If a dynamic backend must reach a service that is local to the gateway, set `config.backend.allowDynamicLoopback: true`. For more information, see [Loopback and link-local destinations]({{< link-hextra path="/documentation/configuration/egress-proxy/#loopback-destinations" >}}).
 
 ### Removed {#v17-removed}
 
