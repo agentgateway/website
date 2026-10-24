@@ -212,7 +212,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 
 2. Review the configuration file. 
 
-   ```
+   ```sh
    cat config.yaml
    ```
 
@@ -369,9 +369,11 @@ mcp:
 
 Configure your MCP client to send `x-include-time: true` on its requests, including initialization, to expose tools such as `time_get_current_time` alongside `everything_echo`. Without that header, or with a different value, only the `everything` target participates.
 
-Keep the following behaviors in mind when you write target conditions:
+Conditions run on every request. Keep these behaviors in mind:
 
-* **Evaluation timing**: In stateful mode (the default), conditions run at session initialization. The selected targets apply to all later requests in that session. Conditions run again if agentgateway rebuilds the session from its session ID, such as on another replica. In stateless mode, conditions run on every request.
+* **Stateful sessions (default)**: Each request must select the same targets as at initialization. A change, such as dropping the `x-include-time` header, returns `404` with `session not found`.
+* **Session recovery**: After a session `404`, the MCP specification requires the client to start a new session. Its requests determine the new target selection.
+* **Stateless sessions**: In stateless mode, each request uses the targets its conditions select.
 * **Stable names**: Tool and prompt names keep their target-name prefix even when only one target remains.
 * **Excluded targets**: Their tools are absent from lists. Calls to those tools fail because the target is not part of the session.
 * **Evaluation errors**: Agentgateway excludes the target if its condition fails to evaluate, such as when it reads a missing JWT claim.
@@ -412,6 +414,56 @@ mcp:
 | `mcp.server.version` | Value to report in `serverInfo.version`. Set this field together with `mcp.server.name`. The configuration is invalid when only one of the two fields is set. |
 | `mcp.server.title` | Optional value to report in `serverInfo.title`. You can set this field without `mcp.server.name` or `mcp.server.version`. |
 | `mcp.server.instructions` | Gateway instructions preamble to report to clients. When upstream targets also return instructions, the merged target instructions start with this value. |
+
+## Capabilities and change notifications {#capabilities}
+
+For sessions with multiple targets, agentgateway merges their capabilities into one `initialize` result. Tools, prompts, and resources are always enabled.
+
+Each of the following capabilities is advertised only if at least one session target offers it:
+
+- `tools.listChanged`
+- `prompts.listChanged`
+- `resources.listChanged`
+- `resources.subscribe`
+
+When you set `statefulMode: stateless`, `initialize` omits these capabilities, even for a single target. Stateless sessions have no notification stream.
+
+Clients using `server/discover` get the same merged capabilities, regardless of `statefulMode`. They receive notifications through `subscriptions/listen`.
+
+Agentgateway skips targets that do not support `subscriptions/listen` without failing the stream.
+
+If no target offers a capability, the result omits it. For example, a backend whose targets offer none of these capabilities returns `"tools": {}`, `"prompts": {}`, and `"resources": {}`.
+
+In this guide, the `everything` target advertises all of these capabilities, and the `time` target advertises none.
+
+Run the configuration from [Configure the agentgateway](#configure-the-agentgateway). Initialize a session and review the returned capabilities.
+
+```sh
+curl -s http://localhost:3000/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"1.0.0"}}}' \
+  | sed -n 's/^data: //p' | jq '.result.capabilities'
+```
+
+The capabilities come from the `everything` target.
+
+Example output:
+
+```json
+{
+  "prompts": {
+    "listChanged": true
+  },
+  "resources": {
+    "subscribe": true,
+    "listChanged": true
+  },
+  "tools": {
+    "listChanged": true
+  }
+}
+```
 
 
 ## Next steps
