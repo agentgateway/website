@@ -131,7 +131,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
    * **OpenAPI schema**: In the `openapi` target of the configuration file, set the schema source. You can provide the schema as a local file path, an inline string, or a remote URL. This example uses a local file path. 
    * **CORS policy**: To use the agentgateway UI playground later, add the following CORS policy to your `config.yaml` file. The config automatically reloads when you save the file.
 
-   ```
+   ```sh
    open config.yaml
    ```
 
@@ -190,11 +190,95 @@ Whether the UI can save depends on your storage mode. For more information, see 
 
 Agentgateway generates one MCP tool for each operation in your OpenAPI spec. Each tool is named after the operation's `operationId` field. For example, an operation with `operationId: addPet` becomes an MCP tool named `addPet`. Make sure each operation in your spec defines a unique `operationId` so that the generated tool names are predictable and do not collide.
 
-## Tool response content
+## Tool response content {#tool-response-content}
 
-For non-5xx OpenAPI responses, the response body and the `Content-Type` header determine the MCP tool result. A JSON object or JSON `null` response produces structured content. Other non-image, non-JSON responses also produce structured content. In that content, `code` contains the HTTP status code, and `message` contains the UTF-8-decoded body.
+Agentgateway converts OpenAPI responses into MCP tool results or errors based on HTTP status. The `Content-Type` header and body determine the result content.
 
-When the `Content-Type` header is an `image/*` media type, the tool result contains an MCP image content block instead. The image block uses the response media type, such as `image/png`, and base64-encoded body bytes.
+| Upstream response | MCP tool result |
+| ----------------- | --------------- |
+| JSON object or JSON `null` | Structured content in `structuredContent`. The `content` list also has a `text` block with the serialized JSON. |
+| Other JSON value, such as an array or a string | Structured content that wraps the value in a `data` field, such as `{"data":["cat","dog"]}`. |
+| Text that is not valid JSON | A `text` block with the body. |
+| Binary body with an `image/*` type | An `image` block with the base64-encoded body and the response media type, such as `image/png`. |
+| Binary body with an `audio/*` type | An `audio` block with the base64-encoded body and the response media type, such as `audio/wav`. |
+| Any other binary body | A `resource` block with the base64-encoded body in `blob`, the response media type, and URI `tool://<tool name>`. |
+| Empty body | A result with an empty `content` list. |
+
+Binary responses without a `Content-Type` header use `application/octet-stream`.
+
+Agentgateway treats a body as text if either condition holds:
+
+* The `Content-Type` is `text/*`, has a `json`, `xml`, or `yaml` subtype or suffix, or is `application/javascript`, `application/x-www-form-urlencoded`, or `application/x-ndjson`.
+* The body is valid UTF-8 and contains no NUL bytes, regardless of `Content-Type`.
+
+For example, `image/svg+xml` is text because of its `xml` suffix. Agentgateway first tries to parse all text bodies as JSON, including those labeled `text/plain`.
+
+### Error responses {#tool-response-errors}
+
+The status code changes the result as follows:
+
+* **`5xx` responses**: The client receives HTTP `500` with JSON-RPC error code `-32603` (internal error) and message `failed to send message`. Agentgateway logs the upstream status and body.
+* **All other responses, including `4xx`**: The client receives a tool result with the content types described above. The result sets `isError` to `false` and omits the HTTP status code.
+
+To help a model recognize a failed call, return an error body that describes the failure.
+
+### Example tool results {#tool-response-examples}
+
+These examples show how upstream responses map to MCP tool results.
+
+* A `200` response with `Content-Type: application/json` and a JSON object body:
+
+  ```json
+  {"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"{\"available\":7,\"pending\":2,\"sold\":1}"}],"structuredContent":{"available":7,"pending":2,"sold":1},"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: application/json` and a JSON array body:
+
+  ```json
+  {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{\"data\":[\"cat\",\"dog\"]}"}],"structuredContent":{"data":["cat","dog"]},"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: text/plain` and the body `OK`:
+
+  ```json
+  {"jsonrpc":"2.0","id":4,"result":{"content":[{"type":"text","text":"OK"}],"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: image/png`:
+
+  ```json
+  {"jsonrpc":"2.0","id":5,"result":{"content":[{"type":"image","data":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAA=","mimeType":"image/png"}],"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: audio/wav`:
+
+  ```json
+  {"jsonrpc":"2.0","id":6,"result":{"content":[{"type":"audio","data":"UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=","mimeType":"audio/wav"}],"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: application/pdf` from the `getReport` tool:
+
+  ```json
+  {"jsonrpc":"2.0","id":7,"result":{"content":[{"type":"resource","resource":{"uri":"tool://getReport","mimeType":"application/pdf","blob":"JVBERi0xLjQKJeLjz9MK"}}],"isError":false}}
+  ```
+
+* A `204` response with an empty body:
+
+  ```json
+  {"jsonrpc":"2.0","id":8,"result":{"content":[],"isError":false}}
+  ```
+
+* A `404` response with `Content-Type: text/plain` and the body `Pet not found`:
+
+  ```json
+  {"jsonrpc":"2.0","id":9,"result":{"content":[{"type":"text","text":"Pet not found"}],"isError":false}}
+  ```
+
+* A `500` response:
+
+  ```json
+  {"jsonrpc":"2.0","id":10,"error":{"code":-32603,"message":"failed to send message"}}
+  ```
 
 ## Path parameters {#path-parameters}
 
@@ -209,10 +293,16 @@ Agentgateway rejects the tool call before it sends any request to the upstream s
 - A path parameter value is neither a string nor a number.
 - A string value contains an empty, `.`, or `..` path segment when split on `/` or `\`.
 
-The client receives an HTTP `500` response with a JSON-RPC error instead of a tool result. The error code is `-32603` (internal error), and the message names the parameter and the reason, such as in the following example for a missing parameter.
+The client receives HTTP `500` with JSON-RPC error code `-32603` (internal error) and message `failed to send message`:
 
 ```json
-{"jsonrpc":"2.0","id":2,"error":{"code":-32603,"message":"failed to send message: invalid request: path parameter 'user_id' is missing"}}
+{"jsonrpc":"2.0","id":2,"error":{"code":-32603,"message":"failed to send message"}}
+```
+
+The agentgateway log identifies the parameter and cause. For example:
+
+```console
+error="mcp: failed to send message: invalid request: path parameter 'petId' is missing"
 ```
 
 ## Other configurations
