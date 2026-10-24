@@ -29,7 +29,7 @@ For a logging example, see [Log the agent session]({{< link-hextra path="/docume
 
 #### Session detection rules {#session-detection}
 
-Agentgateway checks the following headers in order and uses the first valid value.
+Agentgateway checks the following well-known headers in order and uses the first valid value.
 
 1. Any `x-<vendor>-session-id` header, such as Claude Code's `x-claude-code-session-id`. The `<vendor>` part can be any name.
 2. The Codex headers `session-id`, `session_id`, `thread-id`, and `conversation_id`, in that order.
@@ -54,13 +54,15 @@ If no session is detected, `request.agent.session` is unset. Use `default(reques
 
 #### Override session detection {#session-override}
 
-Set `config.standardAttributes.session` to a CEL expression to override detection:
+If the default session detection does not fit your clients, you can override it. Set the `config.standardAttributes.session` field to a CEL expression that returns the session ID for your clients. Agentgateway evaluates the expression for each request and uses the result as follows:
 
-- **Nonempty string**: Use the value as is, without length or character checks.
-- **`null` or an empty string**: Leave the request without an agent session.
-- **Error or another type**: Fall back to the detected session.
+| Expression result | Agent session |
+| -- | -- |
+| A non-empty string | The string, as is. The length and character checks from the detection rules don't apply. |
+| `null` or an empty string | None. The request has no agent session, even if it has a recognized session header. |
+| Any other type, or an error | Agentgateway ignores the expression and uses the default detection from [Session detection rules](#session-detection). The result is the ID from the request headers, or no session if none match. |
 
-This example uses `x-conversation`. Without that header, requests have no agent session, even if another recognized session header is present.
+An expression that reads a missing header fails with an error. To leave requests without that header unset instead of falling back to default session detection, wrap the session lookup in a `default()` function, as shown in the following example. Requests without an `x-conversation` header have no agent session, even if they have another recognized session header.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -71,27 +73,25 @@ config:
 
 ### Repeated request headers {#repeated-headers}
 
-Header lookups return a string for a single value and a list for repeated values. Comparing a list with a string returns `false`. String functions such as `startsWith()` fail on lists.
+A client can send the same header more than once. In CEL, `request.headers["x-a"]` then returns a list of values, not a string. When the header is sent once, it returns a string. Because the type changes depending on what the client sends, an expression that works for one value can behave differently for repeated values:
 
-For example, sending `x-role: guest` twice can bypass the authorization rule `deny: 'request.headers["x-role"] == "guest"'`.
+* Comparing a list to a string with `==` returns `false`.
+* String functions such as `startsWith()` fail with an error.
 
-Results for a request made with `curl -H 'x-a: 1' -H 'x-a: 2'`:
+This behavior can open a security hole. Take a rule that denies requests that include `x-role: guest`, such as the authorization rule `deny: 'request.headers["x-role"] == "guest"'`. If a client sends `x-role: guest` twice, the lookup returns `["guest", "guest"]`. The comparison is false, the deny rule doesn't match, and the request is allowed.
 
-| Expression | Result |
-| -- | -- |
-| `request.headers["x-a"]` | `["1", "2"]` |
-| `request.headers["x-a"] == "1"` | `false` |
-| `request.headers["x-a"].startsWith("1")` | Error |
-| `request.headers.raw()["x-a"][0]` | `"1"` |
-| `request.headers.join()["x-a"]` | `"1,2"` |
+To get a consistent type, read the header through a header view. The following table shows the result of each expression for a request made with `curl -H 'x-a: 1' -H 'x-a: 2'`:
 
-For a consistent result type, use a header view:
+| Expression | Result | Use it to |
+| -- | -- | -- |
+| `request.headers["x-a"]` | `["1", "2"]` | Not recommended. The type depends on how many times the header is sent. |
+| `request.headers["x-a"] == "1"` | `false` | Not recommended. The comparison is false for repeated headers. |
+| `request.headers["x-a"].startsWith("1")` | Error | Not recommended. String functions fail for repeated headers. |
+| `request.headers.raw()["x-a"][0]` | `"1"` | Get the first value. |
+| `request.headers.join()["x-a"]` | `"1,2"` | Get all values as one string. |
+| `request.headers.split()["x-a"]` | `["1", "2"]` | Get all values as a list, with comma-separated values split too. |
 
-* **First value**: `request.headers.raw()["x-a"][0]`. The `raw()` view always returns a list, even for a header that appears once.
-* **All values as one string**: `request.headers.join()["x-a"]` joins the values with commas.
-* **All values as a list**: `request.headers.split()["x-a"]` also splits each value on commas, so `x-a: 1,2` and `x-a: 3` return `["1", "2", "3"]`.
-
-For the full list of header views, see [Header Views](https://github.com/agentgateway/agentgateway/blob/main/schema/cel-functions.md#header-views) in the agentgateway CEL schema.
+The `raw()` view always returns a list, even if the header is sent once, so `[0]` works for single and repeated headers. The `split()` view also splits each value on commas, so `x-a: 1,2` and `x-a: 3` together return `["1", "2", "3"]`. For the full list of header views, see [Header Views](https://github.com/agentgateway/agentgateway/blob/main/schema/cel-functions.md#header-views) in the agentgateway CEL schema.
 
 ## Variables by policy type
 
