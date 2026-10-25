@@ -30,6 +30,8 @@ If agentgateway generates a key during the upgrade, MCP sessions established bef
 
 For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
 
+## 🔥 Breaking changes {#v17-breaking-changes}
+
 ## 🌟 New features {#v17-new-features}
 
 ### MCP {#v17-mcp}
@@ -271,6 +273,10 @@ The `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable is remo
 - **JWT validation**: With several JWT providers, agentgateway tries each provider whose `issuer` and JWKS key ID match the token. Agentgateway also checks the `nbf` (not before) claim to reject tokens that are not yet valid. This check allows 60 seconds of leeway for clock skew. The `audiences` field of the `mcpAuthentication` route policy is now optional. For more information, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn/#jwt-claim-validation" >}}).
 - **Backend authentication**: In the `backendAuth` policy or the `auth` field of an `llm.models` entry, AWS `assumeRole` takes an `externalId`, and Azure authentication takes `scopes`. For more information, see [AWS]({{< link-hextra path="/documentation/configuration/security/backend-authn/providers/aws/#assume-a-role" >}}) and [Azure]({{< link-hextra path="/documentation/configuration/security/backend-authn/providers/azure/#configure-token-scopes" >}}).
 - **Network authorization by destination**: Rules in `frontendPolicies.networkAuthorization` can match on `destination.address`, `destination.port`, and the TLS SNI hostname in `destination.hostname`. For more information, see [Require TLS SNI]({{< link-hextra path="/documentation/configuration/security/network-authz/#require-tls-sni" >}}).
+
+### Error responses hide internal details by default {#v17-error-responses-hide-internal-details-by-default}
+
+Client-facing error responses now use generic messages for backend, policy, guardrail, and upstream failures. Use proxy logs or request traces for the internal cause, or set `AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS=true` only in a trusted debugging environment.
 
 ### MCP {#v16-mcp}
 

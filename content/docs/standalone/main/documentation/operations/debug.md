@@ -115,6 +115,16 @@ The agentgateway process now writes `debug` log lines, such as the following.
 
 You can also set fine-grained levels per module by using the same `RUST_LOG` filter syntax, such as `info,proxy::httpproxy=trace`.
 
+## Debug client-safe error responses {#client-safe-error-responses}
+
+Client-facing error responses hide internal details by default. For example, a backend credential problem might return only `backend authentication failed`, while the process logs keep the exact cause. Use the process logs, access logs, and request traces to debug the internal error.
+
+For local debugging in a trusted environment, start agentgateway with `AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS=true` to send internal error details back to clients. Do not use this setting on a shared or public gateway. Client responses can include backend names, credential lookup failures, and other environment-specific details.
+
+```sh
+AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS=true agentgateway -f config.yaml
+```
+
 ## Capture profiles
 
 Agentgateway includes pprof endpoints to help you investigate CPU and memory issues. Use the `agctl proxy profile` commands to read those endpoints and write the profile to a file.

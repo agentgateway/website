@@ -18,6 +18,10 @@ Review the release notes for agentgateway on Kubernetes.
 
 - **Optional chart-created RBAC**: Set `rbac.create` to `false` in the controller Helm chart to skip the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the chart creates, for clusters that manage role-based access control (RBAC) outside of Helm. For more information, see [Chart-created RBAC resources]({{< link-hextra path="/documentation/install/advanced/#rbac-create" >}}).
 
+### Error responses hide internal details by default {#v17-error-responses-hide-internal-details-by-default}
+
+Client-facing error responses now use generic messages for backend, policy, guardrail, and upstream failures. Use proxy logs or request traces for the internal cause, or set `AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS=true` only in a trusted debugging environment.
+
 ### MCP {#v17-mcp}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3824 -->

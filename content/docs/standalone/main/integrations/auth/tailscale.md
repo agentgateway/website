@@ -168,7 +168,7 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
 
    ```
    HTTP/1.1 403 Forbidden
-   external authorization failed
+   authorization failed
    ```
 
 2. Send a request through your Tailscale IP address. The request passes authentication and reaches the MCP server, which returns a `406 Not Acceptable` response because the request does not include the required `text/event-stream` header.
@@ -204,7 +204,7 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
 <!--
 ## Troubleshooting
 
-**`external authorization failed` for Tailscale IPs**: Check that the Tailscale socket exists and is accessible at the path in your configuration.
+**`authorization failed` for Tailscale IPs**: Check that the Tailscale socket exists and is accessible at the path in your configuration.
 
 ```bash
 # Linux
