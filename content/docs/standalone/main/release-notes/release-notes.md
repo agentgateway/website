@@ -107,24 +107,38 @@ For more information, see [Session key]({{< link-hextra path="/integrations/mcp/
 
 **LLM**
 
+- Count-token responses and normalized request usage now include normalized messages, tool calls, tool results, and tool definitions when agentgateway estimates tokens locally for providers without native count-token support. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3867 -->
+- Detect-mode streamed Anthropic responses now record input and cache token counts from `message_start` events and wait for output tokens before reporting usage. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4067 -->
+- Gateway-level and route-level LLM budgets now both record usage when they match the same completed request. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3888 -->
+- Gemini and Vertex AI tool calls preserve `oneOf` tool-parameter schemas by rewriting them to Gemini-compatible `anyOf` schemas. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3920 -->
+- Model catalog imports keep deprecated models that are still available and include updated model metadata. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4096 -->
 - OpenAI-compatible responses, such as from Gemini, count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
 - Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
 - Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 - Bedrock Runtime requests now send client `tool_choice` settings as Converse `toolChoice`, so forced tool choices can take effect and models that reject them return Bedrock errors.
+- Token-based rate limits now count buffered embeddings, rerank, Decisions, and SystemOne responses against local and remote token budgets. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4029 -->
 
 **MCP**
 
 - Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+- Locally generated refusals for LLM model routing and MCP DNS rebinding include request snapshots, so access logs and CEL response policies can read request, JWT, API key, and metadata attributes. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3996 -->
 - Stateful MCP requests with a session ID that the proxy cannot decode, such as after the session key changes, now return `404` instead of `400`, so clients start a new session.
 - MCP authentication derives JWKS URLs without a double slash when an issuer value ends with `/`.
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 - Stateful Streamable HTTP `DELETE /mcp` requests now resume encoded sessions before closing upstream sessions, so any replica with the same session key can close the upstream sessions.
 - MCP responses now honor the `responseIdleTimeout` response idle timeout, which previously did not apply on MCP routes. A response, including an SSE stream, that sends no data for longer than the timeout is now ended.
+- Substrate actor egress now returns explicit HTTP 403 responses for unsupported WebSocket and CONNECT egress, and access logs can record the original CONNECT destination. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4048 -->
+- Substrate policy and credential calls use the versioned v1 gRPC service names, so agentgateway can talk to updated Substrate servers. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4124 -->
 
 **Operations**
 
 - Standalone configuration reloads now track files that agentgateway reads during parsing, such as `backendTLS.root` certificate files, so later file changes are picked up without a process restart.
 - Metrics requests use the OpenMetrics content type by default, while browser requests use `text/plain` so browsers display metrics instead of downloading them.
+
+**Security**
+
+- Invalid backend TLS SNI names now return a request error instead of panicking the proxy. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4082 -->
+- Standalone external authorization configs that set `includeRequestBody` but omit `maxRequestBytes` now buffer up to 8192 bytes by default. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3940 -->
 
 ## ✨ Highlights {#v16-highlights}
 

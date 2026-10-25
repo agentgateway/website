@@ -82,15 +82,24 @@ Review the release notes for agentgateway on Kubernetes.
 
 **LLM**
 
+- Count-token responses and normalized request usage now include normalized messages, tool calls, tool results, and tool definitions when agentgateway estimates tokens locally for providers without native count-token support. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3867 -->
+- Detect-mode streamed Anthropic responses now record input and cache token counts from `message_start` events and wait for output tokens before reporting usage. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4067 -->
+- Gateway-level and route-level LLM budgets now both record usage when they match the same completed request. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3888 -->
+- Gemini and Vertex AI tool calls preserve `oneOf` tool-parameter schemas by rewriting them to Gemini-compatible `anyOf` schemas. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3920 -->
+- Model catalog imports keep deprecated models that are still available and include updated model metadata. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4096 -->
 - OpenAI-compatible responses, such as from Gemini, count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
 - Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
 - Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 - Bedrock Runtime requests now send client `tool_choice` settings as Converse `toolChoice`, so forced tool choices can take effect and models that reject them return Bedrock errors.
 - AgentgatewayModel routing now chooses a more specific model match, such as `openai/gpt-5.5`, before a wildcard match such as `openai/*`.
+- Token-based rate limits now count buffered embeddings, rerank, Decisions, and SystemOne responses against local and remote token budgets. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4029 -->
 
 **MCP**
 
 - Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+- Locally generated refusals for LLM model routing and MCP DNS rebinding include request snapshots, so access logs and CEL response policies can read request, JWT, API key, and metadata attributes. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3996 -->
+- Substrate actor egress now returns explicit HTTP 403 responses for unsupported WebSocket and CONNECT egress, and access logs can record the original CONNECT destination. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4048 -->
+- Substrate policy and credential calls use the versioned v1 gRPC service names, so agentgateway can talk to updated Substrate servers. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4124 -->
 - The controller creates the session key Secret of each Gateway only when the Secret is missing, and no longer overwrites the key on reconcile, which could invalidate stateful MCP sessions. If the Secret cannot be created, the Gateway reports `Programmed: False` with the reason `DeploymentFailed`.
 - Stateful MCP requests with a session ID that the proxy cannot decode, such as after the session key changes, now return `404` instead of `400`, so clients start a new session.
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
@@ -100,11 +109,13 @@ Review the release notes for agentgateway on Kubernetes.
 **Security**
 
 - Invalid `oauthTokenExchange` or `crossAppAccess` backend authentication no longer blocks the rest of your configuration from reaching the proxy. Only requests that use the invalid block fail, with HTTP `500` and the message `oauthTokenExchange configuration is invalid` or `crossAppAccess configuration is invalid`. The policy reports `Accepted: True` with the reason `PartiallyValid`. For more information, see [Debug your setup]({{< link-hextra path="/documentation/operations/debug/" >}}).
+- Invalid backend TLS SNI names now return a request error instead of panicking the proxy. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4082 -->
 
 **Operations**
 
 - HTTP/1 clients receive `Connection: close` on the next response when a proxy drains or reaches its maximum connection duration.
 - Metrics requests use the OpenMetrics content type by default, while browser requests use `text/plain` so browsers display metrics instead of downloading them.
+- The Kubernetes controller admin server can bind to a configured local interface with `AGW_UNSAFE_ADMIN_BIND_ADDRESS`; the default remains `localhost`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4049 -->
 
 ## ✨ Highlights {#v16-highlights}
 
