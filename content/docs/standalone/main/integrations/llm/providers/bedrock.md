@@ -78,14 +78,14 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 5. Keep the default `bedrock/*` in the **Incoming model match** field.
 6. Keep **Ambient** for the **AWS credentials**. To enter an access key instead, select **Static**. This option writes the key to an `auth.aws` block.
 7. For the **AWS region**, enter or select `us-west-2`.
-8. From the **Bedrock endpoint** dropdown, select **Prefer Runtime**. The UI preselects **Prefer Mantle** for a new Bedrock model, and saves the choice as `params.bedrockEndpointPreference`. For more information, see [Bedrock Mantle](#bedrock-mantle).
+8. From the **Bedrock endpoint** dropdown, keep **Prefer Runtime**, or select a different endpoint preference. **Prefer Runtime** is the default when `params.bedrockEndpointPreference` is not set. For more information, see [Bedrock Mantle](#bedrock-mantle).
 9. For **Outgoing model**, keep **Strip bedrock/**. This option removes the `bedrock/` prefix before the request is forwarded. To send every request to one model instead, select **Explicit**, and enter the model ID. This option sets `params.model`.
 
    {{< reuse-image src="img/ui-llm-add-model-bedrock-runtime.png" srcDark="img/ui-llm-add-model-bedrock-runtime-dark.png" alt="Add model drawer with Amazon Bedrock selected as the provider, bedrock/* as the incoming model match, Ambient as the AWS credentials, us-west-2 as the AWS region, and Prefer Runtime as the Bedrock endpoint" >}}
 
 10. Click **Save model**.
 
-The UI writes `bedrockEndpointPreference: runtimePreferred` in addition to the fields in the **Config file** tab. Runtime is also the default when the field is not set, so both configurations behave the same.
+The UI leaves out `bedrockEndpointPreference` when you keep **Prefer Runtime**, because **Prefer Runtime** is the default. If you choose a different endpoint preference, the UI writes it to `params.bedrockEndpointPreference`.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}

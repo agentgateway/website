@@ -117,7 +117,7 @@ The **Traffic** area holds the HTTP gateways and routes that are not LLM or MCP 
 
   {{< reuse-image src="img/ui-tour-traffic-routes.png" srcDark="img/ui-tour-traffic-routes-dark.png" alt="Traffic Routes page with two HTTP routes, api-v2 and httpbin, that show the gateway, path match, and backends" >}}
 
-* **Route policies**: To change a backend or a policy on a route, click the **Edit route** icon for the route. The **Edit route** drawer shows the backends, a **Route policies** summary such as CORS and rate limits{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}, and the YAML that your change produces{{< /version >}}. Click **View diff** to compare the change with your current configuration before you save.
+* **Route policies**: To change a backend or a policy on a route, click the **Edit route** icon for the route. The **Edit route** drawer shows the backends, a **Route policies** summary such as CORS and rate limits{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}, and the YAML that your change produces{{< /version >}}. Click **View diff** to compare the change with your current configuration before you save.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} To edit fields that the form does not show, click the **Raw** icon (`<>`) in the drawer header and edit the YAML.{{< /version >}}
 
   {{< reuse-image src="img/ui-tour-route-policies.png" srcDark="img/ui-tour-route-policies-dark.png" alt="Edit route drawer with a host backend, a Backend policies row, a Route policies row for CORS and rate limits, and a View diff button" >}}
 
@@ -128,7 +128,7 @@ The **Traffic** area holds the HTTP gateways and routes that are not LLM or MCP 
 
 The **LLM** area configures the models that clients can request and the policies that apply to all LLM traffic.
 
-* **Models**: Lists each model with its provider and the model name that the request uses with that provider. Click the play icon to try a model in the **Chat Playground**.
+* **Models**: Lists each model with its provider and the model name that the request uses with that provider. Click the play icon to try a model in the **Chat Playground**.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} When you add a virtual model, the UI loads the current configuration and selects a model for the first target.{{< /version >}}
 
   {{< reuse-image src="img/ui-tour-llm-models.png" srcDark="img/ui-tour-llm-models-dark.png" alt="LLM Models page with one gpt-4o-mini model from the OpenAI provider and play, edit, and delete icons" >}}
 
@@ -142,7 +142,7 @@ The **LLM** area also has pages for providers, guardrails, virtual API keys, cos
 
 The **MCP** area configures the MCP servers behind the gateway and the policies that apply to MCP traffic.
 
-* **Servers**: Lists each MCP server with its transport, endpoint, and connection state. A server in the **ready** state is connected, and its tools are available in the **Tool Playground**.
+* **Servers**: Lists each MCP server with its transport, endpoint, and connection state. A server in the **ready** state is connected, and its tools are available in the **Tool Playground**.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} For an MCP server that connects directly to a URL, the editor also shows backend policies for that target. An MCP server that references a backend uses the backend's policies instead.{{< /version >}}
 
   {{< reuse-image src="img/ui-tour-mcp-servers.png" srcDark="img/ui-tour-mcp-servers-dark.png" alt="MCP Servers page with one Streamable HTTP server named time in the ready state" >}}
 
@@ -165,6 +165,8 @@ Whether the UI can save the changes that you make depends on your storage mode. 
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 The UI checks a change before it writes the configuration file. If the change is not valid, the save fails with an error and the file does not change.
+
+The UI marks required fields from the configuration schema. If a form cannot show a loaded value, the drawer switches to raw YAML and explains why. The raw YAML editor uses the same schema check as the form. When the UI writes a new value, it leaves out schema defaults that you did not change.
 
 If you edit the file outside the UI and agentgateway rejects the reload, the UI shows a **Configuration reload failed** banner. Agentgateway keeps running the previous valid configuration. The UI and `/api/config/effective` show the file on disk, including the rejected change. To retry the reload, fix the file and save it again.
 {{< /version >}}
