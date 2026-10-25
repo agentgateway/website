@@ -154,6 +154,18 @@ manual: general_settings.master_key: Requires manual review and was not emitted
 unsupported: custom_section: Unrecognized LiteLLM top-level field was not emitted
 ```
 
+### Review LiteLLM fallback findings {#review-litellm-fallback-findings}
+
+The importer maps ordinary LiteLLM `fallbacks` and `default_fallbacks` to priority-based failover targets. When both `router_settings.default_fallbacks` and `litellm_settings.default_fallbacks` are present, the importer applies `router_settings.default_fallbacks`. The importer reports the `litellm_settings` value as `manual`.
+
+| Source field | Import behavior |
+| -- | -- |
+| `router_settings.default_fallbacks` or `litellm_settings.default_fallbacks` | The importer flattens LiteLLM fallback recursion into static priority-ordered failover targets. A default applies at a hop only when that hop has no explicit `fallbacks` entry. |
+| `router_settings.max_fallbacks` | A non-negative integer bounds the flattened failover chain. `0` removes emitted failover targets, including ordinary `fallbacks`. For a non-integer value, the importer uses the LiteLLM default of `5` and reports the value as `manual`. |
+| `router_settings.context_window_fallbacks` and `router_settings.content_policy_fallbacks` | The importer reports these condition-specific fallbacks as `manual` because unconditional priority failover cannot represent them. Configure equivalent behavior manually. |
+
+Review `manual` findings for unknown model names and wildcard models. With LiteLLM, unknown model names can use the first default fallback. In agentgateway, requests for unknown model names return `model_not_found` unless the configuration imports a concrete `"*"` model. Default fallbacks cannot attach to wildcard models because failover requires a virtual model that matches names exactly.
+
 ## Supported LiteLLM mappings
 
 The importer currently handles the following common file-based LiteLLM settings.
@@ -168,7 +180,7 @@ The importer currently handles the following common file-based LiteLLM settings.
 | `litellm_params.organization` | `requestHeaders.set.openai-organization` for OpenAI and OpenAI-compatible models; environment references are preserved |
 | Fixed string values in `litellm_params.extra_headers` | `requestHeaders.set` on the model or reusable provider, with model-level values overriding shared credential values |
 | `rpm` | Relative weights for generated weighted routes when the routing strategy permits it |
-| Ordinary `fallbacks` | Priority-based failover targets |
+| Ordinary `fallbacks`, `default_fallbacks`, and `max_fallbacks` | Priority-based failover targets, with default fallbacks flattened into each route's failover chain |
 | `simple-shuffle` routing | Generated routing with an `approximate` finding because the semantics are not identical |
 | Public wildcard model names | Exact `*`, prefix patterns such as `gpt-*`, and suffix patterns such as `*-preview` |
 

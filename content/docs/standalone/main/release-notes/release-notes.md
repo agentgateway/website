@@ -62,6 +62,7 @@ For more information, see [Session key]({{< link-hextra path="/integrations/mcp/
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3960 -->
 
+- **LiteLLM import maps default fallbacks**: The LiteLLM importer now maps `default_fallbacks` to priority-based failover targets, uses `router_settings.default_fallbacks` before `litellm_settings.default_fallbacks`, and honors `router_settings.max_fallbacks`. Condition-specific fallbacks such as `context_window_fallbacks` and `content_policy_fallbacks` are reported for manual review because they cannot be represented as unconditional failover. For more information, see [Migrate from LiteLLM]({{< link-hextra path="/documentation/configuration/import/#review-litellm-fallback-findings" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/3038 -->
 - **Model catalogs include descriptive model metadata**: Model catalog entries can now include display names, lifecycle status, release dates, token limits, modalities, capabilities, and reasoning controls in addition to pricing fields. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#advanced-catalog-format" >}}).
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3965 -->
