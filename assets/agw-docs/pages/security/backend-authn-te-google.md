@@ -24,7 +24,7 @@ The Google STS uses the standard RFC 8693 grant, so you configure it with the ge
 
 {{< reuse "agw-docs/snippets/prereq.md" >}}
 
-4. Install the [`gcloud` CLI](https://cloud.google.com/sdk/docs/install) and log in to a Google Cloud project where you can create workload identity pools and Cloud Storage buckets, such as with the `roles/iam.workloadIdentityPoolAdmin` and `roles/storage.admin` roles.
+4. Install the [`gcloud` CLI](https://docs.cloud.google.com/sdk/docs/install-sdk) and log in to a Google Cloud project where you can create workload identity pools and Cloud Storage buckets, such as with the `roles/iam.workloadIdentityPoolAdmin` and `roles/storage.admin` roles.
 
 5. Install [`jq`](https://jqlang.org/download/).
 

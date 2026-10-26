@@ -371,6 +371,10 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 {{< reuse "agw-docs/pages/agentgateway/mcp/virtual-target-conditions.md" >}}
 {{< /version >}}
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+{{< reuse "agw-docs/pages/agentgateway/mcp/virtual-capabilities.md" >}}
+{{< /version >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
