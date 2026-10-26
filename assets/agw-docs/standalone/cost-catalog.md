@@ -179,13 +179,13 @@ MODEL_CATALOG_PATHS=./costs/catalog.json,./costs/overrides.json agentgateway -f 
 
 When a request matches an entry in the catalog, agentgateway populates these CEL fields:
 
-- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-token-type components such as `input`, `output`, `cacheRead`, `cacheWrite`, `cacheWriteDetails`, `reasoning`, `inputAudio`, and `outputAudio`. Unset when the model cannot be priced.
+- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-token-type components such as `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, and `outputAudio`. Unset when the model cannot be priced.
 - `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied. Includes the same per-token-type fields when available. Unset when the model cannot be priced.
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 - `llm.model`: The resolved model's catalog metadata, including `id`, `tags`, `limits`, `modalities`, `capabilities`, and `reasoning`. Unset when no catalog entry matches the request provider and model.
 {{< /version >}}
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}Prompt-cache writes with non-default time to live (TTL) values are reported under `llm.cost.cacheWriteDetails`: `llm.cost.cacheWriteDetails.1h` for Anthropic 1-hour writes and `llm.cost.cacheWriteDetails.12h` for OpenAI 12-hour writes. `llm.cost.cacheWrite` reports cache writes that do not use one of those TTLs. When the catalog includes `cacheWriteDetails`, `llm.costRates.cacheWriteDetails.1h` and `llm.costRates.cacheWriteDetails.12h` report the effective rates.{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}`llm.cost.cacheWriteDetails` reports the cost of Anthropic 1-hour and OpenAI 12-hour prompt-cache writes. For more information, see [Cache writes by TTL](#cache-write-details).{{< /version >}}
 
 {{< version exclude-if="1.5.x" >}}For page-billed document models, `llm.cost.pages` reports the page-cost component, and `llm.costRates.perPage` reports the USD-per-page rate that was applied.{{< /version >}}
 
@@ -196,10 +196,6 @@ Traces always include the full breakdown:
 * `agw.ai.usage.cost.output`
 * `agw.ai.usage.cost.cache_read`
 * `agw.ai.usage.cost.cache_write`
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
-* `agw.ai.usage.cost.cache_write_details.1h`
-* `agw.ai.usage.cost.cache_write_details.12h`
-{{< /version >}}
 * `agw.ai.usage.cost.reasoning`
 * `agw.ai.usage.cost.input_audio`
 * `agw.ai.usage.cost.output_audio`
@@ -224,6 +220,58 @@ A priced request produces an access log entry that includes cost data.
 ... protocol=llm gen_ai.provider.name=openai gen_ai.request.model=gpt-4o-mini
 gen_ai.usage.input_tokens=14 gen_ai.usage.output_tokens=6 agw.ai.usage.cost.total=0.0000057 ...
 ```
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+### Cache writes by TTL {#cache-write-details}
+
+Anthropic and OpenAI price prompt-cache writes by how long the cache entry lives, its time to live (TTL). {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} prices two extended TTLs separately from other cache writes: Anthropic 1-hour writes (`1h`) and OpenAI Responses API 12-hour writes (`12h`).
+
+To set the rates, add a `cacheWriteDetails` map to a model's `rates` or to a tier's `rates`. Writes for a TTL that the map omits use the `cacheWrite` rate. The built-in catalog already sets these rates for many Anthropic and OpenAI models.
+
+```json
+{
+  "providers": {
+    "anthropic": {
+      "models": {
+        "claude-opus-5": {
+          "rates": {
+            "input": "5",
+            "output": "25",
+            "cacheRead": "0.5",
+            "cacheWrite": "6.25",
+            "cacheWriteDetails": { "1h": "10" }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+The cost data reports these writes separately from other cache writes.
+
+- `llm.cost.cacheWrite` covers only cache writes without an extended TTL, such as Anthropic 5-minute writes.
+- `llm.cost.cacheWriteDetails` maps each TTL to its cost. The map contains only TTLs with a non-zero cost, so a request without extended-TTL writes has an empty map.
+- `llm.costRates.cacheWriteDetails` maps each TTL to the rate that the catalog sets for it. A TTL that uses the `cacheWrite` rate has no key.
+- Traces add `agw.ai.usage.cost.cache_write_details.1h` and `agw.ai.usage.cost.cache_write_details.12h` only when that cost is non-zero.
+
+The keys start with a digit, so read them with index syntax, such as `llm.cost.cacheWriteDetails['1h']`. A lookup of a missing key fails, and the access log leaves out the field. To log `0` instead, check for the key first.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    add:
+      cache_write_1h: "'1h' in llm.cost.cacheWriteDetails ? llm.cost.cacheWriteDetails['1h'] : 0.0"
+```
+
+The following log entry is for a request that wrote 400,000 tokens to the 5-minute cache and 600,000 tokens to the 1-hour cache. The 1-hour writes cost `$6`, and the 5-minute writes cost `$2.50`.
+
+```console
+... gen_ai.provider.name=anthropic gen_ai.request.model=claude-opus-5
+gen_ai.usage.cache_creation.input_tokens=1000000 agw.ai.usage.cost.total=8.50075 cache_write_1h=6 ...
+```
+{{% /version %}}
 
 {{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
 ### Service tiers {#service-tiers}
