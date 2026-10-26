@@ -87,7 +87,6 @@ Review the release notes for agentgateway on Kubernetes.
 - Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 - Bedrock Runtime requests now send client `tool_choice` settings as Converse `toolChoice`, so forced tool choices can take effect and models that reject them return Bedrock errors.
 - AgentgatewayModel routing now chooses a more specific model match, such as `openai/gpt-5.5`, before a wildcard match such as `openai/*`.
-- Prompt caching is applied consistently for Bedrock Responses and Messages requests, and `backend.ai.promptCaching` also applies to Anthropic providers and Anthropic Claude models on Vertex AI. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3927 -->
 
 **MCP**
 
