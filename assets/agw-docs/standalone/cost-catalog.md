@@ -179,13 +179,13 @@ MODEL_CATALOG_PATHS=./costs/catalog.json,./costs/overrides.json agentgateway -f 
 
 When a request matches an entry in the catalog, agentgateway populates these CEL fields:
 
-- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-token-type components such as `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, and `outputAudio`. Unset when the model cannot be priced.
+- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-token-type components such as `input`, `output`, `cacheRead`, `cacheWrite`, `cacheWriteDetails`, `reasoning`, `inputAudio`, and `outputAudio`. Unset when the model cannot be priced.
 - `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied. Includes the same per-token-type fields when available. Unset when the model cannot be priced.
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 - `llm.model`: The resolved model's catalog metadata, including `id`, `tags`, `limits`, `modalities`, `capabilities`, and `reasoning`. Unset when no catalog entry matches the request provider and model.
 {{< /version >}}
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}For Anthropic prompt-cache writes with a 1-hour time to live (TTL), `llm.cost.cacheWrite1h` reports the 1-hour cache-write cost. `llm.cost.cacheWrite` reports the cost for cache writes that do not use a 1-hour TTL, such as 5-minute cache writes. When the catalog includes `cacheWrite1h`, `llm.costRates.cacheWrite1h` reports the effective rate.{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}Prompt-cache writes with non-default time to live (TTL) values are reported under `llm.cost.cacheWriteDetails`: `llm.cost.cacheWriteDetails.1h` for Anthropic 1-hour writes and `llm.cost.cacheWriteDetails.12h` for OpenAI 12-hour writes. `llm.cost.cacheWrite` reports cache writes that do not use one of those TTLs. When the catalog includes `cacheWriteDetails`, `llm.costRates.cacheWriteDetails.1h` and `llm.costRates.cacheWriteDetails.12h` report the effective rates.{{< /version >}}
 
 {{< version exclude-if="1.5.x" >}}For page-billed document models, `llm.cost.pages` reports the page-cost component, and `llm.costRates.perPage` reports the USD-per-page rate that was applied.{{< /version >}}
 
@@ -196,7 +196,10 @@ Traces always include the full breakdown:
 * `agw.ai.usage.cost.output`
 * `agw.ai.usage.cost.cache_read`
 * `agw.ai.usage.cost.cache_write`
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}* `agw.ai.usage.cost.cache_write_1h`{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+* `agw.ai.usage.cost.cache_write_details.1h`
+* `agw.ai.usage.cost.cache_write_details.12h`
+{{< /version >}}
 * `agw.ai.usage.cost.reasoning`
 * `agw.ai.usage.cost.input_audio`
 * `agw.ai.usage.cost.output_audio`

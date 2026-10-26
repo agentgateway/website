@@ -308,6 +308,8 @@ The preference applies to four route types: chat completions, messages, response
 
 Whether the preference changes the request format that a model accepts depends on the endpoint that it selects. A model that resolves to Runtime accepts the Bedrock Converse format only, and its chat format tags do not apply. A model that resolves to Mantle accepts the formats in its tags, except for `anthropic.claude*` models, which always take the Anthropic Messages format. For more information, see [Chat format tags]({{< link-hextra path="/documentation/llm/cost-controls/costs/#chat-format-tags" >}}).
 
+Set `AGENTGATEWAY_BEDROCK_RUNTIME_CONVERSE=false` on the proxy to test native Runtime APIs for chat requests. In this mode, Runtime uses native OpenAI or Anthropic paths for chat completions, messages, and responses instead of Bedrock Converse. For Responses requests, Bedrock Runtime drops `web_search*` tools before forwarding the request because Runtime cannot execute them.
+
 When a `/v1/messages` or `/v1/messages/count_tokens` request reaches Bedrock Mantle in the Anthropic Messages format, the request keeps the client `anthropic-version` header. If the client sends no version header, the request uses the default `2023-06-01` version.
 
 > [!NOTE]
