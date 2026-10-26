@@ -27,8 +27,8 @@ mcp:
   port: 3000
   policies:
     retry:
-      # total number of attempts allowed.
-      # Note: 1 attempt implies no retries; the initial attempt is included in the count.
+      # Maximum number of retries after the original request.
+      # Note: A value of 3 allows up to 3 retries after the initial attempt.
       attempts: 3
       # Optional; if set, a delay between each additional attempt
       backoff: 500ms
@@ -51,8 +51,8 @@ gateways:
 routes:
 - policies:
     retry:
-      # total number of attempts allowed.
-      # Note: 1 attempt implies no retries; the initial attempt is included in the count.
+      # Maximum number of retries after the original request.
+      # Note: A value of 3 allows up to 3 retries after the initial attempt.
       attempts: 3
       # Optional; if set, a delay between each additional attempt
       backoff: 500ms
@@ -80,8 +80,8 @@ gateways:
 routes:
 - policies:
     retry:
-      # total number of attempts allowed.
-      # Note: 1 attempt implies no retries; the initial attempt is included in the count.
+      # Maximum number of retries after the original request.
+      # Note: A value of 3 allows up to 3 retries after the initial attempt.
       attempts: 3
       # Optional; if set, a delay between each additional attempt
       backoff: 500ms
@@ -99,8 +99,8 @@ mcp:
   port: 3000
   policies:
     retry:
-      # total number of attempts allowed.
-      # Note: 1 attempt implies no retries; the initial attempt is included in the count.
+      # Maximum number of retries after the original request.
+      # Note: A value of 3 allows up to 3 retries after the initial attempt.
       attempts: 3
       # Optional; if set, a delay between each additional attempt
       backoff: 500ms
