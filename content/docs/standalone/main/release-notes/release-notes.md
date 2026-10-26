@@ -104,6 +104,7 @@ For more information, see [Session key]({{< link-hextra path="/integrations/mcp/
 **Traffic management**
 
 - Local gRPC policy call failures, such as DNS errors, unavailable endpoints, refused connections, and timeouts, are reported with the mapped gRPC status instead of `UNKNOWN`.
+- Standalone configuration validation rejects invalid header modifiers, conflicting direct response body fields, invalid redirect or rewrite paths, and request mirror percentages outside `0.0` to `1.0`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4097 -->
 
 **LLM**
 

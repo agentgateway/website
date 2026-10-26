@@ -58,6 +58,8 @@ routes:
 {{< /tab >}}
 {{< /tabs >}}
 
+Set either `body` or `bodyExpression`, not both. Standalone configuration validation rejects direct response policies that set both fields.
+
 {{< doc-test paths="direct-response" >}}
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
