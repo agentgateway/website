@@ -491,7 +491,7 @@ The expression can read anything in the request context. Common keys are the `jw
 
 Review the following behavior before you set a key.
 
-* **Where the key is evaluated**: A `requests` rule is checked before the LLM request body is parsed, so its key cannot read `llm` fields. A `tokens` rule is charged after the body is parsed, so its key can also read fields such as `llm.requestModel`. For the variables that each policy can read, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
+* **What the key can read**: For LLM requests, both `requests` and `tokens` keys can read `llm.requestModel` and `llmRequest` (the parsed request body). To count requests per model, use `llm.requestModel` as the key. See [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
 * **Requests without a value**: Requests whose key is empty, or whose expression cannot be evaluated, share a single bucket. An empty key does not exempt a request from the limit. To apply a limit to only some requests, use [conditional policies]({{< link-hextra path="/documentation/configuration/policies/conditional-policies/" >}}) instead.
 * **How many buckets are kept, and where they live**: {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For a quota that is shared across instances, use [remote rate limits](#remote).
 
