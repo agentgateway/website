@@ -98,7 +98,7 @@ Turn on API key authentication, and create two virtual keys, one for Alice and o
    {{< reuse-image-light src="img/ui-virtual-keys-list.png" alt="UI Virtual API Keys page listing configured keys and metadata" >}}
    {{< reuse-image-dark srcDark="img/ui-virtual-keys-list-dark.png" alt="UI Virtual API Keys page listing configured keys and metadata" >}}
 
-The UI writes the same `apiKey` policy as the **Config file** tab{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}, with one difference. It saves a hash of each key (`keyHash`), not the raw value. To save the raw value, select **Store raw key**{{< /version >}}. Give the keys to your users to send in an `Authorization: Bearer $VIRTUAL_KEY` header.
+The UI writes the same `apiKey` policy as the **Config file** tab{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}, with one difference. It saves a hash of each key (`keyHash`), not the raw value. To save the raw value, select **Store raw key**. If you open the UI over plain HTTP from a host other than `localhost`, the UI cannot hash keys and always saves the raw value{{< /version >}}. Give the keys to your users to send in an `Authorization: Bearer $VIRTUAL_KEY` header.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 Create a configuration with API key authentication. This example creates two virtual keys for Alice and Bob.
@@ -392,7 +392,7 @@ Replace one client's key, such as after a suspected leak. The key keeps its name
    {{< reuse-image-light src="img/ui-llm-key-rotate.png" alt="Edit virtual key drawer for alice with a new value in the Key value field, a Keep existing button, and the Store raw key option" >}}
    {{< reuse-image-dark srcDark="img/ui-llm-key-rotate-dark.png" alt="Edit virtual key drawer for alice with a new value in the Key value field, a Keep existing button, and the Store raw key option" >}}
 
-3. Optional: Select **Store raw key** to save the key value instead of a hash. If you keep the default, the UI saves only a hash of the key (`keyHash`).
+3. Optional: Select **Store raw key** to save the key value instead of a hash. If you keep the default, the UI saves only a hash of the key (`keyHash`). The UI can hash the key only when you open it over HTTPS or from `localhost`. If you open the UI over plain HTTP from another host, such as `http://192.168.1.10:15000/ui`, the UI selects **Store raw key** and you cannot clear it.
 4. Click **Save key**. If the UI saved a hash, the **Copy your new API key** dialog shows the new key. Click **Copy**, and click **Done**. The UI does not show the key again.
 5. Give the new key to Alice. Requests with the old key now fail with `401`.
 6. To continue with the budget examples, which use Alice's original key, edit Alice's key again, click **Edit**, and replace the value with `vk-alice-4f9c2a`.

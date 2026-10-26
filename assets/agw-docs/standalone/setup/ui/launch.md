@@ -136,12 +136,12 @@ The **LLM** area configures the models that clients can request and the policies
 
   {{< reuse-image src="img/ui-tour-llm-policies.png" srcDark="img/ui-tour-llm-policies-dark.png" alt="LLM Policies page with policy cards such as CORS, API keys, and JWT auth, each marked enabled or disabled" >}}
 
-The **LLM** area also has pages for providers, guardrails, virtual API keys, costs, analytics, and logs. For more information, see the [LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}}).
-
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 * **Virtual API Keys**: To rotate a key, click **Edit** for the key. For a key that starts with `agw_sk_`, click **Regenerate** to generate a new value. For other keys, click **Edit** in the **Key value** field and enter a new value. For the steps, see [Rotate a virtual key]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#rotate-a-virtual-key" >}}).
 * **Logs** and **Analytics**: Each filter dropdown, such as **Users** or **Groups**, lists the values from recorded traffic and has a search box. Type part of a value to narrow the list. The list shows an exact match first, then the values that start with the text, and then the values that contain it. Typing does not filter the results. To filter, select a value.
 {{< /version >}}
+
+The **LLM** area also has pages for providers, guardrails, virtual API keys, costs, analytics, and logs. For more information, see the [LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}}).
 
 ### MCP {#tour-mcp}
 
