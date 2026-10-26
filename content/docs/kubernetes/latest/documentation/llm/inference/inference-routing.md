@@ -105,6 +105,6 @@ field, see [Multiple inference pools]({{< link-hextra path="/documentation/llm/i
 > Most users can keep the default llm-d Router OpenAI parser and send
 > OpenAI-compatible requests, such as `/v1/chat/completions`. If clients send a
 > different request format, configure the
-> [EPP](https://llm-d.ai/docs/architecture/core/router) parser, such as
+> [EPP](https://llm-d.ai/docs/architecture/router) parser, such as
 > `router.epp.parser`, for that client-facing format. For parser options, see the
 > [llm-d Router parser docs](https://github.com/llm-d/llm-d-router/blob/main/pkg/epp/framework/plugins/requesthandling/parsers/README.md).
