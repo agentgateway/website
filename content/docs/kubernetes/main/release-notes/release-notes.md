@@ -91,6 +91,8 @@ Error responses that the agentgateway proxy generates now carry a generic messag
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3992 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3953 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3831 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4090 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4091 -->
 
 - **Proxy environment variables**: Callouts from the proxy, such as external authorization requests, guardrail requests, and AWS and Azure credential fetches, now use the `HTTPS_PROXY`, `HTTP_PROXY`, `ALL_PROXY`, and `NO_PROXY` environment variables to configure a forward proxy that these requests must be routed through. In 1.6, only Google Cloud Platform (GCP) credential fetches used these variables. If you set these variables in `spec.env` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource for another purpose, callouts go through that forward proxy after you upgrade. To keep all callouts direct, set `NO_PROXY` to `*`. For more information, see [Callout proxy]({{< link-hextra path="/documentation/setup/customize/callout-proxy/" >}}).
 - **Normalized service tier**: `llm.serviceTier` is now one of `standard`, `flex`, `priority`, or `reserved`, whatever the provider's own naming. A provider tier that agentgateway does not recognize leaves the value unset. Update CEL expressions and dashboards that compare against provider-specific values such as `default`. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
@@ -111,6 +113,7 @@ Error responses that the agentgateway proxy generates now carry a generic messag
 - **Controller reconciliation metrics**: The controller no longer reports `agentgateway_controller_reconcile_duration_seconds` or `agentgateway_controller_reconciliations_running`. `agentgateway_controller_reconciliations_total` reports only the controller and result, without the `name` and `namespace` labels. Update dashboards and alerts that use these metrics. For more information, see [Control plane metrics reference]({{< link-hextra path="/documentation/observability/metrics/control-plane/#control-plane-metrics-reference" >}}).
 - **Configuration warning Events**: Configuration warnings in the proxy's xDS responses now publish Kubernetes Events with the reason `AgentGatewayConfigWarning` and increment `agentgateway_xds_warnings_total`. Warnings do not count the response as rejected. In 1.6, these warnings were reported as rejections, with the `AgentGatewayNackError` reason and the `agentgateway_xds_rejects_total` counter. If your alerts watch for rejections, also alert on warnings. For more information, see [View configuration warnings]({{< link-hextra path="/documentation/observability/metrics/nacks/#config-warnings" >}}).
 - **GenAI operation name**: The `gen_ai.operation.name` attribute in access logs and traces now reflects the request type, such as `generate_content`, `embeddings`, `rerank`, `realtime`, `decisions`, or `count_tokens`. Requests on a route with the `Detect` route type record `unknown`. In 1.6, every request except Embeddings requests recorded `chat`. Update queries and dashboards that filter on `chat`. For more information, see [Operation names]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#operation-names" >}}).
+- **CSRF `Origin` checks**: For a request without a `Sec-Fetch-Site` header, the CSRF policy now rejects `Origin: null` unless `additionalOrigins` includes `null`. In 1.6, agentgateway treated `Origin: null` as a missing origin and allowed the request. The same-origin check now compares only the host and ignores the scheme, so a TLS-terminating proxy in front of agentgateway no longer causes false rejections. For more information, see [CSRF]({{< link-hextra path="/documentation/security/csrf/" >}}).
 
 ## 🌟 New features {#v17-new-features}
 
@@ -131,13 +134,14 @@ Error responses that the agentgateway proxy generates now carry a generic messag
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3776 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3691 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4010 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3912 -->
 
 - **OpenAI Decisions and TypeSafe SystemOne**: Agentgateway supports the OpenAI Decisions API and the TypeSafe SystemOne API natively, and translates between them in both directions. Route `/v1/decisions` and `/v1/systemone` with the `Decisions` and `SystemOne` route types of an {{< reuse "agw-docs/snippets/backend.md" >}}. To connect to TypeSafe, set `spec.provider: Typesafe` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}. For more information, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}) and [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}). Azure supports both APIs for the `Foundry` resource type.
 - **Perplexity provider**: Set `spec.provider: Perplexity` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} to connect to Perplexity with built-in defaults. The provider accepts Responses and Messages requests, but not Chat Completions requests. For other ways to connect, see [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/#perplexity" >}}).
 - **Copilot on Kubernetes**: Set `spec.ai.provider.copilot` on an {{< reuse "agw-docs/snippets/backend.md" >}}, or `spec.provider: Copilot` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, to use the Copilot provider with credentials from a Kubernetes Secret. For more information, see [Copilot]({{< link-hextra path="/integrations/llm/providers/copilot/" >}}).
 - **Callout router for virtual models**: A virtual model can select its target model by calling an external HTTP service. Set `spec.virtualModel.callout` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, with an optional fallback model and response cache. For more information, see [Choose a model with an HTTP callout]({{< link-hextra path="/documentation/llm/models/virtual/#callout-routing" >}}).
 - **More accurate token counting**: A new tokenizer estimates token counts more accurately, runs about 10 times faster, and uses less memory.
-- **Better format conversion**: Reasoning from vLLM and OpenRouter is preserved when agentgateway converts Chat Completions responses to Messages or Responses. Bedrock reasoning streams as reasoning items in Responses, and Bedrock redacted reasoning is preserved. Vertex AI Gemini models accept `http://` and `https://` URIs in file content. For more information, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}) and [Send file content by URI]({{< link-hextra path="/integrations/llm/providers/vertex/#send-file-content-by-uri" >}}).
+- **Better format conversion**: Reasoning from vLLM and OpenRouter is preserved when agentgateway converts Chat Completions responses to Messages or Responses. Bedrock reasoning streams as reasoning items in Responses, and Bedrock redacted reasoning is preserved. Vertex AI Gemini models accept `http://` and `https://` URIs in file content. Chat Completions requests to Anthropic send inline `file` parts as documents instead of dropping them, and a file part without inline data, such as a `file_id`, returns `400`. For more information, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}) and [Send file content by URI]({{< link-hextra path="/integrations/llm/providers/vertex/#send-file-content-by-uri" >}}).
 - **More CEL during request policies**: Request-phase CEL expressions on LLM traffic can read `llm.requestModel` before provider overrides and `llmRequest` for the parsed JSON request body. For more information, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
 
 ### Model catalog and cost {#v17-catalog}
@@ -149,6 +153,7 @@ Error responses that the agentgateway proxy generates now carry a generic messag
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3661 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3825 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3977 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4088 -->
 
 The model catalog now describes models as well as pricing them. Catalog entries can include a display name, release date, lifecycle status, token limits, modalities, capabilities, and reasoning controls.
 
@@ -181,7 +186,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
   ```
 
   For more information, see [Catalog JSON format]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-json-format" >}}).
-- **1-hour cache pricing**: Anthropic cache writes with a 1-hour TTL are priced with the new `cacheWrite1h` rate. When the rate is unset, the `cacheWrite` rate applies.
+- **1-hour and 12-hour cache pricing**: Cache writes with a longer time to live (TTL), such as Anthropic 1-hour and OpenAI 12-hour cache writes, are priced with the new `cacheWriteDetails` rates, keyed by TTL such as `1h` and `12h`. When a TTL has no rate, the `cacheWrite` rate applies. In CEL, read the cost of a TTL with brackets, such as `llm.cost.cacheWriteDetails['1h']`. For more information, see [Catalog JSON format]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-json-format" >}}).
 
 ### Guardrails {#v17-guardrails}
 

@@ -111,6 +111,9 @@ Error responses that agentgateway generates now carry a generic message instead 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3957 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3928 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3831 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4090 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4091 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4097 -->
 
 - **Proxy environment variables**: Callouts, such as JWKS fetches, external authorization requests, and AWS and Azure credential fetches, now use the `HTTPS_PROXY`, `HTTP_PROXY`, `ALL_PROXY`, and `NO_PROXY` environment variables when `config.callouts.tunnel` is omitted. In 1.6, only Google Cloud Platform (GCP) credential fetches used these variables. If the environment that runs agentgateway exports these variables for other tools, callouts go through that proxy after you upgrade. To keep callouts direct, set `NO_PROXY` to `*`. For more information, see [Callout proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/" >}}).
 - **Normalized service tier**: `llm.serviceTier` is now one of `standard`, `flex`, `priority`, or `reserved`, whatever the provider's own naming. A provider tier that agentgateway does not recognize leaves the value unset. Update CEL expressions and dashboards that compare against provider-specific values such as `default`. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
@@ -132,6 +135,8 @@ Error responses that agentgateway generates now carry a generic message instead 
 - **gRPC policy calls**: When a gRPC policy call, such as to an external processing server, fails before it reaches the service, agentgateway now reports the mapped gRPC status instead of `UNKNOWN`. For example, DNS errors, refused connections, and timeouts report `UNAVAILABLE`.
 - **Anthropic version header**: Agentgateway forwards the client's `anthropic-version` header instead of replacing it. When the client does not send the header, agentgateway still sets the default value `2023-06-01`.
 - **Decisions and SystemOne requests to custom providers**: `/v1/decisions` and `/v1/systemone` requests now have their own `decisions` and `systemOne` route types. A `custom` provider that declares neither the `decisions` nor the `systemOne` format rejects them with `400`. This includes a provider without `formats`. In 1.6, agentgateway forwarded them without conversion. To keep serving these requests, declare the format that the upstream server supports. For more information, see [Custom providers without a Decisions format]({{< link-hextra path="/documentation/llm/api-types/decisions/#custom-provider-requirements" >}}).
+- **CSRF `Origin` checks**: For a request without a `Sec-Fetch-Site` header, the CSRF policy now rejects `Origin: null` unless `additionalOrigins` includes `null`. In 1.6, agentgateway treated `Origin: null` as a missing origin and allowed the request. The same-origin check now compares only the host and ignores the scheme, so a TLS-terminating proxy in front of agentgateway no longer causes false rejections. For more information, see [CSRF]({{< link-hextra path="/documentation/configuration/security/csrf/" >}}).
+- **Filter validation**: Invalid filter settings now fail configuration validation instead of failing each request. For example, a configuration with a request mirror `percentage` outside `0.0` to `1.0`, such as `percentage: 50`, or a direct response with both `body` and `bodyExpression` no longer loads. Invalid header names or values and invalid redirect or rewrite paths are also rejected. For more information, see [Mirroring]({{< link-hextra path="/documentation/configuration/resiliency/mirroring/" >}}).
 
 ## 🌟 New features {#v17-new-features}
 
@@ -151,13 +156,14 @@ Error responses that agentgateway generates now carry a generic message instead 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3776 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3691 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4010 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3912 -->
 
 - **OpenAI Decisions and TypeSafe SystemOne**: Agentgateway supports the OpenAI Decisions API at `/v1/decisions` and the TypeSafe SystemOne API at `/v1/systemone` natively, and translates between them in both directions. To connect to TypeSafe, set `provider: typesafe` in an `llm.models` entry. For more information, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}) and [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}). A `custom` provider can declare the `decisions` or `systemOne` format. Azure supports both APIs for the `foundry` resource type.
 - **Perplexity provider**: Set `provider: perplexity` in an `llm.models` entry to connect to Perplexity with built-in defaults. The provider accepts Responses and Messages requests, but not Chat Completions requests. For more information, see [Perplexity]({{< link-hextra path="/integrations/llm/providers/perplexity/" >}}).
 - **Callout router for virtual models**: A virtual model can select its target model by calling an external HTTP service. Set `routing.callout` in an `llm.virtualModels` entry, with an optional fallback model and response cache. For more information, see [Callout routing]({{< link-hextra path="/documentation/llm/virtual-models/#callout-routing" >}}).
 - **Per-model HTTP transformations**: Set `requestTransformation` on an `llm.models` entry, or in `llm.providers[].defaults` for every model of a provider, to modify the headers, body, and metadata of requests. A model's value replaces the provider default. For more information, see [LLM request transformation]({{< link-hextra path="/documentation/llm/transformations/#llm-request-transformation" >}}).
 - **More accurate token counting**: A new tokenizer estimates token counts more accurately, runs about 10 times faster, and uses less memory.
-- **Better format conversion**: Reasoning from vLLM and OpenRouter is preserved when agentgateway converts Chat Completions responses to Messages or Responses. Bedrock reasoning streams as reasoning items in Responses, and Bedrock redacted reasoning is preserved. Vertex AI Gemini models accept `http://` and `https://` URIs in file content. For more information, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}) and [Send file content by URI]({{< link-hextra path="/integrations/llm/providers/vertex/#send-file-content-by-uri" >}}).
+- **Better format conversion**: Reasoning from vLLM and OpenRouter is preserved when agentgateway converts Chat Completions responses to Messages or Responses. Bedrock reasoning streams as reasoning items in Responses, and Bedrock redacted reasoning is preserved. Vertex AI Gemini models accept `http://` and `https://` URIs in file content. Chat Completions requests to Anthropic send inline `file` parts as documents instead of dropping them, and a file part without inline data, such as a `file_id`, returns `400`. For more information, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}) and [Send file content by URI]({{< link-hextra path="/integrations/llm/providers/vertex/#send-file-content-by-uri" >}}).
 - **More CEL during request policies**: Request-phase CEL expressions on LLM traffic can read `llm.requestModel` before provider overrides and `llmRequest` for the parsed JSON request body. For more information, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
 
 ### Model catalog and cost {#v17-catalog}
@@ -170,6 +176,7 @@ Error responses that agentgateway generates now carry a generic message instead 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3825 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3977 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3970 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4088 -->
 
 The model catalog now describes models as well as pricing them. Catalog entries can include a display name, release date, lifecycle status, token limits, modalities, capabilities, and reasoning controls.
 
@@ -204,7 +211,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
   ```
 
   For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#advanced-catalog-format" >}}).
-- **1-hour cache pricing**: Anthropic cache writes with a 1-hour TTL are priced with the new `cacheWrite1h` rate. When the rate is unset, the `cacheWrite` rate applies.
+- **1-hour and 12-hour cache pricing**: Cache writes with a longer time to live (TTL), such as Anthropic 1-hour and OpenAI 12-hour cache writes, are priced with the new `cacheWriteDetails` rates, keyed by TTL such as `1h` and `12h`. When a TTL has no rate, the `cacheWrite` rate applies. In CEL, read the cost of a TTL with brackets, such as `llm.cost.cacheWriteDetails['1h']`. For more information, see [Advanced: Catalog format]({{< link-hextra path="/documentation/llm/cost-controls/costs/#advanced-catalog-format" >}}).
 - **Budgets without a window**: An API key budget without a `window` accumulates usage for its lifetime, which provides a fixed spending limit. For more information, see [Per-key budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/" >}}).
 
 ### Guardrails {#v17-guardrails}
