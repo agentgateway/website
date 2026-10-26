@@ -99,7 +99,7 @@ Deploy three backend instances that represent three localities, and then enable 
      name: gateway
      namespace: agentgateway-locality
    spec:
-     gatewayClassName: agentgateway
+     gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
      listeners:
        - name: http
          protocol: HTTP
