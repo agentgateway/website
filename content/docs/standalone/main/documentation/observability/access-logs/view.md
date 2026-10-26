@@ -19,7 +19,14 @@ gen_ai.request.model=gpt-4o gen_ai.response.model=gpt-4o-2024-08-06
 gen_ai.usage.input_tokens=68 gen_ai.usage.output_tokens=298 duration=2488ms
 ```
 
-For LLM traffic, the log line automatically includes `gen_ai.*` fields. When the LLM request format cannot be inferred, such as for passthrough traffic, the `gen_ai.operation.name` value is `unknown`. For MCP traffic, the log line includes `mcp.*` fields.
+LLM log lines include `gen_ai.*` fields. The route type determines `gen_ai.operation.name`, such as `chat` for Chat Completions or `embeddings` for Embeddings.
+
+- `detect` routes log the operation that the request path implies, such as `ocr` for `/v1/ocr`. They log `unknown` when agentgateway does not recognize the path.
+- `passthrough` routes omit `gen_ai.operation.name`.
+
+For all values, see [Operation names]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#operation-names" >}}).
+
+MCP log lines include `mcp.*` fields.
 
 For requests that the `llm.models` configuration or a virtual model serves, `agw.ai.original_model` records the model name that the client sent, and `gen_ai.request.model` records the model that reaches the provider after routing, such as the target that a virtual model selected.
 
