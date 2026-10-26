@@ -91,6 +91,7 @@ Review the release notes for agentgateway on Kubernetes.
 **MCP**
 
 - Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+- Stateful MCP requests that reuse a session ID on another route to the same backend now use that route's policy settings. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4057 -->
 - The controller creates the session key Secret of each Gateway only when the Secret is missing, and no longer overwrites the key on reconcile, which could invalidate stateful MCP sessions. If the Secret cannot be created, the Gateway reports `Programmed: False` with the reason `DeploymentFailed`.
 - Stateful MCP requests with a session ID that the proxy cannot decode, such as after the session key changes, now return `404` instead of `400`, so clients start a new session.
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
