@@ -1,5 +1,5 @@
 
-The agentgateway control plane exposes Prometheus-compatible metrics on port `9092`. These metrics reflect the health and activity of the Kubernetes controller, such as how many resources have been reconciled, {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}how long reconciliations take, {{< /version >}}and whether the controller is keeping the XDS snapshot in sync with the proxy.
+The agentgateway control plane exposes Prometheus-compatible metrics on port `9092`. They track resource reconciliation counts, {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}reconciliation duration, {{< /version >}}and XDS synchronization with the proxy.
 
 Control plane metrics cannot be customized. To set up automatic scraping of these metrics with Prometheus, see [Enable metrics scraping]({{< link path="/documentation/observability/metrics/overview/" >}}).
 
@@ -67,7 +67,14 @@ EOF
 Review the metrics that are emitted by the {{< reuse "agw-docs/snippets/agentgateway.md" >}} control plane. 
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 
-The control plane no longer emits the `agentgateway_controller_reconcile_duration_seconds` histogram or the `agentgateway_controller_reconciliations_running` gauge. The `agentgateway_controller_reconciliations_total` counter keeps only the `controller` and `result` labels, and no longer has `name` or `namespace` labels. For the `gateway` controller, the counter includes only Gateways whose GatewayClass the {{< reuse "agw-docs/snippets/agentgateway.md" >}} controller manages. If your dashboards, alerts, or recording rules use the removed metrics or labels, update them.
+The following metrics and labels have changed:
+
+- **Removed metrics**: The `agentgateway_controller_reconcile_duration_seconds` histogram and `agentgateway_controller_reconciliations_running` gauge.
+- **Counter labels**: `agentgateway_controller_reconciliations_total` keeps only `controller` and `result`. The `name` and `namespace` labels are removed.
+
+For the `gateway` controller, the counter includes only Gateways whose GatewayClass the {{< reuse "agw-docs/snippets/agentgateway.md" >}} controller manages.
+
+Update dashboards, alerts, or recording rules that use the removed metrics or labels.
 
 {{< /version >}}
 

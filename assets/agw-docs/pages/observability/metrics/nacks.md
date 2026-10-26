@@ -1,15 +1,19 @@
 
-When the {{< reuse "agw-docs/snippets/agentgateway.md" >}} control plane pushes an XDS configuration update to a proxy, the proxy validates the configuration before applying it. If the proxy rejects a resource, the rejection is called a NACK (negative acknowledgement). The proxy continues running on its last known-good configuration for that resource, so traffic keeps flowing, but the intended change is silently not applied.
+The {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy validates XDS updates from the control plane before applying them. A rejected resource produces a NACK (negative acknowledgement).
 
-The {{< reuse "agw-docs/snippets/agentgateway.md" >}} control plane tracks these rejections via the `agentgateway_xds_rejects_total` counter on port `9092`. When a rejection occurs, the control plane also creates a Kubernetes Warning event on the affected Gateway resource so you can identify which policy or route caused the rejection.
+The proxy retains its last known-good configuration for that resource. Traffic continues, but the rejected change is not applied.
 
-A common cause of rejections is a value that the Kubernetes API server and the control plane accept, but that the proxy cannot parse, such as an `agentRuntimeArn` value in an {{< reuse "agw-docs/snippets/backend.md" >}} that is not a valid ARN.
+The control plane counts rejections in `agentgateway_xds_rejects_total` on port `9092`. It also creates a Kubernetes Warning event on the affected Gateway.
+
+Rejections can occur when the proxy cannot parse a value accepted by the Kubernetes API server and control plane. One example is an invalid `agentRuntimeArn` in an {{< reuse "agw-docs/snippets/backend.md" >}}.
 
 {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
-The proxy also reports problems that it can work around, such as a CEL expression that the Go-based control plane validator accepts but the Rust-based proxy cannot parse, or a TLS certificate that the proxy cannot load. For these problems, the proxy applies the rest of the resource and replaces the invalid part, such as with a CEL expression that always fails. The control plane counts these problems as rejections too.
+The proxy also reports problems it can work around, including invalid CEL expressions and TLS certificates. A CEL expression may pass the Go control plane validator but fail the Rust proxy parser.
+
+The proxy applies the rest of the resource and replaces the invalid part, such as with an expression that always fails. The control plane counts these problems as rejections too.
 {{< /version >}}
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
-Not every problem rejects a resource. When the proxy can load a resource but must ignore or replace part of it, such as a CEL expression that it cannot parse, the proxy applies the resource and reports a configuration warning instead. Warnings have their own counter and event reason. For more information, see [View configuration warnings](#config-warnings).
+If only part of a resource is unusable, the proxy can apply the rest and report a configuration warning. Warnings use a separate counter and event reason. See [View configuration warnings](#config-warnings).
 {{< /version >}}
 
 ## View the rejection metric
@@ -61,13 +65,16 @@ You can use this metric to configure alerts in Prometheus that fire when rejecti
 
 ## View rejection events
 
-When a rejection occurs, the control plane creates a Kubernetes Warning event with the `AgentGatewayNackError` reason on the Gateway. The event message is a JSON list. In each entry, the `key` field names the resource that the proxy rejected, and the `error` field has the error from the proxy.
+A rejection creates a Kubernetes Warning event on the Gateway with reason `AgentGatewayNackError`. The message is a JSON list with these fields:
+
+- `key`: The rejected resource.
+- `error`: The error from the proxy.
 
 {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 For a problem that the proxy works around, such as a CEL expression that it cannot parse, the entry has a `warn` field instead of an `error` field.
 {{< /version >}}
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
-The status of the rejected resource does not show the rejection. For example, an {{< reuse "agw-docs/snippets/backend.md" >}} with an `agentRuntimeArn` value that is not a valid ARN reports `Accepted: True`, but the proxy rejects it.
+The resource status does not show the rejection. For example, an {{< reuse "agw-docs/snippets/backend.md" >}} with an invalid `agentRuntimeArn` still reports `Accepted: True`.
 {{< /version >}}
 
 1. List rejection events in the namespace where your Gateway is deployed.
@@ -101,15 +108,20 @@ The status of the rejected resource does not show the rejection. For example, an
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 ## View configuration warnings {#config-warnings}
 
-Some configuration problems do not stop the proxy from loading a resource. The proxy applies the resource, ignores or replaces the part that it cannot use, and reports a warning. The control plane counts warnings in the `agentgateway_xds_warnings_total` counter and creates a Kubernetes Warning event with the `AgentGatewayConfigWarning` reason on the Gateway. Warnings do not increase `agentgateway_xds_rejects_total`.
+When the proxy can apply a resource after ignoring or replacing an invalid part, it reports a configuration warning. The control plane records warnings separately:
+
+- **Counter**: `agentgateway_xds_warnings_total`.
+- **Gateway event**: A Kubernetes Warning event with reason `AgentGatewayConfigWarning`.
+
+Warnings do not increase `agentgateway_xds_rejects_total`.
 
 Common causes of warnings:
 
 - CEL expressions that pass the Go-based control plane validator but fail the Rust-based proxy parser, such as calling `has()` with an invalid argument. The proxy replaces the expression with one that always fails.
-- Regular expressions that the proxy cannot compile, such as in a route path match or a prompt guard. The proxy replaces an invalid path regex with a matcher that never matches, and skips an invalid prompt guard pattern.
+- Invalid regular expressions in route paths or prompt guards. Invalid path patterns never match. The proxy skips invalid prompt guard patterns.
 - Invalid TLS certificates that the proxy cannot load.
 
-The warning message describes how the proxy handled each problem. Because the proxy applies the rest of the resource, traffic can behave differently from what you configured, so treat warnings as configuration errors to fix.
+Warnings describe how the proxy handled each problem. Fix them as configuration errors: traffic may behave differently from your configuration.
 
 > [!NOTE]
 > In version 1.6 and earlier, the control plane reported these warnings as rejections, with the `AgentGatewayNackError` event reason and the `agentgateway_xds_rejects_total` counter. If your alerts watch for rejections, also alert on `agentgateway_xds_warnings_total`.
@@ -134,7 +146,9 @@ The warning message describes how the proxy handled each problem. Because the pr
    agentgateway_xds_warnings_total 2
    ```
 
-3. List warning events in the namespace where your Gateway is deployed. The event message is a JSON list. In each entry, the `key` field names the resource, and the `warn` field has the warning from the proxy.
+3. List warning events in the Gateway namespace.
+
+   Each JSON message entry uses `key` for the resource and `warn` for the proxy warning.
 
    ```sh
    kubectl get events -n {{< reuse "agw-docs/snippets/namespace.md" >}} --field-selector=reason=AgentGatewayConfigWarning

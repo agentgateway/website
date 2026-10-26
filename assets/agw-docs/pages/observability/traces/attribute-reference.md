@@ -79,7 +79,7 @@ LLM requests that model routing serves also carry the `agw.ai.original_model` at
 {{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
 ### Operation names {#operation-names}
 
-The `gen_ai.operation.name` attribute records the type of LLM operation, based on the route type that served the request. Access logs, the `gen_ai_operation_name` metric label, and the request log database use the same values.
+The route type determines `gen_ai.operation.name`. Access logs, the `gen_ai_operation_name` metric label, and the request log database use the same values.
 
 | Value | Requests |
 |-------|----------|
@@ -90,9 +90,9 @@ The `gen_ai.operation.name` attribute records the type of LLM operation, based o
 | `realtime` | OpenAI Realtime requests |
 | `decisions` | Decisions and SystemOne requests |
 | `count_tokens` | Anthropic and Gemini token count requests |
-| `unknown` | Requests that agentgateway handles with the Detect route type, which forwards the request without identifying the operation |
+| `unknown` | Detect routes, which forward requests without identifying the operation |
 
-Requests that agentgateway handles with the Passthrough route type do not have a `gen_ai.operation.name` attribute.
+Passthrough routes omit `gen_ai.operation.name`.
 {{% /version %}}
 
 ## MCP attributes

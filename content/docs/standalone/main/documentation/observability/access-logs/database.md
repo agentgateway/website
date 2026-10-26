@@ -63,7 +63,7 @@ Each access log record captures the following data.
 
 ### Token and latency columns {#token-latency-columns}
 
-Besides the token totals, the `request_logs` table has the following columns for token details and latency. A token column is empty when the provider does not report the value. The latency columns are empty for responses that are not streamed.
+`request_logs` includes these token and latency columns. Token values are empty when unreported. Latency values are empty for responses that are not streamed.
 
 | Column | Description | Log attribute |
 |--------|-------------|---------------|
@@ -73,7 +73,7 @@ Besides the token totals, the `request_logs` table has the following columns for
 | `time_to_first_token_ms` | Time to generate the first token of the response, in milliseconds. | `agw.ai.time_to_first_token` |
 | `time_per_output_token_ms` | Average time to generate each output token, in milliseconds. | `agw.ai.time_per_output_token` |
 
-The `agctl standalone analytics` command uses these columns to report the cache hit rate, the average time to first token, and the output tokens per second.
+`agctl standalone analytics` uses these columns to report cache hit rate, average time to first token, and output tokens per second.
 
 When a request prompt guard rejects an LLM request before the provider call, the database still stores a log record. The **Logs** page shows the rejection. The record includes request-side LLM metadata, but no provider response fields because the request never reaches the LLM provider.
 
@@ -105,9 +105,13 @@ frontendPolicies:
 
 ## Schema migrations {#schema-migrations}
 
-At startup, agentgateway updates the request log schema in the database that stores request logs, which is `config.logging.database` or, if that field is not set, `config.database`. Agentgateway records each applied schema change in the `_agentgateway_request_log_migrations` table, so each change runs only once.
+At startup, agentgateway migrates the request log database: `config.logging.database`, falling back to `config.database`.
 
-When you upgrade from an earlier version, such as 1.6, startup adds the [token and latency columns](#token-latency-columns) to the existing `request_logs` table. Then, it fills the new columns for existing LLM request rows from the `attributes_json` column, so analytics include requests that were logged before the upgrade. On a large table, this backfill can make the first startup after the upgrade take longer.
+Applied changes are recorded in `_agentgateway_request_log_migrations` and run only once.
+
+Upgrading from an earlier version, such as 1.6, adds the [token and latency columns](#token-latency-columns). Existing LLM rows are backfilled from `attributes_json`, so analytics include requests logged before the upgrade.
+
+This backfill can delay the first startup on large tables.
 
 To check which schema changes are applied to a SQLite database, query the migrations table.
 
@@ -127,17 +131,17 @@ On PostgreSQL, the migrations table also lists version `3`, `backfill request lo
 
 ### Downgrade to an earlier version {#downgrade}
 
-Before you upgrade, back up the database that stores request logs. After the upgrade migrates the database, downgrading behaves differently for each backend.
+Back up the request log database before upgrading. After migration, downgrade behavior depends on the backend:
 
-* **SQLite**: An earlier version starts and keeps writing request logs to the migrated database. It ignores the new columns, so the rows that it writes have no values in those columns. If you upgrade again, the migration does not run again, and those rows stay empty in the new columns.
-* **PostgreSQL**: An earlier version fails to start, because the migrations table lists schema changes that it does not know. The error is similar to the following.
+* **SQLite**: Earlier versions keep writing logs but leave the new columns empty. Upgrading again does not rerun the migration, so those rows remain unfilled.
+* **PostgreSQL**: Earlier versions cannot start because they do not recognize the applied migrations:
 
   ```
   Error: failed to migrate request log database schema
       migration 2 was previously applied but is missing in the resolved migrations
   ```
 
-  To start the earlier version on the migrated database, delete the records of the newer schema changes. The new columns stay in the table, and the earlier version ignores them.
+  Delete the newer migration records to start the earlier version. The new columns remain and are ignored by that version.
 
   ```sh
   psql "postgres://user:password@host:5432/dbname" \
@@ -150,7 +154,7 @@ Before you upgrade, back up the database that stores request logs. After the upg
   DELETE 2
   ```
 
-  When you upgrade again, the migrations run again and fill the new columns for the rows that the earlier version wrote.
+  Upgrading again reruns migrations and backfills the new columns, including logs written after the downgrade.
 
 ## Query the database
 

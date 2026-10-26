@@ -376,7 +376,7 @@ The agentgateway controller runs its own admin server on port `9095`. The admin 
 | `/` | Lists the endpoints and the current log level of each controller component. |
 | `/debug/pprof/` | Go [pprof](https://pkg.go.dev/net/http/pprof) profiles of the controller, such as goroutine stack dumps and heap profiles. |
 | `/logging` | Get the log level of each controller component, or set it with a `PUT` request. The [`agctl controller log`](#controller-logs) command uses this endpoint. |
-| `/snapshots/krt` | A JSON snapshot of the Kubernetes resources that the controller processed and the resources that it generated from them. The snapshot includes the data of the Secrets that the controller watches. |
+| `/snapshots/krt` | JSON snapshot of processed Kubernetes resources and generated resources. Includes data from Secrets watched by the controller. |
 | `/version` | The controller version and build details. |
 
 1. Port-forward the controller deployment.
@@ -396,12 +396,24 @@ The agentgateway controller runs its own admin server on port `9095`. The admin 
 
 ### Expose the admin server on the pod network {#admin-bind-address}
 
-By default, the controller admin server listens on `localhost` inside the controller pod, so you can reach it only through a port-forward. To reach it from other pods in the cluster, such as a debugging tool, set the `AGW_UNSAFE_ADMIN_BIND_ADDRESS` environment variable on the controller.
+By default, the admin server listens on `localhost` inside the controller pod. Use port-forwarding to reach it.
 
-The value is an IP address, such as `0.0.0.0` for all IPv4 addresses or `::` for all IPv6 addresses, or `localhost`, which is the default. Do not include a port. The admin server always uses port `9095`. If the value is not an IP address or `localhost`, the controller does not start. The controller Service does not expose port `9095`, so clients connect to the pod IP address.
+To allow access from other pods, set `AGW_UNSAFE_ADMIN_BIND_ADDRESS` on the controller.
+
+Accepted values are:
+
+- `localhost` (default).
+- An IPv4 address, such as `0.0.0.0` to listen on all IPv4 addresses.
+- An IPv6 address, such as `::` to listen on all IPv6 addresses.
+
+Do not include a port. Invalid values prevent the controller from starting.
+
+The server always uses port `9095`. The controller Service does not expose this port, so clients must connect to the pod IP address.
 
 > [!WARNING]
-> The admin server has no authentication. When it listens on an address other than `localhost`, any client that can reach the controller pod on port `9095` can read Secret data from the `/snapshots/krt` endpoint and change the controller log levels. Use this setting only to debug non-production environments, and restrict access to the port, such as with a NetworkPolicy.
+> The admin server has no authentication. Anyone who can reach the controller pod on port `9095` can read Secret data through `/snapshots/krt` and change controller log levels.
+>
+> Expose it beyond `localhost` only for debugging non-production environments. Restrict access to the port, such as with a NetworkPolicy.
 
 1. Create a Helm values file that sets the environment variable through `controller.extraEnv`.
 

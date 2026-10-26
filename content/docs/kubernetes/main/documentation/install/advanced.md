@@ -122,9 +122,11 @@ controller:
 
 ## Init containers {#extra-init-containers}
 
-Add init containers to the control plane pod with the `controller.extraInitContainers` setting. Init containers run before the controller container starts. An init container that sets `restartPolicy: Always` runs as a [native sidecar container](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/), which starts before the controller and keeps running for the life of the pod. Native sidecar containers require Kubernetes 1.29 or later. This setting changes only the control plane pod, not the gateway proxy pods.
+Use `controller.extraInitContainers` to run containers before the controller starts. This setting affects only the control plane pod.
 
-The following example adds a native sidecar container with a shell. Because the controller image has no shell, you can use the sidecar to debug from inside the pod network, such as to reach the [controller admin server]({{< link-hextra path="/documentation/operations/debug/#control-plane" >}}) on `localhost:9095`.
+Set `restartPolicy: Always` for a [native sidecar container](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/). It starts before the controller and runs for the life of the pod. Native sidecars require Kubernetes 1.29 or later.
+
+The controller image has no shell. This example adds one through a native sidecar for debugging inside the pod network, including access to the [controller admin server]({{< link-hextra path="/documentation/operations/debug/#control-plane" >}}) on `localhost:9095`.
 
 ```yaml
 controller:
@@ -135,7 +137,7 @@ controller:
     command: ["sh", "-c", "sleep infinity"]
 ```
 
-To check the result before you upgrade, render the controller Deployment with your values file, such as `init-values.yaml`.
+Before upgrading, render the controller Deployment with your values file, such as `init-values.yaml`.
 
 ```sh
 helm template {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
