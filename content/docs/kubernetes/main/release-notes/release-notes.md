@@ -99,7 +99,6 @@ Review the release notes for agentgateway on Kubernetes.
 
 **Security**
 
-- CSRF validation rejects `Origin: null` on requests without `Sec-Fetch-Site`, and same-origin fallback compares only the `Origin` host to the request `Host`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4090 -->
 - Invalid `oauthTokenExchange` or `crossAppAccess` backend authentication no longer blocks the rest of your configuration from reaching the proxy. Only requests that use the invalid block fail, with HTTP `500` and the message `oauthTokenExchange configuration is invalid` or `crossAppAccess configuration is invalid`. The policy reports `Accepted: True` with the reason `PartiallyValid`. For more information, see [Debug your setup]({{< link-hextra path="/documentation/operations/debug/" >}}).
 
 **Operations**
