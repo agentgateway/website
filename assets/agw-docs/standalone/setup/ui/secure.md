@@ -185,8 +185,15 @@ To give different users different access, choose one of the following options.
 
 Add `allow` rules to the `authorization` policy in `ui.policies` to let one group of users save changes while every other user can view. The following example gives members of the `agentgateway-admins` group full access. The example assumes that your IdP adds a `groups` claim to the ID token. The claim name and the group names depend on your IdP configuration.
 
-1. Open the **Settings** > **UI** page on the admin interface, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui). In a Helm installation, port-forward port `15000` first. Edit UI policies on the admin interface. The policies protect only the UI on the gateways that the `ui` section lists, not the admin interface, so a rule that you save cannot block your own access while you work.
-2. Add the rules to the `ui.policies` section that has your authentication policy. In the UI, add the rules on the **Authorization** card. In a Helm installation, the section is `config.ui.policies` in your values file.
+1. In a Helm installation, port-forward the admin port.
+
+   ```sh
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} 15000:15000
+   ```
+
+2. Open the **Settings** > **UI** page on the admin interface, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui). Edit UI policies on the admin interface. The policies protect only the UI on the gateways that the `ui` section lists, not the admin interface, so a rule that you save cannot block your own access while you work.
+3. Add the rules to the `ui.policies` section that has your authentication policy. In the UI, add the rules on the **Authorization** card. In a Helm installation, the section is `config.ui.policies` in your values file.
 
    ```yaml
    ui:
@@ -204,7 +211,8 @@ Add `allow` rules to the `authorization` policy in `ui.policies` to let one grou
    | `request.method == "GET"` | Every other user can open the UI pages and read the configuration. |
    | `request.path.startsWith("/api/logs/") \|\| request.path == "/api/cel"` | Every other user can also search and stream request logs, view analytics, and use the Common Expression Language (CEL) playground. These pages query data with `POST` requests, so this rule includes them in view access. |
 
-3. Log in to the UI as a user outside the group, and verify that you can browse the UI. When you save a change, the gateway returns a `403` response, because only members of the group can save changes, including changes to `ui.policies`. You can still log out with **Sign out**.
+4. Log in to the UI on the gateway as a member of the `agentgateway-admins` group, and save a change to verify that the group rule matches. If the save returns a `403` response, check the name and values of the `groups` claim in your IdP, and update the rule on the admin interface.
+5. Log in to the UI as a user outside the group, and verify that you can browse the UI. When you save a change, the gateway returns a `403` response, because only members of the group can save changes, including changes to `ui.policies`. 
 
 ## Check which user is logged in {#signed-in-user}
 
