@@ -115,7 +115,6 @@ For more information, see [Session key]({{< link-hextra path="/integrations/mcp/
 **MCP**
 
 - Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
-- Stateful MCP requests that reuse a session ID on another route to the same backend now use that route's policy settings. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4057 -->
 - Stateful MCP requests with a session ID that the proxy cannot decode, such as after the session key changes, now return `404` instead of `400`, so clients start a new session.
 - MCP authentication derives JWKS URLs without a double slash when an issuer value ends with `/`.
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
