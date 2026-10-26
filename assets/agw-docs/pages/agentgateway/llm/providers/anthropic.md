@@ -256,10 +256,10 @@ For Anthropic Messages and token-count requests, a client `anthropic-version` he
    }
    ```
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 ## Send inline files through Chat Completions {#send-inline-files-through-chat-completions}
 
-When a client sends a `/v1/chat/completions` request to Anthropic through {{< reuse "agw-docs/snippets/agentgateway.md" >}}, an inline `file` content part becomes an Anthropic Messages `document` block. Set `file.file_data` to a base64 `data:` URI, such as `data:application/pdf;base64,<base64>`. The conversion rejects a `file_id`, raw base64 string, remote URL, or file part with no content. Those forms have no inline content to send to Anthropic.
+When a client sends a `/v1/chat/completions` request to Anthropic through {{< reuse "agw-docs/snippets/agentgateway.md" >}}, an inline `file` content part becomes an Anthropic Messages `document` block. Set `file.file_data` to a base64 `data:` URI, such as `data:application/pdf;base64,<base64>`. The document title comes from `file.filename`. The conversion rejects a `file_id`, raw base64 string, remote URL, or file part with no content. Those forms have no inline content to send to Anthropic.
 {{< /version >}}
 
 ## Extended thinking and reasoning

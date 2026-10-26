@@ -62,9 +62,9 @@ On the way back, the signature of a response thinking block is forwarded as `rea
 
 For the same behavior in the other direction, where a Messages client reaches a provider that speaks Chat Completions, see [Converting to the Chat Completions format]({{< link-hextra path="/documentation/llm/api-types/messages/#converting-to-the-chat-completions-format" >}}).
 
-### File parts on a converted route {#file-parts-on-a-converted-route}
+## File parts on a converted route {#file-parts-on-a-converted-route}
 
-When a Chat Completions user message reaches a provider that takes the Messages format, an inline `file` content part becomes a Messages `document` block. Set `file.file_data` to a base64 `data:` URI, such as `data:application/pdf;base64,<base64>`. The document title comes from `file.filename`. `prompt_cache_breakpoint` becomes `cache_control`.
+When a Chat Completions user message reaches a provider that takes the Messages format, an inline `file` content part becomes a Messages `document` block. Set `file.file_data` to a base64 `data:` URI, such as `data:application/pdf;base64,<base64>`. The document title comes from `file.filename`. A `prompt_cache_breakpoint` on the file part becomes an ephemeral `cache_control` breakpoint on the document block.
 
 The conversion rejects file parts that it cannot send inline to the Messages provider. A `file_id`, raw base64 string, remote URL, or file part with no content returns an unsupported conversion error.
 
