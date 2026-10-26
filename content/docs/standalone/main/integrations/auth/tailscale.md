@@ -182,7 +182,7 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
 
    ```
    HTTP/1.1 406 Not Acceptable
-   Not Acceptable: Client must accept text/event-stream
+   client must accept text/event-stream
    ```
 
 3. Send a complete MCP request through your Tailscale IP address with the required headers.

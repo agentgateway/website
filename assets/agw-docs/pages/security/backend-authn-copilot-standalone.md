@@ -229,7 +229,7 @@ start_gateway notoken
 CODE=$(curl -s --max-time 15 -o copilot-notoken.txt -w '%{http_code}' http://127.0.0.1:3000/get)
 stop_gateway
 [ "$CODE" = "500" ] || { echo "FAIL: expected 500 with no token, got $CODE"; cat copilot-notoken.txt; exit 1; }
-grep -q 'Copilot token not found' copilot-notoken.txt || {
+grep -q 'backend authentication failed' copilot-notoken.txt || {
   echo "FAIL: the documented error message changed"; cat copilot-notoken.txt; exit 1; }
 echo "copilot backend authentication verified"
 {{< /doc-test >}}
@@ -238,13 +238,22 @@ echo "copilot backend authentication verified"
 
 The method needs no token to load a configuration, so `--validate-only` passes on a host with no token available. A missing token surfaces on the first request instead, as a `500`.
 
+{{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ```
 backend authentication failed: Copilot token not found; set GH_COPILOT_TOKEN or authenticate with GitHub Copilot/GitHub CLI
 ```
+{{< /version >}}
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+```
+backend authentication failed
+```
+
+The agentgateway logs record the cause, such as `Copilot token not found; set GH_COPILOT_TOKEN or authenticate with GitHub Copilot/GitHub CLI`.
+{{< /version >}}
 
 | Symptom | Cause |
 | -- | -- |
-| `Copilot token not found` | None of the four sources yielded a token. Set `GH_COPILOT_TOKEN`, or run `gh auth login`. In a container, check that `HOME` or `XDG_CONFIG_HOME` points at the directory that holds the mounted configuration. |
+| `Copilot token not found` in the response or the agentgateway logs | None of the four sources yielded a token. Set `GH_COPILOT_TOKEN`, or run `gh auth login`. In a container, check that `HOME` or `XDG_CONFIG_HOME` points at the directory that holds the mounted configuration. |
 | `data did not match any variant of untagged enum BackendAuthCompat` | The configuration uses the map form. Write `backendAuth: copilot`. |
 | The backend rejects the token, although agentgateway found one. | The token belongs to an account with no Copilot subscription, or it came from a `gh` login with too few scopes. Confirm the token separately before you debug the route. |
 | The upstream rejects the request body. | The method overwrote `content-type` with `application/json`. |

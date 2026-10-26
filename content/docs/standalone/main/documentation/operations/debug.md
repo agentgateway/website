@@ -117,13 +117,56 @@ You can also set fine-grained levels per module by using the same `RUST_LOG` fil
 
 ## Debug client-safe error responses {#client-safe-error-responses}
 
-Client-facing error responses hide internal details by default. For example, a backend credential problem might return only `backend authentication failed`, while the process logs keep the exact cause. Use the process logs, access logs, and request traces to debug the internal error.
+When agentgateway rejects a request or cannot complete it, the response body carries a short, generic message, such as `authentication failed` or `no backends available`. The message does not include internal details, such as backend addresses, credential sources, or token validation errors. The `error` field of the access log and the request traces keep the full cause.
 
-For local debugging in a trusted environment, start agentgateway with `AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS=true` to send internal error details back to clients. Do not use this setting on a shared or public gateway. Client responses can include backend names, credential lookup failures, and other environment-specific details.
+For example, a route uses `backendAuth: copilot`, but agentgateway finds no Copilot token. The client receives only a generic message.
 
-```sh
-AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS=true agentgateway -f config.yaml
+```console
+HTTP/1.1 500 Internal Server Error
+content-type: text/plain
+content-length: 29
+
+backend authentication failed
 ```
+
+The access log line for the same request names the cause.
+
+```console
+error	request gateway=default/default listener=default route=default/copilot ... http.status=500 error="backend authentication failed: Copilot token not found; set GH_COPILOT_TOKEN or authenticate with GitHub Copilot/GitHub CLI" reason=Internal
+```
+
+{{< reuse "agw-docs/pages/operations/client-error-messages.md" >}}
+
+### Return error details to clients {#expose-error-details}
+
+For local debugging in a trusted environment, you can send the full internal error back to the client. Set the `AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS` environment variable to `true`. Any other value keeps the details hidden.
+
+> [!WARNING]
+> Do not use this setting on a shared or public gateway. Client responses can include backend addresses, credential lookup failures, and other details about your environment.
+
+1. Start agentgateway with the environment variable.
+
+   ```sh
+   AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS=true agentgateway -f config.yaml
+   ```
+
+2. Send a request that fails. The response now includes the cause, such as for the Copilot example from the previous section.
+
+   ```console
+   HTTP/1.1 500 Internal Server Error
+   content-type: text/plain
+   content-length: 123
+
+   backend authentication failed: Copilot token not found; set GH_COPILOT_TOKEN or authenticate with GitHub Copilot/GitHub CLI
+   ```
+
+   Agentgateway logs a warning the first time that it returns an error with details.
+
+   ```console
+   warn	proxy	AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS is enabled; internal error details are sent to clients
+   ```
+
+3. When you finish debugging, restart agentgateway without the environment variable.
 
 ## Capture profiles
 

@@ -163,7 +163,7 @@ You can test the keys in the UI playground or with curl. Both work the same way,
 3. In the **Specific model** field, enter `gpt-3.5-turbo`. The `*` model accepts any model name, so the playground needs a specific name to send.
 4. From the **Virtual API key** dropdown, select Alice's key. The dropdown lists only the keys that are stored as raw values. If the UI saved the key as a hash, select **Raw value**, and paste Alice's key into the **Raw API key** field.
 5. In the **User message** field, enter `Hello!`, and click **Send**. Verify that the reply from the model appears.
-6. From the **Virtual API key** dropdown, select **Raw value**, and enter `invalid-key` in the **Raw API key** field. Send the message again. Verify that the playground shows **Playground request failed** with the error `api key authentication failure: invalid credentials`.
+6. From the **Virtual API key** dropdown, select **Raw value**, and enter `invalid-key` in the **Raw API key** field. Send the message again. Verify that the playground shows **Playground request failed** with the error `authentication failed`.
 {{% /version %}}
 {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 The playground steps need agentgateway 1.7 or later. Use the **curl** tab.
@@ -341,7 +341,7 @@ Revoke one client's access without restarting agentgateway or changing other key
 {{% tab name="UI" %}}
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 1. Open **LLM** > **Virtual API Keys**, and click the **Delete key** icon for Bob's key. In the **Delete virtual API key?** dialog, click **Delete key**.
-2. In the **Chat Playground**, select **Raw value** from the **Virtual API key** dropdown, and enter Bob's key, `vk-bob-8d1e7b`. Send a message. Verify that the playground shows **Playground request failed** with the error `api key authentication failure: invalid credentials`.
+2. In the **Chat Playground**, select **Raw value** from the **Virtual API key** dropdown, and enter Bob's key, `vk-bob-8d1e7b`. Send a message. Verify that the playground shows **Playground request failed** with the error `authentication failed`.
 3. Restore Bob's key before continuing with the budget examples. Click **New key**, and create Bob's key again in the same way as in [Step 1](#step-1-configure-api-key-authentication).
 {{% /version %}}
 {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
@@ -604,8 +604,10 @@ The key in `VIRTUAL_KEY` still works, because its hash did not change. The `keys
    Example output:
 
    ```text
-   api key authentication failure: invalid credentials
+   authentication failed
    ```
+
+   The agentgateway logs record the reason, `api key authentication failure: invalid credentials`.
 
 To rotate a key, create a replacement key with a new name, update the client, and then revoke the old key.
 {{< /version >}}

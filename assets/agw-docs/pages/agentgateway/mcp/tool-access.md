@@ -183,8 +183,10 @@ sequenceDiagram
       Example output: 
       ```console
       Failed to call tool search_repositories: Streamable HTTP error: 
-      Error POSTing to endpoint: {"jsonrpc":"2.0","id":2,"error":{"code":-32603,"message":"failed to send message: unauthorized tool call"}}
+      Error POSTing to endpoint: {"jsonrpc":"2.0","id":2,"error":{...}}
       ```
+
+      {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The JSON-RPC error has the code `-32602` and the message `Unknown tool: search_repositories`.{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The JSON-RPC error has the code `-32602` and the message `unknown resource`, which is the same message as for a tool that does not exist. The proxy logs record the reason, such as `mcp: authorization denied for tool: search_repositories`.{{< /version >}}
    
    3. Try to access the `get_me` took with Bob's JWT token. Verify that the request fails, because the token does not have the `sub=alice` claim. 
       ```sh
@@ -201,9 +203,10 @@ sequenceDiagram
       Example output: 
       ```console
       Failed to call tool search_repositories: Streamable HTTP error: 
-      Error POSTing to endpoint: {"jsonrpc":"2.0","id":2,"error":{"code":-32603,"message":
-      "failed to send message: unauthorized tool call"}}
+      Error POSTing to endpoint: {"jsonrpc":"2.0","id":2,"error":{...}}
       ```
+
+      {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The JSON-RPC error has the code `-32602` and the message `Unknown tool: search_repositories`.{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The JSON-RPC error has the code `-32602` and the message `unknown resource`, which is the same message as for a tool that does not exist. The proxy logs record the reason, such as `mcp: authorization denied for tool: search_repositories`.{{< /version >}}
    {{% /tab %}}
    {{% tab name="UI" %}}
    1. Go to the MCP inspector tool, and re-connect with Alice's token. From the **Tools** tab, click **Clear**. Then click **List Tools**. Verify that you can now only see the `get_me` tool that you authorized in your {{< reuse "agw-docs/snippets/policy.md" >}}. 
