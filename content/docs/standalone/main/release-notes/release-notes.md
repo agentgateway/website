@@ -74,6 +74,14 @@ Dynamic backends now reject destinations that resolve to loopback, link-local, o
 
 **Actions to take**: If a dynamic backend must reach a service that is local to the gateway, set `config.backend.allowDynamicLoopback: true`. For more information, see [Loopback and link-local destinations]({{< link-hextra path="/documentation/configuration/egress-proxy/#loopback-destinations" >}}).
 
+### Error responses hide internal details {#v17-error-details}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2162 -->
+
+Error responses that agentgateway generates now carry a generic message instead of the internal cause of the error. The HTTP status codes are unchanged. For example, a failed JWT, API key, basic, or OIDC authentication returns `authentication failed`, a failed backend authentication returns `backend authentication failed`, and a request without an available backend returns `no backends available`. The same applies to the `grpc-message` of gRPC responses and the error message of MCP JSON-RPC responses. Errors that describe the client's own request, such as an invalid LLM request body or MCP session header, keep their details. Rejection responses that you configure, such as for prompt guards, are unchanged. The `error` field of the access log and the request traces still contain the full cause.
+
+**Actions to take**: If clients, tests, or alerts parse error response bodies or match their text, update them to match the generic messages or use the status code instead. To find the cause of an error, check the access log. To return the full details to clients while you debug in a trusted environment, set the `AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS` environment variable to `true`. Do not use this setting in production. For more information, see [Client-safe error responses]({{< link-hextra path="/documentation/operations/debug/#client-safe-error-responses" >}}).
+
 ### Removed {#v17-removed}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4072 -->
@@ -263,11 +271,13 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3797 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3833 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4053 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4012 -->
 
 - **Standalone Helm session key Secret**: Set `session.secretName` to load the AES-256-GCM session key from an existing Kubernetes Secret. The chart passes the Secret's `key` entry to the proxy as the `SESSION_KEY` environment variable, which takes precedence over `config.session.key`. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
 - **Native histogram scraping**: The PodMonitor of the standalone Helm chart supports native histogram scraping, relabelings, and metric relabelings. Native histogram scraping is off by default and requires Prometheus v3.8.0 or later and Prometheus Operator v0.88.0 or later. For more information, see [Scrape native histograms]({{< link-hextra path="/documentation/observability/metrics/prometheus/#native-histograms" >}}).
 - **Graceful HTTP/1 drain**: When agentgateway drains or a connection reaches its maximum connection duration, HTTP/1 clients receive `Connection: close` on the next response, so that they close the connection cleanly. For more information, see [Shutdown and drain]({{< link-hextra path="/documentation/configuration/static-configuration/#shutdown-drain" >}}).
 - **Standalone Helm init containers**: Set `extraInitContainers` in the standalone Helm chart to add init containers, including native sidecar containers, to the proxy pod. For more information, see [Common Helm values]({{< link-hextra path="/documentation/setup/install/helm/#common-helm-values" >}}).
+- **Hostname destinations from an endpoint picker**: In standalone request scheduler mode, an endpoint picker (EPP) can select a DNS hostname, such as a shared gateway or cloud load balancer in another cluster, in addition to an IP address. Set `destinationMode: passthrough` in `inferenceRouting` to accept hostname destinations. The default `validated` mode still accepts only IP addresses that match a local endpoint. For more information, see [Hostname destinations]({{< link-hextra path="/documentation/llm/inference/#hostname-destinations" >}}).
 
 ### CLI and UI {#v17-cli-ui}
 
@@ -315,11 +325,17 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3933 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3896 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4082 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4050 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4067 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4096 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4059 -->
 
 **Traffic management**
 
 - Requests that agentgateway answers locally, such as for an unknown model or a failed model authorization, now include the request data in access logs and CEL.
 - External authorization with `includeRequestBody` and no `maxRequestBytes` no longer rejects every request that has a body with `413`. The limit defaults to 8192 bytes.
+- A TLS backend whose hostname is not a valid TLS server name now fails the request with an error instead of crashing the proxy.
 
 **LLM**
 
@@ -333,6 +349,9 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 - Passthrough no longer fails on SSE streams with an unterminated final event.
 - Claude models on Azure AI Foundry now follow the Anthropic prompt-cache token convention for normalized token counts and cost.
 - A route-level API key budget no longer replaces a gateway-level budget.
+- Anthropic responses that report `usage.iterations`, such as for server-side compaction, now count the tokens of every iteration, including cache tokens, in usage, telemetry, costs, and converted Chat Completions usage. Previously, only the final iteration counted. Each iteration is priced at its own model when the model catalog has an exact match for that model. `/v1/messages` responses keep the `usage.iterations` breakdown.
+- On `detect` routes, streamed Anthropic responses, including Claude on Bedrock, now record input and cache tokens from the `message_start` event. Previously, only output tokens were recorded.
+- The built-in model catalog keeps deprecated models that providers still serve, so that requests to these models are still priced. `agctl catalog import` now includes deprecated models by default. To leave them out, set `--legacy=false`.
 
 **MCP**
 
@@ -341,7 +360,8 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 - MCP responses now honor the `responseIdleTimeout` response idle timeout, which previously did not apply on MCP routes. A response, including an SSE stream, that sends no data for longer than the timeout is now ended.
 - MCP target conditions are now checked on each request of a session, not only when the session is initialized. A request whose conditions select different targets than the session returns `404`, and the client starts a new session. For more information, see [Target conditions]({{< link-hextra path="/integrations/mcp/servers/virtual/#target-conditions" >}}).
-- Resumed MCP sessions no longer keep outdated settings after a configuration change.
+- A reused stateful MCP session now applies the MCP guardrails of the current route, as it already did for MCP authorization. Previously, the session kept the guardrails of the route and configuration that it started with. For example, a session that started on a route without guardrails skipped the guardrails of another route to the same backend.
+- A request with an encrypted MCP session ID that a different MCP backend issued now returns `404`, and the client starts a new session. Previously, the request could reach the other backend. Session IDs that are not encrypted with a session key are not checked.
 
 **UI**
 

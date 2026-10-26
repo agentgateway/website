@@ -55,6 +55,15 @@ An {{< reuse "agw-docs/snippets/backend.md" >}} with `spec.dynamicForwardProxy` 
 
 **Actions to take**: If a dynamic forward proxy backend must reach a service that is local to the proxy, set `config.backend.allowDynamicLoopback: true` in `spec.rawConfig` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. For more information, see [Allow loopback destinations]({{< link-hextra path="/documentation/traffic-management/dfp/#allow-dynamic-loopback" >}}) and [Raw config]({{< link-hextra path="/documentation/setup/customize/options/#raw-config" >}}).
 
+### Error responses hide internal details {#v17-error-details}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2162 -->
+
+Error responses that the agentgateway proxy generates now carry a generic message instead of the internal cause of the error. The HTTP status codes are unchanged. For example, a failed JWT, API key, basic, or OIDC authentication returns `authentication failed`, a failed backend authentication returns `backend authentication failed`, and a request without an available backend returns `no backends available`. The same applies to the `grpc-message` of gRPC responses and the error message of MCP JSON-RPC responses. Errors that describe the client's own request, such as an invalid LLM request body or MCP session header, keep their details. Rejection responses that you configure, such as for prompt guards, are unchanged. The `error` field of the access log and the request traces still contain the full cause.
+
+**Actions to take**: If clients, tests, or alerts parse error response bodies or match their text, update them to match the generic messages or use the status code instead. To find the cause of an error, check the proxy's access log. To return the full details to clients while you debug in a trusted environment, set the `AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS` environment variable to `true` in `spec.env` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. Do not use this setting in production. For more information, see [Debug your setup]({{< link-hextra path="/documentation/operations/debug/" >}}).
+<!-- TODO anchor from #1367 -->
+
 ### Removed {#v17-removed}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4072 -->
@@ -87,7 +96,7 @@ An {{< reuse "agw-docs/snippets/backend.md" >}} with `spec.dynamicForwardProxy` 
 - **Proxy environment variables**: Callouts from the proxy, such as external authorization requests, guardrail requests, and AWS and Azure credential fetches, now use the `HTTPS_PROXY`, `HTTP_PROXY`, `ALL_PROXY`, and `NO_PROXY` environment variables to configure a forward proxy that these requests must be routed through. In 1.6, only Google Cloud Platform (GCP) credential fetches used these variables. If you set these variables in `spec.env` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource for another purpose, callouts go through that forward proxy after you upgrade. To keep all callouts direct, set `NO_PROXY` to `*`. For more information, see [Callout proxy]({{< link-hextra path="/documentation/setup/customize/callout-proxy/" >}}).
 - **Normalized service tier**: `llm.serviceTier` is now one of `standard`, `flex`, `priority`, or `reserved`, whatever the provider's own naming. A provider tier that agentgateway does not recognize leaves the value unset. Update CEL expressions and dashboards that compare against provider-specific values such as `default`. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
 - **`AgentgatewayModel` wildcard precedence**: An exact model name such as `openai/gpt-5.5` in an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} now wins over a wildcard such as `openai/*`, matching standalone. For more information, see [Model matching]({{< link-hextra path="/documentation/llm/models/about/#model-matching" >}}).
-- **Invalid OAuth configuration**: Invalid `oauthTokenExchange` or `crossAppAccess` backend authentication no longer blocks the rest of your configuration from reaching the proxy. Only requests that use the invalid block fail, with HTTP `500` and the message `oauthTokenExchange configuration is invalid` or `crossAppAccess configuration is invalid`. The policy reports `Accepted: True` with the reason `PartiallyValid`. For more information, see [Debug your setup]({{< link-hextra path="/documentation/operations/debug/" >}}).
+- **Invalid OAuth configuration**: Invalid `oauthTokenExchange` or `crossAppAccess` backend authentication no longer blocks the rest of your configuration from reaching the proxy. Only requests that use the invalid block fail, with HTTP `500` and the message `backend authentication failed`. The proxy's access log records the cause, such as `oauthTokenExchange configuration is invalid` or `crossAppAccess configuration is invalid`. The policy reports `Accepted: True` with the reason `PartiallyValid`. For more information, see [Debug your setup]({{< link-hextra path="/documentation/operations/debug/" >}}).
 - **Bedrock `tool_choice`**: Client `tool_choice` settings now reach Bedrock Converse as `toolChoice`. Previously, they were dropped silently. Requests that force tool use on a model that does not support it, such as with extended thinking, now return an error from Bedrock.
 - **Bedrock service tier**: The OpenAI `service_tier` values `priority`, `default`, and `flex` now reach Bedrock Converse as `serviceTier`. Previously, they were dropped silently, and Bedrock served the request at the standard tier. Requests for a tier that the model does not support now return a `400` error from Bedrock. For more information, see [Service tier]({{< link-hextra path="/integrations/llm/providers/bedrock/#service-tier" >}}).
 - **Token rate limits for non-chat APIs**: Token-based LLM rate limits now count usage from Embeddings, Rerank, Decisions, and SystemOne requests.
@@ -117,6 +126,7 @@ An {{< reuse "agw-docs/snippets/backend.md" >}} with `spec.dynamicForwardProxy` 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3771 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3605 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3843 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3867 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4030 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3828 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3776 -->
@@ -127,6 +137,7 @@ An {{< reuse "agw-docs/snippets/backend.md" >}} with `spec.dynamicForwardProxy` 
 - **Perplexity provider**: Set `spec.provider: Perplexity` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} to connect to Perplexity with built-in defaults. The provider accepts Responses and Messages requests, but not Chat Completions requests. For other ways to connect, see [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/#perplexity" >}}).
 - **Copilot on Kubernetes**: Set `spec.ai.provider.copilot` on an {{< reuse "agw-docs/snippets/backend.md" >}}, or `spec.provider: Copilot` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, to use the Copilot provider with credentials from a Kubernetes Secret. For more information, see [Copilot]({{< link-hextra path="/integrations/llm/providers/copilot/" >}}).
 - **Callout router for virtual models**: A virtual model can select its target model by calling an external HTTP service. Set `spec.virtualModel.callout` on an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, with an optional fallback model and response cache. For more information, see [Choose a model with an HTTP callout]({{< link-hextra path="/documentation/llm/models/virtual/#callout-routing" >}}).
+- **More accurate token counting**: A new tokenizer estimates token counts more accurately, runs about 10 times faster, and uses less memory.
 - **Better format conversion**: Reasoning from vLLM and OpenRouter is preserved when agentgateway converts Chat Completions responses to Messages or Responses. Bedrock reasoning streams as reasoning items in Responses, and Bedrock redacted reasoning is preserved. Vertex AI Gemini models accept `http://` and `https://` URIs in file content. For more information, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}) and [Send file content by URI]({{< link-hextra path="/integrations/llm/providers/vertex/#send-file-content-by-uri" >}}).
 - **More CEL during request policies**: Request-phase CEL expressions on LLM traffic can read `llm.requestModel` before provider overrides and `llmRequest` for the parsed JSON request body. For more information, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
 
@@ -269,10 +280,16 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3817 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3896 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4082 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4050 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4067 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4096 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4059 -->
 
 **Traffic management**
 
 - Requests that agentgateway answers locally, such as for an unknown model or a failed model authorization, now include the request data in access logs and CEL.
+- A TLS backend whose hostname is not a valid TLS server name now fails the request with an error instead of crashing the proxy.
 
 **LLM**
 
@@ -285,6 +302,9 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 - Gemini tool schemas that use `oneOf` no longer return empty tool calls.
 - Passthrough no longer fails on SSE streams with an unterminated final event.
 - Claude models on Azure AI Foundry now follow the Anthropic prompt-cache token convention for normalized token counts and cost.
+- Anthropic responses that report `usage.iterations`, such as for server-side compaction, now count the tokens of every iteration, including cache tokens, in usage, telemetry, costs, and converted Chat Completions usage. Previously, only the final iteration counted. Each iteration is priced at its own model when the model catalog has an exact match for that model. `/v1/messages` responses keep the `usage.iterations` breakdown.
+- On `Detect` routes, streamed Anthropic responses, including Claude on Bedrock, now record input and cache tokens from the `message_start` event. Previously, only output tokens were recorded.
+- The built-in model catalog keeps deprecated models that providers still serve, so that requests to these models are still priced. `agctl catalog import` now includes deprecated models by default. To leave them out, set `--legacy=false`.
 
 **MCP**
 
@@ -292,7 +312,8 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 - The controller creates the session key Secret of each Gateway only when the Secret is missing, and no longer overwrites the key on reconcile, which could invalidate stateful MCP sessions. If the Secret cannot be created, the Gateway reports `Programmed: False` with the reason `DeploymentFailed`.
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 - MCP responses now honor the `spec.traffic.timeouts.responseIdle` response idle timeout, which previously did not apply on MCP routes. A response, including an SSE stream, that sends no data for longer than the timeout is now ended.
-- Resumed MCP sessions no longer keep outdated settings after a configuration change.
+- A reused stateful MCP session now applies the MCP guardrails of the current route, as it already did for MCP authorization. Previously, the session kept the guardrails of the route and configuration that it started with. For example, a session that started on a route without guardrails skipped the guardrails of another route to the same backend.
+- A request with an encrypted MCP session ID that a different MCP backend issued now returns `404`, and the client starts a new session. Previously, the request could reach the other backend. Session IDs that are not encrypted with a session key are not checked.
 
 **Operations**
 
