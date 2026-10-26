@@ -18,7 +18,7 @@ Attaches to: {{< badge content="Route" path="/documentation/configuration/routes
 
 Request {{< gloss "Mirroring" >}}mirroring{{< /gloss >}} allows sending a copy of each request to an alternative backend.
 These requests will not be retried if they fail.
-Set `percentage` to a decimal from `0.0` to `1.0`. Standalone configuration validation rejects values outside that range.
+Set `percentage` to a value from `0.0` to `1.0`. For example, `0.5` mirrors half of the requests. Agentgateway rejects a configuration with a value outside that range, such as `percentage: 50`.
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}

@@ -58,7 +58,7 @@ routes:
 {{< /tab >}}
 {{< /tabs >}}
 
-Set either `body` or `bodyExpression`, not both. Standalone configuration validation rejects direct response policies that set both fields.
+Set either `body` or `bodyExpression`, not both. Agentgateway rejects a configuration with a direct response policy that sets both fields.
 
 {{< doc-test paths="direct-response" >}}
 cat <<'EOF' > config.yaml

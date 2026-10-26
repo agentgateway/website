@@ -18,7 +18,7 @@ Attaches to: {{< badge content="Route" path="/documentation/configuration/routes
 
 Request {{< gloss "Redirect" >}}redirects{{< /gloss >}} allow returning a direct response redirecting users to another location.
 
-For `path.full` and `path.prefix`, use an empty value or start the value with `/`. If you use `path.prefix` on a route that does not delegate to a route group, every match on the route must use `pathPrefix`.
+Start the `path.full` and `path.prefix` values with `/`. If you use `path.prefix` on a route that does not delegate to a route group, every match on the route must use `pathPrefix`. Agentgateway rejects a configuration that does not follow these rules.
 
 For example, the following configuration will return a `307 Temporary Redirect` response with the header `location: https://example.com/new-path`:
 
