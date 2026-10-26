@@ -6,7 +6,7 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
 >
 > {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Client response bodies use the usage convention for the API format that the client called. A `/v1/messages` response uses Anthropic usage fields. In that response, `usage.input_tokens` excludes prompt-cache tokens and cache counts appear separately. A `/v1/chat/completions` response uses OpenAI usage fields, and `usage.prompt_tokens` includes prompt-cache tokens.{{< /version >}}
 >
-> {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}When Anthropic reports `usage.iterations`, the `/v1/messages` response keeps that array. Telemetry, cost calculations, and converted Chat Completions responses use the sum of the iteration entries.{{< /version >}}
+> {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}When Anthropic reports `usage.iterations`, the `/v1/messages` response keeps that array. Telemetry, cost calculations, and converted Chat Completions responses use the sum of the iteration entries.{{< /version >}}
 {{< /version >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
