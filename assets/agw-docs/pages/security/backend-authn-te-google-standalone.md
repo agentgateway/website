@@ -23,7 +23,7 @@ The Google STS uses the standard RFC 8693 grant, so you configure it with the ge
 
 1. [Install the agentgateway binary]({{< link-hextra path="/documentation/setup/install/binary/" >}}).
 2. Install [Docker](https://docs.docker.com/get-started/get-docker/) to run the sample identity provider.
-3. Install the [`gcloud` CLI](https://cloud.google.com/sdk/docs/install) and log in to a Google Cloud project where you can create workload identity pools and Cloud Storage buckets, such as with the `roles/iam.workloadIdentityPoolAdmin` and `roles/storage.admin` roles.
+3. Install the [`gcloud` CLI](https://docs.cloud.google.com/sdk/docs/install-sdk) and log in to a Google Cloud project where you can create workload identity pools and Cloud Storage buckets, such as with the `roles/iam.workloadIdentityPoolAdmin` and `roles/storage.admin` roles.
 4. Install [`jq`](https://jqlang.org/download/).
 
 ## Step 1: Run a sample identity provider {#idp}
