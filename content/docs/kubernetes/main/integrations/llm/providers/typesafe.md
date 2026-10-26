@@ -18,7 +18,7 @@ The preset accepts only Decisions and SystemOne requests. Chat Completions, Resp
 
 Store your TypeSafe API key in a Secret, and create a model that uses the `Typesafe` preset. The model attaches directly to the Gateway listener, so you do not create an {{< reuse "agw-docs/snippets/backend.md" >}} or an HTTPRoute.
 
-1. Get an API key from [TypeSafe](https://docs.typesafe.ai/api).
+1. Get an API key from [TypeSafe](https://docs.typesafe.ai/api/system-one).
 
 2. Save the API key in an environment variable.
 
