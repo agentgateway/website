@@ -84,6 +84,10 @@ For more information, see [Session key]({{< link-hextra path="/integrations/mcp/
 
 - **Per-key budgets can run without a reset window**: Omit `budgets[].window` to create an API key budget whose usage accumulates for the lifetime of the budget and never resets. For more information, see [Per-key dollar or token budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/" >}}).
 
+### Security {#v17-security}
+
+- **Configurable OIDC session cookie lifetime**: Set `sessionTtl` on a local OIDC policy to control how long browser session cookies remain valid. If you omit the field, sessions keep the 7-day default, and the session still expires no later than the ID token's `exp` claim. For more information, see [Session cookies]({{< link-hextra path="/documentation/configuration/security/oidc/#session-cookies" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4066 -->
+
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->
