@@ -107,6 +107,7 @@ For more information, see [Session key]({{< link-hextra path="/integrations/mcp/
 
 **LLM**
 
+- Bedrock Runtime chat-completions requests with an empty `tools` list no longer include a Converse tool configuration, so requests without callable tools can complete normally. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4107 -->
 - OpenAI-compatible responses, such as from Gemini, count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
 - Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
 - Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
