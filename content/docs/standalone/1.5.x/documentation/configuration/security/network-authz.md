@@ -20,7 +20,7 @@ Attaches to: {{< badge content="Frontend" path="/documentation/configuration/ove
 #     with all three rule types (`allow`, `deny`, `require`) and the
 #     `source.address` / `source.port` CEL variables.
 #   * "Examples": all three example configs are accepted - the private-range
-#     allowlist (`cidr(...).containsIP(...)`), the mTLS `source.tls.identity`
+#     allowlist (`cidr(...).containsIP(...)`), the mTLS `source.spiffeId`
 #     requirement, and the layered L4+L7 config that combines
 #     `networkAuthorization` with a route-level `authorization` policy.
 #   * Allowlist semantics from the "Evaluation order" list, rule 6: with the
@@ -32,6 +32,11 @@ Attaches to: {{< badge content="Frontend" path="/documentation/configuration/ove
 #     (`127.0.0.1`) lets the connection reach HTTP routing - observed as a `503`
 #     from the placeholder backend rather than a connection failure, confirming
 #     network authorization is the thing that let it through.
+#   * "Require mTLS client identity" at runtime: with test client certificates
+#     for `spiffe://cluster.local/ns/default/sa/my-service` and
+#     `.../sa/other-service` from the same CA, the example admits only the
+#     `my-service` client (observed as a 503 from the placeholder backend) and
+#     rejects the other client and a client with no certificate.
 #
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * Evaluation order rules for `deny` match and denylist semantics - requires
@@ -45,9 +50,6 @@ Attaches to: {{< badge content="Frontend" path="/documentation/configuration/ove
 #     `networkAuthorization` config at all behaves like any other page's
 #     unauthenticated route), so a dedicated example would add no signal beyond
 #     what every other doc test on this site already demonstrates.
-#   * `source.tls.identity` and `source.tls.subject_alt_names` at runtime -
-#     requires config/traffic the page omits; the page shows no TLS listener or
-#     client certificate setup, so the mTLS example is only validated as config.
 #   * The route-level `authorization` JWT requirement in the layered example -
 #     external dependency; enforcing it needs a JWT issuer this page does not set
 #     up. HTTP authorization is covered by its own guide.
@@ -176,16 +178,20 @@ Evaluation order:
 5. If only `deny` rules exist, unmatched connections are allowed (denylist semantics).
 6. If `allow` rules exist but none matched, the connection is rejected (allowlist semantics).
 
+Some CEL variables are unset for some connections. A rule that references an unset variable never matches. A `require` rule then rejects the connection, and a `deny` rule lets the connection through. For when each variable is set, see [CEL context](#cel-context).
+
 ## CEL context
 
-The following CEL variables are available in network authorization rules:
+The following CEL variables are available in network authorization rules. For every variable that agentgateway exposes, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
 
 | Variable | Type | Description |
 |----------|------|-------------|
 | `source.address` | `string` | IP address of the downstream connection. |
 | `source.port` | `int` | Port of the downstream connection. |
-| `source.tls.identity` | `string` | Client certificate identity (if mTLS). |
-| `source.tls.subject_alt_names` | `list(string)` | Subject Alternative Names from the client certificate. |
+| `source.spiffeId` | `string` | SPIFFE ID of the client certificate, which is the certificate's first `spiffe://` URI Subject Alternative Name (SAN). Set only when the gateway verifies client certificates. |
+| `source.identity` | `object` | Istio-format identity of the client certificate, with the `trustDomain`, `namespace`, and `serviceAccount` fields. Set only when the SPIFFE ID has the `spiffe://<trust-domain>/ns/<namespace>/sa/<service-account>` format. Compare its fields, not the whole object, with a string. |
+| `source.subjectAltNames` | `list(string)` | Subject Alternative Names from the client certificate. |
+| `source.subject`, `source.subjectCn`, `source.issuer` | `string` | Subject, subject common name (CN), and issuer of the client certificate. |
 
 ## Examples
 
@@ -210,11 +216,24 @@ agentgateway -f config-private.yaml --validate-only
 
 ### Require mTLS client identity
 
+Admit only clients whose certificate carries a specific SPIFFE ID. The gateway must verify client certificates, so set `root` in its `tls` settings to the CA that issued them. Without `root`, the client certificate variables are unset, and this rule rejects every connection.
+
 ```yaml
 frontendPolicies:
   networkAuthorization:
     rules:
-    - require: 'source.tls.identity == "spiffe://cluster.local/ns/default/sa/my-service"'
+    - require: 'source.spiffeId == "spiffe://cluster.local/ns/default/sa/my-service"'
+
+gateways:
+  default:
+    port: 3443
+    tls:
+      cert: certs/cert.pem
+      key: certs/key.pem
+      root: certs/ca.pem
+routes:
+- backends:
+  - host: localhost:8080
 ```
 
 {{< doc-test paths="network-authz" >}}
@@ -222,10 +241,28 @@ cat <<'EOF' > config-mtls.yaml
 frontendPolicies:
   networkAuthorization:
     rules:
-    - require: 'source.tls.identity == "spiffe://cluster.local/ns/default/sa/my-service"'
+    - require: 'source.spiffeId == "spiffe://cluster.local/ns/default/sa/my-service"'
+
+gateways:
+  default:
+    port: 3443
+    tls:
+      cert: certs/cert.pem
+      key: certs/key.pem
+      root: certs/ca.pem
+routes:
+- backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config-mtls.yaml --validate-only
 {{< /doc-test >}}
+
+You can match the same client in other ways:
+
+* `'"spiffe://cluster.local/ns/default/sa/my-service" in source.subjectAltNames'` checks every SAN in the client certificate.
+* `'source.identity.namespace == "default" && source.identity.serviceAccount == "my-service"'` checks parts of an Istio-format SPIFFE ID.
+
+Do not compare `source.identity` with a SPIFFE ID string. `source.identity` is an object, so the comparison never matches, and the rule rejects every client.
 
 ### Layered L4+L7 controls
 
