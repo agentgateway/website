@@ -163,7 +163,12 @@ For more information, see the [MCP quickstart]({{< link-hextra path="/documentat
 The **Settings** page, under **Tools**, holds the settings that apply to the whole gateway. The page has two sub-pages, and [http://localhost:15000/ui/settings](http://localhost:15000/ui/settings) opens the first one.
 
 * **UI**: Selects the **Public gateway** that serves the UI in addition to the admin interface. The page also shows the UI access policies, such as OIDC, JWT auth, API keys, and CORS. The UI saves these settings in the `ui` section of your configuration. For more information, see [Serve the UI on its own gateway]({{< link-hextra path="/documentation/setup/ui/gateway-ui/" >}}) and [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).
+
+  {{< reuse-image src="img/ui-tour-settings-ui.png" srcDark="img/ui-tour-settings-ui-dark.png" alt="Settings UI page with the Public gateway dropdown set to None and the UI access policy cards, such as OIDC and JWT auth, marked disabled" >}}
+
 * **Observability**: Shows the **Tracing** and **Access logs** cards, which configure tracing and access logs for all traffic. The UI saves these settings in `frontendPolicies.tracing` and `frontendPolicies.accessLog`. For more information, see [Access logs]({{< link-hextra path="/documentation/observability/access-logs/view/" >}}) and [Traces]({{< link-hextra path="/documentation/observability/traces/" >}}).
+
+  {{< reuse-image src="img/ui-tour-settings-observability.png" srcDark="img/ui-tour-settings-observability-dark.png" alt="Settings Observability page with the Tracing and Access logs cards, both marked disabled" >}}
 {{< /version >}}
 
 ## Try out the UI
@@ -191,7 +196,12 @@ The drawers that edit models, providers, guardrails, MCP servers, gateways, list
      group: sales
    ```
 
+   {{< reuse-image src="img/ui-llm-key-raw.png" srcDark="img/ui-llm-key-raw-dark.png" alt="Edit virtual key drawer in raw mode with the YAML for the bob-key virtual API key" >}}
+
 3. Edit the YAML. The UI checks each edit against the configuration schema. If an edit is not valid, the drawer shows an **Invalid configuration** banner with the first error, and you cannot save. For example, if you delete the `key` field of a virtual API key, the banner reports that `key` is required.
+
+   {{< reuse-image src="img/ui-llm-key-raw-invalid.png" srcDark="img/ui-llm-key-raw-invalid-dark.png" alt="Edit virtual key drawer in raw mode with an Invalid configuration banner that reports key: Required, and the Save key button turned off" >}}
+
 4. Click **Save**, such as **Save key**. To check the change first, click **View diff**.
 
 To return to the form, click the **Raw** icon again. The form keeps your last valid edit and drops any text that is not valid. If the form cannot show a value, such as a field that has no form control, the drawer stays in raw mode, and the tooltip on the **Raw** icon explains why.
@@ -219,6 +229,11 @@ For an example of using the UI to set something up, use the **LLM > Client Setup
 4. Select the client from the **Integration** dropdown, and copy the generated settings or snippet.
 
    {{< reuse-image src="img/ui-tour-client-setup.png" srcDark="img/ui-tour-client-setup-dark.png" alt="LLM Client Setup page with connection settings on the left and a generated curl snippet on the right" >}}
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+   For example, select **Continue** to get a model entry for `~/.continue/config.yaml`.
+
+   {{< reuse-image src="img/ui-tour-client-setup-continue.png" srcDark="img/ui-tour-client-setup-continue-dark.png" alt="LLM Client Setup page with Continue selected as the integration and a generated model entry for the Continue config.yaml file" >}}
+{{< /version >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 Client Setup fills in **Gateway base URL** from the gateway that serves LLM traffic. If the same gateway also serves the UI, Client Setup uses the address in your browser instead, so the URL keeps the host, scheme, and port of a reverse proxy in front of agentgateway. Check the URL before you copy a snippet, and change it if clients reach agentgateway through a different address. The snippets appear only when **Gateway base URL** has a value.

@@ -388,6 +388,10 @@ Replace one client's key, such as after a suspected leak. The key keeps its name
 2. Replace the key value.
    * If the key starts with `agw_sk_`, such as a key that the UI generated, click **Regenerate**. The UI generates a new `agw_sk_` value.
    * For a custom key, such as `vk-alice-4f9c2a`, click **Edit**. Replace the value in the **Key value** field with the new value, such as `vk-alice-7c2e5b`.
+
+   {{< reuse-image-light src="img/ui-llm-key-rotate.png" alt="Edit virtual key drawer for alice with a new value in the Key value field, a Keep existing button, and the Store raw key option" >}}
+   {{< reuse-image-dark srcDark="img/ui-llm-key-rotate-dark.png" alt="Edit virtual key drawer for alice with a new value in the Key value field, a Keep existing button, and the Store raw key option" >}}
+
 3. Optional: Select **Store raw key** to save the key value instead of a hash. If you keep the default, the UI saves only a hash of the key (`keyHash`).
 4. Click **Save key**. If the UI saved a hash, the **Copy your new API key** dialog shows the new key. Click **Copy**, and click **Done**. The UI does not show the key again.
 5. Give the new key to Alice. Requests with the old key now fail with `401`.
