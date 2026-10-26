@@ -111,6 +111,7 @@ For more information, see [Session key]({{< link-hextra path="/integrations/mcp/
 - Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
 - Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
 - Bedrock Runtime requests now send client `tool_choice` settings as Converse `toolChoice`, so forced tool choices can take effect and models that reject them return Bedrock errors.
+- Responses requests to Bedrock keep a function call whose `arguments` value is invalid JSON by sending an empty tool input, so Bedrock does not receive an orphan `toolResult` on later turns. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4027 -->
 
 **MCP**
 
