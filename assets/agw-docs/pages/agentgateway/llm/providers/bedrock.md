@@ -296,6 +296,29 @@ When a chat request goes to Bedrock Runtime, the `tool_choice` value from the cl
 The Bedrock model decides which values it accepts. If the model rejects forced tool use, such as `any` or a named tool, the client receives the Bedrock error. For example, Anthropic models reject forced tool use when [extended thinking](https://platform.claude.com/docs/en/build-with-claude/thinking#thinking-with-tool-use) is enabled. The tool choice is not changed for requests that use extended thinking.
 {{% /version %}}
 
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
+## Service tier {#service-tier}
+
+For `/v1/chat/completions` and `/v1/responses` requests to Bedrock Runtime, agentgateway converts OpenAI `service_tier` to Converse `serviceTier`. This selects the Bedrock [service tier](https://docs.aws.amazon.com/bedrock/latest/userguide/service-tiers-inference.html).
+
+| Client `service_tier` | Bedrock `serviceTier` |
+|---|---|
+| `priority` | `{"type": "priority"}` |
+| `default` | `{"type": "default"}` |
+| `flex` | `{"type": "flex"}` |
+| `auto`, or omitted | Omitted. Bedrock uses its default tier. |
+| `scale`, `fast`, or `ultrafast` | Omitted. Bedrock uses its default tier. For `/v1/chat/completions` requests, these values also trigger the warning `service tier is not supported by Bedrock`. |
+| Any other value | For `/v1/chat/completions` requests, omitted with the same warning. For `/v1/responses` requests, the request fails with `400` before it reaches Bedrock. For example: ``unknown variant `bogus` ``. |
+
+A `/v1/messages` request does not set a Bedrock service tier.
+
+If the Bedrock model does not support the requested tier, the request fails with `400`. For example: `The provided service tier is not supported for this model`.
+
+Earlier versions omitted the tier and used the standard tier. To keep that behavior, omit `service_tier` or set it to `auto`.
+
+Bedrock reports the served tier in the `x-amzn-bedrock-service-tier` response header. Agentgateway normalizes it as `llm.serviceTier` to select model catalog rates. The built-in catalog has no Bedrock service-tier rates. To price Bedrock tiers differently, add `serviceTier` tiers for your Bedrock models to your own catalog. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
+{{% /version %}}
+
 ## Prompt caching
 
 Prompt Caching is a performance, cost-optimization, and cost-reduction feature that allows the model to "remember" frequently used parts of your prompt, including long system instructions, reference documents, or tool definitions. This way, the model does not need to reprocess these parts every time you send a new prompt. 
@@ -469,7 +492,19 @@ Some Bedrock models return encrypted reasoning in a `reasoningContent.redactedCo
 | `/v1/responses` | A reasoning item with `encrypted_content`. | Send the reasoning item back in the input. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
 | `/v1/chat/completions` | Omitted, because the Chat Completions format has no field for encrypted reasoning. Signed reasoning text still arrives in `reasoning_content` and `reasoning_signature`. | Not possible. |
 
-A streamed reply does not keep the encrypted payload, so streamed encrypted reasoning cannot be replayed. A `/v1/messages` stream shows the encrypted reasoning as a `thinking` block with the text `[REDACTED]`.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} If redacted reasoning fragments in a streamed Bedrock Runtime reply exceed the stream buffer limit before the block ends, the stream emits an `api_error` event with the message `Stream processing error`. The stream then stops.{{< /version >}}
+{{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}A streamed reply does not keep the encrypted payload, so streamed encrypted reasoning cannot be replayed. A `/v1/messages` stream shows the encrypted reasoning as a `thinking` block with the text `[REDACTED]`.{{< /version >}}
+
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
+Replay streamed encrypted reasoning the same way as buffered reasoning. Stream events depend on the client API.
+
+| Client API | Streamed reasoning |
+|---|---|
+| `/v1/messages` | Text uses `thinking_delta` events; the signature uses `signature_delta`. Encrypted reasoning arrives as one `redacted_thinking` block after Bedrock finishes the block. |
+| `/v1/responses` | Each reasoning block becomes a `reasoning` output item before the `message` item. Text uses `response.reasoning_text.delta` events. The item's `response.output_item.done` event carries the signature or encrypted payload as `encrypted_content`. |
+| `/v1/chat/completions` | Text uses `reasoning_content`; the signature uses `reasoning_signature`. Encrypted reasoning is omitted. |
+
+For `/v1/messages` streams, agentgateway buffers encrypted reasoning until the block ends. If the buffered fragments exceed the LLM buffer limit, the stream emits an `api_error` event with `Stream processing error` and stops. The limit is 32 MiB unless you set `frontend.http.maxBufferSize`. For more information, see [Buffering]({{< link-hextra path="/documentation/traffic-management/buffering/#about-buffer-limits" >}}).
+{{% /version %}}
 {{% /version %}}
 
 ## Structured outputs

@@ -32,6 +32,8 @@ To send the requests that agentgateway makes on its own behalf, such as JWKS fet
 > [!NOTE]
 > Policies that you attach to a listener on a `tunnelProtocol: connect` bind are not applied to the CONNECT request, because tunnel mode handles the request before route matching. To authenticate clients, use route mode.
 
+By default, dynamic backends refuse to connect to loopback and link-local addresses. For more information, see [Loopback and link-local destinations](#loopback-destinations).
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
@@ -400,3 +402,106 @@ Use this pattern when agentgateway must apply HTTP policies to every outbound re
 * To apply HTTP policies to every outbound request, use [Inspect all HTTPS traffic](#inspect-all-https-traffic).
 
 Run one configuration at a time. Each configuration on this page listens for proxy requests on port 3000.
+
+## Loopback and link-local destinations {#loopback-destinations}
+
+A dynamic backend uses the destination named in each request. Without restrictions, clients could reach services on the gateway host.
+
+Examples include the admin interface on `localhost:15000` and the cloud metadata server at `169.254.169.254`, which can issue cloud credentials. This is called server-side request forgery (SSRF).
+
+To prevent this attack, a dynamic backend refuses to connect to the following addresses.
+
+| Address type | IPv4 | IPv6 |
+| -- | -- | -- |
+| Loopback | `127.0.0.0/8` | `::1` |
+| Link-local, including the cloud metadata server | `169.254.0.0/16` | `fe80::/10` |
+| Unspecified, which connects to the local host | `0.0.0.0` | `::` |
+
+The check has the following scope:
+
+* **Checks run after DNS resolution.** Hostnames resolving to blocked addresses, such as `localhost`, are also blocked. The check covers IPv4-mapped forms of blocked addresses, such as `::ffff:127.0.0.1`.
+* **Private networks remain reachable.** To restrict destinations in ranges such as `10.0.0.0/8` and `192.168.0.0/16`, use route `hostnames` allowlists.
+* **Only dynamic backends are checked.** A backend with a fixed address, such as `host: localhost:8080`, still connects to loopback.
+
+A refused request fails with a `503` response and the body `backend not allowed`. The request log records the reason as `dynamic backend resolved to a loopback or link-local address`.
+
+### Allow loopback destinations {#allow-dynamic-loopback}
+
+Set `config.backend.allowDynamicLoopback` to `true` to allow local destinations.
+
+> [!WARNING]
+> This setting affects every dynamic backend in the configuration. Clients using these routes can reach the cloud metadata server at `169.254.169.254` and every service on the gateway host, including the admin interface. Keep a `hostnames` allowlist on every route with a dynamic backend.
+
+These steps first verify the default behavior using agentgateway's readiness endpoint at `localhost:15021`.
+
+1. Create a configuration file that forwards proxy requests for `localhost` to a dynamic backend.
+   ```yaml
+   cat <<EOF > egress-loopback.yaml
+   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+   binds:
+   - port: 3000
+     listeners:
+     - name: forward
+       protocol: HTTP
+       routes:
+       - name: local-services
+         hostnames:
+         - localhost
+         backends:
+         - dynamic: {}
+   EOF
+   ```
+
+2. Start agentgateway.
+   ```sh
+   agentgateway -f egress-loopback.yaml
+   ```
+
+3. In another terminal, send a request through the proxy to the readiness endpoint. The request is refused.
+   ```sh
+   curl -i --proxy http://127.0.0.1:3000 http://localhost:15021/healthz/ready
+   ```
+
+   Example output:
+   ```console
+   HTTP/1.1 503 Service Unavailable
+   content-type: text/plain
+   content-length: 19
+
+   backend not allowed
+   ```
+
+   The agentgateway log records the reason.
+   ```console
+   error	request gateway=default/default listener=forward route=default/local-services endpoint=localhost:15021 ... http.status=503 protocol=http error="dynamic backend resolved to a loopback or link-local address" reason=NoHealthyBackend
+   ```
+
+4. Stop agentgateway. Then add the `config.backend.allowDynamicLoopback` setting to the top of the configuration file.
+   ```yaml
+   config:
+     backend:
+       allowDynamicLoopback: true
+   ```
+
+   | Setting | Description |
+   | -- | -- |
+   | `config.backend.allowDynamicLoopback` | Allows loopback, link-local, and unspecified destinations when `true`. Defaults to `false`. Read at startup; restart agentgateway after changing it. |
+
+5. Start agentgateway again.
+   ```sh
+   agentgateway -f egress-loopback.yaml
+   ```
+
+6. Send the request again. The proxy now forwards it to the readiness endpoint.
+   ```sh
+   curl -i --proxy http://127.0.0.1:3000 http://localhost:15021/healthz/ready
+   ```
+
+   Example output:
+   ```console
+   HTTP/1.1 200 OK
+   content-type: text/plain
+   content-length: 6
+
+   ready
+   ```

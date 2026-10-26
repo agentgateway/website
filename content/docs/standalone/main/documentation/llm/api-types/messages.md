@@ -74,11 +74,11 @@ The first three rows are values that a `custom` provider declares in its `format
 
 Bedrock Converse is not a `formats` value. A [`bedrock` provider]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) supports only Converse, so agentgateway always converts Messages requests to that format.
 
-When a provider supports both `responses` and `completions`, agentgateway prefers Responses. The Responses conversion drops extended-thinking history. The Chat Completions conversion preserves it.
+When a provider supports both `responses` and `completions`, agentgateway always converts Messages requests to Responses. This rule is fixed, regardless of the `formats` list order.
+
+The Responses conversion drops extended-thinking history. The Chat Completions conversion preserves it.
 
 Use the `openAI` provider only for the OpenAI API. For other OpenAI-compatible servers, use a [`custom` provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with the formats that the server supports. If the server does not support `/v1/responses`, declare `completions` and omit `responses`. Use the same configuration to preserve extended-thinking history.
-
-For providers that support both formats, the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable provides a temporary workaround for Responses conversion bugs. To prefer Chat Completions, set the variable to `true` on the agentgateway process. The variable applies to every provider and is planned for removal in version 1.7.
 
 ### Converted replies and errors
 
@@ -132,7 +132,7 @@ The reply is converted back with these differences:
 
 ### Converting to the Chat Completions format
 
-Agentgateway converts a Messages request to Chat Completions when the provider declares `completions` and omits `responses`. For providers that support both formats, you can use the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS=true` workaround. To configure the supported formats, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
+Agentgateway converts a Messages request to Chat Completions only when the provider declares `completions` and omits `responses`. To configure the supported formats, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
 The Chat Completions conversion carries extended-thinking history in both directions, so a thinking session on a converted route keeps its prior reasoning from one turn to the next. Self-hosted engines that report reasoning as `reasoning_content` also accept it back on an assistant message, which is what makes the carryover possible.
 
@@ -182,7 +182,11 @@ Each `cache_control` marker becomes a Bedrock cache point after the content that
 
 Messages that are left empty after the conversion drops unsupported blocks are not sent to Bedrock. The conversion adds at most four cache points to a request, so a marker is dropped when four cache points are already set.
 
-On the way back, Bedrock reasoning text becomes a `thinking` block. In a buffered reply, Bedrock encrypted reasoning becomes a `redacted_thinking` block that keeps the encrypted payload for the next turn. A streamed reply does not keep the payload. The encrypted reasoning arrives as a `thinking` block with the text `[REDACTED]`, which cannot be replayed. If redacted reasoning fragments in a streamed Bedrock Runtime reply exceed the stream buffer limit before the block ends, the stream emits an `api_error` event with the message `Stream processing error`. The stream then stops. For the same behavior on other Bedrock endpoints, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}).
+In replies, Bedrock reasoning text becomes a `thinking` block. Encrypted reasoning becomes a `redacted_thinking` block that preserves the payload for replay. This applies to both buffered and streamed replies.
+
+A stream sends the encrypted block in one `content_block_start` event after Bedrock finishes the block. If the buffered fragments exceed the LLM buffer limit, the stream emits an `api_error` event with `Stream processing error` and stops. The limit is 32 MiB unless you set `frontendPolicies.http.maxBufferSize`. For more information, see [Body buffering]({{< link-hextra path="/documentation/configuration/traffic-management/buffer/" >}}).
+
+For other client APIs, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}).
 
 ## Using the API
 
