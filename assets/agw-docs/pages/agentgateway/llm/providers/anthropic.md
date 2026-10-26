@@ -11,6 +11,10 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
 For Anthropic Messages and token-count requests, a client `anthropic-version` header is forwarded. If the client sends no version header, the request uses the default `2023-06-01` version.
 {{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+Use `backend.ai.promptCaching` on the {{< reuse "agw-docs/snippets/policy.md" >}} resource with Anthropic providers, including Anthropic Claude models on Vertex AI. The policy caches system prompts, conversation history, and tool definitions only when the request does not already contain `cache_control` markers. The `minTokens` value applies to system prompt caching.
+{{< /version >}}
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
