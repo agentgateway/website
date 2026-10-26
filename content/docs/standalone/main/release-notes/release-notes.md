@@ -52,6 +52,7 @@ For more information, see [Session key]({{< link-hextra path="/integrations/mcp/
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3842 -->
 
+- **Helm charts can add custom init containers**: Use `controller.extraInitContainers` in the controller chart and `extraInitContainers` in the standalone chart to render custom init containers in the Deployment, including Kubernetes native sidecar-style init containers. For more information, see [Controller init containers]({{< link-hextra path="/documentation/install/advanced/#controller-init-containers" >}}) and [Run extra init containers]({{< link-hextra path="/documentation/setup/install/helm/#extra-init-containers" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4053 -->
 - **Standalone Helm session key Secret**: Set `session.secretName` to load the AES-256-GCM session key from an existing Kubernetes Secret. The chart passes the Secret's `key` entry to the proxy as the `SESSION_KEY` environment variable, which takes precedence over `config.session.key`. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
 
 ### LLM {#v17-llm}

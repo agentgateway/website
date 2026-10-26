@@ -260,6 +260,58 @@ A port-forward is a quick way to look at the UI on a cluster. To give the UI its
 {{< reuse "agw-docs/standalone/helm-standalone-values-table.md" >}}
 
 {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+### Run extra init containers {#extra-init-containers}
+
+Use `extraInitContainers` to run init containers in the standalone proxy pod. The chart renders each list item into the Deployment's `spec.template.spec.initContainers` list. For a Kubernetes native sidecar-style init container, set `restartPolicy: Always`.
+
+1. Add the init container to your `values.yaml` file.
+
+   ```yaml
+   extraInitContainers:
+   - name: sleep
+     image: docker.io/curlimages/curl
+     command:
+     - /bin/sleep
+     - infinity
+     imagePullPolicy: IfNotPresent
+     restartPolicy: Always
+   ```
+
+2. Upgrade the Helm release with your values file.
+
+   ```sh
+   helm upgrade {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     {{< reuse "agw-docs/standalone/helm-standalone-chart-ref.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --reuse-values \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     -f values.yaml
+   ```
+
+3. Wait for Kubernetes to roll out the updated Deployment.
+
+   ```sh
+   kubectl rollout status deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+4. Confirm that the Deployment includes the init container.
+
+   ```sh
+   kubectl get deploy {{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -o jsonpath='{.spec.template.spec.initContainers[?(@.name=="sleep")].image}'
+   ```
+
+   Expected output:
+
+   ```txt
+   docker.io/curlimages/curl
+   ```
+
+{{< /version >}}
+
 ### Create a PodDisruptionBudget {#helm-pdb}
 
 Use a PodDisruptionBudget (PDB) to keep one proxy pod available during voluntary disruptions. The chart creates the PDB only when `podDisruptionBudget.enabled` is `true` and the minimum replica count is greater than `1`. The minimum replica count is `replicaCount`, or `autoscaling.minReplicas` when `autoscaling.enabled` is `true`.

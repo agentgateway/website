@@ -58,6 +58,10 @@ Review the release notes for agentgateway on Kubernetes.
 
 - **Anthropic 1-hour cache writes can use a separate catalog rate**: Set `cacheWrite1h` in a model cost catalog to price Anthropic prompt-cache writes with a 1-hour TTL separately from 5-minute cache writes. If `cacheWrite1h` is omitted, those tokens use the `cacheWrite` rate. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-json-format" >}}).
 
+### Traffic management and operations {#v17-traffic-management-and-operations}
+
+- **Helm charts can add custom init containers**: Use `controller.extraInitContainers` in the controller chart and `extraInitContainers` in the standalone chart to render custom init containers in the Deployment, including Kubernetes native sidecar-style init containers. For more information, see [Controller init containers]({{< link-hextra path="/documentation/install/advanced/#controller-init-containers" >}}) and [Run extra init containers]({{< link-hextra path="/documentation/setup/install/helm/#extra-init-containers" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4053 -->
+
 ## 🐛 Fixes {#v17-fixes}
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3744 -->

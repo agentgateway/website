@@ -110,6 +110,22 @@ commonLabels:
   agw-managed: "true"
 ```
 
+## Controller init containers {#controller-init-containers}
+
+Use `controller.extraInitContainers` to run init containers in the controller pod. The chart renders each list item into `spec.template.spec.initContainers` on the controller Deployment. For a Kubernetes native sidecar-style init container, set `restartPolicy: Always`.
+
+```yaml
+controller:
+  extraInitContainers:
+  - name: sleep
+    image: docker.io/curlimages/curl
+    command:
+    - /bin/sleep
+    - infinity
+    imagePullPolicy: IfNotPresent
+    restartPolicy: Always
+```
+
 ## PodDisruptionBudget
 
 Configure a Pod Disruption Budget to ensure that a minimum number of control plane instances are up and running at any given time during voluntary disruptions, such as upgrades. In this example, 50% of your control plane instances must be running.
