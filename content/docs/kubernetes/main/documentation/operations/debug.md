@@ -369,7 +369,7 @@ Agentgateway includes pprof endpoints to help you investigate CPU and memory iss
 
 ## Debug the control plane {#control-plane}
 
-The agentgateway controller runs its own admin server on port `9095`. The admin server provides the following endpoints.
+The agentgateway controller runs its own admin server on port `9095`. The admin server listens only on `localhost` inside the controller pod, so use port-forwarding to reach it. The admin server provides the following endpoints.
 
 | Endpoint | Description |
 | -- | -- |
@@ -382,7 +382,7 @@ The agentgateway controller runs its own admin server on port `9095`. The admin 
 1. Port-forward the controller deployment.
 
    ```sh
-   kubectl port-forward deploy/agentgateway -n agentgateway-system 9095
+   kubectl port-forward deployment/{{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} 9095
    ```
 
    Example output:
@@ -393,72 +393,6 @@ The agentgateway controller runs its own admin server on port `9095`. The admin 
    ```
 
 2. In your browser, open the admin server at [http://localhost:9095/](http://localhost:9095/), and select an endpoint.
-
-### Expose the admin server on the pod network {#admin-bind-address}
-
-By default, the admin server listens on `localhost` inside the controller pod. Use port-forwarding to reach it.
-
-To allow access from other pods, set `AGW_UNSAFE_ADMIN_BIND_ADDRESS` on the controller.
-
-Accepted values are:
-
-- `localhost` (default).
-- An IPv4 address, such as `0.0.0.0` to listen on all IPv4 addresses.
-- An IPv6 address, such as `::` to listen on all IPv6 addresses.
-
-Do not include a port. Invalid values prevent the controller from starting.
-
-The server always uses port `9095`. The controller Service does not expose this port, so clients must connect to the pod IP address.
-
-> [!WARNING]
-> The admin server has no authentication. Anyone who can reach the controller pod on port `9095` can read Secret data through `/snapshots/krt` and change controller log levels.
->
-> Expose it beyond `localhost` only for debugging non-production environments. Restrict access to the port, such as with a NetworkPolicy.
-
-1. Create a Helm values file that sets the environment variable through `controller.extraEnv`.
-
-   ```sh
-   cat > admin-bind-values.yaml <<'EOF'
-   controller:
-     extraEnv:
-       AGW_UNSAFE_ADMIN_BIND_ADDRESS: "0.0.0.0"
-   EOF
-   ```
-
-2. Optional: Render the controller Deployment to check the environment variable.
-
-   ```sh
-   helm template {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
-     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
-     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     -f admin-bind-values.yaml \
-     --show-only templates/deployment.yaml | grep -A1 AGW_UNSAFE_ADMIN_BIND_ADDRESS
-   ```
-
-   Example output:
-
-   ```
-               - name: AGW_UNSAFE_ADMIN_BIND_ADDRESS
-                 value: "0.0.0.0"
-   ```
-
-3. Upgrade the controller Helm release with the values file. The controller pod restarts.
-
-   ```sh
-   helm upgrade -i {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
-     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
-     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --reuse-values \
-     -f admin-bind-values.yaml
-   ```
-
-   Example output:
-
-   ```
-   Release "agentgateway" has been upgraded. Happy Helming!
-   ```
-
-To return to the default, upgrade the release again with `--reuse-values --set controller.extraEnv.AGW_UNSAFE_ADMIN_BIND_ADDRESS=localhost`.
 
 ## Collect a bug report {#bug-report}
 

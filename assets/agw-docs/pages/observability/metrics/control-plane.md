@@ -67,14 +67,7 @@ EOF
 Review the metrics that are emitted by the {{< reuse "agw-docs/snippets/agentgateway.md" >}} control plane. 
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 
-The following metrics and labels have changed:
-
-- **Removed metrics**: The `agentgateway_controller_reconcile_duration_seconds` histogram and `agentgateway_controller_reconciliations_running` gauge.
-- **Counter labels**: `agentgateway_controller_reconciliations_total` keeps only `controller` and `result`. The `name` and `namespace` labels are removed.
-
-For the `gateway` controller, the counter includes only Gateways whose GatewayClass the {{< reuse "agw-docs/snippets/agentgateway.md" >}} controller manages.
-
-Update dashboards, alerts, or recording rules that use the removed metrics or labels.
+The `agentgateway_controller_reconciliations_total` counter has only the `controller` and `result` labels. For the `gateway` controller, the counter includes only Gateways whose GatewayClass the {{< reuse "agw-docs/snippets/agentgateway.md" >}} controller manages.
 
 {{< /version >}}
 

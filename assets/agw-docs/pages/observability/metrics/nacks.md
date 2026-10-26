@@ -123,9 +123,6 @@ Common causes of warnings:
 
 Warnings describe how the proxy handled each problem. Fix them as configuration errors: traffic may behave differently from your configuration.
 
-> [!NOTE]
-> In version 1.6 and earlier, the control plane reported these warnings as rejections, with the `AgentGatewayNackError` event reason and the `agentgateway_xds_rejects_total` counter. If your alerts watch for rejections, also alert on `agentgateway_xds_warnings_total`.
-
 1. Port-forward the control plane deployment.
 
    ```sh
