@@ -1,7 +1,7 @@
 Compare the performance of agentgateway on Kubernetes versus a plain Kubernetes Service for inference routing.
 
 In `kubernetes` mode, an agentgateway proxy runs as the `Gateway` data plane.
-An `HTTPRoute` targets an `InferencePool`, and the [Endpoint Picker Extension (EPP)](https://llm-d.ai/docs/architecture/core/router/epp)
+An `HTTPRoute` targets an `InferencePool`, and the [Endpoint Picker Extension (EPP)](https://llm-d.ai/docs/architecture/router/epp)
 selects the model-server endpoint.
 
 For setup instructions, see the [inference benchmark README](https://github.com/agentgateway/benchmarks/blob/522fc04a595faad40e6cb070d0f2275e1314f1f9/inference/README.md).
