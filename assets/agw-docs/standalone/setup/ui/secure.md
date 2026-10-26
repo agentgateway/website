@@ -11,27 +11,6 @@ The `oidc` policy in `ui.policies` also accepts bearer ID tokens, so CLI clients
 > [!NOTE]
 > A policy in `ui.policies` applies only to the gateways that the `ui` section lists. It does not apply to the copy of the UI on the admin interface, which stays unauthenticated. That is safe by default, because the admin address is loopback-only, but it is a reason not to move it. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/documentation/setup/ui/#admin-interface" >}}).
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
-### What users can do after they log in {#access-model}
-
-The policies in `ui.policies` act as one gate in front of every UI page and every UI API endpoint. The UI has no built-in roles, such as separate viewer and administrator roles. A user who passes the gate can use every UI feature, including the following actions:
-
-* Save configuration changes, if your [storage mode]({{< link-hextra path="/documentation/setup/storage/" >}}) allows writes.
-* Create, edit, and delete any virtual key, including keys that other users created.
-* Add or change policies in `ui.policies`.
-
-To limit what users can do after they log in, choose one of the following options.
-
-| Option | Effect |
-| -- | -- |
-| `readOnly` storage mode | No user can save changes from the UI or the UI API. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/#binary-readonly" >}}). |
-| Authorization rules on the request method and path | Users in a group that you choose can save changes, and other users can only view. For more information, see [Give some users read-only access](#read-only-users). |
-| [`extAuthz` policy]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}) | Your own authorization service decides each UI request. The service can apply any per-user rules that you write. |
-
-> [!WARNING]
-> A user who can save changes can lock every user out of the UI on the gateway, including that user. In `file` storage mode, the user can change any policy in `ui.policies`, such as by saving an authorization rule that denies every request. In `hybrid` storage mode, the user cannot change the policies in your configuration file, but can add a policy that the file does not set. For example, an `extAuthz` policy for a service that does not exist rejects every request. To recover, open the **Settings** > **UI** page on the admin interface, such as `http://localhost:15000/ui/settings/ui`, where the policies do not apply. In a Helm installation, port-forward port `15000` first. Then fix or remove the policy.
-{{< /version >}}
-
 ## Before you begin
 
 1. [Install standalone agentgateway]({{< link-hextra path="/documentation/setup/install/" >}}).
@@ -190,33 +169,42 @@ Whether the UI can save depends on your storage mode. For more information, see 
 > Agentgateway fetches the OIDC discovery document at startup, so the issuer must be reachable from the pod. When the fetch fails, the pod does not start, and the logs report `failed to decode oidc discovery response from uri`. If the pod enters `CrashLoopBackOff` after you add the policy, check the issuer URL and any egress restrictions.
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
-## Give some users read-only access {#read-only-users}
+## Choose what users can do {#access-model}
 
-To let one group of users save changes while other users can only view, add `allow` rules to the `authorization` policy in `ui.policies`. Base the rules on the request method and path, because the UI has no built-in roles.
+The policies in `ui.policies` decide what users can do after they log in, so you can match UI access to the teams in your IdP. Each request to a UI page or the UI API passes through the policies. By default, a user who logs in gets full access, which suits a small team of administrators. Full access includes saving configuration changes, managing all virtual keys, and editing `ui.policies`.
 
-Before you save the rules, make sure that you can reach the admin interface. If a rule locks you out, you can fix the rule there. For more information, see [What users can do after they log in](#access-model).
+To give different users different access, choose one of the following options.
 
-The following example lets members of the `agentgateway-admins` group use every UI feature. Every other authenticated user can view the UI. The example assumes that your IdP adds a `groups` claim to the ID token. The claim name and the group names depend on your IdP configuration.
-
-Add the rules to the `ui.policies` section that has your authentication policy. In a Helm installation, the section is `config.ui.policies` in your values file. In the UI, add the rules on the **Authorization** card of the **Settings** > **UI** page.
-
-```yaml
-ui:
-  policies:
-    authorization:
-      rules:
-      - allow: '"agentgateway-admins" in jwt.groups'
-      - allow: 'request.method == "GET"'
-      - allow: 'request.path.startsWith("/api/logs/") || request.path == "/api/cel"'
-```
-
-| Rule | Effect |
+| Option | Effect |
 | -- | -- |
-| `"agentgateway-admins" in jwt.groups` | Members of the group pass every request, including saves. |
-| `request.method == "GET"` | Other users can open the UI pages and read the configuration. |
-| `request.path.startsWith("/api/logs/") \|\| request.path == "/api/cel"` | Other users can also search and stream request logs, view analytics, and use the Common Expression Language (CEL) playground. These pages read data but send `POST` requests. Without this rule, the gateway rejects them with a `403` response. |
+| Authorization rules | Define your own roles from IdP claims, the request method, and the request path. For example, one group can save changes, and every other user can view. For more information, see [Give some users read-only access](#read-only-users). |
+| [`extAuthz` policy]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}) | Your own authorization service, such as OPA, decides each UI request with any per-user rules that you write. |
+| `readOnly` storage mode | Every user can view the UI, and your configuration file stays the source of truth. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/#binary-readonly" >}}). |
 
-When a user outside the group saves a change, the gateway returns a `403` response. No other rule matches a save, so only members of the group can change `ui.policies`. Users outside the group can still log out with **Sign out**.
+### Give some users read-only access {#read-only-users}
+
+Add `allow` rules to the `authorization` policy in `ui.policies` to let one group of users save changes while every other user can view. The following example gives members of the `agentgateway-admins` group full access. The example assumes that your IdP adds a `groups` claim to the ID token. The claim name and the group names depend on your IdP configuration.
+
+1. Open the **Settings** > **UI** page on the admin interface, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui). In a Helm installation, port-forward port `15000` first. The admin interface is the best place to edit UI policies, because the policies do not apply to it. You keep access while you try out rules, and you can always return there to adjust them.
+2. Add the rules to the `ui.policies` section that has your authentication policy. In the UI, add the rules on the **Authorization** card. In a Helm installation, the section is `config.ui.policies` in your values file.
+
+   ```yaml
+   ui:
+     policies:
+       authorization:
+         rules:
+         - allow: '"agentgateway-admins" in jwt.groups'
+         - allow: 'request.method == "GET"'
+         - allow: 'request.path.startsWith("/api/logs/") || request.path == "/api/cel"'
+   ```
+
+   | Rule | Effect |
+   | -- | -- |
+   | `"agentgateway-admins" in jwt.groups` | Members of the group have full access, including saving changes. |
+   | `request.method == "GET"` | Every other user can open the UI pages and read the configuration. |
+   | `request.path.startsWith("/api/logs/") \|\| request.path == "/api/cel"` | Every other user can also search and stream request logs, view analytics, and use the Common Expression Language (CEL) playground. These pages query data with `POST` requests, so this rule includes them in view access. |
+
+3. Log in to the UI as a user outside the group, and verify that you can browse the UI. When you save a change, the gateway returns a `403` response, because only members of the group can save changes, including changes to `ui.policies`. You can still log out with **Sign out**.
 
 ## Check which user is logged in {#signed-in-user}
 
@@ -227,7 +215,7 @@ The account menu in the top bar of the UI shows the user of each request. The ac
 3. The username of a basic authentication request
 4. The client identity of a mutual TLS (mTLS) connection, such as the workload identity or the common name of the client certificate
 
-Many IdPs set the `sub` claim to an opaque ID. For example, Keycloak uses a UUID, such as `1ed4bac1-9a81-4867-a81f-04cfc58bf0b2`. To show the email address instead, set the `standardAttributes.user` field in the `config` section of your configuration file to `jwt.email`. In a Helm installation, the field is `config.config.standardAttributes.user` in your values file, because the `config` value holds the whole configuration file.
+You choose which value identifies your users. Many IdPs set the `sub` claim to a stable ID, such as the UUID `1ed4bac1-9a81-4867-a81f-04cfc58bf0b2` in Keycloak. To show the email address instead, set the `standardAttributes.user` field in the `config` section of your configuration file to `jwt.email`. In a Helm installation, the field is `config.config.standardAttributes.user` in your values file, because the `config` value holds the whole configuration file.
 
 ```yaml
 config:

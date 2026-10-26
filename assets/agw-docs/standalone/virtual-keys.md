@@ -17,7 +17,7 @@ The gateway host holds every provider key. Protect it as you would any other sec
 * **Restrict access to the files.** Run agentgateway as a dedicated user, and make the key file and the configuration file readable only by that user.
 * **Do not store raw virtual keys.** Store a `keyHash` for each virtual key instead of the raw `key`, so that a copy of the configuration file does not contain usable keys.
 * **Encrypt client traffic.** Virtual keys are bearer credentials. Serve clients over TLS, or keep the gateway on a private network.
-* **Protect the UI and admin API.** Anyone who can reach them can create and read virtual keys.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} A user who can log in to the UI can also edit or delete keys that other users own.{{< /version >}} {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x" >}}For more information, see [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).{{< /version >}}
+* **Protect the UI and admin API.** Anyone who can reach them can create and read virtual keys.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} Use UI access policies to choose which users can manage keys.{{< /version >}} {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x" >}}For more information, see [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).{{< /version >}}
 * **Keep agentgateway up to date** with security patches.
 
 ## Before you begin
@@ -406,11 +406,11 @@ llm:
           agentgateway.dev/owner: 1ed4bac1-9a81-4867-a81f-04cfc58bf0b2
 ```
 
-Keep the following behavior in mind:
+Owners work in the following ways:
 
-* **The owner is a label, not a permission.** Any user who can save changes in the UI can edit or delete any key, including keys that other users own. To limit who can change keys, see [What users can do after they log in]({{< link-hextra path="/documentation/setup/ui/secure-ui/#access-model" >}}).
-* **The owner does not change.** When another user edits the key, agentgateway keeps the original owner.
-* **Request logs and analytics use the owner.** By default, the owner becomes the `agentgateway.user` of each request that uses the key. The owner takes precedence over the `user` and `name` metadata of the key. For example, if an administrator creates a key for `team-a`, analytics attribute the requests of `team-a` to the administrator. Request logs still record the key name in the `agw.api_key.name` attribute. To change the user value, set the `config.standardAttributes.user` field. For more information, see [Check which user is logged in]({{< link-hextra path="/documentation/setup/ui/secure-ui/#signed-in-user" >}}).
+* **Owners record who created each key.** Your UI access policies decide who can edit or delete keys. To set up roles, such as a group that manages keys and a group that can only view them, see [Choose what users can do]({{< link-hextra path="/documentation/setup/ui/secure-ui/#access-model" >}}).
+* **The owner stays with the key.** When another user edits the key, agentgateway keeps the original owner, so you always know where the key came from.
+* **Request logs and analytics group usage by owner.** By default, the owner becomes the `agentgateway.user` of each request that uses the key, ahead of the `user` and `name` metadata of the key. Each request log also records the key name in the `agw.api_key.name` attribute, so you can break down usage per key, such as when an administrator creates a key for each team. To choose a different user value, set the `config.standardAttributes.user` field. For more information, see [Check which user is logged in]({{< link-hextra path="/documentation/setup/ui/secure-ui/#signed-in-user" >}}).
 {{< /version >}}
 
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
