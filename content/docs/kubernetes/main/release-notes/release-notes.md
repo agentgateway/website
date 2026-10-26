@@ -50,6 +50,10 @@ Review the release notes for agentgateway on Kubernetes.
 
 - **Model catalog metadata in CEL**: CEL expressions can read `llm.model` for the catalog entry that served a completed LLM request, including model IDs, tags, limits, modalities, capabilities, and reasoning metadata. Use the fields to log, trace, or emit metrics based on the resolved model. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#step-4-use-cost-data-in-cel-logs-traces-and-metrics" >}}).
 
+- **Endpoint picker hostname destinations**: Endpoint picker extensions can now return DNS hostname targets in `x-gateway-destination-endpoint`, such as a shared gateway or cloud load balancer, instead of only IP endpoints. In standalone request scheduler mode, set `destinationMode: passthrough` when an EPP can select hostnames; `validated` mode still accepts only IP destinations that match local endpoints. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4012 -->
+
+- **Chat Completions file parts convert to Anthropic documents**: A `/v1/chat/completions` request to an Anthropic Messages provider can now send an inline `file` part as a base64 `data:` URI in `file.file_data`. The conversion sends it as a Messages `document` block. Requests that use `file_id`, raw base64, remote URLs, or empty file parts are rejected. For more information, see [Anthropic]({{< link-hextra path="/integrations/llm/providers/anthropic/#send-inline-files-through-chat-completions" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/3912 -->
+
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3661 -->
 
 - **Service-tier pricing in the model catalog**: The model catalog can price requests by normalized service tier, such as `standard`, `flex`, `priority`, or `reserved`. The `agctl catalog import` default sources now include `vertex-pricing`, which adds Vertex AI Gemini service-tier rates. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-json-format" >}}).
@@ -93,6 +97,9 @@ Review the release notes for agentgateway on Kubernetes.
 - Bedrock Runtime requests now send client `tool_choice` settings as Converse `toolChoice`, so forced tool choices can take effect and models that reject them return Bedrock errors.
 - AgentgatewayModel routing now chooses a more specific model match, such as `openai/gpt-5.5`, before a wildcard match such as `openai/*`.
 - Token-based rate limits now count buffered embeddings, rerank, Decisions, and SystemOne responses against local and remote token budgets. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4029 -->
+- Responses requests to Bedrock keep a function call whose `arguments` value is invalid JSON by sending an empty tool input, so Bedrock does not receive an orphan `toolResult` on later turns. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4027 -->
+- Prompt caching is applied consistently for Bedrock Responses and Messages requests, and `backend.ai.promptCaching` also applies to Anthropic providers and Anthropic Claude models on Vertex AI. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3927 -->
+- Bedrock Runtime chat-completions requests with an empty `tools` list no longer include a Converse tool configuration, so requests without callable tools can complete normally. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4107 -->
 
 **MCP**
 
@@ -110,6 +117,7 @@ Review the release notes for agentgateway on Kubernetes.
 
 - Invalid `oauthTokenExchange` or `crossAppAccess` backend authentication no longer blocks the rest of your configuration from reaching the proxy. Only requests that use the invalid block fail, with HTTP `500` and the message `oauthTokenExchange configuration is invalid` or `crossAppAccess configuration is invalid`. The policy reports `Accepted: True` with the reason `PartiallyValid`. For more information, see [Debug your setup]({{< link-hextra path="/documentation/operations/debug/" >}}).
 - Invalid backend TLS SNI names now return a request error instead of panicking the proxy. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4082 -->
+- CSRF validation rejects `Origin: null` on requests without `Sec-Fetch-Site`, and same-origin fallback compares only the `Origin` host to the request `Host`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4090 -->
 
 **Operations**
 
