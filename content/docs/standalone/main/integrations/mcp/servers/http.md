@@ -90,7 +90,28 @@ By default, agentgateway proxies streamable HTTP in **stateful** mode, as descri
 > [!NOTE]
 > The `statefulMode` field controls how agentgateway proxies session-based servers. It is separate from the newer, inherently sessionless `2026-07-28` MCP protocol, which agentgateway supports automatically through version negotiation. For more information, see [MCP spec compatibility]({{< link-hextra path="/documentation/mcp/spec-compatibility" >}}).
 
-To use stateless mode, set `statefulMode` to `stateless` on the MCP configuration.
+You can turn on stateless mode in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+These steps assume an MCP server that you already added, as described in [Configure the agentgateway](#configure-the-agentgateway).
+
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**.
+2. For **State mode**, select **Stateless**.
+
+   {{< reuse-image src="img/ui-mcp-settings-stateless.png" srcDark="img/ui-mcp-settings-stateless-dark.png" alt="MCP servers settings drawer with the state mode set to Stateless" >}}
+
+3. Click **Save settings**.
+
+The UI sets `statefulMode` to `stateless`, as in the **Config file** tab. It also sets `failureMode` to `failClosed` and writes an empty `gateways` list.
+
+> [!NOTE]
+> When `statefulMode` is not set, the **State mode** list still shows **Stateless**, although the default is stateful. If you save the **Settings** drawer to change another field, select **Stateful** first to keep the default session behavior.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+Set `statefulMode` to `stateless` on the MCP configuration.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -102,6 +123,8 @@ mcp:
     mcp:
       host: http://localhost:3005/mcp/
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 When you send an `initialize` request through agentgateway in stateless mode, the response returns `HTTP 200` with no `Mcp-Session-Id` header. In the default stateful mode, the same request returns an `Mcp-Session-Id` header that pins the session to a backend.
 
@@ -217,12 +240,47 @@ A request that fails any rule receives a `403` response with the body `MCP DNS r
 
 ## Configure the agentgateway
 
-1. Spin up an MCP server that uses streamable HTTP.
-   ```sh
-   PORT=3005 npx -y @modelcontextprotocol/server-everything streamableHttp
-   ```
+Spin up an MCP server that uses streamable HTTP.
 
-2. Create a configuration for your agentgateway to connect to your MCP server. Make sure to expose the `Mcp-Session-Id` header in the CORS configuration for session persistence.
+```sh
+PORT=3005 npx -y @modelcontextprotocol/server-everything streamableHttp
+```
+
+Then, connect agentgateway to your MCP server. You can use the UI or a configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Create a configuration with an empty `mcp` section, and start agentgateway. You add the MCP server and the CORS policy in the UI.
+   ```sh
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   mcp:
+     port: 3000
+     targets: []
+   EOF
+   agentgateway -f config.yaml
+   ```
+2. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Add server**.
+3. Enter `mcp` for the **Server name**, and keep the **Streamable HTTP** transport.
+4. Enter `http://localhost:3005/mcp/` for the **URL**, and click **Save server**.
+
+   {{< reuse-image src="img/ui-mcp-servers-add-http.png" srcDark="img/ui-mcp-servers-add-http-dark.png" alt="Add MCP server drawer for the mcp target with the Streamable HTTP transport and the http://localhost:3005/mcp/ URL" >}}
+
+5. Open **MCP** > **Policies**, and click **CORS**. Expose the `Mcp-Session-Id` header so that clients keep their session.
+   1. In **Allowed origins**, enter `*`, and click **Add**.
+   2. Keep **Allow all request headers** selected.
+   3. In **Expose headers**, enter `Mcp-Session-Id`, and click **Add**.
+
+      {{< reuse-image src="img/ui-mcp-cors-session-id.png" srcDark="img/ui-mcp-cors-session-id-dark.png" alt="MCP CORS policy drawer with the * allowed origin and the Mcp-Session-Id expose header" >}}
+
+   4. Click **Save policy**.
+
+The UI writes the same `mcp` section as the **Config file** tab, with two additions. The CORS policy also lists the selected **Allowed methods**, `GET` and `POST`. The first save also adds a generated session key, `config.session.key`.
+
+Instead of step 5, you can click **Apply CORS** in the **Tool Playground**. That shortcut allows the origin of the UI instead of `*`.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+1. Create a configuration for your agentgateway to connect to your MCP server. Make sure to expose the `Mcp-Session-Id` header in the CORS configuration for session persistence.
    ```yaml
    cat <<EOF > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -243,10 +301,12 @@ A request that fails any rule receives a `403` response with the body `MCP DNS r
    EOF
    ```
 
-3. Run the agentgateway. 
+2. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Verify access to tools
 

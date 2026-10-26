@@ -21,7 +21,7 @@ agctl catalog import [flags]
 ```
       --exclude-providers strings   source provider ids to omit
   -h, --help                        help for import
-      --legacy                      include deprecated models
+      --legacy                      include deprecated models (default true)
   -o, --out string                  output catalog path (default: stdout)
       --overlay string              YAML catalog to merge over imported data
       --pretty                      pretty-print the output JSON

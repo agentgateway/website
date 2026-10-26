@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Fixture for tests/ui-tabs-e.spec.ts: the "UI" tabs in configuration/gateways.md,
+# configuration/routes.md (TCP routes), and configuration/traffic-management/matching.md.
+# Holds only what the drawers need to find:
+#   - default: the HTTP gateway that the matching routes and the CORS policy attach to.
+#   - web: a gateway already switched to "Multiple listeners", so it has the listener1 entry
+#     whose Edit listener drawer gateways.md fills in. Port 8443, as in that guide.
+#   - postgres-proxy, database-proxy, redis-proxy: the TCP gateways that the TCP route drawers
+#     select. The guides put the first two on 5432; database-proxy moves to 5433 so the
+#     fixture binds, and no capture shows its port.
+# Nothing is saved and no backend runs, so none of the hosts needs to answer.
+gateways:
+  default:
+    port: 3000
+  web:
+    port: 8443
+    listeners:
+    - name: listener1
+  postgres-proxy:
+    port: 5432
+    protocol: TCP
+  database-proxy:
+    port: 5433
+    protocol: TCP
+  redis-proxy:
+    port: 6379
+    protocol: TCP
+routes: []
+tcpRoutes: []

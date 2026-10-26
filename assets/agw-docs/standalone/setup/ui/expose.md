@@ -21,49 +21,28 @@ How the address becomes reachable depends on your installation method.
 
 ## Binary and Docker
 
-1. Add a `tls` section to the gateway that the UI is attached to. Agentgateway reads the certificate and key from the file system, and setting `tls` also switches the gateway protocol to HTTPS. Use the certificate for the hostname that you created a DNS record for.
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+You can add the certificate to the UI gateway in the UI or in your configuration file.
 
-   ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   gateways:
-     default:
-       port: 4000
-     ui-gateway:
-       port: 4001
-       tls:
-         cert: /etc/agentgateway/tls/tls.crt
-         key: /etc/agentgateway/tls/tls.key
-   ```
+{{< tabs >}}
+{{% tab name="UI" %}}
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 
-2. Start agentgateway with the updated configuration.
+1. Put the certificate and key where agentgateway can read them. The UI saves file paths, not the files themselves.
+   * **Binary**: The paths are paths on the host that agentgateway runs on, such as `/etc/agentgateway/tls/tls.crt` and `/etc/agentgateway/tls/tls.key`.
+   * **Docker**: The paths are paths inside the container. Mount the directory that holds the certificate and key, such as with `-v "$PWD/tls:/etc/agentgateway/tls:ro"`, and publish the UI gateway port with `-p 4001:4001`. The UI cannot add a mount or publish a port, so set both when you start the container. For the full command, see the **Docker** tab in the **Config file** tab.
+2. Open the UI on the admin interface, such as [http://localhost:15000/ui/traffic/gateways](http://localhost:15000/ui/traffic/gateways) (**Traffic** > **Gateways**). If you open the UI through the `ui-gateway` instead, the page stops loading when the gateway switches to HTTPS.
+3. For the `ui-gateway`, click the **Edit gateway** icon.
+4. In the **Edit gateway** drawer, add the certificate.
+   1. From the **Protocol** dropdown, select **HTTPS**.
+   2. Expand **TLS**.
+   3. Enter `/etc/agentgateway/tls/tls.crt` for the **Certificate** and `/etc/agentgateway/tls/tls.key` for the **Key**.
 
-   {{< tabs >}}
-   {{% tab name="Binary" %}}
-   The `cert` and `key` paths are paths on the host that agentgateway runs on, so put the files at those paths, or change the paths in the configuration to where your files already are. No mount is involved.
+      {{< reuse-image src="img/ui-gateway-tls.png" srcDark="img/ui-gateway-tls-dark.png" alt="Edit gateway drawer for the ui-gateway gateway, set to HTTPS with the certificate and key from /etc/agentgateway/tls" >}}
 
-   ```sh
-   agentgateway -f config.yaml
-   ```
-   {{% /tab %}}
-   {{% tab name="Docker" %}}
-   The `cert` and `key` paths are paths inside the container, so mount the directory that holds the certificate and key at the parent path. The following example mounts a local `tls` directory that holds `tls.crt` and `tls.key` at `/etc/agentgateway/tls`.
-
-   ```sh
-   docker run -d \
-     --name agentgateway \
-     --user "$(id -u):$(id -g)" \
-     -v "$PWD/config.yaml:/config.yaml" \
-     -v "$PWD/tls:/etc/agentgateway/tls:ro" \
-     -p 4000:4000 -p 4001:4001 \
-     -e OIDC_COOKIE_SECRET \
-     -e ISSUER_URL -e UI_CLIENT_ID -e UI_CLIENT_SECRET -e REDIRECT_URI \
-     {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
-     -f /config.yaml
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-
-3. Confirm that the gateway serves your certificate.
+   4. Click **Save gateway**. The gateway shows the **HTTPS** and **TLS** badges. You do not need to restart agentgateway.
+5. Open the **Settings** > **UI** page, and confirm that the **Public gateway** dropdown shows `ui-gateway`. If it does not, select `ui-gateway`, and click **Save UI gateway**.
+6. Confirm that the gateway serves your certificate.
 
    ```sh
    echo | openssl s_client -connect agentgateway.example.com:4001 \
@@ -79,6 +58,15 @@ How the address becomes reachable depends on your installation method.
    ```
 
 For more certificate options, see [Gateways]({{< link-hextra path="/documentation/configuration/gateways/" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/setup/ui/expose-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/standalone/setup/ui/expose-config.md" >}}
+{{% /version %}}
 
 ## Helm
 

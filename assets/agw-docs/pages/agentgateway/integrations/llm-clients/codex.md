@@ -26,25 +26,45 @@ A `*` model suits a gateway that serves only OpenAI.
 {{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
 {{< /version >}}
 
-1. Create a configuration file.
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+You can configure agentgateway in the UI or in your configuration file.
 
-   ```yaml
-   cat > config.yaml << 'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+{{< tabs >}}
+{{% tab name="UI" %}}
+To create the same configuration in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps.
+
+1. Set your OpenAI API key, create a configuration file with an empty `llm` section, and start agentgateway. The UI checks that the `OPENAI_API_KEY` environment variable exists when you save the model.
+
+   ```sh
+   export OPENAI_API_KEY='<your-api-key>'
+   cat > config.yaml <<'EOF'
    llm:
-     models:
-     - name: "*"
-       provider: openAI
-       params:
-         apiKey: "$OPENAI_API_KEY"
+     models: []
    EOF
-   ```
-
-2. Start agentgateway.
-
-   ```bash
    agentgateway -f config.yaml
    ```
+
+2. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+3. From the **Provider** dropdown, select **OpenAI**.
+4. In the **Incoming model match** field, replace the default `openai/*` with `*`.
+5. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
+
+   {{< reuse-image src="img/ui-llm-model-passthrough.png" srcDark="img/ui-llm-model-passthrough-dark.png" alt="Add model drawer with the OpenAI provider, the * match, the OPENAI_API_KEY environment variable, and Incoming model as the outgoing model" >}}
+
+6. Click **Save model**.
+
+The UI writes the provider as `openai` instead of `openAI`. Agentgateway accepts both values.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/codex-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/codex-config.md" >}}
+{{% /version %}}
 
 > [!NOTE]
 > For wildcard model matching, rate limiting, and other options, see the [OpenAI provider page]({{< link-hextra path="/integrations/llm/providers/openai" >}}).

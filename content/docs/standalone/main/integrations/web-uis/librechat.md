@@ -32,11 +32,19 @@ description: Front LibreChat with agentgateway to centralize LLM credentials, au
 
 ### Step 1: Configure agentgateway
 
+You can configure agentgateway in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+{{< reuse "agw-docs/standalone/llm/clients/ui-openai-port-3000.md" >}}
+
+Agentgateway is already running with the new configuration, so skip Step 2.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 Create a `config.yaml`:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
 llm:
   port: 3000
   models:
@@ -45,6 +53,8 @@ llm:
     params:
       apiKey: "$OPENAI_API_KEY"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Step 2: Start agentgateway
 

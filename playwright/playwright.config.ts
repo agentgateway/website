@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { resolveImage } from './scripts/resolve-image.mjs';
+import { lineAtLeast, resolveImage } from './scripts/resolve-image.mjs';
 
 /**
  * Proof-of-concept config for capturing screenshots of the agentgateway product UI.
@@ -33,10 +33,17 @@ import { resolveImage } from './scripts/resolve-image.mjs';
  *                      jwt     — server-everything + metrics tags (jwt.spec.ts)
  *                      storage — PostgreSQL-backed gateway, hybrid storage (storage.spec.ts)
  *                      file    — writable config file, default storage (storage-file.spec.ts)
+ *                      tour    — one populated gateway: routes, LLM model, MCP server, and
+ *                                policies, for the UI tour in setup/ui/launch-ui (tour.spec.ts)
+ *                      fixture — any fixtures/<FIXTURE>, no backends, for the UI-tab drawer
+ *                                captures (tests/ui-tabs-*.spec.ts); docs 1.7 and later
  *                    The scripts under scripts/ are self-contained: they start any backing
  *                    servers, run the container, and clean up on exit.
  *   REUSE: webServer.reuseExistingServer attaches to anything already serving the URL,
  *          so you can run a `scripts/serve-*.sh` (or `docker run …`) yourself and point here.
+ *          The flip side: a leftover container on the port is captured instead, and the
+ *          launcher's own checks never run. `capture:all`/`update:all` run `clean:ui` before
+ *          each mode; before a single `npm run test:<mode>`, run `npm run clean:ui` yourself.
  */
 
 // Which docs version line we are capturing for. Drives both the image (a released tag for
@@ -56,6 +63,14 @@ const BIN = process.env.AGENTGATEWAY_BIN;
 const ADMIN_ADDR = process.env.ADMIN_ADDR || 'localhost:15000';
 const MODE = process.env.CAPTURE_MODE || '';
 
+// The fixture-mode specs (tests/ui-tabs-*.spec.ts) capture the "UI" tabs, which start in docs 1.7,
+// and skip every test on an older line (uiTabsOnly() in fixtures/test.ts). Playwright still starts
+// the webServer before it knows that, and a fixture written for the nightly UI may not load in an
+// older released image: the container would never answer, the run would wait out the timeout, and
+// the nightly's `update:all` chain would stop there. So a fixture run on an older line starts no UI.
+// Keep '1.7' in step with UI_TABS_SINCE in fixtures/test.ts.
+const NEEDS_SERVER = !(MODE === 'fixture' && !lineAtLeast(VERSION, '1.7'));
+
 const BASE_URL =
   process.env.UI_BASE_URL || (BIN ? `http://${ADMIN_ADDR}` : `http://localhost:${HOST_PORT}`);
 
@@ -72,6 +87,9 @@ const SCRIPT_FOR = {
   costs: 'serve-costs-ui.sh',
   storage: 'serve-storage-ui.sh',
   file: 'serve-file-ui.sh',
+  tour: 'serve-tour-ui.sh',
+  // Any one fixture, named by FIXTURE: the UI-tab drawer captures (tests/ui-tabs-*.spec.ts).
+  fixture: 'serve-fixture-ui.sh',
 };
 const command = BIN
   ? `"${BIN}" -f fixtures/standalone-config.yaml`
@@ -102,7 +120,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   reporter: [['html', { open: 'never' }], ['list']],
 
-  webServer: {
+  webServer: NEEDS_SERVER ? {
     command,
     url: `${BASE_URL}/ui/`,
     reuseExistingServer: true, // attach to an already-running UI (container, dev server, port-forward)
@@ -110,14 +128,19 @@ export default defineConfig({
     // modes also start host servers (npx server-everything, Petstore mock) first
     stdout: 'pipe',
     stderr: 'pipe',
+    // Send SIGTERM and wait, rather than the default SIGKILL, so the launcher's `trap cleanup`
+    // runs and removes the containers it started. Without this, a single-spec run leaves them up.
+    gracefulShutdown: { signal: 'SIGTERM', timeout: 10_000 },
     env: BIN
       ? {
           ADMIN_ADDR,
           STATS_ADDR: process.env.STATS_ADDR || 'localhost:15020',
           READINESS_ADDR: process.env.READINESS_ADDR || 'localhost:15021',
         }
-      : {},
-  },
+      // Pass the resolved image to the serve-*.sh launchers, so a local run of any mode uses the
+      // image for DOC_VERSION even when AGW_IMAGE is not exported (CI exports it anyway).
+      : { AGW_IMAGE: IMAGE },
+  } : undefined,
 
   use: {
     baseURL: BASE_URL,

@@ -32,11 +32,19 @@ description: Front Open WebUI with agentgateway to centralize auth, audit, and r
 
 ### Step 1: Configure agentgateway
 
+You can configure agentgateway in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+{{< reuse "agw-docs/standalone/llm/clients/ui-openai-port-3000.md" >}}
+
+Agentgateway is already running with the new configuration, so skip Step 2.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 Create a `config.yaml` that exposes an OpenAI-compatible endpoint on port 3000 and forwards requests to OpenAI.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
 llm:
   port: 3000
   models:
@@ -47,6 +55,8 @@ llm:
 ```
 
 For other providers, see the [LLM providers guide]({{< link-hextra path="/integrations/llm/providers/" >}}).
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Step 2: Start agentgateway
 

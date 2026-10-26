@@ -17,6 +17,37 @@ This guide covers inline keys, environment variables, files, and Kubernetes secr
 
 ## Configure your agentgateway proxy
 
+You can set the provider API key in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Start agentgateway with a configuration that has an `llm` section. You add the model and its API key in the UI.
+
+   ```sh
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models: []
+   EOF
+   agentgateway -f config.yaml
+   ```
+
+2. Open **LLM** > **Models** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+3. From the **Provider** dropdown, select **OpenAI**.
+4. Keep the default `openai/*` in the **Incoming model match** field, and keep **Strip openai/** for the **Outgoing model**.
+5. For the **Provider API key**, select one of the following options.
+   * **API key**: Enter the key itself, such as `sk-proj....`. The UI writes the key inline in the `params.apiKey` field. This option is the least secure. Only use this option for quick tests.
+   * **Env var**: Enter the name of the environment variable, such as `OPENAI_API_KEY`. The UI writes `apiKey: $OPENAI_API_KEY`. The variable must be set in the environment that agentgateway runs in, or the save fails.
+   * **File**: Enter the path to a file that holds the key, such as `/etc/agentgateway/openai-key.txt`. The UI writes `apiKey: {file: <path>}`. Agentgateway reads this file only when it loads the configuration, so a changed key takes effect after the next configuration reload or restart. This option differs from the **File** steps in the **Config file** tab, which use `auth.key.value.file` and pick up a changed key on the next request.
+   * **Unset**: Configure no provider credential.
+
+   {{< reuse-image src="img/ui-llm-model-prefixed.png" srcDark="img/ui-llm-model-prefixed-dark.png" alt="Add model drawer with the OpenAI provider, the default openai/* match, the OPENAI_API_KEY environment variable, and Strip openai/ as the outgoing model" >}}
+
+6. Click **Save model**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 Choose how to provide the key.
 
 {{< tabs >}}
@@ -31,10 +62,12 @@ You can provide your API key directly in the agentgateway configuration. This op
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
      models:
-     - name: "*"
+     - name: "openai/*"
        provider: openAI
        params:
          apiKey: "sk-proj...."
+       transformation:
+         model: llmRequest.model.stripPrefix("openai/")
    EOF
    ```
 
@@ -52,10 +85,12 @@ You can provide your API key directly in the agentgateway configuration. This op
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
      models:
-     - name: "*"
+     - name: "openai/*"
        provider: openAI
        params:
          apiKey: "$OPENAI_API_KEY"
+       transformation:
+         model: llmRequest.model.stripPrefix("openai/")
    EOF
    ```
    
@@ -76,12 +111,14 @@ Store the key in a file on the gateway host. Agentgateway watches the file for c
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
      models:
-     - name: "*"
+     - name: "openai/*"
        provider: openAI
        auth:
          key:
            value:
              file: openai-key
+       transformation:
+         model: llmRequest.model.stripPrefix("openai/")
    EOF
    ```
 
@@ -93,6 +130,8 @@ When deploying agentgateway on Kubernetes, you can leverage Kubernetes secrets t
 
 For more information, see the [agentgateway on Kubernetes docs](https://agentgateway.dev/docs/kubernetes/latest/documentation/llm/api-keys/). 
 
+{{% /tab %}}
+{{< /tabs >}}
 {{% /tab %}}
 {{< /tabs >}}
 
@@ -116,7 +155,7 @@ Rotate provider keys regularly, when your provider requires it, or after a suspe
    ```sh
    curl -s http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
-     -d '{"model": "gpt-4o-mini", "messages": [{"role": "user", "content": "Hello!"}]}' | jq .
+     -d '{"model": "openai/gpt-4o-mini", "messages": [{"role": "user", "content": "Hello!"}]}' | jq .
    ```
 
    Example output:

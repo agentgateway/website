@@ -13,18 +13,21 @@ Configure [GitHub Copilot](https://github.com/features/copilot) in VS Code to ro
 
 ## Example agentgateway configuration
 
-```yaml {paths="copilot-validate"}
-cat > /tmp/test-copilot.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  port: 3000
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-EOF
-```
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+You can configure agentgateway in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+{{< reuse "agw-docs/standalone/llm/clients/ui-openai-port-3000.md" >}}
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/github-copilot-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/github-copilot-config.md" >}}
+{{% /version %}}
 
 {{< doc-test paths="copilot-validate" >}}
 export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"

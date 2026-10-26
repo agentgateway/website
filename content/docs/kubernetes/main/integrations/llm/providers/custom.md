@@ -32,6 +32,10 @@ shape but have no first-class {{< reuse "agw-docs/snippets/backend.md" >}} type,
 such as Cohere, DeepSeek, Groq, Mistral, Perplexity, Together AI, and xAI. For
 these providers, use [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}) before using a custom provider.
 
+For TypeSafe Jev with an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}},
+set `spec.provider: Typesafe` unless you need custom target control. Use
+`SystemOne` only when you declare a custom provider format.
+
 ## Supported targets
 
 A custom provider must specify exactly one upstream target.
@@ -57,6 +61,8 @@ non-default path for that format.
 | `Completions` | `/v1/chat/completions` |
 | `Messages` | `/v1/messages` |
 | `Responses` | `/v1/responses` |
+| `Decisions` | `/v1/decisions` |
+| `SystemOne` | `/v1/systemone` |
 | `Embeddings` | `/v1/embeddings` |
 | `AnthropicTokenCount` | `/v1/messages/count_tokens` |
 | `Realtime` | `/v1/realtime` |
@@ -72,6 +78,8 @@ shapes, declare each supported format and optionally set a per-format path.
 | OpenAI chat completions | `Completions`, then `Messages` |
 | Anthropic messages | `Messages`, then `Responses`, then `Completions` |
 | OpenAI responses | `Responses`, then `Completions` |
+| OpenAI decisions | `Decisions`, then `SystemOne` |
+| TypeSafe SystemOne | `SystemOne`, then `Decisions` |
 | OpenAI embeddings | `Embeddings` |
 | Anthropic token count | `AnthropicTokenCount` |
 | OpenAI realtime | `Realtime` |
@@ -79,6 +87,12 @@ shapes, declare each supported format and optionally set a per-format path.
 
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
+
+Use `SystemOne` for a TypeSafe SystemOne upstream. With `SystemOne`, OpenAI
+Decisions requests from `/v1/decisions` go to `/v1/systemone` on the upstream.
+The conversion returns the upstream response in the Decisions format. The
+conversion also works in the other direction: SystemOne requests from
+`/v1/systemone` can go to a `Decisions` upstream.
 
 An error such as `failed to parse Messages request` names the route type that
 parsed the client request before provider conversion. Check that the request
@@ -89,28 +103,21 @@ API format that the client sent. When the request is converted to another
 format, the client query string is dropped. For details, see
 [Query strings on converted requests]({{< link-hextra path="/documentation/llm/about/#query-strings-on-converted-requests" >}}).
 
-When a provider declares both `Responses` and `Completions`, agentgateway prefers
-Responses for Anthropic messages requests. This order also applies to the built-in
-`openai` provider and to `azure` for models other than Claude. On an
-{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, it also applies to
-`Ollama`, `Groq`, `Huggingface`, and `XAI`.
+When a provider declares both `Responses` and `Completions`, agentgateway always
+converts Anthropic messages requests to Responses. This rule is fixed, regardless
+of the `formats` list order.
 
-The Responses conversion drops extended-thinking history. The Chat Completions
-conversion preserves it. To preserve this history, declare `Completions` and
-omit `Responses`.
+The same rule applies to the built-in `openai` provider and to `azure` for models
+other than Claude. On an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}},
+it also applies to `Ollama`, `Groq`, `Huggingface`, and `XAI`.
+
+The Responses conversion drops extended-thinking history. Chat Completions
+preserves it.
 
 Use the `openai` provider only for the OpenAI API. For other OpenAI-compatible
 servers, use a custom provider with the formats that the server supports.
-If the server does not support `/v1/responses`, declare `Completions` and omit
-`Responses`.
-
-For providers that support both formats, the
-`AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable provides a
-temporary workaround for Responses conversion bugs. To prefer Chat Completions,
-set this variable to `true` in `spec.env` of the
-{{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
-The variable applies to every provider and is planned for removal in version 1.7.
-For an example, see [Add environment variables]({{< link-hextra path="/documentation/setup/customize/configs/#env-vars" >}}).
+To preserve thinking history or connect to a server without `/v1/responses`,
+declare `Completions` and omit `Responses`.
 
 ### Converted replies and errors
 
@@ -229,11 +236,9 @@ The following cases do not round-trip.
 
 ### Anthropic messages to the Completions format
 
-Agentgateway converts an Anthropic messages request to Chat Completions when the
-provider declares `Completions` and omits `Responses`. For providers that support
-both formats, you can use the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS=true`
-workaround. The conversion preserves reasoning history and handles the following
-fields.
+Agentgateway converts an Anthropic messages request to Chat Completions only when
+the provider declares `Completions` and omits `Responses`. This conversion
+preserves reasoning history and handles the following fields.
 
 | Field | What happens |
 |-------|--------------|

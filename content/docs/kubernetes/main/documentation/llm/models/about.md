@@ -21,7 +21,7 @@ The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API removes the sca
 Every model that attaches to the same parent is aggregated into a single model table, called a *model router*. From that table, agentgateway serves the following behavior.
 
 - Model extraction from the request body.
-- The standard LLM API paths, such as `/v1/chat/completions` and `/v1/audio/transcriptions`.
+- The standard LLM API paths, such as `/v1/chat/completions`, `/v1/decisions`, `/v1/systemone`, and `/v1/audio/transcriptions`.
 - Model discovery on `/v1/models`.
 - Per-model provider routing.
 - OpenAI-compatible error responses for unknown models.
@@ -51,7 +51,7 @@ Each `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` lists one or more 
 
 | Parent kind | Model router | Paths |
 |-------------|--------------|-------|
-| `Gateway` | The listener's default router, shared by every model that attaches to the same listener. | The standard LLM paths at the listener root, such as `/v1/chat/completions` and `/v1/models`. |
+| `Gateway` | The listener's default router, shared by every model that attaches to the same listener. | The standard LLM paths at the listener root, such as `/v1/chat/completions`, `/v1/decisions`, and `/v1/models`. |
 | `ListenerSet` | The same as a `Gateway` parent, for a listener that a `ListenerSet` contributes. | The standard LLM paths at the listener root. |
 | `HTTPRoute` | A separate router for the referenced route rule, with its own model table. | The standard LLM paths under the rule's path prefix, such as `/tenant-a/v1/chat/completions`. |
 
@@ -218,7 +218,7 @@ Agentgateway strips the `/tenant-a` prefix before it forwards the request, so th
 
 ### Router scoping constraints
 
-- **A virtual model and the concrete models it selects must share one router.** A `weighted` or `conditional` virtual model resolves its targets by model name inside its own router's table. Attach the virtual model and its targets to the same parent. Otherwise, the request fails with a `404` error and the `virtual_model_target_not_found` code. The virtual model still reports `Accepted: True`, so the model status does not show this problem.
+- **A virtual model and the concrete models it selects must share one router.** A `weighted`, `conditional`, or `callout` virtual model resolves its targets by model name inside its own router's table. Attach the virtual model and its targets to the same parent. Otherwise, the request fails with a `404` error and the `virtual_model_target_not_found` code. For a `callout` virtual model, the request counts as a failed callout instead. The virtual model still reports `Accepted: True`, so the model status does not show this problem.
 - **A root-path model route cannot share a listener with directly attached models.** If a model-serving rule matches `/`, has no matches at all, or has a match with no path, then no `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` can attach directly to the same listener through a `Gateway` parent. Both would claim the same paths, so the model on the route is rejected with a conflict message. Give the route a distinct prefix, or move the directly attached models onto routes.
 - **The rule name is part of the router identity.** Renaming a route rule moves its models to a new router. If you omit the rule name, the rule's index in the list identifies the router instead, so reordering rules has the same effect.
 
@@ -437,12 +437,13 @@ Each virtual model uses exactly one strategy.
 | `weighted` | Relative weight. | Traffic splitting, canary rollouts, and A/B tests. |
 | `failover` | Priority group, then health and latency. | Resiliency when a provider degrades. |
 | `conditional` | The first CEL expression that evaluates to `true`. | Tiering by header, body, or other request context. |
+| `callout` | The model name returned by an HTTP service. | Centralized routing logic, tenant-aware model selection, and sticky routing decisions. |
 
 For examples of each strategy, see [Virtual models]({{< link-hextra path="/documentation/llm/models/virtual/" >}}).
 
 ### Constraints
 
-- Targets must be `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources in the same namespace. Cross-namespace references are not supported.
+- Model targets must be `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources in the same namespace. Cross-namespace model references are not supported.
 - Virtual models must be `Public`. The restriction stops virtual models from targeting each other, which could otherwise create routing loops.
 - Virtual models cannot set `spec.policies`. Configure policies on the concrete target models instead.
 

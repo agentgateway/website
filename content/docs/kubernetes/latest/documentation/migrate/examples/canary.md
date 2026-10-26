@@ -72,7 +72,7 @@ Both Ingresses merge into one HTTPRoute. Traffic is split 80/20:
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: app-primary-app-example-com
+  name: app-canary-app-example-com
 spec:
   hostnames:
   - app.example.com

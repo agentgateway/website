@@ -36,6 +36,44 @@ Policies can define `allow`, `deny`, and `require` rules. Rules are evaluated in
 > - A `deny` expression that errors does not match, so it does not deny the request (fail-open).
 > - An `allow` expression that errors does not match, so it does not allow the request.
 
+You can configure authorization rules in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `authorization` policy as the **Simplified (LLM)** example in the **Config file** tab.
+
+1. Create a configuration with an LLM model, but no authorization policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   ```
+2. Start agentgateway with this configuration.
+3. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **Authorization** tile.
+4. Add each of the following rules. For each rule, click **Add rule**, select the effect from the rule's dropdown, and replace the example expression in the editor.
+
+   | Effect | Expression |
+   |--------|------------|
+   | **Allow** | `request.path == "/authz/public"` |
+   | **Deny** | `request.path == "/authz/deny"` |
+   | **Require** | `jwt.aud == "my-service"` |
+   | **Allow** | `request.headers["x-allow"] == "true"` |
+
+   {{< reuse-image src="img/ui-llm-policy-authorization.png" srcDark="img/ui-llm-policy-authorization-dark.png" alt="Authorization policy drawer with allow, deny, require, and allow rules" >}}
+
+5. Click **Save policy**.
+
+The UI saves every rule as an object with an `allow`, `deny`, or `require` key. A legacy string rule, such as the last rule in the **Config file** tab, is saved as an `allow` rule, which behaves the same. To try out an expression first, click **Playground** on the rule to open it in the CEL playground.
+
+You can also add an authorization policy in **MCP** > **Policies**, or in the **Route policies** section of a route in **Traffic** > **Routes**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
@@ -95,6 +133,8 @@ routes:
   - host: localhost:8080
 ```
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 {{< doc-test paths="http-authz" >}}
@@ -170,11 +210,21 @@ agentgateway -f config-mcp.yaml --validate-only
 
 The `require` rule type expresses mandatory conditions more clearly than double-negative `deny` rules, and it fails closed. For example:
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. In the **Authorization** policy drawer, click **Add rule**.
+2. Select **Require** from the rule's dropdown.
+3. Replace the example expression with `jwt.aud == "my-service"`.
+4. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 authorization:
   rules:
   - require: 'jwt.aud == "my-service"'
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 You might be tempted to express the same intent with a `deny` rule:
 
@@ -204,6 +254,38 @@ Each rule in `llm.models[].authorization.rules` uses the same schema as route au
 - An object with `deny`
 - An object with `require`
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the model-level rules from the **Config file** tab to the `gpt-4` model.
+
+1. Create a configuration with the `gpt-4` model, but no authorization rules, and start agentgateway with it.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: gpt-4
+       provider: openAI
+       params:
+         model: gpt-4o
+         apiKey: "$OPENAI_API_KEY"
+   ```
+2. Open [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models) (**LLM** > **Models**), and click the **Edit model** icon for the `gpt-4` model.
+3. Expand **Advanced** > **Model policies** > **Authorization**.
+4. Add each of the following rules. For each rule, click **Add rule**, select the effect from the rule's dropdown, and replace the example expression in the editor.
+
+   | Effect | Expression |
+   |--------|------------|
+   | **Require** | `jwt.aud == "llm-api"` |
+   | **Deny** | `request.headers["x-org"] == "blocked"` |
+   | **Allow** | `request.headers["x-org"] == "engineering"` |
+
+   {{< reuse-image src="img/ui-llm-model-authorization.png" srcDark="img/ui-llm-model-authorization-dark.png" alt="Edit model drawer for gpt-4 with the Authorization model policy and its require, deny, and allow rules" >}}
+
+5. Click **Apply authorization**, and then click **Save model**.
+
+The UI saves the last rule as `allow: request.headers["x-org"] == "engineering"` instead of the legacy string form. Both forms behave the same. To add the policy-layer rules in `llm.policies.authorization`, open **LLM** > **Policies**, and click the **Authorization** tile. Add each rule with **Add rule**, and click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   models:
@@ -218,5 +300,7 @@ llm:
       - deny: 'request.headers["x-org"] == "blocked"'
       - 'request.headers["x-org"] == "engineering"'
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 The LLM models endpoint (`/v1/models`) is also gated by authorization. If a caller does not satisfy authorization rules for a model, that model is not returned. This authorization filtering is separate from [`llm.models[].visibility`]({{< link-hextra path="/documentation/llm/virtual-models/#public-and-internal-models" >}}), which controls whether a model is directly exposed or kept as an internal virtual-model target.

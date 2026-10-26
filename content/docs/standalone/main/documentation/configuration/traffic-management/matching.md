@@ -37,6 +37,27 @@ If no path match is specified, the default is to match all paths (`/`).
 
 For regex path matching, the regular expression applies to the full request path. For example, `/foo/[0-9]+` matches `/foo/123`, but not `/foo/123/bar`.
 
+You can configure path matching in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+To add a route with a path match in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same `api-exact` route as the **Exact path matching** example in the **Config file** tab.
+
+1. Open **Traffic** > **Routes**, and click **Add route**.
+2. Select the **Gateway**, such as `default`, and enter `api-exact` for the **Name**.
+3. Select **Exact** as the **Path match** type. For the other examples, select **Prefix** or **Regex**.
+4. Enter `/api/v1/users` for the **Path**.
+
+   {{< reuse-image src="img/ui-matching-path.png" srcDark="img/ui-matching-path-dark.png" alt="Add route drawer for the api-exact route with an exact path match on /api/v1/users" >}}
+
+5. In the **Backends** section, click **Add backend**, and enter `api.example.com:8080` for the **Host**.
+6. Click **Save route**.
+
+To add a path match to an existing route, click the **Edit route** icon for the route instead. The UI edits only the first entry in `matches`. To add more entries, click the **Raw** icon (`<>`) in the drawer header and edit the YAML, or use the **Config file** tab.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 {{< tabs >}}
@@ -86,6 +107,8 @@ routes:
 ```
 {{< /tab >}}
 {{< /tabs >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Header matching
 
@@ -96,6 +119,26 @@ Match incoming requests based on HTTP headers included in the request.
 - **Regex match:**  
   `{ "name": "Authorization", "value": { "regex": "^Bearer .*" } }`
 
+You can configure header matching in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps create the same `multi-header` route as the **Multiple header matching** example in the **Config file** tab.
+
+1. Open **Traffic** > **Routes**, and click **Add route**.
+2. Select the **Gateway**, enter `multi-header` for the **Name**, and enter `/api` for the **Path**.
+3. In the **Headers** section, click **Add header** for each header condition.
+   1. Enter `Authorization` for the header name and `^Bearer .*` for the value. Then, click **Regex** to match the value as a regular expression.
+   2. Enter `Content-Type` for the header name and `application/json` for the value. Leave **Regex** off for an exact match.
+
+   {{< reuse-image src="img/ui-matching-headers.png" srcDark="img/ui-matching-headers-dark.png" alt="Add route drawer for the multi-header route with a regex Authorization header condition, an exact Content-Type header condition, and the backend" >}}
+
+4. In the **Backends** section, click **Add backend**, and enter `api.example.com:8080` for the **Host**.
+5. Click **Save route**.
+
+A request must match every header condition in the list. The UI edits only the first entry in `matches`. To add more entries, click the **Raw** icon (`<>`) in the drawer header and edit the YAML, or use the **Config file** tab.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 {{< tabs >}}
@@ -160,6 +203,8 @@ routes:
 ```
 {{< /tab >}}
 {{< /tabs >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Method matching
 
@@ -169,6 +214,24 @@ Optionally restrict matches to specific HTTP methods.
 { "method": { "method": "GET" } }
 ```
 
+You can configure method matching in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps create the same `get-only` route as the **GET method matching** example in the **Config file** tab.
+
+1. Open **Traffic** > **Routes**, and click **Add route**.
+2. Select the **Gateway**, enter `get-only` for the **Name**, and enter `/api` for the **Path**.
+3. Enter `GET` for the **Method**.
+
+   {{< reuse-image src="img/ui-matching-method.png" srcDark="img/ui-matching-method-dark.png" alt="Add route drawer for the get-only route with the /api path and the GET method" >}}
+
+4. In the **Backends** section, click **Add backend**, and enter `api.example.com:8080` for the **Host**.
+5. Click **Save route**.
+
+To send different methods to different backends, add one route for each method. The UI edits only the first entry in `matches`. To add more entries, click the **Raw** icon (`<>`) in the drawer header and edit the YAML, or use the **Config file** tab.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 {{< tabs >}}
@@ -228,6 +291,8 @@ routes:
 ```
 {{< /tab >}}
 {{< /tabs >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Query parameter matching
 
@@ -238,6 +303,26 @@ Match on query parameters, either by exact value or regex.
 - **Regex:**  
   `{ "name": "version", "value": { "regex": "^v[0-9]+$" } }`
 
+You can configure query parameter matching in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps create the same `multi-query` route as the **Multiple query parameters** example in the **Config file** tab.
+
+1. Open **Traffic** > **Routes**, and click **Add route**.
+2. Select the **Gateway**, enter `multi-query` for the **Name**, and enter `/api` for the **Path**.
+3. In the **Query** section, click **Add query** for each query condition.
+   1. Enter `version` for the query name and `v1` for the value. Leave **Regex** off for an exact match.
+   2. Enter `format` for the query name and `^(json|xml)$` for the value. Then, click **Regex** to match the value as a regular expression.
+
+   {{< reuse-image src="img/ui-matching-query.png" srcDark="img/ui-matching-query-dark.png" alt="Add route drawer for the multi-query route with an exact version query condition, a regex format query condition, and the backend" >}}
+
+4. In the **Backends** section, click **Add backend**, and enter `api.example.com:8080` for the **Host**.
+5. Click **Save route**.
+
+A request must match every query condition in the list. The UI edits only the first entry in `matches`. To add more entries, click the **Raw** icon (`<>`) in the drawer header and edit the YAML, or use the **Config file** tab.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 {{< tabs >}}
@@ -301,6 +386,8 @@ routes:
   - host: api.example.com:8080
 ```
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 ### Combined matching
@@ -371,6 +458,20 @@ For routes configured with [TCP listeners]({{< link-hextra path="/documentation/
 
 Match incoming requests based on the hostname included in the request. This is primarily used for TLS termination scenarios.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps assume that you have a TCP gateway named `database-proxy`. To add one, see [TCP listeners]({{< link-hextra path="/documentation/configuration/listeners/#tcp-listeners" >}}).
+
+1. Open **Traffic** > **Routes**, and click **Add route**.
+2. Select **TCP** as the **Kind**, and select the `database-proxy` **Gateway**.
+3. Enter `database-backend` for the **Name** and `db.example.com` for the **Hostnames**. To match more than one hostname, separate them with commas.
+4. In the **Backends** section, click **Add backend**, and enter `postgres.example.com:5432` for the **Host**.
+
+   {{< reuse-image src="img/ui-matching-tcp-hostname.png" srcDark="img/ui-matching-tcp-hostname-dark.png" alt="Add route drawer with the TCP kind, the database-proxy gateway, the database-backend route name, the db.example.com hostname, and the postgres.example.com:5432 backend" >}}
+
+5. Click **Save route**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -385,6 +486,8 @@ tcpRoutes:
   backends:
   - host: postgres.example.com:5432
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Backend routing
 
@@ -396,6 +499,24 @@ In the following example, traffic is load balanced across the three backends in 
 
 If no weight is specified, the default is 1. Backends with a weight of 0 receive no traffic. Each incoming TCP connection maintains a 1:1 mapping with an outgoing backend connection; once a connection is established, it remains bound to its assigned backend for the lifetime of that connection.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps assume that you have a TCP gateway named `redis-proxy`. To add one, see [TCP listeners]({{< link-hextra path="/documentation/configuration/listeners/#tcp-listeners" >}}).
+
+1. Open **Traffic** > **Routes**, and click **Add route**.
+2. Select **TCP** as the **Kind**, select the `redis-proxy` **Gateway**, and enter `redis-cluster` for the **Name**.
+3. In the **Backends** section, click **Add backend** three times. Enter the **Host** and **Weight** of each backend.
+   * `redis-1.example.com:6379` with a weight of `1`
+   * `redis-2.example.com:6379` with a weight of `2`
+   * `redis-3.example.com:6379` with a weight of `1`
+
+   {{< reuse-image src="img/ui-matching-tcp-weights.png" srcDark="img/ui-matching-tcp-weights-dark.png" alt="Add route drawer for the redis-cluster TCP route on the redis-proxy gateway with three backends weighted 1, 2, and 1" >}}
+
+4. Click **Save route**.
+
+The UI leaves out `weight: 1`, because 1 is the default weight.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
@@ -413,6 +534,8 @@ tcpRoutes:
   - host: redis-3.example.com:6379
     weight: 1
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="matching" >}}
 # WHAT THIS TEST VALIDATES:

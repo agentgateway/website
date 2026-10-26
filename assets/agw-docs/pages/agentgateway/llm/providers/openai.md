@@ -400,6 +400,12 @@ Example output:
 {{% /conditional-text %}}
 {{% /version %}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+## Send OpenAI Decisions API requests {#decisions}
+
+To send requests to the OpenAI Decisions API, add the `Decisions` route type for the `/v1/decisions` path to the `routes` of your OpenAI {{< reuse "agw-docs/snippets/backend.md" >}}. For the steps, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}).
+{{< /version >}}
+
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
 
 ## Cleanup

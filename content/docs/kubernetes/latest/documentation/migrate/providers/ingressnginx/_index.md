@@ -9,6 +9,13 @@ The `ingress-nginx` provider defines the source resources to be translated, e.g.
 
 **Note:** Some annotations may be translated into agentgateway resources or user-facing notifications.
 
+The mappings on this page describe [ingress2gateway v0.5.0](https://github.com/kgateway-dev/ingress2gateway/releases/tag/v0.5.0).
+
+## Ingress class selection
+
+The provider selects the `nginx` Ingress class by default. To convert Ingresses with another class, set
+`--ingress-nginx-ingress-class=<class-name>`. Generated Gateways still use `gatewayClassName: agentgateway`.
+
 ## Supported Annotations
 
 The `ingress-nginx` provider currently supports an Ingress with the following annotations.
@@ -31,12 +38,17 @@ The `ingress-nginx` provider currently supports an Ingress with the following an
 
 ### Request / Body Size
 
-- `nginx.ingress.kubernetes.io/client-body-buffer-size`: Sets the maximum request body size when `proxy-body-size` is not present. **Note:** The agentgateway emitter does not currently project body/buffer size to AgentgatewayPolicy.
+- `nginx.ingress.kubernetes.io/client-body-buffer-size`: The emitter writes `AgentgatewayPolicy.spec.frontend.http.maxBufferSize` when `proxy-body-size` is not present. Quantities are converted to bytes.
 
 - **Note (regex-mode constraint):** Ingress NGINX session cookie paths do not support regex. If regex-mode is enabled for a host (via `use-regex: "true"` or
   `rewrite-target`) and cookie affinity is used, `session-cookie-path` must be set; the provider validates this and emits an error if it is missing.
 
-- `nginx.ingress.kubernetes.io/proxy-body-size`: Sets the maximum allowed request body size. Takes precedence over `client-body-buffer-size`. **Note:** The agentgateway emitter does not currently project body/buffer size to AgentgatewayPolicy.
+- `nginx.ingress.kubernetes.io/proxy-body-size`: The emitter writes `AgentgatewayPolicy.spec.frontend.http.maxBufferSize` in bytes and takes precedence over `client-body-buffer-size`. The resolved size must be greater than zero and fit in a signed 32-bit integer.
+
+> [!WARNING]
+> The generated policy targets the HTTPRoute. agentgateway accepts `spec.frontend` only when every target is a Gateway, so `kubectl apply` rejects the policy: `the 'frontend' field can only target a Gateway`.
+>
+> Change `targetRefs` so the policy targets the generated Gateway, or move `spec.frontend` into a separate policy that targets that Gateway. A Gateway target applies the setting to every route on the Gateway.
 
 ---
 
@@ -91,8 +103,10 @@ The `ingress-nginx` provider currently supports an Ingress with the following an
 ### Backend Protocol
 
 - `nginx.ingress.kubernetes.io/backend-protocol`: Indicates the L7 protocol that is used to communicate with the proxied backend.
-  - **Supported values (recorded):** `GRPC`, `GRPCS` — the provider records protocol intent; the agentgateway emitter does **not** currently emit AgentgatewayBackend or Service resources for this. It may emit an **INFO** notification with a `kubectl patch` command to set `spec.ports[].appProtocol` on the existing Service.
-  - **Values treated as default HTTP/1.x (no-op):** `HTTP`, `HTTPS`, `AUTO_HTTP`
+  - **Supported values (mapped):** `GRPC`, `GRPCS` — the emitter creates a backend-scoped AgentgatewayPolicy with `spec.backend.http.version: HTTP2`. It targets the Service, or the generated AgentgatewayBackend when `service-upstream: "true"` is also set.
+  - Generated routes remain HTTPRoutes. The HTTP version policy does not configure backend TLS; the TLS requirements below also apply to GRPCS.
+  - `HTTPS` and `GRPCS` also enable backend TLS processing for the `proxy-ssl-*` annotations.
+  - `HTTP` and `AUTO_HTTP` use default HTTP/1.x behavior.
   - **Unsupported values (rejected):** `FCGI` (and others)
 
 ---
@@ -107,7 +121,23 @@ The `ingress-nginx` provider currently supports an Ingress with the following an
 
 ---
 
+### Service Upstream
+
+- `nginx.ingress.kubernetes.io/service-upstream: "true"`: Creates an AgentgatewayBackend named `<service>-service-upstream` with `spec.static.host` and `spec.static.port` derived from the Service. Matching HTTPRoute backend references are rewritten to target it. The host uses in-cluster Service DNS instead of individual Pod addresses.
+
+### Access Logging
+
+- `nginx.ingress.kubernetes.io/enable-access-log`: When explicitly set, the emitter writes `AgentgatewayPolicy.spec.frontend.accessLog` on an HTTPRoute target. A value of `"true"` emits an empty `accessLog` object. A value of `"false"` sets `filter: "false"`. When the annotation is absent, no access log policy is emitted. Apply fails with the same Gateway-target error as body size. Use the same workaround: retarget the policy to the generated Gateway.
+
+### TLS Passthrough
+
+- `nginx.ingress.kubernetes.io/ssl-passthrough: "true"`: Converts the affected HTTPRoute to a TLSRoute (`apiVersion: gateway.networking.k8s.io/v1alpha2`) and configures a Gateway listener with `protocol: TLS` and `tls.mode: Passthrough`. The backend must terminate TLS. HTTP path matching and HTTP policies do not apply to passthrough traffic. Clusters that serve TLSRoute `v1` and not `v1alpha2` reject the resource: `no matches for kind "TLSRoute" in version "gateway.networking.k8s.io/v1alpha2"`. If apply fails with that error, change the TLSRoute `apiVersion` to `gateway.networking.k8s.io/v1`. Leave the other fields as generated. A server-side dry run accepts that change.
+
+---
+
 ### Backend TLS
+
+Set `nginx.ingress.kubernetes.io/backend-protocol` to `HTTPS` or `GRPCS` to enable backend TLS processing.
 
 - `nginx.ingress.kubernetes.io/proxy-ssl-secret`: Specifies a Secret containing client certificate (`tls.crt`), client key (`tls.key`), and optionally CA certificate (`ca.crt`) in PEM format. The secret name can be specified as `secretName` (same namespace) or `namespace/secretName`. For agentgateway, this maps to `AgentgatewayPolicy.spec.backend.tls.mtlsCertificateRef[0].name` (emitter uses only the name; Secret must be in the same namespace as the policy).
 
@@ -117,7 +147,7 @@ The `ingress-nginx` provider currently supports an Ingress with the following an
 
 - `nginx.ingress.kubernetes.io/proxy-ssl-server-name`: When set to `"on"`, enables SNI; the SNI value still comes from `proxy-ssl-name`. For agentgateway, the emitter projects SNI via `proxy-ssl-name`.
 
-**Note:** For agentgateway, backend TLS is emitted as one **AgentgatewayPolicy per backend Service** (name `<service-name>-backend-tls`), targeting the Service via `spec.targetRefs`. Conflicting settings for the same Service may result in warnings.
+**Note:** For agentgateway, backend TLS is emitted as one **AgentgatewayPolicy per backend Service** (name `<service-name>-backend-tls`), targeting the Service via `spec.targetRefs`. The emitter also emits a Gateway API `BackendTLSPolicy` with the same name. Its `validation.caCertificateRefs` entry is a ConfigMap with the same name as the secret. The command prints a warning that the `BackendTLSPolicy` cannot configure mTLS and only verifies the server CA. It also prints a notice that you must create that ConfigMap with the CA certificate under the key `ca.crt`. Creating the ConfigMap enables that server CA verification. It does not enable mTLS. If `proxy-ssl-secret` is given as `namespace/name`, the emitter uses only `name` (Secret must be in the same namespace as the policy). Conflicting settings for the same Service may result in warnings.
 
 ---
 
@@ -131,7 +161,7 @@ The `ingress-nginx` provider currently supports an Ingress with the following an
 
 ### SSL Redirect
 
-- `nginx.ingress.kubernetes.io/ssl-redirect`: When set to `"true"`, enables SSL redirect for HTTP requests. For agentgateway, the emitter **splits** the HTTPRoute into an HTTP redirect route (RequestRedirect filter, 301 to HTTPS, no backends) and a separate HTTPS backend route. Note that ingress-nginx redirects with code 308; Gateway API uses 301.
+- `nginx.ingress.kubernetes.io/ssl-redirect`: When set to `"true"` with TLS configured for the host, the provider generates an HTTP redirect route (RequestRedirect filter, 308 to HTTPS, no backends) and a separate HTTPS backend route.
 
 - `nginx.ingress.kubernetes.io/force-ssl-redirect`: When set to `"true"`, enables SSL redirect. Treated identically to `ssl-redirect` by the agentgateway emitter.
 

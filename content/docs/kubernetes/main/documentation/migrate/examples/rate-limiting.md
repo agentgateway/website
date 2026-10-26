@@ -14,11 +14,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ratelimit-demo
+  namespace: default
   annotations:
     nginx.ingress.kubernetes.io/limit-rps: "10"
     nginx.ingress.kubernetes.io/limit-burst-multiplier: "2"
 spec:
-  ingressClassName: agentgateway
+  ingressClassName: nginx
   rules:
   - host: api.example.com
     http:

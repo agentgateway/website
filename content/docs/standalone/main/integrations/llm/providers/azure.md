@@ -59,6 +59,39 @@ Azure supports two endpoint types:
 - **Azure AI Foundry** (`foundry`): Connect to Azure AI Foundry project endpoints at `{resourceName}-resource.services.ai.azure.com`.
 - **Azure OpenAI** (`openAI`): Connect directly to Azure OpenAI Service deployments at `{resourceName}.openai.azure.com`.
 
+You can add the model in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same models as the **Config file** tab.
+
+1. Optional: To authenticate with an API key, set your API key in the `AZURE_API_KEY` environment variable. The UI checks that the variable exists when you save the model.
+
+   ```sh
+   export AZURE_API_KEY='<your-api-key>'
+   ```
+
+2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
+3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+4. From the **Provider** dropdown, select **Azure**.
+5. In the **Incoming model match** field, replace the default `azure/*` with the model name to match, such as `*` or `gpt-4.1`.
+6. For the **Azure credentials**, select one of the following options.
+   * **Default**: Uses implicit Entra ID authentication.
+   * **Managed**: Uses a managed identity. Optionally, enter the client ID of a user-assigned identity.
+   * **API key**: Select **Env var**, and enter `AZURE_API_KEY`.
+7. Enter the **Azure resource name**, such as `your-resource-name`.
+8. For the **Azure resource type**, select **Foundry** or **OpenAI**. For **Foundry**, also enter the **Azure project name**, such as `your-project-name`.
+9. Optional: Enter an **Azure API version**. Leave the field empty to use the default.
+
+   {{< reuse-image src="img/ui-llm-add-model-azure-foundry.png" srcDark="img/ui-llm-add-model-azure-foundry-dark.png" alt="Add model drawer with Azure selected as the provider, Default as the Azure credentials, your-resource-name as the Azure resource name, Foundry as the Azure resource type, and your-project-name as the Azure project name" >}}
+
+10. Click **Save model**.
+
+The **API key** option saves the key in `params.apiKey`. The **Foundry (API key)** example in the **Config file** tab uses an `auth.key` block instead, which sends the key in the `api-key` header. To write that block, click the **Raw** icon (`<>`) in the drawer header, or use the **Config file** tab.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 {{< tabs >}}
@@ -177,6 +210,8 @@ agentgateway -f config-azure-openai.yaml --validate-only
 | `params.azureApiVersion` | Optional API version override. Defaults to `v1`. For legacy deployments, use a dated version like `2024-04-01-preview`. |
 | `params.model` | The specific Azure model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.apiKey` | The Azure API key for authentication. If unset, implicit Entra ID authentication is used. You can reference environment variables using the `$VAR_NAME` syntax. |
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Advanced configuration
 
@@ -694,87 +729,101 @@ fi
 echo "✓ The wildcard model is served and resolves to the azure provider"
 {{< /doc-test >}}
 
-## Use Microsoft Decision Models on Azure AI Foundry
+## Use Microsoft Decision models on Azure AI Foundry
 
-Use an agentgateway build that includes Azure Foundry Decisions and native
-SystemOne support. Deploy Microsoft-Decision-1 in your Foundry resource and set
-`params.model` to its deployment name.
+[Azure AI Foundry](https://ai.azure.com/) hosts Microsoft Decision models, which answer classification questions about a text, such as which of several choices fits best or how likely a statement is true. {{< reuse "agw-docs/snippets/agentgateway.md" >}} accepts two request formats for these models:
 
-Agentgateway converts `/v1/decisions` requests and responses, and forwards
-`/v1/systemone` in its native format. Both APIs use Foundry's endpoint at
-`https://{resourceName}.cognitiveservices.azure.com/providers/microsoft/v1/systemone`.
-The deployment name goes in the upstream request body.
+- **Decisions API** (`/v1/decisions`): The OpenAI-compatible format. {{< reuse "agw-docs/snippets/agentgateway.md" >}} converts the request and the response to and from the native SystemOne format. For another example of this API, see the [Jev guardrail guide]({{< link-hextra path="/integrations/llm/guardrails/jev/" >}}).
+- **SystemOne** (`/v1/systemone`): The native format of the model. {{< reuse "agw-docs/snippets/agentgateway.md" >}} forwards the request unchanged.
 
-Save the following as `config-decisions.yaml`, replacing the resource and
-deployment placeholders.
+Both formats use the Foundry resource endpoint, `https://{resourceName}.cognitiveservices.azure.com/providers/microsoft/v1/systemone`. In SystemOne, a question of type `noul` returns the probability that a statement is true. The Decisions API calls this question type `predicate`.
 
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  models:
-  - auth:
-      azure:
-        developerImplicit: {}
-    name: foundry-decision
-    params:
-      azureResourceName: my-foundry-resource
-      azureResourceType: foundry
-      model: my-decision-deployment
-    provider: azure
-  port: 3000
-```
+Before you begin, deploy Microsoft-Decision-1 in your Foundry resource. Then sign in with the Azure CLI or the Azure Developer CLI as an identity that has inference access to the Foundry resource.
 
-Sign in with the Azure CLI or Azure Developer CLI using an identity with inference
-access to the Foundry resource. Validate the configuration, then start agentgateway:
+1. Save the following configuration as `config-decisions.yaml`. Replace the resource name and deployment name with your own values.
 
-```sh
-agentgateway --validate-only -f config-decisions.yaml
-agentgateway -f config-decisions.yaml
-```
+   {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
-Send a choice request from another terminal:
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - auth:
+         azure:
+           developerImplicit: {}
+       name: foundry-decision
+       params:
+         azureResourceName: my-foundry-resource
+         azureResourceType: foundry
+         model: my-decision-deployment
+       provider: azure
+     port: 3000
+   ```
 
-```sh
-curl --fail-with-body --max-time 120 http://localhost:3000/v1/decisions \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "input": "I was charged twice for my subscription.",
-    "model": "foundry-decision",
-    "questions": [{
-      "choices": [
-        {"description": "Payments and invoices", "value": "billing"},
-        {"description": "Software problems", "value": "technical"}
-      ],
-      "instructions": "Which team should handle this support ticket?",
-      "name": "department",
-      "type": "choice"
-    }]
-  }'
-```
+   {{< reuse "agw-docs/snippets/review-table.md" >}}
 
-The response includes a `department` choice with probabilities and token usage.
-The Decisions API also supports `predicate` and `score` questions.
+   | Setting | Description |
+   |---------|-------------|
+   | `name` | The model name that clients send in the `model` field. This name is not the deployment name. A request with any other model name returns a `404` error. |
+   | `provider` | Set to `azure` for Azure AI Foundry. |
+   | `auth.azure.developerImplicit` | Authenticate with the credentials from your Azure CLI or Azure Developer CLI sign-in. |
+   | `params.azureResourceName` | The Azure AI Foundry resource name used to construct the endpoint hostname. |
+   | `params.azureResourceType` | Set to `foundry` to use Azure AI Foundry endpoints. |
+   | `params.model` | The name of your Foundry deployment. {{< reuse "agw-docs/snippets/agentgateway.md" >}} sends this name upstream and replaces the `model` value in the client request. |
 
-To send a native SystemOne request through the same configuration:
+   Both request paths are served from the same model. You do not need to configure a route for each path.
 
-```sh
-curl --fail-with-body --max-time 120 http://localhost:3000/v1/systemone \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model": "foundry-decision",
-    "questions": {
-      "department": {
-        "criteria": {
-          "billing": "Payments and invoices",
-          "technical": "Software problems"
-        },
-        "instructions": "Which team should handle this support ticket?",
-        "type": "choice"
-      }
-    },
-    "state": "I was charged twice for my subscription."
-  }'
-```
+2. Validate the configuration, then start agentgateway.
 
-SystemOne uses `state` and a question map, and returns an `answers` map. Its question
-types are `noul` (predicate), `choice`, and `score`.
+   ```sh
+   agentgateway --validate-only -f config-decisions.yaml
+   agentgateway -f config-decisions.yaml
+   ```
+
+3. In another terminal, send a choice question through the Decisions API.
+
+   ```sh
+   curl --fail-with-body --max-time 120 http://localhost:3000/v1/decisions \
+     -H 'Content-Type: application/json' \
+     -d '{
+       "input": "I was charged twice for my subscription.",
+       "model": "foundry-decision",
+       "questions": [{
+         "choices": [
+           {"description": "Payments and invoices", "value": "billing"},
+           {"description": "Software problems", "value": "technical"}
+         ],
+         "instructions": "Which team should handle this support ticket?",
+         "name": "department",
+         "type": "choice"
+       }]
+     }'
+   ```
+
+   The response includes a `department` choice with a probability for each value, and token usage. The Decisions API also supports `predicate` and `score` questions.
+
+4. Send the same question in the native SystemOne format. SystemOne takes the text in `state` and the questions as a map keyed by name, and returns an `answers` map. Its question types are `noul`, `choice`, and `score`.
+
+   ```sh
+   curl --fail-with-body --max-time 120 http://localhost:3000/v1/systemone \
+     -H 'Content-Type: application/json' \
+     -d '{
+       "model": "foundry-decision",
+       "questions": {
+         "department": {
+           "criteria": {
+             "billing": "Payments and invoices",
+             "technical": "Software problems"
+           },
+           "instructions": "Which team should handle this support ticket?",
+           "type": "choice"
+         }
+       },
+       "state": "I was charged twice for my subscription."
+     }'
+   ```
+
+   > [!NOTE]
+   > Prompt guards are disabled for requests in the native SystemOne format.
+
+5. When you finish, stop agentgateway with Ctrl+C.
