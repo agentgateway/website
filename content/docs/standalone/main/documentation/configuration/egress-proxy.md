@@ -394,6 +394,15 @@ Use this pattern when agentgateway must apply HTTP policies to every outbound re
 > [!WARNING]
 > This configuration has no hostname allowlist, so it permits every HTTPS destination. To restrict destinations as well, add route `hostnames` entries, or combine this pattern with one of the allowlist patterns on this page.
 
+## Choose a pattern
+
+* To restrict outbound traffic by hostname and keep it encrypted, use [Allowlist destinations without decrypting traffic](#allowlist-destinations-without-decrypting-traffic).
+* To restrict who may use the proxy, use [Require client authentication](#require-client-authentication). This pattern also refuses a blocked destination at the proxy rather than through a TLS error.
+* To serve selected hostnames from agentgateway while everything else passes through, use [Terminate TLS for selected hostnames](#terminate-tls-for-selected-hostnames).
+* To apply HTTP policies to every outbound request, use [Inspect all HTTPS traffic](#inspect-all-https-traffic).
+
+Run one configuration at a time. Each configuration on this page listens for proxy requests on port 3000.
+
 ## Loopback and link-local destinations {#loopback-destinations}
 
 A dynamic backend uses the destination named in each request. Without restrictions, clients could reach services on the gateway host.
@@ -419,6 +428,9 @@ A refused request fails with a `503` response and the body `backend not allowed`
 ### Allow loopback destinations {#allow-dynamic-loopback}
 
 Set `config.backend.allowDynamicLoopback` to `true` to allow local destinations.
+
+> [!WARNING]
+> This setting affects every dynamic backend in the configuration. Clients using these routes can reach the cloud metadata server at `169.254.169.254` and every service on the gateway host, including the admin interface. Keep a `hostnames` allowlist on every route with a dynamic backend.
 
 These steps first verify the default behavior using agentgateway's readiness endpoint at `localhost:15021`.
 
@@ -493,15 +505,3 @@ These steps first verify the default behavior using agentgateway's readiness end
 
    ready
    ```
-
-> [!WARNING]
-> This setting affects every dynamic backend in the configuration. Clients using these routes can reach every service on the gateway host, including the admin interface. Keep a `hostnames` allowlist on every route with a dynamic backend.
-
-## Choose a pattern
-
-* To restrict outbound traffic by hostname and keep it encrypted, use [Allowlist destinations without decrypting traffic](#allowlist-destinations-without-decrypting-traffic).
-* To restrict who may use the proxy, use [Require client authentication](#require-client-authentication). This pattern also refuses a blocked destination at the proxy rather than through a TLS error.
-* To serve selected hostnames from agentgateway while everything else passes through, use [Terminate TLS for selected hostnames](#terminate-tls-for-selected-hostnames).
-* To apply HTTP policies to every outbound request, use [Inspect all HTTPS traffic](#inspect-all-https-traffic).
-
-Run one configuration at a time. Each configuration on this page listens for proxy requests on port 3000.

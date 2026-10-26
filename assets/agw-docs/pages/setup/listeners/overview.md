@@ -68,11 +68,11 @@ flowchart TD
 Listeners that share a port must use the same protocol and the same bind mode. Each listener must also claim a hostname that no earlier listener on that port already claimed.
 {{< /version >}}
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
-Listeners sharing a port must use the same bind mode. Protocols must also match, except that an HTTPS listener and a TLS passthrough listener can share a port.
+Listeners sharing a port must use the same bind mode. Protocols must also match, except that an HTTPS listener and a TLS listener can share a port.
 
 The proxy selects between them by the connection's Server Name Indication (SNI) hostname. For an example, see [Share the HTTPS port with a TLS passthrough listener]({{< link-hextra path="/documentation/setup/listeners/https/#tls-passthrough-shared-port" >}}).
 
-Each listener must claim a unique hostname on its port. A listener without a hostname claims `*`, so only one is allowed per port.
+Each listener must claim a unique hostname on its port, even if the listeners allow routes from different namespaces. A listener without a hostname claims `*`, so only one is allowed per port.
 {{< /version >}}
 
 Several listeners can share a port, which is how one port serves more than one hostname. Each listener is checked against the listeners that are already accepted on its port, so precedence decides which listener keeps a contested setting.

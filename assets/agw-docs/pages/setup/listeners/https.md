@@ -398,7 +398,7 @@ An HTTPS listener and a TLS passthrough listener can share a port on one Gateway
 - **HTTPS**: The gateway terminates TLS.
 - **TLS passthrough**: The backend terminates TLS. Use this for services that manage their own certificates or require end-to-end mutual TLS.
 
-Sharing a port avoids a second Gateway and often a second load balancer and IP address. The listeners must claim different hostnames. For conflict rules, see [Listener precedence]({{< link-hextra path="/documentation/setup/listeners/overview/#listener-precedence" >}}).
+Sharing a port avoids a second Gateway and often a second load balancer and IP address. The listeners must claim different hostnames. This example creates a separate `https-passthrough` Gateway so that the `https` Gateway from the previous sections stays unchanged. In your own setup, you can add the TLS listener to an existing Gateway instead. For conflict rules, see [Listener precedence]({{< link-hextra path="/documentation/setup/listeners/overview/#listener-precedence" >}}).
 
 The following steps reuse the root certificate, the `https` Secret, and the httpbin app from the previous sections.
 
@@ -442,6 +442,8 @@ The following steps reuse the root certificate, the `https` Secret, and the http
    metadata:
      name: passthrough-nginx
      namespace: httpbin
+     labels:
+       example: httpbin-https
    data:
      nginx.conf: |
        events {}
@@ -463,6 +465,8 @@ The following steps reuse the root certificate, the `https` Secret, and the http
    metadata:
      name: passthrough-nginx
      namespace: httpbin
+     labels:
+       example: httpbin-https
    spec:
      replicas: 1
      selector:
@@ -499,6 +503,8 @@ The following steps reuse the root certificate, the `https` Secret, and the http
    metadata:
      name: passthrough-nginx
      namespace: httpbin
+     labels:
+       example: httpbin-https
    spec:
      selector:
        app: passthrough-nginx
@@ -589,6 +595,8 @@ The following steps reuse the root certificate, the `https` Secret, and the http
    metadata:
      name: passthrough-nginx
      namespace: httpbin
+     labels:
+       example: httpbin-https
    spec:
      parentRefs:
      - name: https-passthrough
@@ -720,8 +728,7 @@ rm -rf example_certs
 If you shared the HTTPS port with a TLS passthrough listener, also delete the TLSRoute and the nginx server.
 
 ```sh
-kubectl delete tlsroute passthrough-nginx -n httpbin
-kubectl delete deployment,service,configmap passthrough-nginx -n httpbin
+kubectl delete -A tlsroutes,deployments,services,configmaps -l example=httpbin-https
 ```
 {{< /version >}}
 

@@ -157,6 +157,9 @@ A refused request fails with a `503` response and the body `backend not allowed`
 
 To allow local destinations, set `config.backend.allowDynamicLoopback` in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource's `rawConfig`. There is no dedicated field for this setting.
 
+> [!WARNING]
+> This setting affects every Dynamic Forward Proxy route on the Gateway. Clients using these routes can reach the cloud metadata server at `169.254.169.254` and every service inside the proxy pod, including the admin interface. Restrict destinations with HTTPRoute `hostnames` and restrict clients with an authorization policy.
+
 These steps first verify the default behavior using the proxy's readiness endpoint at `localhost:15021`.
 
 1. Send a request with the host header set to the proxy's own readiness endpoint. The request is refused.
@@ -207,6 +210,8 @@ These steps first verify the default behavior using the proxy's readiness endpoi
            allowDynamicLoopback: true
    EOF
    ```
+
+   {{< reuse "agw-docs/snippets/review-table.md" >}}
 
    | Setting | Description |
    | -- | -- |
@@ -259,9 +264,6 @@ These steps first verify the default behavior using the proxy's readiness endpoi
 
    ready
    ```
-
-> [!WARNING]
-> This setting affects every Dynamic Forward Proxy route on the Gateway. Clients using these routes can reach every service inside the proxy pod, including the admin interface. Restrict destinations with HTTPRoute `hostnames` and restrict clients with an authorization policy.
 {{< /version >}}
 
 ## Cleanup
@@ -273,13 +275,15 @@ kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} dfp-backend -n httpb
 kubectl delete httproute dfp-httproute -n httpbin
 ```
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
-If you allowed loopback destinations, remove the reference from the Gateway and delete the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
+If you allowed loopback destinations, revert the setting.
 
-```sh
-kubectl patch gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type json \
-  -p '[{"op":"remove","path":"/spec/infrastructure/parametersRef"}]'
-kubectl delete {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} dfp-loopback -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-```
+* If you added the setting to an existing {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, remove `config.backend.allowDynamicLoopback` from its `rawConfig`.
+* If you created the `dfp-loopback` resource, remove the reference from the Gateway and delete the resource.
+  ```sh
+  kubectl patch gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type json \
+    -p '[{"op":"remove","path":"/spec/infrastructure/parametersRef"}]'
+  kubectl delete {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} dfp-loopback -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+  ```
 {{< /version >}}
 
 
