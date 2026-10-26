@@ -40,6 +40,7 @@ Review the release notes for agentgateway on Kubernetes.
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3960 -->
 
+- **Endpoint picker hostname destinations**: Endpoint picker extensions can now return DNS hostname targets in `x-gateway-destination-endpoint`, such as a shared gateway or cloud load balancer, instead of only IP endpoints. In standalone request scheduler mode, set `destinationMode: passthrough` when an EPP can select hostnames; `validated` mode still accepts only IP destinations that match local endpoints. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4012 -->
 - **Model catalogs include descriptive model metadata**: Model catalog entries can now include display names, lifecycle status, release dates, token limits, modalities, capabilities, and reasoning controls in addition to pricing fields. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-json-format" >}}).
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3965 -->
