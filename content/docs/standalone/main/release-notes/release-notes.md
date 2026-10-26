@@ -107,7 +107,6 @@ For more information, see [Session key]({{< link-hextra path="/integrations/mcp/
 
 **LLM**
 
-- Anthropic usage accounting includes every `usage.iterations` entry, including compaction and cache-read tokens, when calculating telemetry, costs, and converted Chat Completions usage, and Messages requests always prefer Responses when a provider supports both Responses and Chat Completions because the deprecated `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` override is removed. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4050 -->
 - OpenAI-compatible responses, such as from Gemini, count reasoning tokens as output usage when agentgateway converts the response to Messages or Responses and when agentgateway records normalized usage.
 - Messages requests that ask for reasoning no longer send reasoning parameters to older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o`.
 - Bedrock conversion keeps prompt-cache markers when unsupported Messages blocks or blank Chat Completions text are dropped, and Anthropic cache TTLs reach Bedrock cache points.
