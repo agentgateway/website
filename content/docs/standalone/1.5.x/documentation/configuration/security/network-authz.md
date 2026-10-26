@@ -216,7 +216,7 @@ agentgateway -f config-private.yaml --validate-only
 
 ### Require mTLS client identity
 
-Admit only clients whose certificate carries a specific SPIFFE ID. The gateway must verify client certificates, so set `root` in its `tls` settings to the CA that issued them. Without `root`, the client certificate variables are unset, and this rule rejects every connection.
+Admit only clients whose certificate carries a specific SPIFFE ID. The gateway must verify client certificates, so set `root` in the gateway's `tls` settings to the CA that issued the client certificates. Without `root`, the client certificate variables are unset, and this rule rejects every connection.
 
 ```yaml
 frontendPolicies:
