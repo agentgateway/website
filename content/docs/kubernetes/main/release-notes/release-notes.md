@@ -36,7 +36,6 @@ Review the release notes for agentgateway on Kubernetes.
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4010 -->
 
-- **Bedrock Runtime native API testing and cache-write TTL cost buckets**: Set `AGENTGATEWAY_BEDROCK_RUNTIME_CONVERSE=false` to test Bedrock Runtime with native OpenAI and Anthropic API paths. Model catalogs now use `cacheWriteDetails` for non-default prompt-cache write TTL rates, including Anthropic `1h` and OpenAI `12h`, and CEL and trace fields expose those buckets under `cacheWriteDetails`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3845 -->
 - **CEL can read LLM request fields before provider routing**: Request-phase CEL expressions on LLM traffic can read `llm.requestModel` before provider overrides and `llmRequest` for the parsed JSON request body. For more information, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3960 -->
