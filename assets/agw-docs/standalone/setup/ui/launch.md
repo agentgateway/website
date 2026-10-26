@@ -136,12 +136,7 @@ The **LLM** area configures the models that clients can request and the policies
 
   {{< reuse-image src="img/ui-tour-llm-policies.png" srcDark="img/ui-tour-llm-policies-dark.png" alt="LLM Policies page with policy cards such as CORS, API keys, and JWT auth, each marked enabled or disabled" >}}
 
-{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
-* **Virtual API Keys**: To rotate a key, click **Edit** for the key. For a key that starts with `agw_sk_`, click **Regenerate** to generate a new value. For other keys, click **Edit** in the **Key value** field and enter a new value. For the steps, see [Rotate a virtual key]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#rotate-a-virtual-key" >}}).
-* **Logs** and **Analytics**: Each filter dropdown, such as **Users** or **Groups**, lists the values from recorded traffic and has a search box. Type part of a value to narrow the list. The list shows an exact match first, then the values that start with the text, and then the values that contain it. Typing does not filter the results. To filter, select a value.
-{{< /version >}}
-
-The **LLM** area also has pages for providers, guardrails, virtual API keys, costs, analytics, and logs. For more information, see the [LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}}).
+The **LLM** area also has pages for providers, guardrails, virtual API keys, costs, analytics, and logs. For more information, see the [LLM quickstart]({{< link-hextra path="/documentation/quickstart/llm/" >}}).{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}} To replace the value of a virtual API key, see [Rotate a virtual key]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#rotate-a-virtual-key" >}}).{{< /version >}}
 
 ### MCP {#tour-mcp}
 
@@ -181,9 +176,9 @@ Use the UI to review what agentgateway loaded and to manage the resources that y
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 ## Edit a resource as YAML {#raw-mode}
 
-The drawers that edit models, providers, guardrails, MCP servers, gateways, listeners, routes, policies, and virtual API keys have a **Raw** mode. Use raw mode to set a field that the form does not show, or to paste a configuration snippet. Raw mode replaces the YAML preview of earlier versions.
+The drawers that edit models, providers, guardrails, MCP servers, gateways, listeners, routes, policies, and virtual API keys have a **Raw** mode. Use raw mode to set a field that the form does not show, or to paste a configuration snippet.
 
-1. Open the drawer for a resource. For example, open **LLM** > **Virtual API Keys**, and click **Edit** for a key.
+1. Open the drawer for a resource. For example, open **LLM** > **Virtual API Keys**, and click the **Edit key** icon for a key.
 2. Click the **Raw** icon (`<>`) at the top of the drawer.
 
    The drawer shows the YAML for that one resource, such as one key, model, route, or policy. It does not show the rest of your configuration. Expand **Help** to see the fields that the resource accepts.
@@ -202,9 +197,8 @@ The drawers that edit models, providers, guardrails, MCP servers, gateways, list
 
    {{< reuse-image src="img/ui-llm-key-raw-invalid.png" srcDark="img/ui-llm-key-raw-invalid-dark.png" alt="Edit virtual key drawer in raw mode with an Invalid configuration banner that reports key: Required, and the Save key button turned off" >}}
 
-4. Click **Save**, such as **Save key**. To check the change first, click **View diff**.
-
-To return to the form, click the **Raw** icon again. The form keeps your last valid edit and drops any text that is not valid. If the form cannot show a value, such as a field that has no form control, the drawer stays in raw mode, and the tooltip on the **Raw** icon explains why.
+4. Optional: To return to the form, click the **Raw** icon again. The form keeps your last valid edit and drops any text that is not valid. If the form cannot show a value, such as a field that has no form control, the drawer stays in raw mode. The tooltip on the **Raw** icon explains why.
+5. Click the save button, such as **Save key**. To check the change first, click **View diff**.
 
 To work with the whole configuration instead of one resource, open **Tools** > **Raw Configuration**.
 {{< /version >}}

@@ -395,7 +395,7 @@ Replace one client's key, such as after a suspected leak. The key keeps its name
 3. Optional: Select **Store raw key** to save the key value instead of a hash. If you keep the default, the UI saves only a hash of the key (`keyHash`). The UI can hash the key only when you open it over HTTPS or from `localhost`. If you open the UI over plain HTTP from another host, such as `http://192.168.1.10:15000/ui`, the UI selects **Store raw key** and you cannot clear it.
 4. Click **Save key**. If the UI saved a hash, the **Copy your new API key** dialog shows the new key. Click **Copy**, and click **Done**. The UI does not show the key again.
 5. Give the new key to Alice. Requests with the old key now fail with `401`.
-6. To continue with the budget examples, which use Alice's original key, edit Alice's key again, click **Edit**, and replace the value with `vk-alice-4f9c2a`.
+6. Optional: The budget examples on this page use Alice's original key, `vk-alice-4f9c2a`. To continue with these examples after you set a custom key in step 2, edit Alice's key again, click **Edit**, and replace the value with `vk-alice-4f9c2a`. If you clicked **Regenerate** instead, use the new `agw_sk_` key in place of `vk-alice-4f9c2a`. In production, do not reuse a key that might have leaked.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 1. Replace the `key` value of Alice's entry in `llm.policies.apiKey.keys`, and save the configuration. Agentgateway reloads the file without a restart.
@@ -425,7 +425,8 @@ Replace one client's key, such as after a suspected leak. The key keeps its name
    401
    ```
 
-3. Give the new key to Alice. To continue with the budget examples, which use Alice's original key, change the value back to `vk-alice-4f9c2a`.
+3. Give the new key to Alice.
+4. Optional: The budget examples on this page use Alice's original key, `vk-alice-4f9c2a`. To continue with these examples, change the value back to `vk-alice-4f9c2a`. In production, do not reuse a key that might have leaked.
 {{% /tab %}}
 {{< /tabs >}}
 {{< /version >}}
