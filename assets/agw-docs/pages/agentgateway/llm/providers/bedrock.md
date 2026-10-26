@@ -334,7 +334,7 @@ If you omit `promptCaching`, prompt caching is disabled. If you set `promptCachi
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 When a client sends prompt-cache markers, Bedrock conversion turns each marker into a Bedrock cache point after the content that the marker is on. In `/v1/messages` requests, the Anthropic `cache_control.ttl` value becomes the TTL of the Bedrock cache point.
 
-Client cache markers take precedence over `backend.ai.promptCaching`. If the converted Bedrock request already contains a cache point, the policy does not add automatic cache points. For Nova models, the policy ignores `cacheTools` because Nova does not accept cache points on tool definitions. The `minTokens` value applies to system prompt caching.
+Client cache markers take precedence over `backend.ai.promptCaching`. If the converted Bedrock request already contains a cache point, the policy adds no cache points. For Nova models, the policy ignores `cacheTools`, because Nova does not accept cache points on tool definitions. The `minTokens` value applies only to system prompt caching.
 
 The conversion drops some content before sending the request to Bedrock. When dropped content has a cache marker, the marker moves to nearby content that the conversion keeps:
 
