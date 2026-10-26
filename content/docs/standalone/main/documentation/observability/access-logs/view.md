@@ -21,7 +21,7 @@ gen_ai.usage.input_tokens=68 gen_ai.usage.output_tokens=298 duration=2488ms
 
 LLM log lines include `gen_ai.*` fields. The route type determines `gen_ai.operation.name`, such as `chat` for Chat Completions or `embeddings` for Embeddings.
 
-- `detect` routes log `unknown`.
+- `detect` routes log the operation that the request path implies, such as `ocr` for `/v1/ocr`. They log `unknown` when agentgateway does not recognize the path.
 - `passthrough` routes omit `gen_ai.operation.name`.
 
 For all values, see [Operation names]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#operation-names" >}}).

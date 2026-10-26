@@ -117,7 +117,7 @@ Duration and size metrics, such as `agentgateway_request_duration_seconds` and `
 
 The control plane does not emit histograms. Proxies emit classic histograms by default and can emit native histograms or both.
 
-Emit both to migrate dashboards and alerts to native histograms gradually. Keep classic histograms for the built-in Grafana dashboard, which calculates percentiles from `_bucket` series.
+To migrate dashboards and alerts to native histograms gradually, configure the proxies to emit both kinds. Keep classic histograms for the built-in Grafana dashboard, which calculates percentiles from `_bucket` series.
 
 #### Scrape native histograms {#native-histograms}
 

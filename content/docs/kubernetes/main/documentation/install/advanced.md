@@ -126,40 +126,86 @@ Use `controller.extraInitContainers` to run containers before the controller sta
 
 Set `restartPolicy: Always` for a [native sidecar container](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/). It starts before the controller and runs for the life of the pod. Native sidecars require Kubernetes 1.29 or later.
 
-The controller image has no shell. This example adds one through a native sidecar for debugging inside the pod network, including access to the [controller admin server]({{< link-hextra path="/documentation/operations/debug/#control-plane" >}}) on `localhost:9095`.
+The controller image has no shell, so you cannot run commands in the controller container with `kubectl exec`. The following example adds a shell through a native sidecar. Containers in a pod share a network namespace, so the shell can inspect the controller's network from inside the pod, such as the ports that the controller listens on or how the pod resolves DNS names.
 
-```yaml
-controller:
-  extraInitContainers:
-  - name: debug-shell
-    image: busybox:1.36
-    restartPolicy: Always
-    command: ["sh", "-c", "sleep infinity"]
-```
+1. Create a Helm values file that adds the sidecar.
 
-Before upgrading, render the controller Deployment with your values file, such as `init-values.yaml`.
+   ```sh
+   cat > init-values.yaml <<'EOF'
+   controller:
+     extraInitContainers:
+     - name: debug-shell
+       image: busybox:1.36
+       restartPolicy: Always
+       command: ["sh", "-c", "sleep infinity"]
+   EOF
+   ```
 
-```sh
-helm template {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
-  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
-  --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  -f init-values.yaml \
-  --show-only templates/deployment.yaml | sed -n '/initContainers:/,/containers:/p'
-```
+2. Optional: Render the controller Deployment to check the init container.
 
-Example output:
+   ```sh
+   helm template {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -f init-values.yaml \
+     --show-only templates/deployment.yaml | sed -n '/initContainers:/,/containers:/p'
+   ```
 
-```yaml
-      initContainers:
-        - command:
-          - sh
-          - -c
-          - sleep infinity
-          image: busybox:1.36
-          name: debug-shell
-          restartPolicy: Always
-      containers:
-```
+   Example output:
+
+   ```yaml
+         initContainers:
+           - command:
+             - sh
+             - -c
+             - sleep infinity
+             image: busybox:1.36
+             name: debug-shell
+             restartPolicy: Always
+         containers:
+   ```
+
+3. Upgrade the controller Helm release with the values file. The controller pod restarts. For more information about upgrades, see [Upgrade]({{< link-hextra path="/documentation/operations/upgrade/" >}}).
+
+   ```sh
+   helm upgrade -i {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --reuse-values \
+     -f init-values.yaml
+   ```
+
+4. Check that the controller pod runs both containers.
+
+   ```sh
+   kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app.kubernetes.io/name={{< reuse "agw-docs/snippets/helm-agentgateway.md" >}}
+   ```
+
+   Example output:
+
+   ```
+   NAME                            READY   STATUS    RESTARTS   AGE
+   agentgateway-86bd4c7557-8nctr   2/2     Running   0          39s
+   ```
+
+5. Run a command in the sidecar. For example, list the ports that the controller listens on. The output shows that the [controller admin server]({{< link-hextra path="/documentation/operations/debug/#control-plane" >}}) on port `9095` accepts connections only from inside the pod.
+
+   ```sh
+   kubectl exec -n {{< reuse "agw-docs/snippets/namespace.md" >}} deploy/{{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -c debug-shell -- netstat -tln
+   ```
+
+   Example output:
+
+   ```
+   Active Internet connections (only servers)
+   Proto Recv-Q Send-Q Local Address           Foreign Address         State
+   tcp        0      0 127.0.0.1:9095          0.0.0.0:*               LISTEN
+   tcp        0      0 :::9978                 :::*                    LISTEN
+   tcp        0      0 :::9093                 :::*                    LISTEN
+   tcp        0      0 :::9092                 :::*                    LISTEN
+   ```
+
+To remove the sidecar, upgrade the release again with `--reuse-values --set controller.extraInitContainers=null`.
 
 ## Namespace-scoped write permissions {#rbac-gateway-namespaces}
 

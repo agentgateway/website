@@ -3,12 +3,12 @@ The {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy validates XDS update
 
 The proxy retains its last known-good configuration for that resource. Traffic continues, but the rejected change is not applied.
 
-The control plane counts rejections in `agentgateway_xds_rejects_total` on port `9092`. It also creates a Kubernetes Warning event on the affected Gateway.
+The control plane counts rejections in `agentgateway_xds_rejects_total` on port `9092`. The control plane also creates a Kubernetes Warning event on the affected Gateway.
 
 Rejections can occur when the proxy cannot parse a value accepted by the Kubernetes API server and control plane. One example is an invalid `agentRuntimeArn` in an {{< reuse "agw-docs/snippets/backend.md" >}}.
 
 {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
-The proxy also reports problems it can work around, including invalid CEL expressions and TLS certificates. A CEL expression may pass the Go control plane validator but fail the Rust proxy parser.
+The proxy also reports problems it can work around, including invalid CEL expressions and TLS certificates. A CEL expression might pass the Go control plane validator but fail the Rust proxy parser.
 
 The proxy applies the rest of the resource and replaces the invalid part, such as with an expression that always fails. The control plane counts these problems as rejections too.
 {{< /version >}}
@@ -111,7 +111,9 @@ The resource status does not show the rejection. For example, an {{< reuse "agw-
 When the proxy can apply a resource after ignoring or replacing an invalid part, it reports a configuration warning. The control plane records warnings separately:
 
 - **Counter**: `agentgateway_xds_warnings_total`.
-- **Gateway event**: A Kubernetes Warning event with reason `AgentGatewayConfigWarning`.
+- **Gateway event**: A Kubernetes Warning event with reason `AgentGatewayConfigWarning`. The message is a JSON list with these fields:
+  - `key`: The resource with the warning.
+  - `warn`: The warning from the proxy.
 
 Warnings do not increase `agentgateway_xds_rejects_total`.
 
@@ -121,7 +123,7 @@ Common causes of warnings:
 - Invalid regular expressions in route paths or prompt guards. Invalid path patterns never match. The proxy skips invalid prompt guard patterns.
 - Invalid TLS certificates that the proxy cannot load.
 
-Warnings describe how the proxy handled each problem. Fix them as configuration errors: traffic may behave differently from your configuration.
+Treat each warning as a configuration error. Traffic might behave differently from your configuration.
 
 1. Port-forward the control plane deployment.
 
@@ -144,8 +146,6 @@ Warnings describe how the proxy handled each problem. Fix them as configuration 
    ```
 
 3. List warning events in the Gateway namespace.
-
-   Each JSON message entry uses `key` for the resource and `warn` for the proxy warning.
 
    ```sh
    kubectl get events -n {{< reuse "agw-docs/snippets/namespace.md" >}} --field-selector=reason=AgentGatewayConfigWarning

@@ -1,5 +1,5 @@
 
-The agentgateway control plane exposes Prometheus-compatible metrics on port `9092`. They track resource reconciliation counts, {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}reconciliation duration, {{< /version >}}and XDS synchronization with the proxy.
+The agentgateway control plane exposes Prometheus-compatible metrics on port `9092`. The metrics track resource reconciliation counts{{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}, reconciliation duration,{{< /version >}} and XDS synchronization with the proxy.
 
 Control plane metrics cannot be customized. To set up automatic scraping of these metrics with Prometheus, see [Enable metrics scraping]({{< link path="/documentation/observability/metrics/overview/" >}}).
 

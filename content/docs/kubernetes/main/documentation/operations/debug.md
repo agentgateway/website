@@ -369,7 +369,7 @@ Agentgateway includes pprof endpoints to help you investigate CPU and memory iss
 
 ## Debug the control plane {#control-plane}
 
-The agentgateway controller runs its own admin server on port `9095`. The admin server listens only on `localhost` inside the controller pod, so use port-forwarding to reach it. The admin server provides the following endpoints.
+The agentgateway controller runs its own admin server on port `9095`. By default, the admin server listens only on `localhost` inside the controller pod, so use port-forwarding to reach it. The admin server provides the following endpoints.
 
 | Endpoint | Description |
 | -- | -- |

@@ -105,13 +105,13 @@ frontendPolicies:
 
 ## Schema migrations {#schema-migrations}
 
-At startup, agentgateway migrates the request log database: `config.logging.database`, falling back to `config.database`.
+At startup, agentgateway migrates the request log database that `config.logging.database` configures, or the database that `config.database` configures if you omit `config.logging.database`.
 
 Applied changes are recorded in `_agentgateway_request_log_migrations` and run only once.
 
 Upgrading from an earlier version, such as 1.6, adds the [token and latency columns](#token-latency-columns). Existing LLM rows are backfilled from `attributes_json`, so analytics include requests logged before the upgrade.
 
-This backfill can delay the first startup on large tables.
+This backfill can delay the first startup on large tables. Back up the request log database before you upgrade.
 
 To check which schema changes are applied to a SQLite database, query the migrations table.
 
@@ -131,30 +131,34 @@ On PostgreSQL, the migrations table also lists version `3`, `backfill request lo
 
 ### Downgrade to an earlier version {#downgrade}
 
-Back up the request log database before upgrading. After migration, downgrade behavior depends on the backend:
+After migration, downgrade behavior depends on the backend.
 
 * **SQLite**: Earlier versions keep writing logs but leave the new columns empty. Upgrading again does not rerun the migration, so those rows remain unfilled.
-* **PostgreSQL**: Earlier versions cannot start because they do not recognize the applied migrations:
+* **PostgreSQL**: Earlier versions cannot start because they do not recognize the applied migrations. To downgrade, follow the steps in this section.
 
   ```
   Error: failed to migrate request log database schema
       migration 2 was previously applied but is missing in the resolved migrations
   ```
 
-  Delete the newer migration records to start the earlier version. The new columns remain and are ignored by that version.
+To downgrade agentgateway with a PostgreSQL request log database:
 
-  ```sh
-  psql "postgres://user:password@host:5432/dbname" \
-    -c "DELETE FROM _agentgateway_request_log_migrations WHERE version IN (2, 3);"
-  ```
+1. Delete the newer migration records. The new columns remain, and the earlier version ignores them. In the following command, the `DATABASE_URL` environment variable holds the connection URL of the request log database.
 
-  Example output:
+   ```sh
+   psql "$DATABASE_URL" \
+     -c "DELETE FROM _agentgateway_request_log_migrations WHERE version IN (2, 3);"
+   ```
 
-  ```
-  DELETE 2
-  ```
+   Example output:
 
-  Upgrading again reruns migrations and backfills the new columns, including logs written after the downgrade.
+   ```
+   DELETE 2
+   ```
+
+2. Start the earlier version of agentgateway.
+
+3. Optional: To return to the newer version later, upgrade agentgateway again. The migrations run again and backfill the new columns, including logs written after the downgrade.
 
 ## Query the database
 
