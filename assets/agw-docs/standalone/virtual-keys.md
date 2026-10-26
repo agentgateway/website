@@ -410,7 +410,7 @@ Owners work in the following ways:
 
 * **Owners record who created each key.** Your UI access policies decide who can edit or delete keys. To set up roles, such as a group that manages keys and a group that can only view them, see [Choose what users can do]({{< link-hextra path="/documentation/setup/ui/secure-ui/#access-model" >}}).
 * **The owner stays with the key.** When another user edits the key, agentgateway keeps the original owner, so you always know where the key came from.
-* **Request logs and analytics group usage by owner.** By default, the owner becomes the `agentgateway.user` of each request that uses the key, ahead of the `user` and `name` metadata of the key. Each request log also records the key name in the `agw.api_key.name` attribute, so you can break down usage per key, such as when an administrator creates a key for each team. To choose a different user value, set the `config.standardAttributes.user` field. For more information, see [Check which user is logged in]({{< link-hextra path="/documentation/setup/ui/secure-ui/#signed-in-user" >}}).
+* **Request logs and analytics group usage by owner.** By default, the owner becomes the `agentgateway.user` of each request that uses the key, ahead of the `user` and `name` metadata of the key. Each request log also records the key name in the `agw.api_key.name` attribute, so you can break down usage per key, such as when an administrator creates a key for each team. To choose a different user value, set the `config.standardAttributes.user` field. For more information, see [Choose how users are identified]({{< link-hextra path="/documentation/setup/ui/secure-ui/#signed-in-user" >}}).
 {{< /version >}}
 
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}

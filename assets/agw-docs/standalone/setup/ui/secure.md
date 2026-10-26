@@ -177,14 +177,25 @@ To give different users different access, choose one of the following options.
 
 | Option | Effect |
 | -- | -- |
-| Authorization rules | Define your own roles from IdP claims, the request method, and the request path. For example, one group can save changes, and every other user can view. For more information, see [Give some users read-only access](#read-only-users). |
-| [`extAuthz` policy]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}) | Your own authorization service, such as OPA, decides each UI request with any per-user rules that you write. |
-| `readOnly` storage mode | Every user can view the UI, and all configuration changes go through your configuration file. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/#binary-readonly" >}}). |
+| Authorization rules | Define your own roles from IdP claims, the request method, and the request path. For example, one group can save changes, and every other user can view. For more information, see [Set up an admin group](#admin-group). |
+| `extAuthz` policy | Your own authorization service, such as OPA, decides each UI request with any per-user rules that you write. For more information, see [External authorization]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}). |
+| `readOnly` storage mode | Every user can view the UI and all configuration changes go through your configuration file. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/#binary-readonly" >}}). |
 
-### Give some users read-only access {#read-only-users}
+### Set up an admin group {#admin-group}
 
 Add `allow` rules to the `authorization` policy in `ui.policies` to let one group of users save changes while every other user can view. The following example gives members of the `agentgateway-admins` group full access. The example assumes that your IdP adds a `groups` claim to the ID token. The claim name and the group names depend on your IdP configuration.
 
+The example uses the following rules.
+
+| Rule | Effect |
+| -- | -- |
+| `"agentgateway-admins" in jwt.groups` | Members of the group have full access, including saving changes. |
+| `request.method == "GET"` | Every other user can open the UI pages and read the configuration. |
+| `request.path.startsWith("/api/logs/") \|\| request.path == "/api/cel"` | Every other user can also search and stream request logs, view analytics, and use the Common Expression Language (CEL) playground. These pages query data with `POST` requests, so this rule includes them in view access. |
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< tabs >}}
+{{% tab name="UI" %}}
 1. In a Helm installation, port-forward the admin port.
 
    ```sh
@@ -192,63 +203,68 @@ Add `allow` rules to the `authorization` policy in `ui.policies` to let one grou
      deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} 15000:15000
    ```
 
-2. Open the **Settings** > **UI** page on the admin interface, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui). Edit UI policies on the admin interface. The policies protect only the UI on the gateways that the `ui` section lists, not the admin interface, so a rule that you save cannot block your own access while you work.
-3. Add the rules to the `ui.policies` section that has your authentication policy. In the UI, add the rules on the **Authorization** card. In a Helm installation, the section is `config.ui.policies` in your values file.
+2. Open the **Settings** > **UI** page on the admin interface, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui).
+3. In the **UI access policies** section, click the **Authorization** card.
+4. For each rule in the table, click **Add rule**, keep **Allow** as the effect, and enter the expression.
+5. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/setup/ui/secure-readonly-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.6.x" %}}
+{{< reuse "agw-docs/standalone/setup/ui/secure-readonly-config.md" >}}
+{{% /version %}}
 
-   ```yaml
-   ui:
-     policies:
-       authorization:
-         rules:
-         - allow: '"agentgateway-admins" in jwt.groups'
-         - allow: 'request.method == "GET"'
-         - allow: 'request.path.startsWith("/api/logs/") || request.path == "/api/cel"'
-   ```
+#### Verify the rules
 
-   | Rule | Effect |
-   | -- | -- |
-   | `"agentgateway-admins" in jwt.groups` | Members of the group have full access, including saving changes. |
-   | `request.method == "GET"` | Every other user can open the UI pages and read the configuration. |
-   | `request.path.startsWith("/api/logs/") \|\| request.path == "/api/cel"` | Every other user can also search and stream request logs, view analytics, and use the Common Expression Language (CEL) playground. These pages query data with `POST` requests, so this rule includes them in view access. |
+1. Log in to the UI on the gateway as a member of the `agentgateway-admins` group, and save a change to verify that the group rule matches. If the save returns a `403` response, check the name and values of the `groups` claim in your IdP, and update the rule.
+2. Log in to the UI as a user outside the group, and verify that you can browse the UI. When you save a change, the gateway returns a `403` response, because only members of the group can save changes, including changes to `ui.policies`.
 
-4. Log in to the UI on the gateway as a member of the `agentgateway-admins` group, and save a change to verify that the group rule matches. If the save returns a `403` response, check the name and values of the `groups` claim in your IdP, and update the rule on the admin interface.
-5. Log in to the UI as a user outside the group, and verify that you can browse the UI. When you save a change, the gateway returns a `403` response, because only members of the group can save changes, including changes to `ui.policies`. 
+## Choose how users are identified {#signed-in-user}
 
-## Check which user is logged in {#signed-in-user}
-
-The account menu in the top bar of the UI shows the user of each request. The account menu and the request logs use the same value, the `agentgateway.user` attribute. By default, the value comes from the first of the following sources that has a value:
+Agentgateway identifies the user of each request with the `agentgateway.user` attribute. Request logs, analytics, and [virtual key owners]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#key-owners" >}}) record this value. By default, the value comes from the first of the following sources that has a value:
 
 1. The metadata of a virtual key, in this order: `agentgateway.dev/owner`, `user`, `name`, then `owner`
 2. The `sub` claim, then the `email` claim, of a JWT or an OIDC session
 3. The username of a basic authentication request
 4. The client identity of a mutual TLS (mTLS) connection, such as the workload identity or the common name of the client certificate
 
-You choose which value identifies your users. Many IdPs set the `sub` claim to a stable ID, such as the UUID `1ed4bac1-9a81-4867-a81f-04cfc58bf0b2` in Keycloak. To show the email address instead, set the `standardAttributes.user` field in the `config` section of your configuration file to `jwt.email`. In a Helm installation, the field is `config.config.standardAttributes.user` in your values file, because the `config` value holds the whole configuration file.
+You choose which value identifies your users. Many IdPs set the `sub` claim to a stable ID, such as the UUID `1ed4bac1-9a81-4867-a81f-04cfc58bf0b2` in Keycloak. To record email addresses instead, follow these steps.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Logs** page, and click **Settings**.
+2. In the **Request log identity** section of the **Log settings** drawer, enter `jwt.email` in the **User attribute** field.
+3. Click **Save settings**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+Set the `standardAttributes.user` field in the `config` section of your configuration file to `jwt.email`. In a Helm installation, the field is `config.config.standardAttributes.user` in your values file, because the `config` value holds the whole configuration file.
 
 ```yaml
 config:
   standardAttributes:
     user: jwt.email
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
-You can set the field to any CEL expression that returns a string. For an OIDC session, when your expression returns no value, the account menu uses the `sub` claim instead. This fallback keeps **Sign out** available. The menu shows the user's name from the `name` or `preferred_username` claim. It shows the email address from the `email` claim.
+You can set the field to any CEL expression that returns a string. The account menu shows the user's name and email address from the `name` (or `preferred_username`) and `email` claims, so your expression changes the menu only when the token has neither. For an OIDC session, if your expression returns no value, agentgateway uses the `sub` claim instead, so the account menu and **Sign out** stay available.
 
-To check the user of your requests, open the `/api/runtime` endpoint in the browser where you are logged in to the UI, such as [http://localhost:4001/api/runtime](http://localhost:4001/api/runtime).
 
-The response includes a `user` object, such as the following example.
+#### Verify the changes
+Open the `/api/runtime` endpoint in the browser where you are logged in to the UI, such as [http://localhost:4001/api/runtime](http://localhost:4001/api/runtime). The `subject` field of the `user` object shows the value that agentgateway records for your requests.
 
 ```json
 "user": {
-  "subject": "1ed4bac1-9a81-4867-a81f-04cfc58bf0b2",
+  "subject": "alice@example.com",
   "name": "Alice Admin",
   "email": "alice@example.com",
   "canLogout": true
 }
 ```
 
-The `canLogout` field is `true` for a browser OIDC session, which users can end with **Sign out** in the account menu. The field is `false` for other credentials, such as a bearer token or basic authentication.
-
-When a user creates a virtual key in the UI{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} or with `agctl`{{< /version >}}, agentgateway records this user as the owner of the key. For more information, see [Key owners]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#key-owners" >}}).
 {{< /version >}}
 
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
