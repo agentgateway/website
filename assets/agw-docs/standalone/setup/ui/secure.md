@@ -179,13 +179,13 @@ To give different users different access, choose one of the following options.
 | -- | -- |
 | Authorization rules | Define your own roles from IdP claims, the request method, and the request path. For example, one group can save changes, and every other user can view. For more information, see [Give some users read-only access](#read-only-users). |
 | [`extAuthz` policy]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}) | Your own authorization service, such as OPA, decides each UI request with any per-user rules that you write. |
-| `readOnly` storage mode | Every user can view the UI, and your configuration file stays the source of truth. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/#binary-readonly" >}}). |
+| `readOnly` storage mode | Every user can view the UI, and all configuration changes go through your configuration file. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/#binary-readonly" >}}). |
 
 ### Give some users read-only access {#read-only-users}
 
 Add `allow` rules to the `authorization` policy in `ui.policies` to let one group of users save changes while every other user can view. The following example gives members of the `agentgateway-admins` group full access. The example assumes that your IdP adds a `groups` claim to the ID token. The claim name and the group names depend on your IdP configuration.
 
-1. Open the **Settings** > **UI** page on the admin interface, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui). In a Helm installation, port-forward port `15000` first. The admin interface is the best place to edit UI policies, because the policies do not apply to it. You keep access while you try out rules, and you can always return there to adjust them.
+1. Open the **Settings** > **UI** page on the admin interface, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui). In a Helm installation, port-forward port `15000` first. Edit UI policies on the admin interface. The policies protect only the UI on the gateways that the `ui` section lists, not the admin interface, so a rule that you save cannot block your own access while you work.
 2. Add the rules to the `ui.policies` section that has your authentication policy. In the UI, add the rules on the **Authorization** card. In a Helm installation, the section is `config.ui.policies` in your values file.
 
    ```yaml
