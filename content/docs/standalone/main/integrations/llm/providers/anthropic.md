@@ -159,6 +159,10 @@ Example response:
 }
 ```
 
+## Send inline files through Chat Completions {#send-inline-files-through-chat-completions}
+
+When a client sends a `/v1/chat/completions` request to Anthropic through agentgateway, an inline `file` content part becomes an Anthropic Messages `document` block. Set `file.file_data` to a base64 `data:` URI, such as `data:application/pdf;base64,<base64>`. The conversion rejects a `file_id`, raw base64 string, remote URL, or file part with no content. Those forms have no inline content to send to Anthropic.
+
 ## Token counting
 
 Use Anthropic's `count_tokens` API to estimate token usage before you make a request. If the client sends an `anthropic-version` header, the request uses that value. If the client sends no version header, the request uses the default `2023-06-01` version. The request is formatted for Anthropic's API.

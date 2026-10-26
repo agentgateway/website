@@ -40,6 +40,7 @@ Review the release notes for agentgateway on Kubernetes.
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3960 -->
 
+- **Chat Completions file parts convert to Anthropic documents**: A `/v1/chat/completions` request to an Anthropic Messages provider can now send an inline `file` part as a base64 `data:` URI in `file.file_data`. The conversion sends it as a Messages `document` block. Requests that use `file_id`, raw base64, remote URLs, or empty file parts are rejected. For more information, see [Anthropic]({{< link-hextra path="/integrations/llm/providers/anthropic/#send-inline-files-through-chat-completions" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/3912 -->
 - **Model catalogs include descriptive model metadata**: Model catalog entries can now include display names, lifecycle status, release dates, token limits, modalities, capabilities, and reasoning controls in addition to pricing fields. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-json-format" >}}).
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3965 -->

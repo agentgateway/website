@@ -225,6 +225,12 @@ assistant message that carries `reasoning_content` together with a non-empty
 and tool calls. The signature of a response thinking block is forwarded back as
 `reasoning_signature`.
 
+For an OpenAI chat completions client that reaches a `Messages` provider, an
+inline `file` content part in a user message becomes a Messages `document`
+block. Set `file.file_data` to a base64 `data:` URI. The conversion rejects a
+`file_id`, raw base64 string, remote URL, or file part with no content. Those
+forms have no inline content to send to the Messages provider.
+
 The following cases do not round-trip.
 
 | Case | What happens |
