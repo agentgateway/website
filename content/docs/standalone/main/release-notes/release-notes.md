@@ -126,6 +126,10 @@ For more information, see [Session key]({{< link-hextra path="/integrations/mcp/
 - Standalone configuration reloads now track files that agentgateway reads during parsing, such as `backendTLS.root` certificate files, so later file changes are picked up without a process restart.
 - Metrics requests use the OpenMetrics content type by default, while browser requests use `text/plain` so browsers display metrics instead of downloading them.
 
+**Security**
+
+- CSRF validation rejects `Origin: null` on requests without `Sec-Fetch-Site`, and same-origin fallback compares only the `Origin` host to the request `Host`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4090 -->
+
 ## ✨ Highlights {#v16-highlights}
 
 Version 1.6 provides many updates to existing features, including the following quick highlights. Before you upgrade, review the [breaking changes](#v16-breaking-changes), because several defaults change.

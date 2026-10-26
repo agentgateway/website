@@ -24,6 +24,8 @@ According to [OWASP](https://community.owasp.org/attacks/csrf), CSRF is defined 
 
 To help prevent CSRF attacks, the CSRF policy implements a multi-layered validation approach to allow or block requests based on their properties. The policy checks that the request's origin matches its destination. If the origin and destination do not match, a 403 Forbidden error code is returned. Unlike CORS, CSRF protection works with all HTTP clients, not just browsers.
 
+For requests without a `Sec-Fetch-Site` header, the policy compares the host in the `Origin` header with the request `Host` and ignores the scheme. The policy treats an `Origin: null` header as cross-origin and rejects the request unless you add `null` to `additionalOrigins`.
+
 Review the following diagram to see an example CSRF request flow:
 ```mermaid
 sequenceDiagram
@@ -59,7 +61,7 @@ sequenceDiagram
 Allowed requests are as follows.
 
 - Safe methods (`GET`, `HEAD`, `OPTIONS`) from any origin
-- Same-origin requests (`Origin` matches `Host`)
+- Same-origin requests, where the `Origin` host matches `Host` regardless of scheme
 - Requests from origins in `additionalOrigins`
 - Requests with `Sec-Fetch-Site: same-origin` or `Sec-Fetch-Site: none`
 
@@ -69,6 +71,7 @@ Blocked requests, which receive a `403 Forbidden` response with the message "CSR
 
 - Cross-site requests with `Sec-Fetch-Site: cross-site` (unless trusted)
 - Cross-site requests where `Origin` doesn't match `Host` (unless trusted)
+- Requests without `Sec-Fetch-Site` and with `Origin: null` (unless trusted)
 - Malformed `Origin` headers in cross-site contexts
 
 > [!NOTE]
@@ -158,7 +161,7 @@ agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}
 
 The `additionalOrigins` setting is a list of trusted origins allowed to make cross-site requests.
-- Format: `"scheme://host[:port]"`
+- Format: `"scheme://host[:port]"`. Use `"null"` only for opaque origins from trusted clients that do not send `Sec-Fetch-Site`.
 - Examples: `"https://www.example.com"`, `"http://localhost:3000"`
 
 For strict CSRF protection to prevent all cross-site requests, set `additionalOrigins` to an empty list, as shown in the following route-level policy.

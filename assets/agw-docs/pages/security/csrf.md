@@ -8,6 +8,10 @@ According to [OWASP](https://community.owasp.org/attacks/csrf), CSRF is defined 
 
 To help prevent CSRF attacks, you can enable CSRF protection for your gateway or a specific route. For each route that you apply the CSRF policy to, the filter checks to make sure that a request's origin matches its destination. If the origin and destination do not match, a 403 Forbidden error code is returned. 
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+For requests without a `Sec-Fetch-Site` header, the policy compares the host in the `Origin` header with the request `Host` and ignores the scheme. The policy treats an `Origin: null` header as cross-origin and rejects the request unless you add `null` to `additionalOrigins`.
+{{< /version >}}
+
 Review the following diagram to see an example CSRF request flow:
 ```mermaid
 sequenceDiagram
@@ -74,7 +78,7 @@ Configure an {{< reuse "agw-docs/snippets/policy.md" >}} to enable CSRF protecti
    | Field | Description | 
    |-------|-------------|
    | `csrf` | Enables CSRF protection for the targeted Gateway or routes. When configured, all cross-origin requests are validated. | 
-   | `additionalOrigins` | List of additional origins that are allowed to make requests to your app beyond the same-origin requests. This is useful for trusted partners, subdomains, or CDNs. Origins cannot include wildcards. | 
+   | `additionalOrigins` | List of additional origins that are allowed to make requests to your app beyond the same-origin requests. This is useful for trusted partners, subdomains, or CDNs. Origins cannot include wildcards.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} To trust opaque origins from clients that do not send `Sec-Fetch-Site`, add `null` to this list.{{< /version >}} |
 
 
 {{< doc-test paths="csrf" >}}
