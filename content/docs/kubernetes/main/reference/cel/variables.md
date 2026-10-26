@@ -35,8 +35,8 @@ Depending on the policy, different fields are accessible based on when in the re
 |------|-------------------|
 |Transformation| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`, and `llmRequest` for parsed JSON LLM requests |
 |Remote Rate Limit| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend` |
-|Local Rate Limit key (`requests`)| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend` — the rule is checked before the LLM request is parsed, so a key cannot read `llm`. |
-|Local Rate Limit key (`tokens`)| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend`, `llm` — the rule is charged after the LLM request is parsed, so a key can read fields such as `llm.requestModel`. |
+|Local Rate Limit key (`requests`)| `source`, `request`, `jwt`, `apiKey`, `mcp`, `backend`, `llm` for request fields such as `llm.requestModel`. |
+|Local Rate Limit key (`tokens`)| Same as `requests`. The rule is charged with the real token usage after the LLM response is known. |
 |HTTP Authorization| `source`, `request`, `jwt`, `mcp`, `backend` |
 |External Authorization| `source`, `request`, `jwt`, `mcp`, `backend` |
 |MCP Authorization| `source`, `request`, `jwt`, `mcp`, `backend` — `mcp.methodName` distinguishes methods such as `tools/list` and `tools/call`. For list methods, rules run once per listed item. `mcp.sessionId` and `mcp.tool.arguments` aren't set. |

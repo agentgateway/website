@@ -38,8 +38,8 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 | Transformation (request) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `llmRequest`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` — not `response`. [^1] |
 | Transformation (response) | Same as request-path, plus `response` for response-side rules. [^2] |
 | Remote rate limit | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` |
-| Local rate limit key (`requests` rule) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` — not `llm`, because the rule is checked before the LLM request is parsed. [^7] |
-| Local rate limit key (`tokens` rule) | Same as a `requests` rule, plus `llm` for fields such as `llm.requestModel`, because the rule is charged after the LLM request is parsed. [^7] |
+| Local rate limit key (`requests` rule) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, and `llm` for request fields such as `llm.requestModel`. [^7] |
+| Local rate limit key (`tokens` rule) | Same as a `requests` rule. The rule is charged with the real token usage after the LLM response is known. [^7] |
 | HTTP Authorization | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` |
 | Network authorization | `env`, `source` [^3] |
 | External Authorization | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` — some expressions run after the authorization service returns and can read `response`. [^4] |
