@@ -187,6 +187,8 @@ When a request matches an entry in the catalog, agentgateway populates these CEL
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}For Anthropic prompt-cache writes with a 1-hour time to live (TTL), `llm.cost.cacheWrite1h` reports the 1-hour cache-write cost. `llm.cost.cacheWrite` reports the cost for cache writes that do not use a 1-hour TTL, such as 5-minute cache writes. When the catalog includes `cacheWrite1h`, `llm.costRates.cacheWrite1h` reports the effective rate.{{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}When an Anthropic Messages response reports `usage.iterations`, the request cost uses a separate calculation for each iteration. If an iteration names a `model` with an exact catalog match, the tokens for that iteration use that model's catalog entry. Otherwise, the iteration uses the response model. The request cost is the sum of those iteration costs.{{< /version >}}
+
 {{< version exclude-if="1.5.x" >}}For page-billed document models, `llm.cost.pages` reports the page-cost component, and `llm.costRates.perPage` reports the USD-per-page rate that was applied.{{< /version >}}
 
 The request access log includes `agw.ai.usage.cost.total` only for priced LLM requests. When the model cannot be priced, the access log leaves out the field.
