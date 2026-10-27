@@ -170,7 +170,7 @@ routes:
 1. Download a multiplex configuration for your agentgateway.
 
    ```yaml {paths="mcp-virtual"}
-   curl -L https://agentgateway.dev/examples/mcp-multiplex/config.yaml -o config.yaml
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/v1.5.0/examples/mcp-multiplex/config.yaml -o config.yaml
    ```
 
    {{< doc-test paths="mcp-virtual" >}}
@@ -184,7 +184,7 @@ routes:
    cat config.yaml
    ```
 
-   {{% github-yaml url="https://agentgateway.dev/examples/mcp-multiplex/config.yaml" %}}
+   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.5.0/examples/mcp-multiplex/config.yaml" %}}
 
    * **Listener**: An HTTP listener is configured and bound on port 3000. It includes a basic route that matches all traffic to an MCP backend.
    * **Backend**: The MCP backend defines two **targets**: `time` and `everything`. Note that the target names cannot include underscores (`_`). These targets are multiplexed together and exposed as a single unified MCP server to clients. All tools from both targets are available, prefixed with their target name.

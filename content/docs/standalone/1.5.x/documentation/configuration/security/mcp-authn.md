@@ -157,7 +157,7 @@ routes:
 
 ### Adding an IdP
 
-Adding support for a new provider requires minimal code changes. To contribute support for your identity provider, see the [`McpIDP` enum in the agentgateway source](https://github.com/agentgateway/agentgateway/blob/main/crates/agentgateway/src/types/agent.rs).
+Adding support for a new provider requires minimal code changes. To contribute support for your identity provider, see the [`McpIDP` enum in the agentgateway source](https://github.com/agentgateway/agentgateway/blob/v1.5.0/crates/agentgateway/src/types/agent.rs).
 
 {{< doc-test paths="mcp-authn" >}}
 # WHAT THIS TEST VALIDATES:

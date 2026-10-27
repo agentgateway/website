@@ -14,11 +14,11 @@
 {{/* TARGETS — version prefixes to generate pages into                    */}}
 {{/*                                                                     */}}
 {{/* latest and main read the moving api/{latest,main}/ and              */}}
-{{/* cel/{latest,main}/ widgets. A frozen version directory (1.6.x) reads */}}
+{{/* cel/{latest,main}/ widgets. Frozen versions (1.6.x, 1.5.x) read     */}}
 {{/* point-in-time copies under api/<version>/ and cel/<version>/, made   */}}
 {{/* at the release that froze it. Add each newly frozen version here.   */}}
 {{/* =================================================================== */}}
-{{ $targets := slice "latest" "main" "1.6.x" }}
+{{ $targets := slice "latest" "main" "1.6.x" "1.5.x" }}
 
 {{/* =================================================================== */}}
 {{/* CRD PAGES — kubespec widget page per Kubernetes custom resource      */}}
