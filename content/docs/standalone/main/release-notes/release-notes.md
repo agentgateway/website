@@ -156,6 +156,7 @@ Error responses that agentgateway generates now carry a generic message instead 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3776 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4010 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3912 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4152 -->
 
 - **OpenAI Decisions and TypeSafe SystemOne**: Agentgateway supports the OpenAI Decisions and TypeSafe SystemOne APIs natively and translates between them. Set `provider: typesafe` to connect to TypeSafe. For more information, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}) and [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}).
 - **Perplexity provider**: Set `provider: perplexity` in an `llm.models` entry to connect to Perplexity with built-in defaults. The provider accepts Responses and Messages requests, but not Chat Completions requests. For more information, see [Perplexity]({{< link-hextra path="/integrations/llm/providers/perplexity/" >}}).
@@ -163,6 +164,7 @@ Error responses that agentgateway generates now carry a generic message instead 
 - **Per-model HTTP transformations**: Set `requestTransformation` on an `llm.models` entry, or in `llm.providers[].defaults` for every model of a provider, to modify the headers, body, and metadata of requests. A model's value replaces the provider default. For more information, see [LLM request transformation]({{< link-hextra path="/documentation/llm/transformations/#llm-request-transformation" >}}).
 - **Better format conversion**: Reasoning from vLLM, OpenRouter, and Bedrock is preserved in more conversions. Chat Completions requests to Anthropic send inline `file` parts as documents instead of dropping them, and a file part without inline data, such as a `file_id`, returns `400`. For more information, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}).
 - **More CEL during request policies**: Request-phase CEL expressions on LLM traffic can read `llm.requestModel` before provider overrides and `llmRequest` for the parsed JSON request body. For more information, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
+- **Audio endpoints**: Agentgateway detects `/v1/audio/transcriptions`, `/v1/audio/translations`, and `/v1/audio/speech` requests, so that policies, logs, and metrics apply to audio traffic. Transcription and translation requests record `audio_seconds` and can be priced per audio minute with the new `perAudioMinute` catalog rate. In CEL, read `llm.audioSeconds`, `llm.costRates.perAudioMinute`, and `llm.cost.audioDuration`. The built-in catalog includes per-minute rates for some OpenAI transcription models, such as `whisper-1`. Speech requests are not metered. For more information, see [Audio]({{< link-hextra path="/documentation/llm/api-types/audio/" >}}).
 
 ### Model catalog and cost {#v17-catalog}
 

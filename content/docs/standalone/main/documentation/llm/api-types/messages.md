@@ -168,6 +168,8 @@ The Bedrock Converse conversion preserves tool choice for Messages requests. The
 
 On the way out, a `thinking` block in the message history becomes a Bedrock `reasoningContent.reasoningText` block, with its signature. A `redacted_thinking` block becomes a Bedrock `reasoningContent.redactedContent` block, so that a client can replay encrypted reasoning that Bedrock returned on an earlier turn. `document`, `search_result`, `server_tool_use`, and `web_search_tool_result` blocks are dropped because Bedrock Converse has no equivalent block types.
 
+Bedrock Converse has no system role inside the message list. A system message that comes before any user or assistant message is added to the Bedrock system prompt. A system message after a user or assistant message stays in place instead: its text is sent as user text wrapped in `<system-reminder>` tags, and its cache markers are kept. Moving the message into the system prompt would change the cached prefix of every request. When the system message follows a tool call, its text is sent after the tool results, because tool results must directly follow the tool call.
+
 Each `cache_control` marker becomes a Bedrock cache point after the content that the marker is on, and the `cache_control.ttl` value becomes the TTL of the cache point. The conversion drops some content before sending the request to Bedrock. When dropped content has a cache marker, the marker moves to nearby content that the conversion keeps:
 
 - **Dropped blocks:** A marker on a dropped block moves to the nearest earlier content that the conversion keeps:

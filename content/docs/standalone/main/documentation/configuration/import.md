@@ -170,6 +170,8 @@ The importer currently handles the following common file-based LiteLLM settings.
 | `rpm` | Relative weights for generated weighted routes when the routing strategy permits it |
 | Ordinary `fallbacks` | Priority-based failover targets |
 | `default_fallbacks` in `router_settings` or `litellm_settings` | Priority-based failover targets for each model that has no `fallbacks` entry of its own. For more information, see [Import fallbacks](#fallbacks). |
+| `router_settings.allowed_fails` and `router_settings.cooldown_time` | `health.eviction.consecutiveFailures` and `health.eviction.duration` on each imported model. Both mappings are `approximate`. For more information, see [Import cooldowns](#cooldowns). |
+| `router_settings.disable_cooldowns: true` | No `health` policy |
 | `router_settings.max_fallbacks` | The depth limit for the failover chains that `default_fallbacks` produces. `0` turns off all fallbacks. Without `default_fallbacks`, the importer reports any other value as `manual`. |
 | `simple-shuffle` routing | Generated routing with an `approximate` finding because the semantics are not identical |
 | Public wildcard model names | Exact `*`, prefix patterns such as `gpt-*`, and suffix patterns such as `*-preview` |
@@ -222,7 +224,7 @@ The importer converts LiteLLM fallbacks into priority-based failover on a genera
    Imported litellm config: fallbacks-config.yaml
    ```
 
-3. Review the generated configuration. The `llm.models` list has one internal model for each deployment, such as `imported/litellm/chat/1`. The `llm.virtualModels` list has one virtual model for each public model name, with the failover chain as priority-ordered targets. A lower `priority` value is tried first.
+3. Review the generated configuration. The `llm.models` list has one internal model for each deployment, such as `imported/litellm/chat/1`. The `llm.virtualModels` list has one virtual model for each public model name, with the failover chain as priority-ordered targets. A lower `priority` value is tried first. The following excerpt shows only the `llm.virtualModels` section.
 
    ```yaml
    llm:
@@ -279,6 +281,85 @@ Review the following fallback findings.
 | `manual` on `max_fallbacks` with "No automatic mapping is available" | You set `max_fallbacks` to a value other than `0`, but not `default_fallbacks`. Without `default_fallbacks`, each failover chain has only the model's own `fallbacks` entry, so the importer has no chain depth to limit. Review the generated failover chains. |
 | `manual` on `max_fallbacks` with "must be a non-negative integer" | The value is not a non-negative whole number, so the importer uses the default of `5`. |
 
+
+## Import cooldowns {#cooldowns}
+
+LiteLLM cools down a deployment after it fails more than `allowed_fails` times in a minute, and keeps it out of rotation for `cooldown_time` seconds. The importer maps these router settings to a model health eviction policy on each imported model.
+
+* `allowed_fails` becomes `health.eviction.consecutiveFailures`, set to the `allowed_fails` value plus one. LiteLLM cools down a deployment on the failure after the allowed ones, so the extra failure keeps the same threshold.
+* `cooldown_time` becomes `health.eviction.duration`.
+
+The importer maps the two settings only together. If you set only one of them, the importer emits no health policy and reports a `manual` finding.
+
+1. Save the LiteLLM configuration to a file, such as `litellm-cooldowns.yaml`. The following example allows three failures and sets a 60-second cooldown.
+
+   ```yaml
+   model_list:
+   - model_name: chat
+     litellm_params:
+       model: openai/gpt-4o
+       api_key: os.environ/OPENAI_API_KEY
+   - model_name: chat
+     litellm_params:
+       model: openai/gpt-4o-mini
+       api_key: os.environ/OPENAI_API_KEY
+   router_settings:
+     allowed_fails: 3
+     cooldown_time: 60
+   ```
+
+2. Run the importer.
+
+   ```sh
+   agentgateway import \
+     --from litellm \
+     --file litellm-cooldowns.yaml \
+     --output cooldowns-config.yaml
+   ```
+
+   Example output:
+
+   ```text
+   exact: model_list[0]: Imported model deployment for chat
+   exact: model_list[1]: Imported model deployment for chat
+   approximate: router_settings.allowed_fails: Mapped LiteLLM allowed_fails + 1 to the model health eviction consecutiveFailures threshold; agentgateway counts consecutive failures rather than failures within a window
+   approximate: router_settings.cooldown_time: Mapped LiteLLM cooldown_time to the model health eviction duration
+   Imported litellm config: cooldowns-config.yaml
+   ```
+
+3. Review the generated configuration. Each model in the `llm.models` list has the same `health` policy. The following excerpt shows the first model.
+
+   ```yaml
+   llm:
+     models:
+     - name: imported/litellm/chat/1
+       visibility: internal
+       provider: openAI
+       params:
+         model: gpt-4o
+         apiKey: $OPENAI_API_KEY
+       health:
+         eviction:
+           consecutiveFailures: 4
+           duration: 60s
+   ```
+
+The eviction policy behaves differently from a LiteLLM cooldown. Agentgateway counts consecutive failures, not failures within a minute. The `duration` value is the base eviction time, and repeated evictions of the same model last longer. For how eviction works, see [Failover routing]({{< link-hextra path="/documentation/llm/virtual-models/#failover-routing" >}}).
+
+### Review cooldown findings {#cooldown-findings}
+
+Review the following cooldown findings.
+
+| Finding | Action |
+| -- | -- |
+| `approximate` on `allowed_fails` and `cooldown_time` | Test the eviction behavior, because agentgateway counts consecutive failures instead of failures within a minute. |
+| `manual` on `allowed_fails` or `cooldown_time` with "requires" | You set only one of the two settings, so the importer emitted no health policy. Set both settings, or add a `health` policy yourself. |
+| `manual` on `allowed_fails` and `cooldown_time` with "must be" or "was not mapped because" | One of the values is invalid, so the importer emitted no health policy. `allowed_fails` must be a non-negative integer, and `cooldown_time` must be a positive whole number of seconds. A decimal such as `0.5` is invalid. Fix the value, or add a `health` policy yourself. |
+| `manual` on `allowed_fails_policy` | LiteLLM thresholds for each exception type do not fit the single eviction threshold. The importer does not map `allowed_fails_policy`, `allowed_fails`, or `cooldown_time`. Configure a `health` policy yourself. |
+| `manual` on `model_list[N].litellm_params.cooldown_time` | The importer does not map a cooldown for one deployment, and the router-level `health` policy does not apply to that model. Configure its `health` policy yourself. A `cooldown_time`, `allowed_fails`, or `allowed_fails_policy` key in the deployment's `model_info` has the same effect, but the importer reports no finding for it. |
+| `exact` on `disable_cooldowns` | Cooldowns are disabled, and the importer emitted no health policy. |
+| `manual` on `disable_cooldowns` | Cooldowns are disabled, but the import also created failover routes. Agentgateway evicts failing failover targets by default, even without a `health` policy. Review the eviction behavior of the generated failover routes. |
+
 ## Use stdin and stdout
 
 Use `-` as the input file to read the LiteLLM configuration from stdin. If you omit `--output`, the generated configuration is written to stdout.
@@ -304,5 +385,6 @@ The importer focuses on file-based model and routing configuration. It does not 
 - Configurations split across LiteLLM `include` files unless you combine them into one input file first.
 - Model group aliases, condition-specific fallbacks, default fallbacks for wildcard models, guardrails, MCP servers, custom prompt templates, and tokenizers.
 - Routing strategies other than the mappings described in this guide.
+- Cooldown thresholds for each exception type in `allowed_fails_policy`, and cooldown settings on individual deployments. The importer maps only the router-level `allowed_fails` and `cooldown_time` settings.
 
 Review the [`agentgateway` importer follow-on issue](https://github.com/agentgateway/agentgateway/issues/2607) for the current implementation backlog. Treat the compatibility findings produced by your installed binary as the source of truth because importer support can expand between releases.

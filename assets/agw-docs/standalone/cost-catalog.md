@@ -179,7 +179,7 @@ MODEL_CATALOG_PATHS=./costs/catalog.json,./costs/overrides.json agentgateway -f 
 
 When a request matches an entry in the catalog, agentgateway populates these CEL fields:
 
-- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-token-type components such as `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, and `outputAudio`. Unset when the model cannot be priced.
+- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-token-type components such as `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, and `outputAudio`.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} The components also include `pages`, `cacheWriteDetails`, and `audioDuration`.{{< /version >}} Unset when the model cannot be priced.
 - `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied. Includes the same per-token-type fields when available. Unset when the model cannot be priced.
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 - `llm.model`: The resolved model's catalog metadata, including `id`, `tags`, `limits`, `modalities`, `capabilities`, and `reasoning`. Unset when no catalog entry matches the request provider and model.
@@ -190,6 +190,8 @@ When a request matches an entry in the catalog, agentgateway populates these CEL
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}When an Anthropic Messages response reports `usage.iterations`, the request cost uses a separate calculation for each iteration. If an iteration names a `model` with an exact catalog match, the tokens for that iteration use that model's catalog entry. Otherwise, the iteration uses the response model. The request cost is the sum of those iteration costs.{{< /version >}}
 
 {{< version exclude-if="1.5.x" >}}For page-billed document models, `llm.cost.pages` reports the page-cost component, and `llm.costRates.perPage` reports the USD-per-page rate that was applied.{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}For audio models that bill by duration, `llm.cost.audioDuration` reports the audio-duration cost component, and `llm.costRates.perAudioMinute` reports the USD-per-minute rate that was applied. For transcription and translation requests, `llm.audioSeconds` holds the audio duration in seconds that the provider reported, even when the model cannot be priced. For an example, see [Audio]({{< link-hextra path="/documentation/llm/api-types/audio/" >}}).{{< /version >}}
 
 The request access log includes `agw.ai.usage.cost.total` only for priced LLM requests. When the model cannot be priced, the access log leaves out the field.
 Traces always include the full breakdown:
@@ -202,6 +204,7 @@ Traces always include the full breakdown:
 * `agw.ai.usage.cost.input_audio`
 * `agw.ai.usage.cost.output_audio`
 {{< version exclude-if="1.5.x" >}}* `agw.ai.usage.cost.pages`{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}* `agw.ai.usage.cost.audio_duration`{{< /version >}}
 
 As these are loaded into the CEL context, they can be explicitly emitted as well.
 
@@ -295,8 +298,6 @@ Cost calculations match this value to catalog tiers with a `serviceTier` field. 
 | Vertex AI | `ON_DEMAND` becomes `standard`. `ON_DEMAND_FLEX` becomes `flex`. `ON_DEMAND_PRIORITY` becomes `priority`. `PROVISIONED_THROUGHPUT` becomes `reserved`. Claude models report the Anthropic tiers, `standard` and `priority`. |
 
 Unlisted providers or tiers leave `llm.serviceTier` unset.
-
-Earlier versions exposed the provider's original tier name, such as `default` or `ON_DEMAND`. Update CEL comparisons to use the normalized names.
 
 For Bedrock tier requests and the response header used to detect the tier, see [Service tier]({{< link-hextra path="/integrations/llm/providers/bedrock/#service-tier" >}}).
 

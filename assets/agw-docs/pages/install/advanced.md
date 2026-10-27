@@ -28,22 +28,9 @@ When using the development build {{< reuse "agw-docs/versions/patch-dev.md" >}},
 
 ## Experimental Gateway API features {#experimental-gateway-api-features}
 
-Experimental Gateway API features are controlled by the experimental feature gate, `AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES`. This setting is enabled by default, so experimental features such as the following are available without any extra configuration:
+Experimental Gateway API features follow the channel of the Gateway API CRDs that you install. To use a feature that is experimental in your Gateway API version, install the experimental channel of the Gateway API CRDs.
 
-- CORS policies
-- Retries
-- Session persistence
-
-To set the feature gate explicitly, such as to make the setting visible in your Helm values or to turn experimental features off, set the environment variable in your {{< reuse "agw-docs/snippets/kgateway.md" >}} controller deployment in your Helm values file.
-
-```yaml
-controller:
-  extraEnv:
-    AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES: "true"
-```
-
-
-
+For the list of experimental features and the install command, see [Experimental features in Gateway API]({{< link-hextra path="/release-notes/versions/#experimental-features" >}}).
 
 ## Leader election
 

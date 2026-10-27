@@ -68,7 +68,7 @@ Throughout this guide, you use self-signed TLS certificates for the Certificate 
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
    ```
 
-   If you use Gateway API 1.4, install the experimental channel instead and keep the `AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES` controller setting enabled (the default). For installation steps, see the [Get started guide]({{< link-hextra path="/documentation/quickstart/install/" >}}).
+   If you use Gateway API 1.4, install the experimental channel instead. For installation steps, see the [Get started guide]({{< link-hextra path="/documentation/quickstart/install/" >}}).
 
 ## Create TLS certificates 
 

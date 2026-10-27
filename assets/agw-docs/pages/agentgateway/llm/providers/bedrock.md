@@ -350,6 +350,8 @@ The conversion drops some content before sending the request to Bedrock. When dr
 - **Blank Chat Completions text:** In `/v1/chat/completions` requests, a text part that contains only whitespace is not sent. The marker on that text part moves to the end of the content before the text part in the same message. When the text part is the first content of the message, the marker is dropped.
 
 Messages that are left empty after the conversion drops unsupported blocks are not sent to Bedrock. The conversion adds at most four cache points to a request, so a marker is dropped when four cache points are already set.
+
+In `/v1/messages` requests, a system message after a user or assistant message stays in place instead of moving into the Bedrock system prompt. Its text is sent as user text wrapped in `<system-reminder>` tags, with its cache markers, so the cached prefix ahead of it does not change. When the system message follows a tool call, its text is sent after the tool results.
 {{% /version %}}
 
 > [!NOTE]
@@ -491,7 +493,7 @@ Some Bedrock models return encrypted reasoning in a `reasoningContent.redactedCo
 | Client API | Encrypted reasoning in the reply | Replay on the next turn |
 |---|---|---|
 | `/v1/messages` | A `redacted_thinking` block. | Send the block back in the message history. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
-| `/v1/responses` | A reasoning item with `encrypted_content`. | Send the reasoning item back in the input. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
+| `/v1/responses` | A reasoning item with `encrypted_content`.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} Treat the value as opaque. It holds the full reasoning block: the reasoning text and its signature, or Bedrock's encrypted payload. The reasoning text is not encrypted, and response guardrails do not mask it.{{< /version >}} | Send the reasoning item back in the input. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}The next Bedrock request includes it as `reasoningContent.redactedContent`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}The next Bedrock request includes signed reasoning as `reasoningContent.reasoningText` with its signature, and encrypted reasoning as `reasoningContent.redactedContent`. Agentgateway needs only `encrypted_content` to replay the item, so a client that sends back only `encrypted_content` still works.{{< /version >}} |
 | `/v1/chat/completions` | Omitted, because the Chat Completions format has no field for encrypted reasoning. Signed reasoning text still arrives in `reasoning_content` and `reasoning_signature`. | Not possible. |
 
 {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}A streamed reply does not keep the encrypted payload, so streamed encrypted reasoning cannot be replayed. A `/v1/messages` stream shows the encrypted reasoning as a `thinking` block with the text `[REDACTED]`.{{< /version >}}
@@ -502,7 +504,7 @@ Replay streamed encrypted reasoning the same way as buffered reasoning. Stream e
 | Client API | Streamed reasoning |
 |---|---|
 | `/v1/messages` | Text uses `thinking_delta` events; the signature uses `signature_delta`. Encrypted reasoning arrives as one `redacted_thinking` block after Bedrock finishes the block. |
-| `/v1/responses` | Each reasoning block becomes a `reasoning` output item before the `message` item. Text uses `response.reasoning_text.delta` events. The item's `response.output_item.done` event carries the signature or encrypted payload as `encrypted_content`. |
+| `/v1/responses` | Each reasoning block becomes a `reasoning` output item before the `message` item. Text uses `response.reasoning_text.delta` events. The item's `response.output_item.done` event carries `encrypted_content`, the same opaque carrier of the full reasoning as in a buffered reply. |
 | `/v1/chat/completions` | Text uses `reasoning_content`; the signature uses `reasoning_signature`. Encrypted reasoning is omitted. |
 
 For `/v1/messages` streams, agentgateway buffers encrypted reasoning until the block ends. If the buffered fragments exceed the LLM buffer limit, the stream emits an `api_error` event with `Stream processing error` and stops. The limit is 32 MiB unless you set `frontend.http.maxBufferSize`. For more information, see [Buffering]({{< link-hextra path="/documentation/traffic-management/buffering/#about-buffer-limits" >}}).
