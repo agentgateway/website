@@ -38,9 +38,16 @@ The `2026-07-28` revision adds caching controls to responses such as `server/dis
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ## Tool-call error results
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+When a `tools/call` request is denied by an MCP guardrail (such as an ExtMCP server or a CEL expression processor) or by a local or global rate limit, the client gets an HTTP 200 JSON-RPC response with `result.isError: true`. The text content carries the denial reason or the rate-limit message, so that MCP clients can show the failure as a tool-execution error instead of treating the session as broken.
+
+Clients that negotiate MCP protocol version `2026-07-28` or later also get `result.resultType: complete`. For older clients, `resultType` is left out for compatibility. Denials of other MCP methods, ExtMCP denials with the `UNKNOWN` code, CEL expressions that fail to evaluate, and internal ExtMCP failures such as an unreachable server still return JSON-RPC errors. A CEL evaluation error and an internal ExtMCP failure both return the code `-32603` with the message `guardrail check failed`.
+{{< /version >}}
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 When a `tools/call` request is denied by an ExtMCP guardrail or by a local or global rate limit, the client gets an HTTP 200 JSON-RPC response with `result.isError: true`. The text content carries the denial reason or the rate-limit message, so that MCP clients can show the failure as a tool-execution error instead of treating the session as broken.
 
 Clients that negotiate MCP protocol version `2026-07-28` or later also get `result.resultType: complete`. For older clients, `resultType` is left out for compatibility. Denials of other MCP methods, ExtMCP denials with the `UNKNOWN` code, and internal ExtMCP failures such as an unreachable server still return JSON-RPC errors.
+{{< /version >}}
 {{< /version >}}
 
 ## What you can still configure

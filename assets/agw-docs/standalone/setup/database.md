@@ -51,6 +51,16 @@ SQLite writes to a file, so agentgateway needs a writable directory for it. Post
 > [!WARNING]
 > Do not point more than one agentgateway instance at the same SQLite file. Give each instance its own file instead, or use PostgreSQL. With one file for each instance, the **Analytics** page shows the traffic of the instance that you are connected to, not the traffic of the whole deployment.
 
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+#### Encrypt PostgreSQL connections with TLS {#postgres-tls}
+
+To control TLS for PostgreSQL, add the `sslmode` parameter to the URL. By default, agentgateway encrypts the connection when the server supports TLS, but it does not verify the server certificate. To verify the certificate and the hostname, set `sslmode=verify-full`. Agentgateway then checks the certificate against the trusted root certificates of the operating system. For a server certificate from a private certificate authority (CA), also set `sslrootcert` to the path of the CA certificate. Otherwise, agentgateway fails to start with an `invalid peer certificate: UnknownIssuer` error.
+
+```txt
+postgres://user:password@host:5432/dbname?sslmode=verify-full&sslrootcert=/config/ca.crt
+```
+{{% /version %}}
+
 ## Before you begin
 
 [Install agentgateway]({{< link-hextra path="/documentation/setup/install/" >}}) as a binary, a Docker container, or a Kubernetes Deployment with Helm.
@@ -587,10 +597,10 @@ The configuration that agentgateway loaded has no `config.database` field and no
 
 **How to fix it**
 
-Add a database for your installation method, then restart agentgateway. See [Binary and Docker](#binary-docker) or [Helm](#helm). To confirm which configuration agentgateway loaded, review the effective configuration.
+Add a database for your installation method, then restart agentgateway. See [Binary and Docker](#binary-docker) or [Helm](#helm). To confirm which configuration agentgateway loaded, review the configuration dump on the admin address.
 
 ```sh
-curl -s http://localhost:15000/api/config/effective | jq '.config.database'
+curl -s http://localhost:15000/config_dump | jq '.config.database'
 ```
 
 ### The Analytics page is empty after a request {#troubleshoot-empty}

@@ -96,7 +96,7 @@ You can turn on stateless mode in the UI or in your configuration file.
 {{% tab name="UI" %}}
 These steps assume an MCP server that you already added, as described in [Configure the agentgateway](#configure-the-agentgateway).
 
-1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**.
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**. Expand **MCP behavior**.
 2. For **State mode**, select **Stateless**.
 
    {{< reuse-image src="img/ui-mcp-settings-stateless.png" srcDark="img/ui-mcp-settings-stateless-dark.png" alt="MCP servers settings drawer with the state mode set to Stateless" >}}

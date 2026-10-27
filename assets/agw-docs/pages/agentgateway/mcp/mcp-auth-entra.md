@@ -174,8 +174,14 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    | `providers[].jwks.remote.jwksPath` | The path to Entra's JWKS endpoint for your tenant. |
    | `mcp.provider` | The identity provider. Set to `Entra` to enable the native Entra bridging behavior. |
    | `mcp.clientId` | The Application (client) ID of your Entra app registration. Because Entra has no Dynamic Client Registration, agentgateway answers registration requests with this value. |
-   | `mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. In this example, the supported scopes and bearer token methods. Do not set `resource`. When `resource` is unset, the gateway derives the resource identifier from the request URL, so the metadata stays correct whether clients reach the gateway through a load balancer, a port-forward, or a different MCP route. If you set `resource`, every route advertises that one value. Do not set `authorizationServers` either. The gateway advertises itself as the authorization server. If you point clients at Entra instead, they bypass the bridge and fail as described in [Troubleshooting](#troubleshooting). |
+   | `mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. In this example, the supported scopes and bearer token methods. Leave `resource` and `authorizationServers` unset. For details, see the note after this table. |
    | `authorization.policy.matchExpressions` | CEL rules that authorize the claims in the verified JWT. Entra puts the app roles that you assign in the `roles` claim, so this example requires the `mcp.admin` app role. Requests that present a valid token without that role are denied with a 403 HTTP response code. |
+
+   **Behind a load balancer or external URL:** Leave `resource` unset. When `resource` is unset, the gateway derives the resource identifier from the request URL, so the metadata stays correct whether clients reach the gateway through a load balancer, a port-forward, or a different MCP route. If you set `resource`, every route advertises that one value. Also leave `authorizationServers` unset. The gateway advertises itself as the authorization server. If you point clients at Entra instead, they bypass the bridge and fail as described in [Troubleshooting](#troubleshooting).
+
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+   One exception applies. If clients reach the gateway through an external URL that differs from the request URL that the gateway sees, set `authorizationServers` to that one external URL, such as `https://mcp.example.com/mcp`. With exactly one URL, the gateway uses it as the `issuer` of the metadata that it serves, and builds the proxied `authorize`, `token`, and client registration endpoints from it.
+   {{< /version >}}
 
 2. Verify that the policy was accepted.
    ```sh {paths="setup-entra"}
@@ -501,7 +507,7 @@ Review the following common errors and what to check for each.
 | Error | What to check |
 | -- | -- |
 | `Dynamic Client Registration rejected (HTTP 404)` | The HTTPRoute does not match the `/.well-known/oauth-authorization-server/mcp` path. Add the path as a `PathPrefix` match, as shown in [Configure MCP auth](#configure-mcp-auth). |
-| `Incompatible auth server: does not support dynamic client registration` | The client is contacting Entra directly instead of the gateway. Remove `authorizationServers` from `mcp.resourceMetadata`, and check that the HTTPRoute matches both discovery paths. |
+| `Incompatible auth server: does not support dynamic client registration` | The client is contacting Entra directly instead of the gateway. Remove `authorizationServers` from `mcp.resourceMetadata`, and check that the HTTPRoute matches both discovery paths.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} If you need `authorizationServers`, set it to the external URL of the gateway's MCP route, not to Entra.{{< /version >}} |
 | `AADSTS9010010: The resource parameter provided in the request doesn't match with the requested scopes` | Same cause as the previous error. The client reached Entra without going through the gateway, which strips the `resource` parameter. |
 | `AADSTS50011: The redirect URI ... does not match the redirect URIs configured for the application` | The redirect URI in the app registration is missing the client's callback path, or is registered under the **Web** platform instead of **Mobile and desktop applications**. |
 | `AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'` | The app registration is treated as a confidential client. Move the redirect URI to the **Mobile and desktop applications** platform. |

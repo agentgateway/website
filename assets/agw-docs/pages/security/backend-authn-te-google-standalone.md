@@ -222,8 +222,9 @@ The exchange does not validate the incoming token itself; Google does. To reject
 When the exchange fails, the gateway returns `400` with the body `invalid request`. The response from the STS is logged at debug level. To see it, run agentgateway with the `RUST_LOG=info,agentgateway::http::auth::oauth=debug` environment variable, and look for `oauth token exchange rejected by authorization server` in the output.
 
 | Error | Cause |
-| -- | -- |
-| `502` with `Connection reset by peer` | The gateway connects to the STS or to Cloud Storage over plain HTTP. Set `policies.backendTLS: {}` on both the `oauthTokenExchange` method and the backend. |
+| -- | -- |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+| `502` with `backend authentication failed`, or `503` with `connection reset` | The gateway connects to the STS (`502`) or to Cloud Storage (`503`) over plain HTTP, and the server resets the connection. The gateway logs show `Connection reset by peer`. Set `policies.backendTLS: {}` on both the `oauthTokenExchange` method and the backend. |{{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+| `502` with `Connection reset by peer` | The gateway connects to the STS or to Cloud Storage over plain HTTP. Set `policies.backendTLS: {}` on both the `oauthTokenExchange` method and the backend. |{{< /version >}}
 | `invalid_request`: Invalid value for "audience". | The `audiences` value is not the full resource name of a provider. It must start with `//iam.googleapis.com/projects/`, not `https://`. |
 | `invalid_target`: The target service indicated by the "audience" parameters is invalid. | The `audiences` value names a provider that does not exist or is disabled. Check the project number, pool ID, and provider ID. |
 | `invalid_request`: Invalid value of requested_token_type in request. | Set `requestedTokenType` to `urn:ietf:params:oauth:token-type:access_token`. |

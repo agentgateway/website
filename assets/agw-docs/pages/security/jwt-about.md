@@ -72,7 +72,7 @@ sequenceDiagram
         AGW-->>C: 200 OK
 
     else mode: Strict — No JWT or invalid
-        AGW-->>C: 401 Unauthorized<br/>"no bearer token found"
+        AGW-->>C: 401 Unauthorized{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}<br/>"authentication failed"{{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}<br/>"no bearer token found"{{< /version >}}
     end
 
     Note over C,Backend: Optional & Permissive Modes
