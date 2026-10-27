@@ -13,7 +13,7 @@ The following features were introduced in the experimental channel of the upstre
 
 BackendTLSPolicy and named HTTPRoute rules became standard in [Gateway API 1.4](https://github.com/kubernetes-sigs/gateway-api/releases/tag/v1.4.0). ListenerSets, HTTPRoute CORS filters, TLSRoutes, and frontend client-certificate validation became standard in [Gateway API 1.5](https://github.com/kubernetes-sigs/gateway-api/releases/tag/v1.5.0). TCPRoutes and UDPRoutes became standard in [Gateway API 1.6](https://github.com/kubernetes-sigs/gateway-api/releases/tag/v1.6.0). These features do not require experimental CRDs at or after their standard-channel version.
 
-To use a feature that is still experimental in your Gateway API version, install the experimental channel of the Gateway API CRDs. Agentgateway follows the channel that you install, and you do not need to change any Helm values.
+To use a feature that is still experimental in your Gateway API version, install the experimental channel of the Gateway API CRDs. Experimental features follow the CRD channel that you install, so you do not need to change any Helm values.
 
 **Sample command for version {{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}**: Note that some CRDs are prefixed with `X` to indicate that the entire CRD is experimental and subject to change.
     
