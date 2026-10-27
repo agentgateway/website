@@ -36,6 +36,8 @@ Many providers now have dedicated integrations with preconfigured base URLs and 
 - [OpenRouter]({{< link-hextra path="/integrations/llm/providers/openrouter/" >}})
 - [Fireworks AI]({{< link-hextra path="/integrations/llm/providers/fireworks/" >}})
 - [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}})
+- [Perplexity]({{< link-hextra path="/integrations/llm/providers/perplexity/" >}})
+- [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}})
 
 ### Self-hosted solutions
 
@@ -46,7 +48,7 @@ Run models locally or in your own infrastructure:
 
 ### Custom providers
 
-Use [Custom provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) for other providers without direct support such as Perplexity, vLLM, or LM Studio.
+Use [Custom provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) for other providers without direct support, such as vLLM or LM Studio.
 Agentgateway supports all of the common LLM formats and can generally integrate with any provider ([file an issue](https://github.com/agentgateway/agentgateway/issues/new) if one is missing!).
 
 ## Using the API
@@ -124,6 +126,16 @@ console.log(response);
 {{% /tab %}}
 {{< /tabs >}}
 
+### Query strings on converted requests
+
+A client query string belongs to the API format that the client called. For the Chat Completions, Messages, Responses, and Gemini formats, the client query string is kept when the provider receives the same format, and is dropped when the request is converted to another format. For example, a Messages request to `/v1/messages?beta=true` that is converted to Chat Completions for a Gemini provider reaches the provider without `?beta=true`.
+
+These cases differ:
+
+- An Amazon Bedrock request on the Runtime endpoint always drops the client query string, because Runtime serves only the Bedrock APIs.
+- A built-in provider that sets `params.hostOverride` without `params.pathPrefix` receives the client path and query string unchanged. This provider path prefix is a different setting from `llm.pathPrefix`, which sets the base path that clients call.
+- A request on a path that is forwarded without format conversion keeps the client query string.
+
 ## Model routing and aliases
 
 Model routing is configured within the `llm` section of your agentgateway configuration file. 
@@ -141,7 +153,7 @@ The outgoing model can be passed through from the incoming model, be transformed
 | `params.model` | The model name sent to the upstream provider. If set, this overrides the model from the request. If not set, the model from the request is passed through. |
 | `transformation.model` | CEL expression for the upstream model name, such as `llmRequest.model.stripPrefix("openai/")`. Runs after `params.model` and overrides its value. |
 
-Agentgateway recognizes the standard LLM serving paths, such as `/v1/chat/completions`, `/v1/messages`, `/v1/responses`, `/v1/audio/transcriptions`, and `/v1/models`, only when the request path matches exactly. Provider-specific paths that carry the model in the path, such as the Gemini and Vertex AI `:generateContent` paths, match by their pattern instead. A request to any other path, such as `/other/v1/messages` or `/v1/messages/extra`, is not rejected. Agentgateway still selects the model from the request body, but forwards the request to the provider as passthrough, without format conversion and without the `params.model` override.
+Agentgateway recognizes the standard LLM serving paths, such as `/v1/chat/completions`, `/v1/messages`, `/v1/responses`, `/v1/systemone`, `/v1/audio/transcriptions`, `/v1/audio/translations`, `/v1/audio/speech`, and `/v1/models`, only when the request path matches exactly. Provider-specific paths that carry the model in the path, such as the Gemini and Vertex AI `:generateContent` paths, match by their pattern instead. A request to any other path, such as `/other/v1/messages` or `/v1/messages/extra`, is not rejected. Agentgateway still selects the model from the request body, but forwards the request to the provider as passthrough, without format conversion and without the `params.model` override.
 
 To serve the standard LLM paths under a base path, set `llm.pathPrefix`. For example, `pathPrefix: /tenant-a` lets clients call `/tenant-a/v1/chat/completions`. The gateway removes `/tenant-a` before model routing and before forwarding the request to the provider, and returns a `404` error for requests outside the prefix. The prefix must start with `/`, and cannot include a query or a fragment. You can set only one prefix, and a trailing slash is ignored.
 

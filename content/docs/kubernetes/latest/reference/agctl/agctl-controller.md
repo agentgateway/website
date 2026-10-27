@@ -4,4 +4,4 @@ weight: 10
 description: Reference for the `agctl controller` command.
 ---
 
-{{< reuse "agw-docs/pages/reference/agctl/latest/agctl-controller.md" >}}
+{{< reuse "agw-docs/pages/reference/agctl/main/agctl-controller.md" >}}

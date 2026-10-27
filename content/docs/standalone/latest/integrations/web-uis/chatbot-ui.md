@@ -32,11 +32,48 @@ description: Front Chatbot UI with agentgateway to keep API keys server-side and
 
 ### Step 1: Configure agentgateway
 
+You can configure agentgateway in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+To create the same configuration in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps.
+
+1. Set your OpenAI API key, create a configuration file with an empty `llm` section, and start agentgateway. The UI checks that the `OPENAI_API_KEY` environment variable exists when you save the model.
+
+   ```sh
+   export OPENAI_API_KEY='<your-api-key>'
+   cat > config.yaml <<'EOF'
+   llm:
+     models: []
+   EOF
+   agentgateway -f config.yaml
+   ```
+
+2. Add the model.
+   1. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+   2. From the **Provider** dropdown, select **OpenAI**.
+   3. In the **Incoming model match** field, replace the default `openai/*` with `*`.
+   4. For the **Provider API key**, select **Env var**, and enter `OPENAI_API_KEY`.
+
+      {{< reuse-image src="img/ui-llm-model-passthrough.png" srcDark="img/ui-llm-model-passthrough-dark.png" alt="Add model drawer with the OpenAI provider, the * match, the OPENAI_API_KEY environment variable, and Incoming model as the outgoing model" >}}
+
+   5. Click **Save model**.
+3. Serve LLM traffic on port `3001`.
+   1. Open the **Gateway Overview** page, such as [http://localhost:15000/ui/](http://localhost:15000/ui/).
+   2. On the **LLM** row, click **Settings**.
+   3. Enter `3001` for the **Port**, and click **Save settings**.
+
+The UI writes the same deprecated `llm.port` field as the **Config file** tab, plus an empty `llm.gateways` list. If your configuration defines `gateways`, the **Settings** drawer shows a **Gateway** dropdown instead of **Port**, and binds LLM traffic to the gateway that you select. The UI also writes the provider as `openai` instead of `openAI`. Agentgateway accepts both values.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+
+Agentgateway is already running with the new configuration, so skip Step 2.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 Create a `config.yaml`. Agentgateway listens on port `3001` so it does not conflict with Chatbot UI's default port `3000`:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
 llm:
   port: 3001
   models:
@@ -45,6 +82,8 @@ llm:
     params:
       apiKey: "$OPENAI_API_KEY"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Step 2: Start agentgateway
 

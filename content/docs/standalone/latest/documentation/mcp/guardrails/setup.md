@@ -1,13 +1,15 @@
 ---
-title: Set up MCP guardrails
-weight: 20
+title: Set up remote guardrails
+weight: 30
 description: Gate and mutate MCP method calls with an external ExtMCP policy server.
 test:
   mcp-guardrails:
   - path: mcp-guardrails
 ---
 
-Gate and mutate Model Context Protocol (MCP) method calls with an external policy server. For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
+Inspect, rewrite, or reject Model Context Protocol (MCP) calls with an external ExtMCP policy server.
+
+For an overview, see [Guardrail processors]({{< link-hextra path="/documentation/mcp/guardrails/processors" >}}). To run guardrails inside agentgateway, see [Set up CEL guardrails]({{< link-hextra path="/documentation/mcp/guardrails/cel" >}}).
 
 In this guide, you route `tools/call` and `tools/list` requests through a sample ExtMCP server that denies any tool whose name contains `forbidden` and annotates each tool description in `tools/list` responses.
 
@@ -20,7 +22,7 @@ In this guide, you route `tools/call` and `tools/list` requests through a sample
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
-## Set up MCP guardrails
+## Set up remote guardrails
 
 1. Start a sample ExtMCP policy server. This example uses a prebuilt gRPC server that denies `tools/call` when the tool name contains `forbidden`, and appends ` [extmcp]` to every tool description in `tools/list` responses. The server listens on port `9001`.
    ```sh
@@ -39,7 +41,7 @@ In this guide, you route `tools/call` and `tools/list` requests through a sample
    > * `CheckRequest`: Called in the request phase, before the call reaches the MCP backend. Return the request unchanged, return mutated `params`, or return an `AuthorizationError` to deny the call.
    > * `CheckResponse`: Called in the response phase, after the MCP backend returns a result. Return the response unchanged, return a mutated `result`, or return an `AuthorizationError` to deny the call.
    >
-   > Generate gRPC bindings from the proto file in your language, implement the two methods, and serve them over cleartext HTTP/2 (h2c) on the port that agentgateway connects to. For more information about the request and response messages, outcomes, and error codes, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
+   > Generate gRPC bindings from the proto file and implement both methods. Serve them over cleartext HTTP/2 (h2c) on the port that agentgateway connects to. For more information about the request and response messages, outcomes, and error codes, see [Guardrail processors]({{< link-hextra path="/documentation/mcp/guardrails/processors" >}}).
 
 2. In another terminal, create a `config.yaml` file. The MCP backend exposes a local stdio MCP server, and the `mcpGuardrails` policy on the route sends selected MCP methods through the ExtMCP server.
    ```yaml
@@ -116,7 +118,7 @@ In this guide, you route `tools/call` and `tools/list` requests through a sample
    | `kind: remote` | Use a remote gRPC ExtMCP server to enforce this processor. |
    | `host` | The address of the ExtMCP policy server. This example points to the sample server from the previous step. |
    | `failureMode: failClosed` | Deny requests if the policy server is unreachable or returns an error. To allow requests instead, set `failOpen`. |
-   | `methods` | The MCP methods to route through the policy server, and the phase for each. `tools/call: request` sends each tool call to the server *before* it reaches the MCP backend, so the server can allow, mutate, or deny the call. `tools/list: response` sends the tool listing to the server *after* the backend returns it, so the server can filter or annotate the list. For the full list of phases and method matching, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}). |
+   | `methods` | MCP methods and phases to send to the policy server. `tools/call: request` checks tool calls before forwarding them. `tools/list: response` filters or annotates tool lists after the backend responds. See [Methods and phases]({{< link-hextra path="/documentation/mcp/guardrails/processors/#methods" >}}). |
 
 3. Run agentgateway with the configuration file.
    ```sh

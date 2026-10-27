@@ -85,25 +85,53 @@ Build the Docker image from the source code. The example builds the image for an
 
 ## Configure the agentgateway {#agentgateway}
 
-1. From the directory where you plan to run agentgateway, download and review the OpenAPI schema for the Petstore server.
+From the directory where you plan to run agentgateway, download and review the OpenAPI schema for the Petstore server.
 
+```sh
+curl http://localhost:8080/api/v3/openapi.json > openapi.json
+```
+
+Then, connect agentgateway to the Petstore server. You can use the UI or a configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. From the directory with the `openapi.json` file, create a configuration with an empty `mcp` section, and start agentgateway. You add the OpenAPI server in the UI.
    ```sh
-   curl http://localhost:8080/api/v3/openapi.json > openapi.json
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   mcp:
+     port: 3000
+     targets: []
+   EOF
+   agentgateway -f config.yaml
    ```
+2. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Add server**.
+3. Enter `openapi` for the **Server name**, and select the **OpenAPI** transport.
+4. Replace the **URL** with `localhost:8080`, the address of the Petstore server.
+5. For **Schema source**, select **File**. Then, enter `openapi.json` for the **Schema**. A relative path resolves from the directory where you run agentgateway.
 
-2. Download an OpenAPI configuration for your agentgateway.
+   {{< reuse-image src="img/ui-mcp-servers-add-openapi-file.png" srcDark="img/ui-mcp-servers-add-openapi-file-dark.png" alt="Add MCP server drawer for the openapi target with the OpenAPI transport, the localhost:8080 URL, and the openapi.json schema file" >}}
+
+6. Click **Save server**.
+
+The UI writes the same `openapi` target as the **Config file** tab. The **Config file** tab also adds a CORS policy for the UI playground. In the UI, you add that policy with **Apply CORS** when you verify the setup in the next section.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+1. Download an OpenAPI configuration for your agentgateway.
    ```sh
    curl -L https://agentgateway.dev/examples/mcp-openapi/config.yaml -o config.yaml
    ```
 
-3. Update the agentgateway configuration file as follows:
+2. Update the agentgateway configuration file as follows:
 
    * **Listener**: An HTTP listener is configured and exposed on port 3000.
    * **Backend**: Use an MCP backend to set up an OpenAPI server based on the Petstore sample app.
    * **OpenAPI schema**: In the `openapi` target of the configuration file, set the schema source. You can provide the schema as a local file path, an inline string, or a remote URL. This example uses a local file path. 
    * **CORS policy**: To use the agentgateway UI playground later, add the following CORS policy to your `config.yaml` file. The config automatically reloads when you save the file.
 
-   ```
+   ```sh
    open config.yaml
    ```
 
@@ -127,10 +155,12 @@ Build the Docker image from the source code. The example builds the image for an
          host: localhost:8080
    ```
 
-4. Run the agentgateway. 
+3. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Verify access to the Petstore APIs
 
@@ -160,6 +190,96 @@ Build the Docker image from the source code. The example builds the image for an
 
 Agentgateway generates one MCP tool for each operation in your OpenAPI spec. Each tool is named after the operation's `operationId` field. For example, an operation with `operationId: addPet` becomes an MCP tool named `addPet`. Make sure each operation in your spec defines a unique `operationId` so that the generated tool names are predictable and do not collide.
 
+## Tool response content {#tool-response-content}
+
+Agentgateway converts OpenAPI responses into MCP tool results or errors based on HTTP status. The `Content-Type` header and body determine the result content.
+
+| Upstream response | MCP tool result |
+| ----------------- | --------------- |
+| JSON object or JSON `null` | Structured content in `structuredContent`. The `content` list also has a `text` block with the serialized JSON. |
+| Other JSON value, such as an array or a string | Structured content that wraps the value in a `data` field, such as `{"data":["cat","dog"]}`. |
+| Text that is not valid JSON | A `text` block with the body. |
+| Binary body with an `image/*` type | An `image` block with the base64-encoded body and the response media type, such as `image/png`. |
+| Binary body with an `audio/*` type | An `audio` block with the base64-encoded body and the response media type, such as `audio/wav`. |
+| Any other binary body | A `resource` block with the base64-encoded body in `blob`, the response media type, and URI `tool://<tool name>`. |
+| Empty body | A result with an empty `content` list. |
+
+Binary responses without a `Content-Type` header use `application/octet-stream`.
+
+Agentgateway treats a body as text if either condition holds:
+
+* The `Content-Type` is `text/*`, has a `json`, `xml`, or `yaml` subtype or suffix, or is `application/javascript`, `application/x-www-form-urlencoded`, or `application/x-ndjson`.
+* The body is valid UTF-8 and contains no NUL bytes, regardless of `Content-Type`.
+
+For example, `image/svg+xml` is text because of its `xml` suffix. Agentgateway first tries to parse all text bodies as JSON, including those labeled `text/plain`.
+
+### Error responses {#tool-response-errors}
+
+The status code changes the result as follows:
+
+* **`5xx` responses**: The client receives HTTP `500` with JSON-RPC error code `-32603` (internal error) and message `failed to send message`. Agentgateway logs the upstream status and body.
+* **All other responses, including `4xx`**: The client receives a tool result with the content types described above. The result sets `isError` to `false` and omits the HTTP status code.
+
+To help a model recognize a failed call, return an error body that describes the failure.
+
+### Example tool results {#tool-response-examples}
+
+These examples show how upstream responses map to MCP tool results.
+
+* A `200` response with `Content-Type: application/json` and a JSON object body:
+
+  ```json
+  {"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"{\"available\":7,\"pending\":2,\"sold\":1}"}],"structuredContent":{"available":7,"pending":2,"sold":1},"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: application/json` and a JSON array body:
+
+  ```json
+  {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{\"data\":[\"cat\",\"dog\"]}"}],"structuredContent":{"data":["cat","dog"]},"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: text/plain` and the body `OK`:
+
+  ```json
+  {"jsonrpc":"2.0","id":4,"result":{"content":[{"type":"text","text":"OK"}],"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: image/png`:
+
+  ```json
+  {"jsonrpc":"2.0","id":5,"result":{"content":[{"type":"image","data":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAA=","mimeType":"image/png"}],"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: audio/wav`:
+
+  ```json
+  {"jsonrpc":"2.0","id":6,"result":{"content":[{"type":"audio","data":"UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=","mimeType":"audio/wav"}],"isError":false}}
+  ```
+
+* A `200` response with `Content-Type: application/pdf` from the `getReport` tool:
+
+  ```json
+  {"jsonrpc":"2.0","id":7,"result":{"content":[{"type":"resource","resource":{"uri":"tool://getReport","mimeType":"application/pdf","blob":"JVBERi0xLjQKJeLjz9MK"}}],"isError":false}}
+  ```
+
+* A `204` response with an empty body:
+
+  ```json
+  {"jsonrpc":"2.0","id":8,"result":{"content":[],"isError":false}}
+  ```
+
+* A `404` response with `Content-Type: text/plain` and the body `Pet not found`:
+
+  ```json
+  {"jsonrpc":"2.0","id":9,"result":{"content":[{"type":"text","text":"Pet not found"}],"isError":false}}
+  ```
+
+* A `500` response:
+
+  ```json
+  {"jsonrpc":"2.0","id":10,"error":{"code":-32603,"message":"failed to send message"}}
+  ```
+
 ## Path parameters {#path-parameters}
 
 OpenAPI path parameters are always required. In the MCP tool schema, each OpenAPI path parameter is required, even when the OpenAPI document omits `required` or sets it to `false`.
@@ -173,10 +293,16 @@ Agentgateway rejects the tool call before it sends any request to the upstream s
 - A path parameter value is neither a string nor a number.
 - A string value contains an empty, `.`, or `..` path segment when split on `/` or `\`.
 
-The client receives an HTTP `500` response with a JSON-RPC error instead of a tool result. The error code is `-32603` (internal error), and the message names the parameter and the reason, such as in the following example for a missing parameter.
+The client receives HTTP `500` with JSON-RPC error code `-32603` (internal error) and message `failed to send message`:
 
 ```json
-{"jsonrpc":"2.0","id":2,"error":{"code":-32603,"message":"failed to send message: invalid request: path parameter 'user_id' is missing"}}
+{"jsonrpc":"2.0","id":2,"error":{"code":-32603,"message":"failed to send message"}}
+```
+
+The agentgateway log identifies the parameter and cause. For example:
+
+```console
+error="mcp: failed to send message: invalid request: path parameter 'petId' is missing"
 ```
 
 ## Other configurations
@@ -185,6 +311,17 @@ The client receives an HTTP `500` response with a JSON-RPC error instead of a to
 
 Fetch the OpenAPI schema from a remote URL. Agentgateway retrieves the schema at startup.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**). For the `openapi` server that you added in [Configure the agentgateway](#agentgateway), click the **Edit server** icon.
+2. For **Schema source**, select **URL**.
+3. Replace the **Schema** value with the schema URL, such as `http://localhost:8080/api/v3/openapi.json`.
+
+   {{< reuse-image src="img/ui-mcp-servers-edit-openapi-url.png" srcDark="img/ui-mcp-servers-edit-openapi-url-dark.png" alt="Edit MCP server drawer for the openapi target with the schema URL http://localhost:8080/api/v3/openapi.json" >}}
+
+4. Click **Save server**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 mcp:
@@ -202,11 +339,26 @@ mcp:
         url: http://localhost:8080/api/v3/openapi.json
       host: localhost:8080
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Inline schema
 
 Embed the OpenAPI schema directly as an inline string.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**). For the `openapi` server that you added in [Configure the agentgateway](#agentgateway), click the **Edit server** icon.
+2. For **Schema source**, select **Inline**.
+3. In the **Schema** editor, replace any existing value with your OpenAPI document, such as the JSON in the **Config file** tab. The editor keeps the previous schema path or URL until you replace it.
+
+   {{< reuse-image src="img/ui-mcp-servers-edit-openapi-inline.png" srcDark="img/ui-mcp-servers-edit-openapi-inline-dark.png" alt="Edit MCP server drawer for the openapi target with an inline Petstore OpenAPI schema" >}}
+
+4. Click **Save server**.
+
+The UI saves the document as a multi-line string in the `schema` field, as in the **Config file** tab.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 mcp:
@@ -245,11 +397,45 @@ mcp:
         }
       host: localhost:8080
 ```
+{{% /tab %}}
+{{< /tabs >}}
+
+### Override the schema server path {#override-schema-server-path}
+
+By default, operation paths use the path from the OpenAPI schema's server URL. To replace that prefix without editing the schema, set a non-root path in the target's `host` URI. If the target uses `host`/`port`/`path` or `backend`, set `path` instead.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  targets:
+  - name: openapi
+    openapi:
+      host: https://example.com/api
+      schema:
+        url: https://example.com/openapi.json
+```
+
+With this configuration, an operation at `/users` is forwarded to `https://example.com/api/users`. Config validation rejects paths that do not start with a single `/`. Validation also rejects paths that contain a query string, fragment, or backslash.
+
+If the path is omitted, empty, or `/`, the target keeps using the schema's server path. To route to root when the schema has a server path, update the schema's server URL to `/`.
 
 ### Stateless sessions
 
 OpenAPI backends are inherently stateless because they translate standard REST endpoints into MCP tools. You can set `statefulMode: stateless` on the MCP backend to skip session tracking. In stateless mode, the gateway automatically wraps each request with an initialization sequence so the upstream processes every request independently.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**. Expand **MCP behavior**.
+2. For **State mode**, select **Stateless**.
+
+   {{< reuse-image src="img/ui-mcp-settings-stateless.png" srcDark="img/ui-mcp-settings-stateless-dark.png" alt="MCP servers settings drawer with the state mode set to Stateless" >}}
+
+3. Click **Save settings**.
+
+The UI sets `statefulMode` to `stateless`, as in the **Config file** tab. It also sets `failureMode` to `failClosed` and writes an empty `gateways` list.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 mcp:
   port: 3000
@@ -261,3 +447,5 @@ mcp:
         url: http://localhost:8080/api/v3/openapi.json
       host: localhost:8080
 ```
+{{% /tab %}}
+{{< /tabs >}}

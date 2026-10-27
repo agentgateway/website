@@ -88,12 +88,57 @@ EOF
 
 ### Step 2: Configure budgets on your API keys
 
+You can configure the keys and budgets in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Start agentgateway with a database, the catalog, and a model, but no API key authentication. You add the authentication, the keys, and the budgets in the UI. The UI cannot add the `config.database` or `config.modelCatalog` settings.
+
+   ```sh
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   config:
+     database:
+       url: sqlite://budgets.db
+     modelCatalog:
+     - file: ./catalog.json
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   EOF
+   agentgateway -f config.yaml
+   ```
+
+2. Open **LLM** > **Virtual API Keys** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/keys](http://localhost:15000/ui/llm/keys).
+3. Click **Enable API key auth**. From the **Validation mode** dropdown, select **Strict**, and click **Enable API key auth** again.
+4. Click **New key**, and create the `team-a` key.
+   1. Enter `team-a` for the **Name**. The UI writes the name to `metadata.name`.
+   2. From the **Key value** dropdown, select **Use custom key**, and enter `sk-team-a-abc123def456`.
+   3. Expand **Budgets**, and click **Add budget**. Enter `daily-spend` for the **Name**, `24h` for the **Rolling window**, and `0.008` for the **Limit amount**. Select **USD** for the **Limit unit** and **Block requests** for **When limit is reached**.
+
+      {{< reuse-image src="img/ui-llm-key-budget.png" srcDark="img/ui-llm-key-budget-dark.png" alt="Create virtual key drawer for team-a scrolled to a daily spend budget of 0.008 USD every 24h that blocks requests" >}}
+
+   4. Expand **Model access**, and select **Selected models**. Enter `gpt-5*` in the **Allowed model patterns** field, and click **Add**.
+   5. Click **Save key**.
+5. In the **Copy your new API key** dialog, click **Done**.
+6. Click **New key**, and create the `team-b` key in the same way, with the following values. Keep **Model access** set to **Unrestricted**.
+   * **Name**: `team-b`
+   * **Key value**: `sk-team-b-xyz789uvw012`
+   * **Budget**: `daily-tokens`, `24h`, `250`, **Tokens**, **Audit only**
+
+The UI writes the same `apiKey` policy as the **Config file** tab, with two differences. It saves a hash of each key (`keyHash`) instead of the raw value, unless you select **Store raw key**. It also adds `agentgateway.dev/` entries to each key's metadata, such as a key hint and a creation time. If the configuration has no `config.database`, the **Budgets** section shows a **Database required** warning.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 Create a configuration with a database, the catalog, API key authentication, and a budget on each key.
 
 ```yaml {paths="apikey-budgets"}
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
 config:
   database:
     url: sqlite://budgets.db
@@ -121,12 +166,10 @@ llm:
         metadata:
           name: team-b
         budgets:
-        - name: daily-tokens
+        - name: lifetime-tokens
           limit:
             unit: Tokens
             amount: 250
-          window:
-            rolling: 24h
           onBudgetExceeded: Audit
   models:
   - name: "*"
@@ -135,8 +178,10 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 EOF
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
-The `team-a` key has a dollar budget that blocks requests when the budget is exhausted, and the `team-b` key has a token budget that only records the overage. Review the following table to understand this configuration. Both limits are small so that you can reach them in a few requests. Use realistic limits in production.
+The `team-a` key has a dollar budget that blocks requests when the budget is exhausted. The `team-b` key omits `window`, so its token budget never resets and only records the overage. Review the following table to understand this configuration. Both limits are small so that you can reach them in a few requests. Use realistic limits in production.
 
 | Setting | Description |
 | -- | -- |
@@ -146,7 +191,8 @@ The `team-a` key has a dollar budget that blocks requests when the budget is exh
 | `budgets` | List of budgets that are charged independently. A key can have several budgets, such as an hourly dollar cap and a monthly dollar cap. |
 | `budgets[].name` | Names the budget within its key. The name must be unique among that key's budgets. |
 | `budgets[].limit.unit` | `USD` to cap realized cost, or `Tokens` to cap token usage. |
-| `budgets[].limit.amount` | The maximum usage in the window. A `Tokens` amount must be a whole number. A `USD` amount takes up to nine decimal places. |
+| `budgets[].limit.amount` | The maximum usage for the budget. A `Tokens` amount must be a whole number. A `USD` amount takes up to nine decimal places. |
+| `budgets[].window` | Optional rolling-window block. Omit this block when the budget must keep accumulating usage and never reset. |
 | `budgets[].window.rolling` | Length of the fixed usage window, such as `1h`, `24h`, or `30d`. Windows are aligned to the Unix epoch rather than to the key's first request. |
 | `budgets[].onBudgetExceeded` | `Block` to reject requests with a `429` after the limit is passed, or `Audit` to record the overage and allow the request. |
 | `allowedModels` | Model name patterns that can match the request's top-level model. Omit the field to leave the key unconstrained. For more information, see [Limit model access per key](#limit-model-access-per-key). |
@@ -155,6 +201,8 @@ The `team-a` key has a dollar budget that blocks requests when the budget is exh
 > A `USD` budget charges nothing unless the catalog prices the models that the key uses. Agentgateway does not report an error in this case. The budget stays at zero usage and never rejects a request. Before you rely on a `USD` budget, confirm that the access log records `agw.ai.usage.cost.total` for the traffic that the budget covers.
 
 ### Step 3: Start agentgateway
+
+If you used the UI in Step 2, agentgateway is already running, and you can skip this step.
 
 ```sh
 agentgateway -f config.yaml
@@ -300,7 +348,7 @@ EOF
    Example output:
 
    ```json
-   {"error":{"message":"Budget exceeded","type":"rate_limit_error","code":"budget_exceeded"}}
+   {"error":{"message":"budget exceeded","type":"rate_limit_error","code":"budget_exceeded"}}
    ```
 
    Agentgateway also writes a log line for each rejected request. A `USD` budget reports its amounts in dollars.
@@ -357,50 +405,63 @@ EOF
 
 ### Step 6: Check budget usage
 
-Query the admin API for the current usage of a key. To return every budget, omit the `apiKeyName` parameter.
+1. Check the budget usage of the key with [agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}). To list the budgets of every key, omit the `--key` flag.
 
-```sh {paths="apikey-budgets"}
-curl -s "http://localhost:15000/api/budgets/status?apiKeyName=team-a" | jq .
-```
+   ```sh
+   agctl standalone budgets --key team-a
+   ```
 
-The `used` value is a dollar amount, and it is higher than the limit, because agentgateway charged the request that crossed the limit after it completed.
+   The `USED` value is higher than the limit, because agentgateway charged the request that crossed the limit after the request completed. The `RESETS` column shows the end of the current window in your local time.
 
-Example output:
+   Example output:
 
-```json
-{
-  "observedAt": 1787773624201,
-  "budgets": [
-    {
-      "apiKeyName": "team-a",
-      "name": "daily-spend",
-      "limit": {
-        "unit": "USD",
-        "amount": "0.008"
-      },
-      "usage": {
-        "used": "0.00903",
-        "remaining": "0",
-        "exceeded": true
-      },
-      "window": {
-        "start": 1787702400000,
-        "end": 1787788800000,
-        "durationMs": 86400000,
-        "expired": false
-      },
-      "onBudgetExceeded": "Block",
-      "updatedAt": 1787773623159
-    }
-  ]
-}
-```
+   ```text
+   KEY     BUDGET       USED      LIMIT   REMAINING  RESETS            STATUS    ACTION
+   team-a  daily-spend  $0.00903  $0.008  $0         2026-10-20 20:00  exceeded  block
+   ```
 
-You can also review and edit budgets in the built-in [Admin UI]({{< link-hextra path="/documentation/setup/ui/" >}}), on the same **LLM > Virtual API Keys** page that lists your keys.
+2. For the full budget status, query the admin API. The response adds the window start and end as Unix timestamps in milliseconds, and the time of the last update. To return every budget, omit the `apiKeyName` parameter.
+
+   ```sh {paths="apikey-budgets"}
+   curl -s "http://localhost:15000/api/budgets/status?apiKeyName=team-a" | jq .
+   ```
+
+   Example output:
+
+   ```json
+   {
+     "observedAt": 1787773624201,
+     "budgets": [
+       {
+         "apiKeyName": "team-a",
+         "name": "daily-spend",
+         "limit": {
+           "unit": "USD",
+           "amount": "0.008"
+         },
+         "usage": {
+           "used": "0.00903",
+           "remaining": "0",
+           "exceeded": true
+         },
+         "window": {
+           "start": 1787702400000,
+           "end": 1787788800000,
+           "durationMs": 86400000,
+           "expired": false
+         },
+         "onBudgetExceeded": "Block",
+         "updatedAt": 1787773623159
+       }
+     ]
+   }
+   ```
+
+The `agctl standalone budgets` command and the API report usage only. To change a budget, [update the key with agctl]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl-update" >}}), edit your configuration file, or use the built-in [UI]({{< link-hextra path="/documentation/setup/ui/" >}}) on the same **LLM > Virtual API Keys** page that lists your keys.
 
 ### Step 7: Try a token budget
 
-The `team-b` key that you configured in Step 2 caps tokens rather than dollars, and it uses the `Audit` action. An `Audit` budget records usage and logs the overage, but it never rejects a request. Use an `Audit` budget to size a limit before you enforce it, or to alert on a team that goes over its allocation without interrupting its work.
+The `team-b` key that you configured in Step 2 caps tokens rather than dollars. The budget omits `window` and uses the `Audit` action. Because the budget has no window, the budget keeps accumulating usage and never resets. An `Audit` budget records usage and logs the overage, but it never rejects a request.
 
 1. Send four requests with the `team-b` key. Each request uses 101 tokens, so four requests use more than the 250-token limit allows.
 
@@ -428,10 +489,10 @@ The `team-b` key that you configured in Step 2 caps tokens rather than dollars, 
    request 4: 200
    ```
 
-2. Check the gateway logs. Agentgateway logs each request that it receives while the budget is over its limit, so you can alert on the `budget` target in your log pipeline. A `Tokens` budget reports its amounts as whole tokens.
+2. Check the gateway logs. The gateway logs each request that it receives while the budget is over its limit, so you can alert on the `budget` target in your log pipeline. A `Tokens` budget reports its amounts as whole tokens. If you query the admin API for this budget, `window.end` and `window.durationMs` are `null`.
 
    ```
-   warn budget API key budget exceeded api_key="team-b" budget="daily-tokens" used=303 limit_unit="Tokens" limit_amount=250 exceeded=true
+   warn budget API key budget exceeded api_key="team-b" budget="lifetime-tokens" used=303 limit_unit="Tokens" limit_amount=250 exceeded=true
    ```
 
 {{< doc-test paths="apikey-budgets" >}}
@@ -447,7 +508,7 @@ YAMLTest -f - <<'EOF'
   expect:
     statusCode: 200
     bodyJsonPath:
-      - path: "$.budgets[?(@.name=='daily-tokens')].usage.exceeded"
+      - path: "$.budgets[?(@.name=='lifetime-tokens')].usage.exceeded"
         comparator: equals
         value: true
 
@@ -476,6 +537,19 @@ EOF
 
 The `allowedModels` field limits the top-level model that an API key can request. Provider server-side tools, such as the Anthropic advisor tool, can use models outside the list. The field is independent of budgets, so it needs no database and no catalog, and you can use it on its own.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Virtual API Keys**, and click the **Edit key** icon for the `team-a` key. To create a key instead, click **New key**.
+2. Expand **Model access**, and select **Selected models**.
+3. In the **Allowed model patterns** field, enter `gpt-5*`, and click **Add**. Then add `claude-sonnet-5` in the same way.
+
+   {{< reuse-image src="img/ui-llm-key-model-access.png" srcDark="img/ui-llm-key-model-access-dark.png" alt="Create virtual key drawer with model access limited to the gpt-5* and claude-sonnet-5 models" >}}
+
+4. Click **Save key**.
+
+The **Access mode** options map to the values in the following table. **Unrestricted** omits the field, and **Deny all** writes an empty list.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   policies:
@@ -489,8 +563,12 @@ llm:
         - "gpt-5*"
         - claude-sonnet-5
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 Each entry is an exact model name or a pattern with one `*` wildcard, such as a `gpt-5*` prefix or a `*-mini` suffix. When the top-level model does not match the list, agentgateway rejects the request before it reaches a provider. The response has a `403` status code and the `model_not_allowed` code.
+
+To create a key with model restrictions and a budget from the command line, see [Set up virtual keys (agctl)]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl-create" >}}).
 
 | Value | Effect |
 | -- | -- |

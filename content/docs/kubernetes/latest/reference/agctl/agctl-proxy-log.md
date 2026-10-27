@@ -4,4 +4,4 @@ weight: 10
 description: Reference for the `agctl proxy log` command.
 ---
 
-{{< reuse "agw-docs/pages/reference/agctl/latest/agctl-proxy-log.md" >}}
+{{< reuse "agw-docs/pages/reference/agctl/main/agctl-proxy-log.md" >}}

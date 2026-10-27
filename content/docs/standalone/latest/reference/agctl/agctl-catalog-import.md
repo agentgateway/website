@@ -4,4 +4,4 @@ weight: 10
 description: Reference for the `agctl catalog import` command.
 ---
 
-{{< reuse "agw-docs/pages/reference/agctl/latest/agctl-catalog-import.md" >}}
+{{< reuse "agw-docs/pages/reference/agctl/main/agctl-catalog-import.md" >}}
