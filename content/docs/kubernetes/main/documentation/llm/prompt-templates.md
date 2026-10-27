@@ -117,13 +117,13 @@ Dynamic templates use CEL transformations to inject variables from the request c
        transformation:
          request:
            body: |
-             json(request.body).with(body,
+             toJson(json(request.body).with(body,
                {
                  "model": body.model,
                  "messages": [{"role": "system", "content": "You are assisting user: " + default(request.headers["x-user-id"], "anonymous")}]
                    + body.messages
                }
-             ).toJson()
+             ))
    EOF
    ```
 
@@ -190,7 +190,7 @@ traffic:
   transformation:
     request:
       body: |
-        json(request.body).with(body,
+        toJson(json(request.body).with(body,
           {
             "model": body.model,
             "messages": [
@@ -200,7 +200,7 @@ traffic:
               }
             ] + body.messages
           }
-        ).toJson()
+        ))
 ```
 
 ### Conditional templates based on headers
@@ -212,7 +212,7 @@ traffic:
   transformation:
     request:
       body: |
-        json(request.body).with(body,
+        toJson(json(request.body).with(body,
           request.headers["x-user-tier"] == "premium" ?
             {
               "model": body.model,
@@ -222,7 +222,7 @@ traffic:
               "model": body.model,
               "messages": [{"role": "system", "content": "Provide concise, brief answers."}] + body.messages
             }
-        ).toJson()
+        ))
 ```
 
 ### Add request tracking metadata
@@ -234,7 +234,7 @@ traffic:
   transformation:
     request:
       body: |
-        json(request.body).with(body,
+        toJson(json(request.body).with(body,
           {
             "model": body.model,
             "messages": [
@@ -244,7 +244,7 @@ traffic:
               }
             ] + body.messages
           }
-        ).toJson()
+        ))
 ```
 
 ### Combine static and dynamic templates
@@ -268,7 +268,7 @@ traffic:
   transformation:
     request:
       body: |
-        json(request.body).with(body,
+        toJson(json(request.body).with(body,
           {
             "model": body.model,
             "messages": body.messages + [
@@ -278,7 +278,7 @@ traffic:
               }
             ]
           }
-        ).toJson()
+        ))
 ```
 
 This applies both static prompts (prepend/append) and dynamic user context (from headers).

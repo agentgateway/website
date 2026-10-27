@@ -29,10 +29,10 @@
    data:
      trafficRouterPlugins: |-
        - name: "argoproj-labs/gatewayAPI"
-	     # example uses amd64 and v0.11.0
-	     # for other builds and versions,
-	     # see https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases
-         location: "https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/download/v0.11.0/gatewayapi-plugin-amd64"
+         # example uses amd64 and v0.11.0
+         # for other builds and versions,
+         # see https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases
+         location: "https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/download/v0.11.0/gatewayapi-plugin-linux-amd64"
    EOF
    ```
    {{% /tab %}}
@@ -47,9 +47,9 @@
    data:
      trafficRouterPlugins: |-
        - name: "argoproj-labs/gatewayAPI"
-	     # example uses arm64 and v0.11.0
-	     # for other builds and versions,
-	     # see https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases
+         # example uses arm64 and v0.11.0
+         # for other builds and versions,
+         # see https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases
          location: "https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/download/v0.11.0/gatewayapi-plugin-linux-arm64"
    EOF
    ```
@@ -308,7 +308,7 @@
 
 1. Verify `httpbun` image.
    ```bash
-   kubectl get pod httpbun -o yaml | grep image:
+   kubectl get pods -l app=httpbun -o yaml | grep image:
    ```
    Example output:
    ```shell
@@ -330,12 +330,7 @@
    kubectl argo rollouts set image httpbun-rollout httpbun=sharat87/httpbun:latest
    ```
 
-4. Promote the rollout.
-   ```sh
-   kubectl argo rollouts promote httpbun-rollout
-   ```
-
-5. Check the weight difference between the stable and canary services again to verify the traffic split.
+4. Check the weight difference between the stable and canary services again to verify the traffic split. The rollout pauses at the first canary step, so 30% of traffic goes to the canary service.
    ```shell
    kubectl get httproute httpbun-http-route -o jsonpath='{.spec.rules[0].backendRefs}' | jq
    ```
@@ -359,9 +354,14 @@
    ]
    ```
 
-6. Check that the `httpbun` Pod is running the `latest` image.
+5. Promote the rollout. Argo Rollouts continues through the remaining canary steps until the canary receives all traffic and becomes the stable version.
+   ```sh
+   kubectl argo rollouts promote httpbun-rollout
+   ```
+
+6. After the rollout completes, which takes about 30 seconds, check that the `httpbun` pods run the `latest` image.
    ```bash
-   k get pod httpbun -o yaml | grep image:
+   kubectl get pods -l app=httpbun -o yaml | grep image:
    ```
    Example output:
    ```shell

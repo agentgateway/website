@@ -111,6 +111,7 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
         }
       ]
     }' 
+   ```
    {{% /tab %}}
    {{% tab name="Port-forward for local testing" %}}
    ```sh
@@ -267,6 +268,7 @@ Store the API key in a Kubernetes secret. Then, refer to the secret in the {{< r
         }
       ]
     }' 
+   ```
    {{% /tab %}}
    {{% tab name="Port-forward for local testing" %}}
    ```sh
@@ -405,6 +407,7 @@ Pass through an existing token directly from the client or a successful OpenID C
         }
       ]
     }'
+   ```
    {{% /tab %}}
    {{% tab name="Port-forward for local testing" %}}
    ```sh
