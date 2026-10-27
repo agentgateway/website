@@ -1,4 +1,5 @@
 import { test, expect, dismissWelcome } from '../fixtures/test';
+import { lineAtLeast } from '../scripts/resolve-image.mjs';
 
 /**
  * Cost dashboard captures for llm/cost-controls/dashboard.md.
@@ -43,6 +44,21 @@ test('cost dashboard — cost', async ({ page }) => {
   await setMeasure(page, 'Cost');
   await page.waitForTimeout(500);
   await expect(page).toHaveScreenshot('ui-cost-dashboard-cost.png', CHART_DRIFT);
+});
+
+// The searchable filter dropdowns (llm/cost-controls/dashboard.md, docs 1.7 and later): the Models
+// filter open with "claude" typed, which narrows the list to the two Claude models. The clip stops
+// above the "Traffic over time" chart, so the default (tight) threshold applies.
+test('cost dashboard — filter search', async ({ page }) => {
+  test.skip(!lineAtLeast(process.env.DOC_VERSION || 'latest', '1.7'), 'filter search: docs 1.7 and later');
+  await openAnalytics(page);
+  await page.getByRole('button', { name: 'All models' }).click();
+  await page.getByRole('textbox', { name: 'Search model' }).fill('claude');
+  await expect(page.getByRole('checkbox', { name: 'claude-3-haiku' })).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: 'gpt-4o' })).toHaveCount(0);
+  await expect(page).toHaveScreenshot('ui-cost-dashboard-filter-search.png', {
+    clip: { x: 220, y: 70, width: 1060, height: 360 },
+  });
 });
 
 // LLM > Virtual API Keys — the keys list (assets/agw-docs/standalone/virtual-keys.md, Step 1,

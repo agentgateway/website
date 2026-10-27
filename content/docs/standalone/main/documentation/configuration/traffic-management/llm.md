@@ -17,7 +17,34 @@ For more information on connecting to LLM providers, see [LLM consumption]({{< l
 |`routes`| Control the LLM request type, such as OpenAI Completions, OpenAI Decisions, Anthropic Messages, or Embeddings. |
 |`promptGuard`| Authorize requests based on their prompts.                                                         |
 |`modelAliases`| Configure aliases for model names.                                                                 |
-|`promptCaching`| Configure automatic caching controls in requests.                                                  |
+|`promptCaching`| Add prompt-cache markers to requests automatically. See [Prompt caching](#prompt-caching).          |
+
+## Prompt caching {#prompt-caching}
+
+The `promptCaching` policy adds prompt-cache markers to requests, so that the provider can reuse a cached prompt prefix. It works with Anthropic, with Claude models on Vertex AI, and with Claude 3 and later and Nova models on Amazon Bedrock.
+
+Set `promptCaching` on a model in `llm.models`, or in the `policies.ai` block of a route or AI backend.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  models:
+  - name: "anthropic/*"
+    provider: anthropic
+    params:
+      apiKey: "$ANTHROPIC_API_KEY"
+    transformation:
+      model: llmRequest.model.stripPrefix("anthropic/")
+    promptCaching:
+      cacheTools: true
+```
+
+`promptCaching: {}` uses the defaults: `cacheSystem: true`, `cacheMessages: true`, `cacheTools: false`, and `minTokens: 1024`.
+
+- `cacheSystem` marks the system prompt. `cacheMessages` marks the last message before the current turn. To move that marker further back, set `cacheMessageOffset`. `cacheTools` marks the last tool definition.
+- `minTokens` applies only to the system prompt. Agentgateway estimates the token count as the word count times 1.3.
+- If a request already has prompt-cache markers, the policy adds none.
+- For Bedrock Nova models, the policy ignores `cacheTools`, because Nova does not accept cache points on tool definitions.
 
 ## Model resolution order {#llm-model-resolution-standalone}
 

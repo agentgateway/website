@@ -189,7 +189,7 @@ The **Models** page, under **LLM**, lists the models that the proxy serves from 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 ## Generate LLM client settings {#client-setup}
 
-Use the **LLM** > **Client Setup** page to generate connection settings and snippets for LLM clients, such as curl, Claude Code, Codex CLI, Cursor, and the OpenAI SDKs. The page configures the client only and does not create or change Gateway, HTTPRoute, AgentgatewayBackend, AgentgatewayPolicy, or Secret resources.
+Use the **LLM** > **Client Setup** page to generate connection settings and snippets for LLM clients, such as curl, Claude Code, Codex CLI, Continue, Cursor, and the OpenAI SDKs. The page configures the client only and does not create or change Gateway, HTTPRoute, AgentgatewayBackend, AgentgatewayPolicy, or Secret resources.
 
 1. Open the **LLM** > **Client Setup** page, such as [http://localhost:15000/ui/llm/client-setup](http://localhost:15000/ui/llm/client-setup).
 2. Enter the **Gateway base URL** that clients use to reach the proxy, including any route prefix. The field starts empty because the proxy does not know the external address of its Gateway, such as a load balancer hostname. The snippets appear only after you enter a URL.

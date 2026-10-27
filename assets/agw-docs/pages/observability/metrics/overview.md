@@ -115,7 +115,9 @@ Duration and size metrics, such as `agentgateway_request_duration_seconds` and `
 * **Classic histograms** use a fixed set of bucket boundaries. Each bucket is its own time series with a `_bucket` suffix and an `le` label, next to `_sum` and `_count` series.
 * **[Native histograms](https://prometheus.io/docs/specs/native_histograms/)** choose exponential bucket boundaries automatically and store all buckets in one time series. They give higher-resolution percentiles, usually at a lower storage cost. They are exposed only through the Prometheus protobuf format.
 
-The control plane emits its `agentgateway_controller_reconcile_duration_seconds` histogram in both kinds. The proxies emit classic histograms by default, and can emit native histograms or both. Emitting both types of histograms lets you move dashboards and alerts to native histograms gradually. The built-in Grafana dashboard calculates percentiles from the classic `_bucket` series, so keep classic histograms while you use it.
+The control plane does not emit histograms. Proxies emit classic histograms by default and can emit native histograms or both.
+
+To migrate dashboards and alerts to native histograms gradually, configure the proxies to emit both kinds. Keep classic histograms for the built-in Grafana dashboard, which calculates percentiles from `_bucket` series.
 
 #### Scrape native histograms {#native-histograms}
 

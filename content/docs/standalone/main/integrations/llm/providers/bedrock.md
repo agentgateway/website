@@ -58,6 +58,8 @@ Configure Amazon Bedrock as an LLM provider in agentgateway.
 
 Bedrock conversion turns the prompt-cache markers in `/v1/messages` and `/v1/chat/completions` requests into Bedrock cache points, including markers on content that the conversion does not send. In `/v1/messages` requests, the Anthropic `cache_control.ttl` value becomes the TTL of the cache point. For where a marker on dropped content goes, see [Converting to the Bedrock Converse format]({{< link-hextra path="/documentation/llm/api-types/messages/#converting-to-the-bedrock-converse-format" >}}). In `/v1/chat/completions` requests, a text part that contains only whitespace is not sent, and the marker on that text part moves to the end of the content before the text part in the same message.
 
+If a request already has prompt-cache markers, the `promptCaching` policy adds no cache points. For more information, see [Prompt caching]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#prompt-caching" >}}).
+
 ## Authentication
 
 Before you can use Bedrock as an LLM provider, you must authenticate by using the standard [AWS authentication sources](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html).
