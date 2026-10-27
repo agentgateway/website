@@ -198,12 +198,12 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
          backendRefs:
            - name: openai-mini-backend
              namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-             group: agentgateway.dev
+             group: {{< reuse "agw-docs/snippets/group.md" >}}
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
              weight: 80
            - name: openai-premium-backend
              namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-             group: agentgateway.dev
+             group: {{< reuse "agw-docs/snippets/group.md" >}}
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
              weight: 20
    EOF
