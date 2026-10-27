@@ -80,7 +80,7 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 5. Keep the default `bedrock/*` in the **Incoming model match** field.
 6. Keep **Ambient** for the **AWS credentials**. To enter an access key instead, select **Static**. This option writes the key to an `auth.aws` block.
 7. For the **AWS region**, enter or select `us-west-2`.
-8. From the **Bedrock endpoint** dropdown, select **Prefer Runtime**. The dropdown shows **Prefer Runtime**, the default, for a new Bedrock model. The UI saves `params.bedrockEndpointPreference` only after you select a value. For more information, see [Bedrock Mantle](#bedrock-mantle).
+8. Keep **Prefer Runtime**, the default, in the **Bedrock endpoint** dropdown. The UI saves `params.bedrockEndpointPreference` only after you select a value. For more information, see [Bedrock Mantle](#bedrock-mantle).
 9. For **Outgoing model**, keep **Strip bedrock/**. This option removes the `bedrock/` prefix before the request is forwarded. To send every request to one model instead, select **Explicit**, and enter the model ID. This option sets `params.model`.
 
    {{< reuse-image src="img/ui-llm-add-model-bedrock-runtime.png" srcDark="img/ui-llm-add-model-bedrock-runtime-dark.png" alt="Add model drawer with Amazon Bedrock selected as the provider, bedrock/* as the incoming model match, Ambient as the AWS credentials, us-west-2 as the AWS region, and Prefer Runtime as the Bedrock endpoint" >}}
@@ -418,7 +418,7 @@ Some Bedrock models return encrypted reasoning in a `reasoningContent.redactedCo
 | Client API | Encrypted reasoning in the reply | Replay on the next turn |
 |---|---|---|
 | `/v1/messages` | A `redacted_thinking` block. | Send the block back in the message history. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
-| `/v1/responses` | A reasoning item with `encrypted_content`. The value is an opaque carrier of the full reasoning: the reasoning text and its signature, or the encrypted payload. | Send the reasoning item back in the input. The next Bedrock request includes it as `reasoningContent.redactedContent`. Agentgateway needs only `encrypted_content` to replay the item, so a client that sends back only `encrypted_content` still works. |
+| `/v1/responses` | A reasoning item with `encrypted_content`. Treat the value as opaque. It holds the full reasoning block: the reasoning text and its signature, or Bedrock's encrypted payload. The reasoning text is not encrypted, and response guardrails do not mask it. | Send the reasoning item back in the input. The next Bedrock request includes signed reasoning as `reasoningContent.reasoningText` with its signature, and encrypted reasoning as `reasoningContent.redactedContent`. Agentgateway needs only `encrypted_content` to replay the item, so a client that sends back only `encrypted_content` still works. |
 | `/v1/chat/completions` | Omitted, because the Chat Completions format has no field for encrypted reasoning. Signed reasoning text still arrives in `reasoning_content` and `reasoning_signature`. | Not possible. |
 
 Replay streamed encrypted reasoning the same way as buffered reasoning. Stream events depend on the client API.

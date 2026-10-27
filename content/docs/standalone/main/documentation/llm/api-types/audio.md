@@ -22,7 +22,7 @@ The audio duration is available as `llm.audioSeconds` in CEL expressions and as 
 
 ## Transcribe audio and record the cost {#transcribe}
 
-1. Create a catalog overlay that prices `whisper-1` at `$0.006` per minute of audio. The built-in catalog already prices this model. Use the same shape for a model that the built-in catalog does not price, or to set your own rate.
+1. Create a catalog overlay that prices `whisper-1` at a contracted `$0.005` per minute of audio. The built-in catalog prices this model at `$0.006`, so the overlay overrides the built-in rate. Use the same shape for a model that the built-in catalog does not price.
 
    ```sh
    cat <<'EOF' > audio-costs.json
@@ -31,7 +31,7 @@ The audio duration is available as `llm.audioSeconds` in CEL expressions and as 
        "openai": {
          "models": {
            "whisper-1": {
-             "rates": { "perAudioMinute": "0.006" }
+             "rates": { "perAudioMinute": "0.005" }
            }
          }
        }
@@ -95,10 +95,10 @@ The audio duration is available as `llm.audioSeconds` in CEL expressions and as 
    {"text":"Hello from agentgateway.","usage":{"type":"duration","seconds":90}}
    ```
 
-5. Check the access log in the terminal where agentgateway runs. The entry records the `transcription` operation, the audio duration, and the cost. A duration of 90 seconds at `$0.006` per minute costs `$0.009`.
+5. Check the access log in the terminal where agentgateway runs. The entry records the `transcription` operation, the audio duration, and the cost. A duration of 90 seconds at `$0.005` per minute costs `$0.0075`, which confirms the overlay rate replaced the built-in `$0.006`.
 
    ```console
-   info	request ... http.path=/v1/audio/transcriptions http.status=200 protocol=llm gen_ai.operation.name=transcription gen_ai.provider.name=openai gen_ai.request.model=whisper-1 agw.ai.original_model=whisper-1 agw.ai.usage.cost.total=0.009 gen_ai.usage.audio_seconds=90 ... audio_seconds=90 audio_cost=0.009 audio_rate=0.006
+   info	request ... http.path=/v1/audio/transcriptions http.status=200 protocol=llm gen_ai.operation.name=transcription gen_ai.provider.name=openai gen_ai.request.model=whisper-1 agw.ai.original_model=whisper-1 agw.ai.usage.cost.total=0.0075 gen_ai.usage.audio_seconds=90 ... audio_seconds=90 audio_cost=0.0075 audio_rate=0.005
    ```
 
 6. Send a speech request, and save the audio to a file.

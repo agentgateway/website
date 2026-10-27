@@ -354,8 +354,9 @@ Review the following cooldown findings.
 | -- | -- |
 | `approximate` on `allowed_fails` and `cooldown_time` | Test the eviction behavior, because agentgateway counts consecutive failures instead of failures within a minute. |
 | `manual` on `allowed_fails` or `cooldown_time` with "requires" | You set only one of the two settings, so the importer emitted no health policy. Set both settings, or add a `health` policy yourself. |
+| `manual` on `allowed_fails` and `cooldown_time` with "must be" or "was not mapped because" | One of the values is invalid, so the importer emitted no health policy. `allowed_fails` must be a non-negative integer, and `cooldown_time` must be a positive whole number of seconds. A decimal such as `0.5` is invalid. Fix the value, or add a `health` policy yourself. |
 | `manual` on `allowed_fails_policy` | LiteLLM thresholds for each exception type do not fit the single eviction threshold. The importer does not map `allowed_fails_policy`, `allowed_fails`, or `cooldown_time`. Configure a `health` policy yourself. |
-| `manual` on `model_list[N].litellm_params.cooldown_time` | The importer does not map a cooldown for one deployment, and the router-level `health` policy does not apply to that model. Configure its `health` policy yourself. |
+| `manual` on `model_list[N].litellm_params.cooldown_time` | The importer does not map a cooldown for one deployment, and the router-level `health` policy does not apply to that model. Configure its `health` policy yourself. A `cooldown_time`, `allowed_fails`, or `allowed_fails_policy` key in the deployment's `model_info` has the same effect, but the importer reports no finding for it. |
 | `exact` on `disable_cooldowns` | Cooldowns are disabled, and the importer emitted no health policy. |
 | `manual` on `disable_cooldowns` | Cooldowns are disabled, but the import also created failover routes. Agentgateway evicts failing failover targets by default, even without a `health` policy. Review the eviction behavior of the generated failover routes. |
 

@@ -56,6 +56,7 @@ On an {{< reuse "agw-docs/snippets/backend.md" >}}, set the audio paths to `Dete
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. Verify that the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is enabled. The API is enabled by default. For the steps, see [Verify the AgentgatewayModel feature]({{< link-hextra path="/documentation/llm/models/serve/#verify-the-agentgatewaymodel-feature" >}}).
+3. Make sure that your cluster has a node with an NVIDIA GPU and the NVIDIA device plugin or GPU Operator, so that `nvidia.com/gpu` is schedulable. The Voxtral Small example in this guide requests one GPU. Without one, the pod stays `Pending`, and the wait in step 1 times out.
 
 ## Set up and expose your audio model
 
@@ -64,9 +65,6 @@ On an {{< reuse "agw-docs/snippets/backend.md" >}}, set the audio paths to `Dete
 ### Step 1: Deploy the audio model (self-hosted)
 
 Deploy the audio model inside your cluster (e.g., Voxtral Small via vLLM) and expose it via a Service.
-
-> [!WARNING]
-> **Voxtral Small requires a Docker environment with NVIDIA GPU support (`nvidia-container-toolkit`).**
 
 1. Deploy Voxtral Small using the official vLLM OpenAI-compatible image.
 
@@ -157,44 +155,7 @@ In the output, you see a JSON response listing the model.
 
 ### Step 3: Enable LLM serving on a listener
 
-A listener serves LLM traffic only when it allows the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind. Add the route kind to the `http` listener on the `agentgateway-proxy` Gateway that you created during setup. The gateway then serves both LLM models and ordinary HTTPRoute traffic on the same port.
-
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: Gateway
-metadata:
-  name: agentgateway-proxy
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  gatewayClassName: {{< reuse "agw-docs/snippets/agw-gatewayclass.md" >}}
-  listeners:
-  - name: http
-    port: 80
-    protocol: HTTP
-    allowedRoutes:
-      namespaces:
-        from: All
-      kinds:
-      - group: gateway.networking.k8s.io
-        kind: HTTPRoute
-      - group: agentgateway.dev
-        kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
-EOF
-```
-
-Example output:
-
-```console
-gateway.gateway.networking.k8s.io/agentgateway-proxy configured
-```
-
-{{% reuse "agw-docs/snippets/review-table.md" %}}
-
-| Setting | Description |
-|---------|-------------|
-| `allowedRoutes.kinds` | Adding `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` enables the listener's built-in LLM paths, such as `/v1/audio/transcriptions`. Keeping `HTTPRoute` lets your existing routes continue to work. The listener accepts only the kinds that you list, so include every kind that you need. |
-| `listeners[0].name` | The model references this name in `parentRefs.sectionName`. |
+Add the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind to the `http` listener on the `agentgateway-proxy` Gateway, and verify that the listener supports it. Follow the steps in [Enable LLM serving on a listener]({{< link-hextra path="/documentation/llm/models/serve/#enable-llm-serving-on-a-listener" >}}). The gateway then serves both LLM models and ordinary `HTTPRoute` traffic on the same port. The model in the next step references the `http` listener name in `parentRefs.sectionName`.
 
 ### Step 4: Create the AgentgatewayModel
 
