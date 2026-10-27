@@ -13,6 +13,10 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
 For Anthropic Messages and token-count requests, a client `anthropic-version` header is forwarded. If the client sends no version header, the request uses the default `2023-06-01` version.
 {{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+To add prompt-cache markers automatically, set `backend.ai.promptCaching` in an {{< reuse "agw-docs/snippets/policy.md" >}} resource. The setting also works for Claude models on Vertex AI. If a request already has `cache_control` markers, the policy adds none. The `minTokens` value applies only to system prompt caching. For the fields and their defaults, see [Prompt caching on Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/#prompt-caching" >}}).
+{{< /version >}}
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
