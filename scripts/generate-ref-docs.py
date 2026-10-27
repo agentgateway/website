@@ -91,6 +91,7 @@ Usage (from workflow):
 
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -374,6 +375,85 @@ def _freeze_dir(assets_path: str, link_version: str, doc_version: str, website_d
     print(f"    ✓ Froze snapshot {target}")
 
 
+# findmetrics resolves a `Namespace:` or `Subsystem:` identifier only against constants
+# declared in the SAME FILE as the metric. A constant declared elsewhere in the package is
+# dropped, and the metric is listed without that prefix. controller/pkg/setup/xds_tls.go is
+# the known case: it uses `Subsystem: xdsSubsystem`, declared in controlplane.go, so the
+# emitted agentgateway_xds_cert_* metrics were documented as agentgateway_cert_*.
+#
+# The fix belongs upstream (build the constants map per package), but until it lands this
+# post-process re-resolves those identifiers across the package and renames the rows.
+_METRIC_CALL_RE = re.compile(
+    r"\bmetrics\.New(?:Counter|Gauge|Histogram)\(\s*metrics\.\w+Opts\{(?P<opts>[^{}]*)\}",
+    re.DOTALL,
+)
+_OPT_RE = re.compile(r'\b(Namespace|Subsystem|Name|Help)\s*:\s*("(?:[^"\\]|\\.)*"|\w+)')
+_STRING_CONST_RE = re.compile(r'^\s*(?:const\s+|var\s+)?(\w+)(?:\s+string)?\s*=\s*"((?:[^"\\]|\\.)*)"', re.MULTILINE)
+_DEFAULT_METRIC_NAMESPACE = "agentgateway"
+
+
+def _metric_full_name(namespace: str, subsystem: str, name: str) -> str:
+    return "_".join(p for p in (namespace, subsystem, name) if p)
+
+
+def fix_cross_file_metric_prefixes(md_content: str, controller_dir: str) -> str:
+    """Rename metrics whose Namespace or Subsystem constant lives in another file of the package."""
+    package_consts: dict[str, dict[str, str]] = {}
+    file_consts: dict[str, dict[str, str]] = {}
+    sources: dict[str, str] = {}
+    for root, _, files in os.walk(controller_dir):
+        for name in files:
+            if not name.endswith(".go") or name.endswith("_test.go"):
+                continue
+            path = os.path.join(root, name)
+            with open(path, encoding="utf-8") as f:
+                src = f.read()
+            consts = dict(_STRING_CONST_RE.findall(src))
+            sources[path] = src
+            file_consts[path] = consts
+            package_consts.setdefault(root, {}).update(consts)
+
+    renames: dict[tuple[str, str], str] = {}
+    for path, src in sources.items():
+        for call in _METRIC_CALL_RE.finditer(src):
+            opts = dict(_OPT_RE.findall(call.group("opts")))
+            name = opts.get("Name", "")
+            if not name.startswith('"'):
+                continue
+            found = {"Namespace": "", "Subsystem": ""}
+            fixed = dict(found)
+            for key in found:
+                value = opts.get(key, "")
+                if value.startswith('"'):
+                    found[key] = fixed[key] = value.strip('"')
+                elif value:
+                    found[key] = file_consts[path].get(value, "")
+                    fixed[key] = package_consts[os.path.dirname(path)].get(value, found[key])
+            found["Namespace"] = found["Namespace"] or _DEFAULT_METRIC_NAMESPACE
+            fixed["Namespace"] = fixed["Namespace"] or _DEFAULT_METRIC_NAMESPACE
+            wrong = _metric_full_name(found["Namespace"], found["Subsystem"], name.strip('"'))
+            right = _metric_full_name(fixed["Namespace"], fixed["Subsystem"], name.strip('"'))
+            if wrong != right:
+                renames[(wrong, opts.get("Help", "").strip('"'))] = right
+
+    if not renames:
+        return md_content
+
+    lines = md_content.splitlines()
+    header, rows = lines[:2], lines[2:]
+    fixed_rows = []
+    for row in rows:
+        cells = row.split("|")
+        new_name = renames.get((cells[0], "|".join(cells[3:]))) if len(cells) >= 4 else None
+        if new_name:
+            print(f"    ✓ Renamed metric {cells[0]} -> {new_name}")
+            cells[0] = new_name
+        fixed_rows.append("|".join(cells))
+    # findmetrics sorts by full name, so restore that order after renaming.
+    fixed_rows.sort(key=lambda r: r.split("|", 1)[0])
+    return "\n".join(header + fixed_rows) + "\n"
+
+
 def generate_metrics_docs(link_version: str, website_dir: str, kgateway_dir: str, doc_version: str = "") -> bool:
     """Generate control plane metrics into a versioned snippet (e.g. metrics-control-plane-latest.md)."""
     print(f"  → Generating metrics docs for {link_version}")
@@ -395,6 +475,7 @@ def generate_metrics_docs(link_version: str, website_dir: str, kgateway_dir: str
         print(f"    Warning: findmetrics failed: {e.stderr or e}")
         return False
 
+    md_content = fix_cross_file_metric_prefixes(md_content, kgateway_dir)
     md_content = normalize_links(md_content, website_dir, os.path.basename(out_file))
     md_content = retarget_links(md_content, link_version, website_dir, os.path.basename(out_file))
 
