@@ -212,3 +212,52 @@ Inference Extension CRDs, agentgateway, and the llm-d Router in Gateway mode.
    ```
 
    The response has an HTTP `200 OK` status.
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+
+## Raise the endpoint picker timeout {#epp-timeout}
+
+By default, agentgateway waits up to 10 seconds for the EPP to respond to a request. If the EPP holds a request longer, such as when EPP flow control queues the request, agentgateway returns a `500` response with the `external processing failed` message. The `FailOpen` failure mode does not apply in this case, because the EPP is reachable.
+
+To raise the limit, apply an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the EPP Service, which the `endpointPickerRef` field of the InferencePool names. The policy attaches to every Gateway that routes to the InferencePool.
+
+1. Create the policy for the EPP Service from the quickstart.
+
+   ```yaml
+   kubectl apply -f - <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: epp-timeout
+     namespace: default
+   spec:
+     targetRefs:
+       - group: ""
+         kind: Service
+         name: vllm-qwen3-32b-epp
+     backend:
+       http:
+         requestTimeout: 60s
+   EOF
+   ```
+
+   | Setting | Description |
+   | -- | -- |
+   | `targetRefs` | The EPP Service. The llm-d Router Gateway chart names it after the Helm release, with an `-epp` suffix. |
+   | `backend.http.requestTimeout` | The maximum time to wait for the EPP to respond. The request timeout of the HTTPRoute still limits the whole request. The llm-d Router Gateway chart sets that timeout to `300s`. |
+
+2. Verify that the policy is accepted and attached to the Gateway.
+
+   ```bash
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} epp-timeout -n default \
+     -o jsonpath='{range .status.ancestors[*]}{.ancestorRef.name}{"\n"}{range .conditions[*]}  {.type}={.status} {.message}{"\n"}{end}{end}'
+   ```
+
+   Example output:
+
+   ```
+   inference-gateway
+     Accepted=True Policy accepted
+     Attached=True Attached to all targets
+   ```
+{{< /version >}}

@@ -12,6 +12,29 @@ FrontendTLS supports the following configurations:
 In addition, you can choose between the following validation modes. Note that you must install version 1.5 or later of the Kubernetes Gateway API to use these capabilities. 
 * **AllowValidOnly**: A connection between a client and the gateway proxy can only be established if the gateway can validate the client's TLS certificate successfully. For an example, see the [Default configuration for all listeners](#default) guide.
 * **AllowInsecureFallback**: The gateway proxy can establish a TLS connection, even if the client TLS certificate could not be validated successfully. For an example, see the [Per port configuration](#perport) guide. 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+
+### CA certificate sources {#ca-sources}
+
+> [!WARNING]
+> {{< reuse "agw-docs/snippets/feature-experimental.md">}}
+
+This guide stores the CA certificates that validate client certificates in a ConfigMap. Instead, you can keep them in a ClusterTrustBundle, a cluster-scoped resource in the `certificates.k8s.io` API group. Because a ClusterTrustBundle is cluster-scoped, the Gateway needs no ReferenceGrant to use it. In the `caCertificateRefs` field, set the `group` and `kind` fields of the reference, as in the following example.
+
+```yaml
+tls:
+  frontend:
+    default:
+      validation:
+        mode: AllowValidOnly
+        caCertificateRefs:
+          - name: example-ca
+            kind: ClusterTrustBundle
+            group: certificates.k8s.io
+```
+
+Agentgateway uses the `certificates.k8s.io/v1` version of the ClusterTrustBundle API, which Kubernetes serves by default in version 1.37 and later. If the cluster does not serve the API, the listener is not programmed, and its `ResolvedRefs` condition has the `InvalidCACertificateKind` reason. For the steps to create a ClusterTrustBundle, see [CA certificate in a ClusterTrustBundle]({{< link-hextra path="/documentation/security/backendtls/#clustertrustbundle-ca" >}}).
+{{< /version >}}
 
 ## About this guide
 

@@ -12,12 +12,28 @@ You can use the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} Backe
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ### CA certificate sources {#ca-sources}
 
+{{< version include-if="1.6.x" >}}
 In a BackendTLSPolicy, the CA certificate that verifies the backend must come from a Kubernetes ConfigMap. The gateway rejects a `validation.caCertificateRefs` entry that refers to any other kind of resource.
+{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}
+In a BackendTLSPolicy, the CA certificate that verifies the backend comes from a Kubernetes ConfigMap, or from a ClusterTrustBundle if your cluster serves the ClusterTrustBundle API. ClusterTrustBundle support is experimental. The gateway rejects a `validation.caCertificateRefs` entry that refers to any other kind of resource.
+
+A ClusterTrustBundle is a cluster-scoped resource in the `certificates.k8s.io` API group that holds one or more PEM-encoded CA certificates in its `spec.trustBundle` field. To use one, set the `group` and `kind` fields of the reference, as in the following example. For the full steps, see [CA certificate in a ClusterTrustBundle](#clustertrustbundle-ca).
+
+```yaml
+validation:
+  hostname: "example.com"
+  caCertificateRefs:
+  - group: certificates.k8s.io
+    kind: ClusterTrustBundle
+    name: example-ca
+```
+{{< /version >}}
 
 If you keep your CA certificates in Kubernetes Secrets, such as when a Secret is issued by cert-manager or synced from an external secret store, use the {{< reuse "agw-docs/snippets/policy.md" >}} resource instead. The `tls.caCertificateRefs` field in this resource takes an optional `kind` setting that you can set to `ConfigMap` (the default) or `Secret`. Either source provides the certificate in a `ca.crt` key by default. To read the certificate from another key, set the optional `key` setting to that key name. This setting helps when a trust-manager bundle or an external secret store writes the certificate under a descriptive name, or when one object holds several bundles. For an example, see [CA certificate in a Secret](#secret-ca).
 
 > [!NOTE]
-> The `key` setting applies only to the `caCertificateRefs` field in the {{< reuse "agw-docs/snippets/policy.md" >}} and {{< reuse "agw-docs/snippets/backend.md" >}} resources. A BackendTLSPolicy and a Gateway listener's `frontendValidation` field use the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} reference type, which has no key setting, so those references always read the `ca.crt` key.
+> The `key` setting applies only to the `caCertificateRefs` field in the {{< reuse "agw-docs/snippets/policy.md" >}} and {{< reuse "agw-docs/snippets/backend.md" >}} resources. A BackendTLSPolicy and a Gateway listener's `frontendValidation` field use the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} reference type, which has no key setting. A ConfigMap or Secret that those references name must hold the certificate in the `ca.crt` key.
 
 The `tls.caCertificateRefs` field is available in each place that the {{< reuse "agw-docs/snippets/policy.md" >}} and {{< reuse "agw-docs/snippets/backend.md" >}} resources configure backend TLS, such as `spec.backend.tls` in a policy, `spec.policies.tls` in a backend, and the per-target `policies.tls` settings of an MCP or LLM backend.
 {{< /version >}}
@@ -26,7 +42,8 @@ The `tls.caCertificateRefs` field is available in each place that the {{< reuse 
 
 In this guide, you learn how to originate one-way TLS connections for the following services: 
 * [**In-cluster service**](#in-cluster-service): An NGINX server that is configured with a self-signed TLS certificate and deployed to the same cluster as the Gateway. You use a BackendTLSPolicy to originate TLS connections to NGINX. 
-* [**External service**](#external-service): The `httpbin.org` hostname, which represents an external service that you want to originate a TLS connection to. You use a BackendTLSPolicy resource to originate TLS connections to that hostname. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+* [**External service**](#external-service): The `httpbin.org` hostname, which represents an external service that you want to originate a TLS connection to. You use a BackendTLSPolicy resource to originate TLS connections to that hostname. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}
+* [**CA certificate in a ClusterTrustBundle**](#clustertrustbundle-ca): The same NGINX server, but with the CA certificate stored in a ClusterTrustBundle instead of a ConfigMap. You use a BackendTLSPolicy to originate TLS connections to NGINX.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 * [**CA certificate in a Secret**](#secret-ca): The same NGINX server, but with the CA certificate stored in a Kubernetes Secret instead of a ConfigMap. You use an {{< reuse "agw-docs/snippets/policy.md" >}} to originate TLS connections to NGINX.{{< /version >}}
 
 ## Before you begin
@@ -407,11 +424,130 @@ Set up an {{< reuse "agw-docs/snippets/backend.md" >}} resource that represents 
    }
    ```
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}
+
+## CA certificate in a ClusterTrustBundle {#clustertrustbundle-ca}
+
+> [!WARNING]
+> {{< reuse "agw-docs/snippets/feature-experimental.md">}}
+
+A BackendTLSPolicy can read the CA certificate from a ClusterTrustBundle instead of a ConfigMap. A ClusterTrustBundle is cluster-scoped, so you can keep one set of CA certificates for BackendTLSPolicies in every namespace.
+
+Agentgateway uses the `certificates.k8s.io/v1` version of the ClusterTrustBundle API, which Kubernetes serves by default in version 1.37 and later. The controller checks for the API when it starts. If your cluster starts to serve the API after you install {{< reuse "agw-docs/snippets/agentgateway.md" >}}, restart the controller.
+
+This section reuses the NGINX server, the `tls-policy` BackendTLSPolicy, and the `nginx-route` HTTPRoute that you created in the [In-cluster service](#in-cluster-service) section.
+
+1. Verify that the controller found the ClusterTrustBundle API. The GatewayClass lists the `ClusterTrustBundle` feature only if the cluster serves the API.
+
+   ```sh
+   kubectl get gatewayclass {{< reuse "agw-docs/snippets/gatewayclass.md" >}} \
+     -o jsonpath='{.status.supportedFeatures[*].name}' | tr ' ' '\n' | grep ClusterTrustBundle
+   ```
+
+   Example output:
+
+   ```
+   ClusterTrustBundle
+   ```
+
+   If the command returns no output, use a ConfigMap as the CA source instead.
+
+2. Create a ClusterTrustBundle that has the CA certificate that signed the NGINX server certificate. Run the command from the directory that has the `ca-cert.pem` file.
+
+   ```sh
+   kubectl apply -f- <<EOF
+   apiVersion: certificates.k8s.io/v1
+   kind: ClusterTrustBundle
+   metadata:
+     name: example-ca
+   spec:
+     trustBundle: |
+   $(sed 's/^/    /' ca-cert.pem)
+   EOF
+   ```
+
+   Example output:
+
+   ```
+   clustertrustbundle.certificates.k8s.io/example-ca created
+   ```
+
+3. Update the BackendTLSPolicy to read the CA certificate from the ClusterTrustBundle.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: BackendTLSPolicy
+   metadata:
+     name: tls-policy
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app: nginx
+   spec:
+     targetRefs:
+     - group: ""
+       kind: Service
+       name: nginx
+     validation:
+       hostname: "example.com"
+       caCertificateRefs:
+       - group: certificates.k8s.io
+         kind: ClusterTrustBundle
+         name: example-ca
+   EOF
+   ```
+
+   Example output:
+
+   ```
+   backendtlspolicy.gateway.networking.k8s.io/tls-policy configured
+   ```
+
+4. Check the conditions of the BackendTLSPolicy.
+
+   ```sh
+   kubectl get backendtlspolicy tls-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -o jsonpath='{range .status.ancestors[0].conditions[*]}{.type}={.status} {.reason}{"\n"}{end}'
+   ```
+
+   Example output:
+
+   ```
+   Accepted=True Accepted
+   ResolvedRefs=True ResolvedRefs
+   ```
+
+   If the cluster does not serve the ClusterTrustBundle API, the `ResolvedRefs` condition is `False` with the `InvalidKind` reason and the message `the cluster does not serve the ClusterTrustBundle API`.
+
+5. Send a request to the NGINX server and verify that you get back a 200 HTTP response code.
+
+   * **Cloud Provider LoadBalancer**
+     ```sh
+     curl -vi http://$INGRESS_GW_ADDRESS:80/ -H "host: example.com:80"
+     ```
+   * **Port-forward for local testing**
+     ```sh
+     curl -vi http://localhost:8080/ -H "host: example.com:8080"
+     ```
+
+   Example output:
+
+   ```
+   < HTTP/1.1 200 OK
+   HTTP/1.1 200 OK
+   ```
+
+   When you update the certificates in the ClusterTrustBundle, the gateway uses the new certificates without a restart.
+
+You can also use a ClusterTrustBundle to validate client certificates on a Gateway listener. For more information, see [Mutual TLS listeners]({{< link-hextra path="/documentation/setup/listeners/mtls/#ca-sources" >}}).
+
+{{< /version >}}
+
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 
 ## CA certificate in a Secret {#secret-ca}
 
-A BackendTLSPolicy reads the CA certificate only from a ConfigMap. To verify a backend by using a CA certificate that is stored in a Kubernetes Secret, use the {{< reuse "agw-docs/snippets/policy.md" >}} resource instead, and set `kind: Secret` in the `caCertificateRefs` field.
+A BackendTLSPolicy cannot read the CA certificate from a Secret. To verify a backend by using a CA certificate that is stored in a Kubernetes Secret, use the {{< reuse "agw-docs/snippets/policy.md" >}} resource instead, and set `kind: Secret` in the `caCertificateRefs` field.
 
 This section reuses the NGINX server and the `nginx-route` HTTPRoute that you created in the [In-cluster service](#in-cluster-service) section.
 
@@ -671,6 +807,14 @@ kubectl delete httproute httpbin-org -n {{< reuse "agw-docs/snippets/namespace.m
 kubectl delete backendtlspolicy httpbin-org -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} httpbin-org -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}
+### CA certificate in a ClusterTrustBundle
+
+```sh
+kubectl delete clustertrustbundle example-ca --ignore-not-found
+```
+{{< /version >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ### CA certificate in a Secret
