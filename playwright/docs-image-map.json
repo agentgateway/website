@@ -823,6 +823,41 @@
       "$note": "assets/agw-docs/standalone/setup/ui/gateway.md (setup/ui/gateway-ui.md), \"Serve the UI on its own gateway\" UI tab, step 3: Settings > UI with ui-gateway selected as the Public gateway and the Save UI gateway button showing. Never saved. Captured by tests/ui-tabs-f-2.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-f-2.yaml.",
       "light": "assets/img/ui-settings-public-gateway.png",
       "dark": "assets/img/ui-settings-public-gateway-dark.png"
+    },
+    "ui-cost-dashboard-filter-search.png": {
+      "$note": "content/docs/standalone/main/documentation/llm/cost-controls/dashboard.md: the Analytics Models filter open with \"claude\" typed in its search box, which narrows the list to the two Claude models. Clipped above the chart. Captured by tests/costs.spec.ts under CAPTURE_MODE=costs; docs 1.7 and later.",
+      "light": "assets/img/ui-cost-dashboard-filter-search.png",
+      "dark": "assets/img/ui-cost-dashboard-filter-search-dark.png"
+    },
+    "ui-llm-key-rotate.png": {
+      "$note": "assets/agw-docs/standalone/virtual-keys.md (llm/cost-controls/virtual-keys.md), \"Rotate a virtual key\" UI tab, step 2: the Edit virtual key drawer for alice after Edit, with a new custom key value, Keep existing, and Store raw key unchecked. Never saved. Captured by tests/ui-tabs-g.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-g.yaml.",
+      "light": "assets/img/ui-llm-key-rotate.png",
+      "dark": "assets/img/ui-llm-key-rotate-dark.png"
+    },
+    "ui-llm-key-raw.png": {
+      "$note": "assets/agw-docs/standalone/setup/ui/launch.md (setup/ui/launch-ui.md), \"Edit a resource as YAML\", step 2: the Edit virtual key drawer for bob-key in raw mode, with the YAML from the guide. Never saved. Captured by tests/ui-tabs-g.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-g.yaml.",
+      "light": "assets/img/ui-llm-key-raw.png",
+      "dark": "assets/img/ui-llm-key-raw-dark.png"
+    },
+    "ui-llm-key-raw-invalid.png": {
+      "$note": "assets/agw-docs/standalone/setup/ui/launch.md (setup/ui/launch-ui.md), \"Edit a resource as YAML\", step 3: the same drawer after the key line is deleted, with the Invalid configuration banner (key: Required) and Save key disabled. Never saved. Captured by tests/ui-tabs-g.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-g.yaml.",
+      "light": "assets/img/ui-llm-key-raw-invalid.png",
+      "dark": "assets/img/ui-llm-key-raw-invalid-dark.png"
+    },
+    "ui-tour-settings-ui.png": {
+      "$note": "assets/agw-docs/standalone/setup/ui/launch.md (setup/ui/launch-ui.md), \"Settings\" tour: Settings > UI with no Public gateway and the UI access policy cards. Captured by tests/ui-tabs-g.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-g.yaml.",
+      "light": "assets/img/ui-tour-settings-ui.png",
+      "dark": "assets/img/ui-tour-settings-ui-dark.png"
+    },
+    "ui-tour-settings-observability.png": {
+      "$note": "assets/agw-docs/standalone/setup/ui/launch.md (setup/ui/launch-ui.md), \"Settings\" tour: Settings > Observability with the Tracing and Access logs cards. Captured by tests/ui-tabs-g.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-g.yaml.",
+      "light": "assets/img/ui-tour-settings-observability.png",
+      "dark": "assets/img/ui-tour-settings-observability-dark.png"
+    },
+    "ui-tour-client-setup-continue.png": {
+      "$note": "assets/agw-docs/standalone/setup/ui/launch.md (setup/ui/launch-ui.md), \"Generate LLM client settings\": Client Setup with Continue selected, showing the ~/.continue/config.yaml model entry. Captured by tests/ui-tabs-g.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-g.yaml.",
+      "light": "assets/img/ui-tour-client-setup-continue.png",
+      "dark": "assets/img/ui-tour-client-setup-continue-dark.png"
     }
   }
 }

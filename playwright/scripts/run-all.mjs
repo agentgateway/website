@@ -33,6 +33,7 @@ const MODES = [
   'test:ui-tabs-e-binds',
   'test:ui-tabs-f',
   'test:ui-tabs-f-2',
+  'test:ui-tabs-g',
 ];
 
 const extra = process.argv.slice(2);
