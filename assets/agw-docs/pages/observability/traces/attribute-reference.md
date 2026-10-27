@@ -65,7 +65,7 @@ These attributes follow the [OTel semantic conventions for generative AI spans](
 
 | Attribute | Description |
 |-----------|-------------|
-| `gen_ai.operation.name` | Operation type (for example, `chat`) |
+| `gen_ai.operation.name` | Operation type, such as `chat` or `embeddings` |
 | `gen_ai.provider.name` | LLM provider (for example, `openai`) |
 | `gen_ai.request.model` | Requested model |
 | `gen_ai.response.model` | Model that served the response |
@@ -74,6 +74,30 @@ These attributes follow the [OTel semantic conventions for generative AI spans](
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 LLM requests that model routing serves also carry the `agw.ai.original_model` attribute. Model routing serves {{< conditional-text include-if="kubernetes" >}}`{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}the `llm.models` configuration, including virtual models{{< /conditional-text >}}. The attribute records the model name that the client sent, and `gen_ai.request.model` records the model that reaches the provider after routing. Use the two values together to see which target served a request for a virtual model. Access logs carry the same attribute, including for requests that fail routing, such as a request for a model that does not exist.
+{{% /version %}}
+
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
+### Operation names {#operation-names}
+
+The route type determines the `gen_ai.operation.name` attribute. For `detect` routes, the request path determines it instead. Access logs, the `gen_ai_operation_name` metric label, and the request log database use the same values.
+
+| Value | Route type | Request path on a `detect` route |
+|-------|------------|----------------------------------|
+| `chat` | OpenAI Chat Completions, OpenAI Responses, and Anthropic Messages | `/v1/chat/completions`, `/v1/responses`, or `/v1/messages` |
+| `generate_content` | Gemini `generateContent` and `streamGenerateContent` | A Gemini or Vertex AI `:generateContent` or `:streamGenerateContent` path |
+| `embeddings` | OpenAI Embeddings | `/v1/embeddings` |
+| `rerank` | Rerank | `/v1/rerank` or `/v2/rerank` |
+| `realtime` | OpenAI Realtime | None |
+| `decisions` | Decisions and SystemOne | `/v1/decisions` or `/v1/systemone` |
+| `count_tokens` | Anthropic and Gemini token count | `/v1/messages/count_tokens`, or a Gemini or Vertex AI `:countTokens` path |
+| `image_generation` | None | `/v1/images/generations`, `/v1/images/edits`, or `/v1/images/variations` |
+| `ocr` | None | `/v1/ocr` |
+| `transcription` | None | `/v1/audio/transcriptions` or `/v1/audio/translations` |
+| `speech` | None | `/v1/audio/speech` |
+| `compaction` | None | `/v1/responses/compact` |
+| `unknown` | None | Any other path |
+
+Passthrough routes omit `gen_ai.operation.name`.
 {{% /version %}}
 
 ## MCP attributes
