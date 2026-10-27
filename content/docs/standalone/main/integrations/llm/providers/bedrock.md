@@ -80,7 +80,7 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 5. Keep the default `bedrock/*` in the **Incoming model match** field.
 6. Keep **Ambient** for the **AWS credentials**. To enter an access key instead, select **Static**. This option writes the key to an `auth.aws` block.
 7. For the **AWS region**, enter or select `us-west-2`.
-8. From the **Bedrock endpoint** dropdown, select **Prefer Runtime**. The UI preselects **Prefer Mantle** for a new Bedrock model, and saves the choice as `params.bedrockEndpointPreference`. For more information, see [Bedrock Mantle](#bedrock-mantle).
+8. Keep **Prefer Runtime**, the default, in the **Bedrock endpoint** dropdown. The UI saves `params.bedrockEndpointPreference` only after you select a value. For more information, see [Bedrock Mantle](#bedrock-mantle).
 9. For **Outgoing model**, keep **Strip bedrock/**. This option removes the `bedrock/` prefix before the request is forwarded. To send every request to one model instead, select **Explicit**, and enter the model ID. This option sets `params.model`.
 
    {{< reuse-image src="img/ui-llm-add-model-bedrock-runtime.png" srcDark="img/ui-llm-add-model-bedrock-runtime-dark.png" alt="Add model drawer with Amazon Bedrock selected as the provider, bedrock/* as the incoming model match, Ambient as the AWS credentials, us-west-2 as the AWS region, and Prefer Runtime as the Bedrock endpoint" >}}
@@ -300,7 +300,7 @@ To apply Bedrock Guardrails with either endpoint, including on `llm.models`, use
 
 The Kubernetes API takes the same four values capitalized, such as `RuntimePreferred`, under `spec.ai.provider.bedrock.endpointPreference`. A value that you copy from one mode to the other fails to load.
 
-In the agentgateway UI, the **LLM Models** and **LLM Providers** editors set `bedrockEndpointPreference` to `mantlePreferred` when you change an entry's provider to **Amazon Bedrock**. An existing Bedrock entry that does not set `bedrockEndpointPreference` shows **Prefer Runtime** in the **Bedrock endpoint** selector and keeps the `runtimePreferred` default. The UI writes the field only after you choose a value and save the entry.
+In the agentgateway UI, the **LLM Models** and **LLM Providers** editors do not set `bedrockEndpointPreference` when you change an entry's provider to **Amazon Bedrock**. A Bedrock entry that does not set `bedrockEndpointPreference` shows **Prefer Runtime** in the **Bedrock endpoint** selector and keeps the `runtimePreferred` default. The UI writes the field only after you choose a value and save the entry.
 
 The preference applies to four route types: chat completions, messages, responses, and Anthropic token counting. Every other route type ignores the preference and uses a fixed endpoint.
 
@@ -418,7 +418,7 @@ Some Bedrock models return encrypted reasoning in a `reasoningContent.redactedCo
 | Client API | Encrypted reasoning in the reply | Replay on the next turn |
 |---|---|---|
 | `/v1/messages` | A `redacted_thinking` block. | Send the block back in the message history. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
-| `/v1/responses` | A reasoning item with `encrypted_content`. | Send the reasoning item back in the input. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
+| `/v1/responses` | A reasoning item with `encrypted_content`. Treat the value as opaque. It holds the full reasoning block: the reasoning text and its signature, or Bedrock's encrypted payload. The reasoning text is not encrypted, and response guardrails do not mask it. | Send the reasoning item back in the input. The next Bedrock request includes signed reasoning as `reasoningContent.reasoningText` with its signature, and encrypted reasoning as `reasoningContent.redactedContent`. Agentgateway needs only `encrypted_content` to replay the item, so a client that sends back only `encrypted_content` still works. |
 | `/v1/chat/completions` | Omitted, because the Chat Completions format has no field for encrypted reasoning. Signed reasoning text still arrives in `reasoning_content` and `reasoning_signature`. | Not possible. |
 
 Replay streamed encrypted reasoning the same way as buffered reasoning. Stream events depend on the client API.
@@ -426,7 +426,7 @@ Replay streamed encrypted reasoning the same way as buffered reasoning. Stream e
 | Client API | Streamed reasoning |
 |---|---|
 | `/v1/messages` | Text uses `thinking_delta` events; the signature uses `signature_delta`. Encrypted reasoning arrives as one `redacted_thinking` block after Bedrock finishes the block. |
-| `/v1/responses` | Each reasoning block becomes a `reasoning` output item before the `message` item. Text uses `response.reasoning_text.delta` events. The item's `response.output_item.done` event carries the signature or encrypted payload as `encrypted_content`. |
+| `/v1/responses` | Each reasoning block becomes a `reasoning` output item before the `message` item. Text uses `response.reasoning_text.delta` events. The item's `response.output_item.done` event carries `encrypted_content`, the same opaque carrier of the full reasoning as in a buffered reply. |
 | `/v1/chat/completions` | Text uses `reasoning_content`; the signature uses `reasoning_signature`. Encrypted reasoning is omitted. |
 
 For `/v1/messages` streams, agentgateway buffers encrypted reasoning until the block ends. If the buffered fragments exceed the LLM buffer limit, the stream emits an `api_error` event with `Stream processing error` and stops. The limit is 32 MiB unless you set `frontendPolicies.http.maxBufferSize`. For more information, see [Body buffering]({{< link-hextra path="/documentation/configuration/traffic-management/buffer/" >}}).

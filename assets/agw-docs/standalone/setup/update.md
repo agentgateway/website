@@ -2,7 +2,7 @@ The steps differ by installation method, because each method delivers the config
 
 ## About
 
-In standalone mode, one configuration file is the source of truth for the proxy. Agentgateway watches that file and reloads it when the contents change, so most changes take effect without restarting the process.
+In standalone mode, one configuration file is the source of truth for the proxy. Agentgateway watches that file and reloads it when the contents change, so most changes take effect without restarting the process.{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} Agentgateway also watches the secret files that the configuration references, such as a `params.apiKey` file, a `basicAuth.htpasswd` file, a `backendAuth.gcp.credential` file, or an OAuth `clientAuth` secret or signing key file, and reloads when one of them changes.{{< /version >}}
 
 ```txt
 INFO state_manager  Watching config file: /config/config.yaml
@@ -13,6 +13,10 @@ Two things are worth knowing before you edit.
 
 * **Not every field reloads.** The top-level `config` section holds startup settings, such as `adminAddr`, `storage`, `database`, `logging`, and `tracing`. Agentgateway applies those only when the process starts, with the exception of `config.modelCatalog`{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} and `config.standardAttributes`{{< /version >}}, which reload dynamically. Everything else, including `gateways`, `routes`, `llm`, `mcp`, and `ui`, reloads in place. For more information, see [Fields that require a restart](#restart-required).
 * **The UI might write to this file.** In the default storage mode in binary and Docker deployments, agentgateway writes the resources that you manage in the UI back to the same file. Your file is an output as well as an input. To keep the file read-only, or to send UI edits to a database instead, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+To check that agentgateway applied a change, read the `configReload` field of the `/api/runtime` endpoint. Do not use the `/api/config/effective` endpoint for this check. That endpoint reads your configuration file from disk, and in `hybrid` storage mode merges the resources from the database, so it shows your edit even when agentgateway rejected it. To see what agentgateway runs, including the startup-only settings in the `config` section, use the `/config_dump` endpoint on the admin address. For more information, see [Inspect agentgateway configuration]({{< link-hextra path="/documentation/operations/inspect-config/" >}}).
+{{< /version >}}
 
 ### Fields that require a restart {#restart-required}
 
@@ -65,6 +69,7 @@ Edit the file that you passed to `agentgateway -f`, or the generated file in you
    agentgateway -f config.yaml
    ```
 
+{{% version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 5. Confirm that the running configuration includes your change. Agentgateway serves the configuration that it loaded on the admin API, so this check also shows anything that a database overlay contributes in `hybrid` storage mode.
 
    ```sh
@@ -97,6 +102,35 @@ Edit the file that you passed to `agentgateway -f`, or the generated file in you
 
    > [!NOTE]
    > This API is the one that the UI itself calls, so it is served wherever the UI is served: the admin interface at `localhost:15000` by default, and the port of any gateway that the `ui` section lists. It is not the same as the admin interface's debugging endpoints, such as `/config_dump`, which are served only on the admin address. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/documentation/setup/ui/#admin-interface" >}}).
+{{% /version %}}
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+5. Confirm that agentgateway applied your change. The `configReload` field of the `/api/runtime` endpoint reports whether the last reload succeeded.
+
+   ```sh
+   curl -s http://localhost:15000/api/runtime | jq .configReload
+   ```
+
+   Example output:
+
+   ```json
+   {
+     "synchronized": true,
+     "lastError": null
+   }
+   ```
+
+   If agentgateway rejects the file, it keeps serving the previous configuration. The `synchronized` field is `false`, and `lastError` holds the reason. Fix the error, and save the file again.
+
+   ```json
+   {
+     "synchronized": false,
+     "lastError": "gateways.default: unknown field `bogusField` at line 10 column 5"
+   }
+   ```
+
+   > [!NOTE]
+   > The `/api/runtime` endpoint is served wherever the UI is served: the admin interface at `localhost:15000` by default, and the port of any gateway that the `ui` section lists.
+{{% /version %}}
 
 ## Docker {#docker}
 
@@ -126,11 +160,31 @@ The container reads the configuration from the path that you mounted, so you edi
    docker restart <container-name>
    ```
 
+{{% version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 4. Confirm that the running configuration includes your change. Reach the admin API on a gateway port that you published, such as port 4000 in the generated configuration, because the admin address binds to the container's own loopback interface and is not reachable from your host. For more information, see [Reach the UI in a container]({{< link-hextra path="/documentation/operations/debug/#docker-admin-addr" >}}).
 
    ```sh
    curl -s http://localhost:4000/api/config/effective | jq
    ```
+{{% /version %}}
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+4. Confirm that agentgateway applied your change. Reach the admin API on a gateway port that you published, such as port 4000 in the generated configuration, because the admin address binds to the container's own loopback interface and is not reachable from your host. For more information, see [Reach the UI in a container]({{< link-hextra path="/documentation/operations/debug/#docker-admin-addr" >}}).
+
+   ```sh
+   curl -s http://localhost:4000/api/runtime | jq .configReload
+   ```
+
+   Example output:
+
+   ```json
+   {
+     "synchronized": true,
+     "lastError": null
+   }
+   ```
+
+   If `synchronized` is `false`, agentgateway rejected the file and kept the previous configuration. The `lastError` field holds the reason.
+{{% /version %}}
 
 ## Helm {#helm}
 
@@ -186,6 +240,7 @@ Whether the upgrade restarts the pods depends on what you changed. The chart has
      -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
+{{% version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 5. Confirm that the running configuration includes your change.
 
    1. Port-forward the admin address.
@@ -200,9 +255,58 @@ Whether the upgrade restarts the pods depends on what you changed. The chart has
       ```sh
       curl -s http://localhost:15000/api/config/effective | jq
       ```
+{{% /version %}}
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+5. Confirm that agentgateway applied your change.
+
+   1. Port-forward the admin address.
+
+      ```sh
+      kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+        deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} 15000:15000
+      ```
+
+   2. Check whether the last reload succeeded. The ConfigMap change can take a minute to reach the pod.
+
+      ```sh
+      curl -s http://localhost:15000/api/runtime | jq .configReload
+      ```
+
+      Example output:
+
+      ```json
+      {
+        "synchronized": true,
+        "lastError": null
+      }
+      ```
+
+      If `synchronized` is `false`, agentgateway rejected the configuration and kept the previous one. The `lastError` field holds the reason.
+
+   3. Optional: Review the configuration that agentgateway runs, such as the startup settings in the `config` section.
+
+      ```sh
+      curl -s http://localhost:15000/config_dump | jq '.config.logging'
+      ```
+
+      Example output:
+
+      ```json
+      {
+        "filter": null,
+        "fields": {
+          "remove": [],
+          "add": {}
+        },
+        "level": "info",
+        "format": "text",
+        "database": null
+      }
+      ```
+{{% /version %}}
 
 > [!IMPORTANT]
-> The upgrade replaces the whole configuration file, not just the fields that you changed. A value that you leave out of the values file returns to its chart default, so pass your complete values file on every upgrade, or use `--reuse-values` to keep the values from the previous revision. In `database` storage mode, the upgrade replaces only the ConfigMap baseline, and the resources that the UI stored in the database are unaffected.
+> The upgrade replaces the whole configuration file, not just the fields that you changed. A value that you leave out of the values file returns to its chart default, so pass your complete values file on every upgrade, or use `--reuse-values` to keep the values from the previous revision. In the chart's `database` mode, which runs agentgateway in `hybrid` storage mode, the upgrade replaces only the ConfigMap baseline, and the resources that the UI stored in the database are unaffected.
 
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 ## Update resources with agctl {#agctl}
