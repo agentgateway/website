@@ -283,7 +283,7 @@ Instead of step 5, you can click **Apply CORS** in the **Tool Playground**. That
 1. Create a configuration for your agentgateway to connect to your MCP server. Make sure to expose the `Mcp-Session-Id` header in the CORS configuration for session persistence.
    ```yaml
    cat <<EOF > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
    mcp:
      port: 3000
      policies:

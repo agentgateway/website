@@ -30,7 +30,7 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
 2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent. This example uses a frontend tracing policy. For sampling and exporter options, see [Configure tracing]({{< link-hextra path="/documentation/observability/traces/setup/" >}}).
    ```yaml
    cat <<EOF > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
    frontendPolicies:
      tracing:
        host: localhost:4317

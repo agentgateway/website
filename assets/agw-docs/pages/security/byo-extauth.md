@@ -111,7 +111,7 @@ For gRPC external authorization, agentgateway waits 2 seconds for the authorizat
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -v "${INGRESS_GW_ADDRESS}:8080/openai" -H content-type:application/json -d '{
+   curl -v "${INGRESS_GW_ADDRESS}/openai" -H content-type:application/json -d '{
     "model": "gpt-3.5-turbo",
     "messages": [
       {
@@ -257,7 +257,7 @@ For gRPC external authorization, agentgateway waits 2 seconds for the authorizat
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -v "${INGRESS_GW_ADDRESS}:8080/openai" -H content-type:application/json -d '{
+   curl -v "${INGRESS_GW_ADDRESS}/openai" -H content-type:application/json -d '{
     "model": "gpt-3.5-turbo",
     "messages": [
       {
@@ -308,7 +308,7 @@ For gRPC external authorization, agentgateway waits 2 seconds for the authorizat
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -v "${INGRESS_GW_ADDRESS}:8080/openai" -H content-type:application/json \
+   curl -v "${INGRESS_GW_ADDRESS}/openai" -H content-type:application/json \
    -H "x-ext-authz: allow" \
    -H "x-ai-api-key:N2YwMDIxZTEtNGUzNS1jNzgzLTRkYjAtYjE2YzRkZGVmNjcy" \
    -d '{
@@ -353,7 +353,7 @@ For gRPC external authorization, agentgateway waits 2 seconds for the authorizat
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} gateway-ext-auth-policy route-ext-auth-policy backend-ext-auth-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete deployment ext-authz -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete service ext-authz -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

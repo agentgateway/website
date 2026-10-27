@@ -59,7 +59,7 @@ You can provide your API key directly in the agentgateway configuration. This op
 1. Configure the agentgateway proxy and enter your key in the `params.apiKey` field directly.
    ```yaml
    cat <<EOF > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
    llm:
      models:
      - name: "openai/*"
