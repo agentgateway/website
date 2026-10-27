@@ -94,7 +94,7 @@ routes:
 {{< tab name="traffic-ratelimiting-local example" >}}
 For a runnable version of the routing-based configuration, see the [`traffic-ratelimiting-local` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-ratelimiting-local) in the agentgateway repository.
 
-{{% github-yaml url="https://agentgateway.dev/examples/traffic-ratelimiting-local/config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.6.0/examples/traffic-ratelimiting-local/config.yaml" %}}
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -699,11 +699,11 @@ Each descriptor value is a [CEL expression]({{< link-hextra path="/documentation
 For a complete runnable setup, including the Envoy rate limit service configuration and the Docker commands to run it with Redis, see the [`traffic-ratelimiting-global` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-ratelimiting-global) in the agentgateway repository.
 
 {{% details title="Configuration from the traffic-ratelimiting-global example" closed="true" %}}
-{{% github-yaml url="https://agentgateway.dev/examples/traffic-ratelimiting-global/config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.6.0/examples/traffic-ratelimiting-global/config.yaml" %}}
 
 The example also defines the limits on the rate limit server side:
 
-{{% github-yaml url="https://agentgateway.dev/examples/traffic-ratelimiting-global/ratelimit-config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.6.0/examples/traffic-ratelimiting-global/ratelimit-config.yaml" %}}
 {{% /details %}}
 
 #### Failure behavior

@@ -87,6 +87,6 @@ The following functions can be used in all policy types.
 To define reusable functions from CEL expressions, see
 [Custom functions]({{< link-hextra path="/reference/cel/custom-functions/" >}}).
 
-{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel-functions.md" section="Functions" %}}
+{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/tags/v1.6.0/schema/cel-functions.md" section="Functions" %}}
 
-{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel-functions.md" section="Standard Functions" %}}
+{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/tags/v1.6.0/schema/cel-functions.md" section="Standard Functions" %}}

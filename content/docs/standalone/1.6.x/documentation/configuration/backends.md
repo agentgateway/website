@@ -366,7 +366,7 @@ Agentgateway derives the connection details from the `agentRuntimeArn` value: re
 
 The following configuration is from the [`traffic-aws-agentcore` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-aws-agentcore) in the agentgateway repository.
 
-{{% github-yaml url="https://agentgateway.dev/examples/traffic-aws-agentcore/config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.6.0/examples/traffic-aws-agentcore/config.yaml" %}}
 
 | Setting | Description |
 | -- | -- |

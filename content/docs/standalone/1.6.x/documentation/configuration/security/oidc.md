@@ -216,7 +216,7 @@ routes:
 {{< tab name="traffic-oidc example" >}}
 For a complete runnable setup, including a Compose file that starts a preconfigured local Keycloak instance, see the [`traffic-oidc` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-oidc) in the agentgateway repository.
 
-{{% github-yaml url="https://agentgateway.dev/examples/traffic-oidc/config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.6.0/examples/traffic-oidc/config.yaml" %}}
 {{< /tab >}}
 {{< /tabs >}}
 

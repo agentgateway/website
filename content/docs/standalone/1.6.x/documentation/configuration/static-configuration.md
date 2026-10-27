@@ -43,7 +43,7 @@ such as `10s`.
 
 The following table shows the `config` file schema for static configurations at startup. For the full agentgateway schema of dynamic and static configuration, see the [reference docs]({{< link-hextra path="/reference/configuration/schema/" >}}).
 
-{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/config.md" 
+{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/tags/v1.6.0/schema/config.md" 
    section="Configuration File Schema"
    exclude="^\\|.(gateways|routes|tcpRoutes|ui|binds|frontendPolicies|policies|services|workloads|backends|llm|mcp|routeGroups)"
    timeout="120s"

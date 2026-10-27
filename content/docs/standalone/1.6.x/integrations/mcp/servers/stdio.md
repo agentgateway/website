@@ -74,7 +74,7 @@ mcp_call() {
    cat config.yaml
    ```
 
-   {{% github-yaml  url="https://agentgateway.dev/examples/mcp-basic/config.yaml" %}}
+   {{% github-yaml  url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.6.0/examples/mcp-basic/config.yaml" %}}
 
    {{< reuse "agw-docs/snippets/review-table.md" >}}
 
