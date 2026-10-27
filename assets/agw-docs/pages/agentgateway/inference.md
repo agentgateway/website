@@ -243,7 +243,7 @@ To raise the limit, apply an {{< reuse "agw-docs/snippets/policy.md" >}} that ta
 
    | Setting | Description |
    | -- | -- |
-   | `targetRefs` | The EPP Service. The llm-d Router Gateway chart names it after the Helm release, with an `-epp` suffix. |
+   | `targetRefs` | The EPP Service. The llm-d Router Gateway chart names it after the Helm release, with an `-epp` suffix. Create the policy in the same namespace as the InferencePool. |
    | `backend.http.requestTimeout` | The maximum time to wait for the EPP to respond. The request timeout of the HTTPRoute still limits the whole request. The llm-d Router Gateway chart sets that timeout to `300s`. |
 
 2. Verify that the policy is accepted and attached to the Gateway.

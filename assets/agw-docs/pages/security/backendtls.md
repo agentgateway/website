@@ -433,7 +433,7 @@ Set up an {{< reuse "agw-docs/snippets/backend.md" >}} resource that represents 
 
 A BackendTLSPolicy can read the CA certificate from a ClusterTrustBundle instead of a ConfigMap. A ClusterTrustBundle is cluster-scoped, so you can keep one set of CA certificates for BackendTLSPolicies in every namespace.
 
-Agentgateway uses the `certificates.k8s.io/v1` version of the ClusterTrustBundle API, which Kubernetes serves by default in version 1.37 and later. The controller checks for the API when it starts. If your cluster starts to serve the API after you install {{< reuse "agw-docs/snippets/agentgateway.md" >}}, restart the controller.
+Agentgateway uses the `certificates.k8s.io/v1` version of the ClusterTrustBundle API, which Kubernetes serves by default in version 1.37 and later. The `v1beta1` version that earlier Kubernetes versions can serve is not supported. The controller checks for the API when it starts. If your cluster starts to serve the API after you install {{< reuse "agw-docs/snippets/agentgateway.md" >}}, restart the controller.
 
 This section reuses the NGINX server, the `tls-policy` BackendTLSPolicy, and the `nginx-route` HTTPRoute that you created in the [In-cluster service](#in-cluster-service) section.
 

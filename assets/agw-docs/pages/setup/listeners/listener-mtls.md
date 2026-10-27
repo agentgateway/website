@@ -33,7 +33,7 @@ tls:
             group: certificates.k8s.io
 ```
 
-Agentgateway uses the `certificates.k8s.io/v1` version of the ClusterTrustBundle API, which Kubernetes serves by default in version 1.37 and later. If the cluster does not serve the API, the listener is not programmed, and its `ResolvedRefs` condition has the `InvalidCACertificateKind` reason. For the steps to create a ClusterTrustBundle, see [CA certificate in a ClusterTrustBundle]({{< link-hextra path="/documentation/security/backendtls/#clustertrustbundle-ca" >}}).
+Agentgateway uses the `certificates.k8s.io/v1` version of the ClusterTrustBundle API, which Kubernetes serves by default in version 1.37 and later. If the cluster does not serve the API, the listener's `ResolvedRefs` condition is `False` with the `InvalidCACertificateKind` reason. If every CA certificate reference is a ClusterTrustBundle, the listener is also not programmed. If other references resolve, the listener validates client certificates against only those CA certificates. For the steps to create a ClusterTrustBundle, see [CA certificate in a ClusterTrustBundle]({{< link-hextra path="/documentation/security/backendtls/#clustertrustbundle-ca" >}}).
 {{< /version >}}
 
 ## About this guide
