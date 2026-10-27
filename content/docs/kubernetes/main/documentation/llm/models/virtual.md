@@ -454,10 +454,10 @@ Failover depends on eviction. A virtual model with more than one priority group 
    done
    ```
 
-   Example output. The first request fails and evicts `primary-down`. Later requests are served by the priority 1 target.
+   Example output. The first request fails with `connection refused` and evicts `primary-down`. Later requests are served by the priority 1 target. The proxy logs record the full error, such as `upstream call failed: Connect: Connection refused (os error 111)`.
 
    ```
-   upstream call failed: Connect: Connection refused (os error 111)
+   connection refused
    {"model":"resolved-internal-fast","usage":{"prompt_tokens":0,"completion_tokens":1,"total_tokens":1},"choices":[{"message":{"content":"hi","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
    {"model":"resolved-internal-fast","usage":{"prompt_tokens":0,"completion_tokens":1,"total_tokens":1},"choices":[{"message":{"content":"hi","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
    ```

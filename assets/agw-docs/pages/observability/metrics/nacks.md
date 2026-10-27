@@ -1,12 +1,20 @@
 
-When the {{< reuse "agw-docs/snippets/agentgateway.md" >}} control plane pushes an XDS configuration update to a proxy, the proxy validates the configuration before applying it. If the proxy rejects the configuration, such as because a CEL expression is syntactically valid in the Go-based control plane validator, but fails the Rust-based proxy validator, the rejection is called a NACK (negative acknowledgement). The proxy continues running on its last known-good configuration, so traffic keeps flowing, but the intended change is silently not applied.
+The {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy validates XDS updates from the control plane before applying them. A rejected resource produces a NACK (negative acknowledgement).
 
-The {{< reuse "agw-docs/snippets/agentgateway.md" >}} control plane tracks these rejections via the `agentgateway_xds_rejects_total` counter on port `9092`. When a rejection occurs, the control plane also creates a Kubernetes Warning event on the affected Gateway resource so you can identify which policy or route caused the rejection.
+The proxy retains its last known-good configuration for that resource. Traffic continues, but the rejected change is not applied.
 
-Common causes of rejections:
+The control plane counts rejections in `agentgateway_xds_rejects_total` on port `9092`. The control plane also creates a Kubernetes Warning event on the affected Gateway.
 
-- CEL expressions in policies that pass the Go-based control plane validator but fail the Rust-based proxy validator, such as calling `has()` with an invalid argument.
-- Invalid TLS certificates that the proxy cannot load.
+Rejections can occur when the proxy cannot parse a value accepted by the Kubernetes API server and control plane. One example is an invalid `agentRuntimeArn` in an {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+{{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+The proxy also reports problems it can work around, including invalid CEL expressions and TLS certificates. A CEL expression might pass the Go control plane validator but fail the Rust proxy parser.
+
+The proxy applies the rest of the resource and replaces the invalid part, such as with an expression that always fails. The control plane counts these problems as rejections too.
+{{< /version >}}
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+If only part of a resource is unusable, the proxy can apply the rest and report a configuration warning. Warnings use a separate counter and event reason. See [View configuration warnings](#config-warnings).
+{{< /version >}}
 
 ## View the rejection metric
 
@@ -57,14 +65,17 @@ You can use this metric to configure alerts in Prometheus that fire when rejecti
 
 ## View rejection events
 
-When a rejection occurs, the control plane creates Kubernetes Warning events on both the Gateway and its corresponding Deployment resources. The event message includes the policy or route that caused the rejection and the error from the proxy.
+A rejection creates a Kubernetes Warning event on the Gateway with reason `AgentGatewayNackError`. The message is a JSON list with these fields:
 
-**Example rejection event:**
+- `key`: The rejected resource.
+- `error`: The error from the proxy.
 
-```console
-LAST SEEN   TYPE      REASON                  OBJECT                    MESSAGE
-83s         Warning   AgentGatewayNackError   gateway/agentgateway      policy/traffic/default/example-agw-policy-for-body:transformation:default/example-route-for-body: error: parse: ERROR: <input>:1:20: invalid argument has(request.headers['x-priority-level']) ? 'level_' + request.headers['x-priority-level'] : 'level_unknown'
-```
+{{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+For a problem that the proxy works around, such as a CEL expression that it cannot parse, the entry has a `warn` field instead of an `error` field.
+{{< /version >}}
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+The resource status does not show the rejection. For example, an {{< reuse "agw-docs/snippets/backend.md" >}} with an invalid `agentRuntimeArn` still reports `Accepted: True`.
+{{< /version >}}
 
 1. List rejection events in the namespace where your Gateway is deployed.
 
@@ -72,8 +83,78 @@ LAST SEEN   TYPE      REASON                  OBJECT                    MESSAGE
    kubectl get events -n {{< reuse "agw-docs/snippets/namespace.md" >}} --field-selector=reason=AgentGatewayNackError
    ```
 
+   Example output:
+
+   ```console
+   LAST SEEN   TYPE      REASON                  OBJECT                       MESSAGE
+   8s          Warning   AgentGatewayNackError   gateway/agentgateway-proxy   [{"key":"backend/agentgateway-system/agentcore","error":"error: invalid AgentCore ARN: not-an-arn"}]
+   ```
+
 2. View events on the Gateway resource directly.
 
    ```sh {paths="nacks"}
    kubectl describe gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
+
+   Example output:
+
+   ```console
+   Events:
+     Type     Reason                 Age   From                           Message
+     ----     ------                 ----  ----                           -------
+     Warning  AgentGatewayNackError  13s   agentgateway.dev/agentgateway  [{"key":"backend/agentgateway-system/agentcore","error":"error: invalid AgentCore ARN: not-an-arn"}]
+   ```
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## View configuration warnings {#config-warnings}
+
+When the proxy can apply a resource after ignoring or replacing an invalid part, it reports a configuration warning. The control plane records warnings separately:
+
+- **Counter**: `agentgateway_xds_warnings_total`.
+- **Gateway event**: A Kubernetes Warning event with reason `AgentGatewayConfigWarning`. The message is a JSON list with these fields:
+  - `key`: The resource with the warning.
+  - `warn`: The warning from the proxy.
+
+Warnings do not increase `agentgateway_xds_rejects_total`.
+
+Common causes of warnings:
+
+- CEL expressions that pass the Go-based control plane validator but fail the Rust-based proxy parser, such as calling `has()` with an invalid argument. The proxy replaces the expression with one that always fails.
+- Invalid regular expressions in route paths or prompt guards. Invalid path patterns never match. The proxy skips invalid prompt guard patterns.
+- Invalid TLS certificates that the proxy cannot load.
+
+Treat each warning as a configuration error. Traffic might behave differently from your configuration.
+
+1. Port-forward the control plane deployment.
+
+   ```sh
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} deployment/{{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} 9092
+   ```
+
+2. Query the metrics endpoint and search for the warning counter. Like the rejection counter, `agentgateway_xds_warnings_total` appears only after the first warning.
+
+   ```sh
+   curl -s http://localhost:9092/metrics | grep xds_warnings
+   ```
+
+   Example output:
+
+   ```console
+   # HELP agentgateway_xds_warnings_total Total number of xDS responses with configuration warnings from agentgateway proxy
+   # TYPE agentgateway_xds_warnings_total counter
+   agentgateway_xds_warnings_total 2
+   ```
+
+3. List warning events in the Gateway namespace.
+
+   ```sh
+   kubectl get events -n {{< reuse "agw-docs/snippets/namespace.md" >}} --field-selector=reason=AgentGatewayConfigWarning
+   ```
+
+   Example output:
+
+   ```console
+   LAST SEEN   TYPE      REASON                      OBJECT                       MESSAGE
+   8s          Warning   AgentGatewayConfigWarning   gateway/agentgateway-proxy   [{"key":"policy/traffic/agentgateway-system/priority-header:transformation:agentgateway-system/httpbin","warn":"invalid CEL expression for transformation: parse: ERROR: <input>:1:20: invalid argument to has() macro\n| has(request.headers['x-priority-level']) ? 'level_' + request.headers['x-priority-level'] : 'level_unknown'\n| ...................^; replacing \"has(request.headers['x-priority-level']) ? 'level_' + request.headers['x-priority-level'] : 'level_unknown'\" with an expression that always fails"}]
+   ```
+{{< /version >}}

@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Fixture for tests/ui-tabs-g.spec.ts: the 1.7 UI features in setup/ui/launch-ui (raw mode, the
+# Settings tour, the Continue recipe on Client Setup) and the "Rotate a virtual key" UI tab in
+# llm/cost-controls/virtual-keys. Run with CAPTURE_MODE=fixture FIXTURE=ui-tabs-g.yaml.
+#
+# Nothing here is ever called and no drawer is saved, so the provider key is a throwaway literal
+# and no backend runs.
+#
+#   - llm.policies.apiKey: alice's key is the custom key that the rotation steps edit
+#     (virtual-keys.md). bob-key is the key in the raw mode YAML example (launch.md).
+#   - llm.models: one model, so Client Setup has a model to put in the Continue recipe.
+#   - no gateways or ui section, so Settings > UI shows the default state: no Public gateway.
+llm:
+  port: 4000
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: vk-alice-4f9c2a
+        metadata:
+          name: alice
+          user: alice
+      - key: sk-custom-bob-0001
+        metadata:
+          name: bob-key
+          user: bob
+          group: sales
+  models:
+  - name: gpt-4o-mini
+    provider: openAI
+    params:
+      model: gpt-4o-mini
+      apiKey: "sk-fixture-not-a-real-key"

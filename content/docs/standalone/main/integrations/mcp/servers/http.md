@@ -14,7 +14,7 @@ Connect to an MCP server via streamable HTTP.
 
 ## About streamable HTTP
 
-Agentgateway automatically manages stateful MCP sessions when using HTTP-based transports. The session state (including backend pinning) is encoded in the session ID and persisted across requests, ensuring that subsequent tool calls in the same session are routed to the same backend server.
+Agentgateway automatically manages stateful MCP sessions when using HTTP-based transports. The session state (including backend pinning) is encoded in the session ID and persisted across requests, ensuring that subsequent tool calls in the same session are routed to the same backend server. If a client reuses a session ID on a different route to the same backend, the request uses the MCP policy settings from the new route.
 
 ```mermaid
 sequenceDiagram
@@ -38,9 +38,9 @@ sequenceDiagram
 1. **Session initialization**: When a client sends an `initialize` request, agentgateway creates a session and returns a session ID
 2. **Backend pinning**: The session is pinned to a specific backend server (important when using multiple targets)
 3. **State encoding**: The session state is encoded into the session ID and encrypted with AES-256-GCM. For the key that agentgateway uses, see [Session key](#session-key).
-4. **Session resumption**: Subsequent requests with the same session ID are automatically routed to the same backend
+4. **Session resumption**: Subsequent requests with the same session ID are automatically routed to the same backend. If the route changes, the MCP policy settings from the new route still apply.
 
-If a client sends a session ID that the proxy cannot decode, the proxy returns `HTTP 404`, and the [MCP specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#session-management) requires the client to start a new session. A session ID cannot be decoded after the session key changes. For example, a session ID fails to decode after you restart the proxy with a different key, or when proxy instances behind one load balancer use different keys.
+If a client sends a session ID that the proxy cannot decode, the proxy returns `HTTP 404`, and the [MCP specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#session-management) requires the client to start a new session. A session ID cannot be decoded after the session key changes. For example, a session ID fails to decode after you restart the proxy with a different key, or when proxy instances behind one load balancer use different keys. If an encrypted session ID belongs to a different MCP backend from the current request's backend, the proxy also returns `HTTP 404`. The client starts a new session on the current backend.
 
 When a client closes a stateful session with `DELETE /mcp`, the proxy decodes the session ID before it sends close requests to upstream targets. Any replica with the same session key can close the upstream sessions. Deletion is best effort. Upstream close failures still return `HTTP 202`, and those upstream sessions stay open until the target's idle timeout. If the proxy cannot rebuild a target connection from the session ID, the client receives the rebuild error.
 
