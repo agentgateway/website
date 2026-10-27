@@ -16,11 +16,7 @@ Attaches to: {{< badge content="Route" path="/documentation/configuration/routes
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
-When a backend request fails, agentgateway can be configured to *{{< gloss "Retry" >}}retry{{< /gloss >}}* the request.
-Every retry goes to the same route backend as the original request. When a request arrives, agentgateway selects one entry from the route's `backends` list by weight, and every retry reuses that entry. If that backend has several endpoints, agentgateway selects an endpoint again for each retry, so a retry can reach a different endpoint. The endpoint that just failed is not excluded from that selection.
-
-> [!NOTE]
-> Retries alone do not fail over between route backends. If a route has two `backends` entries and the selected entry keeps failing, the request fails after its last retry, even when the other entry is healthy. To fail over between LLM providers, use [failover routing]({{< link-hextra path="/documentation/llm/virtual-models/#failover-routing" >}}) in a virtual model, which moves traffic to the next priority group after every target in the current group is evicted.
+When a backend request fails, agentgateway can be configured to *{{< gloss "Retry" >}}retry{{< /gloss >}}* the request. Keep in mind that each retry goes to the same route backend as the original request. If you also want to configure failover so that an endpoint is marked as unhealthy and a request tried with a different endpoint, use [failover routing with virtual models]({{< link-hextra path="/documentation/llm/virtual-models/#failover-routing" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
