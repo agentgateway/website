@@ -4,7 +4,7 @@ weight: 37
 description: Run agentgateway as an HTTP CONNECT proxy to control which destinations your clients can reach.
 ---
 
-Agentgateway can act as an HTTP CONNECT proxy for outbound traffic. Clients point their proxy settings at agentgateway, and agentgateway decides which destinations they are allowed to reach.
+Agentgateway can act as an HTTP CONNECT proxy for outbound traffic. Clients point their standard proxy settings at agentgateway, and agentgateway decides which destinations they are allowed to reach.
 
 ## About the egress proxy
 
@@ -20,7 +20,7 @@ The client then sends `CONNECT <host>:443` to agentgateway instead of connecting
 | -- | -- | -- |
 | Configuration | `tunnelProtocol: connect` on a bind | `frontendPolicies.connect.mode: route` |
 | How a destination is matched | TLS SNI, through `tcpRoutes` hostnames | The CONNECT authority, through route `hostnames` |
-| HTTP policies apply to the CONNECT request | No | Yes |
+| HTTP policies apply to the CONNECT request | Never | Yes |
 | Client authentication | Not available | Available, through `basicAuth` |
 | A blocked destination fails with | A TLS error, after the tunnel is established | A `404` response to the CONNECT request |
 | Can terminate TLS for selected hostnames | Yes | No |
@@ -32,7 +32,7 @@ To send the requests that agentgateway makes on its own behalf, such as JWKS fet
 > [!NOTE]
 > Policies that you attach to a listener on a `tunnelProtocol: connect` bind are not applied to the CONNECT request, because tunnel mode handles the request before route matching. To authenticate clients, use route mode.
 
-By default, dynamic backends refuse to connect to loopback and link-local addresses. For more information, see [Loopback and link-local destinations](#loopback-destinations).
+For more information, see [Loopback and link-local destinations](#loopback-destinations).
 
 ## Before you begin
 
