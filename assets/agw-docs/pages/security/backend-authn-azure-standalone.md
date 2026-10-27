@@ -287,9 +287,18 @@ For example, a missing credential source returns `500` with the following messag
 A request that agentgateway cannot authenticate returns a `500`.
 {{< /version >}}
 
+{{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ```
 backend authentication failed: the credential provider was not enabled
 ```
+{{< /version >}}
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+```
+backend authentication failed
+```
+
+The agentgateway logs record the cause, such as `the credential provider was not enabled`.
+{{< /version >}}
 
 | Symptom | Cause |
 | -- | -- |

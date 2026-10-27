@@ -552,7 +552,7 @@ For every available key and for the per-region profiles that a multi-region depl
 | -- | -- |
 | The connection test calls `/claude/v1/models` on a dedicated Claude hostname | Remove `/claude` from the base URL, or update the `HTTPRoute` to match and rewrite that prefix. |
 | The gateway API key connection returns HTTP 401 | Confirm that Claude Desktop sends the client key stored in the policy's Secret and that the strict API key policy is attached to the Claude Desktop `HTTPRoute`. |
-| Entra sign-in returns `api key authentication failure` | The Claude Desktop route is still protected by its old virtual API key policy. Replace that policy with the JWT policy; do not require both. |
+| Entra sign-in fails with HTTP `401`, and the proxy logs show `api key authentication failure` | The Claude Desktop route is still protected by its old virtual API key policy. Replace that policy with the JWT policy; do not require both. |
 | Entra Test connection succeeds, but restart logs `InvalidToken` | An older managed profile restored a static key. Update the assigned profile to `interactive`, remove `inferenceGatewayApiKey`, sync the device, and fully restart Claude Desktop. |
 | A subscription request logs `api key authentication failure` | A virtual API key policy is protecting the subscription route or its shared `Gateway`. Remove that policy from the subscription route; scope policies needed by other clients to their own `HTTPRoute`. |
 | The test needs at least one model after `/v1/models` fails | Add a full model ID under **Models** and disable or skip model discovery. |
