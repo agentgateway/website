@@ -296,7 +296,7 @@ For example, configure `redirect` to redirect users to a sign-in page, and `meta
 |`includeRequestHeaders`|Specific headers to include in the authorization request.<br>If unset, the gRPC protocol sends all request headers. The HTTP protocol sends only 'Authorization'.|
 |`includeRequestBody`|Options for including the request body in the authorization request|
 |`includeRequestBody.maxRequestBytes`|Maximum size of request body to buffer (default: 8192)|
-|`includeRequestBody.allowPartialMessage`|If true, send partial body when max_request_bytes is reached|
+|`includeRequestBody.allowPartialMessage`|If true, send partial body when the body exceeds `maxRequestBytes`|
 
 ## Backend connection policies
 
