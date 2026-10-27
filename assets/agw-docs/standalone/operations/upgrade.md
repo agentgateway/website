@@ -4,6 +4,11 @@ An upgrade replaces the agentgateway binary or image. It does not change your co
 
 Every method requires a restart of the agentgateway process, because a new binary cannot replace a running one in place. Plan for a brief interruption in proxy traffic, or run more than one instance behind a load balancer.
 
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+> [!WARNING]
+> If you upgrade from an earlier version, agentgateway generates an MCP session key at the first start, unless you set `SESSION_KEY` or `config.session.key`. MCP sessions that clients established before the upgrade are rejected, so clients must start new sessions. Where agentgateway saves the key depends on the storage mode. In `file` mode, agentgateway writes the key into your configuration file, which is a change to the file that you might keep in version control. In `hybrid` mode, agentgateway stores the key in the database. To prevent the write, set your own key in `SESSION_KEY` before you upgrade, or set `SESSION_KEY` or `config.session.key` to `disabled` to keep session IDs unencrypted. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
+{{% /version %}}
+
 ## Before you begin
 
 1. {{< reuse "agw-docs/standalone/operations/upgrade-release-notes.md" >}}

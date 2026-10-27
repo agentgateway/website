@@ -200,7 +200,7 @@ The drawers that edit models, providers, guardrails, MCP servers, gateways, list
 4. Optional: To return to the form, click the **Raw** icon again. The form keeps your last valid edit and drops any text that is not valid. If the form cannot show a value, such as a field that has no form control, the drawer stays in raw mode. The tooltip on the **Raw** icon explains why.
 5. Click the save button, such as **Save key**. To check the change first, click **View diff**.
 
-To work with the whole configuration instead of one resource, open **Tools** > **Raw Configuration**. This page shows your configuration file as it is on disk, including comments, and saves your text exactly as you enter it. In `hybrid` storage mode, the file is read-only, so the page does not save. Its **Database** tab lists the resources that the UI stored in the database.
+To work with the whole configuration instead of one resource, open **Tools** > **Raw Configuration**. This page shows your configuration file as it is on disk, including comments, and saves your text exactly as you enter it. In `hybrid` storage mode, agentgateway treats the file as read-only, so the **Save** button is disabled by default. Its **Database** tab lists the resources that the UI stored in the database.
 {{< /version >}}
 
 ## Save changes from the UI {#save-changes}

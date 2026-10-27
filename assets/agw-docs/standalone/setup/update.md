@@ -2,7 +2,7 @@ The steps differ by installation method, because each method delivers the config
 
 ## About
 
-In standalone mode, one configuration file is the source of truth for the proxy. Agentgateway watches that file and reloads it when the contents change, so most changes take effect without restarting the process.{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} Agentgateway also watches the secret files that the configuration references, such as a `params.apiKey` file, a `basicAuth.htpasswd` file, or an OAuth `clientAuth` secret or signing key file, and reloads when one of them changes.{{< /version >}}
+In standalone mode, one configuration file is the source of truth for the proxy. Agentgateway watches that file and reloads it when the contents change, so most changes take effect without restarting the process.{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} Agentgateway also watches the secret files that the configuration references, such as a `params.apiKey` file, a `basicAuth.htpasswd` file, a `backendAuth.gcp.credential` file, or an OAuth `clientAuth` secret or signing key file, and reloads when one of them changes.{{< /version >}}
 
 ```txt
 INFO state_manager  Watching config file: /config/config.yaml
@@ -13,6 +13,10 @@ Two things are worth knowing before you edit.
 
 * **Not every field reloads.** The top-level `config` section holds startup settings, such as `adminAddr`, `storage`, `database`, `logging`, and `tracing`. Agentgateway applies those only when the process starts, with the exception of `config.modelCatalog`{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} and `config.standardAttributes`{{< /version >}}, which reload dynamically. Everything else, including `gateways`, `routes`, `llm`, `mcp`, and `ui`, reloads in place. For more information, see [Fields that require a restart](#restart-required).
 * **The UI might write to this file.** In the default storage mode in binary and Docker deployments, agentgateway writes the resources that you manage in the UI back to the same file. Your file is an output as well as an input. To keep the file read-only, or to send UI edits to a database instead, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+To check that agentgateway applied a change, read the `configReload` field of the `/api/runtime` endpoint. Do not use the `/api/config/effective` endpoint for this check. That endpoint reads your configuration file from disk, and in `hybrid` storage mode merges the resources from the database, so it shows your edit even when agentgateway rejected it. To see what agentgateway runs, including the startup-only settings in the `config` section, use the `/config_dump` endpoint on the admin address. For more information, see [Inspect agentgateway configuration]({{< link-hextra path="/documentation/operations/inspect-config/" >}}).
+{{< /version >}}
 
 ### Fields that require a restart {#restart-required}
 
@@ -125,11 +129,7 @@ Edit the file that you passed to `agentgateway -f`, or the generated file in you
    ```
 
    > [!NOTE]
-   > More about other endpoints:
-   > 
-   > The `/api/config/effective` endpoint does not show the running configuration. It reads your configuration file from disk, and in `hybrid` storage mode merges the resources from the database, so it shows your edit even when agentgateway rejected it. To see what agentgateway runs, including the startup-only settings in the `config` section, use the `/config_dump` endpoint on the admin address. For more information, see [Inspect agentgateway configuration]({{< link-hextra path="/documentation/operations/inspect-config/" >}}).
-   > 
-   > The `/api/runtime` endpoint is part of the API that the UI itself calls, so it is served wherever the UI is served: the admin interface at `localhost:15000` by default, and the port of any gateway that the `ui` section lists. It is not the same as the admin interface's debugging endpoints, such as `/config_dump`, which are served only on the admin address. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/documentation/setup/ui/#admin-interface" >}}).
+   > The `/api/runtime` endpoint is served wherever the UI is served: the admin interface at `localhost:15000` by default, and the port of any gateway that the `ui` section lists.
 {{% /version %}}
 
 ## Docker {#docker}
@@ -283,7 +283,7 @@ Whether the upgrade restarts the pods depends on what you changed. The chart has
 
       If `synchronized` is `false`, agentgateway rejected the configuration and kept the previous one. The `lastError` field holds the reason.
 
-   3. **Optional**: Review the configuration that agentgateway runs, such as the startup settings in the `config` section.
+   3. Optional: Review the configuration that agentgateway runs, such as the startup settings in the `config` section.
 
       ```sh
       curl -s http://localhost:15000/config_dump | jq '.config.logging'

@@ -46,23 +46,20 @@ Agentgateway selects the backend from the URL. A URL that starts with `postgres:
 | SQLite | `sqlite://./data.db` | You run a single agentgateway instance and want no external service. |
 | PostgreSQL | `postgres://user:password@host:5432/dbname` | You run more than one replica, or you want the data to outlive the instance. |
 
-### More about SQLite
+SQLite writes to a file, so agentgateway needs a writable directory for it. PostgreSQL needs a reachable server and a user that can create tables.
 
-SQLite writes to a file, so agentgateway needs a writable directory for it.
+> [!WARNING]
+> Do not point more than one agentgateway instance at the same SQLite file. Give each instance its own file instead, or use PostgreSQL. With one file for each instance, the **Analytics** page shows the traffic of the instance that you are connected to, not the traffic of the whole deployment.
 
-Do not point more than one agentgateway instance at the same SQLite file. Give each instance its own file instead, or use PostgreSQL. With one file for each instance, the **Analytics** page shows the traffic of the instance that you are connected to, not the traffic of the whole deployment.
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+#### Encrypt PostgreSQL connections with TLS {#postgres-tls}
 
-### More about PostreSQL
-
-PostgreSQL needs a reachable server and a user that can create tables.
-
-{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 To control TLS for PostgreSQL, add the `sslmode` parameter to the URL. By default, agentgateway encrypts the connection when the server supports TLS, but it does not verify the server certificate. To verify the certificate and the hostname, set `sslmode=verify-full`. Agentgateway then checks the certificate against the trusted root certificates of the operating system. For a server certificate from a private certificate authority (CA), also set `sslrootcert` to the path of the CA certificate. Otherwise, agentgateway fails to start with an `invalid peer certificate: UnknownIssuer` error.
 
 ```txt
 postgres://user:password@host:5432/dbname?sslmode=verify-full&sslrootcert=/config/ca.crt
 ```
-{{< /version >}}
+{{% /version %}}
 
 ## Before you begin
 

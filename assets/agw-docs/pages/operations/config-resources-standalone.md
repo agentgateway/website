@@ -9,7 +9,7 @@ The config resource API is served wherever the UI is served, and the admin addre
 What `config.storage.mode` changes is where a write is stored, and whether the API lists the resource afterward. {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}In `file` mode, agentgateway writes the resource into your config file, and a list request returns an empty array. In `hybrid` mode, agentgateway stores the resource in the database and the API lists it.{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}In `file` mode, agentgateway writes the resource into your config file, and a list request returns the resources from that file. In `hybrid` mode, agentgateway stores the resource in the database, and a list request returns the resources from the database only, not from the baseline file.{{< /version >}} For each mode, what the database holds, and how the modes differ per installation method, see [Storage modes]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
-In `hybrid` mode, agentgateway stores and uses each resource as you send it, and does not expand environment variable references, such as `${VAR}`. The exception is the `params.apiKey` field of an `llm.provider` or `llm.model` resource, which can reference an environment variable or a `{file: <path>}`. In `file` mode, agentgateway expands environment variable references in the whole file, including the resources that you write through the API.
+{{< reuse "agw-docs/snippets/standalone-hybrid-env-expansion.md" >}}
 {{< /version >}}
 
 The rest of this guide uses `hybrid` mode, which supports the full set of operations.
