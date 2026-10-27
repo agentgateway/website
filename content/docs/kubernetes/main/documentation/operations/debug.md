@@ -367,6 +367,33 @@ Agentgateway includes pprof endpoints to help you investigate CPU and memory iss
 > [!NOTE]
 > To profile an agentgateway binary that runs on your workstation instead of a proxy pod, use `--local`, such as `agctl proxy profile heap --local`. Note that profiling data is available only when agentgateway runs on Linux. Proxy pods always meet this requirement, but a local macOS or Windows build does not: the CPU profile endpoint is not registered, so `agctl proxy profile cpu` fails with a `404 Not Found` error, and `agctl proxy profile heap` writes a profile that contains no allocation samples.
 
+## Debug the control plane {#control-plane}
+
+The agentgateway controller runs its own admin server on port `9095`. By default, the admin server listens only on `localhost` inside the controller pod, so use port-forwarding to reach it. The admin server provides the following endpoints.
+
+| Endpoint | Description |
+| -- | -- |
+| `/` | Lists the endpoints and the current log level of each controller component. |
+| `/debug/pprof/` | Go [pprof](https://pkg.go.dev/net/http/pprof) profiles of the controller, such as goroutine stack dumps and heap profiles. |
+| `/logging` | Get the log level of each controller component, or set it with a `PUT` request. The [`agctl controller log`](#controller-logs) command uses this endpoint. |
+| `/snapshots/krt` | JSON snapshot of processed Kubernetes resources and generated resources. Includes data from Secrets watched by the controller. |
+| `/version` | The controller version and build details. |
+
+1. Port-forward the controller deployment.
+
+   ```sh
+   kubectl port-forward deployment/{{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} 9095
+   ```
+
+   Example output:
+
+   ```
+   Forwarding from 127.0.0.1:9095 -> 9095
+   Forwarding from [::1]:9095 -> 9095
+   ```
+
+2. In your browser, open the admin server at [http://localhost:9095/](http://localhost:9095/), and select an endpoint.
+
 ## Collect a bug report {#bug-report}
 
 When you open an issue or ask for help, attach a snapshot of your setup. The `agctl bug-report` command collects the agentgateway resources, logs, and metrics from your cluster into a single `.tar.gz` archive, so you do not have to gather them one by one.
