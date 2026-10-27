@@ -61,7 +61,7 @@ An {{< reuse "agw-docs/snippets/backend.md" >}} with `spec.dynamicForwardProxy` 
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2162 -->
 
-Error responses that the agentgateway proxy generates now carry a generic message instead of the internal cause of the error. <!--TODO: confirm the rationale with the agentgateway maintainers (upstream PR 2162)-->This keeps internal details, such as signing key IDs, file paths, and upstream addresses, from being exposed to clients. The HTTP status codes are unchanged. The `error` field of the access log and the request traces still contain the full cause.
+Error responses that the agentgateway proxy generates now carry a generic message instead of the internal cause of the error. This keeps internal details, such as signing key IDs, file paths, and upstream addresses, from being exposed to clients. The HTTP status codes are unchanged. The `error` field of the access log and the request traces still contain the full cause.
 
 {{< reuse "agw-docs/pages/operations/client-error-messages.md" >}}
 
@@ -96,6 +96,7 @@ Error responses that the agentgateway proxy generates now carry a generic messag
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3831 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4090 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4091 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4168 -->
 
 - **Proxy environment variables**: Callouts from the proxy, such as external authorization requests, guardrail requests, and AWS and Azure credential fetches, now use the `HTTPS_PROXY`, `HTTP_PROXY`, `ALL_PROXY`, and `NO_PROXY` environment variables to configure a forward proxy that these requests must be routed through. In 1.6, only Google Cloud Platform (GCP) credential fetches used these variables. If you set these variables in `spec.env` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource for another purpose, callouts go through that forward proxy after you upgrade. To keep all callouts direct, set `NO_PROXY` to `*`. For more information, see [Callout proxy]({{< link-hextra path="/documentation/setup/customize/callout-proxy/" >}}).
 - **Normalized service tier**: `llm.serviceTier` is now one of `standard`, `flex`, `priority`, or `reserved`, regardless of the name that the provider uses. A provider tier that agentgateway does not recognize leaves the value unset. Update CEL expressions and dashboards that compare against provider-specific values such as `default`. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
@@ -107,6 +108,7 @@ Error responses that the agentgateway proxy generates now carry a generic messag
 - **Webhook guardrail responses**: A webhook `pass` response that contains any field other than `reason` is now an error. So is a `mask` response whose messages contain extra fields, which previously passed the content unmasked. The error follows the guard's `failureMode`. For more information, see [Webhook response actions]({{< link-hextra path="/documentation/llm/guardrails/webhook/guardrails/#webhook-response-actions" >}}).
 - **Google Model Armor errors**: A non-success response from Model Armor is now a guard failure and follows the guard's `failureMode`.
 - **Backend mirrors**: Request mirror filters in the `backendRefs` of an `HTTPRoute` now run after backend policies, so requests that backend authorization rejects are no longer mirrored. Mirror filters on a route rule still run before backend policies.
+- **Model namespaces**: An {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} in a namespace that the listener's `allowedRoutes.namespaces` does not allow is now `Accepted: False` with the reason `NotAllowedByListeners`. The default is `from: Same`, so a model in another namespace no longer attaches. To fix it, set `from` to `All` or `Selector`, or move the model. For more information, see [Troubleshooting]({{< link-hextra path="/documentation/llm/models/serve/#requests-return-model_not_found" >}}).
 - **MCP session errors**: Stateful MCP requests with a session ID that the proxy cannot decode, such as after the session key changes, now return `404` instead of `400`. Clients then start a new session.
 - **gRPC health**: Errors that agentgateway itself returns to gRPC clients now record their `grpc-status`. Only server-side gRPC errors, such as `UNAVAILABLE` or `INTERNAL`, mark a backend unhealthy. A client-side gRPC status from an LLM provider no longer evicts the target from a failover group. This change matches how agentgateway treats `5xx` and `4xx` responses for HTTP.
 - **gRPC policy calls**: When a gRPC policy call, such as to an external processing server, fails before it reaches the service, agentgateway now reports the mapped gRPC status instead of `UNKNOWN`. For example, DNS errors, refused connections, and timeouts report `UNAVAILABLE`.
@@ -217,10 +219,14 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3936 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3864 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3763 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4158 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4147 -->
 
+- **MCP authorization without an ID**: Agentgateway now rejects MCP requests other than `notifications/*` that have no usable JSON-RPC `id` with `400`. In 1.6, a `tools/call` without an `id` reached the MCP server without MCP authorization. For more information, see [Tool access]({{< link-hextra path="/documentation/mcp/tool-access/" >}}).
 - **MCP authentication with token passthrough**: MCP authentication now works with a JWT policy that sets `spec.traffic.jwtAuthentication.preserveToken: true`. For more information, see [Set up JWT authentication]({{< link-hextra path="/documentation/security/jwt/setup/" >}}).
 - **Callouts through a proxy**: You can now send the requests that the agentgateway proxy makes on its own behalf, such as external authorization requests, guardrail requests, and cloud provider credential fetches, through a forward proxy. For more information, see [Callout proxy]({{< link-hextra path="/documentation/setup/customize/callout-proxy/" >}}).
 - **Optional chart-created RBAC**: Set `rbac.create` to `false` in the controller Helm chart to skip the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the chart creates, for clusters that manage role-based access control (RBAC) outside of Helm. For more information, see [Chart-created RBAC resources]({{< link-hextra path="/documentation/install/advanced/#rbac-create" >}}).
+- **ClusterTrustBundle CA certificates**: A BackendTLSPolicy or a listener with `frontendValidation` can read CA certificates from an experimental ClusterTrustBundle, on Kubernetes 1.37 and later. If you set `rbac.create` to `false`, grant the controller `get`, `list`, and `watch` on `clustertrustbundles`. For more information, see [CA certificate in a ClusterTrustBundle]({{< link-hextra path="/documentation/security/backendtls/#clustertrustbundle-ca" >}}) and [Listener mTLS]({{< link-hextra path="/documentation/setup/listeners/mtls/#ca-sources" >}}).
 
 ### Observability {#v17-observability}
 
@@ -272,13 +278,22 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4067 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4096 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4059 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3966 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4105 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3898 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4157 -->
+
+**Traffic management**
+
+- CEL calls such as `contains(a, b)`, `startsWith`, `endsWith`, and `matches` now read the second argument. Previously, they ignored it, so `contains(x, y)` always returned `true`.
+- A policy that targets the endpoint picker (EPP) Service of an InferencePool now attaches, so you can raise the 10-second EPP timeout. For more information, see [Raise the endpoint picker timeout]({{< link-hextra path="/documentation/llm/inference/inference-routing/#epp-timeout" >}}).
 
 **LLM**
 
 - Usage and cost now include the reasoning tokens of OpenAI-compatible responses, such as from Gemini, the input and cache tokens of streamed Anthropic responses on `Detect` routes, and every iteration of Anthropic responses that report `usage.iterations`, such as for server-side compaction. Previously, these tokens were not counted.
 - Bedrock conversion keeps prompt-cache markers when it drops unsupported content, passes Anthropic cache TTLs to Bedrock cache points, and no longer invalidates the prompt cache on mid-stream system messages.
 - Built-in OpenAI-compatible providers, such as Groq and DeepInfra, no longer duplicate the base path, such as `/v1/v1/...`, on Detect and Passthrough routes.
-- Gemini tool schemas that use `oneOf` no longer return empty tool calls.
+- Gemini tool schemas that use `oneOf` no longer return empty tool calls. Messages and Responses requests keep the Gemini 3 thought signature, so tool loops no longer fail with `400`.
 - Passthrough no longer fails on SSE streams with an unterminated final event.
 - Claude models on Azure AI Foundry now follow the Anthropic prompt-cache token convention for normalized token counts and cost.
 - The built-in model catalog keeps deprecated models that providers still serve, so that requests to these models are still priced. `agctl catalog import` now includes deprecated models by default. To leave them out, set `--legacy=false`.
@@ -289,4 +304,5 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 - The controller creates the session key Secret of each Gateway only when the Secret is missing, and no longer overwrites the key on reconcile, which could invalidate stateful MCP sessions. If the Secret cannot be created, the Gateway reports `Programmed: False` with the reason `DeploymentFailed`.
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 - MCP responses now honor the `spec.traffic.timeouts.responseIdle` response idle timeout, which previously did not apply on MCP routes. A response, including an SSE stream, that sends no data for longer than the timeout is now ended.
+- A configuration reload that races with MCP session creation no longer hangs the proxy.
 - Reused stateful MCP sessions now apply the MCP guardrails of the current route, as they already did for MCP authorization. A request with an encrypted session ID that a different MCP backend issued returns `404`, and the client starts a new session. Previously, a session could skip the guardrails of another route or reach another backend.

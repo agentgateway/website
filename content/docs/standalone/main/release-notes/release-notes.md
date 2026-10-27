@@ -80,7 +80,7 @@ Dynamic backends now reject destinations that resolve to loopback, link-local, o
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2162 -->
 
-Error responses that agentgateway generates now carry a generic message instead of the internal cause of the error. <!--TODO: confirm the rationale with the agentgateway maintainers (upstream PR 2162)-->This keeps internal details, such as signing key IDs, file paths, and upstream addresses, from being exposed to clients. The HTTP status codes are unchanged. The `error` field of the access log and the request traces still contain the full cause.
+Error responses that agentgateway generates now carry a generic message instead of the internal cause of the error. This keeps internal details, such as signing key IDs, file paths, and upstream addresses, from being exposed to clients. The HTTP status codes are unchanged. The `error` field of the access log and the request traces still contain the full cause.
 
 {{< reuse "agw-docs/pages/operations/client-error-messages.md" >}}
 
@@ -117,6 +117,7 @@ Error responses that agentgateway generates now carry a generic message instead 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4090 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4091 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4097 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4163 -->
 
 - **Proxy environment variables**: Callouts, such as JWKS fetches, external authorization requests, and AWS and Azure credential fetches, now use the `HTTPS_PROXY`, `HTTP_PROXY`, `ALL_PROXY`, and `NO_PROXY` environment variables when `config.callouts.tunnel` is omitted. In 1.6, only Google Cloud Platform (GCP) credential fetches used these variables. If the environment that runs agentgateway exports these variables for other tools, callouts go through that proxy after you upgrade. To keep callouts direct, set `NO_PROXY` to `*`. For more information, see [Callout proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/" >}}).
 - **Normalized service tier**: `llm.serviceTier` is now one of `standard`, `flex`, `priority`, or `reserved`, regardless of the name that the provider uses. A provider tier that agentgateway does not recognize leaves the value unset. Update CEL expressions and dashboards that compare against provider-specific values such as `default`. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
@@ -137,6 +138,7 @@ Error responses that agentgateway generates now carry a generic message instead 
 - **Anthropic version header**: Agentgateway forwards the client's `anthropic-version` header instead of replacing it. When the client does not send the header, agentgateway still sets the default value `2023-06-01`.
 - **Decisions and SystemOne requests to custom providers**: A `custom` provider, including one without `formats`, now rejects `/v1/decisions` and `/v1/systemone` requests with `400` unless it declares the `decisions` or `systemOne` format. In 1.6, agentgateway forwarded them without conversion. For more information, see [Custom providers without a Decisions format]({{< link-hextra path="/documentation/llm/api-types/decisions/#custom-provider-requirements" >}}).
 - **CSRF `Origin` checks**: For a request without a `Sec-Fetch-Site` header, the CSRF policy now rejects `Origin: null` unless `additionalOrigins` includes `null`. In 1.6, agentgateway treated `Origin: null` as a missing origin and allowed the request. The same-origin check now compares only the host and ignores the scheme, so a TLS-terminating proxy in front of agentgateway no longer causes false rejections. For more information, see [CSRF]({{< link-hextra path="/documentation/configuration/security/csrf/" >}}).
+- **Environment variables in hybrid mode**: In `hybrid` storage mode, `${VAR}` in resources that you save through the UI or API now stays literal, except in the `params.apiKey` field of an LLM provider or model. In 1.6, agentgateway expanded it. Enter literal values, or set these fields in the configuration file. For more information, see [`hybrid` mode]({{< link-hextra path="/documentation/setup/storage/#binary-hybrid" >}}).
 - **Filter validation**: Invalid filter settings now fail configuration validation instead of failing each request. For example, a configuration with a request mirror `percentage` outside `0.0` to `1.0`, such as `percentage: 50`, or a direct response with both `body` and `bodyExpression` no longer loads. Invalid header names or values and invalid redirect or rewrite paths are also rejected. For more information, see [Mirroring]({{< link-hextra path="/documentation/configuration/resiliency/mirroring/" >}}).
 
 ## 🌟 New features {#v17-new-features}
@@ -240,11 +242,13 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3821 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3936 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3864 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4158 -->
 
 - **OIDC with bearer tokens**: Set `credentials: sessionOrBearer` on an OIDC policy to accept a bearer ID token as well as a browser session. One policy then covers both browser and API clients. With `credentials: permissive`, browsers still sign in, and other requests fall through to other authentication policies. Pair `permissive` with an `authorization` policy, because it does not reject unauthenticated requests by itself. For more information, see [Bearer tokens for API clients]({{< link-hextra path="/documentation/configuration/security/oidc/#bearer-id-tokens" >}}).
 - **Backend credentials from CEL**: A backend authentication key can be computed from a CEL expression, such as a value that an external authorization server returns. Set `backendAuth.key.expression`, or `expression` in a `backendAuth.credentials` entry. For more information, see [Compute the key from the request]({{< link-hextra path="/documentation/configuration/security/backend-authn/key/#key-expression" >}}).
 - **MCP authentication with token passthrough**: MCP authentication now works with a JWT policy that sets `preserveToken: true`. For more information, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn/" >}}).
 - **Callouts through a proxy**: Send the requests that agentgateway makes on its own behalf, such as JWKS fetches, OIDC discovery, external authorization, and cloud provider credential fetches, through an HTTP proxy. Set `config.callouts.tunnel`, or use the standard proxy environment variables. For more information, see [Callout proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/" >}}).
+- **MCP authorization without an ID**: Agentgateway now rejects MCP requests other than `notifications/*` that have no usable JSON-RPC `id` with `400`. In 1.6, a `tools/call` without an `id` reached the MCP server without MCP authorization. For more information, see [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz/" >}}).
 
 ### Observability {#v17-observability}
 
@@ -290,9 +294,10 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3923 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3919 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3038 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3179 -->
 
 - **`agctl standalone`**: Manage a standalone agentgateway through its admin API. Use `get`, `apply`, and `delete` for resources such as models, policies, and MCP targets. Use `keys` and `budgets` to manage API keys and check their budgets. For more information, see [Manage resources with agctl]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
-- **LiteLLM default fallbacks**: `agentgateway import --from litellm` converts LiteLLM `default_fallbacks` into priority-based failover. For more information, see [Import fallbacks]({{< link-hextra path="/documentation/configuration/import/#fallbacks" >}}).
+- **LiteLLM fallbacks and cooldowns**: `agentgateway import --from litellm` converts LiteLLM `default_fallbacks` into priority-based failover, and `allowed_fails` and `cooldown_time` into model health eviction. For more information, see [Import fallbacks]({{< link-hextra path="/documentation/configuration/import/#fallbacks" >}}).
 - **Raw editing**: The form editors in the UI have a raw YAML mode. Fields that the form does not support are kept when you save. For more information, see [Edit a resource as YAML]({{< link-hextra path="/documentation/setup/ui/launch-ui/#raw-mode" >}}).
 - **More UI improvements**: Required fields, schema help, and errors appear next to each field. A top-level **Settings** page groups gateway-wide settings, Client Setup includes a recipe for Continue, you can rotate an API key with an auto-generated value, and the filters on the **Logs** and **Analytics** pages are searchable. For more information, see [Settings]({{< link-hextra path="/documentation/setup/ui/launch-ui/#tour-settings" >}}).
 
@@ -320,17 +325,23 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4067 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4096 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4059 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3878 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3966 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4105 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4109 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3898 -->
 
 **Traffic management**
 
 - External authorization with `includeRequestBody` and no `maxRequestBytes` no longer rejects every request that has a body with `413`. The limit defaults to 8192 bytes.
+- CEL calls such as `contains(a, b)`, `startsWith`, `endsWith`, and `matches` now read the second argument. Previously, they ignored it, so `contains(x, y)` always returned `true`.
 
 **LLM**
 
 - Usage and cost now include the reasoning tokens of OpenAI-compatible responses, such as from Gemini, the input and cache tokens of streamed Anthropic responses on `detect` routes, and every iteration of Anthropic responses that report `usage.iterations`, such as for server-side compaction. Previously, these tokens were not counted.
 - Bedrock conversion keeps prompt-cache markers when it drops unsupported content, passes Anthropic cache TTLs to Bedrock cache points, and no longer invalidates the prompt cache on mid-stream system messages.
 - Built-in OpenAI-compatible providers, such as Groq and DeepInfra, no longer duplicate the base path, such as `/v1/v1/...`, on Detect and Passthrough routes.
-- Gemini tool schemas that use `oneOf` no longer return empty tool calls.
+- Gemini tool schemas that use `oneOf` no longer return empty tool calls. Messages and Responses requests keep the Gemini 3 thought signature, so tool loops no longer fail with `400`.
 - Passthrough no longer fails on SSE streams with an unterminated final event.
 - Claude models on Azure AI Foundry now follow the Anthropic prompt-cache token convention for normalized token counts and cost.
 - A route-level API key budget no longer replaces a gateway-level budget.
@@ -343,6 +354,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 - MCP responses now honor the `responseIdleTimeout` response idle timeout, which previously did not apply on MCP routes. A response, including an SSE stream, that sends no data for longer than the timeout is now ended.
 - MCP target conditions are now checked on each request of a session, not only when the session is initialized. A request whose conditions select different targets than the session returns `404`, and the client starts a new session. For more information, see [Target conditions]({{< link-hextra path="/integrations/mcp/servers/virtual/#target-conditions" >}}).
+- A configuration reload that races with MCP session creation no longer hangs agentgateway.
 - Reused stateful MCP sessions now apply the MCP guardrails of the current route, as they already did for MCP authorization. A request with an encrypted session ID that a different MCP backend issued returns `404`, and the client starts a new session. Previously, a session could skip the guardrails of another route or reach another backend.
 
 **UI**
@@ -351,4 +363,5 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 
 **Operations**
 
-- Standalone configuration reloads now track files that agentgateway reads during parsing, such as `backendTLS.root` certificate files, so later file changes are picked up without a process restart.
+- Standalone configuration reloads now track files that agentgateway reads during parsing, such as `backendTLS.root` certificate files, `params.apiKey` files, htpasswd files, GCP credentials, and OAuth client credentials, so later file changes are picked up without a process restart.
+- `/config_dump` now redacts database URLs, which previously showed the password.
