@@ -58,7 +58,7 @@ The standalone dashboard includes request rates by status, route, and reason; re
 
 7. Download the agentgateway dashboard JSON.
    ```sh
-   curl -L "https://raw.githubusercontent.com/agentgateway/agentgateway/main/controller/install/helm/agentgateway-standalone/files/agentgateway-dashboard.json" \
+   curl -L "https://raw.githubusercontent.com/agentgateway/agentgateway/v1.6.0/controller/install/helm/agentgateway-standalone/files/agentgateway-dashboard.json" \
      -o agentgateway-dashboard.json
    ```
 
@@ -111,7 +111,7 @@ The standalone dashboard includes request rates by status, route, and reason; re
    # Confirm that the dashboard JSON downloaded in the Kubernetes section is the expected
    # agentgateway dashboard, then import it through the API to mirror the manual
    # "Upload dashboard JSON file" step.
-   curl -sL "https://raw.githubusercontent.com/agentgateway/agentgateway/main/controller/install/helm/agentgateway-standalone/files/agentgateway-dashboard.json" \
+   curl -sL "https://raw.githubusercontent.com/agentgateway/agentgateway/v1.6.0/controller/install/helm/agentgateway-standalone/files/agentgateway-dashboard.json" \
      -o agentgateway-dashboard.json
    jq -e '.uid == "agentgateway-standalone"' agentgateway-dashboard.json >/dev/null
    jq '{dashboard: ., overwrite: true}' agentgateway-dashboard.json \
@@ -152,7 +152,7 @@ The standalone dashboard includes request rates by status, route, and reason; re
 4. Download and import the standalone dashboard.
 
    ```sh
-   curl -L "https://raw.githubusercontent.com/agentgateway/agentgateway/main/controller/install/helm/agentgateway-standalone/files/agentgateway-dashboard.json" \
+   curl -L "https://raw.githubusercontent.com/agentgateway/agentgateway/v1.6.0/controller/install/helm/agentgateway-standalone/files/agentgateway-dashboard.json" \
      -o agentgateway-dashboard.json
    ```
 

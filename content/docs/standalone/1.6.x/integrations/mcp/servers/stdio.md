@@ -61,7 +61,7 @@ mcp_call() {
 1. Download an MCP configuration for your agentgateway.
 
    ```yaml {paths="mcp-stdio"}
-   curl -L https://agentgateway.dev/examples/mcp-basic/config.yaml -o config.yaml
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/v1.6.0/examples/mcp-basic/config.yaml -o config.yaml
    ```
 
    {{< doc-test paths="mcp-stdio" >}}

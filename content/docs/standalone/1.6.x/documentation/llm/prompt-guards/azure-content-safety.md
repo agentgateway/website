@@ -45,7 +45,7 @@ llm:
 ```
 {{< /tab >}}
 {{< tab name="llm-prompt-guard example" >}}
-The following routing-based configuration is from the [`llm-prompt-guard` example](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-prompt-guard) in the agentgateway repository.
+The following routing-based configuration is from the [`llm-prompt-guard` example](https://github.com/agentgateway/agentgateway/tree/v1.6.0/examples/llm-prompt-guard) in the agentgateway repository.
 
 {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.6.0/examples/llm-prompt-guard/azure-content-safety-config.yaml" %}}
 {{< /tab >}}
