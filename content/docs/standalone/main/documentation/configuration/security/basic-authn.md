@@ -22,7 +22,7 @@ Attaches to: {{< badge content="Listener" path="/documentation/configuration/lis
 > Basic authentication is not generally recommended for production use.
 > At a minimum, use basic authentication along with TLS encryption.
 
-The **htpasswd** field specifies the username/password pairs. See the [htpasswd](https://httpd.apache.org/docs/current/programs/htpasswd.html) documentation.
+The **htpasswd** field specifies the username/password pairs. See the [htpasswd](https://httpd.apache.org/docs/current/programs/htpasswd.html) documentation. If you set it to `{file: <path>}`, agentgateway watches the file and reloads the configuration when the file changes, so you can add users or rotate passwords without a restart.
 The **realm** field, optionally, specifies the [realm name](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Authentication#www-authenticate_and_proxy-authenticate_headers) returned in error responses.
 
 Additionally, authentication can run in two different modes:

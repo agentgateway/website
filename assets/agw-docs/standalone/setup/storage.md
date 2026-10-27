@@ -139,7 +139,7 @@ Use `file` mode when you want the UI to save your changes into the same configur
    > [!NOTE]
    > If you enabled MCP in the UI, the `mcp` section also has a `port` field, because **Enable** writes the capability's default port along with the empty `targets` list.
 
-Agentgateway preserves the schema comment at the top of the file, and reloads the file after it writes to it.
+Agentgateway preserves the schema comment at the top of the file, and reloads the file after it writes to it.{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} Agentgateway edits the file in place, so it also keeps your other comments. If agentgateway cannot edit the file in place, it rewrites the whole file, and those comments are lost.{{< /version >}}
 
 > [!IMPORTANT]
 > In this mode the UI is a writer of your configuration file, not only a reader. If you keep your configuration in version control, or if you generate it from another tool, use `readOnly` or `hybrid` mode so that a UI edit cannot overwrite it.
@@ -151,6 +151,10 @@ Agentgateway also writes to your configuration file at startup when you do not s
 ### `hybrid` mode {#binary-hybrid}
 
 Use `hybrid` mode when you want the configuration file to stay exactly as you wrote it, and UI edits to persist somewhere else. Agentgateway accepts a `postgres://` or `postgresql://` URL for PostgreSQL, and treats any other value as a SQLite database path.
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+Agentgateway expands environment variable references, such as `${VAR}`, in your configuration file. It does not expand them in the resources that you save through the UI, the config resource API, or agctl. Those resources are stored and used exactly as you enter them. The exception is the `params.apiKey` field of an LLM provider or model, which can still reference an environment variable, such as `$OPENAI_API_KEY`, or a file path. In `file` mode, agentgateway expands references everywhere, because every resource is saved to the file.
+{{< /version >}}
 
 1. Set the storage mode and a database URL in your configuration file. A generated configuration already has the `database` field, which points at a SQLite file next to the configuration file. In that case, you add only the `storage` field.
 

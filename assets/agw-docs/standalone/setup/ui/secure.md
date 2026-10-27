@@ -40,7 +40,10 @@ Whether the UI can save depends on your storage mode. For more information, see 
 
 2. Restart agentgateway from the same shell, so that agentgateway has these variables in its environment. In Docker, add `-e OIDC_COOKIE_SECRET -e ISSUER_URL -e UI_CLIENT_ID -e UI_CLIENT_SECRET -e REDIRECT_URI` to your `docker run` command. For the full command, see the **Docker** tab in the **Config file** tab.
 3. Open the **Settings** > **UI** page on the admin interface, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui). The policies do not apply to the admin interface, so you keep access while you edit them. Confirm that the **Public gateway** dropdown shows `ui-gateway`.
-4. In the **UI access policies** section, click the **OIDC** card, and configure the following fields. You can enter environment variable references, which agentgateway expands when it loads the configuration. This way, the client secret is not written into the file.
+4. In the **UI access policies** section, click the **OIDC** card, and configure the following fields. In `file` storage mode, you can enter environment variable references, which agentgateway expands when it loads the configuration. This way, the client secret is not written into the file.
+
+   In `hybrid` storage mode, agentgateway stores the values as you enter them and does not expand environment variable references. Enter the literal values instead, or set the OIDC policy in your configuration file as shown in the **Config file** tab. A reference in the **Issuer** field fails the save with an error such as `invalid discovery uri derived from issuer '${ISSUER_URL}'`. For more information, see [`hybrid` mode]({{< link-hextra path="/documentation/setup/storage/#binary-hybrid" >}}).
+
    1. **Issuer**: `${ISSUER_URL}`
    2. **Client ID**: `${UI_CLIENT_ID}`
    3. **Client secret**: `${UI_CLIENT_SECRET}`
@@ -51,7 +54,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 
    {{< reuse-image src="img/ui-settings-oidc-client.png" srcDark="img/ui-settings-oidc-client-dark.png" alt="UI OIDC settings drawer scrolled to the client ID, client secret, and redirect URI environment variables and the profile and email scopes" >}}
 
-5. Click **Save policy**. The save fails if agentgateway cannot fetch the OIDC discovery document from the issuer, or if a referenced environment variable is not set.
+5. Click **Save policy**. The save fails if agentgateway cannot fetch the OIDC discovery document from the issuer. In `file` storage mode, the save also fails if a referenced environment variable is not set.
 6. Optional: Restrict access to users whose email address ends in `@example.com`.
    1. Click the **Authorization** card, and click **Add rule**.
    2. Keep **Allow** as the effect, and replace the example expression with `jwt.email.endsWith("@example.com")`.
