@@ -98,7 +98,7 @@ Turn on API key authentication, and create two virtual keys, one for Alice and o
    {{< reuse-image-light src="img/ui-virtual-keys-list.png" alt="UI Virtual API Keys page listing configured keys and metadata" >}}
    {{< reuse-image-dark srcDark="img/ui-virtual-keys-list-dark.png" alt="UI Virtual API Keys page listing configured keys and metadata" >}}
 
-The UI writes the same `apiKey` policy as the **Config file** tab{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}, with one difference. It saves a hash of each key (`keyHash`), not the raw value. To save the raw value, select **Store raw key**{{< /version >}}. Give the keys to your users to send in an `Authorization: Bearer $VIRTUAL_KEY` header.
+The UI writes the same `apiKey` policy as the **Config file** tab{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}, with one difference. It saves a hash of each key (`keyHash`), not the raw value. To save the raw value, select **Store raw key**. If you open the UI over plain HTTP from a host other than `localhost`, the UI cannot hash keys and always saves the raw value{{< /version >}}. Give the keys to your users to send in an `Authorization: Bearer $VIRTUAL_KEY` header.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 Create a configuration with API key authentication. This example creates two virtual keys for Alice and Bob.
@@ -163,7 +163,7 @@ You can test the keys in the UI playground or with curl. Both work the same way,
 3. In the **Specific model** field, enter `gpt-3.5-turbo`. The `*` model accepts any model name, so the playground needs a specific name to send.
 4. From the **Virtual API key** dropdown, select Alice's key. The dropdown lists only the keys that are stored as raw values. If the UI saved the key as a hash, select **Raw value**, and paste Alice's key into the **Raw API key** field.
 5. In the **User message** field, enter `Hello!`, and click **Send**. Verify that the reply from the model appears.
-6. From the **Virtual API key** dropdown, select **Raw value**, and enter `invalid-key` in the **Raw API key** field. Send the message again. Verify that the playground shows **Playground request failed** with the error `api key authentication failure: invalid credentials`.
+6. From the **Virtual API key** dropdown, select **Raw value**, and enter `invalid-key` in the **Raw API key** field. Send the message again. Verify that the playground shows **Playground request failed** with the error `authentication failed`.
 {{% /version %}}
 {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 The playground steps need agentgateway 1.7 or later. Use the **curl** tab.
@@ -341,7 +341,7 @@ Revoke one client's access without restarting agentgateway or changing other key
 {{% tab name="UI" %}}
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 1. Open **LLM** > **Virtual API Keys**, and click the **Delete key** icon for Bob's key. In the **Delete virtual API key?** dialog, click **Delete key**.
-2. In the **Chat Playground**, select **Raw value** from the **Virtual API key** dropdown, and enter Bob's key, `vk-bob-8d1e7b`. Send a message. Verify that the playground shows **Playground request failed** with the error `api key authentication failure: invalid credentials`.
+2. In the **Chat Playground**, select **Raw value** from the **Virtual API key** dropdown, and enter Bob's key, `vk-bob-8d1e7b`. Send a message. Verify that the playground shows **Playground request failed** with the error `authentication failed`.
 3. Restore Bob's key before continuing with the budget examples. Click **New key**, and create Bob's key again in the same way as in [Step 1](#step-1-configure-api-key-authentication).
 {{% /version %}}
 {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
@@ -376,6 +376,60 @@ The UI steps for this section need agentgateway 1.7 or later. Use the **Config f
 3. Restore Bob's key before continuing with the budget examples.
 {{% /tab %}}
 {{< /tabs >}}
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+### Rotate a virtual key {#rotate-a-virtual-key}
+
+Replace one client's key, such as after a suspected leak. The key keeps its name, metadata, model access, and budget settings. Agentgateway tracks budget usage by the key value, so the budgets of a rotated key start again from zero.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Virtual API Keys**, and click the **Edit key** icon for Alice's key.
+2. Replace the key value.
+   * If the key starts with `agw_sk_`, such as a key that the UI generated, click **Regenerate**. The UI generates a new `agw_sk_` value.
+   * For a custom key, such as `vk-alice-4f9c2a`, click **Edit**. Replace the value in the **Key value** field with the new value, such as `vk-alice-7c2e5b`.
+
+   {{< reuse-image-light src="img/ui-llm-key-rotate.png" alt="Edit virtual key drawer for alice with a new value in the Key value field, a Keep existing button, and the Store raw key option" >}}
+   {{< reuse-image-dark srcDark="img/ui-llm-key-rotate-dark.png" alt="Edit virtual key drawer for alice with a new value in the Key value field, a Keep existing button, and the Store raw key option" >}}
+
+3. Optional: Select **Store raw key** to save the key value instead of a hash. If you keep the default, the UI saves only a hash of the key (`keyHash`). The UI can hash the key only when you open it over HTTPS or from `localhost`. If you open the UI over plain HTTP from another host, such as `http://192.168.1.10:15000/ui`, the UI selects **Store raw key** and you cannot clear it.
+4. Click **Save key**. If the UI saved a hash, the **Copy your new API key** dialog shows the new key. Click **Copy**, and click **Done**. The UI does not show the key again.
+5. Give the new key to Alice. Requests with the old key now fail with `401`.
+6. Optional: The budget examples on this page use Alice's original key, `vk-alice-4f9c2a`. To continue with these examples after you set a custom key in step 2, edit Alice's key again, click **Edit**, and replace the value with `vk-alice-4f9c2a`. If you clicked **Regenerate** instead, use the new `agw_sk_` key in place of `vk-alice-4f9c2a`. In production, do not reuse a key that might have leaked.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+1. Replace the `key` value of Alice's entry in `llm.policies.apiKey.keys`, and save the configuration. Agentgateway reloads the file without a restart.
+
+   ```yaml
+   keys:
+   - key: vk-alice-7c2e5b
+     metadata:
+       user: alice
+   - key: vk-bob-8d1e7b
+     metadata:
+       user: bob
+   ```
+
+2. Send a request with Alice's old key. Verify that agentgateway returns `401`.
+
+   ```sh
+   curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/v1/chat/completions \
+     -H "Authorization: Bearer vk-alice-4f9c2a" \
+     -H "Content-Type: application/json" \
+     -d '{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello!"}]}'
+   ```
+
+   Example output:
+
+   ```
+   401
+   ```
+
+3. Give the new key to Alice.
+4. Optional: The budget examples on this page use Alice's original key, `vk-alice-4f9c2a`. To continue with these examples, change the value back to `vk-alice-4f9c2a`. In production, do not reuse a key that might have leaked.
+{{% /tab %}}
+{{< /tabs >}}
+{{< /version >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ### Rotate a provider key {#rotate-a-provider-key}
@@ -631,8 +685,10 @@ The key in `VIRTUAL_KEY` still works, because its hash did not change. The `keys
    Example output:
 
    ```text
-   api key authentication failure: invalid credentials
+   authentication failed
    ```
+
+   The agentgateway logs record the reason, `api key authentication failure: invalid credentials`.
 
 To rotate a key, create a replacement key with a new name, update the client, and then revoke the old key.
 {{< /version >}}
