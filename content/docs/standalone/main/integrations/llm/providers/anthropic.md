@@ -161,6 +161,10 @@ Example response:
 }
 ```
 
+## Send inline files through Chat Completions {#send-inline-files-through-chat-completions}
+
+In a `/v1/chat/completions` request to Anthropic, agentgateway converts an inline `file` content part to an Anthropic `document` block. For the required `file.file_data` format and the file parts that the conversion rejects, see [File parts on a converted route]({{< link-hextra path="/documentation/llm/api-types/completions/#file-parts-on-a-converted-route" >}}).
+
 ## Token counting
 
 Use Anthropic's `count_tokens` API to estimate token usage before you make a request. If the client sends an `anthropic-version` header, the request uses that value. If the client sends no version header, the request uses the default `2023-06-01` version. The request is formatted for Anthropic's API.
