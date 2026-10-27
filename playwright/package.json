@@ -35,7 +35,8 @@
     "test:ui-tabs-e-listeners": "CAPTURE_MODE=fixture FIXTURE=ui-tabs-e-listeners.yaml playwright test tests/ui-tabs-e-listeners.spec.ts",
     "test:ui-tabs-e-binds": "CAPTURE_MODE=fixture FIXTURE=ui-tabs-e-binds.yaml playwright test tests/ui-tabs-e-binds.spec.ts",
     "test:ui-tabs-f": "CAPTURE_MODE=fixture FIXTURE=ui-tabs-f.yaml playwright test tests/ui-tabs-f.spec.ts",
-    "test:ui-tabs-f-2": "CAPTURE_MODE=fixture FIXTURE=ui-tabs-f-2.yaml playwright test tests/ui-tabs-f-2.spec.ts"
+    "test:ui-tabs-f-2": "CAPTURE_MODE=fixture FIXTURE=ui-tabs-f-2.yaml playwright test tests/ui-tabs-f-2.spec.ts",
+    "test:ui-tabs-g": "CAPTURE_MODE=fixture FIXTURE=ui-tabs-g.yaml playwright test tests/ui-tabs-g.spec.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",
