@@ -30,7 +30,7 @@ Neither mode is a replacement for the other. Tunnel mode gives you SNI-based con
 To send the requests that agentgateway makes on its own behalf, such as JWKS fetches, through an upstream proxy instead of proxying traffic from your clients, see [Callout proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/" >}}).
 
 > [!NOTE]
-> Policies that you attach to a listener on a `tunnelProtocol: connect` bind are not applied to the CONNECT request, because tunnel mode handles the request before route matching. To authenticate clients, use route mode.
+> Policies that you attach to a listener on a `tunnelProtocol: connect` bind are not applied to the CONNECT request because tunnel mode handles the request before route matching. To authenticate clients, use route mode.
 
 For more information, see [Loopback and link-local destinations](#loopback-destinations).
 
