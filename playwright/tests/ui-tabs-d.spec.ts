@@ -57,7 +57,13 @@ test.describe('MCP server UI tabs', () => {
     await openServers(page);
     await page.getByRole('button', { name: /^settings$/i }).first().click();
     const drawer = page.getByRole('dialog');
-    await expect(drawer.getByText('MCP behavior')).toBeVisible();
+    // MCP behavior (State mode, Prefix mode, Failure mode, SSE keep-alive) starts collapsed, so
+    // expand it, as the guides' steps tell the reader to.
+    const behavior = drawer.getByRole('button', { name: /^MCP behavior\b/ });
+    await expect(behavior).toHaveAttribute('aria-expanded', 'false');
+    await behavior.click();
+    await expect(behavior).toHaveAttribute('aria-expanded', 'true');
+    await expect(drawer.getByRole('combobox', { name: 'State mode', exact: true })).toBeVisible();
     return drawer;
   }
 

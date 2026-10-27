@@ -190,9 +190,17 @@ Use `sseKeepAlive` on the MCP backend to send Server-Sent Events (SSE) comment f
 
 An MCP stream is idle whenever no tool calls or notifications are in flight, which nothing in the network path can tell apart from a dead connection. Keep-alives are off by default, so omit `sseKeepAlive` if you do not need them.
 
-Set the duration for the keep-alive where you configure the backend: `mcp.sseKeepAlive` in the simplified MCP style, and `routes[].backends[].mcp.sseKeepAlive` in the routing-based style.
+Set the duration for the keep-alive where you configure the backend: `mcp.sseKeepAlive` in the simplified MCP style, and `routes[].backends[].mcp.sseKeepAlive` in the routing-based style. The UI sets the simplified MCP style.
 
 {{< tabs >}}
+{{% tab name="UI" %}}
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**. Expand **MCP behavior**.
+2. For **SSE keep-alive**, enter `10s`.
+3. For **State mode**, select **Stateful** to keep the default session behavior. The list shows **Stateless** when `statefulMode` is not set, and the drawer saves the selected value.
+4. Click **Save settings**.
+
+The UI sets `mcp.sseKeepAlive` to `10s`, as in the **Simplified (MCP)** tab. It also writes the selected state mode, sets `failureMode` to `failClosed`, and writes an empty `gateways` list. To turn off keep-alives, clear the field and save.
+{{% /tab %}}
 {{% tab name="Simplified (MCP)" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
