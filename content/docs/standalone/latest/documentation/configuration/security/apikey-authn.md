@@ -317,7 +317,7 @@ agentgateway -f config2-mcp.yaml --validate-only
 
 ## LLM budgets and model access
 
-An API key entry can carry two fields that apply to LLM traffic. The `budgets` field sets a per-key budget that caps what the key spends. The `allowedModels` field limits which models the key can reach. Both fields work with a `key` entry and with a `keyHash` entry.
+An API key entry can carry two fields that apply to LLM traffic. The `budgets` field sets a per-key budget that caps what the key spends. The `allowedModels` field limits the top-level model that the key can request. Provider server-side tools, such as the Anthropic advisor tool, can use models outside the list. Both fields work with a `key` entry and with a `keyHash` entry.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -353,7 +353,7 @@ llm:
 
 | Setting | Description |
 | -- | -- |
-| `allowedModels` | Model name patterns that the key can reach. Each entry is an exact name or a pattern with one `*` wildcard. Omit the field to leave the key unconstrained, or set an empty list to deny every model. You cannot combine `*` with another pattern. |
+| `allowedModels` | Model name patterns that can match the request's top-level model. Each entry is an exact name or a pattern with one `*` wildcard. Omit the field to leave the key unconstrained, or set an empty list to deny every model. The field does not check models that provider server-side tools use. You cannot combine `*` with another pattern. |
 | `budgets` | List of budgets that are charged independently after each LLM response. |
 | `budgets[].name` | Names the budget within its key. The name must be unique among that key's budgets. |
 | `budgets[].limit.unit` | `USD` to cap realized cost, or `Tokens` to cap token usage. |
