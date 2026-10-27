@@ -1,4 +1,4 @@
-Configure self-hosted audio models like [Voxtral Small](https://huggingface.co/mistralai/Voxtral-Small-24B-2507) through {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Audio models expose endpoints like `/v1/audio/transcriptions` and `/v1/models`. This guide routes these endpoints with `Passthrough` processing on an {{< reuse "agw-docs/snippets/backend.md" >}}, so agentgateway forwards the request and response without parsing or modifying the payload.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} To record audio usage and cost, serve the audio model through an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resource instead. For more information, see [Usage and cost](#usage-and-cost).{{< /version >}}
+Configure self-hosted audio models like [Voxtral Small](https://huggingface.co/mistralai/Voxtral-Small-24B-2507) through {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Audio models expose endpoints like `/v1/audio/transcriptions` and `/v1/models` that are handled via `Passthrough` routing, where agentgateway forwards the request and response without parsing or modifying the payload.
 
 ## Before you begin
 
@@ -248,28 +248,6 @@ The table below lists the audio-specific endpoints that can be configured via `P
 > [!NOTE]
 > When a route is set to `Passthrough`, agentgateway does not apply any LLM-specific policies (such as cost tracking, rate limiting, or prompt guards) to those requests. The requests are forwarded exactly as received.
 
-
-{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
-## Usage and cost {#usage-and-cost}
-
-When you serve an audio model through an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resource, {{< reuse "agw-docs/snippets/agentgateway.md" >}} recognizes the audio endpoints and records usage and cost for them. A route that sets the audio paths to `Detect` in `policies.ai.routes` records the same data. `Passthrough` routes record neither.
-
-| API path | `gen_ai.operation.name` | Usage and cost |
-|----------|-------------------------|----------------|
-| `/v1/audio/transcriptions` | `transcription` | The audio duration is read from the `usage.seconds`, `usage.prompt_audio_seconds`, or top-level `duration` field of the response. |
-| `/v1/audio/translations` | `transcription` | Same as transcriptions. |
-| `/v1/audio/speech` | `speech` | None. The response is binary audio with no usage fields, so the request has no usage and no cost. |
-
-For multipart requests, {{< reuse "agw-docs/snippets/agentgateway.md" >}} reads the `model` form field, and rewrites it when the model maps to a different upstream name. The other form fields, such as the uploaded file, are forwarded unchanged.
-
-The audio duration is available as `llm.audioSeconds` in CEL expressions and as `gen_ai.usage.audio_seconds` in access logs and traces. To price it, set a `perAudioMinute` rate in USD per minute for the model in the model cost catalog. The built-in catalog includes per-minute rates for some OpenAI transcription models, such as `whisper-1`. For a self-hosted model such as Voxtral, add your own rate. For more information, see [Cost tracking]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
-
-For example, a transcription that reports `usage.seconds: 90` for a model with `perAudioMinute: "0.006"` costs `$0.009`. The access log entry includes the following fields.
-
-```console
-gen_ai.operation.name=transcription gen_ai.provider.name=openai gen_ai.request.model=whisper-1 agw.ai.usage.cost.total=0.009 gen_ai.usage.audio_seconds=90
-```
-{{% /version %}}
 
 ## Cleanup
 
