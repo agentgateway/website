@@ -202,20 +202,6 @@ The request access log includes `agw.ai.usage.cost.total` only for priced LLM re
 
 Anthropic and OpenAI price prompt-cache writes by how long the cache entry lives, its time to live (TTL). {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} prices two extended TTLs separately from other cache writes: Anthropic 1-hour writes (`1h`) and OpenAI Responses API 12-hour writes (`12h`).
 
-To set the rates, add a `cacheWriteDetails` map to a model's `rates` or to a tier's `rates` in your catalog JSON. Writes for a TTL that the map omits use the `cacheWrite` rate. The built-in catalog already sets these rates for many Anthropic and OpenAI models.
-
-```json
-"claude-opus-5": {
-  "rates": {
-    "input": "5",
-    "output": "25",
-    "cacheRead": "0.5",
-    "cacheWrite": "6.25",
-    "cacheWriteDetails": { "1h": "10" }
-  }
-}
-```
-
 The cost data reports these writes separately from other cache writes.
 
 - `llm.cost.cacheWrite` covers only cache writes without an extended TTL, such as Anthropic 5-minute writes.
@@ -225,39 +211,63 @@ The cost data reports these writes separately from other cache writes.
 
 The keys start with a digit, so read them with index syntax, such as `llm.cost.cacheWriteDetails['1h']`. A lookup of a missing key fails, and the access log leaves out the field. To log `0` instead, check for the key first.
 
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-metadata:
-  name: cache-write-log
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: agentgateway-proxy
-  frontend:
-    accessLog:
-      attributes:
-        add:
-        - name: cache_write_1h
-          expression: "'1h' in llm.cost.cacheWriteDetails ? llm.cost.cacheWriteDetails['1h'] : 0.0"
-EOF
-```
+To set the rates and log the cost of 1-hour cache writes, follow these steps.
 
-Example output:
+1. Add a `cacheWriteDetails` map to a model's `rates` or to a tier's `rates` in your catalog JSON. Writes for a TTL that the map omits use the `cacheWrite` rate. The built-in catalog already sets these rates for many Anthropic and OpenAI models.
 
-```console
-agentgatewaypolicy.agentgateway.dev/cache-write-log created
-```
+   ```json
+   "claude-opus-5": {
+     "rates": {
+       "input": "5",
+       "output": "25",
+       "cacheRead": "0.5",
+       "cacheWrite": "6.25",
+       "cacheWriteDetails": { "1h": "10" }
+     }
+   }
+   ```
 
-The following log entry is for a request that wrote 400,000 tokens to the 5-minute cache and 600,000 tokens to the 1-hour cache. The 1-hour writes cost `$6`, and the 5-minute writes cost `$2.50`.
+2. Add the cost of 1-hour cache writes as an access log attribute. The expression checks for the key first, so requests without 1-hour writes log `0`.
 
-```console
-... gen_ai.provider.name=anthropic gen_ai.request.model=claude-opus-5
-gen_ai.usage.cache_creation.input_tokens=1000000 agw.ai.usage.cost.total=8.50075 cache_write_1h=6 ...
-```
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: cache-write-log
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     frontend:
+       accessLog:
+         attributes:
+           add:
+           - name: cache_write_1h
+             expression: "'1h' in llm.cost.cacheWriteDetails ? llm.cost.cacheWriteDetails['1h'] : 0.0"
+   EOF
+   ```
+
+   Example output:
+
+   ```console
+   agentgatewaypolicy.agentgateway.dev/cache-write-log created
+   ```
+
+3. Send a request that writes to the 1-hour cache, and check the proxy logs for the `cache_write_1h` field.
+
+   ```sh
+   kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} | grep cache_write_1h
+   ```
+
+   The following log entry is for a request that wrote 400,000 tokens to the 5-minute cache and 600,000 tokens to the 1-hour cache. The 1-hour writes cost `$6`, and the 5-minute writes cost `$2.50`.
+
+   ```console
+   ... gen_ai.provider.name=anthropic gen_ai.request.model=claude-opus-5
+   gen_ai.usage.cache_creation.input_tokens=1000000 agw.ai.usage.cost.total=8.50075 cache_write_1h=6 ...
+   ```
 
 ### Service tiers {#service-tiers}
 
