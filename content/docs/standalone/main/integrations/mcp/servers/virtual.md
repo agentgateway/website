@@ -309,7 +309,7 @@ You can set the prefix mode in the UI or in your configuration file.
 {{% tab name="UI" %}}
 1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**. Expand **MCP behavior**.
 2. For **Prefix mode**, select **Never**.
-3. For **State mode**, select **Stateful** to keep the default session behavior. The list shows **Stateless** when `statefulMode` is not set, and the drawer saves the selected value.
+3. Check **State mode**. If `statefulMode` is not set in your configuration, the drawer still shows **Stateless** and saves it, so select **Stateful** to keep the default session behavior.
 
    {{< reuse-image src="img/ui-mcp-settings-prefix-never.png" srcDark="img/ui-mcp-settings-prefix-never-dark.png" alt="MCP servers settings drawer with the prefix mode set to Never and the state mode set to Stateful" >}}
 
@@ -390,13 +390,13 @@ When you multiplex multiple targets, the client receives the gateway MCP `server
 {{< tabs >}}
 {{% tab name="UI" %}}
 1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**. Expand **Server info**.
-2. For **Name** and **Version**, enter `company-mcp-gateway` and `2026.09`. Set both fields or leave both empty. If you set only one, the save fails.
+2. For **Name** and **Version**, enter `company-mcp-gateway` and `2026.09`. Set both fields or leave both empty.
 3. For **Title**, enter `Company MCP Gateway`.
 4. For **Instructions**, enter `Use this gateway to access approved internal MCP tools.`
-5. Expand **MCP behavior**. For **State mode**, select **Stateful** to keep the default session behavior. The list shows **Stateless** when `statefulMode` is not set, and the drawer saves the selected value.
+5. Expand **MCP behavior**. Check **State mode**. If `statefulMode` is not set in your configuration, the drawer still shows **Stateless** and saves it, so select **Stateful** to keep the default session behavior.
 6. Click **Save settings**.
 
-The UI sets the `server` block, as in the **Config file** tab. It also writes the selected state mode, sets `failureMode` to `failClosed`, and writes an empty `gateways` list. To remove the overrides, clear all four fields and save.
+The UI sets the `server` block, as in the **Config file** tab. The UI also writes the other drawer values: the selected state mode, `failureMode` (`failClosed` if it was not set), and an empty `gateways` list with the port if no gateway is bound. To remove the overrides, clear all four fields and save.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml

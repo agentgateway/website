@@ -177,4 +177,42 @@ test.describe('MCP server UI tabs', () => {
     await choose(page, drawer, 'State mode', 'Stateful');
     await capture(page, 'ui-mcp-settings-prefix-never.png');
   });
+
+  // configuration-modes.md, "Keep idle MCP streams alive" UI tab: SSE keep-alive 10s with State
+  // mode Stateful. Asserts the saved value by reopening the drawer, so it needs no baseline image.
+  test('settings: SSE keep-alive', async ({ page }) => {
+    const drawer = await openSettings(page);
+    await drawer.getByLabel('SSE keep-alive', { exact: true }).fill('10s');
+    await choose(page, drawer, 'State mode', 'Stateful');
+    await drawer.getByRole('button', { name: 'Save settings', exact: true }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    const reopened = await openSettings(page);
+    await expect(reopened.getByLabel('SSE keep-alive', { exact: true })).toHaveValue('10s');
+  });
+
+  // virtual.md, "Server information overrides" UI tab: the `server` block, with State mode
+  // Stateful. Asserts the saved values by reopening the drawer, so it needs no baseline image.
+  test('settings: server info', async ({ page }) => {
+    await openServers(page);
+    await page.getByRole('button', { name: /^settings$/i }).first().click();
+    const drawer = page.getByRole('dialog');
+    await drawer.getByRole('button', { name: /^Server info\b/ }).click();
+    await drawer.getByLabel('Name', { exact: true }).fill('company-mcp-gateway');
+    await drawer.getByLabel('Version', { exact: true }).fill('2026.09');
+    await drawer.getByLabel('Title', { exact: true }).fill('Company MCP Gateway');
+    await drawer.getByLabel('Instructions', { exact: true })
+      .fill('Use this gateway to access approved internal MCP tools.');
+    await drawer.getByRole('button', { name: /^MCP behavior\b/ }).click();
+    await choose(page, drawer, 'State mode', 'Stateful');
+    await drawer.getByRole('button', { name: 'Save settings', exact: true }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    await openServers(page);
+    await page.getByRole('button', { name: /^settings$/i }).first().click();
+    const reopened = page.getByRole('dialog');
+    await reopened.getByRole('button', { name: /^Server info\b/ }).click();
+    await expect(reopened.getByLabel('Name', { exact: true })).toHaveValue('company-mcp-gateway');
+    await expect(reopened.getByLabel('Version', { exact: true })).toHaveValue('2026.09');
+  });
 });

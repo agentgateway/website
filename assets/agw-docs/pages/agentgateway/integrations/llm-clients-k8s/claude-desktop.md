@@ -4,9 +4,6 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 
 {{< reuse "agw-docs/snippets/claude-desktop-3p.md" >}}
 
-> [!NOTE]
-> Claude Desktop uses the same client settings in every deployment mode. Only the resources that configure agentgateway differ.
-
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
@@ -28,11 +25,6 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
    authentication, you need an OIDC provider and an Anthropic API key for the
    proxy.
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
-> [!TIP]
-> The UI's **LLM** > **Client Setup** page generates the Claude Desktop connection settings from the gateway URL and API key that you enter. The page configures the client only. It does not create or change Kubernetes resources, so you still set up the backend and route in the following steps. For more information, see [Generate LLM client settings]({{< link-hextra path="/documentation/observability/ui/#client-setup" >}}).
-{{< /version >}}
-
 ## Get the gateway URL {#gateway-url}
 
 {{< reuse "agw-docs/snippets/agw-get-gateway-url-k8s.md" >}}
@@ -45,6 +37,10 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 > * **Port-forward the proxy** and use `http://127.0.0.1:<port>`. Use the literal address `127.0.0.1`, because `localhost` does not always resolve as a loopback address for this check. Choose this option to try out the setup on a single machine.
 > * **Terminate HTTPS on the proxy** and use `https://<hostname>`. Choose this option when you [roll out the configuration to your organization](#mdm), because each user's machine must reach the proxy over the network. To set up a certificate, see [HTTPS listeners]({{< link-hextra path="/documentation/setup/listeners/https/" >}}).
 
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+> [!NOTE]
+> The Kubernetes UI is read-only and does not currently show the standalone **LLM > Client Setup** generator. Configure the client with the same gateway URL and credential values manually. The client settings are not specific to a deployment mode; only the resources that configure agentgateway differ. Follow [agentgateway/agentgateway#2989](https://github.com/agentgateway/agentgateway/issues/2989) for the enhancement, and see [UI]({{< link-hextra path="/documentation/observability/ui/" >}}) for more information about the current UI.
+{{< /version >}}
 
 ## Set up the Anthropic backend
 
@@ -171,7 +167,10 @@ With `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources, clients
 ## Use a gateway API key {#gateway-api-key}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
-After you create the key in the following steps, the UI's [**LLM** > **Client Setup**]({{< link-hextra path="/documentation/observability/ui/#client-setup" >}}) page can generate the Claude Desktop settings. Enter the **Gateway base URL**, paste the key into **Raw API key**, and select **Claude Desktop** as the **Integration**. The page does not create the backend, policy, or Secret.
+After you create the key in the following steps, the UI's [**LLM** > **Client Setup**]({{< link-hextra path="/documentation/observability/ui/#client-setup" >}}) page can generate the Claude Desktop settings. Enter the **Gateway base URL**, paste the key into **Raw API key**, and select **Claude Desktop** as the **Integration**. The page generates the same settings that the steps in this guide produce. It does not create the backend, policy, or Secret.
+{{< /version >}}
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+You can use the same client-side values that the standalone **Client Setup** page produces. The Kubernetes UI does not generate these values, so configure the gateway and Claude Desktop manually.
 {{< /version >}}
 
 1. Verify that the `anthropic-desktop` backend references `anthropic-secret` in
