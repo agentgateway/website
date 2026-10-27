@@ -195,7 +195,7 @@ The `team-a` key has a dollar budget that blocks requests when the budget is exh
 | `budgets[].window` | Optional rolling-window block. Omit this block when the budget must keep accumulating usage and never reset. |
 | `budgets[].window.rolling` | Length of the fixed usage window, such as `1h`, `24h`, or `30d`. Windows are aligned to the Unix epoch rather than to the key's first request. |
 | `budgets[].onBudgetExceeded` | `Block` to reject requests with a `429` after the limit is passed, or `Audit` to record the overage and allow the request. |
-| `allowedModels` | Model name patterns that the key can reach. Omit the field to leave the key unconstrained. For more information, see [Limit model access per key](#limit-model-access-per-key). |
+| `allowedModels` | Model name patterns that can match the request's top-level model. Omit the field to leave the key unconstrained. For more information, see [Limit model access per key](#limit-model-access-per-key). |
 
 > [!WARNING]
 > A `USD` budget charges nothing unless the catalog prices the models that the key uses. Agentgateway does not report an error in this case. The budget stays at zero usage and never rejects a request. Before you rely on a `USD` budget, confirm that the access log records `agw.ai.usage.cost.total` for the traffic that the budget covers.
@@ -348,7 +348,7 @@ EOF
    Example output:
 
    ```json
-   {"error":{"message":"Budget exceeded","type":"rate_limit_error","code":"budget_exceeded"}}
+   {"error":{"message":"budget exceeded","type":"rate_limit_error","code":"budget_exceeded"}}
    ```
 
    Agentgateway also writes a log line for each rejected request. A `USD` budget reports its amounts in dollars.
@@ -535,7 +535,7 @@ EOF
 
 ## Limit model access per key
 
-The `allowedModels` field limits which models an API key can reach. The field is independent of budgets, so it needs no database and no catalog, and you can use it on its own.
+The `allowedModels` field limits the top-level model that an API key can request. Provider server-side tools, such as the Anthropic advisor tool, can use models outside the list. The field is independent of budgets, so it needs no database and no catalog, and you can use it on its own.
 
 {{< tabs >}}
 {{% tab name="UI" %}}
@@ -566,15 +566,15 @@ llm:
 {{% /tab %}}
 {{< /tabs >}}
 
-Each entry is an exact model name or a pattern with one `*` wildcard, such as a `gpt-5*` prefix or a `*-mini` suffix. Agentgateway rejects a request for any other model with a `403` response and the `model_not_allowed` code, before the request reaches a provider.
+Each entry is an exact model name or a pattern with one `*` wildcard, such as a `gpt-5*` prefix or a `*-mini` suffix. When the top-level model does not match the list, agentgateway rejects the request before it reaches a provider. The response has a `403` status code and the `model_not_allowed` code.
 
 To create a key with model restrictions and a budget from the command line, see [Set up virtual keys (agctl)]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#agctl-create" >}}).
 
 | Value | Effect |
 | -- | -- |
-| The field is omitted | The key can reach every model that the gateway serves. This is the default. |
-| An empty list | The key can reach no models. Agentgateway rejects every LLM request from the key. |
-| `["*"]` | The key can reach every model. You cannot combine `*` with another pattern in the same list. |
+| The field is omitted | The key can request every top-level model that the gateway serves. This is the default. |
+| An empty list | The key cannot request any top-level model. Agentgateway rejects every LLM request from the key. |
+| `["*"]` | The key can request every top-level model. You cannot combine `*` with another pattern. |
 
 The field also filters the model list that the key sees. A request to `/v1/models` returns only the models that the key is allowed to use. For example, a gateway names three models individually rather than with the `"*"` pattern that Step 2 uses.
 

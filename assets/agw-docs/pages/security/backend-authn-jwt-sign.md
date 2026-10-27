@@ -185,9 +185,18 @@ print("jwtSign backend authentication verified")'
 
 A `jwtSign` policy that the gateway cannot use fails closed. The gateway rejects every request on the route instead of forwarding an unsigned one. Requests return a `500` with a general message, which deliberately does not name the credential that the gateway could not resolve.
 
+{{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ```
 backend authentication failed: jwtSign configuration is invalid
 ```
+{{< /version >}}
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+```
+backend authentication failed
+```
+
+The proxy logs record the cause, such as `jwtSign configuration is invalid`.
+{{< /version >}}
 
 Check the policy status first. The controller reports the problems that it can see on the `Accepted` condition, which stays `True` with the reason `PartiallyValid`.
 

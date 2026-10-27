@@ -14,6 +14,8 @@ Configure Anthropic (Claude models) as an LLM provider in agentgateway.
 > [!NOTE]
 > Anthropic excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Anthropic reports. To read the Anthropic number itself, use `llm.providerInputTokens`. For more information, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
 
+To add prompt-cache markers to requests automatically, set `promptCaching` on the model. For more information, see [Prompt caching]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#prompt-caching" >}}).
+
 {{< doc-test paths="anthropic" >}}
 # ============================================================================
 # Doc test coverage for this guide (these comments are not rendered on the page)
@@ -158,6 +160,10 @@ Example response:
   "stop_sequence": null
 }
 ```
+
+## Send inline files through Chat Completions {#send-inline-files-through-chat-completions}
+
+In a `/v1/chat/completions` request to Anthropic, agentgateway converts an inline `file` content part to an Anthropic `document` block. For the required `file.file_data` format and the file parts that the conversion rejects, see [File parts on a converted route]({{< link-hextra path="/documentation/llm/api-types/completions/#file-parts-on-a-converted-route" >}}).
 
 ## Token counting
 

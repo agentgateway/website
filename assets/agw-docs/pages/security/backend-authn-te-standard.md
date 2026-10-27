@@ -326,9 +326,18 @@ The exchange presents the incoming token to the authorization server exactly as 
 
    Example output:
 
+   {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
    ```
    authentication failure: the token header is malformed: Error(InvalidToken)
    ```
+   {{< /version >}}
+   {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+   ```
+   authentication failed
+   ```
+
+   The proxy logs record the reason, such as `authentication failure: the token header is malformed: Error(InvalidToken)`.
+   {{< /version >}}
 
 4. Send a request with no token at all. The gateway rejects this case too.
 
@@ -338,9 +347,18 @@ The exchange presents the incoming token to the authorization server exactly as 
 
    Example output:
 
+   {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
    ```
    authentication failure: no bearer token found
    ```
+   {{< /version >}}
+   {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+   ```
+   authentication failed
+   ```
+
+   The proxy logs record the reason, such as `authentication failure: no bearer token found`.
+   {{< /version >}}
 
 {{< doc-test paths="te-standard" >}}
 YAMLTest -f - <<'EOF'
@@ -445,7 +463,7 @@ oauth subjectToken tokenType "not a uri" must be a built-in token type or an abs
 ```
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
-Every request that uses the policy fails with a `500` and the message `oauthTokenExchange configuration is invalid`. The gateway does not call the token endpoint for these requests. Requests that do not use the policy are not affected.
+Every request that uses the policy fails with a `500` and the message `backend authentication failed`. The proxy logs record the cause, `oauthTokenExchange configuration is invalid`. The gateway does not call the token endpoint for these requests. Requests that do not use the policy are not affected.
 {{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 The data plane refuses the policy, so every request on the route fails with a `400` and the message `invalid request`.
 {{< /version >}}
@@ -462,9 +480,18 @@ Unlike the subject and actor token types, `requestedTokenType` is a closed set. 
 
 When you set `requestedTokenType`, the gateway sends `requested_token_type` on the token request, then compares the `issued_token_type` of the response against it. A mismatch fails the exchange with {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}`502`{{< /version >}}{{< version include-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}`500`{{< /version >}}, and the request never reaches the backend.
 
+{{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ```
 backend authentication failed: token exchange returned issued_token_type urn:ietf:params:oauth:token-type:jwt, expected urn:ietf:params:oauth:token-type:access_token
 ```
+{{< /version >}}
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+```
+backend authentication failed
+```
+
+The proxy logs record the cause, such as `token exchange returned issued_token_type urn:ietf:params:oauth:token-type:jwt, expected urn:ietf:params:oauth:token-type:access_token`.
+{{< /version >}}
 
 > [!NOTE]
 > When you omit `requestedTokenType`, the gateway sends no `requested_token_type` parameter, and it does not check `issued_token_type` at all. The authorization server chooses the type, and the gateway accepts whatever the response returns. Set the field when the type of the issued token matters to the backend.

@@ -18,6 +18,9 @@
    EOF
    ```
 
+   > [!NOTE]
+   > The generated service for a Gateway is of type `LoadBalancer` by default. Depending on your load balancer implementation, each Gateway can consume an external IP address from the address pool of your cluster, so creating many Gateways can exhaust that pool. If a Gateway does not need to be reachable from outside the cluster, set the service type to `ClusterIP` instead. For more information, see [Internal-only ClusterIP service]({{< link-hextra path="/documentation/setup/customize/configs/#clusterip-service" >}}).
+
 2. Verify that the agentgateway proxy is created.
 
    * Gateway: Note that it might take a few minutes for an address to be assigned.
