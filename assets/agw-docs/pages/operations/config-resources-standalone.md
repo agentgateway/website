@@ -68,13 +68,16 @@ Agentgateway supports the following resource kinds. No other kind is accepted.
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 Each kind maps to a top-level config section. For example, the `mcp.target` kind manages the entries in `mcp.targets`. An MCP target that you define inline in `routes[].backends` belongs to its `traffic.route` resource instead. Likewise, inline model and route policies belong to the resource that contains them.
 
-The `llm.settings` and `mcp.settings` kinds each hold one resource, with the ID `default`, that sets the top-level fields of its section. Accepted kinds by type of setting are as follows:
+The `llm.settings` and `mcp.settings` kinds each hold one resource, with the ID `default`, that sets the top-level fields of its section. Each kind accepts the following fields:
 
-* LLM kinds: `gateways`, `port`, and `tls`.
-* MCP kinds: `gateways`, `port`, `statefulMode`, `prefixMode`, `failureMode`, `sseKeepAlive`, `dnsRebindingProtection`, and `server`.
-* Any other field returns `400` with the message `contains unsupported field`.
+* `llm.settings`: `gateways`, `port`, and `tls`.
+* `mcp.settings`: `gateways`, `port`, `statefulMode`, `prefixMode`, `failureMode`, `sseKeepAlive`, `dnsRebindingProtection`, and `server`.
+
+A write that includes any other field returns `400` with a message such as `mcp.settings/default contains unsupported field: <field>`.
 
 In `hybrid` mode, a settings field that the config file sets is file-owned. A write that changes a file-owned field returns `409`, for example `file-owned mcp.settings/default field cannot be updated in hybrid mode: statefulMode`. A write that repeats the value from the file succeeds, and agentgateway drops that field from the stored resource.
+
+The conflict can also happen in the other order. If you save a field through the UI or API and later add the same field to the config file, agentgateway reports `config resource mcp.settings/default field <field> conflicts with file-owned configuration` when it combines the file and the stored resources. To resolve the conflict, remove the field from either the config file or the stored resource.
 
 ## Manage resources with agctl {#agctl}
 
