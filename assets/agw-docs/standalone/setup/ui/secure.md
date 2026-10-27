@@ -2,7 +2,7 @@
 
 To require users to authenticate, apply a browser [OIDC]({{< link-hextra path="/documentation/configuration/security/oidc/" >}}) policy to the gateway that serves the UI. Unauthenticated requests are redirected to your identity provider (IdP) to log in, and only requests that pass the policies in `ui.policies` reach the UI.
 
-The `ui.policies` section takes the same policies that a route takes, so you can also use [JWT]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}), [basic]({{< link-hextra path="/documentation/configuration/security/basic-authn/" >}}), or [API key]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}) authentication for programmatic access. To restrict which authenticated users get in, add an [authorization policy]({{< link-hextra path="/documentation/configuration/security/http-authz/" >}}) alongside the authentication policy.
+The `ui.policies` section takes the same policies that a route takes, so you can also use [JWT]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}), [basic]({{< link-hextra path="/documentation/configuration/security/basic-authn/" >}}), or [API key]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}) authentication for programmatic access. To restrict which authenticated users get in, add an [authorization policy]({{< link-hextra path="/documentation/configuration/security/http-authz/" >}}) alongside the authentication policy. To send the access decision to your own policy service, such as Open Policy Agent (OPA), use an [external authorization]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}) (`extAuthz`) policy. The `ui.policies` section also accepts [cross-origin resource sharing (CORS)]({{< link-hextra path="/documentation/configuration/security/cors/" >}}) and [cross-site request forgery (CSRF)]({{< link-hextra path="/documentation/configuration/security/csrf/" >}}) policies.
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 The `oidc` policy in `ui.policies` also accepts bearer ID tokens, so CLI clients can call the UI's API without a browser session. The client sends an ID token from the same identity provider and client in the `Authorization: Bearer <token>` header. This default is `credentials: sessionOrBearer`. To accept only browser sessions, set `credentials: session`. For more information, see [Bearer tokens for API clients]({{< link-hextra path="/documentation/configuration/security/oidc/#bearer-id-tokens" >}}).
@@ -168,6 +168,111 @@ Whether the UI can save depends on your storage mode. For more information, see 
 > [!IMPORTANT]
 > Agentgateway fetches the OIDC discovery document at startup, so the issuer must be reachable from the pod. When the fetch fails, the pod does not start, and the logs report `failed to decode oidc discovery response from uri`. If the pod enters `CrashLoopBackOff` after you add the policy, check the issuer URL and any egress restrictions.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+## Choose what users can do {#access-model}
+
+The policies in `ui.policies` decide what users can do after they log in, so you can match UI access to the teams in your IdP. Each request to a UI page or the UI API passes through the policies. By default, a user who logs in gets full access, which suits a small team of administrators. Full access includes saving configuration changes, managing all virtual keys, and editing `ui.policies`.
+
+To give different users different access, choose one of the following options.
+
+| Option | Effect |
+| -- | -- |
+| Authorization rules | Define your own roles from IdP claims, the request method, and the request path. For example, one group can save changes, and every other user can view. For more information, see [Set up an admin group](#admin-group). |
+| `extAuthz` policy | Your own authorization service, such as OPA, decides each UI request with any per-user rules that you write. For more information, see [External authorization]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}). |
+| `readOnly` storage mode | Every user can view the UI and all configuration changes go through your configuration file. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/#binary-readonly" >}}). |
+
+### Set up an admin group {#admin-group}
+
+Add `allow` rules to the `authorization` policy in `ui.policies` to let one group of users save changes while every other user can view. The following example gives members of the `agentgateway-admins` group full access. Before you add the rules, check that your IdP adds a `groups` claim to the ID token. Without the claim, the group rule does not match, and saves from the UI on the gateway return a `403` response. The claim name and the group names depend on your IdP configuration.
+
+The example uses the following rules.
+
+| Rule | Effect |
+| -- | -- |
+| `"agentgateway-admins" in jwt.groups` | Members of the group have full access, including saving changes. |
+| `request.method == "GET"` | Every other user can open the UI pages and read the configuration, including any secrets that the configuration file stores inline, such as virtual keys, provider API keys, and OIDC client secrets. To hide secrets, narrow this rule to the paths that users need, or use an `extAuthz` policy. |
+| `request.path.startsWith("/api/logs/") \|\| request.path == "/api/cel"` | Every other user can also search and stream request logs, view analytics, and use the Common Expression Language (CEL) playground. These pages query data with `POST` requests, so this rule includes them in view access. |
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. In a Helm installation, port-forward the admin port.
+
+   ```sh
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} 15000:15000
+   ```
+
+2. Open the **Settings** > **UI** page on the admin interface, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui).
+3. In the **UI access policies** section, click the **Authorization** card.
+4. For each rule in the table, click **Add rule**, keep **Allow** as the effect, and enter the expression.
+5. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/setup/ui/secure-admin-group-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.6.x" %}}
+{{< reuse "agw-docs/standalone/setup/ui/secure-admin-group-config.md" >}}
+{{% /version %}}
+
+#### Verify the rules
+
+1. Log in to the UI on the gateway as a member of the `agentgateway-admins` group, and save a change to verify that the group rule matches. If the save returns a `403` response, check the name and values of the `groups` claim in your IdP, and update the rule.
+2. Log in to the UI as a user outside the group, and verify that you can browse the UI. When you save a change, the gateway returns a `403` response, because only members of the group can save changes, including changes to `ui.policies`.
+
+## Choose how users are identified {#signed-in-user}
+
+Agentgateway identifies the user of each request with the `agentgateway.user` attribute. Request logs, analytics, and [virtual key owners]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#key-owners" >}}) record this value. By default, the value comes from the first of the following sources that has a value:
+
+1. The metadata of a virtual key, in this order: `agentgateway.dev/owner`, `user`, `name`, then `owner`
+2. The `sub` claim, then the `email` claim, of a JWT or an OIDC session
+3. The username of a basic authentication request
+4. The client identity of a mutual TLS (mTLS) connection, such as the workload identity or the common name of the client certificate
+
+You choose which value identifies your users. Many IdPs set the `sub` claim to a stable ID, such as the UUID `1ed4bac1-9a81-4867-a81f-04cfc58bf0b2` in Keycloak. To record email addresses instead, set the user attribute to the following CEL expression.
+
+Your expression replaces the whole default order, not only the JWT part. For example, if you set the attribute to `jwt.email` alone, requests that use a virtual key no longer record a user. Key owners then stop appearing in request logs. The following expression keeps the default order and checks the `email` claim before the `sub` claim.
+
+```txt
+coalesce(apiKey["agentgateway.dev/owner"], apiKey.user, apiKey.name, apiKey.owner, jwt.email, jwt.sub, basicAuth.username, source.identity.namespace + "/" + source.identity.serviceAccount, source.subjectCn, null)
+```
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Logs** page, and click **Settings**.
+2. In the **Request log identity** section of the **Log settings** drawer, enter the expression in the **User attribute** field.
+3. Click **Save settings**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+Set the `standardAttributes.user` field in the `config` section of your configuration file to the expression. In a Helm installation, the field is `config.config.standardAttributes.user` in your values file, because the `config` value holds the whole configuration file.
+
+```yaml
+config:
+  standardAttributes:
+    user: 'coalesce(apiKey["agentgateway.dev/owner"], apiKey.user, apiKey.name, apiKey.owner, jwt.email, jwt.sub, basicAuth.username, source.identity.namespace + "/" + source.identity.serviceAccount, source.subjectCn, null)'
+```
+{{% /tab %}}
+{{< /tabs >}}
+
+You can set the field to any CEL expression that returns a string. The account menu shows the user's name and email address from the `name` (or `preferred_username`) and `email` claims, so your expression changes the menu only when the token has neither. For an OIDC session, if your expression returns no value, agentgateway uses the `sub` claim instead, so the account menu and **Sign out** stay available.
+
+
+#### Verify the changes
+Open the `/api/runtime` endpoint in the browser where you are logged in to the UI, such as [http://localhost:4001/api/runtime](http://localhost:4001/api/runtime). The `subject` field of the `user` object shows the value that agentgateway records for your requests.
+
+```json
+"user": {
+  "subject": "alice@example.com",
+  "name": "Alice Admin",
+  "email": "alice@example.com",
+  "canLogout": true
+}
+```
+
+{{< /version >}}
+
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 ## Authenticate CLI access {#agctl}
 
@@ -180,3 +285,6 @@ To verify the connection, run `agctl standalone --gateway <profile-name> get all
 
 * [Expose the UI]({{< link-hextra path="/documentation/setup/ui/expose-ui/" >}}) on your own HTTPS hostname, now that a login is required.
 * [Choose where configuration is stored]({{< link-hextra path="/documentation/setup/storage/" >}}) so that the UI can save your changes.
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+* [See who owns each virtual key]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#key-owners" >}}) and how the owner affects request logs.
+{{< /version >}}
