@@ -19,8 +19,8 @@ Inspect and manage the agentgateway proxy admin API.
 ### SEE ALSO
 
 * [agctl](../agctl/)	 - agctl controls and inspects Agentgateway resources
-* [agctl proxy config](../agctl-proxy-config/)	 - Retrieve agentgateway configuration for a resource
-* [agctl proxy log](../agctl-proxy-log/)	 - Get or set proxy log levels
-* [agctl proxy profile](../agctl-proxy-profile/)	 - Collect Agentgateway proxy pprof profiles
+{{% conditional-text include-if="kubernetes" %}}* [agctl proxy config](../agctl-proxy-config/)	 - Retrieve agentgateway configuration for a resource
+{{% /conditional-text %}}{{% conditional-text include-if="kubernetes" %}}* [agctl proxy log](../agctl-proxy-log/)	 - Get or set proxy log levels
+{{% /conditional-text %}}* [agctl proxy profile](../agctl-proxy-profile/)	 - Collect Agentgateway proxy pprof profiles
 * [agctl proxy trace](../agctl-proxy-trace/)	 - Trace requests handled by an agentgateway pod or local instance.
 

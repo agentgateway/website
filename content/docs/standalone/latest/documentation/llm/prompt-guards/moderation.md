@@ -36,7 +36,7 @@ In this configuration, agentgateway calls the Moderation API for each request an
 
    ```yaml
    cat <<EOF > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
    llm:
      models:
      - name: "*"
@@ -96,7 +96,7 @@ Because the gateway sets the parameter, a client cannot weaken the moderation th
 1. Create a configuration file that routes to OpenAI and sets the `moderation` field on the provider.
    ```yaml
    cat <<EOF > moderation-config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
    gateways:
      default:
        port: 3000
