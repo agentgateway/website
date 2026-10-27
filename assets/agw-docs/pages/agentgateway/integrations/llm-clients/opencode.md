@@ -117,9 +117,18 @@ Configure an OpenAI model and a virtual key for OpenCode. Agentgateway replaces 
 
 If the virtual key is missing, unknown, or revoked, OpenCode shows the `401` response from agentgateway.
 
+{{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ```
 Error: Unauthorized: api key authentication failure: invalid credentials
 ```
+{{< /version >}}
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+```
+Error: Unauthorized: authentication failed
+```
+
+The agentgateway logs record the reason, such as `api key authentication failure: invalid credentials`.
+{{< /version >}}
 
 ## Next steps
 

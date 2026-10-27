@@ -187,6 +187,8 @@ When a request matches an entry in the catalog, agentgateway populates these CEL
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}`llm.cost.cacheWriteDetails` reports the cost of Anthropic 1-hour and OpenAI 12-hour prompt-cache writes. For more information, see [Cache writes by TTL](#cache-write-details).{{< /version >}}
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}When an Anthropic Messages response reports `usage.iterations`, the request cost uses a separate calculation for each iteration. If an iteration names a `model` with an exact catalog match, the tokens for that iteration use that model's catalog entry. Otherwise, the iteration uses the response model. The request cost is the sum of those iteration costs.{{< /version >}}
+
 {{< version exclude-if="1.5.x" >}}For page-billed document models, `llm.cost.pages` reports the page-cost component, and `llm.costRates.perPage` reports the USD-per-page rate that was applied.{{< /version >}}
 
 The request access log includes `agw.ai.usage.cost.total` only for priced LLM requests. When the model cannot be priced, the access log leaves out the field.
