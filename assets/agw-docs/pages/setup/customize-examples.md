@@ -564,8 +564,8 @@ To keep a Gateway reachable only from inside the cluster, set the service type t
    Example output:
 
    ```txt
-   NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
-   agentgateway-proxy   ClusterIP   172.20.200.127   <none>        80/TCP    10s
+   NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+   agentgateway-proxy   ClusterIP   172.xx.xxx.xx   <none>        80/TCP    10s
    ```
 
    To reach a `ClusterIP` gateway, send requests from a pod in the cluster to `agentgateway-proxy.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local`, or use `kubectl port-forward` for local testing.
