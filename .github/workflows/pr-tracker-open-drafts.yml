@@ -425,8 +425,10 @@ jobs:
           fi
 
           # Exit 0: append asked for and the metadata is good. 2: not asked
-          # for, an ordinary draft, left to the refresh job. Anything else:
-          # refused.
+          # for, an ordinary draft, left to the refresh job. 4: older than 30
+          # days, skipped as the refresh job skips it: the drafting side
+          # writes a new pushed_at only when it has something to add, so a
+          # quiet month is not an error. Anything else: refused.
           status=0
           git log -1 --format=%B "${tip}" \
             | awk -v m="${METADATA_MARKER}" '$0 == "-----END " m "-----" && f { ok = 1; exit } f { print } $0 == "-----BEGIN " m "-----" { f = 1 } END { exit !ok }' \
@@ -441,17 +443,26 @@ jobs:
               sys.exit(3)
           pushed = datetime.datetime.fromisoformat(str(m.get("pushed_at", "")).replace("Z", "+00:00"))
           age = datetime.datetime.now(datetime.timezone.utc) - pushed
-          sys.exit(0 if datetime.timedelta(minutes=-10) <= age <= datetime.timedelta(days=30) else 3)
+          if age < datetime.timedelta(minutes=-10):
+              sys.exit(3)
+          sys.exit(4 if age > datetime.timedelta(days=30) else 0)
           PY
           fi
           case "$status" in
             0) ;;
             2) echo "${BRANCH}: an ordinary draft; nothing to add."; echo "ok=false" >> "$GITHUB_OUTPUT"; exit 0 ;;
-            *) echo "::error::the signed metadata on ${BRANCH} does not name this branch, or is too old, or does not parse."
+            4) echo "${BRANCH}: the draft was pushed more than 30 days ago; nothing to add."
+               echo "ok=false" >> "$GITHUB_OUTPUT"; exit 0 ;;
+            *) echo "::error::the signed metadata on ${BRANCH} does not name this branch, is dated in the future, or does not parse."
                exit 1 ;;
           esac
 
-          last=$(git log --format='%(trailers:key=Drafts-Commit,valueonly)' HEAD | grep -m1 -E '^[0-9a-f]{40}$' || true)
+          # Only the pull request's own commits: once main is merged into
+          # the branch, HEAD's history also holds the trailers of other
+          # drafts that already merged.
+          git rev-parse -q --verify origin/main > /dev/null || git fetch -q origin main:refs/remotes/origin/main
+          last=$(git log --format='%(trailers:key=Drafts-Commit,valueonly)' origin/main..HEAD \
+                   | grep -m1 -E '^[0-9a-f]{40}$' || true)
           if [ -z "$last" ]; then
             echo "::warning::${BRANCH}: no Drafts-Commit trailer on the pull request branch, so it is not known which draft commits it has; adding nothing."
             echo "ok=false" >> "$GITHUB_OUTPUT"
@@ -496,7 +507,9 @@ jobs:
           printf '%s\n' "${changed}" | sed 's/^/  /'
 
       # A conflict means somebody edited the same lines on the pull request
-      # branch; nothing is added, and the run summary says which files.
+      # branch; nothing is added, and the run summary says which files. It
+      # fails the job: the trailer does not move, so every later run conflicts
+      # again, and appending stays stopped until a maintainer resolves it.
       # DCO: the commit carries a Signed-off-by trailer.
       - name: Add the new commits to the pull request branch
         if: steps.guard.outputs.ok == 'true'
@@ -513,12 +526,12 @@ jobs:
           if ! git apply --index --3way "${patch}"; then
             conflicts=$(git diff --name-only --diff-filter=U)
             git reset -q --hard HEAD
-            echo "::warning::the new commits on ${BRANCH} conflict with edits on ${URL}; nothing added. See the run summary."
+            echo "::error::the new commits on ${BRANCH} conflict with edits on ${URL}; nothing added, and nothing will be until the conflict is resolved on the pull request branch. See the run summary."
             {
-              echo "- \`${BRANCH}\`: its new commits conflict with edits on ${URL}, so nothing was added. Conflicting files:"
+              echo "- \`${BRANCH}\`: its new commits conflict with edits on ${URL}, so nothing was added. Resolve the conflict on the pull request branch, or close the pull request, for later fixes to be added. Conflicting files:"
               printf '%s\n' "${conflicts}" | tr -d '`' | sed 's/^/    - `/; s/$/`/'
             } >> "$GITHUB_STEP_SUMMARY"
-            exit 0
+            exit 1
           fi
           git -c user.name="GitHub Action" -c user.email="action@github.com" commit -q \
             -m "Add the drafting side's new changes" \
