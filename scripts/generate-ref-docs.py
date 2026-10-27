@@ -381,19 +381,44 @@ def _freeze_dir(assets_path: str, link_version: str, doc_version: str, website_d
 # the known case: it uses `Subsystem: xdsSubsystem`, declared in controlplane.go, so the
 # emitted agentgateway_xds_cert_* metrics were documented as agentgateway_cert_*.
 #
-# The fix belongs upstream (build the constants map per package), but until it lands this
-# post-process re-resolves those identifiers across the package and renames the rows.
-_METRIC_CALL_RE = re.compile(
-    r"\bmetrics\.New(?:Counter|Gauge|Histogram)\(\s*metrics\.\w+Opts\{(?P<opts>[^{}]*)\}",
-    re.DOTALL,
-)
-_OPT_RE = re.compile(r'\b(Namespace|Subsystem|Name|Help)\s*:\s*("(?:[^"\\]|\\.)*"|\w+)')
-_STRING_CONST_RE = re.compile(r'^\s*(?:const\s+|var\s+)?(\w+)(?:\s+string)?\s*=\s*"((?:[^"\\]|\\.)*)"', re.MULTILINE)
+# TODO: delete this post-process once findmetrics builds its constants map per package
+# instead of per file (parseFile() in controller/pkg/metrics/cmd/findmetrics/main.go).
+# Until then it re-resolves those identifiers across the package and renames the rows.
+# It reads Go with regexes, so every case it cannot resolve prints a warning instead of
+# passing silently.
+_METRIC_CALL_RE = re.compile(r"\bmetrics\.New(?:Counter|Gauge|Histogram)\(\s*metrics\.\w+Opts\{")
+_OPT_RE = re.compile(r'\b(Namespace|Subsystem|Name|Help)\s*:\s*("(?:[^"\\]|\\.)*"|\w+(?:\.\w+)?)')
+# Package-level string constants only: a `const`/`var` line at the start of a line, or a
+# line inside a top-level `const (...)`/`var (...)` block. findmetrics also reads constants
+# declared inside functions, but no metric option uses one today.
+_DECL_BLOCK_RE = re.compile(r"^(?:const|var) \((.*?)^\)", re.MULTILINE | re.DOTALL)
+_DECL_LINE_RE = re.compile(r'^(?:const|var) (\w+)(?: string)? = "((?:[^"\\]|\\.)*)"', re.MULTILINE)
+_BLOCK_ENTRY_RE = re.compile(r'^\s+(\w+)(?: string)? *= *"((?:[^"\\]|\\.)*)"', re.MULTILINE)
 _DEFAULT_METRIC_NAMESPACE = "agentgateway"
 
 
 def _metric_full_name(namespace: str, subsystem: str, name: str) -> str:
     return "_".join(p for p in (namespace, subsystem, name) if p)
+
+
+def _string_consts(src: str) -> dict[str, str]:
+    consts = dict(_DECL_LINE_RE.findall(src))
+    for block in _DECL_BLOCK_RE.finditer(src):
+        consts.update(_BLOCK_ENTRY_RE.findall(block.group(1)))
+    return consts
+
+
+def _opts_body(src: str, start: int) -> str:
+    """Return the text of an Opts literal from just after its `{` to the matching `}`."""
+    depth = 1
+    for i in range(start, len(src)):
+        if src[i] == "{":
+            depth += 1
+        elif src[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return src[start:i]
+    return src[start:]
 
 
 def fix_cross_file_metric_prefixes(md_content: str, controller_dir: str) -> str:
@@ -408,18 +433,18 @@ def fix_cross_file_metric_prefixes(md_content: str, controller_dir: str) -> str:
             path = os.path.join(root, name)
             with open(path, encoding="utf-8") as f:
                 src = f.read()
-            consts = dict(_STRING_CONST_RE.findall(src))
+            consts = _string_consts(src)
             sources[path] = src
             file_consts[path] = consts
-            package_consts.setdefault(root, {}).update(consts)
+            package_consts.setdefault(os.path.dirname(path), {}).update(consts)
 
     renames: dict[tuple[str, str], str] = {}
     for path, src in sources.items():
         for call in _METRIC_CALL_RE.finditer(src):
-            opts = dict(_OPT_RE.findall(call.group("opts")))
-            name = opts.get("Name", "")
-            if not name.startswith('"'):
+            opts = dict(_OPT_RE.findall(_opts_body(src, call.end())))
+            if not opts.get("Name", "").startswith('"'):
                 continue
+            name = opts["Name"].strip('"')
             found = {"Namespace": "", "Subsystem": ""}
             fixed = dict(found)
             for key in found:
@@ -429,11 +454,17 @@ def fix_cross_file_metric_prefixes(md_content: str, controller_dir: str) -> str:
                 elif value:
                     found[key] = file_consts[path].get(value, "")
                     fixed[key] = package_consts[os.path.dirname(path)].get(value, found[key])
+                    if not fixed[key]:
+                        print(
+                            f"    Warning: cannot resolve {key} {value} for metric {name} "
+                            f"in {os.path.relpath(path, controller_dir)}; its documented name may be wrong"
+                        )
             found["Namespace"] = found["Namespace"] or _DEFAULT_METRIC_NAMESPACE
             fixed["Namespace"] = fixed["Namespace"] or _DEFAULT_METRIC_NAMESPACE
-            wrong = _metric_full_name(found["Namespace"], found["Subsystem"], name.strip('"'))
-            right = _metric_full_name(fixed["Namespace"], fixed["Subsystem"], name.strip('"'))
+            wrong = _metric_full_name(found["Namespace"], found["Subsystem"], name)
+            right = _metric_full_name(fixed["Namespace"], fixed["Subsystem"], name)
             if wrong != right:
+                # findmetrics trims only the quotes, so a Help with escapes still matches its cell.
                 renames[(wrong, opts.get("Help", "").strip('"'))] = right
 
     if not renames:
@@ -444,11 +475,14 @@ def fix_cross_file_metric_prefixes(md_content: str, controller_dir: str) -> str:
     fixed_rows = []
     for row in rows:
         cells = row.split("|")
-        new_name = renames.get((cells[0], "|".join(cells[3:]))) if len(cells) >= 4 else None
+        key = (cells[0], "|".join(cells[3:])) if len(cells) >= 4 else None
+        new_name = renames.pop(key, None) if key else None
         if new_name:
             print(f"    ✓ Renamed metric {cells[0]} -> {new_name}")
             cells[0] = new_name
         fixed_rows.append("|".join(cells))
+    for wrong, right in renames.items():
+        print(f"    Warning: no row for {wrong[0]} in the findmetrics output; expected to rename it to {right}")
     # findmetrics sorts by full name, so restore that order after renaming.
     fixed_rows.sort(key=lambda r: r.split("|", 1)[0])
     return "\n".join(header + fixed_rows) + "\n"

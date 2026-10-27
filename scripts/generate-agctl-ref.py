@@ -93,8 +93,13 @@ CONTENT_MODES = ("standalone", "kubernetes")
 MODE_ONLY_COMMANDS = {
     # controller/pkg/cli/standalone/: calls the standalone admin API.
     "agctl-standalone": "standalone",
-    # controller/pkg/cli/bugreport/: reads the cluster through the kubeconfig.
+    # The rest resolve their target through the kubeconfig (controller/pkg/cli/kubeutil/).
+    # `agctl proxy trace` and `agctl proxy profile` also take --local, so they stay in both.
     "agctl-bug-report": "kubernetes",
+    "agctl-controller": "kubernetes",
+    "agctl-migrate": "kubernetes",
+    "agctl-proxy-config": "kubernetes",
+    "agctl-proxy-log": "kubernetes",
 }
 
 
