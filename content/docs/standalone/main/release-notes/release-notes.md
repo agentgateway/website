@@ -12,7 +12,7 @@ Review the release notes for agentgateway standalone.
 
 ## ✨ Highlights {#v17-highlights}
 
-Version 1.7 knows more about your models and your traffic than ever. Review the following highlights. Before you upgrade, also review the [breaking changes](#v17-breaking-changes). In particular, standalone deployments now encrypt MCP sessions by default, prompt guards inspect tool outputs by default, and dynamic backends can no longer reach loopback or link-local addresses.
+Version 1.7 knows more about your models and your traffic than ever. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.
 
 - **[Model metadata and service-tier costs](#v17-catalog)**: The model catalog knows each model's context window, modalities, and capabilities, and shares them through `/v1/models` and CEL. Costs reflect the service tier that served each request.
 - **[New LLM APIs and providers](#v17-llm)**: Agentgateway speaks the OpenAI Decisions and TypeSafe SystemOne APIs natively, adds Perplexity, and lets virtual models choose a target by calling your own routing service.
@@ -21,6 +21,8 @@ Version 1.7 knows more about your models and your traffic than ever. Review the 
 - **[OIDC for browsers and API clients](#v17-security)**: One OIDC policy can accept both browser sessions and bearer ID tokens.
 
 ## 🔥 Breaking changes {#v17-breaking-changes}
+
+Before you upgrade, review the breaking changes. In particular, standalone deployments now encrypt MCP sessions by default, prompt guards inspect tool outputs by default, and dynamic backends can no longer reach loopback or link-local addresses.
 
 ### Standalone encrypts MCP sessions with a key by default {#v17-session-key}
 
@@ -78,7 +80,7 @@ Dynamic backends now reject destinations that resolve to loopback, link-local, o
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2162 -->
 
-Error responses that agentgateway generates now carry a generic message instead of the internal cause of the error. The HTTP status codes are unchanged. For example, a failed JWT, API key, basic, or OIDC authentication returns `authentication failed`, a failed backend authentication returns `backend authentication failed`, and a request without an available backend returns `no backends available`. The same applies to the `grpc-message` of gRPC responses and the error message of MCP JSON-RPC responses. Errors that describe the client's own request, such as an invalid LLM request body or MCP session header, keep their details. Rejection responses that you configure, such as for prompt guards, are unchanged. The `error` field of the access log and the request traces still contain the full cause.
+Error responses that agentgateway generates now carry a generic message instead of the internal cause of the error. <!--TODO: confirm the rationale with the agentgateway maintainers (upstream PR 2162)-->This keeps internal details, such as signing key IDs, file paths, and upstream addresses, from being exposed to clients. The HTTP status codes are unchanged. For example, a failed JWT, API key, basic, or OIDC authentication returns `authentication failed`, a failed backend authentication returns `backend authentication failed`, and a request without an available backend returns `no backends available`. The same applies to the `grpc-message` of gRPC responses and the error message of MCP JSON-RPC responses. Errors that describe the client's own request, such as an invalid LLM request body or MCP session header, keep their details. Rejection responses that you configure, such as for prompt guards, are unchanged. The `error` field of the access log and the request traces still contain the full cause.
 
 **Actions to take**: If clients, tests, or alerts parse error response bodies or match their text, update them to match the generic messages or use the status code instead. To find the cause of an error, check the access log. To return the full details to clients while you debug in a trusted environment, set the `AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS` environment variable to `true`. Do not use this setting in production. For more information, see [Client-safe error responses]({{< link-hextra path="/documentation/operations/debug/#client-safe-error-responses" >}}).
 

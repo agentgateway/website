@@ -12,7 +12,7 @@ Review the release notes for agentgateway on Kubernetes.
 
 ## ✨ Highlights {#v17-highlights}
 
-Version 1.7 knows more about your models and your traffic than ever. Review the following highlights. Before you upgrade, also review the [breaking changes](#v17-breaking-changes). In particular, prompt guards inspect tool outputs by default, and dynamic forward proxy backends can no longer reach loopback or link-local addresses.
+Version 1.7 knows more about your models and your traffic than ever. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.
 
 - **[Model metadata and service-tier costs](#v17-catalog)**: The model catalog knows each model's context window, modalities, and capabilities, and shares them through `/v1/models` and CEL. Costs reflect the service tier that served each request.
 - **[New LLM APIs and providers](#v17-llm)**: Agentgateway speaks the OpenAI Decisions and TypeSafe SystemOne APIs natively and adds Perplexity and Copilot. Virtual models can choose a target by calling your own routing service.
@@ -20,6 +20,8 @@ Version 1.7 knows more about your models and your traffic than ever. Review the 
 - **[Kubernetes and operations](#v17-operations)**: HTTPS and TLS passthrough listeners can share a port, the Helm chart can skip RBAC resources, and `agctl bug-report` collects diagnostics into one archive.
 
 ## 🔥 Breaking changes {#v17-breaking-changes}
+
+Before you upgrade, review the breaking changes. In particular, prompt guards inspect tool outputs by default, and dynamic forward proxy backends can no longer reach loopback or link-local addresses.
 
 ### Prompt guards inspect tool outputs by default {#v17-prompt-guard-scope}
 
@@ -59,7 +61,7 @@ An {{< reuse "agw-docs/snippets/backend.md" >}} with `spec.dynamicForwardProxy` 
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2162 -->
 
-Error responses that the agentgateway proxy generates now carry a generic message instead of the internal cause of the error. The HTTP status codes are unchanged. For example, a failed JWT, API key, basic, or OIDC authentication returns `authentication failed`, a failed backend authentication returns `backend authentication failed`, and a request without an available backend returns `no backends available`. The same applies to the `grpc-message` of gRPC responses and the error message of MCP JSON-RPC responses. Errors that describe the client's own request, such as an invalid LLM request body or MCP session header, keep their details. Rejection responses that you configure, such as for prompt guards, are unchanged. The `error` field of the access log and the request traces still contain the full cause.
+Error responses that the agentgateway proxy generates now carry a generic message instead of the internal cause of the error. <!--TODO: confirm the rationale with the agentgateway maintainers (upstream PR 2162)-->This keeps internal details, such as signing key IDs, file paths, and upstream addresses, from being exposed to clients. The HTTP status codes are unchanged. For example, a failed JWT, API key, basic, or OIDC authentication returns `authentication failed`, a failed backend authentication returns `backend authentication failed`, and a request without an available backend returns `no backends available`. The same applies to the `grpc-message` of gRPC responses and the error message of MCP JSON-RPC responses. Errors that describe the client's own request, such as an invalid LLM request body or MCP session header, keep their details. Rejection responses that you configure, such as for prompt guards, are unchanged. The `error` field of the access log and the request traces still contain the full cause.
 
 **Actions to take**: If clients, tests, or alerts parse error response bodies or match their text, update them to match the generic messages or use the status code instead. To find the cause of an error, check the proxy's access log. To return the full details to clients while you debug in a trusted environment, set the `AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS` environment variable to `true` in `spec.env` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. Do not use this setting in production. For more information, see [Client-safe error responses]({{< link-hextra path="/documentation/operations/debug/#client-safe-error-responses" >}}).
 
