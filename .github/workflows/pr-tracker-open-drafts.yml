@@ -16,7 +16,9 @@
 # and body come from the message of the branch's tip commit, an empty commit the
 # drafting run signs. It changes no file, so nothing of it appears in the diff
 # under review, and a pull request opened by hand from the fork has no file to
-# delete either.
+# delete either. For an open pull request it refreshes the description, and,
+# only when the draft's signed metadata asks for it with `"append": true`, adds
+# the fork branch's new commits as a new commit (see the append job).
 #
 # WHAT TO REVIEW IT FOR. It copies content from a repository in another
 # organization, so it refuses any branch that touches a path outside
@@ -46,7 +48,8 @@ concurrency:
 # clicks "Approve and run"; see the note added to each body.
 # NOTHING BY DEFAULT; each job below asks for only what it uses. Listing
 # branches and pull requests is read-only, refreshing a description only edits
-# pull requests, and only the job that opens a pull request pushes a branch.
+# pull requests, and only the jobs that open a pull request or add to one push
+# a branch.
 permissions: {}
 
 env:
@@ -360,6 +363,168 @@ jobs:
 
           gh pr edit "${URL}" --body-file /tmp/body.md
           echo "- Refreshed ${URL}" >> "$GITHUB_STEP_SUMMARY"
+
+  # NEW COMMITS ON AN OPEN DRAFT, FOR DRAFTS THAT ASK FOR IT. The refresh job
+  # above never touches content, so that a maintainer's pushes are never
+  # undone. A draft whose signed metadata says `"append": true` (the doc test
+  # fixer's, which adds each day's fixes to one pull request until it merges)
+  # gets its fork branch's NEW commits added here as well: only the commits
+  # since the last one copied, applied on top of whatever the pull request
+  # branch holds now, as a new commit. Nothing is force-pushed, so a
+  # maintainer's commits stay.
+  #
+  # The last fork commit copied is named in a `Drafts-Commit:` trailer, written
+  # by the open job and by this one. A fork branch that no longer contains it
+  # was force-pushed, and is refused rather than guessed at.
+  append:
+    name: Add new draft commits to open PRs
+    needs: find
+    if: needs.find.outputs.refresh != '[]' && needs.find.outputs.refresh != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        pr: ${{ fromJSON(needs.find.outputs.refresh) }}
+    steps:
+      - name: Checkout the pull request branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ matrix.pr.branch }}
+          fetch-depth: 0
+
+      # The same checks the open job's guard makes before it copies anything:
+      # the tip signed by the drafting side's key, metadata bound to this
+      # branch and recent, and only regular files under ALLOWED_PATHS. Here
+      # they cover the commits since the last copy, which is all that is copied.
+      - name: Check the new draft commits
+        id: guard
+        env:
+          BRANCH: ${{ matrix.pr.branch }}
+        run: |
+          set -euo pipefail
+          git remote add drafts "https://github.com/${FORK_REPO}.git"
+          git fetch -q drafts "${BRANCH}"
+          tip=$(git rev-parse "drafts/${BRANCH}")
+
+          if [ -z "${DRAFTS_SIGNING_KEY}" ]; then
+            echo "::error::DRAFTS_SIGNING_KEY is not set, so no draft can be verified."
+            exit 1
+          fi
+          signers="${RUNNER_TEMP}/allowed_signers"
+          printf 'action@github.com namespaces="git" %s\n' "${DRAFTS_SIGNING_KEY}" > "${signers}"
+          want=$(printf '%s\n' "${DRAFTS_SIGNING_KEY}" | ssh-keygen -lf - 2>/dev/null | awk '{print $2}' || true)
+          got=$(git -c gpg.format=ssh -c "gpg.ssh.allowedSignersFile=${signers}" \
+                -c gpg.openpgp.program=false -c gpg.x509.program=false \
+                log -1 --format='%G?|%GF' "${tip}" 2>/dev/null || true)
+          if [ -z "${want}" ] || [ "${got}" != "G|${want}" ]; then
+            echo "::warning::the tip of ${BRANCH} is not signed by the drafting side's key; adding nothing."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Exit 0: append asked for and the metadata is good. 2: not asked
+          # for, an ordinary draft, left to the refresh job. Anything else:
+          # refused.
+          status=0
+          git log -1 --format=%B "${tip}" \
+            | awk -v m="${METADATA_MARKER}" '$0 == "-----END " m "-----" && f { ok = 1; exit } f { print } $0 == "-----BEGIN " m "-----" { f = 1 } END { exit !ok }' \
+            > "${RUNNER_TEMP}/meta.json" || status=3
+          if [ "$status" = 0 ]; then
+            BRANCH="${BRANCH}" python3 - "${RUNNER_TEMP}/meta.json" <<'PY' || status=$?
+          import datetime, json, os, sys
+          m = json.load(open(sys.argv[1]))
+          if m.get("append") is not True:
+              sys.exit(2)
+          if m.get("branch") != os.environ["BRANCH"]:
+              sys.exit(3)
+          pushed = datetime.datetime.fromisoformat(str(m.get("pushed_at", "")).replace("Z", "+00:00"))
+          age = datetime.datetime.now(datetime.timezone.utc) - pushed
+          sys.exit(0 if datetime.timedelta(minutes=-10) <= age <= datetime.timedelta(days=30) else 3)
+          PY
+          fi
+          case "$status" in
+            0) ;;
+            2) echo "${BRANCH}: an ordinary draft; nothing to add."; echo "ok=false" >> "$GITHUB_OUTPUT"; exit 0 ;;
+            *) echo "::error::the signed metadata on ${BRANCH} does not name this branch, or is too old, or does not parse."
+               exit 1 ;;
+          esac
+
+          last=$(git log --format='%(trailers:key=Drafts-Commit,valueonly)' HEAD | grep -m1 -E '^[0-9a-f]{40}$' || true)
+          if [ -z "$last" ]; then
+            echo "::warning::${BRANCH}: no Drafts-Commit trailer on the pull request branch, so it is not known which draft commits it has; adding nothing."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$last" = "$tip" ]; then
+            echo "${BRANCH}: nothing new on the fork."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! git merge-base --is-ancestor "$last" "$tip"; then
+            echo "::error::${BRANCH} on the fork no longer contains ${last}, the last commit copied; it was force-pushed. Adding nothing."
+            exit 1
+          fi
+
+          changed=$(git diff --name-only --no-renames "${last}" "${tip}")
+          bad=""
+          while IFS= read -r file; do
+            [ -n "${file}" ] || continue
+            allowed=false
+            for prefix in ${ALLOWED_PATHS}; do
+              case "${file}" in "${prefix}"/*) allowed=true; break ;; esac
+            done
+            [ "${allowed}" = true ] || bad="${bad}  ${file}\n"
+          done <<< "${changed}"
+          if [ -n "${bad}" ]; then
+            echo "::error::the new commits on ${BRANCH} write outside ${ALLOWED_PATHS}; adding nothing:"
+            printf "%b" "${bad}"
+            exit 1
+          fi
+          for mode in $(git diff --raw --no-renames "${last}" "${tip}" | awk '{print $2}' | sort -u); do
+            case "${mode}" in
+              100644|000000) ;;
+              *) echo "::error::the new commits on ${BRANCH} add a file with mode ${mode}; adding nothing."; exit 1 ;;
+            esac
+          done
+          {
+            echo "ok=true"
+            echo "last=${last}"
+            echo "tip=${tip}"
+          } >> "$GITHUB_OUTPUT"
+          printf '%s\n' "${changed}" | sed 's/^/  /'
+
+      # A conflict means somebody edited the same lines on the pull request
+      # branch; nothing is added, and the run summary says which files.
+      # DCO: the commit carries a Signed-off-by trailer.
+      - name: Add the new commits to the pull request branch
+        if: steps.guard.outputs.ok == 'true'
+        env:
+          BRANCH: ${{ matrix.pr.branch }}
+          URL: ${{ matrix.pr.url }}
+          LAST: ${{ steps.guard.outputs.last }}
+          TIP: ${{ steps.guard.outputs.tip }}
+        run: |
+          set -euo pipefail
+          patch="${RUNNER_TEMP}/append.patch"
+          # shellcheck disable=SC2086 # ALLOWED_PATHS is a space-separated list
+          git diff --binary --no-renames "${LAST}" "${TIP}" -- ${ALLOWED_PATHS} > "${patch}"
+          if ! git apply --index --3way "${patch}"; then
+            conflicts=$(git diff --name-only --diff-filter=U)
+            git reset -q --hard HEAD
+            echo "::warning::the new commits on ${BRANCH} conflict with edits on ${URL}; nothing added. See the run summary."
+            {
+              echo "- \`${BRANCH}\`: its new commits conflict with edits on ${URL}, so nothing was added. Conflicting files:"
+              printf '%s\n' "${conflicts}" | tr -d '`' | sed 's/^/    - `/; s/$/`/'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git -c user.name="GitHub Action" -c user.email="action@github.com" commit -q \
+            -m "Add the drafting side's new changes" \
+            -m "$(printf 'Drafts-Commit: %s\nSigned-off-by: GitHub Action <action@github.com>' "${TIP}")"
+          git push -q origin "HEAD:refs/heads/${BRANCH}"
+          echo "- Added the new commits on \`${BRANCH}\` to ${URL}" >> "$GITHUB_STEP_SUMMARY"
 
   open:
     name: Open PR
@@ -718,6 +883,8 @@ jobs:
             exit 0
           fi
           echo "conflict=false" >> "$GITHUB_OUTPUT"
+          # The fork commit this copies, for the append job's next run.
+          echo "tip=$(git rev-parse "drafts/${BRANCH}")" >> "$GITHUB_OUTPUT"
           # One path per line for `add-paths`, so ALLOWED_PATHS is the only list.
           # shellcheck disable=SC2086
           { echo "paths<<EOF"; printf '%s\n' ${ALLOWED_PATHS}; echo "EOF"; } >> "$GITHUB_OUTPUT"
@@ -733,7 +900,12 @@ jobs:
           add-paths: ${{ steps.apply.outputs.paths }}
           title: ${{ steps.meta.outputs.title }}
           body: ${{ steps.meta.outputs.body }}
-          commit-message: ${{ steps.meta.outputs.title }}
+          # The trailer names the fork commit copied, so the append job knows
+          # which later fork commits are new.
+          commit-message: |
+            ${{ steps.meta.outputs.title }}
+
+            Drafts-Commit: ${{ steps.apply.outputs.tip }}
           committer: GitHub Action <action@github.com>
           author: GitHub Action <action@github.com>
           signoff: true
