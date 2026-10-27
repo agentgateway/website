@@ -68,6 +68,14 @@ Agentgateway supports the following resource kinds. No other kind is accepted.
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 Each kind maps to a top-level config section. For example, the `mcp.target` kind manages the entries in `mcp.targets`. An MCP target that you define inline in `routes[].backends` belongs to its `traffic.route` resource instead. Likewise, inline model and route policies belong to the resource that contains them.
 
+The `llm.settings` and `mcp.settings` kinds each hold one resource, with the ID `default`, that sets the top-level fields of its section. Accepted kinds by type of setting are as follows:
+
+* LLM kinds: `gateways`, `port`, and `tls`.
+* MCP kinds: `gateways`, `port`, `statefulMode`, `prefixMode`, `failureMode`, `sseKeepAlive`, `dnsRebindingProtection`, and `server`.
+* Any other field returns `400` with the message `contains unsupported field`.
+
+In `hybrid` mode, a settings field that the config file sets is file-owned. A write that changes a file-owned field returns `409`, for example `file-owned mcp.settings/default field cannot be updated in hybrid mode: statefulMode`. A write that repeats the value from the file succeeds, and agentgateway drops that field from the stored resource.
+
 ## Manage resources with agctl {#agctl}
 
 Use `agctl standalone` to list, apply, and delete resources from the command line. The CLI calls the same config resource API as the `curl` examples in [Manage API keys](#manage-api-keys). Before you begin, [install agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}) at the same version as your gateway.

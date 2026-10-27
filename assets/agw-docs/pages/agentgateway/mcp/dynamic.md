@@ -1,8 +1,5 @@
 Route to a Model Context Protocol (MCP) server dynamically by using a label selector. This way, unlike a static backend, you can update the backing MCP server without having to update the Backend resource. For more information, see the [About MCP]({{< link-hextra path="/documentation/mcp/about" >}}) topic.
 
-> [!WARNING]
-> Note that only streamable HTTP is currently supported for label selectors. If you need to use an SSE listener, use a [static MCP Backend]({{< link-hextra path="/documentation/mcp/static-mcp/">}}).
-
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
@@ -12,7 +9,7 @@ Route to a Model Context Protocol (MCP) server dynamically by using a label sele
 Deploy an MCP server that you want {{< reuse "agw-docs/snippets/agentgateway.md" >}} to proxy traffic to. The following example sets up an MCP server that provides various utility tools.
 
 1. Create an MCP server (`mcp-server`) that provides various utility tools. Notice the following details about the Service:
-   * `appProtocol: agentgateway.dev/mcp` (required): Configure your service to use the MCP protocol. This way, the agentgateway proxy uses the MCP protocol when connecting to the service.
+   * `appProtocol: agentgateway.dev/mcp` (required): Configure your service to use the MCP protocol. This way, the agentgateway proxy uses the MCP protocol when connecting to the service. The `agentgateway.dev/mcp` value selects the Streamable HTTP transport. For an MCP server that uses the SSE transport, set `appProtocol: agentgateway.dev/mcp-sse` instead.
    * `agentgateway.dev/mcp-path` annotation (optional): The default values are `/sse` for the SSE protocol or `/mcp` for the Streamable HTTP protocol. If you need to change the path of the MCP target endpoint, set this annotation on the Service.
 
    ```yaml {paths="dynamic-mcp"}

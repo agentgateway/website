@@ -134,7 +134,6 @@ The following guardrail runs a credit card detector and OpenAI moderation, both 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
-  gateways: [default]
   models:
   - name: gpt-4o
     provider: openai
