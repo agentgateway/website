@@ -67,7 +67,7 @@ If neither source provides locality information, locality preferences on Service
    Restart the agentgateway controller so it picks up the updated node labels.
 
    ```sh
-   kubectl rollout restart deployment/agentgateway -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl rollout restart deployment/{{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
 {{< doc-test paths="locality-aware-routing" >}}
@@ -99,7 +99,7 @@ Deploy three backend instances that represent three localities, and then enable 
      name: gateway
      namespace: agentgateway-locality
    spec:
-     gatewayClassName: agentgateway
+     gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
      listeners:
        - name: http
          protocol: HTTP
