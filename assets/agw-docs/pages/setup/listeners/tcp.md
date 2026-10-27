@@ -7,9 +7,7 @@ The following guide deploys a sample TCP echo app, sets up a TCP listener on the
 
 1. Install the Gateway API CRDs by following the [Get started guide]({{< link-hextra path="/documentation/quickstart/install/" >}}). The standard channel is sufficient for TCPRoute on Gateway API 1.6 or later. If you use Gateway API 1.3–1.5, select the experimental channel instead.
 
-2. If you use an earlier version that requires experimental Gateway API features, keep the `AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES` controller setting enabled (the default). To set it explicitly, install or upgrade with the `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true` Helm flag.
-
-3. Deploy the sample TCP echo app.
+2. Deploy the sample TCP echo app.
 
    ```yaml
    kubectl apply -f- <<EOF
