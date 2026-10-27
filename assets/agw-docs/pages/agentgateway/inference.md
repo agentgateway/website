@@ -13,7 +13,7 @@ For more information, see the following resources.
   {{< card link="https://gateway-api-inference-extension.sigs.k8s.io/" title="Gateway API Inference Extension">}}
   {{< card link="https://llm-d.ai/docs/infrastructure/gateway" title="llm-d gateway infrastructure">}}
   {{< card link="https://llm-d.ai/docs/infrastructure/gateway/agentgateway" title="llm-d with agentgateway">}}
-  {{< card link="https://agentgateway.dev/docs/standalone/main/documentation/inference/" title="Standalone inference routing" >}}
+  {{< card link="https://agentgateway.dev/docs/standalone/latest/documentation/llm/inference/" title="Standalone inference routing" >}}
 {{< /cards >}}
 
 ## About {#about}

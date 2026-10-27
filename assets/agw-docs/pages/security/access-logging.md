@@ -4,7 +4,7 @@ Access logs, sometimes referred to as audit logs, represent all traffic requests
 
 ### Data that can be logged
 
-Access log content is controlled by [CEL (Common Expression Language)](https://agentgateway.dev/docs/kubernetes/main/reference/cel/) expressions. You can filter which requests are logged and define custom attributes from the request and response.
+Access log content is controlled by [CEL (Common Expression Language)]({{< link-hextra path="/reference/cel/" >}}) expressions. You can filter which requests are logged and define custom attributes from the request and response.
 
 For logging, CEL exposes these variable groups when enabled or applicable:
 
