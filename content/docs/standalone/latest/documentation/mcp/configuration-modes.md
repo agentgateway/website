@@ -115,7 +115,7 @@ mcp:
 
 In routing-based configuration, set the same fields under `routes[].backends[].mcp.targets[]`. Conditions can also use authenticated request context, such as JWT claims populated by a [JWT policy]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}). A client-supplied selection header by itself does not establish the client's identity.
 
-If every condition is false, agentgateway presents an empty virtual MCP server. Target conditions choose which servers participate; [MCP authorization]({{< link-hextra path="/documentation/mcp/mcp-authz/" >}}) separately controls which tools and other resources a client can use after a server responds.
+If every condition is false, agentgateway presents an empty virtual MCP server. For evaluation timing and error behavior, see [Target conditions]({{< link-hextra path="/integrations/mcp/servers/virtual/#target-conditions" >}}). Use [MCP authorization]({{< link-hextra path="/documentation/mcp/mcp-authz/" >}}) to filter individual tools and resources from the selected servers. See [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}) to compare the options.
 
 {{% /version %}}
 
@@ -190,9 +190,17 @@ Use `sseKeepAlive` on the MCP backend to send Server-Sent Events (SSE) comment f
 
 An MCP stream is idle whenever no tool calls or notifications are in flight, which nothing in the network path can tell apart from a dead connection. Keep-alives are off by default, so omit `sseKeepAlive` if you do not need them.
 
-Set the duration for the keep-alive where you configure the backend: `mcp.sseKeepAlive` in the simplified MCP style, and `routes[].backends[].mcp.sseKeepAlive` in the routing-based style.
+Set the duration for the keep-alive where you configure the backend: `mcp.sseKeepAlive` in the simplified MCP style, and `routes[].backends[].mcp.sseKeepAlive` in the routing-based style. The UI writes only the simplified MCP style. For a routing-based backend, use the **Routing-based** tab.
 
 {{< tabs >}}
+{{% tab name="UI" %}}
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**. Expand **MCP behavior**.
+2. For **SSE keep-alive**, enter `10s`.
+3. Check **State mode**. If `statefulMode` is not set in your configuration, the drawer still shows **Stateless** and saves it, so select **Stateful** to keep the default session behavior.
+4. Click **Save settings**.
+
+The UI sets `mcp.sseKeepAlive` to `10s`, as in the **Simplified (MCP)** tab. The UI also writes the other drawer values: the selected state mode, `failureMode` (`failClosed` if it was not set), and an empty `gateways` list with the port if no gateway is bound. To turn off keep-alives, clear the field and save.
+{{% /tab %}}
 {{% tab name="Simplified (MCP)" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config

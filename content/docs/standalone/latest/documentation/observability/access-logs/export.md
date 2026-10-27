@@ -8,8 +8,9 @@ Log export happens in addition to stdout output, so you can send logs to a colle
 
 This guide walks through setting up an OpenTelemetry Collector to receive access logs from agentgateway.
 
-{{< tabs >}}
-{{% tab name="Binary and Docker" %}}
+The way you set up the collector depends on how you installed agentgateway.
+
+## Binary and Docker installations {#binary-docker}
 
 Run the OTel Collector as a Docker container on the same host as agentgateway.
 
@@ -21,14 +22,11 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
        protocols:
          grpc:
            endpoint: 0.0.0.0:4317
-
    processors:
      batch:
-
    exporters:
      debug:
        verbosity: detailed
-
    service:
      pipelines:
        logs:
@@ -47,7 +45,21 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
      otel/opentelemetry-collector:latest
    ```
 
-3. Configure agentgateway to send access logs to the collector.
+3. Configure agentgateway to send access logs to the collector. You can make this change in the UI or in your configuration file.
+
+   {{< tabs >}}
+   {{% tab name="UI" %}}
+   Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+
+   1. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability), and click the **Access logs** card.
+   2. In the **OTLP export** section, select **Export logs over OTLP**.
+   3. Keep `localhost:4317` for the **Collector host** and **gRPC** for the **Protocol**.
+
+      {{< reuse-image src="img/ui-access-logs-otlp.png" srcDark="img/ui-access-logs-otlp-dark.png" alt="Access logs drawer with Export logs over OTLP selected, the collector host localhost:4317, and the gRPC protocol" >}}
+
+   4. Click **Save policy**. The UI saves the `frontendPolicies.accessLog.otlp` section in your configuration.
+   {{% /tab %}}
+   {{% tab name="Config file" %}}
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    frontendPolicies:
@@ -55,6 +67,8 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
        otlp:
          host: localhost:4317
    ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 4. Send a request through agentgateway, then check the collector output to verify that log records are arriving.
    ```sh
@@ -67,8 +81,7 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
    docker rm -f otel-collector
    ```
 
-{{% /tab %}}
-{{% tab name="Kubernetes (Helm)" %}}
+## Helm installations {#helm}
 
 Deploy the OTel Collector into your cluster by using the OpenTelemetry Helm chart and point agentgateway at its service.
 
@@ -137,9 +150,6 @@ Deploy the OTel Collector into your cluster by using the OpenTelemetry Helm char
    kubectl delete namespace monitoring
    ```
 
-{{% /tab %}}
-{{< /tabs >}}
-
 ## Other configurations
 
 Review other common configurations when exporting access logs to an OTLP-compatible backend. 
@@ -150,6 +160,17 @@ You can filter which access logs are exported to your OTLP backend by setting th
 
 The following example sends only error responses to the OTLP collector while logging all requests to stdout.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Settings** > **Observability** page, and click the **Access logs** card.
+2. In the **OTLP export** section, select **Export logs over OTLP**, and keep `localhost:4317` for the **Collector host**.
+3. Enter `response.code >= 400` in the **OTLP filter** field. To set the top-level filter instead, use the **Filter** field in the **Log fields** section.
+
+   {{< reuse-image src="img/ui-access-logs-otlp-filter.png" srcDark="img/ui-access-logs-otlp-filter-dark.png" alt="Access logs drawer with Export logs over OTLP selected, the collector host localhost:4317, the gRPC protocol, and the OTLP filter response.code >= 400" >}}
+
+4. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -158,6 +179,8 @@ frontendPolicies:
       host: localhost:4317
       filter: 'response.code >= 400'
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 The following example logs only error responses to stdout, the database, and the OTLP collector. Because no `otlp.filter` is set, the top-level filter applies to all three backends.
 
@@ -187,6 +210,8 @@ frontendPolicies:
 You can add or remove fields to the log entry that you export to the OTLP endpoint. The following example adds a `trace_id` field from the `x-trace-id` request header and removes the `server.address` field.
 
 The `remove` list matches the attribute names in the OTLP record, which are the OpenTelemetry semantic convention names, such as `server.address`, `url.path`, and `http.response.status_code`. The stdout log keeps the `http.host`, `http.path`, and `http.status` names, and the OTLP `fields` setting does not change it. A name that does not appear in the OTLP record, such as `http.host`, removes nothing.
+
+The UI has no field for `otlp.fields`, so set it in your configuration file.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config

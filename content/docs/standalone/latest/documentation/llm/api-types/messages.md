@@ -59,6 +59,8 @@ routes:
 
 A Messages request does not need a provider that speaks the Anthropic Messages format. When the selected provider advertises a different format, agentgateway converts the request on the way out and converts the reply back into the Messages shape, so the client receives Anthropic responses either way.
 
+A client query string, such as the `?beta=true` that Claude Code sends, is kept only when the provider receives the Messages format. When the request is converted to Responses, Chat Completions, or Bedrock Converse, the client query string is dropped, because its parameters belong to the Messages API. One exception applies: a built-in provider that sets `hostOverride` without `pathPrefix` receives the client path and query string unchanged.
+
 Agentgateway uses the first of these formats that the provider supports.
 
 | Order | Provider format | What happens |
@@ -72,11 +74,11 @@ The first three rows are values that a `custom` provider declares in its `format
 
 Bedrock Converse is not a `formats` value. A [`bedrock` provider]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) supports only Converse, so agentgateway always converts Messages requests to that format.
 
-When a provider supports both `responses` and `completions`, agentgateway prefers Responses. The Responses conversion drops extended-thinking history. The Chat Completions conversion preserves it.
+When a provider supports both `responses` and `completions`, agentgateway always converts Messages requests to Responses. This rule is fixed, regardless of the `formats` list order.
+
+The Responses conversion drops extended-thinking history. The Chat Completions conversion preserves it.
 
 Use the `openAI` provider only for the OpenAI API. For other OpenAI-compatible servers, use a [`custom` provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with the formats that the server supports. If the server does not support `/v1/responses`, declare `completions` and omit `responses`. Use the same configuration to preserve extended-thinking history.
-
-For providers that support both formats, the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable provides a temporary workaround for Responses conversion bugs. To prefer Chat Completions, set the variable to `true` on the agentgateway process. The variable applies to every provider and is planned for removal in version 1.7.
 
 ### Converted replies and errors
 
@@ -85,7 +87,7 @@ These behaviors apply to both the Responses and the Chat Completions conversion.
 - A reply that the provider stops for content filtering returns `stop_reason: "refusal"`, in both the buffered and the streamed form. The provider signals content filtering as `finish_reason: "content_filter"` in Chat Completions, and as a refusal or `incomplete_details.reason: "content_filter"` in Responses.
 - A function call with empty arguments becomes a `tool_use` block whose `input` is `{}`. When the reply reaches the output token limit partway through the arguments, `stop_reason` is `max_tokens`, and a buffered reply returns the partial arguments in `input` as a string instead of an object. Check `stop_reason` before you parse `input`.
 - When the provider rejects a prompt that is longer than the model's context window, the converted error message starts with `capability_rejected: prompt_too_long`, followed by the original message. Clients such as Claude Code use this marker to compact the prompt and retry. The marker is added only to an HTTP 400 error that has the `context_length_exceeded` code, or that has no code and a message that says the prompt exceeds the context window. An error that already contains `capability_rejected:` keeps its message. A Gemini or Vertex AI provider returns errors in the Google format, which does not get the marker.
-- Response usage follows Anthropic Messages conventions. The `usage.input_tokens` field excludes prompt-cache tokens. When the provider returns them, `usage.cache_read_input_tokens` and `usage.cache_creation_input_tokens` report cache tokens separately.
+- Response usage follows Anthropic Messages conventions. The `usage.input_tokens` field excludes prompt-cache tokens. When the provider returns them, `usage.cache_read_input_tokens` and `usage.cache_creation_input_tokens` report cache tokens separately. When a Gemini OpenAI-compatible response reports reasoning tokens separately from `usage.completion_tokens`, the converted `usage.output_tokens` value includes visible output and reasoning tokens.
 
 ### Converting to the Responses format
 
@@ -100,7 +102,7 @@ The Responses conversion covers a common agent subset:
 - Prompt cache breakpoints on system text, input text, input images, assistant text, tool result text, and tool result images. The model name must start with `gpt-`, and its major and minor version must be `5.6` or later.
 - Streaming and usage reporting
 
-The reasoning effort is sent as the Responses `reasoning.effort` field. A request that sets `thinking.type` to `disabled` sends no reasoning setting, even when `output_config.effort` is set. An adaptive `thinking` request without an effort uses `high` as the reasoning effort. The tools exception for models such as `gpt-5.3`, which the [Chat Completions conversion](#converting-to-the-chat-completions-format) applies, does not apply here.
+The reasoning effort is sent as the Responses `reasoning.effort` field. A request that sets `thinking.type` to `disabled` sends no reasoning setting, even when `output_config.effort` is set. An adaptive `thinking` request without an effort uses `high` as the reasoning effort. Older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o` also receive no reasoning setting, because those models reject reasoning parameters. The tools exception for models such as `gpt-5.3`, which the [Chat Completions conversion](#converting-to-the-chat-completions-format) applies, does not apply here.
 
 When `output_config.effort` is omitted, a `thinking` budget maps to these OpenAI effort buckets.
 
@@ -130,7 +132,7 @@ The reply is converted back with these differences:
 
 ### Converting to the Chat Completions format
 
-Agentgateway converts a Messages request to Chat Completions when the provider declares `completions` and omits `responses`. For providers that support both formats, you can use the `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS=true` workaround. To configure the supported formats, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
+Agentgateway converts a Messages request to Chat Completions only when the provider declares `completions` and omits `responses`. To configure the supported formats, see [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
 The Chat Completions conversion carries extended-thinking history in both directions, so a thinking session on a converted route keeps its prior reasoning from one turn to the next. Self-hosted engines that report reasoning as `reasoning_content` also accept it back on an assistant message, which is what makes the carryover possible.
 
@@ -152,15 +154,41 @@ The `stop_sequences` field is sent to the provider as `stop`. The reply reports 
 
 The reasoning effort comes from `output_config.effort`, or from the `thinking` budget when `output_config.effort` is not set, and is sent as `reasoning_effort`. The effort applies even when the request omits `thinking`. A request that sets `thinking.type` to `disabled` sends no `reasoning_effort`, even when `output_config.effort` is set. An adaptive `thinking` request without an effort is sent with `reasoning_effort: "high"`. A `thinking` budget maps to the same OpenAI effort buckets as the Responses conversion.
 
-Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. In the Chat Completions conversion, a request with tools to one of these models is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped. Every other model receives the reasoning effort that the client asked for, if any.
+Certain models, such as `gpt-5.3`, reject a Chat Completions request that sets both a reasoning effort and tools. In the Chat Completions conversion, a request with tools to one of these models is sent with `reasoning_effort: "none"`, and any thinking that the client asked for through `thinking` or `output_config.effort` is dropped.
+
+Older OpenAI chat models whose IDs start with `gpt-3.5`, `gpt-4`, or `chatgpt-4o` reject reasoning effort. In the Chat Completions conversion, requests to those models are sent without `reasoning_effort`, and any thinking that the client asked for is dropped. Every other model receives the reasoning effort that the client asked for, if any.
+
+In both conversions, these prefixes are matched against the model name that is sent to the provider. A model name with a vendor prefix, such as `openai/gpt-4o`, does not match, so the reasoning effort is still sent.
 
 ### Converting to the Bedrock Converse format
 
 The Bedrock Converse conversion carries extended-thinking history in both directions, including encrypted reasoning.
 
-On the way out, a `thinking` block in the message history becomes a Bedrock `reasoningContent.reasoningText` block, with its signature. A `redacted_thinking` block becomes a Bedrock `reasoningContent.redactedContent` block, so that a client can replay encrypted reasoning that Bedrock returned on an earlier turn. Document, search-result, and server-tool content blocks are dropped.
+The Bedrock Converse conversion preserves tool choice for Messages requests. The `auto` value becomes the Bedrock `toolChoice.auto` value, and `any` becomes `toolChoice.any`. A `tool` choice becomes `toolChoice.tool`. The `none` value or an omitted tool choice is omitted, and the tools are still sent, so the model can still call them. Extended thinking does not rewrite the choice. A model that rejects forced tool use with thinking returns a provider error.
 
-On the way back, Bedrock reasoning text becomes a `thinking` block. In a buffered reply, Bedrock encrypted reasoning becomes a `redacted_thinking` block that keeps the encrypted payload for the next turn. A streamed reply does not keep the payload. The encrypted reasoning arrives as a `thinking` block with the text `[REDACTED]`, which cannot be replayed. For the same behavior on other Bedrock endpoints, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}).
+On the way out, a `thinking` block in the message history becomes a Bedrock `reasoningContent.reasoningText` block, with its signature. A `redacted_thinking` block becomes a Bedrock `reasoningContent.redactedContent` block, so that a client can replay encrypted reasoning that Bedrock returned on an earlier turn. `document`, `search_result`, `server_tool_use`, and `web_search_tool_result` blocks are dropped because Bedrock Converse has no equivalent block types.
+
+Bedrock Converse has no system role inside the message list. A system message that comes before any user or assistant message is added to the Bedrock system prompt. A system message after a user or assistant message stays in place instead: its text is sent as user text wrapped in `<system-reminder>` tags, and its cache markers are kept. Moving the message into the system prompt would change the cached prefix of every request. When the system message follows a tool call, its text is sent after the tool results, because tool results must directly follow the tool call.
+
+Each `cache_control` marker becomes a Bedrock cache point after the content that the marker is on, and the `cache_control.ttl` value becomes the TTL of the cache point. The conversion drops some content before sending the request to Bedrock. When dropped content has a cache marker, the marker moves to nearby content that the conversion keeps:
+
+- **Dropped blocks:** A marker on a dropped block moves to the nearest earlier content that the conversion keeps:
+
+  - When content comes before the dropped block in the same message, the marker moves to the end of that content.
+  - When the dropped block is the first block of the message, the marker moves to the end of the closest earlier message that has content.
+  - When no earlier message has content, the marker moves to the end of the system prompt.
+
+  If that content already ends with a cache point, no cache point is added.
+- **Dropped server tools:** Server tools, such as web search, are dropped from the `tools` list. A marker on a dropped server tool moves to the closest earlier tool definition that the conversion keeps, unless that tool definition already has a marker. When no kept tool definition comes before the server tool, the marker is dropped.
+- **Tool results:** Bedrock accepts cache points only between top-level content blocks. A marker on any part inside a tool result moves to after the whole tool result.
+
+Messages that are left empty after the conversion drops unsupported blocks are not sent to Bedrock. The conversion adds at most four cache points to a request, so a marker is dropped when four cache points are already set.
+
+In replies, Bedrock reasoning text becomes a `thinking` block. Encrypted reasoning becomes a `redacted_thinking` block that preserves the payload for replay. This applies to both buffered and streamed replies.
+
+A stream sends the encrypted block in one `content_block_start` event after Bedrock finishes the block. If the buffered fragments exceed the LLM buffer limit, the stream emits an `api_error` event with `Stream processing error` and stops. The limit is 32 MiB unless you set `frontendPolicies.http.maxBufferSize`. For more information, see [Body buffering]({{< link-hextra path="/documentation/configuration/traffic-management/buffer/" >}}).
+
+For other client APIs, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}).
 
 ## Using the API
 

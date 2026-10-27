@@ -1,6 +1,6 @@
 ---
 title: "macOS installation"
-description: Install ingress2gateway on macOS systems
+description: Install ingress2gateway on macOS systems.
 weight: 10
 ---
 

@@ -167,24 +167,56 @@ routes:
 
 ## Configure the agentgateway
 
+You can add the MCP servers in the UI or in a configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+The UI adds both targets to the top-level `mcp` section, as in the [example multiplexing configuration](#about). The downloaded configuration in the **Config file** tab puts the same targets in a route backend instead. Both setups multiplex the targets in the same way.
+
+1. Create a configuration with an empty `mcp` section, and start agentgateway. You add the MCP servers in the UI.
+   ```sh
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   mcp:
+     port: 3000
+     targets: []
+   EOF
+   agentgateway -f config.yaml
+   ```
+2. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and add the `time` server.
+   1. Click **Add server**.
+   2. Enter `time` for the **Server name**, and select the **Command Line** transport. Target names cannot include underscores (`_`).
+   3. Enter `uvx` for the **Command** and `--with mcp<2 mcp-server-time` for the **Arguments**.
+
+      {{< reuse-image src="img/ui-mcp-servers-add-time.png" srcDark="img/ui-mcp-servers-add-time-dark.png" alt="Add MCP server drawer for the time target with the uvx command and the mcp-server-time arguments" >}}
+
+   4. Click **Save server**.
+3. Add the `everything` server.
+   1. Click **Add server**.
+   2. Enter `everything` for the **Server name**, and select the **Command Line** transport.
+   3. Enter `npx` for the **Command** and `@modelcontextprotocol/server-everything` for the **Arguments**.
+   4. Click **Save server**.
+
+The **MCP Servers** page lists both servers. The UI writes each target with an empty `env` map and `clear_env: false`.
+
+To use the UI playground, you also need a CORS policy. In the UI, you add it with **Apply CORS** when you verify the setup in the next section.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 1. Download a multiplex configuration for your agentgateway.
 
    ```yaml {paths="mcp-virtual"}
-   curl -L https://agentgateway.dev/examples/mcp-multiplex/config.yaml -o config.yaml
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/mcp-multiplex/config.yaml -o config.yaml
    ```
-
-   {{< doc-test paths="mcp-virtual" >}}
-   # Step 1: the documented multiplex config downloads and is accepted
-   agentgateway -f config.yaml --validate-only
-   {{< /doc-test >}}
 
 2. Review the configuration file. 
 
-   ```
+   ```sh
    cat config.yaml
    ```
 
-   {{% github-yaml url="https://agentgateway.dev/examples/mcp-multiplex/config.yaml" %}}
+   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/mcp-multiplex/config.yaml" %}}
 
    * **Listener**: An HTTP listener is configured and bound on port 3000. It includes a basic route that matches all traffic to an MCP backend.
    * **Backend**: The MCP backend defines two **targets**: `time` and `everything`. Note that the target names cannot include underscores (`_`). These targets are multiplexed together and exposed as a single unified MCP server to clients. All tools from both targets are available, prefixed with their target name.
@@ -220,6 +252,13 @@ routes:
    ```sh
    agentgateway -f config.yaml
    ```
+{{% /tab %}}
+{{< /tabs >}}
+
+{{< doc-test paths="mcp-virtual" >}}
+# Step 1: the documented multiplex config downloads and is accepted
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
 
 ## Verify access to tools
 
@@ -264,6 +303,21 @@ When you multiplex multiple targets, agentgateway namespaces tool and prompt nam
 
 Use `never` when clients need to call tools by their plain names, such as for [MCP Apps]({{< link-hextra path="/documentation/mcp/apps" >}}) that issue tool calls from a rendered UI. Because unprefixed names must be unique, agentgateway fails to start if two targets expose the same tool name in this mode.
 
+You can set the prefix mode in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**. Expand **MCP behavior**.
+2. For **Prefix mode**, select **Never**.
+3. Check **State mode**. If `statefulMode` is not set in your configuration, the drawer still shows **Stateless** and saves it, so select **Stateful** to keep the default session behavior.
+
+   {{< reuse-image src="img/ui-mcp-settings-prefix-never.png" srcDark="img/ui-mcp-settings-prefix-never-dark.png" alt="MCP servers settings drawer with the prefix mode set to Never and the state mode set to Stateful" >}}
+
+4. Click **Save settings**.
+
+The UI sets `prefixMode` to `never`, as in the **Config file** tab. It also writes the selected state mode, sets `failureMode` to `failClosed`, and writes an empty `gateways` list. The **None** option removes `prefixMode`, so the default `conditional` behavior applies, and names are still prefixed when the backend has more than one target.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 mcp:
@@ -279,15 +333,21 @@ mcp:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 > [!NOTE]
 > The `time` target pins the MCP Python SDK with `--with mcp<2` because `mcp-server-time` does not yet support version 2.x of the SDK. Without the constraint, the target fails to start. Drop the constraint after `mcp-server-time` adds support.
 
 ## Target conditions {#target-conditions}
 
-Use `condition` on an MCP target to include that target only when a CEL expression returns `true` for the current request. The expression can read request attributes, such as headers, and `mcp.target.name`. When authentication is configured, it can also read the authenticated identity. In a target condition, `mcp.target.name` is set to the target under evaluation. Omit `condition` to include the target for every request.
+Set `condition` on an MCP target to include it only when a CEL expression returns `true`. Omit `condition` to always include the target. A condition requires at least two configured targets.
 
-Target conditions run before agentgateway initializes or contacts a target. Target conditions choose which upstream MCP servers participate in the virtual MCP request. By contrast, `mcpAuthorization` filters tools, prompts, and resources after an upstream server responds. A condition requires at least two configured targets. If every target condition returns `false`, clients see an empty virtual MCP server.
+The expression can read request attributes, such as headers, and `mcp.target.name`, the target under evaluation. With authentication configured, it can also read the authenticated identity.
+
+Agentgateway evaluates conditions before contacting targets. The `mcpAuthorization` policy filters list responses after agentgateway contacts the targets. See [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}) to compare the filtering options.
+
+If every condition returns `false`, clients see an empty virtual MCP server.
 
 The following example always includes the `everything` target and includes the `time` target only when the request has the header `x-include-time: true`.
 
@@ -309,6 +369,15 @@ mcp:
 
 Configure your MCP client to send `x-include-time: true` on its requests, including initialization, to expose tools such as `time_get_current_time` alongside `everything_echo`. Without that header, or with a different value, only the `everything` target participates.
 
+Conditions run on every request. Keep these behaviors in mind:
+
+* **Stateful sessions (default)**: Each request must select the same targets as at initialization. A change, such as dropping the `x-include-time` header, returns `404` with `session not found`.
+* **Session recovery**: After a session `404`, the MCP specification requires the client to start a new session. Its requests determine the new target selection.
+* **Stateless sessions**: In stateless mode, each request uses the targets its conditions select.
+* **Stable names**: Tool and prompt names keep their target-name prefix even when only one target remains.
+* **Excluded targets**: Their tools are absent from lists. Calls to those tools fail because the target is not part of the session.
+* **Evaluation errors**: Agentgateway excludes the target if its condition fails to evaluate, such as when it reads a missing JWT claim.
+
 | Field | Description |
 | ----- | ----------- |
 | `mcp.targets[].condition` | Optional CEL expression that controls whether the target participates in the virtual MCP request. The expression must return a boolean value. |
@@ -318,6 +387,18 @@ Configure your MCP client to send `x-include-time: true` on its requests, includ
 
 When you multiplex multiple targets, the client receives the gateway MCP `serverInfo` values and instructions. To customize that metadata, set the `server` block on the MCP configuration. The override applies only to multiplexed targets. A backend with one target keeps the target server's normal metadata.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**. Expand **Server info**.
+2. For **Name** and **Version**, enter `company-mcp-gateway` and `2026.09`. Set both fields or leave both empty.
+3. For **Title**, enter `Company MCP Gateway`.
+4. For **Instructions**, enter `Use this gateway to access approved internal MCP tools.`
+5. Expand **MCP behavior**. Check **State mode**. If `statefulMode` is not set in your configuration, the drawer still shows **Stateless** and saves it, so select **Stateful** to keep the default session behavior.
+6. Click **Save settings**.
+
+The UI sets the `server` block, as in the **Config file** tab. The UI also writes the other drawer values: the selected state mode, `failureMode` (`failClosed` if it was not set), and an empty `gateways` list with the port if no gateway is bound. To remove the overrides, clear all four fields and save.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 mcp:
@@ -337,6 +418,8 @@ mcp:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 | Field | Description |
 | ----- | ----------- |
@@ -345,6 +428,56 @@ mcp:
 | `mcp.server.version` | Value to report in `serverInfo.version`. Set this field together with `mcp.server.name`. The configuration is invalid when only one of the two fields is set. |
 | `mcp.server.title` | Optional value to report in `serverInfo.title`. You can set this field without `mcp.server.name` or `mcp.server.version`. |
 | `mcp.server.instructions` | Gateway instructions preamble to report to clients. When upstream targets also return instructions, the merged target instructions start with this value. |
+
+## Capabilities and change notifications {#capabilities}
+
+For sessions with multiple targets, agentgateway merges their capabilities into one `initialize` result. Tools, prompts, and resources are always enabled.
+
+Each of the following capabilities is advertised only if at least one session target offers it:
+
+- `tools.listChanged`
+- `prompts.listChanged`
+- `resources.listChanged`
+- `resources.subscribe`
+
+When you set `statefulMode: stateless`, `initialize` omits these capabilities, even for a single target. Stateless sessions have no notification stream.
+
+Clients using `server/discover` get the same merged capabilities, regardless of `statefulMode`. They receive notifications through `subscriptions/listen`.
+
+Agentgateway skips targets that do not support `subscriptions/listen` without failing the stream.
+
+If no target offers a capability, the result omits it. For example, a backend whose targets offer none of these capabilities returns `"tools": {}`, `"prompts": {}`, and `"resources": {}`.
+
+In this guide, the `everything` target advertises all of these capabilities, and the `time` target advertises none.
+
+Run the configuration from [Configure the agentgateway](#configure-the-agentgateway). Initialize a session and review the returned capabilities.
+
+```sh
+curl -s http://localhost:3000/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"1.0.0"}}}' \
+  | sed -n 's/^data: //p' | jq '.result.capabilities'
+```
+
+The capabilities come from the `everything` target.
+
+Example output:
+
+```json
+{
+  "prompts": {
+    "listChanged": true
+  },
+  "resources": {
+    "subscribe": true,
+    "listChanged": true
+  },
+  "tools": {
+    "listChanged": true
+  }
+}
+```
 
 
 ## Next steps

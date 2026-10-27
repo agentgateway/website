@@ -275,6 +275,30 @@ In your GKE cluster, set up workload identity.
    The request was rejected due to inappropriate content
    ```
 
+## Guard scope {#scope}
+
+By default, a request guard sends Model Armor the system prompt, message text, and tool call results. A response guard sends only response message text.
+
+Set `scope` to change which text the guard sends. This example excludes tool call results from the request guard.
+
+```yaml
+promptGuard:
+  request:
+  - scope:
+    - SystemPrompt
+    - Messages
+    googleModelArmor:
+      templateId: <template-ID>
+      projectId: <project-ID>
+      location: <location>
+      policies:
+        auth:
+          gcp:
+            type: AccessToken
+```
+
+If no text is in scope, the guard skips the call to Model Armor. For supported values and restrictions, see [Guard scope]({{< link-hextra path="/documentation/llm/guardrails/overview/#scope" >}}).
+
 ## Backend connection and authentication policies
 
 The `policies` field configures how agentgateway connects and authenticates to Google Model Armor when it evaluates a request or response.

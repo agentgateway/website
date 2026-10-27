@@ -21,8 +21,19 @@
 
 {{/* =================================================================== */}}
 {{/* TARGETS — version prefixes to generate pages into                    */}}
+{{/*                                                                     */}}
+{{/* Each target reads its own copies under                              */}}
+{{/* assets/agw-docs/pages/reference/{configuration,cel}/<version>/:      */}}
+{{/*   config-schema.html, cel-context.html  the widgets                  */}}
+{{/*   cel/<version>/cel.json                the CEL schema for the page  */}}
+{{/*   configuration/<version>/source-ref.txt  the agentgateway ref       */}}
+{{/* The reference docs workflow writes all four for latest and main from */}}
+{{/* the ref it generates from. A release copies latest's set into the   */}}
+{{/* frozen version (1.6.x), so frozen versions keep their own schema.   */}}
+{{/* Without a cel.json copy, the page falls back to the main-branch     */}}
+{{/* schema below. Add each newly frozen version here.                   */}}
 {{/* =================================================================== */}}
-{{ $targets := slice "latest/reference" "main/reference" }}
+{{ $targets := slice "latest/reference" "main/reference" "1.6.x/reference" "1.5.x/reference" }}
 
 {{/* =================================================================== */}}
 {{/* PAGES — source type → output path, one line per generated page      */}}
@@ -101,7 +112,12 @@
   {{ else }}
     {{ warnf "Configuration schema widget HTML not found: %s (skipping explorer widget for %s)" $configHtmlPath $prefix }}
   {{ end }}
-  {{ $fullMd := "Generated from the [agentgateway JSON schema](https://github.com/agentgateway/agentgateway/blob/main/schema/config.json).\n\n<p></p><div id=\"ks-widget-slot\"></div>" }}
+  {{ $schemaRef := "main" }}
+  {{ $refPath := printf "assets/agw-docs/pages/reference/configuration/%s/source-ref.txt" $configVersion }}
+  {{ if os.FileExists $refPath }}
+    {{ $schemaRef = readFile $refPath | strings.TrimSpace }}
+  {{ end }}
+  {{ $fullMd := printf "Generated from the [agentgateway JSON schema](https://github.com/agentgateway/agentgateway/blob/%s/schema/config.json).\n\n<p></p><div id=\"ks-widget-slot\"></div>" $schemaRef }}
   {{ $.AddPage (dict
     "content" (dict "mediaType" "text/markdown" "value" $fullMd)
     "kind" "page"
@@ -117,7 +133,12 @@
        Lives at reference/cel/cel-context, alongside the manually authored
        playground / yaml-and-examples / variables pages. The variables page
        links here for the full table of CEL context fields. */}}
-  {{ with $celSchema }}
+  {{ $targetCel := $celSchema }}
+  {{ $celJsonPath := printf "assets/agw-docs/pages/reference/cel/%s/cel.json" $configVersion }}
+  {{ if os.FileExists $celJsonPath }}
+    {{ $targetCel = readFile $celJsonPath | transform.Unmarshal }}
+  {{ end }}
+  {{ with $targetCel }}
     {{ $md := "" }}
     {{ range $name, $prop := .properties }}
       {{ $md = printf "%s\n## `%s`\n" $md $name }}

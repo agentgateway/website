@@ -56,6 +56,10 @@ Configure Amazon Bedrock as an LLM provider in agentgateway.
 > Agentgateway translates between these formats and Bedrock formats internally using Bedrock's [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-call.html).
 > Directly sending `Converse` or `Invoke` request shapes are not directly supported; see [passthrough](#passthrough) for more information if you need these APIs.
 
+Bedrock conversion turns the prompt-cache markers in `/v1/messages` and `/v1/chat/completions` requests into Bedrock cache points, including markers on content that the conversion does not send. In `/v1/messages` requests, the Anthropic `cache_control.ttl` value becomes the TTL of the cache point. For where a marker on dropped content goes, see [Converting to the Bedrock Converse format]({{< link-hextra path="/documentation/llm/api-types/messages/#converting-to-the-bedrock-converse-format" >}}). In `/v1/chat/completions` requests, a text part that contains only whitespace is not sent, and the marker on that text part moves to the end of the content before the text part in the same message.
+
+If a request already has prompt-cache markers, the `promptCaching` policy adds no cache points. For more information, see [Prompt caching]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#prompt-caching" >}}).
+
 ## Authentication
 
 Before you can use Bedrock as an LLM provider, you must authenticate by using the standard [AWS authentication sources](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html).
@@ -63,18 +67,56 @@ Agentgateway will automatically detect the local ambient credentials, but these 
 
 ## Configuration
 
+You can add the model in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same model as the **Config file** tab.
+
+1. Set up AWS credentials in the terminal where you run agentgateway, such as an AWS profile or environment variables.
+2. {{< reuse "agw-docs/standalone/llm/providers/ui-start-empty-llm.md" >}}
+3. Open **LLM** > **Models**, such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add model**.
+4. From the **Provider** dropdown, select **Amazon Bedrock**.
+5. Keep the default `bedrock/*` in the **Incoming model match** field.
+6. Keep **Ambient** for the **AWS credentials**. To enter an access key instead, select **Static**. This option writes the key to an `auth.aws` block.
+7. For the **AWS region**, enter or select `us-west-2`.
+8. Keep **Prefer Runtime**, the default, in the **Bedrock endpoint** dropdown. The UI saves `params.bedrockEndpointPreference` only after you select a value. For more information, see [Bedrock Mantle](#bedrock-mantle).
+9. For **Outgoing model**, keep **Strip bedrock/**. This option removes the `bedrock/` prefix before the request is forwarded. To send every request to one model instead, select **Explicit**, and enter the model ID. This option sets `params.model`.
+
+   {{< reuse-image src="img/ui-llm-add-model-bedrock-runtime.png" srcDark="img/ui-llm-add-model-bedrock-runtime-dark.png" alt="Add model drawer with Amazon Bedrock selected as the provider, bedrock/* as the incoming model match, Ambient as the AWS credentials, us-west-2 as the AWS region, and Prefer Runtime as the Bedrock endpoint" >}}
+
+10. Click **Save model**.
+
+The UI writes `bedrockEndpointPreference: runtimePreferred` in addition to the fields in the **Config file** tab. Runtime is also the default when the field is not set, so both configurations behave the same.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
 llm:
   models:
-  - name: "*"
+  - name: "bedrock/*"
     provider: bedrock
     params:
       awsRegion: us-west-2
+    transformation:
+      model: llmRequest.model.stripPrefix("bedrock/")
 ```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}}
+
+| Setting | Description |
+|---------|-------------|
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. The `bedrock/*` pattern matches any model name that starts with `bedrock/`. |
+| `provider` | The LLM provider, set to `bedrock` for Amazon Bedrock models. |
+| `params.model` | The specific Bedrock model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
+| `params.awsRegion` | The AWS region where the Bedrock model is hosted. |
+| `transformation.model` | Removes the `bedrock/` prefix from the model name before the request is forwarded, so the provider receives its own model name. |
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="bedrock" >}}
 cat <<'EOF' > config.yaml
@@ -82,22 +124,15 @@ cat <<'EOF' > config.yaml
 
 llm:
   models:
-  - name: "*"
+  - name: "bedrock/*"
     provider: bedrock
     params:
       awsRegion: us-west-2
+    transformation:
+      model: llmRequest.model.stripPrefix("bedrock/")
 EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
-
-{{< reuse "agw-docs/snippets/review-configuration.md" >}}
-
-| Setting | Description |
-|---------|-------------|
-| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
-| `provider` | The LLM provider, set to `bedrock` for Amazon Bedrock models. |
-| `params.model` | The specific Bedrock model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
-| `params.awsRegion` | The AWS region where the Bedrock model is hosted. |
 
 ## Passthrough
 
@@ -210,11 +245,19 @@ Bedrock serves models on two API surfaces: the Runtime endpoint, which carries t
 
 For chat requests, the endpoint is chosen per model from the `runtime` and `mantle` tags in the [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). The built-in catalog that ships with {{< reuse "agw-docs/snippets/agentgateway.md" >}} already tags the Amazon Bedrock models. To tag models that are newer than your agentgateway version, run `agctl catalog import`. Its default sources include `aws-bedrock-mantle`, which reads the tags from the AWS model cards. A model with neither tag falls back to the preference alone.
 
-Set `params.bedrockEndpointPreference` to choose how the tags are applied.
+Set `params.bedrockEndpointPreference` to choose how the tags are applied. You can set the preference in the UI or in your configuration file.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open **LLM** > **Models**, and click the **Edit model** icon for the Bedrock model. To create a model, click **Add model**, and select **Amazon Bedrock** from the **Provider** dropdown.
+2. From the **Bedrock endpoint** dropdown, select an option. **Prefer Runtime** writes `runtimePreferred`, **Prefer Mantle** writes `mantlePreferred`, **Runtime only (advanced)** writes `runtimeOnly`, and **Mantle only (advanced)** writes `mantleOnly`.
+3. Click **Save model**.
+
+The **Bedrock endpoint** dropdown is also in the **Add provider** drawer on the **LLM** > **Providers** page.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
 llm:
   models:
   - name: "*"
@@ -223,6 +266,8 @@ llm:
       awsRegion: us-west-2
       bedrockEndpointPreference: runtimePreferred
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 {{< doc-test paths="bedrock" >}}
 cat <<'EOF' > config-mantle.yaml
@@ -255,7 +300,7 @@ To apply Bedrock Guardrails with either endpoint, including on `llm.models`, use
 
 The Kubernetes API takes the same four values capitalized, such as `RuntimePreferred`, under `spec.ai.provider.bedrock.endpointPreference`. A value that you copy from one mode to the other fails to load.
 
-In the agentgateway UI, the **LLM Models** and **LLM Providers** editors set `bedrockEndpointPreference` to `mantlePreferred` when you change an entry's provider to **Amazon Bedrock**. An existing Bedrock entry that does not set `bedrockEndpointPreference` shows **Prefer Runtime** in the **Bedrock endpoint** selector and keeps the `runtimePreferred` default. The UI writes the field only after you choose a value and save the entry.
+In the agentgateway UI, the **LLM Models** and **LLM Providers** editors do not set `bedrockEndpointPreference` when you change an entry's provider to **Amazon Bedrock**. A Bedrock entry that does not set `bedrockEndpointPreference` shows **Prefer Runtime** in the **Bedrock endpoint** selector and keeps the `runtimePreferred` default. The UI writes the field only after you choose a value and save the entry.
 
 The preference applies to four route types: chat completions, messages, responses, and Anthropic token counting. Every other route type ignores the preference and uses a fixed endpoint.
 
@@ -265,8 +310,44 @@ The preference applies to four route types: chat completions, messages, response
 
 Whether the preference changes the request format that a model accepts depends on the endpoint that it selects. A model that resolves to Runtime accepts the Bedrock Converse format only, and its chat format tags do not apply. A model that resolves to Mantle accepts the formats in its tags, except for `anthropic.claude*` models, which always take the Anthropic Messages format. For more information, see [Chat format tags]({{< link-hextra path="/documentation/llm/cost-controls/costs/#chat-format-tags" >}}).
 
+When a `/v1/messages` or `/v1/messages/count_tokens` request reaches Bedrock Mantle in the Anthropic Messages format, the request keeps the client `anthropic-version` header. If the client sends no version header, the request uses the default `2023-06-01` version.
+
 > [!NOTE]
 > Requests to the Mantle endpoint are signed for the `bedrock-mantle` service rather than `bedrock`. If you scope an IAM policy by service name, grant both before you switch a route to Mantle.
+
+## Tool choice
+
+When a chat request goes to Bedrock Runtime, the `tool_choice` value from the client request is converted to the Bedrock Converse `toolChoice` field.
+
+| Client `tool_choice` | Bedrock `toolChoice` |
+|---|---|
+| `auto` | `auto` |
+| `required` (Chat Completions, Responses) or `any` (Messages) | `any` |
+| A named function or tool | `tool`, with that name |
+| `none`, or omitted | Omitted. Bedrock Converse has no `none` option. The tools are still sent, so the model can still call them. |
+
+The Bedrock model decides which values it accepts. If the model rejects forced tool use, such as `any` or a named tool, the client receives the Bedrock error. For example, Anthropic models reject forced tool use when [extended thinking](https://platform.claude.com/docs/en/build-with-claude/thinking#thinking-with-tool-use) is enabled. The tool choice is not changed for requests that use extended thinking.
+
+## Service tier {#service-tier}
+
+For `/v1/chat/completions` and `/v1/responses` requests to Bedrock Runtime, agentgateway converts OpenAI `service_tier` to Converse `serviceTier`. This selects the Bedrock [service tier](https://docs.aws.amazon.com/bedrock/latest/userguide/service-tiers-inference.html).
+
+| Client `service_tier` | Bedrock `serviceTier` |
+|---|---|
+| `priority` | `{"type": "priority"}` |
+| `default` | `{"type": "default"}` |
+| `flex` | `{"type": "flex"}` |
+| `auto`, or omitted | Omitted. Bedrock uses its default tier. |
+| `scale`, `fast`, or `ultrafast` | Omitted. Bedrock uses its default tier. For `/v1/chat/completions` requests, these values also trigger the warning `service tier is not supported by Bedrock`. |
+| Any other value | For `/v1/chat/completions` requests, omitted with the same warning. For `/v1/responses` requests, the request fails with `400` before it reaches Bedrock. For example: ``unknown variant `bogus` ``. |
+
+A `/v1/messages` request does not set a Bedrock service tier.
+
+If the Bedrock model does not support the requested tier, the request fails with `400`. For example: `The provided service tier is not supported for this model`.
+
+Earlier versions omitted the tier and used the standard tier. To keep that behavior, omit `service_tier` or set it to `auto`.
+
+Bedrock reports the served tier in the `x-amzn-bedrock-service-tier` response header. Agentgateway normalizes it as `llm.serviceTier` to select model catalog rates. The built-in catalog has no Bedrock service-tier rates. To price Bedrock tiers differently, add `serviceTier` tiers for your Bedrock models to your own catalog. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
 
 ## Token counting
 
@@ -277,7 +358,7 @@ Agentgateway automatically handles the required formatting for Bedrock's count-t
 curl -X POST http://localhost:4000/v1/messages/count_tokens \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+    "model": "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
     "messages": [{"role": "user", "content": "Hello!"}],
     "system": "You are a helpful assistant."
   }'
@@ -318,7 +399,7 @@ Note that `max_tokens` must be greater than the thinking budget, and the minimum
 
 ```sh
 curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
-  "model": "",
+  "model": "bedrock/us.anthropic.claude-opus-4-20250514-v1:0",
   "max_tokens": 6000,
   "reasoning_effort": "high",
   "messages": [
@@ -337,10 +418,18 @@ Some Bedrock models return encrypted reasoning in a `reasoningContent.redactedCo
 | Client API | Encrypted reasoning in the reply | Replay on the next turn |
 |---|---|---|
 | `/v1/messages` | A `redacted_thinking` block. | Send the block back in the message history. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
-| `/v1/responses` | A reasoning item with `encrypted_content`. | Send the reasoning item back in the input. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
+| `/v1/responses` | A reasoning item with `encrypted_content`. Treat the value as opaque. It holds the full reasoning block: the reasoning text and its signature, or Bedrock's encrypted payload. The reasoning text is not encrypted, and response guardrails do not mask it. | Send the reasoning item back in the input. The next Bedrock request includes signed reasoning as `reasoningContent.reasoningText` with its signature, and encrypted reasoning as `reasoningContent.redactedContent`. Agentgateway needs only `encrypted_content` to replay the item, so a client that sends back only `encrypted_content` still works. |
 | `/v1/chat/completions` | Omitted, because the Chat Completions format has no field for encrypted reasoning. Signed reasoning text still arrives in `reasoning_content` and `reasoning_signature`. | Not possible. |
 
-A streamed reply does not keep the encrypted payload, so streamed encrypted reasoning cannot be replayed. A `/v1/messages` stream shows the encrypted reasoning as a `thinking` block with the text `[REDACTED]`.
+Replay streamed encrypted reasoning the same way as buffered reasoning. Stream events depend on the client API.
+
+| Client API | Streamed reasoning |
+|---|---|
+| `/v1/messages` | Text uses `thinking_delta` events; the signature uses `signature_delta`. Encrypted reasoning arrives as one `redacted_thinking` block after Bedrock finishes the block. |
+| `/v1/responses` | Each reasoning block becomes a `reasoning` output item before the `message` item. Text uses `response.reasoning_text.delta` events. The item's `response.output_item.done` event carries `encrypted_content`, the same opaque carrier of the full reasoning as in a buffered reply. |
+| `/v1/chat/completions` | Text uses `reasoning_content`; the signature uses `reasoning_signature`. Encrypted reasoning is omitted. |
+
+For `/v1/messages` streams, agentgateway buffers encrypted reasoning until the block ends. If the buffered fragments exceed the LLM buffer limit, the stream emits an `api_error` event with `Stream processing error` and stops. The limit is 32 MiB unless you set `frontendPolicies.http.maxBufferSize`. For more information, see [Body buffering]({{< link-hextra path="/documentation/configuration/traffic-management/buffer/" >}}).
 
 ## Structured outputs
 
@@ -348,7 +437,7 @@ Structured outputs constrain the model to respond with a specific JSON schema. P
 
 ```sh
 curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
-  "model": "",
+  "model": "bedrock/us.anthropic.claude-opus-4-20250514-v1:0",
   "max_tokens": 256,
   "response_format": {
     "type": "json_schema",

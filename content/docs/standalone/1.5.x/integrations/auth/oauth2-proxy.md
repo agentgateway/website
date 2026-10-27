@@ -266,5 +266,5 @@ For production deployments, consider the following.
 {{< cards >}}
   {{< card path="/documentation/configuration/security/external-authz" title="External authorization" subtitle="ExtAuthz configuration reference" >}}
   {{< card path="/documentation/configuration/security/" title="Security configuration" subtitle="Complete security options" >}}
-  {{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-oauth2-proxy" title="traffic-oauth2-proxy example" subtitle="Agentgateway config example to start an OAuth2 proxy with Docker Compose" >}}
+  {{< card link="https://github.com/agentgateway/agentgateway/tree/v1.5.0/examples/traffic-oauth2-proxy" title="traffic-oauth2-proxy example" subtitle="Agentgateway config example to start an OAuth2 proxy with Docker Compose" >}}
 {{< /cards >}}

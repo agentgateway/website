@@ -70,8 +70,10 @@ Request and response guards run only on route types that carry an LLM conversati
 | `Responses` | Yes |
 | `GenerateContent` | Yes |
 | `Realtime` | Only when streaming guardrails are enabled. The `Reject` action applies, but `Mask` does not, because WebSocket frames cannot be rewritten. |
+| `SystemOne` | No |
 | `Embeddings` | No |
 | `Rerank` | No |
+| `Decisions` | No |
 | `AnthropicTokenCount` | No |
 | `GeminiCountTokens` | No |
 | `Models` | No |
@@ -94,7 +96,7 @@ The values that `action` takes depend on the guard, because a regex guard can ma
 
 ## Customize rejection responses
 
-When a guard rejects content, {{< reuse "agw-docs/snippets/agentgateway.md" >}} returns a `403` response by default. Set `response.message` to return a custom response body, `response.statusCode` to change the status code, or both. You can set the `response` field on any request or response guard except a `webhook` guard, which ignores it. A webhook sets the status code and body of its own rejections. For more information, see [Custom webhooks]({{< link-hextra path="/documentation/llm/guardrails/webhook/" >}}).
+When a guard rejects content, {{< reuse "agw-docs/snippets/agentgateway.md" >}} returns a `403` response by default. Set `response.message` to return a custom response body, `response.statusCode` to change the status code, and `response.headers` to add response headers. You can set the `response` field on any request or response guard except a `webhook` guard, which ignores it. A webhook sets the status code and body of its own rejections. For more information, see [Custom webhooks]({{< link-hextra path="/documentation/llm/guardrails/webhook/" >}}).
 
 For example, the following request guard returns a custom `422` response when it detects a credit card number.
 
@@ -111,6 +113,11 @@ spec:
           response:
             message: "Request contains sensitive information."
             statusCode: 422
+            headers:
+            - name: x-guardrail
+              value: regex
+            - name: content-type
+              value: application/json
 ```
 
 The `response` settings apply only when the guard rejects content. They do not apply to a guard in `Audit` mode or to a regex guard that masks content.
@@ -159,9 +166,14 @@ A provider error is not a verdict, so `action: Audit` does not change how an err
 
 ## Guard scope {#scope}
 
-A request guard does not inspect the whole request. By default, a guard reads the system prompt and the text of regular user and assistant messages. Tool call content is left alone, so a Social Security number that a tool returns to the model reaches the provider unmasked.
+By default, guards inspect the following content:
 
-Set the `scope` field on a request guard to choose what the guard reads.
+- **Request guards:** The system prompt, regular user and assistant message text, and tool call results.
+- **Response guards:** Regular message text, including plaintext reasoning blocks.
+
+Guards do not scan tool call arguments by default. Sensitive data in those arguments can pass through unmasked.
+
+Set the `scope` field on a request or response guard to choose what the guard reads.
 
 ```yaml
 spec:
@@ -173,30 +185,50 @@ spec:
           - SystemPrompt
           - Messages
           - ToolOutput
+          - ToolInput
           regex:
-            action: Mask
+            action: Reject
             builtins:
             - Ssn
+        response:
+        - scope:
+          - Messages
+          - ToolInput
+          regex:
+            action: Reject
+            builtins:
+            - Email
 ```
 
 | Value | What the guard reads |
 | -- | -- |
 | `SystemPrompt` | The system or developer prompt. |
-| `Messages` | Regular user and assistant message text. |
+| `Messages` | Regular user and assistant message text, including plaintext reasoning blocks in responses. |
 | `ToolInput` | Tool call arguments, which the model usually produces. |
-| `ToolOutput` | Tool call results that are fed back to the model. |
+| `ToolOutput` | Tool call results that are fed back to the model, including results from server-side tools. |
 
 > [!WARNING]
-> A `scope` **replaces** the default, it does not add to it. A guard with `scope: [ToolOutput]` reads tool results and stops reading messages, so content that the guard used to catch passes through. To cover messages and tool results with one guard, list both values.
+> Setting `scope` **replaces** the default. For example, `scope: [ToolInput]` scans only tool call arguments. The guard no longer checks the system prompt, messages, or tool results. To include `ToolInput` alongside the request defaults, list all four values as shown in the previous example.
 
-Four rules govern the field:
+These rules govern the field:
 
-- **Omit `scope` to keep the default.** The default is `SystemPrompt` and `Messages`. The field takes 1 to 4 values, so an empty list is rejected.
-- **Only the `regex` and `bedrockGuardrails` guards accept a scope other than the default.** Any other guard type is rejected with `only regex and bedrockGuardrails guards support a non-default scope`. Other guard types always read the default.
-- **The field applies to request guards only.** A response guard has no `scope`.
+- **Omit `scope` to keep the default.** The request default is `SystemPrompt`, `Messages`, and `ToolOutput`. The response default is `Messages`. The field takes 1 to 4 values, so an empty list is rejected.
+- **Supported guards:** `regex`, `openAIModeration`, `bedrockGuardrails`, and `googleModelArmor` accept `scope`.
+- **Provider calls use only text in scope.** If a request has no text in scope, the guard skips the provider call.
+- **Streaming response guards support only message scope.** If `streaming: Enabled` and a response guard sets `scope`, every value must be `Messages`.
+- **Encrypted payloads are excluded.** Signed response payloads are scanned, but a `Mask` action that would change signed content rejects the response instead.
 - **Masking `ToolInput` can produce invalid JSON.** In APIs that carry tool arguments as opaque JSON, such as chat completions, the whole argument string is treated as one piece of text. A rule that matches across the JSON punctuation rewrites the arguments into something the provider cannot parse. Prefer `ToolOutput`, or write a `ToolInput` pattern that matches only a value.
 
 For a worked example, see [Regex filters]({{< link-hextra path="/documentation/llm/guardrails/regex/#scope" >}}).
+
+### Webhook scope {#webhook-scope}
+
+A webhook always receives the request messages or response choices. You cannot change this content with `scope`. See [Custom webhooks]({{< link-hextra path="/documentation/llm/guardrails/webhook/" >}}).
+
+- **Request webhook:** Omit `scope` or set exactly `[SystemPrompt, Messages]`.
+- **Response webhook:** Omit `scope` or set only `[Messages]`.
+
+Other values are rejected.
 
 ## Streaming guardrails {#streaming}
 

@@ -60,7 +60,7 @@ The pre-built dashboard includes the following sections:
 
 7. Download the agentgateway dashboard JSON.
    ```sh
-   curl -L "https://raw.githubusercontent.com/agentgateway/agentgateway/main/controller/install/helm/agentgateway/files/agentgateway-dashboard.json" \
+   curl -L "https://raw.githubusercontent.com/agentgateway/agentgateway/v1.5.0/controller/install/helm/agentgateway/files/agentgateway-dashboard.json" \
      -o agentgateway-dashboard.json
    ```
 
@@ -113,7 +113,7 @@ The pre-built dashboard includes the following sections:
    # Confirm that the dashboard JSON downloaded in the Kubernetes section is the expected
    # agentgateway dashboard, then import it through the API to mirror the manual
    # "Upload dashboard JSON file" step.
-   curl -sL "https://raw.githubusercontent.com/agentgateway/agentgateway/main/controller/install/helm/agentgateway/files/agentgateway-dashboard.json" \
+   curl -sL "https://raw.githubusercontent.com/agentgateway/agentgateway/v1.5.0/controller/install/helm/agentgateway/files/agentgateway-dashboard.json" \
      -o agentgateway-dashboard.json
    jq -e '.uid == "agentgateway"' agentgateway-dashboard.json >/dev/null
    jq '{dashboard: ., overwrite: true}' agentgateway-dashboard.json \

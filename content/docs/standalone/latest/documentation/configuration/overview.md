@@ -26,7 +26,7 @@ Agentgateway configuration has a few top level sections:
 ### Example configuration file {#example-file}
 
 ```yaml
-{{% github url="https://agentgateway.dev/examples/mcp-basic/config.yaml" %}}
+{{% github url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/mcp-basic/config.yaml" %}}
 ```
 
 ## Update configuration {#add}
@@ -34,7 +34,7 @@ Agentgateway configuration has a few top level sections:
 To update configuration, you can write to the configuration file or use the agentgateway UI.
 
 * **Write to the file**: Most changes that you make to the file are automatically picked up by agentgateway, with the exception of the top-level `config` section.
-* **UI**: In the default `file` storage mode, the UI saves your changes to the configuration file. It edits the file in place and keeps your comments. In `hybrid` storage mode, the UI saves to a database instead. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}). You can open the agentgateway UI on port 15000.
+* **UI**: In the default `file` storage mode, the UI saves your changes to the configuration file. Form saves edit the file in place and keep your comments. If agentgateway cannot edit the file in place, it rewrites the whole file, and the comments are lost. The **Raw Configuration** page saves your text exactly as you enter it. In `hybrid` storage mode, the UI saves to a database instead. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}). You can open the agentgateway UI on port 15000.
 
 ## Run your configuration {#run}
 

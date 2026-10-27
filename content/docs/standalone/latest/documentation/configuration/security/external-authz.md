@@ -32,6 +32,37 @@ When an ExtAuthz server returns header modifications, agentgateway uses `insert`
 
 By default, gRPC external authorization calls time out after 2 seconds. To use a different timeout, set `policies.http.requestTimeout`.
 
+You can configure gRPC external authorization in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `extAuthz` policy as the **Simplified (LLM)** example in the **Config file** tab.
+
+1. Create a configuration with an LLM model, but no external authorization policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   ```
+2. Start agentgateway with this configuration.
+3. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **External authz** tile.
+4. In the **Target** section, replace the default **Host** with `localhost:9000`.
+5. In the **Authorization behavior** section, keep **gRPC** for the **Protocol** and **Deny** for the **Failure mode**.
+6. Optional: In the **gRPC details** section, add the metadata to send to the authorization service. In **Metadata**, enter `dev.agentgateway.jwt` as the key and `{"claims": jwt}` as the CEL expression, and click **Add**.
+
+   {{< reuse-image src="img/ui-llm-policy-ext-authz-grpc.png" srcDark="img/ui-llm-policy-ext-authz-grpc-dark.png" alt="External authorization drawer with the gRPC details and the dev.agentgateway.jwt metadata entry" >}}
+
+7. Click **Save policy**.
+
+You can also add an external authorization policy in **MCP** > **Policies**, or in the **Route policies** section of a route in **Traffic** > **Routes**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
@@ -94,6 +125,8 @@ routes:
   - host: localhost:8080
 ```
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 {{< doc-test paths="external-authz" >}}
@@ -214,13 +247,30 @@ By default, HTTP external authorization calls time out after 2 seconds. To use a
 
 Example configuration: For the full set of options, see the [configuration reference]({{< link-hextra path="/reference/configuration" >}}).
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **External authz** policy drawer, such as in **LLM** > **Policies**.
+2. In the **Target** section, enter `localhost:9000` for the **Host**.
+3. In the **Authorization behavior** section, select **HTTP** for the **Protocol**.
+4. In **Include request headers**, enter `cookie`, and click **Add**. By default, only the `Authorization` header is included.
+
+   {{< reuse-image src="img/ui-llm-policy-ext-authz-http.png" srcDark="img/ui-llm-policy-ext-authz-http-dark.png" alt="External authorization drawer with the HTTP protocol and the cookie request header" >}}
+
+5. In the **HTTP details** section, enter `"/auth" + request.path` for the **Path expression**. This expression sends the authorization request to `/auth/<original request path>`.
+6. In **Include response headers**, enter `x-auth-request-user`, and click **Add**. This step is optional. It passes the user from the authorization response to the upstream service.
+
+   {{< reuse-image src="img/ui-llm-policy-ext-authz-http-details.png" srcDark="img/ui-llm-policy-ext-authz-http-details-dark.png" alt="External authorization drawer with the HTTP path expression and the x-auth-request-user response header" >}}
+
+7. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 extAuthz:
   host: localhost:9000
+  includeRequestHeaders:
+    # By default, only the Authorization header is included.
+    - cookie
   protocol:
-    includeRequestHeaders:
-      # By default, only the Authorization header is included.
-      - cookie
     http:
       # We send to /auth/<original request path>.
       path: |
@@ -230,6 +280,8 @@ extAuthz:
       # This is not required, and is just an example
       - x-auth-request-user
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 For advanced cases, configure settings for the request to the authorization service, as well as the response from the authorization service.
 For example, configure `redirect` to redirect users to a sign-in page, and `metadata` to extract information from the authorization response to include in logs. Review the following table for more advanced options.
@@ -244,7 +296,7 @@ For example, configure `redirect` to redirect users to a sign-in page, and `meta
 |`includeRequestHeaders`|Specific headers to include in the authorization request.<br>If unset, the gRPC protocol sends all request headers. The HTTP protocol sends only 'Authorization'.|
 |`includeRequestBody`|Options for including the request body in the authorization request|
 |`includeRequestBody.maxRequestBytes`|Maximum size of request body to buffer (default: 8192)|
-|`includeRequestBody.allowPartialMessage`|If true, send partial body when max_request_bytes is reached|
+|`includeRequestBody.allowPartialMessage`|If true, send partial body when the body exceeds `maxRequestBytes`|
 
 ## Backend connection policies
 

@@ -21,6 +21,7 @@ There are a few different policies that offer manipulation of HTTP requests and 
 The `requestHeaderModifier` and `responseHeaderModifier` modify request and response headers respectively.
 These allow you to `add`, `set`, or `remove` headers.
 `add` and `set` differ in the case the header already exists; `set` will replace it while `add` will append.
+Agentgateway rejects a configuration with a header modifier that contains an invalid HTTP header name or value.
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}

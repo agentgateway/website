@@ -39,6 +39,39 @@ By default, agentgateway applies rate limits to requests. Therefore, each reques
 To explicitly set request-based rate limits, set the rate limiting type to `requests` as shown in the following example. 
 
 {{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `localRateLimit` policy as the **Simplified (LLM)** example in the **Config file** tab.
+
+1. Create a configuration with an LLM model, but no rate limit policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   ```
+2. Start agentgateway with this configuration.
+3. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **Local rate limit** tile.
+4. Fill out the form.
+   1. **Limit type**: Keep **Requests**.
+   2. **Fill interval**: `60s`
+   3. **Max tokens**: `10`
+   4. **Tokens per fill**: `1`
+
+   {{< reuse-image src="img/ui-llm-policy-local-rate-limit.png" srcDark="img/ui-llm-policy-local-rate-limit-dark.png" alt="Local rate limit drawer with the Requests type, a 60s fill interval, 10 maximum tokens, and 1 token per fill" >}}
+
+5. Click **Save policy**.
+
+The UI omits `type: requests`, because `requests` is the default type. The form edits a single rate limit rule without a `key`. To add more rules or a per-key limit, use the **Raw** icon (`<>`) in the drawer header or the **Config file** tab.
+
+You can also add a local rate limit policy in **MCP** > **Policies**, or in the **Route policies** section of a named route in **Traffic** > **Routes**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -92,10 +125,12 @@ routes:
 ```
 {{< /tab >}}
 {{< tab name="traffic-ratelimiting-local example" >}}
-For a runnable version of the routing-based configuration, see the [`traffic-ratelimiting-local` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-ratelimiting-local) in the agentgateway repository.
+For a runnable version of the routing-based configuration, see the [`traffic-ratelimiting-local` example](https://github.com/agentgateway/agentgateway/tree/v1.7.0/examples/traffic-ratelimiting-local) in the agentgateway repository.
 
-{{% github-yaml url="https://agentgateway.dev/examples/traffic-ratelimiting-local/config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/traffic-ratelimiting-local/config.yaml" %}}
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 {{< doc-test paths="rate-limits" >}}
@@ -166,6 +201,17 @@ Because the number of tokens that are used for the completion is not known at th
 
 To enable token-based rate limiting, set the rate limiting type to `tokens`. This example shows only the `localRateLimit` policy; attach it to a route as shown in the complete examples in the [Configuration](#configuration) section.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Local rate limit** policy drawer, such as in **LLM** > **Policies**.
+2. Select **Tokens** for the **Limit type**.
+3. Fill out the other fields.
+   1. **Fill interval**: `60s`
+   2. **Max tokens**: `10`
+   3. **Tokens per fill**: `1`
+4. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 localRateLimit:
 - maxTokens: 10
@@ -173,6 +219,8 @@ localRateLimit:
   fillInterval: 60s
   type: tokens
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 #### At request time
 
@@ -443,7 +491,7 @@ The expression can read anything in the request context. Common keys are the `jw
 
 Review the following behavior before you set a key.
 
-* **Where the key is evaluated**: A `requests` rule is checked before the LLM request body is parsed, so its key cannot read `llm` fields. A `tokens` rule is charged after the body is parsed, so its key can also read fields such as `llm.requestModel`. For the variables that each policy can read, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
+* **What the key can read**: For LLM requests, both `requests` and `tokens` keys can read `llm.requestModel` and `llmRequest` (the parsed request body). To count requests per model, use `llm.requestModel` as the key. See [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
 * **Requests without a value**: Requests whose key is empty, or whose expression cannot be evaluated, share a single bucket. An empty key does not exempt a request from the limit. To apply a limit to only some requests, use [conditional policies]({{< link-hextra path="/documentation/configuration/policies/conditional-policies/" >}}) instead.
 * **How many buckets are kept, and where they live**: {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For a quota that is shared across instances, use [remote rate limits](#remote).
 
@@ -514,8 +562,43 @@ The following example runs the `ratelimit` server and its Redis backing store lo
 
 #### Connect agentgateway to the rate limit server
 
-With the server running, configure agentgateway to connect to it and specify which descriptors to send. Each descriptor value is a [CEL expression]({{< link-hextra path="/documentation/configuration/traffic-management/transformations" >}}).
+With the server running, configure agentgateway to connect to it and specify which descriptors to send. Each descriptor value is a [CEL expression]({{< link-hextra path="/documentation/configuration/traffic-management/transformations" >}}). You can configure the connection in the UI or in your configuration file.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `remoteRateLimit` policy as the **Simplified (LLM)** example in the **Config file** tab.
+
+1. Create a configuration with an LLM model, but no rate limit policy, and start agentgateway with it.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   ```
+2. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **Remote rate limit** tile.
+3. In the **Service** section, fill out the following fields.
+   1. **Domain**: `example.com`. The domain must match the domain on the rate limit server.
+   2. **Failure mode**: Keep **Fail closed**.
+   3. **Host**: Replace the default host with `localhost:8081`, the address of the rate limit server.
+4. In the **Descriptors** section, configure **Descriptor 1**.
+   1. Select **Tokens** for the **Type**.
+   2. Click **Add entry** twice, so that the descriptor has three entries.
+   3. Enter the following keys and CEL expressions in the **Entries**. Replace the example entry in the first row.
+
+      | Key | Expression |
+      |-----|------------|
+      | `some-static-value` | `"something"` |
+      | `organization` | `request.headers["x-organization"]` |
+      | `authenticated` | `has(jwt.sub)` |
+
+5. Click **Save policy**.
+
+You can also add a remote rate limit policy in **MCP** > **Policies**, or in the **Route policies** section of a named route in **Traffic** > **Routes**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
@@ -599,6 +682,8 @@ routes:
   - host: localhost:8080
 ```
 {{< /tab >}}
+{{< /tabs >}}
+{{% /tab %}}
 {{< /tabs >}}
 
 {{< doc-test paths="rate-limits" >}}
@@ -696,14 +781,14 @@ agentgateway -f config3-mcp.yaml --validate-only
 
 Each descriptor value is a [CEL expression]({{< link-hextra path="/documentation/configuration/traffic-management/transformations" >}}).
 
-For a complete runnable setup, including the Envoy rate limit service configuration and the Docker commands to run it with Redis, see the [`traffic-ratelimiting-global` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-ratelimiting-global) in the agentgateway repository.
+For a complete runnable setup, including the Envoy rate limit service configuration and the Docker commands to run it with Redis, see the [`traffic-ratelimiting-global` example](https://github.com/agentgateway/agentgateway/tree/v1.7.0/examples/traffic-ratelimiting-global) in the agentgateway repository.
 
 {{% details title="Configuration from the traffic-ratelimiting-global example" closed="true" %}}
-{{% github-yaml url="https://agentgateway.dev/examples/traffic-ratelimiting-global/config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/traffic-ratelimiting-global/config.yaml" %}}
 
 The example also defines the limits on the rate limit server side:
 
-{{% github-yaml url="https://agentgateway.dev/examples/traffic-ratelimiting-global/ratelimit-config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/traffic-ratelimiting-global/ratelimit-config.yaml" %}}
 {{% /details %}}
 
 #### Failure behavior

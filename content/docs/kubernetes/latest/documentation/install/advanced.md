@@ -120,6 +120,93 @@ controller:
     minAvailable: 50%
 ```
 
+## Init containers {#extra-init-containers}
+
+Use `controller.extraInitContainers` to run containers before the controller starts. This setting affects only the control plane pod.
+
+Set `restartPolicy: Always` for a [native sidecar container](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/). It starts before the controller and runs for the life of the pod. Native sidecars require Kubernetes 1.29 or later.
+
+The controller image has no shell, so you cannot run commands in the controller container with `kubectl exec`. The following example adds a shell through a native sidecar. Containers in a pod share a network namespace, so the shell can inspect the controller's network from inside the pod, such as the ports that the controller listens on or how the pod resolves DNS names.
+
+1. Create a Helm values file that adds the sidecar.
+
+   ```sh
+   cat > init-values.yaml <<'EOF'
+   controller:
+     extraInitContainers:
+     - name: debug-shell
+       image: busybox:1.36
+       restartPolicy: Always
+       command: ["sh", "-c", "sleep infinity"]
+   EOF
+   ```
+
+2. Optional: Render the controller Deployment to check the init container.
+
+   ```sh
+   helm template {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -f init-values.yaml \
+     --show-only templates/deployment.yaml | sed -n '/initContainers:/,/containers:/p'
+   ```
+
+   Example output:
+
+   ```yaml
+         initContainers:
+           - command:
+             - sh
+             - -c
+             - sleep infinity
+             image: busybox:1.36
+             name: debug-shell
+             restartPolicy: Always
+         containers:
+   ```
+
+3. Upgrade the controller Helm release with the values file. The controller pod restarts. For more information about upgrades, see [Upgrade]({{< link-hextra path="/documentation/operations/upgrade/" >}}).
+
+   ```sh
+   helm upgrade -i {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --reuse-values \
+     -f init-values.yaml
+   ```
+
+4. Check that the controller pod runs both containers.
+
+   ```sh
+   kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app.kubernetes.io/name={{< reuse "agw-docs/snippets/helm-agentgateway.md" >}}
+   ```
+
+   Example output:
+
+   ```
+   NAME                            READY   STATUS    RESTARTS   AGE
+   agentgateway-86bd4c7557-8nctr   2/2     Running   0          39s
+   ```
+
+5. Run a command in the sidecar. For example, list the ports that the controller listens on. The output shows that the [controller admin server]({{< link-hextra path="/documentation/operations/debug/#control-plane" >}}) on port `9095` accepts connections only from inside the pod.
+
+   ```sh
+   kubectl exec -n {{< reuse "agw-docs/snippets/namespace.md" >}} deploy/{{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -c debug-shell -- netstat -tln
+   ```
+
+   Example output:
+
+   ```
+   Active Internet connections (only servers)
+   Proto Recv-Q Send-Q Local Address           Foreign Address         State
+   tcp        0      0 127.0.0.1:9095          0.0.0.0:*               LISTEN
+   tcp        0      0 :::9978                 :::*                    LISTEN
+   tcp        0      0 :::9093                 :::*                    LISTEN
+   tcp        0      0 :::9092                 :::*                    LISTEN
+   ```
+
+To remove the sidecar, upgrade the release again with `--reuse-values --set controller.extraInitContainers=null`.
+
 ## Namespace-scoped write permissions {#rbac-gateway-namespaces}
 
 By default, the controller holds cluster-wide write permissions for the objects that it provisions for a Gateway. To restrict those writes to the namespaces that hold your Gateways, set `rbac.gatewayNamespaces` in the controller Helm chart.
@@ -144,6 +231,36 @@ Review the following constraints before you set the field.
 | The default is an empty `rbac.gatewayNamespaces` list | An empty list keeps the cluster-wide write access, so an upgrade does not change permissions on its own. |
 | Events are scoped too | The controller publishes a warning Event on a Gateway when a proxy rejects its xDS configuration. After you set the field, the controller can create those Events in the listed namespaces only. |
 | Cluster-scoped access is unaffected | Cluster-wide read permissions, and writes to cluster-scoped resources such as GatewayClass and status subresources, do not change. |
+
+## Chart-created RBAC resources {#rbac-create}
+
+By default, the controller Helm chart creates the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the controller needs. If your cluster manages role-based access control (RBAC) resources outside of Helm, set `rbac.create` to `false`. The chart then creates none of these resources.
+
+```yaml
+rbac:
+  create: false
+```
+
+Before you install with this setting, create the roles and bindings yourself. To get the rules that the chart would create, render its RBAC templates with `rbac.create` left at its default value.
+
+```sh
+helm template {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+  --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+  --show-only templates/role.yaml \
+  --show-only templates/serviceaccount.yaml
+```
+
+The output has the `agentgateway-<controller-namespace>` and `agentgateway-<controller-namespace>-deployer` ClusterRoles, the `agentgateway-<controller-namespace>-local` Role, and a binding for each to the controller's service account.
+
+Review the following constraints before you set the field.
+
+| Constraint | Detail |
+| -- | -- |
+| The service account is separate | `serviceAccount.create` still controls whether the chart creates the controller's ServiceAccount. |
+| Bindings also need `serviceAccount.create` | The chart creates the ClusterRoleBindings and RoleBindings only when both `rbac.create` and `serviceAccount.create` are `true`. If you set `serviceAccount.create` to `false` to use an existing service account, the chart still creates the roles but no bindings, so bind the roles to that account yourself. |
+| `rbac.gatewayNamespaces` has no effect | With `rbac.create` set to `false`, the chart creates no RoleBindings in the namespaces that `rbac.gatewayNamespaces` lists. |
+| ClusterTrustBundle read access | If the cluster serves the ClusterTrustBundle API, the controller needs `get`, `list`, and `watch` on `clustertrustbundles` in the `certificates.k8s.io` API group. The rendered ClusterRole already includes this rule, and Kubernetes also grants it to all service accounts through the default `system:cluster-trust-bundle-discovery` ClusterRoleBinding. If you write your own roles and your cluster removes that default binding, add the rule to the controller's ClusterRole, or the controller does not become ready. |
 
 For the full list of chart values, see the [Helm reference]({{< link-hextra path="/reference/helm/" >}}).
 

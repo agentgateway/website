@@ -10,14 +10,13 @@ aliases:
 
 Jaeger works best for local development and testing. For production deployments, consider routing traces through an [OpenTelemetry Collector]({{< link-hextra path="/documentation/observability/traces/configs/otel/" >}}) so that you can fan out to multiple backends or apply processing pipelines to your traces before exporting them.
 
-The way you set up Jaeger depends on how you installed agentgateway. 
+The way you set up Jaeger depends on how you installed agentgateway.
 
-{{< tabs >}}
-{{% tab name="Binary and Docker" %}}
+## Binary and Docker installations {#binary-docker}
 
 Run a Jaeger container on the same host as agentgateway.
 
-1. Start a Jaeger container on the same host that agentgateway runs. 
+1. Start a Jaeger container on the same host that agentgateway runs.
    ```sh
    docker run -d --name jaeger \
      -p 16686:16686 \
@@ -26,7 +25,21 @@ Run a Jaeger container on the same host as agentgateway.
      jaegertracing/all-in-one:latest
    ```
 
-2. Point agentgateway at the Jaeger endpoint. 
+2. Point agentgateway at the Jaeger endpoint. You can make this change in the UI or in your configuration file.
+
+   {{< tabs >}}
+   {{% tab name="UI" %}}
+   Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+
+   1. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability), and click the **Tracing** card.
+   2. Keep `localhost:4317` for the **Host** and **gRPC** for the **Protocol**.
+   3. Enter `true` for **Random sampling**.
+
+      {{< reuse-image src="img/ui-tracing-enable.png" srcDark="img/ui-tracing-enable-dark.png" alt="Tracing drawer with the gRPC protocol in the Export section and random sampling set to true in the Sampling section" >}}
+
+   4. Click **Save policy**.
+   {{% /tab %}}
+   {{% tab name="Config file" %}}
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    frontendPolicies:
@@ -34,6 +47,8 @@ Run a Jaeger container on the same host as agentgateway.
        host: localhost:4317
        randomSampling: true
    ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 3. Open the Jaeger UI at [http://localhost:16686](http://localhost:16686) to view traces.
 
@@ -42,18 +57,17 @@ Run a Jaeger container on the same host as agentgateway.
    docker rm -f jaeger
    ```
 
-{{% /tab %}}
-{{% tab name="Kubernetes (Helm)" %}}
+## Helm installations {#helm}
 
 Install Jaeger into your cluster by using Helm and point agentgateway at the Jaeger collector service.
 
-1. Install the Jaeger Helm chart. 
+1. Install the Jaeger Helm chart.
    ```sh
    helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
    helm install jaeger jaegertracing/jaeger -n monitoring --create-namespace
    ```
 
-2. Verify that the pods are up and running. 
+2. Verify that the pods are up and running.
    ```sh
    kubectl get pods -n monitoring
    ```
@@ -75,9 +89,6 @@ Install Jaeger into your cluster by using Helm and point agentgateway at the Jae
    helm uninstall jaeger -n monitoring
    kubectl delete namespace monitoring
    ```
-
-{{% /tab %}}
-{{< /tabs >}}
 
 ## Other configurations
 
