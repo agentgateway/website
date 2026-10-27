@@ -97,7 +97,7 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/ag
 
 {{% /tab %}}
 {{% tab name="Experimental" %}}
-Experimental Gateway API features are enabled by default. To set the experimental feature gate explicitly, include `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true`. When using a development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, also add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
+When using a development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
 
 
 
@@ -105,8 +105,7 @@ Experimental Gateway API features are enabled by default. To set the experimenta
 ```sh {paths="experimental"}
 helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
 --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
---set controller.image.pullPolicy=Always \
---set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true
+--set controller.image.pullPolicy=Always
 ```
 
 
