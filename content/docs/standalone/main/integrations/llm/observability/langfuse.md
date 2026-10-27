@@ -37,7 +37,7 @@ Sign up at [langfuse.com](https://langfuse.com/) and get your API keys.
 
 Langfuse accepts OpenTelemetry traces directly. Configure agentgateway to export traces directly to your Langfuse deployment.
 
-Set the credentials that the tracing policy sends in its `Authorization` header. Export the variable in the environment that starts agentgateway. The UI checks environment variable references when you save, so a save from the UI fails if agentgateway does not have the variable.
+Set the credentials that the tracing policy sends in its `Authorization` header. Export the variable in the environment that starts agentgateway. In `file` storage mode, the UI checks environment variable references when you save, so a save from the UI fails if agentgateway does not have the variable.
 
 ```bash
 export LANGFUSE_AUTH_HEADER="$(printf '%s' '<your-public-key>:<your-secret-key>' | base64 | tr -d '\n')"
@@ -81,6 +81,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
         set:
           Authorization: "Basic ${LANGFUSE_AUTH_HEADER}"
       ```
+      In `hybrid` storage mode, agentgateway stores the policies exactly as you enter them and does not expand environment variable references. If you enter the reference, agentgateway sends the literal text `Basic ${LANGFUSE_AUTH_HEADER}` to Langfuse. Enter the encoded credentials in place of the reference, such as the output of `echo "$LANGFUSE_AUTH_HEADER"`, or configure tracing in your configuration file as shown in the **Config file** tab.
    3. **Protocol**: Select **HTTP**, and enter `/api/public/otel/v1/traces` for the **Path**.
    4. **Random sampling**: Enter `true`.
 
