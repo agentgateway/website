@@ -4,9 +4,6 @@ The Copilot LLM provider sends requests to the GitHub Copilot API with a token f
 
 In Kubernetes, configure `ai.provider.copilot` on an {{< reuse "agw-docs/snippets/backend.md" >}} and supply the token through `policies.auth.secretRef`. The standalone `backendAuth: copilot` method discovers credentials on the gateway host. Kubernetes uses an explicit Secret instead.
 
-> [!NOTE]
-> Kubernetes Copilot support requires version 1.7 or later. Use CRDs, controller, and data-plane builds that include this support.
-
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
