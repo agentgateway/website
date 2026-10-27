@@ -115,7 +115,7 @@ The agentgateway repository ships this integration as a runnable example, so you
 1. Download the example configuration.
 
    ```sh {paths="jev"}
-   curl -L https://agentgateway.dev/examples/llm-guardrail-jev-openai/config.yaml -o config.yaml
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/llm-guardrail-jev-openai/config.yaml -o config.yaml
    ```
 
 2. Review the configuration file.
@@ -124,7 +124,7 @@ The agentgateway repository ships this integration as a runnable example, so you
    cat config.yaml
    ```
 
-   {{% github-yaml url="https://agentgateway.dev/examples/llm-guardrail-jev-openai/config.yaml" %}}
+   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/llm-guardrail-jev-openai/config.yaml" %}}
 
    The `jev-latest` model uses the built-in `typesafe` provider, which sets the TypeSafe API host and Jev's SystemOne request format. Because of that format, agentgateway translates the webhook's OpenAI Decisions API requests into Jev's native `/v1/systemone` API.
 
@@ -159,10 +159,10 @@ agentgateway -f config.yaml --validate-only
 
 The webhook server turns each guardrail check into an evaluation call. Agentgateway sends the webhook server the messages to check, and the webhook server answers with a pass action or a reject action.
 
-1. Download the example server from the agentgateway repository. The [`guardrail.ts`](https://github.com/agentgateway/agentgateway/blob/main/examples/llm-guardrail-jev-openai/guardrail.ts) file listens on port `8000` and serves the `/request` and `/response` paths that agentgateway calls.
+1. Download the example server from the agentgateway repository. The [`guardrail.ts`](https://github.com/agentgateway/agentgateway/blob/v1.7.0/examples/llm-guardrail-jev-openai/guardrail.ts) file listens on port `8000` and serves the `/request` and `/response` paths that agentgateway calls.
 
    ```sh
-   curl -sL -o guardrail.ts https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/llm-guardrail-jev-openai/guardrail.ts
+   curl -sL -o guardrail.ts https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/llm-guardrail-jev-openai/guardrail.ts
    chmod +x guardrail.ts
    ```
 
@@ -313,7 +313,7 @@ Review the telemetry data for the evaluation calls through agentgateway. For mor
 
 ## More information {#more-information}
 
-- The full [Jev and OpenAI guardrail example](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-guardrail-jev-openai), including the tracing setup that links each evaluation to the client request.
+- The full [Jev and OpenAI guardrail example](https://github.com/agentgateway/agentgateway/tree/v1.7.0/examples/llm-guardrail-jev-openai), including the tracing setup that links each evaluation to the client request.
 - [Virtual models]({{< link-hextra path="/documentation/llm/virtual-models/" >}}) for the weighted, failover, conditional, and callout routing modes.
 - [Custom webhooks]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/" >}}) for the webhook timeout, the `failureMode` setting, and how to change the request path and headers.
 - [Prompt guards]({{< link-hextra path="/documentation/llm/prompt-guards/overview/" >}}) for the built-in regex and moderation guards, which you can run alongside a webhook.

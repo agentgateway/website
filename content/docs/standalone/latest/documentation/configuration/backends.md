@@ -364,9 +364,9 @@ The AWS backend routes requests to an [Amazon Bedrock AgentCore](https://aws.ama
 
 Agentgateway derives the connection details from the `agentRuntimeArn` value: requests are sent over TLS to the `bedrock-agentcore` endpoint in the runtime's AWS region, with the path set to the runtime's invocation endpoint. Agentgateway signs each request with AWS SigV4 under the `bedrock-agentcore` signing name, by using the standard [AWS credential lookup](https://docs.aws.amazon.com/sdkref/latest/guide/access.html) from the environment. To authenticate to a runtime that uses a JWT authorizer instead, set a `policies.backendAuth.key` policy, which replaces the SigV4 signing. For the steps to set up both modes, see [Connect to AWS Bedrock AgentCore]({{< link-hextra path="/documentation/agent/agentcore/" >}}).
 
-The following configuration is from the [`traffic-aws-agentcore` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-aws-agentcore) in the agentgateway repository.
+The following configuration is from the [`traffic-aws-agentcore` example](https://github.com/agentgateway/agentgateway/tree/v1.7.0/examples/traffic-aws-agentcore) in the agentgateway repository.
 
-{{% github-yaml url="https://agentgateway.dev/examples/traffic-aws-agentcore/config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/traffic-aws-agentcore/config.yaml" %}}
 
 | Setting | Description |
 | -- | -- |
@@ -381,7 +381,7 @@ The following configuration is from the [`traffic-aws-agentcore` example](https:
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests are actually signed and proxied to AgentCore at runtime —
 #     requires AWS credentials and a real agent runtime the page omits.
-curl -L https://agentgateway.dev/examples/traffic-aws-agentcore/config.yaml -o config5.yaml
+curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/traffic-aws-agentcore/config.yaml -o config5.yaml
 agentgateway -f config5.yaml --validate-only
 {{< /doc-test >}}
 

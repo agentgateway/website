@@ -121,7 +121,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{% tab name="Config file" %}}
 1. Download an OpenAPI configuration for your agentgateway.
    ```sh
-   curl -L https://agentgateway.dev/examples/mcp-openapi/config.yaml -o config.yaml
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/mcp-openapi/config.yaml -o config.yaml
    ```
 
 2. Update the agentgateway configuration file as follows:

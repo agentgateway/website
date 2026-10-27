@@ -586,7 +586,7 @@ Use the following fields to configure callout routing:
 | `failureMode` | Optional. The default, `failClosed`, rejects the request with a `503` response and the `virtual_model_callout_failed` error code. Set `fallback` to the name of an `llm.models[]` entry to route to that model instead. The configuration is rejected if the fallback model does not exist. |
 | `cache` | Optional cache for callout responses. `key` is a list of CEL expressions that make up the cache key. If a key expression fails, such as when the header is missing, the response is not cached. `ttl` is a duration such as `10m`, or a CEL expression that can read `callout` and returns a duration or a timestamp. `maxEntries` sets the maximum number of cached responses. On a cache hit, `transformation` runs against the cached response. |
 
-For complete examples that include a callout service, see [`llm-callout-jev`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-jev) and [`llm-callout-switchyard`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-switchyard) in the agentgateway repository.
+For complete examples that include a callout service, see [`llm-callout-jev`](https://github.com/agentgateway/agentgateway/tree/v1.7.0/examples/llm-callout-jev) and [`llm-callout-switchyard`](https://github.com/agentgateway/agentgateway/tree/v1.7.0/examples/llm-callout-switchyard) in the agentgateway repository.
 
 > [!NOTE]
 > For reusable provider defaults in simplified mode, see [Multiple LLM providers]({{< link-hextra path="/integrations/llm/providers/multiple-llms/" >}}).

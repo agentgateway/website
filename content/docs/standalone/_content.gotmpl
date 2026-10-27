@@ -22,15 +22,18 @@
 {{/* =================================================================== */}}
 {{/* TARGETS — version prefixes to generate pages into                    */}}
 {{/*                                                                     */}}
-{{/* latest and main read the moving configuration/ and cel/ widgets and */}}
-{{/* the CEL schema from the agentgateway main branch. A frozen version  */}}
-{{/* directory (1.6.x) reads point-in-time copies made at the release    */}}
-{{/* that froze it: configuration/<version>/, cel/<version>/, and        */}}
-{{/* cel/<version>/cel.json in place of the remote CEL schema. Add each  */}}
-{{/* newly frozen version here, and its release tag to $frozenTags.      */}}
+{{/* Each target reads its own copies under                              */}}
+{{/* assets/agw-docs/pages/reference/{configuration,cel}/<version>/:      */}}
+{{/*   config-schema.html, cel-context.html  the widgets                  */}}
+{{/*   cel/<version>/cel.json                the CEL schema for the page  */}}
+{{/*   configuration/<version>/source-ref.txt  the agentgateway ref       */}}
+{{/* The reference docs workflow writes all four for latest and main from */}}
+{{/* the ref it generates from. A release copies latest's set into the   */}}
+{{/* frozen version (1.6.x), so frozen versions keep their own schema.   */}}
+{{/* Without a cel.json copy, the page falls back to the main-branch     */}}
+{{/* schema below. Add each newly frozen version here.                   */}}
 {{/* =================================================================== */}}
 {{ $targets := slice "latest/reference" "main/reference" "1.6.x/reference" }}
-{{ $frozenTags := dict "1.6.x" "v1.6.0" }}
 
 {{/* =================================================================== */}}
 {{/* PAGES — source type → output path, one line per generated page      */}}
@@ -109,7 +112,11 @@
   {{ else }}
     {{ warnf "Configuration schema widget HTML not found: %s (skipping explorer widget for %s)" $configHtmlPath $prefix }}
   {{ end }}
-  {{ $schemaRef := index $frozenTags $configVersion | default "main" }}
+  {{ $schemaRef := "main" }}
+  {{ $refPath := printf "assets/agw-docs/pages/reference/configuration/%s/source-ref.txt" $configVersion }}
+  {{ if os.FileExists $refPath }}
+    {{ $schemaRef = readFile $refPath | strings.TrimSpace }}
+  {{ end }}
   {{ $fullMd := printf "Generated from the [agentgateway JSON schema](https://github.com/agentgateway/agentgateway/blob/%s/schema/config.json).\n\n<p></p><div id=\"ks-widget-slot\"></div>" $schemaRef }}
   {{ $.AddPage (dict
     "content" (dict "mediaType" "text/markdown" "value" $fullMd)

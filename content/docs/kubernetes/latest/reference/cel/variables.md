@@ -72,7 +72,7 @@ To get a consistent type, read the header through a header view. The following t
 | `request.headers.join()["x-a"]` | `"1,2"` | Get all values as one string. |
 | `request.headers.split()["x-a"]` | `["1", "2"]` | Get all values as a list, with comma-separated values split too. |
 
-The `raw()` view always returns a list, even if the header is sent once, so `[0]` works for single and repeated headers. The `split()` view also splits each value on commas, so `x-a: 1,2` and `x-a: 3` together return `["1", "2", "3"]`. For the full list of header views, see [Header Views](https://github.com/agentgateway/agentgateway/blob/main/schema/cel-functions.md#header-views) in the agentgateway CEL schema.
+The `raw()` view always returns a list, even if the header is sent once, so `[0]` works for single and repeated headers. The `split()` view also splits each value on commas, so `x-a: 1,2` and `x-a: 3` together return `["1", "2", "3"]`. For the full list of header views, see [Header Views](https://github.com/agentgateway/agentgateway/blob/v1.7.0/schema/cel-functions.md#header-views) in the agentgateway CEL schema.
 
 ## Variables by policy type
 
@@ -127,6 +127,6 @@ Response payload fields, such as `mcp.tool.result` and `mcp.tool.error`, are ava
 
 The following functions can be used in all policy types.
 
-{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel-functions.md" section="Functions" %}}
+{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/tags/v1.7.0/schema/cel-functions.md" section="Functions" %}}
 
-{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel-functions.md" section="Standard Functions" %}}
+{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/tags/v1.7.0/schema/cel-functions.md" section="Standard Functions" %}}

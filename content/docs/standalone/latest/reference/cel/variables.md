@@ -14,7 +14,7 @@ Additionally, fields are populated only if they are referenced in a CEL expressi
 
 Each policy execution consistently gets the current view of the request and response. For example, during logging, any manipulations from earlier policies (such as transformations or external processing) are observable in the CEL context.
 
-For the full list of fields and types on every top-level object, see the [CEL reference]({{< link-hextra path="/reference/cel/cel-context" >}}) page. It is generated from the [agentgateway CEL schema](https://github.com/agentgateway/agentgateway/blob/main/schema/cel.md) and is the source of truth for nested fields (for example, `source.address` or `llm.inputTokens`).
+For the full list of fields and types on every top-level object, see the [CEL reference]({{< link-hextra path="/reference/cel/cel-context" >}}) page. It is generated from the [agentgateway CEL schema](https://github.com/agentgateway/agentgateway/blob/v1.7.0/schema/cel.md) and is the source of truth for nested fields (for example, `source.address` or `llm.inputTokens`).
 
 When a policy can run against both directly addressed and Service backends, check `has(backend.endpoint)` before reading `backend.endpoint`. The field is populated only for directly addressed backends, such as static hostnames. Service backends leave `backend.endpoint` unset because workload endpoints are selected separately.
 
@@ -91,7 +91,7 @@ To get a consistent type, read the header through a header view. The following t
 | `request.headers.join()["x-a"]` | `"1,2"` | Get all values as one string. |
 | `request.headers.split()["x-a"]` | `["1", "2"]` | Get all values as a list, with comma-separated values split too. |
 
-The `raw()` view always returns a list, even if the header is sent once, so `[0]` works for single and repeated headers. The `split()` view also splits each value on commas, so `x-a: 1,2` and `x-a: 3` together return `["1", "2", "3"]`. For the full list of header views, see [Header Views](https://github.com/agentgateway/agentgateway/blob/main/schema/cel-functions.md#header-views) in the agentgateway CEL schema.
+The `raw()` view always returns a list, even if the header is sent once, so `[0]` works for single and repeated headers. The `split()` view also splits each value on commas, so `x-a: 1,2` and `x-a: 3` together return `["1", "2", "3"]`. For the full list of header views, see [Header Views](https://github.com/agentgateway/agentgateway/blob/v1.7.0/schema/cel-functions.md#header-views) in the agentgateway CEL schema.
 
 ## Variables by policy type
 
@@ -170,6 +170,6 @@ The following functions can be used in all policy types.
 To define reusable functions from CEL expressions, see
 [Custom functions]({{< link-hextra path="/reference/cel/custom-functions/" >}}).
 
-{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel-functions.md" section="Functions" %}}
+{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/tags/v1.7.0/schema/cel-functions.md" section="Functions" %}}
 
-{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel-functions.md" section="Standard Functions" %}}
+{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/tags/v1.7.0/schema/cel-functions.md" section="Standard Functions" %}}

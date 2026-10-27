@@ -516,7 +516,7 @@ For each request to the virtual model, the gateway sends a `POST` request to the
 
 The callout request carries a `content-type` header and only the headers that you set in `headers`. Client request headers, such as `Authorization` or `x-session-id`, are not forwarded. To pass a client header to the routing service, read it in a `headers` expression, such as `x-session-id: request.headers["x-session-id"]`.
 
-In this guide, the httpbun mock LLM stands in for the routing service. Its `/mix` endpoint returns the response that you encode in the URL, so the service always selects `internal-premium` with a `medium` reasoning effort. For routing services that make real decisions, see the [`llm-callout-jev`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-jev) and [`llm-callout-switchyard`](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-callout-switchyard) examples.
+In this guide, the httpbun mock LLM stands in for the routing service. Its `/mix` endpoint returns the response that you encode in the URL, so the service always selects `internal-premium` with a `medium` reasoning effort. For routing services that make real decisions, see the [`llm-callout-jev`](https://github.com/agentgateway/agentgateway/tree/v1.7.0/examples/llm-callout-jev) and [`llm-callout-switchyard`](https://github.com/agentgateway/agentgateway/tree/v1.7.0/examples/llm-callout-switchyard) examples.
 
 For your own in-cluster routing service, set `backendRef` instead of `url`. A `url` that names a cluster hostname does not get the `Service` policies or load balancing. Keep the following in mind for a `backendRef`:
 

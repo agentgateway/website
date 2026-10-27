@@ -90,7 +90,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 1. Download an MCP configuration for your agentgateway.
 
    ```yaml {paths="mcp-stdio"}
-   curl -L https://agentgateway.dev/examples/mcp-basic/config.yaml -o config.yaml
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/mcp-basic/config.yaml -o config.yaml
    ```
 
 2. Review the configuration file. 
@@ -99,7 +99,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
    cat config.yaml
    ```
 
-   {{% github-yaml  url="https://agentgateway.dev/examples/mcp-basic/config.yaml" %}}
+   {{% github-yaml  url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/mcp-basic/config.yaml" %}}
 
    {{< reuse "agw-docs/snippets/review-table.md" >}}
 

@@ -373,6 +373,10 @@ jobs:
           go test ./...
           go run render.go -title "Configuration schema" "$CONFIG_SCHEMA" \
             > "${TARGET_DIR}/config-schema.html"
+          # The standalone content adapter links the schema explorer to the agentgateway
+          # ref that this widget came from. A release copies this directory into the frozen
+          # version, so the ref travels with the widget.
+          echo "${{ matrix.ref }}" > "${TARGET_DIR}/source-ref.txt"
 
       - name: Generate CEL context widget HTML
         run: |
@@ -388,6 +392,10 @@ jobs:
   
           echo "CEL widget HTML generated successfully:"
           ls -la "${TARGET_DIR}/cel-context.html"
+
+          # The standalone content adapter builds the CEL context page from this copy, so
+          # each version renders the schema of its own agentgateway ref instead of main.
+          cp "$CEL_SCHEMA" "${TARGET_DIR}/cel.json"
 
       # Create PR: uses the default GITHUB_TOKEN (contents: write + pull-requests: write from
       # the permissions block at the top of this file). See that block for the CI implications.
