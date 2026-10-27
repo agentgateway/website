@@ -196,6 +196,8 @@ When a request matches an entry in the catalog, {{< reuse "agw-docs/snippets/age
 
 For Anthropic prompt-cache writes with a 1-hour time to live (TTL), `llm.cost.cacheWrite1h` reports the 1-hour cache-write cost, and `llm.cost.cacheWrite` reports the cost of the other cache writes, such as 5-minute cache writes. When the catalog sets `cacheWrite1h`, `llm.costRates.cacheWrite1h` reports the effective rate. Traces record the 1-hour component as `agw.ai.usage.cost.cache_write_1h`.
 
+When an Anthropic Messages response reports `usage.iterations`, {{< reuse "agw-docs/snippets/agentgateway.md" >}} prices each iteration separately and adds the results to get the request cost. If an iteration names a `model` with an exact catalog match, the tokens for that iteration use that model's catalog entry. Otherwise, the iteration uses the response model.
+
 The request access log includes `agw.ai.usage.cost.total` only for priced LLM requests. When the model cannot be priced, which is a lookup status of `Unpriced` or `Missing` as described in the next step, the access log leaves out the field. For how to view logs and add cost fields, see [Metrics and logs]({{< link-hextra path="/documentation/llm/observability/" >}}).
 
 ### Service tiers {#service-tiers}
