@@ -132,7 +132,7 @@ Most routing and policy issues surface in the status of the corresponding Kubern
       | Invalid part | What the proxy loads instead | How to fix it |
       | -- | -- | -- |
       | The Secret that holds LLM provider credentials does not exist | The backend keeps the credential field, but empty. Provider calls go out unauthenticated, so the failure comes back from the provider rather than from agentgateway. | Create the Secret in the namespace that `secretRef` names or correct the reference. |
-      | The controller cannot translate an `oauthTokenExchange` or `crossAppAccess` backend authentication block | The authentication block is replaced with a marker that rejects every request that uses it. Those requests fail with HTTP `500` and the message `oauthTokenExchange configuration is invalid` or `crossAppAccess configuration is invalid`, and the gateway does not call the token endpoint. Requests that do not use the block are not affected. | Fix the field that the condition message names, such as an unsupported `subjectToken.tokenType` value or a missing client authentication Secret. |
+      | The controller cannot translate an `oauthTokenExchange` or `crossAppAccess` backend authentication block | The authentication block is replaced with a marker that rejects every request that uses it. Those requests fail with HTTP `500` and the message `backend authentication failed`, and the gateway does not call the token endpoint. The proxy logs name the cause, such as `oauthTokenExchange configuration is invalid` or `crossAppAccess configuration is invalid`. Requests that do not use the block are not affected. | Fix the field that the condition message names, such as an unsupported `subjectToken.tokenType` value or a missing client authentication Secret. |
       | A prompt guard `webhook.backendRef` names a Service that does not exist | The webhook stays in the policy with no target to call. Guarded requests then take the webhook `failureMode`, which is `FailClosed` unless you set it. With `FailOpen`, prompt guarding is skipped instead. | Create the Service or point `backendRef` at one that exists. |
       | A remote JWKS is not available yet | The authentication policy keeps an empty key set, `{"keys":[]}`, so the policy trusts no keys. JWT authentication defaults to `Strict` mode, which rejects a request that carries no token and rejects any token that does arrive because no key can verify a signature. | Check that the JWKS endpoint is reachable from the control plane. The controller retries the fetch with a backoff and installs the keys when it succeeds. |
       | A CEL expression does not compile | The rest of the policy is kept and the expression is replaced with one that always fails. An `authorization` rule that depends on that replacement therefore allows nothing. | Fix the expression. The condition message names the field, then the expression that did not compile. |
@@ -296,6 +296,99 @@ The agentgateway controller tracks a log level per component, such as the transl
 
 > [!NOTE]
 > You can also get and set the proxy log level directly through the `/logging` admin endpoint, such as `curl -X POST "http://localhost:15000/logging?level=debug"` after you port-forward to the proxy pod. The endpoint accepts the same `RUST_LOG` filter syntax for fine-grained, per-module levels, such as `info,proxy::httpproxy=trace`.
+
+## Debug client-safe error responses {#client-safe-error-responses}
+
+When the agentgateway proxy rejects a request or cannot complete it, the response body carries a short, generic message, such as `authentication failed` or `no backends available`. The message does not include internal details, such as backend addresses, credential sources, or token validation errors. The `error` field of the proxy's access log and the request traces keep the full cause.
+
+For example, an HTTPRoute sends traffic to a Service that has no ready endpoints. The client receives only a generic message.
+
+```console
+HTTP/1.1 503 Service Unavailable
+content-type: text/plain
+content-length: 21
+
+no backends available
+```
+
+The proxy log line for the same request names the cause.
+
+```console
+error	request gateway=agentgateway-system/agentgateway-proxy listener=http route=httpbin/httpbin ... http.status=503 protocol=http error="no healthy backends" reason=NoHealthyBackend
+```
+
+{{< reuse "agw-docs/pages/operations/client-error-messages.md" >}}
+
+### Return error details to clients {#expose-error-details}
+
+For debugging in a trusted test environment, you can send the full internal error back to the client. Set the `AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS` environment variable to `true` on the proxy. Any other value keeps the details hidden. To set the environment variable, use the `spec.env` field of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that your Gateway references.
+
+> [!WARNING]
+> Do not use this setting on a shared or production gateway. Client responses can include backend addresses, credential lookup failures, and other details about your environment.
+
+1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that sets the environment variable. If your Gateway already references an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, add the `env` entry to that resource instead.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+   metadata:
+     name: expose-error-details
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     env:
+     - name: AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS
+       value: "true"
+   EOF
+   ```
+
+2. Reference the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource from your Gateway. The following command patches the `agentgateway-proxy` Gateway from the quickstart.
+
+   ```sh
+   kubectl patch gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type=merge -p '{"spec":{"infrastructure":{"parametersRef":{"group":"{{< reuse "agw-docs/snippets/group.md" >}}","kind":"{{< reuse "agw-docs/snippets/gatewayparameters.md" >}}","name":"expose-error-details"}}}}'
+   ```
+
+   Example output:
+
+   ```console
+   gateway.gateway.networking.k8s.io/agentgateway-proxy patched
+   ```
+
+3. Verify that the proxy deployment has the environment variable. The proxy pods restart with the new setting.
+
+   ```sh
+   kubectl get deployment agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS")]}'
+   ```
+
+   Example output:
+
+   ```console
+   {"name":"AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS","value":"true"}
+   ```
+
+4. Send a request that fails. The response now includes the cause, such as for the Service without ready endpoints from the previous section.
+
+   ```console
+   HTTP/1.1 503 Service Unavailable
+   content-type: text/plain
+   content-length: 19
+
+   no healthy backends
+   ```
+
+   The proxy logs a warning the first time that it returns an error with details.
+
+   ```console
+   warn	proxy	AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS is enabled; internal error details are sent to clients
+   ```
+
+5. When you finish debugging, remove the `parametersRef` from the Gateway, or remove the `env` entry from your existing {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
+
+   ```sh
+   kubectl patch gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type=json -p '[{"op":"remove","path":"/spec/infrastructure/parametersRef"}]'
+   kubectl delete {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} expose-error-details -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
 
 ## Capture profiles
 

@@ -155,7 +155,7 @@ The examples so far read the request, which means they run on a response that a 
 | Field | Description |
 | -- | -- |
 | `proxy.error.reason` | Broad classification of the failure, such as `UpstreamFailure` or `Timeout`. This value is the same value set that the `reason` label on the gateway's request metrics uses, so a response header, a log field, and a metric series can be grouped the same way. |
-| `proxy.error.message` | The human-readable detail, such as `upstream call failed: ...`. Treat the exact text as unstable, because it can change between releases. Match on `reason` instead. |
+| `proxy.error.message` | The human-readable detail, such as `no healthy backends`. Treat the exact text as unstable, because it can change between releases. Match on `reason` instead.{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} This value is the full internal message from the proxy logs, not the generic message in the response body. If you copy it onto a response, clients receive internal details.{{< /version >}} |
 
 `proxy.error` is set only when the gateway synthesized the response from a failure. The variable is absent when the backend answered, and absent for a [direct response]({{< link-hextra path="/documentation/traffic-management/direct-response/" >}}), which is a reply that you configured rather than an error.
 
@@ -188,8 +188,8 @@ The examples so far read the request, which means they run on a response that a 
 
    ```console
    < HTTP/1.1 503 Service Unavailable
-   < x-error-reason: UpstreamFailure
-   < x-error-message: upstream call failed: ...
+   < x-error-reason: NoHealthyBackend
+   < x-error-message: no healthy backends
    ```
 
 `reason` takes one of the following values. The set covers every failure the gateway classifies, not only backend failures, so the same header explains a rejected request as well as an unreachable backend.

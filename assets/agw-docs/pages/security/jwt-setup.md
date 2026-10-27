@@ -90,11 +90,10 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
    HTTP/1.1 401 Unauthorized
    content-type: text/plain
    response-gateway: response path /headers
-   content-length: 45
-   date: Mon, 19 Jan 2026 16:07:12 GMT
+   ...
+   ```
 
-   authentication failure: no bearer token found%  
-   ```      
+   {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The response body names the reason, such as `authentication failure: no bearer token found`.{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The response body says only `authentication failed`. The proxy logs record the reason, such as `authentication failure: no bearer token found`.{{< /version >}}
    
 2. Register a client with Keycloak. The client uses dynamic client registration (DCR), so no administrator creates it, and Keycloak returns the client ID and secret that the next step uses.
 

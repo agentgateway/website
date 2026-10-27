@@ -348,7 +348,7 @@ EOF
    Example output:
 
    ```json
-   {"error":{"message":"Budget exceeded","type":"rate_limit_error","code":"budget_exceeded"}}
+   {"error":{"message":"budget exceeded","type":"rate_limit_error","code":"budget_exceeded"}}
    ```
 
    Agentgateway also writes a log line for each rejected request. A `USD` budget reports its amounts in dollars.

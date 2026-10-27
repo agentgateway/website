@@ -86,7 +86,7 @@ For example, a Responses request to `gpt-4.1` is converted to Chat Completions, 
 
 | Symptom | Cause and resolution |
 |---------|----------------------|
-| A request returns `500` with `Copilot token not found`. | Agentgateway found no credential. Set `GH_COPILOT_TOKEN`, run `gh auth login`, or set `params.apiKey`. The configuration still passes `--validate-only` because the lookup happens on each request. |
+| A request returns `500` with `backend authentication failed`. The logs show `Copilot token not found`. | Agentgateway found no credential. Set `GH_COPILOT_TOKEN`, run `gh auth login`, or set `params.apiKey`. The configuration still passes `--validate-only` because the lookup happens on each request. |
 | A request returns `400` with `unsupported conversion: from Completions to provider copilot`. | The model does not accept the API format of the request. The error lists the supported formats. Send the request in one of those formats. |
 | GitHub rejects the credential. | The credential is expired, is not accepted by the Copilot API, or belongs to an account without access to the model. Confirm the credential and the account entitlement with GitHub. |
 | Requests to a custom `params.baseUrl` have no `Authorization` header. | Agentgateway discovers the credential only for the default upstream. Set `params.apiKey`. |
