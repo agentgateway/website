@@ -4,4 +4,4 @@ weight: 10
 description: Reference for the `agctl bug report` command.
 ---
 
-{{< reuse "agw-docs/pages/reference/agctl/main/agctl-bug-report.md" >}}
+{{< reuse "agw-docs/pages/reference/agctl/latest/agctl-bug-report.md" >}}

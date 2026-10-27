@@ -22,5 +22,5 @@ aliases:
 
 {{< reuse "agw-docs/pages/observability/metrics/control-plane.md" >}}
 
-{{< reuse "agw-docs/snippets/metrics-control-plane-main.md" >}}
+{{< reuse "agw-docs/snippets/metrics-control-plane-latest.md" >}}
 

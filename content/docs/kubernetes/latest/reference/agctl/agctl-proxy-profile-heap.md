@@ -4,4 +4,4 @@ weight: 10
 description: Reference for the `agctl proxy profile heap` command.
 ---
 
-{{< reuse "agw-docs/pages/reference/agctl/main/agctl-proxy-profile-heap.md" >}}
+{{< reuse "agw-docs/pages/reference/agctl/latest/agctl-proxy-profile-heap.md" >}}
