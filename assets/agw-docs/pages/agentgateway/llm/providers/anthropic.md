@@ -5,10 +5,16 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
 > Anthropic excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Anthropic reports. To read the Anthropic number itself, use `llm.providerInputTokens`. For more information, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
 >
 > {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Client response bodies use the usage convention for the API format that the client called. A `/v1/messages` response uses Anthropic usage fields. In that response, `usage.input_tokens` excludes prompt-cache tokens and cache counts appear separately. A `/v1/chat/completions` response uses OpenAI usage fields, and `usage.prompt_tokens` includes prompt-cache tokens.{{< /version >}}
+>
+> {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}When Anthropic reports `usage.iterations`, the `/v1/messages` response keeps that array. Telemetry, cost calculations, and converted Chat Completions responses use the sum of the iteration entries.{{< /version >}}
 {{< /version >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 For Anthropic Messages and token-count requests, a client `anthropic-version` header is forwarded. If the client sends no version header, the request uses the default `2023-06-01` version.
+{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+To add prompt-cache markers automatically, set `backend.ai.promptCaching` in an {{< reuse "agw-docs/snippets/policy.md" >}} resource. The setting also works for Claude models on Vertex AI. If a request already has `cache_control` markers, the policy adds none. The `minTokens` value applies only to system prompt caching. For the fields and their defaults, see [Prompt caching on Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/#prompt-caching" >}}).
 {{< /version >}}
 
 ## Before you begin
