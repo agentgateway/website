@@ -18,6 +18,8 @@ Attaches to: {{< badge content="Route" path="/documentation/configuration/routes
 
 Modify URLs of incoming requests with {{< gloss "Rewrite" >}}rewrite{{< /gloss >}} policies.
 
+Start the `path.full` and `path.prefix` values with `/`. If you use `path.prefix` on a route that does not delegate to a route group, every match on the route must use `pathPrefix`. Agentgateway rejects a configuration that does not follow these rules.
+
 For example, the following configuration modifies the request hostname to `example.com` and the request path to `/new-path`.
 
 {{< tabs >}}
