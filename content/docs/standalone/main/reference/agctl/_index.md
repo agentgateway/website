@@ -3,6 +3,10 @@ title: agctl CLI reference
 weight: 25
 description: Reference for the agctl command-line tool.
 test: skip
+aliases:
+  - /docs/standalone/main/reference/agctl/agctl-controller/
+  - /docs/standalone/main/reference/agctl/agctl-controller-log/
+  - /docs/standalone/main/reference/agctl/agctl-migrate/
 ---
 
 Reference for `agctl`, the command-line tool that you use to inspect and debug agentgateway. The pages in this section are generated from the `agctl` source.
