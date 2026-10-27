@@ -85,11 +85,30 @@ For page-billed document models, set `perPage` instead of token rates. The follo
 ```
 {{% /version %}}
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+For audio models that bill by duration, set `perAudioMinute`. The following example charges `$0.006` for each minute of audio that the OpenAI `whisper-1` model transcribes or translates.
+
+```json
+{
+  "providers": {
+    "openai": {
+      "models": {
+        "whisper-1": {
+          "rates": { "perAudioMinute": "0.006" }
+        }
+      }
+    }
+  }
+}
+```
+{{% /version %}}
+
 Key points:
 
 - Lookups are by **provider id** (such as `openai`, `anthropic`, or `gcp.gemini`) and **model name** (such as `gpt-4o-mini`).
 - Rates are **strings** (exact decimals), in **USD per 1,000,000 tokens**.
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}- `perPage` is **USD per page** for document or OCR models that report page usage, not USD per 1,000,000 tokens.{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}- `perAudioMinute` is **USD per minute of audio** for transcription and translation models that report the audio duration, not USD per 1,000,000 tokens.{{< /version >}}
 - If a rate is omitted, that token type is not priced for the model.
 - `tiers[]` is optional. Each tier selects alternate `rates` when the request context length is **over** the tier's `contextOver` value. Tiers must be ordered by strictly increasing `contextOver`.
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}- Set `serviceTier` to `standard`, `flex`, `priority`, or `reserved` to select rates by served tier. Omit it to match any tier. Omit `contextOver` to apply the rule from zero context tokens. See [Service tiers](#service-tiers) for tier detection.
