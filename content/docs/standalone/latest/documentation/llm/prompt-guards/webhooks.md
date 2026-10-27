@@ -24,7 +24,7 @@ Configure a prompt guard to call your webhook service. You can use the [guardrai
 
 ```yaml
 cat <<EOF > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: \$schema=https://agentgateway.dev/schema/config
 llm:
   models:
   - name: "*"
@@ -76,7 +76,7 @@ A `host` value that starts with `https://` enables backend TLS with the system t
 
 ```yaml
 cat <<EOF > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: \$schema=https://agentgateway.dev/schema/config
 llm:
   models:
   - name: "*"
@@ -114,7 +114,7 @@ Webhook calls use a 10-second timeout by default. To change the timeout for an i
 
 ```yaml
 cat <<EOF > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: \$schema=https://agentgateway.dev/schema/config
 llm:
   models:
   - name: "*"
@@ -146,7 +146,7 @@ To share one timeout across several guards, you can instead define a named backe
 
 ```yaml
 cat <<EOF > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: \$schema=https://agentgateway.dev/schema/config
 backends:
 - name: content-safety-webhook
   host: content-safety-webhook.example.com:8000
@@ -195,7 +195,7 @@ Expressions are evaluated against the original client request, not against the w
 
 ```yaml
 cat <<EOF > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: \$schema=https://agentgateway.dev/schema/config
 llm:
   models:
   - name: "*"
