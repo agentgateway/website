@@ -52,7 +52,7 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
      rules:
        - backendRefs:
            - name: dfp-backend
-             group: agentgateway.dev
+             group: {{< reuse "agw-docs/snippets/group.md" >}}
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
