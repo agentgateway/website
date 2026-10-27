@@ -183,14 +183,14 @@ To give different users different access, choose one of the following options.
 
 ### Set up an admin group {#admin-group}
 
-Add `allow` rules to the `authorization` policy in `ui.policies` to let one group of users save changes while every other user can view. The following example gives members of the `agentgateway-admins` group full access. The example assumes that your IdP adds a `groups` claim to the ID token. The claim name and the group names depend on your IdP configuration.
+Add `allow` rules to the `authorization` policy in `ui.policies` to let one group of users save changes while every other user can view. The following example gives members of the `agentgateway-admins` group full access. Before you add the rules, check that your IdP adds a `groups` claim to the ID token. Without the claim, the group rule does not match, and saves from the UI on the gateway return a `403` response. The claim name and the group names depend on your IdP configuration.
 
 The example uses the following rules.
 
 | Rule | Effect |
 | -- | -- |
 | `"agentgateway-admins" in jwt.groups` | Members of the group have full access, including saving changes. |
-| `request.method == "GET"` | Every other user can open the UI pages and read the configuration. |
+| `request.method == "GET"` | Every other user can open the UI pages and read the configuration, including any secrets that the configuration file stores inline, such as virtual keys, provider API keys, and OIDC client secrets. To hide secrets, narrow this rule to the paths that users need, or use an `extAuthz` policy. |
 | `request.path.startsWith("/api/logs/") \|\| request.path == "/api/cel"` | Every other user can also search and stream request logs, view analytics, and use the Common Expression Language (CEL) playground. These pages query data with `POST` requests, so this rule includes them in view access. |
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
@@ -209,12 +209,12 @@ The example uses the following rules.
 5. Click **Save policy**.
 {{% /tab %}}
 {{% tab name="Config file" %}}
-{{< reuse "agw-docs/standalone/setup/ui/secure-readonly-config.md" >}}
+{{< reuse "agw-docs/standalone/setup/ui/secure-admin-group-config.md" >}}
 {{% /tab %}}
 {{< /tabs >}}
 {{% /version %}}
 {{% version include-if="1.6.x" %}}
-{{< reuse "agw-docs/standalone/setup/ui/secure-readonly-config.md" >}}
+{{< reuse "agw-docs/standalone/setup/ui/secure-admin-group-config.md" >}}
 {{% /version %}}
 
 #### Verify the rules
@@ -231,21 +231,27 @@ Agentgateway identifies the user of each request with the `agentgateway.user` at
 3. The username of a basic authentication request
 4. The client identity of a mutual TLS (mTLS) connection, such as the workload identity or the common name of the client certificate
 
-You choose which value identifies your users. Many IdPs set the `sub` claim to a stable ID, such as the UUID `1ed4bac1-9a81-4867-a81f-04cfc58bf0b2` in Keycloak. To record email addresses instead, follow these steps.
+You choose which value identifies your users. Many IdPs set the `sub` claim to a stable ID, such as the UUID `1ed4bac1-9a81-4867-a81f-04cfc58bf0b2` in Keycloak. To record email addresses instead, set the user attribute to the following CEL expression.
+
+Your expression replaces the whole default order, not only the JWT part. For example, if you set the attribute to `jwt.email` alone, requests that use a virtual key no longer record a user. Key owners then stop appearing in request logs. The following expression keeps the default order and checks the `email` claim before the `sub` claim.
+
+```txt
+coalesce(apiKey["agentgateway.dev/owner"], apiKey.user, apiKey.name, apiKey.owner, jwt.email, jwt.sub, basicAuth.username, source.identity.namespace + "/" + source.identity.serviceAccount, source.subjectCn, null)
+```
 
 {{< tabs >}}
 {{% tab name="UI" %}}
 1. Open the **Logs** page, and click **Settings**.
-2. In the **Request log identity** section of the **Log settings** drawer, enter `jwt.email` in the **User attribute** field.
+2. In the **Request log identity** section of the **Log settings** drawer, enter the expression in the **User attribute** field.
 3. Click **Save settings**.
 {{% /tab %}}
 {{% tab name="Config file" %}}
-Set the `standardAttributes.user` field in the `config` section of your configuration file to `jwt.email`. In a Helm installation, the field is `config.config.standardAttributes.user` in your values file, because the `config` value holds the whole configuration file.
+Set the `standardAttributes.user` field in the `config` section of your configuration file to the expression. In a Helm installation, the field is `config.config.standardAttributes.user` in your values file, because the `config` value holds the whole configuration file.
 
 ```yaml
 config:
   standardAttributes:
-    user: jwt.email
+    user: 'coalesce(apiKey["agentgateway.dev/owner"], apiKey.user, apiKey.name, apiKey.owner, jwt.email, jwt.sub, basicAuth.username, source.identity.namespace + "/" + source.identity.serviceAccount, source.subjectCn, null)'
 ```
 {{% /tab %}}
 {{< /tabs >}}
