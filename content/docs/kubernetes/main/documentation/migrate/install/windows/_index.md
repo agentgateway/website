@@ -15,6 +15,8 @@ Run the following commands in PowerShell.
     $OS = "Windows"
     # One of x86_64|arm64|i386
     $ARCH = "x86_64"
+    # Hide the Invoke-WebRequest progress bar, which slows downloads in Windows PowerShell 5.1
+    $ProgressPreference = 'SilentlyContinue'
     ```
 
     Refer to the [releases page](https://github.com/kgateway-dev/ingress2gateway/releases) for a list of published ingress2gateway versions.
