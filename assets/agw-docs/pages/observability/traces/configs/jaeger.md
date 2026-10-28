@@ -50,7 +50,7 @@ spec:
   frontend:
     tracing:
       backendRef:
-        name: jaeger-collector
+        name: jaeger
         namespace: tracing
         port: 4317
       protocol: GRPC
@@ -63,7 +63,7 @@ EOF
 1. Port-forward the Jaeger UI.
 
    ```sh
-   kubectl port-forward -n tracing svc/jaeger-query 16686:16686
+   kubectl port-forward -n tracing svc/jaeger 16686:16686
    ```
 
 2. Send a request to the httpbin app.

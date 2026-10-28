@@ -33,10 +33,10 @@ You can configure agentgateway in the UI or in your configuration file.
 
 2. Navigate to the **Models** tab.
 
-3. Enable **Override OpenAI Base URL** and enter your agentgateway address.
+3. Enable **Override OpenAI Base URL** and enter your agentgateway address with the `/v1` path. Cursor adds `/chat/completions` to it. Without `/v1`, agentgateway does not recognize the request as a chat completion and passes it through to the provider unchanged.
 
    ```
-   http://localhost:3000
+   http://localhost:3000/v1
    ```
 
    > [!NOTE]

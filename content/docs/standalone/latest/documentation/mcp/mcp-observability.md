@@ -53,7 +53,7 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
 
 4. Open the [agentgateway playground](http://localhost:15000/ui/mcp/playground/) and click **Connect**. Then, select a tool, such as `echo`, enter any message, and click **Run Tool**. 
 
-5. Open the [Jaeger UI](http://localhost:16686/search) and select the `call_tool` operation. Then, verify that you can see traces for your MCP tool call. 
+5. Open the [Jaeger UI](http://localhost:16686/search) and select the `tools/call everything_echo` operation. Then, verify that you can see traces for your MCP tool call. Operation names use the `<method> <target>_<tool>` format.
    
 
 ## View logs
