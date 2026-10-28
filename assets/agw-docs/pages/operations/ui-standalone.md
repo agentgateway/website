@@ -6,11 +6,6 @@ The agentgateway UI is a built-in web interface that runs alongside the proxy on
 
 The UI is separate from the [Web UI integrations]({{< link-hextra path="/integrations/web-uis/" >}}), which are third-party AI chat frontends (such as Open WebUI or LibreChat) that you connect to agentgateway as a backend. The UI is the management interface for agentgateway itself.
 
-{{< doc-test paths="ui-standalone-default,ui-standalone-custom-port" >}}
-# Install agentgateway binary for tests
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 ## Open the UI {#open-admin-ui}
 
 1. Start agentgateway with a config file.
@@ -24,18 +19,6 @@ The UI is separate from the [Web UI integrations]({{< link-hextra path="/integra
    ```
    INFO app  serving UI at http://localhost:15000/ui
    ```
-
-{{< doc-test paths="ui-standalone-default" >}}
-pkill -f "agentgateway -f" 2>/dev/null || true
-sleep 1
-cat > /tmp/agw-ui-default.yaml <<'EOF'
-config:
-  adminAddr: localhost:15000
-EOF
-agentgateway -f /tmp/agw-ui-default.yaml &
-AGW_DEFAULT_PID=$!
-sleep 3
-{{< /doc-test >}}
 
 2. Open [http://localhost:15000/ui/](http://localhost:15000/ui/) in your browser.
 
@@ -51,21 +34,6 @@ sleep 3
    {{< reuse-image-light src="img/1.2-earlier/agentgateway-ui-landing.png" >}}
    {{< reuse-image-dark srcDark="img/1.2-earlier/agentgateway-ui-landing-dark.png" >}}
    {{< /version >}}
-
-{{< doc-test paths="ui-standalone-default" >}}
-YAMLTest -f - <<'EOF'
-- name: UI returns HTTP 200 on default port
-  http:
-    url: "http://localhost:15000/ui/"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-  retries: 3
-EOF
-kill $AGW_DEFAULT_PID 2>/dev/null || true
-{{< /doc-test >}}
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x" >}}
 ## Generate LLM client settings {#client-setup}
@@ -106,34 +74,7 @@ By default, the UI binds to `localhost:15000`. To use a different address or por
    INFO app  serving UI at http://localhost:9090/ui
    ```
 
-{{< doc-test paths="ui-standalone-custom-port" >}}
-pkill -f "agentgateway -f" 2>/dev/null || true
-sleep 1
-cat > /tmp/agw-ui-custom.yaml <<'EOF'
-config:
-  adminAddr: localhost:9090
-EOF
-agentgateway -f /tmp/agw-ui-custom.yaml &
-AGW_CUSTOM_PID=$!
-sleep 3
-{{< /doc-test >}}
-
 3. Open the UI at the new address. In this example, navigate to [http://localhost:9090/ui/](http://localhost:9090/ui/).
-
-{{< doc-test paths="ui-standalone-custom-port" >}}
-YAMLTest -f - <<'EOF'
-- name: UI returns HTTP 200 on custom port
-  http:
-    url: "http://localhost:9090/ui/"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-  retries: 3
-EOF
-kill $AGW_CUSTOM_PID 2>/dev/null || true
-{{< /doc-test >}}
 
 > [!NOTE]
 > If you change <code>adminAddr</code>, update any agentgateway admin API commands to use the new address. For example, change <code>curl http://localhost:15000/logging</code> to use the new port.

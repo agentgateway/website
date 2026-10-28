@@ -2,10 +2,6 @@
 title: Cost dashboard
 weight: 30
 description: View LLM spend, tokens, and traffic in the built-in UI, grouped by model, provider, and user.
-test:
-  cost-dashboard:
-  - file: ${versionRoot}/documentation/llm/cost-controls/dashboard.md
-    path: cost-dashboard
 ---
 
 The [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) guide prices every request and exposes the result to logs, metrics, and CEL. The built-in **UI** turns that data into a visual dashboard: spend, tokens, and calls over time, broken down by model, provider, user, group, or user agent. No external Prometheus or Grafana is required.
@@ -174,63 +170,3 @@ Analytics describes recorded traffic. It does not show budget enforcement or the
 ## Persistence and scaling
 
 The dashboard reads from the database at `config.database.url`. Agentgateway supports SQLite (default, single instance) and PostgreSQL. See [Request Log]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}) for full configuration details, including connection string format, credentials, and schema reference.
-
-{{< doc-test paths="cost-dashboard" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
-
-# A catalog so modelCatalog loads and validates.
-mkdir -p costs
-cat > costs/catalog.json <<'JSON'
-{ "providers": { "openai": { "models": {
-  "gpt-4o-mini": { "rates": { "input": "0.15", "output": "0.6", "cacheRead": "0.075" } }
-} } } }
-JSON
-
-# Config with database + modelCatalog (mode=rwc so SQLite creates the file).
-cat > config.yaml <<'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-config:
-  adminAddr: localhost:15000
-  database:
-    url: "sqlite://./data.db?mode=rwc"
-  modelCatalog:
-  - file: ./costs/catalog.json
-llm:
-  port: 4000
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-EOF
-agentgateway -f config.yaml --validate-only
-
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 4
-{{< /doc-test >}}
-
-{{< doc-test paths="cost-dashboard" >}}
-YAMLTest -f - <<'EOF'
-- name: Costs dashboard page serves
-  http:
-    url: "http://localhost:15000/ui/llm/costs"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-  retries: 3
-- name: Analytics dashboard page serves
-  http:
-    url: "http://localhost:15000/ui/llm/analytics"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-  retries: 3
-EOF
-{{< /doc-test >}}

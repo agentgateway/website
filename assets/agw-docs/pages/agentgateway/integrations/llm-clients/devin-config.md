@@ -1,4 +1,4 @@
-```yaml {paths="devin-validate"}
+```yaml
 cat > /tmp/test-devin.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:

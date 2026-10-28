@@ -7,7 +7,7 @@ The policy sends a per-user token cost to the rate limit server. It extracts the
 > This guide uses global rate limiting so that every proxy replica draws from the same budget. If you do not need the budget to be shared across replicas, you can skip the rate limit server and set `traffic.rateLimit.local[].key` to `apiKey.user_id` instead, which gives each virtual key its own in-memory budget. For more information, see [Claim-level budget limits]({{< link-hextra path="/documentation/llm/rate-limit/#claim-level" >}}).
 {{< /version >}}
 
-```yaml,paths="virtual-keys-with-ratelimit"
+```yaml
 kubectl patch {{< reuse "agw-docs/snippets/policy.md" >}} api-key-auth -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
   --type=merge --patch-file=/dev/stdin <<'EOF'
 spec:
@@ -29,25 +29,6 @@ EOF
 ```
 
 The merge patch adds the rate limit and keeps the authentication, model restrictions, and metrics settings that the policy already has.
-
-{{< doc-test paths="virtual-keys-with-ratelimit" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for api-key-auth policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: agentgateway-system
-        name: api-key-auth
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
 
 {{% reuse "agw-docs/snippets/review-table.md" %}}
 

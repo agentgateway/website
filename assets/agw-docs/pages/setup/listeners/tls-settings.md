@@ -1,6 +1,6 @@
 Use an {{< reuse "agw-docs/snippets/policy.md" >}} resource to configure additional TLS settings for your listeners, such as the minimum and maximum TLS version, supported cipher suites, APN protocols, and the TLS handshake timeout. 
 
-```yaml {paths="tls-settings"}
+```yaml
 kubectl apply -f - <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -23,25 +23,6 @@ spec:
       handshakeTimeout: 5s
 EOF
 ```
-
-{{< doc-test paths="tls-settings" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for tls-settings policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: agentgateway-system
-        name: tls-settings
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
 
 The following settings are supported: 
 

@@ -2,10 +2,6 @@
 title: Streamable HTTP
 weight: 15
 description: Connect to MCP servers via streamable HTTP with automatic session management
-test:
-  mcp-stateless:
-  - file: ${versionRoot}/integrations/mcp/servers/http.md
-    path: mcp-stateless
 ---
 
 Connect to an MCP server via streamable HTTP. 
@@ -127,77 +123,6 @@ mcp:
 {{< /tabs >}}
 
 When you send an `initialize` request through agentgateway in stateless mode, the response returns `HTTP 200` with no `Mcp-Session-Id` header. In the default stateful mode, the same request returns an `Mcp-Session-Id` header that pins the session to a backend.
-
-{{< doc-test paths="mcp-stateless" >}}
-# WHAT THIS TEST VALIDATES:
-#   * statefulMode: stateless is accepted and the MCP endpoint serves an initialize request (HTTP 200)
-#   * In stateless mode, the initialize response does NOT include an Mcp-Session-Id header
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The visible example uses a streamable HTTP upstream (host: http://localhost:3005/mcp/);
-#     the hidden test config uses a self-contained stdio target so no external MCP server is
-#     needed. statefulMode governs the downstream (client-facing) session, independent of the
-#     upstream transport, so the stateless behavior under test is the same.
-#   * The default stateful contrast (Mcp-Session-Id present) is covered by other pages that
-#     use the default configuration.
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-stateless" >}}
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-stateless" >}}
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  statefulMode: stateless
-  targets:
-  - name: everything
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-stateless" >}}
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-stateless" >}}
-YAMLTest -f - <<'EOF'
-- name: MCP endpoint accepts initialize request in stateless mode
-  http:
-    url: "http://localhost:3000"
-    path: /mcp
-    method: POST
-    headers:
-      content-type: application/json
-      accept: "application/json, text/event-stream"
-    body: |
-      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-stateless" >}}
-# Assert that stateless mode does not return an Mcp-Session-Id header
-if curl -sS -D - -o /dev/null -X POST http://localhost:3000/mcp/ \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json, text/event-stream' \
-  -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}' \
-  | grep -qi 'mcp-session-id'; then
-  echo "FAIL: stateless mode returned an Mcp-Session-Id header"
-  exit 1
-fi
-echo "PASS: no Mcp-Session-Id header in stateless mode"
-{{< /doc-test >}}
 
 ## Request body limits {#mcp-request-body-limits}
 

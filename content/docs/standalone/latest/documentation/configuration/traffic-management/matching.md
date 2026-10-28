@@ -2,19 +2,11 @@
 title: Request matching
 weight: 9
 description: Match incoming requests by path, headers, methods, and query parameters.
-test:
-  matching:
-  - file: ${versionRoot}/documentation/configuration/traffic-management/matching.md
-    path: matching
 ---
 
 Based on the route schema (see the [configuration reference]({{< link-hextra path="/reference/configuration/" >}}) for the full field reference and [schema validation]({{< link-hextra path="/reference/configuration/validation/" >}}) for IDE integration), you can configure the following {{< gloss "Matching" >}}matching{{< /gloss >}} conditions for HTTP or TCP routes.
 
 Request matching is a routing-based feature: routes and their match conditions are configured in the top-level `routes` section and attached to a gateway. The simplified `llm` configuration supports header-based model matching (`llm.models[].matches`), but path, method, and query matching require routing-based configuration. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/documentation/llm/configuration-modes/" >}}).
-
-{{< doc-test paths="matching" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 ## HTTP routes
 
@@ -417,39 +409,6 @@ routes:
   - host: api.example.com:8080
 ```
 
-{{< doc-test paths="matching" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The combined-matching example config (path + method + header + query) is
-#     accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * Runtime match behavior — requires a backend the page omits to route to.
-#   * The other match-type variants on this page (exact/prefix/regex path,
-#     header, method, query) are structurally analogous and not individually tested.
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- name: comprehensive-match
-  matches:
-  - path:
-      pathPrefix: "/api/v1"
-    method: "GET"
-    headers:
-    - name: "Authorization"
-      value:
-        regex: "^Bearer .*"
-    query:
-    - name: "format"
-      value:
-        exact: "json"
-  backends:
-  - host: api.example.com:8080
-EOF
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
-
 ## TCP routes
 
 For routes configured with [TCP listeners]({{< link-hextra path="/documentation/configuration/routes#tcp-routes" >}}), you can configure the following matching conditions.
@@ -536,31 +495,3 @@ tcpRoutes:
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="matching" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The TCP backend-routing example config (weighted multi-backend tcpRoutes)
-#     is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * Runtime weighted load balancing — requires live TCP backends the page omits.
-#   * The hostname-matching TCP variant on this page is structurally analogous
-#     and not individually tested.
-cat <<'EOF' > config2.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  redis-proxy:
-    port: 6379
-    protocol: TCP
-tcpRoutes:
-- name: redis-cluster
-  gateways: [redis-proxy]
-  backends:
-  - host: redis-1.example.com:6379
-    weight: 1
-  - host: redis-2.example.com:6379
-    weight: 2
-  - host: redis-3.example.com:6379
-    weight: 1
-EOF
-agentgateway -f config2.yaml --validate-only
-{{< /doc-test >}}

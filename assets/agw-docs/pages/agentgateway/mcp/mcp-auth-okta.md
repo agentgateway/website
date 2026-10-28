@@ -18,7 +18,7 @@ For more information about MCP auth, see the [About MCP auth]({{< link-hextra pa
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/documentation/mcp/static-mcp/" >}}).
 3. Install the experimental channel Gateway API.
-   ```sh {paths="setup-okta"}
+   ```sh
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
 
@@ -57,23 +57,12 @@ Create an app integration in Okta, and collect the values that agentgateway need
    > [!TIP]
    > To confirm the issuer and JWKS path for your authorization server, open its metadata document at `https://<your-org>.okta.com/oauth2/<auth-server-id>/.well-known/openid-configuration` and check the `issuer` and `jwks_uri` fields.
 
-{{< doc-test paths="setup-okta" >}}
-# Okta has no public sample org that serves a JWKS, so this test cannot resolve
-# real keys. The values below are placeholders that let the resources render and
-# validate against the Kubernetes API server. Replace them with your real org,
-# authorization server, app, and audience values when you follow the guide.
-export OKTA_DOMAIN="${OKTA_DOMAIN:-dev-1234567.okta.com}"
-export OKTA_AUTH_SERVER="${OKTA_AUTH_SERVER:-default}"
-export OKTA_CLIENT_ID="${OKTA_CLIENT_ID:-0oa1placeholderclientid}"
-export OKTA_AUDIENCE="${OKTA_AUDIENCE:-api://default}"
-{{< /doc-test >}}
-
 ## Create the JWKS backend
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} that points to your Okta org, and a BackendTLSPolicy that originates a TLS connection to it. The JWT authentication policy uses this backend to fetch Okta's public keys for token signature validation.
 
 1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for your Okta org.
-   ```yaml {paths="setup-okta"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -87,7 +76,7 @@ Create an {{< reuse "agw-docs/snippets/backend.md" >}} that points to your Okta 
    ```
 
 2. Create a BackendTLSPolicy that originates a TLS connection to the `okta-jwks` backend by using well-known trusted CA certificates.
-   ```yaml {paths="setup-okta"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: BackendTLSPolicy
@@ -109,7 +98,7 @@ Create an {{< reuse "agw-docs/snippets/backend.md" >}} that points to your Okta 
 With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces Okta authentication and authorization for the MCP backend.
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with the `Okta` provider. The policy validates tokens that Okta issues and uses a Common Expression Language (CEL) rule to require the `AI-Users` group.
-   ```yaml {paths="setup-okta"}
+   ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -176,7 +165,7 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    > Setting `clientId` is recommended for Okta. Okta's Dynamic Client Registration endpoint usually requires an API token that MCP clients do not have, so registration requests that the gateway proxies to Okta fail. A pre-registered client avoids that dependency.
 
 2. Verify that the policy was accepted.
-   ```sh {paths="setup-okta"}
+   ```sh
    kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} mcp-okta-authn -o yaml
    ```
 
@@ -186,7 +175,7 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    > The control plane fetches the JWKS when it translates the policy. If your Okta domain or JWKS path is wrong, the policy is accepted but the control plane logs `jwks keyset ... isn't available` and the policy does not program on the data plane. Check the control plane logs if authentication does not take effect.
 
 3. Update the HTTPRoute that routes incoming traffic to the MCP server to include the OAuth discovery paths. This way, the agentgateway proxy can serve the resource and authorization server metadata during the MCP auth flow.
-   ```yaml {paths="setup-okta"}
+   ```yaml
    kubectl apply -f - <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -314,71 +303,3 @@ kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} mcp-okta-authn
 kubectl delete backendtlspolicy okta-jwks
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} okta-jwks
 ```
-
-{{< doc-test paths="setup-okta" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The okta-jwks backend and BackendTLSPolicy, the mcp-okta-authn
-#     AgentgatewayPolicy with provider: Okta, an explicit Okta JWKS path,
-#     clientId, and the groups authorization rule, and the updated HTTPRoute are
-#     all accepted by the Kubernetes API server and by the agentgateway control
-#     plane.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That the policy programs on the data plane, the 401 challenge, the proxied
-#     authorization-server metadata, the audience query parameter, the proxied
-#     client registration endpoint, runtime token verification, and the 403 that
-#     the authorization rule returns for a token without the AI-Users group.
-#     Okta has no public sample org that serves a JWKS, so the control plane
-#     cannot resolve keys for the placeholder domain and the policy never reaches
-#     the proxy. Set OKTA_DOMAIN, OKTA_AUTH_SERVER, OKTA_CLIENT_ID, and
-#     OKTA_AUDIENCE to a real Okta org to exercise the full flow.
-YAMLTest -f - <<'EOF'
-- name: wait for okta-jwks BackendTLSPolicy to be accepted
-  wait:
-    target:
-      kind: BackendTLSPolicy
-      metadata:
-        namespace: default
-        name: okta-jwks
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-- name: wait for mcp-okta-authn policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: default
-        name: mcp-okta-authn
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-- name: wait for mcp HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: default
-        name: mcp
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="setup-okta" >}}
-kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} mcp-okta-authn --ignore-not-found
-kubectl delete backendtlspolicy okta-jwks --ignore-not-found
-kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} okta-jwks --ignore-not-found
-{{< /doc-test >}}

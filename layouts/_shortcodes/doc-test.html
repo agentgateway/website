@@ -1,6 +1,9 @@
 {{- /*
   Shortcode: doc-test
   Wraps inner content for documentation test annotations; the inner content is consumed but not rendered, allowing test metadata to be embedded in pages without affecting output.
+  Do not add it to new content. Test markup for the latest and main trees lives in
+  solo-io/docs-tests and is attached at test time; only older frozen version trees
+  still use this shortcode inline, so it must stay to keep them building.
 
   Parameters:
     (none -- uses inner content as test metadata)

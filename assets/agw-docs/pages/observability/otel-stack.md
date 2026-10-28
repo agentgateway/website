@@ -15,7 +15,7 @@ Steps to install:
 
    {{< tabs >}}
    {{% tab name="Local storage" %}}
-   ```yaml {paths="otel-stack"}
+   ```yaml
    helm upgrade --install loki loki \
    --repo https://grafana.github.io/helm-charts \
    --version {{< reuse "agw-docs/versions/otel-stack-loki.md" >}} \
@@ -170,7 +170,7 @@ Steps to install:
 
 2. Deploy Grafana Tempo to your cluster.
 
-   ```yaml {paths="otel-stack"}
+   ```yaml
    helm upgrade --install tempo tempo \
    --repo https://grafana.github.io/helm-charts \
    --version {{< reuse "agw-docs/versions/otel-stack-tempo.md" >}} \
@@ -203,39 +203,6 @@ Steps to install:
    tempo-0                1/1     Running   0          2m10s
    ```
 
-{{< doc-test paths="otel-stack" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for Loki StatefulSet to be ready
-  wait:
-    target:
-      kind: StatefulSet
-      metadata:
-        namespace: telemetry
-        name: loki
-    jsonPath: "$.status.readyReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 400
-      intervalSeconds: 5
-- name: wait for Tempo StatefulSet to be ready
-  wait:
-    target:
-      kind: StatefulSet
-      metadata:
-        namespace: telemetry
-        name: tempo
-    jsonPath: "$.status.readyReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 400
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 ## Step 2: Install OTel Collectors for logs and traces {#otel-collector}
 
 The [OTel Collectors](https://opentelemetry.io/docs/collector/) act as the routing hub for logs and traces. The gateway proxy pushes logs and traces to the collectors via OTLP, and each collector forwards data to [Loki](https://grafana.com/oss/loki/) for logs and [Tempo](https://grafana.com/oss/tempo/) for traces. Metrics are handled separately. [Prometheus](https://prometheus.io/) scrapes the control plane and agentgateway proxy metrics endpoints directly via PodMonitor and ServiceMonitor resources, which you set up in a later step.
@@ -250,7 +217,7 @@ Deploy separate collectors for logs and traces so you can scale and tune each on
 
 1. Deploy the logs collector to process and forward application and access logs.
 
-   ```yaml {paths="otel-stack"}
+   ```yaml
    helm upgrade --install opentelemetry-collector-logs opentelemetry-collector \
    --repo https://open-telemetry.github.io/opentelemetry-helm-charts \
    --version {{< reuse "agw-docs/versions/otel-stack-collector.md" >}} \
@@ -286,7 +253,7 @@ Deploy separate collectors for logs and traces so you can scale and tune each on
 
 2. Deploy the traces collector to handle distributed tracing data.
 
-   ```yaml {paths="otel-stack"}
+   ```yaml
    helm upgrade --install opentelemetry-collector-traces opentelemetry-collector \
    --repo https://open-telemetry.github.io/opentelemetry-helm-charts \
    --version {{< reuse "agw-docs/versions/otel-stack-collector.md" >}} \
@@ -382,46 +349,13 @@ Deploy separate collectors for logs and traces so you can scale and tune each on
    EOF
    ```
 
-{{< doc-test paths="otel-stack" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for logs collector deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: telemetry
-        name: opentelemetry-collector-logs
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: wait for traces collector deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: telemetry
-        name: opentelemetry-collector-traces
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 ## Step 3: Set up Prometheus {#prometheus}
 
 [Prometheus](https://prometheus.io/) is a monitoring system and time-series database that collects metrics from configured targets at given intervals. It's the de facto standard for metrics collection in cloud-native environments. You can use the [PromQL](https://prometheus.io/docs/prometheus/latest/querying/basics/) query language to set up flexible queries and alerts based on the metrics. This guide uses the [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) Helm chart, which bundles Prometheus, Grafana, and the Prometheus Operator.
 
 1. Deploy Prometheus in your cluster.
 
-   ```yaml {paths="otel-stack"}
+   ```yaml
    helm upgrade --install kube-prometheus-stack kube-prometheus-stack \
    --repo https://prometheus-community.github.io/helm-charts \
    --version {{< reuse "agw-docs/versions/otel-stack-prometheus.md" >}} \
@@ -496,44 +430,6 @@ EOF
    kube-prometheus-stack-prometheus-node-exporter-z7csm        1/1     Running   0          72s
    ```
 
-{{< doc-test paths="otel-stack" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for Grafana deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: telemetry
-        name: kube-prometheus-stack-grafana
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 400
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="otel-stack" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for Prometheus StatefulSet to be ready
-  wait:
-    target:
-      kind: StatefulSet
-      metadata:
-        namespace: telemetry
-        name: prometheus-kube-prometheus-stack-prometheus
-    jsonPath: "$.status.readyReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 400
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 ## Step 4: Enable metrics scraping {#enable-monitoring}
 
 Prometheus does not automatically scrape metrics from the {{< reuse "/agw-docs/snippets/agentgateway.md" >}} control plane and proxy metrics endpoints after you installed it. To enable scraping, set `monitoring.enabled=true` in the {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} Helm chart. This setting creates the following resources: 
@@ -546,7 +442,7 @@ Prometheus does not automatically scrape metrics from the {{< reuse "/agw-docs/s
 
 1. Upgrade your {{< reuse "/agw-docs/snippets/agentgateway.md" >}} installation to enable the monitoring resources.
 
-   ```sh {paths="otel-stack"}
+   ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} \
      {{< reuse "agw-docs/snippets/helm-path.md" >}} \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
@@ -574,271 +470,4 @@ Prometheus does not automatically scrape metrics from the {{< reuse "/agw-docs/s
    ```
 
    Both resources are created. Prometheus begins scraping on the next collection cycle (15 seconds by default).
-
-{{< doc-test paths="otel-stack" >}}
-YAMLTest -f - <<'EOF'
-- name: verify ServiceMonitor for agentgateway control plane is created
-  command:
-    command: "kubectl get servicemonitor agentgateway -n {{< reuse "agw-docs/snippets/namespace.md" >}}"
-  source:
-    type: local
-  expect:
-    exitCode: 0
-- name: verify PodMonitor for agentgateway proxy is created
-  command:
-    command: "kubectl get podmonitor agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}"
-  source:
-    type: local
-  expect:
-    exitCode: 0
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="otel-stack" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES, end to end:
-#   * Dashboard import: the "Explore Grafana dashboards" step confirms that Grafana loaded the
-#     imported Agentgateway dashboard (by uid). The metrics below back the dashboard's panels.
-#   * "Requests" panels: agentgateway_requests_total (data plane) is in Prometheus, which proves
-#     the data-plane scrape job works via PodMonitor.
-#   * Control-plane scrape job: agentgateway_controller_reconciliations_total is in Prometheus,
-#     which proves the control-plane scrape job works via ServiceMonitor.
-#   * "Overview" Memory and CPU panels: the cAdvisor metrics (container_memory_working_set_bytes,
-#     container_cpu_usage_seconds_total) for the agentgateway namespace, plus the
-#     agentgateway_build_info series those panels (and "Build Versions") join on.
-#   * "Latency by Route" panel: agentgateway_request_duration_seconds_bucket.
-#   * "XDS" panels: agentgateway_xds_message_total.
-#   * "Runtime" panels: agentgateway_tokio_num_workers (Tokio Runtime),
-#     agentgateway_process_rss (Process Memory), agentgateway_cgroup_working_set (Cgroup Memory).
-#   * Backend readiness: Loki, Tempo, the two OTel collectors, Prometheus, and Grafana
-#     are all confirmed to be running.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * Logs (Loki) and traces (Tempo) storage. This guide installs the Loki/Tempo backends and
-#     the logs/traces OTel collectors, but it does NOT wire the agentgateway proxy to export
-#     logs or traces to them, so both backends stay empty. Confirmed by querying Loki (no
-#     namespace label values) and Tempo (empty search) on a live run. Sending logs and traces
-#     requires extra proxy configuration covered on the access logging and tracing pages
-#     (an `OtlpAccessLog` access-log policy and a tracing policy). Only backend readiness is
-#     checked here.
-#   * The dashboard's "LLM" and "MCP" panels (for example `agentgateway_gen_ai_*` and
-#     `agentgateway_mcp_requests_total`), which require LLM and MCP traffic that this guide
-#     does not generate.
-#   * Visual rendering of any panel. The test only confirms that the metrics behind the panels
-#     exist in Prometheus and that Grafana loaded the dashboard.
-# ============================================================================
-export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-# Generate data-plane traffic through the agentgateway proxy, then allow time for Prometheus
-# to scrape the proxy pods via PodMonitor (default 15s scrape interval). The loop runs for
-# more than ten scrape intervals to ensure at least one full scrape cycle completes.
-for i in $(seq 1 30); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" || true
-  sleep 5
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="otel-stack" >}}
-YAMLTest -f - <<'EOF'
-# Confirm that the metrics behind the dashboard reach the Prometheus backend. A non-empty
-# query result means the metric was scraped (from the proxy, the control plane, or cAdvisor)
-# and stored. The PromQL label matchers in some queries are URL-encoded
-# ( %7B = "{", %3D = "=", %22 = '"', %7D = "}" ).
-#
-# Data plane: the "Requests" dashboard panels use agentgateway_requests_total.
-- name: agentgateway data-plane metrics are stored in Prometheus
-  retries: 5
-  http:
-    url: "http://localhost:9090/api/v1/query?query=agentgateway_requests_total"
-    method: GET
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: StatefulSet
-      metadata:
-        namespace: telemetry
-        name: prometheus-kube-prometheus-stack-prometheus
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.data.result[0].value[1]"
-        comparator: exists
-# Control plane: emitted by the agentgateway controller and collected by the control-plane
-# scrape job. The controller reconciles resources on startup, so this is non-zero without
-# any data-plane traffic.
-- name: agentgateway control-plane metrics are stored in Prometheus
-  retries: 5
-  http:
-    url: "http://localhost:9090/api/v1/query?query=agentgateway_controller_reconciliations_total"
-    method: GET
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: StatefulSet
-      metadata:
-        namespace: telemetry
-        name: prometheus-kube-prometheus-stack-prometheus
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.data.result[0].value[1]"
-        comparator: exists
-# Overview panels: the Memory and CPU panels join cAdvisor metrics on agentgateway_build_info.
-- name: Overview panel join series (agentgateway_build_info) is stored in Prometheus
-  retries: 5
-  http:
-    url: "http://localhost:9090/api/v1/query?query=agentgateway_build_info"
-    method: GET
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: StatefulSet
-      metadata:
-        namespace: telemetry
-        name: prometheus-kube-prometheus-stack-prometheus
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.data.result[0].value[1]"
-        comparator: exists
-# Overview "Memory" panel input: container_memory_working_set_bytes{namespace="agentgateway-system"}
-# ( %7B = "{", %3D = "=", %22 = '"', %7D = "}" )
-- name: Memory panel data (container_memory_working_set_bytes) is stored in Prometheus
-  retries: 5
-  http:
-    url: "http://localhost:9090/api/v1/query?query=container_memory_working_set_bytes%7Bnamespace%3D%22agentgateway-system%22%7D"
-    method: GET
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: StatefulSet
-      metadata:
-        namespace: telemetry
-        name: prometheus-kube-prometheus-stack-prometheus
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.data.result[0].value[1]"
-        comparator: exists
-# Overview "CPU" panel input: container_cpu_usage_seconds_total{namespace="agentgateway-system"}
-- name: CPU panel data (container_cpu_usage_seconds_total) is stored in Prometheus
-  retries: 5
-  http:
-    url: "http://localhost:9090/api/v1/query?query=container_cpu_usage_seconds_total%7Bnamespace%3D%22agentgateway-system%22%7D"
-    method: GET
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: StatefulSet
-      metadata:
-        namespace: telemetry
-        name: prometheus-kube-prometheus-stack-prometheus
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.data.result[0].value[1]"
-        comparator: exists
-# "Latency by Route" panel: agentgateway_request_duration_seconds_bucket (emitted per request).
-- name: Latency panel data (agentgateway_request_duration_seconds_bucket) is stored in Prometheus
-  retries: 5
-  http:
-    url: "http://localhost:9090/api/v1/query?query=agentgateway_request_duration_seconds_bucket"
-    method: GET
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: StatefulSet
-      metadata:
-        namespace: telemetry
-        name: prometheus-kube-prometheus-stack-prometheus
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.data.result[0].value[1]"
-        comparator: exists
-# "XDS" panels: agentgateway_xds_message_total (xDS config messages exchanged with the proxy).
-- name: XDS panel data (agentgateway_xds_message_total) is stored in Prometheus
-  retries: 5
-  http:
-    url: "http://localhost:9090/api/v1/query?query=agentgateway_xds_message_total"
-    method: GET
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: StatefulSet
-      metadata:
-        namespace: telemetry
-        name: prometheus-kube-prometheus-stack-prometheus
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.data.result[0].value[1]"
-        comparator: exists
-# "Runtime" - Tokio Runtime panel: agentgateway_tokio_num_workers.
-- name: Tokio Runtime panel data (agentgateway_tokio_num_workers) is stored in Prometheus
-  retries: 5
-  http:
-    url: "http://localhost:9090/api/v1/query?query=agentgateway_tokio_num_workers"
-    method: GET
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: StatefulSet
-      metadata:
-        namespace: telemetry
-        name: prometheus-kube-prometheus-stack-prometheus
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.data.result[0].value[1]"
-        comparator: exists
-# "Runtime" - Process Memory panel: agentgateway_process_rss.
-- name: Process Memory panel data (agentgateway_process_rss) is stored in Prometheus
-  retries: 5
-  http:
-    url: "http://localhost:9090/api/v1/query?query=agentgateway_process_rss"
-    method: GET
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: StatefulSet
-      metadata:
-        namespace: telemetry
-        name: prometheus-kube-prometheus-stack-prometheus
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.data.result[0].value[1]"
-        comparator: exists
-# "Runtime" - Cgroup Memory panel: agentgateway_cgroup_working_set.
-- name: Cgroup Memory panel data (agentgateway_cgroup_working_set) is stored in Prometheus
-  retries: 5
-  http:
-    url: "http://localhost:9090/api/v1/query?query=agentgateway_cgroup_working_set"
-    method: GET
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: StatefulSet
-      metadata:
-        namespace: telemetry
-        name: prometheus-kube-prometheus-stack-prometheus
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.data.result[0].value[1]"
-        comparator: exists
-EOF
-{{< /doc-test >}}
 

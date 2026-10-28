@@ -3,53 +3,12 @@ title: Amazon Bedrock
 weight: 15
 icon: /integrations/providers/bw/bedrock.svg
 description: Route agentgateway LLM traffic to foundation models on Amazon Bedrock.
-test:
-  bedrock:
-  - file: ${versionRoot}/integrations/llm/providers/bedrock.md
-    path: bedrock
 ---
 
 Configure Amazon Bedrock as an LLM provider in agentgateway.
 
 > [!NOTE]
 > Bedrock excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Bedrock reports. To read the Bedrock number itself, use `llm.providerInputTokens`. For more information, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
-
-{{< doc-test paths="bedrock" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * "Configuration": the example config is accepted by agentgateway
-#     (--validate-only), so `provider: bedrock` is recognized and
-#     `params.awsRegion` is correct.
-#   * "Passthrough": the `passthrough: detect` config is accepted, including the
-#     `name: us.anthropic*` prefix match.
-#   * "Bedrock Mantle": the `params.bedrockEndpointPreference` config is
-#     accepted, which pins both the field name and the lowercase spelling of the
-#     value. Standalone rejects the capitalized Kubernetes spelling, so this
-#     block is what keeps the two modes from being copied into each other.
-#   * With the base config loaded, agentgateway lists at least one model on
-#     `/v1/models` and resolves the wildcard to the `bedrock` provider in the
-#     configured AWS region. The list is not checked for a literal `*`, because
-#     the default `llm.discovery: catalog` expands the wildcard into the catalog's
-#     Bedrock model IDs.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * "Authentication" - external dependency; AWS credentials are resolved per
-#     request from the ambient environment, which the test cannot provide.
-#   * The Converse and Invoke boto3 examples - display-only Python snippets that
-#     need real AWS credentials and a Bedrock model grant.
-#   * "Token counting", "Extended thinking and reasoning", and "Structured
-#     outputs" - external dependency; each bills a live Bedrock completion. Their
-#     example responses and the `reasoning_effort` budget table are display-only.
-#   * That format translation to Bedrock's Converse API is correct - a different
-#     layer; verifying the translation needs a live Bedrock upstream.
-#   * Which endpoint a given model actually resolves to under
-#     `bedrockEndpointPreference` - external dependency; the resolution reads
-#     `runtime`/`mantle` tags from an imported catalog, and populating that
-#     catalog calls the AWS model-card pages.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 > [!NOTE]
 > Agentgateway accepts requests in one of the supported [API formats]({{< link-hextra path="/documentation/llm/api-types/" >}}) (such as the `/v1/chat/completions` request body shape) and returns responses in that format.
@@ -118,22 +77,6 @@ llm:
 {{% /tab %}}
 {{< /tabs >}}
 
-{{< doc-test paths="bedrock" >}}
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: "bedrock/*"
-    provider: bedrock
-    params:
-      awsRegion: us-west-2
-    transformation:
-      model: llmRequest.model.stripPrefix("bedrock/")
-EOF
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
-
 ## Passthrough
 
 If your applications directly use the AWS `Converse` or `Invoke` APIs, Agentgateway cannot translate these APIs to other providers.
@@ -153,20 +96,6 @@ llm:
       awsRegion: us-west-2
     passthrough: detect
 ```
-
-{{< doc-test paths="bedrock" >}}
-cat <<'EOF' > config-passthrough.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  models:
-  - name: us.anthropic*
-    provider: bedrock
-    params:
-      awsRegion: us-west-2
-    passthrough: detect
-EOF
-agentgateway -f config-passthrough.yaml --validate-only
-{{< /doc-test >}}
 
 Then, you can send native Converse and Invoke requests:
 
@@ -268,21 +197,6 @@ llm:
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="bedrock" >}}
-cat <<'EOF' > config-mantle.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: "*"
-    provider: bedrock
-    params:
-      awsRegion: us-west-2
-      bedrockEndpointPreference: runtimePreferred
-EOF
-agentgateway -f config-mantle.yaml --validate-only
-{{< /doc-test >}}
 
 | Value | Endpoint selection |
 |-------|--------------------|
@@ -462,30 +376,3 @@ curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
   ]
 }' | jq
 ```
-
-{{< doc-test paths="bedrock" >}}
-# Confirm the base config serves models and that `params.awsRegion` reaches the
-# resolved provider config. The default `llm.discovery: catalog` expands `*` into
-# catalog model IDs, so check for a non-empty list rather than a literal `*`.
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-
-SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '.data | length')
-if [ "${SERVED:-0}" -eq 0 ]; then
-  echo "FAIL: /v1/models lists no models for the example config"
-  exit 1
-fi
-RESOLVED=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '
-  [ .backends[].backend.ai
-    | select(. != null)
-    | .target.providers[].active[].endpoint
-    | "\(.provider | keys[0])|\(.provider.bedrock.region)"
-  ] | first')
-if [ "$RESOLVED" != "bedrock|us-west-2" ]; then
-  echo "FAIL: expected bedrock|us-west-2 but agentgateway resolved $RESOLVED"
-  exit 1
-fi
-echo "✓ Models are served and the wildcard resolves to bedrock in us-west-2"
-{{< /doc-test >}}
