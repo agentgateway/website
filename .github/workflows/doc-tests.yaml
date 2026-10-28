@@ -9,7 +9,7 @@ on:
       # lives in solo-io/docs-tests, so a change to the SELECTOR no longer
       # triggers this workflow at all -- a path filter cannot watch another
       # repository. The daily schedule below is what catches a selector
-      # regression now, rather than the PR that introduced it.
+      # regression now rather than the PR that introduced it.
       - 'scripts/**'
       - '.github/workflows/doc-tests.yaml'
   schedule:
