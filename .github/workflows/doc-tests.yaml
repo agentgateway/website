@@ -440,12 +440,6 @@ jobs:
           ref: ${{ needs.discover.outputs.docs_tests_ref }}
           path: docs-tests
 
-      - name: Checkout agentgateway (for CRD schemas)
-        uses: actions/checkout@v6
-        with:
-          repository: agentgateway/agentgateway
-          path: agentgateway-product
-
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -453,6 +447,65 @@ jobs:
 
       - name: Install Python dependencies
         run: pip install pyyaml jsonschema
+
+      # Each version tree is checked against the CRDs of the release it
+      # documents. main/ documents the default branch. latest/ documents the
+      # newest stable patch of the minor that hugo.yaml labels `latest` (1.7.x ->
+      # v1.7.<n>). agentgateway has no release branches, so it's a tag.
+      - name: Resolve agentgateway release for latest
+        id: latest-tag
+        run: |
+          set -o pipefail
+          MINOR=$(python3 -c 'import yaml; v = yaml.safe_load(open("hugo.yaml"))["params"]["versions"]; print(next(e["version"] for e in v if e.get("linkVersion") == "latest").removesuffix(".x"))')
+          TAG=$(git ls-remote --tags --refs https://github.com/agentgateway/agentgateway.git "refs/tags/v${MINOR}.*" \
+            | awk '{ sub("refs/tags/", "", $2); print $2 }' | grep -E "^v${MINOR//./\\.}\.[0-9]+$" | sort -V | tail -n 1 || true)
+          if [ -z "$TAG" ]; then
+            echo "::error::No stable agentgateway tag v${MINOR}.<patch> found for the latest docs (${MINOR}.x in hugo.yaml)."
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "latest/ is checked against agentgateway $TAG CRDs; main/ against the default branch."
+
+      - name: Checkout agentgateway main (CRD schemas for main)
+        uses: actions/checkout@v6
+        with:
+          repository: agentgateway/agentgateway
+          path: agentgateway-main
+          persist-credentials: false
+
+      - name: Checkout agentgateway ${{ steps.latest-tag.outputs.tag }} (CRD schemas for latest)
+        uses: actions/checkout@v6
+        with:
+          repository: agentgateway/agentgateway
+          ref: ${{ steps.latest-tag.outputs.tag }}
+          path: agentgateway-latest
+          persist-credentials: false
+
+      # Gateway API kinds (HTTPRoute, Gateway, ...) are checked against the CRDs
+      # of the Gateway API release these docs install. The experimental channel
+      # is a superset of standard, so a standard-channel page cannot fail on it;
+      # the trade is that an experimental-only field on a standard-channel page
+      # passes. Both version trees install the same release today, so one file
+      # serves both.
+      #
+      # Core kinds (Service, Deployment, ...) go through kubeconform, against the
+      # newest Kubernetes version these docs support.
+      - name: Fetch Gateway API CRDs and kubeconform
+        env:
+          KUBECONFORM_VERSION: v0.8.0
+        run: |
+          set -o pipefail
+          GWAPI=$(tr -d '[:space:]' < assets/agw-docs/versions/k8s-gw-version-exp.md)
+          mkdir -p "$RUNNER_TEMP/gateway-api"
+          curl -sSfL -o "$RUNNER_TEMP/gateway-api/experimental-install.yaml" \
+            "https://github.com/kubernetes-sigs/gateway-api/releases/download/v${GWAPI}/experimental-install.yaml"
+          curl -sSfL "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | tar -xz -C "$RUNNER_TEMP" kubeconform
+          KUBE=$(tr -d '[:space:]' < assets/agw-docs/versions/max-kube.md)
+          echo "GATEWAY_API_CRDS=$RUNNER_TEMP/gateway-api/experimental-install.yaml" >> "$GITHUB_ENV"
+          echo "KUBECONFORM=$RUNNER_TEMP/kubeconform" >> "$GITHUB_ENV"
+          echo "KUBERNETES_VERSION=${KUBE}.0" >> "$GITHUB_ENV"
+          echo "Gateway API v${GWAPI} (experimental), Kubernetes ${KUBE}.0 schemas via kubeconform ${KUBECONFORM_VERSION}."
 
       # Test markup is moving out of these pages into docs-tests, as test
       # annotations. Attach them before anything reads the pages. A page that
@@ -471,7 +524,13 @@ jobs:
           mkdir -p out/tests/generated
           python3 docs-tests/scripts/doc_test_schema_check.py \
             --repo-root . \
-            --crd-dir agentgateway-product/controller/install/helm/agentgateway-crds/templates \
+            --crd-dir latest=agentgateway-latest/controller/install/helm/agentgateway-crds/templates \
+            --crd-dir main=agentgateway-main/controller/install/helm/agentgateway-crds/templates \
+            --crd-dir "$GATEWAY_API_CRDS" \
+            --config-schema latest=agentgateway-latest/schema/config.json \
+            --config-schema main=agentgateway-main/schema/config.json \
+            --kubeconform "$KUBECONFORM" \
+            --kubernetes-version "$KUBERNETES_VERSION" \
             --docs-tests-root docs-tests \
             --annotation-report out/annotations/attach-report.json \
             --report-file out/tests/generated/test-results.yaml \
