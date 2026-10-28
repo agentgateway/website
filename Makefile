@@ -139,7 +139,9 @@ PREVIEW ?= $(if $(CF_PAGES),$(filter-out main,$(CF_PAGES_BRANCH)))
 # fail the build: Cloudflare Pages clones only the branch, possibly shallow, so
 # when there is no merge-base with origin/main it compares with origin/main
 # directly, and if even that fails the preview just shows no marks.
-# NO_CHANGES=1 skips it everywhere.
+# Every other build deletes static/_extras/ first: Hugo copies static files
+# into every build, so a manifest left by a local `make serve` would otherwise
+# publish the branch's unreleased text. NO_CHANGES=1 skips it everywhere.
 # Looked up once, and only by a target that uses it.
 CHANGES_SCRIPT = $(eval CHANGES_SCRIPT := $(if $(NO_CHANGES),,$(shell go mod download -json github.com/solo-io/docs-theme-extras 2>/dev/null | python3 -c "import json,os,sys; p=os.path.join(json.load(sys.stdin)['Dir'],'scripts','changes_manifest.py'); print(p if os.path.exists(p) else '')" 2>/dev/null)))$(CHANGES_SCRIPT)
 CHANGES_OUT = static/_extras/changes.json
@@ -151,6 +153,7 @@ build: check-node-deps
 	$(if $(PREVIEW),python3 scripts/local-version-config.py --preview-base origin/main)
 	$(if $(CHANGES_ENV),git rev-parse --verify -q origin/main > /dev/null || git fetch --depth=1 --no-tags origin main:refs/remotes/origin/main || true)
 	$(if $(CHANGES_ENV),python3 $(CHANGES_SCRIPT) --base origin/main --out $(CHANGES_OUT) || python3 $(CHANGES_SCRIPT) --base origin/main --exact-base --out $(CHANGES_OUT) || true)
+	$(if $(CHANGES_ENV),,rm -rf $(dir $(CHANGES_OUT)))
 	$(CHANGES_ENV)hugo --gc --minify $(if $(PREVIEW),--config hugo.yaml$(COMMA)hugo-local-versions.yaml)
 
 # The local servers build only the versions listed in hugo.yaml's
