@@ -11,6 +11,7 @@
 #   make fetch-test-artifacts-serve   Use latest CI test results and run the site
 #   make test-run-serve              Run doc tests locally, then run the site
 #   make fetch-test-artifacts-build  Use latest CI test results and build for prod
+#   make fetch-test-artifacts-build-preview  Same, as a preview with change highlights
 #
 # First-time setup:
 #   make deps              Install Python deps (e.g. for doc test scripts)
@@ -125,11 +126,35 @@ check-node-deps:
 # build everything. PREVIEW=1 tries the preview build locally.
 PREVIEW ?= $(if $(CF_PAGES),$(filter-out main,$(CF_PAGES_BRANCH)))
 
+# Change highlights (docs-theme-extras v0.4.0+): a preview, and the local
+# servers, mark the text the branch adds or removes compared with main. The
+# script that writes what the overlay shows, static/_extras/changes.json (a
+# folder that ignores itself in git), ships in the docs-theme-extras module, so
+# it runs from the pinned version. CHANGES_SCRIPT is empty when the pinned
+# version has no script, and every use below then does nothing.
+#
+# A preview build runs in Hugo's production environment, where the overlay is
+# off, so `build` turns it on with HUGO_PARAMS_THEMEEXTRAS_CHANGEHIGHLIGHTS on
+# previews only. Production (main) never loads it. The manifest step can never
+# fail the build: Cloudflare Pages clones only the branch, possibly shallow, so
+# when there is no merge-base with origin/main it compares with origin/main
+# directly, and if even that fails the preview just shows no marks.
+# Every other build deletes static/_extras/ first: Hugo copies static files
+# into every build, so a manifest left by a local `make serve` would otherwise
+# publish the branch's unreleased text. NO_CHANGES=1 skips it everywhere.
+# Looked up once, and only by a target that uses it.
+CHANGES_SCRIPT = $(eval CHANGES_SCRIPT := $(if $(NO_CHANGES),,$(shell go mod download -json github.com/solo-io/docs-theme-extras 2>/dev/null | python3 -c "import json,os,sys; p=os.path.join(json.load(sys.stdin)['Dir'],'scripts','changes_manifest.py'); print(p if os.path.exists(p) else '')" 2>/dev/null)))$(CHANGES_SCRIPT)
+CHANGES_OUT = static/_extras/changes.json
+CHANGES_ENV = $(if $(and $(PREVIEW),$(CHANGES_SCRIPT)),HUGO_PARAMS_THEMEEXTRAS_CHANGEHIGHLIGHTS=true )
+
 .PHONY: build
 build: check-node-deps
 	$(if $(PREVIEW),pip3 install -q pyyaml || true)
 	$(if $(PREVIEW),python3 scripts/local-version-config.py --preview-base origin/main)
-	hugo --gc --minify $(if $(PREVIEW),--config hugo.yaml$(COMMA)hugo-local-versions.yaml)
+	$(if $(CHANGES_ENV),git rev-parse --verify -q origin/main > /dev/null || git fetch --depth=1 --no-tags origin main:refs/remotes/origin/main || true)
+	$(if $(CHANGES_ENV),python3 $(CHANGES_SCRIPT) --base origin/main --out $(CHANGES_OUT) || python3 $(CHANGES_SCRIPT) --base origin/main --exact-base --out $(CHANGES_OUT) || true)
+	$(if $(CHANGES_ENV),,rm -rf $(dir $(CHANGES_OUT)))
+	$(CHANGES_ENV)hugo --gc --minify $(if $(PREVIEW),--config hugo.yaml$(COMMA)hugo-local-versions.yaml)
 
 # The local servers build only the versions listed in hugo.yaml's
 # `params.versions`. content/docs/ also holds every older version tree, which
@@ -148,15 +173,20 @@ NO_SEARCH_ENV = $(if $(NO_SEARCH),HUGO_PARAMS_SEARCH_ENABLE=false )
 local-version-config:
 	@$(if $(FULL),:,python3 scripts/local-version-config.py $(if $(VERSION),--version $(VERSION)))
 
+# The local servers start the change-highlights watcher next to `hugo server`
+# (the overlay is already on there), and stop it when the server stops.
+CHANGES_WATCH = $(if $(CHANGES_SCRIPT),python3 $(CHANGES_SCRIPT) --out $(CHANGES_OUT) --watch & changes_pid=$$!;,:;)
+CHANGES_STOP = if [ -n "$$changes_pid" ]; then kill $$changes_pid 2>/dev/null; fi
+
 # Start local dev server (drafts and future-dated content shown)
 .PHONY: serve
 serve: check-node-deps local-version-config
-	$(NO_SEARCH_ENV)hugo server --buildDrafts --buildFuture $(LOCAL_VERSIONS_CONFIG)
+	$(CHANGES_WATCH) $(NO_SEARCH_ENV)hugo server --buildDrafts --buildFuture $(LOCAL_VERSIONS_CONFIG); $(CHANGES_STOP)
 
 # Start local server with production-like build (GC, minify, no drafts)
 .PHONY: serve-prod
 serve-prod: check-node-deps local-version-config
-	$(NO_SEARCH_ENV)hugo server --gc --minify $(LOCAL_VERSIONS_CONFIG)
+	$(CHANGES_WATCH) $(NO_SEARCH_ENV)hugo server --gc --minify $(LOCAL_VERSIONS_CONFIG); $(CHANGES_STOP)
 
 # Alias for serve (drafts and future-dated content shown)
 .PHONY: server
@@ -337,9 +367,18 @@ playwright-update-images: playwright-install
 # One-step targets that chain: test data → inject status → build or serve.
 #----------------------------------------------------------------------------------
 
-# Fetch CI test results, inject status, build site for production
+# Fetch CI test results, inject status, build site for production. On a
+# Cloudflare Pages preview branch this is already a preview build (see PREVIEW).
 .PHONY: fetch-test-artifacts-build
 fetch-test-artifacts-build: test-artifacts-fetch test-status build
+
+# Same, but always a preview build, on any branch: skips the unlisted version
+# trees and turns on change highlights (what this branch adds or removes,
+# compared with main). Use it to try a preview locally, or as an explicit
+# preview build command.
+.PHONY: fetch-test-artifacts-build-preview
+fetch-test-artifacts-build-preview:
+	$(MAKE) fetch-test-artifacts-build PREVIEW=1
 
 # Run doc tests, inject status, build site
 .PHONY: test-run-build

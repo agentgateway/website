@@ -1,1 +1,1 @@
-Review the following table to understand this configuration.
+Review the following table to understand each setting in this configuration.
