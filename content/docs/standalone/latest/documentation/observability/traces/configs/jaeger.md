@@ -77,7 +77,7 @@ Install Jaeger into your cluster by using Helm and point agentgateway at the Jae
    config:
      frontendPolicies:
        tracing:
-         host: jaeger-collector.monitoring.svc.cluster.local:4317
+         host: jaeger.monitoring.svc.cluster.local:4317
          randomSampling: true
    ```
 

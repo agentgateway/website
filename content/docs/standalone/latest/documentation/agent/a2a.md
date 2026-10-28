@@ -40,10 +40,10 @@ The following steps use the [A2A sample repository](https://github.com/a2aprojec
    git clone https://github.com/a2aproject/a2a-samples.git
    ```
 
-2. Run the Hello World agent.
+2. Run the Hello World agent. The sample's code needs version 1.x of the A2A SDK, but the samples repository locks an older version. The `--with-requirements` flag installs the version that the sample's `requirements.txt` file pins.
 
    ```sh
-   uv run --directory a2a-samples/samples/python/agents/helloworld .
+   uv run --directory a2a-samples/samples/python/agents/helloworld --with-requirements requirements.txt .
    ```
 
 ## Verify the A2A connection {#verify}
