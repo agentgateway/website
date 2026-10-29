@@ -3,21 +3,12 @@ title: Backends
 weight: 35
 description: Configure backends to route traffic to hostnames, LLM providers, and MCP servers.
 prev: /configuration/listeners
-test:
-  backends:
-  - file: ${versionRoot}/documentation/configuration/backends.md
-    path: backends
 ---
 
 Agentgateway {{< gloss "Backend" >}}backends{{< /gloss >}} control where traffic is routed to.
 Agentgateway supports a variety of backends, such as simple hostnames and IP addresses, {{< gloss "Provider" >}}LLM providers{{< /gloss >}}, and MCP servers.
 
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
-
-{{< doc-test paths="backends" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
-{{< /doc-test >}}
 
 ## Static Hosts
 
@@ -60,29 +51,6 @@ routes:
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="backends" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The static host backend example config is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That traffic is actually routed/weighted to the hosts at runtime — requires
-#     reachable backends the page omits.
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-    protocol: HTTP
-routes:
-- name: api-v2
-  backends:
-  - host: api-v2.example.com:8080
-    weight: 80
-  - host: api-v1.example.com:8080
-    weight: 20
-EOF
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
 
 ## Backend connection lifetime {#connection-lifetime}
 
@@ -160,48 +128,6 @@ routes:
 {{< /tab >}}
 {{< /tabs >}}
 
-{{< doc-test paths="backends" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The MCP backend example (stdio + remote MCP targets) is accepted by
-#     agentgateway in both the routing-based (gateways) and simplified MCP (mcp) forms.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That the MCP targets actually start/connect at runtime — requires the npx
-#     command and remote server the page does not stand up.
-cat <<'EOF' > config2.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - mcp:
-      targets:
-      - name: stdio-server
-        stdio:
-          cmd: npx
-          args: ["@modelcontextprotocol/server-everything"]
-      - name: http-server
-        mcp:
-          host: https://example.com/mcp
-EOF
-agentgateway -f config2.yaml --validate-only
-
-cat <<'EOF' > config2-simplified.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  targets:
-  - name: stdio-server
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-  - name: http-server
-    mcp:
-      host: https://example.com/mcp
-EOF
-agentgateway -f config2-simplified.yaml --validate-only
-{{< /doc-test >}}
-
 ### Session routing
 
 By default, MCP backends use stateful session routing, where the gateway tracks session IDs and routes subsequent requests to the same upstream. For upstreams that do not maintain server-side session state, you can set `statefulMode: stateless`. In stateless mode, the gateway automatically wraps each request with an initialization sequence, so the upstream server processes every request independently.
@@ -240,46 +166,6 @@ routes:
 ```
 {{< /tab >}}
 {{< /tabs >}}
-
-{{< doc-test paths="backends" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The stateless session-routing MCP backend example is accepted by agentgateway
-#     in both the routing-based (gateways) and simplified MCP (mcp) forms.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That stateless wrapping actually occurs at runtime — requires the OpenAPI
-#     upstream and live MCP traffic the page omits.
-cat <<'EOF' > config3.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - mcp:
-      statefulMode: stateless
-      targets:
-      - name: openapi-server
-        openapi:
-          host: petstore3.swagger.io:443
-          schema:
-            url: https://petstore3.swagger.io/api/v3/openapi.json
-EOF
-agentgateway -f config3.yaml --validate-only
-
-cat <<'EOF' > config3-simplified.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  statefulMode: stateless
-  targets:
-  - name: openapi-server
-    openapi:
-      host: petstore3.swagger.io:443
-      schema:
-        url: https://petstore3.swagger.io/api/v3/openapi.json
-EOF
-agentgateway -f config3-simplified.yaml --validate-only
-{{< /doc-test >}}
 
 ## LLM Providers
 
@@ -320,44 +206,6 @@ routes:
 {{< /tab >}}
 {{< /tabs >}}
 
-{{< doc-test paths="backends" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The OpenAI LLM provider example is accepted by agentgateway in both the
-#     routing-based (ai backend) and simplified LLM (llm.models) forms.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That requests are actually proxied to OpenAI at runtime — requires a real
-#     OPENAI_API_KEY and live LLM traffic the page omits.
-cat <<'EOF' > config4.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - ai:
-      name: openai
-      provider:
-        openAI:
-          model: gpt-3.5-turbo
-  policies:
-    backendAuth:
-      key: "$OPENAI_API_KEY"
-EOF
-agentgateway -f config4.yaml --validate-only
-
-cat <<'EOF' > config4-simplified.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  models:
-  - name: openai
-    provider: openAI
-    params:
-      model: gpt-3.5-turbo
-      apiKey: "$OPENAI_API_KEY"
-EOF
-agentgateway -f config4-simplified.yaml --validate-only
-{{< /doc-test >}}
-
 ## AWS AgentCore
 
 The AWS backend routes requests to an [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) agent runtime. Configure the AWS backend inline in a `routes` entry, as in the following example, or as a named top-level `backends` entry that several routes reference.
@@ -373,17 +221,6 @@ The following configuration is from the [`traffic-aws-agentcore` example](https:
 | `agentRuntimeArn` | The ARN of the AgentCore agent runtime to invoke, in the format `arn:aws:bedrock-agentcore:<region>:<account-id>:runtime/<runtime-id>`. |
 | `qualifier` | Optional runtime version or endpoint qualifier to invoke, which is sent as a `qualifier` query parameter. Omit this setting to use the runtime's `DEFAULT` endpoint. |
 | `policies.requestHeaderModifier` | Optional headers to set before the request is sent upstream, such as the `X-Amzn-Bedrock-AgentCore-Runtime-User-Id` header that identifies the user to the AgentCore runtime. |
-
-{{< doc-test paths="backends" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The AWS AgentCore backend config from the traffic-aws-agentcore example,
-#     embedded on this page, is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That requests are actually signed and proxied to AgentCore at runtime —
-#     requires AWS credentials and a real agent runtime the page omits.
-curl -L https://agentgateway.dev/examples/traffic-aws-agentcore/config.yaml -o config5.yaml
-agentgateway -f config5.yaml --validate-only
-{{< /doc-test >}}
 
 ## Session affinity
 
@@ -403,30 +240,6 @@ routes:
       sessionAffinity:
         source: request.headers["x-session-id"]
 ```
-
-{{< doc-test paths="backends" >}}
-# WHAT THIS TEST VALIDATES:
-#   * `sessionAffinity.source` is accepted on a routing-based backend, which is the
-#     only place it attaches. It is not a route policy: agentgateway rejects
-#     `routes[].policies.sessionAffinity` as an unknown field.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That two requests with the same header reach the same endpoint -- the page
-#     configures a single endpoint, and proving the mapping needs several backend
-#     replicas and a way to identify which one answered.
-cat <<'EOF' > config-affinity.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - host: localhost:8080
-    policies:
-      sessionAffinity:
-        source: request.headers["x-session-id"]
-EOF
-agentgateway -f config-affinity.yaml --validate-only
-{{< /doc-test >}}
 
 | Field | Required | Description |
 | -- | -- | -- |

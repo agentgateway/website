@@ -2,7 +2,6 @@
 title: Passthrough
 weight: 50
 description: Forward requests to the upstream provider without transformation.
-test: skip
 ---
 
 The `passthrough` route type forwards requests to the upstream LLM provider as-is, without translating between API formats.

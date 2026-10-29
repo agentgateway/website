@@ -2,7 +2,6 @@
 title: DeepKeep
 weight: 20
 description: Use the DeepKeep AI Firewall as an external guardrail through the Guardrail Webhook API.
-test: skip
 ---
 
 You can use [DeepKeep](https://www.deepkeep.ai/) as an external guardrail provider by running the [DeepKeep agentgateway webhook adapter](https://github.com/Deepkeepai/agentgateway-deepkeep-webhook). The adapter exposes the default Guardrail Webhook API paths that agentgateway calls and forwards checks to DeepKeep's pre-model and post-model moderation endpoints.

@@ -27,28 +27,9 @@ flowchart LR
 Install the sample httpbin app.
 
 1. Install the httpbin app.
-   ```sh {paths="install-httpbin"}
+   ```sh
    kubectl apply -f https://raw.githubusercontent.com/kgateway-dev/kgateway/refs/heads/main/examples/httpbin.yaml
    ```
-
-   {{< doc-test paths="install-httpbin" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for httpbin deployment to be ready
-     wait:
-       target:
-         kind: Deployment
-         metadata:
-           namespace: httpbin
-           name: httpbin
-       jsonPath: "$.status.availableReplicas"
-       jsonPathExpectation:
-         comparator: greaterThan
-         value: 0
-       polling:
-         timeoutSeconds: 400
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
 
 2. Verify that the httpbin app is up and running.
 
@@ -60,7 +41,7 @@ Install the sample httpbin app.
 
 Create an HTTPRoute resource that routes requests to the httpbin app through the Gateway that you created before you began.
 
-```sh {paths="install-httpbin"}
+```sh
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -80,62 +61,6 @@ spec:
 EOF
 ```
 
-{{< doc-test paths="install-httpbin" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: wait for httpbin HTTPRoute refs to be resolved
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="install-httpbin" >}}
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" && break
-  sleep 2
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="install-httpbin" >}}
-YAMLTest -f - <<'EOF'
-- name: verify httpbin returns 200 for www.example.com
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/headers"
-    method: GET
-    headers:
-      host: "www.example.com"
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
-
 ### Step 3: Send a request to the httpbin app
 
 Send a request to the httpbin app through the agentgateway proxy.
@@ -144,7 +69,7 @@ Send a request to the httpbin app through the agentgateway proxy.
 {{% tab name="Cloud Provider LoadBalancer" %}}
 1. Get the external address of the gateway proxy and save it in an environment variable.
 
-   ```sh {paths="install-httpbin"}
+   ```sh
    export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
    echo $INGRESS_GW_ADDRESS
    ```

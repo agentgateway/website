@@ -2,7 +2,6 @@
 title: agentgateway-crds
 weight: 30
 description: Review Helm values for the agentgateway-crds Helm chart.
-test: skip
 # The trailing `./` is not a typo. This file was named `agentgateway-crds..md`
 # with a double dot, which published at `.../agentgateway-crds./`.
 aliases:

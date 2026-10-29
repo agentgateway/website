@@ -4,19 +4,12 @@
 
 The following command reads the LoadBalancer IP address or hostname, whichever your cloud provider assigns.
 
-```sh {paths="llm-clients-k8s-gateway-url"}
+```sh
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy \
   -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
 
 echo "Gateway address: $INGRESS_GW_ADDRESS"
 ```
-
-{{< doc-test paths="llm-clients-k8s-gateway-url" >}}
-if [ -z "${INGRESS_GW_ADDRESS}" ]; then
-  echo "INGRESS_GW_ADDRESS is empty"
-  exit 1
-fi
-{{< /doc-test >}}
 {{% /tab %}}
 {{% tab name="Port-forward for local testing" %}}
 

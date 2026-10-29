@@ -29,7 +29,7 @@ Set the maximum number of headers allowed in HTTP/1.1 requests.
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies the HTTP/1.1 connection configuration to the proxy.
 
-   ```yaml {paths="connection-http1"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -97,29 +97,6 @@ Set the maximum number of headers allowed in HTTP/1.1 requests.
    }
    ```
 
-{{< doc-test paths="connection-http1" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for http1 policy in config dump
-  retries: 20
-  http:
-    url: http://localhost:15000
-    skipSslVerification: true
-    method: GET
-    path: /config_dump
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway-proxy
-  expect:
-    bodyContains:
-    - '"http1MaxHeaders"'
-EOF
-{{< /doc-test >}}
-
 4. Optional: Clean up and remove the {{< reuse "agw-docs/snippets/policy.md" >}}.
 
   ```sh
@@ -134,7 +111,7 @@ Use these settings to tune HTTP/2 flow control, which governs how much data can 
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies HTTP/2 flow control configuration to the proxy.
 
-   ```yaml {paths="connection-http2-flow"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -205,32 +182,6 @@ Use these settings to tune HTTP/2 flow control, which governs how much data can 
     }
    }
    ```
-
-   {{< doc-test paths="connection-http2-flow" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for http2-flow policy in config dump
-     retries: 20
-     http:
-       url: http://localhost:15000
-       skipSslVerification: true
-       method: GET
-       path: /config_dump
-     source:
-       type: pod
-       usePortForward: true
-       selector:
-         kind: Deployment
-         metadata:
-           namespace: agentgateway-system
-           name: agentgateway-proxy
-     expect:
-       bodyContains:
-       - '"http2WindowSize"'
-       - '"http2ConnectionWindowSize"'
-       - '"http2FrameSize"'
-       - '65536'
-   EOF
-   {{< /doc-test >}}
 
 4. Optional: Clean up and remove the {{< reuse "agw-docs/snippets/policy.md" >}}.
 

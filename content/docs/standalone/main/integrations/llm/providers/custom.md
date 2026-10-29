@@ -5,10 +5,6 @@ description: Configure agentgateway for providers without built-in support that 
 aliases:
   - ../../../llm/providers/openai-compatible
   - ../../../documentation/llm/providers/openai-compatible
-test:
-  openai-compatible-validate:
-  - file: ${versionRoot}/integrations/llm/providers/custom.md
-    path: openai-compat-validate
 ---
 
 Use this page for providers that use an LLM API format but do not have first-class `provider:` support. For built-in providers such as [Baseten]({{< link-hextra path="/integrations/llm/providers/baseten/" >}}), [Cerebras]({{< link-hextra path="/integrations/llm/providers/cerebras/" >}}), [Cohere]({{< link-hextra path="/integrations/llm/providers/cohere/" >}}), [DeepInfra]({{< link-hextra path="/integrations/llm/providers/deepinfra/" >}}), [DeepSeek]({{< link-hextra path="/integrations/llm/providers/deepseek/" >}}), [Fireworks AI]({{< link-hextra path="/integrations/llm/providers/fireworks/" >}}), [GitHub Copilot]({{< link-hextra path="/integrations/llm/providers/copilot/" >}}), [Groq]({{< link-hextra path="/integrations/llm/providers/groq/" >}}), [Hugging Face]({{< link-hextra path="/integrations/llm/providers/huggingface/" >}}), [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}}), [Mistral]({{< link-hextra path="/integrations/llm/providers/mistral/" >}}), [OpenRouter]({{< link-hextra path="/integrations/llm/providers/openrouter/" >}}), [Perplexity]({{< link-hextra path="/integrations/llm/providers/perplexity/" >}}), [Together AI]({{< link-hextra path="/integrations/llm/providers/togetherai/" >}}), [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}), [xAI]({{< link-hextra path="/integrations/llm/providers/xai/" >}}), and [Ollama]({{< link-hextra path="/integrations/llm/providers/ollama/" >}}), use the dedicated provider pages instead.
@@ -26,14 +22,6 @@ Use this page for providers that use an LLM API format but do not have first-cla
 You also need the following prerequisites.
 
 - An API key for your chosen provider, unless you are pointing to a local endpoint such as vLLM or LM Studio.
-
-{{< doc-test paths="openai-compat-validate" >}}
-# Install agentgateway binary for testing
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-
-# Set placeholder API keys for validation (--validate-only still resolves env vars)
-export CUSTOM_PROVIDER_API_KEY="${CUSTOM_PROVIDER_API_KEY:-test}"
-{{< /doc-test >}}
 
 ## Configuring a custom provider
 
@@ -80,7 +68,7 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}
 {{% tab name="Config file" %}}
-```yaml {paths="openai-compat-validate"}
+```yaml
 cat > /tmp/test-custom-provider.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:

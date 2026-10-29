@@ -2,7 +2,6 @@
 title: Rerank
 weight: 45
 description: Send rerank requests through agentgateway using the Cohere-compatible Rerank API.
-test: skip
 ---
 
 The Rerank API (`/v2/rerank`) scores a list of documents against a query and returns the most relevant results in ranked order.

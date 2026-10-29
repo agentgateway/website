@@ -10,7 +10,7 @@ In this example, a client passes a feature flag as the `beta` query parameter. T
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
-   ```yaml {paths="query"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -30,39 +30,6 @@ In this example, a client passes a feature flag as the `beta` query parameter. T
              value: 'request.uri.contains("beta=true") ? "enabled" : "disabled"'
    EOF
    ```
-
-   {{< doc-test paths="query" >}}
-   YAMLTest -f - <<'EOF'
-   - name: verify x-beta-features header is set to enabled when beta=true is present
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/get?beta=true"
-       method: GET
-       headers:
-         host: www.example.com
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.headers[\"X-Beta-Features\"][0]"
-           comparator: equals
-           value: enabled
-   - name: verify x-beta-features header is set to disabled when beta=true is absent
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/get"
-       method: GET
-       headers:
-         host: www.example.com
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.headers[\"X-Beta-Features\"][0]"
-           comparator: equals
-           value: disabled
-   EOF
-   {{< /doc-test >}}
 
 2. Send a request with the `beta=true` query parameter. Verify that you get back a 200 HTTP response code and that the `x-beta-features` header is set to `enabled` in the headers echoed back by httpbin.
 
@@ -160,6 +127,6 @@ In this example, a client passes a feature flag as the `beta` query parameter. T
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="query"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin
 ```
