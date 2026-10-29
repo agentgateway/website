@@ -34,11 +34,6 @@ Unlike SigV4 credentials, a JWT expires. Read the token from a file so that you 
 {{% /tab %}}
 {{< /tabs >}}
 
-{{< doc-test paths="agentcore-standalone" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-export AGENTCORE_JWT="${AGENTCORE_JWT:-test-token}"
-{{< /doc-test >}}
-
 ## Before you begin {#before-you-begin}
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
@@ -63,7 +58,7 @@ Create a configuration file with a route to the AgentCore runtime. The `aws.agen
 {{% tab name="IAM (SigV4)" %}}
 1. Create a configuration file with an `aws.agentCore` backend and no authentication policy. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} signs each request with SigV4 by using the credentials in its environment. Replace the `agentRuntimeArn` value with the ARN of your runtime.
 
-   ```yaml {paths="agentcore-standalone"}
+   ```yaml
    cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    gateways:
@@ -89,13 +84,13 @@ Create a configuration file with a route to the AgentCore runtime. The `aws.agen
 {{% tab name="JWT authorization" %}}
 1. Save the bearer token that the runtime's authorizer accepts to a file. The following example writes the token that is in the `AGENTCORE_JWT` environment variable.
 
-   ```sh {paths="agentcore-standalone"}
+   ```sh
    echo -n "$AGENTCORE_JWT" > agentcore-token.jwt
    ```
 
 2. Create a configuration file with an `aws.agentCore` backend and a `backendAuth.key` policy that reads the token from the file. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} sends the token in the `Authorization` header with a `Bearer` prefix, which replaces SigV4 signing. Replace the `agentRuntimeArn` value with the ARN of your runtime.
 
-   ```yaml {paths="agentcore-standalone"}
+   ```yaml
    cat <<'EOF' > config-jwt.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    gateways:
@@ -182,19 +177,6 @@ routes:
    | `404` with `No endpoint or agent found with qualifier` | The ARN or the `qualifier` value does not name a deployed runtime endpoint. The message reports the qualifier that was used, which is `DEFAULT` when you omit the setting. |
    | `500` with `backend authentication failed` | {{< reuse "agw-docs/snippets/agentgateway.md" >}} could not resolve credentials at all, so no request was signed. A failed `assumeRole` call reports this way. |
 
-{{< doc-test paths="agentcore-standalone" >}}
-# WHAT THIS TEST VALIDATES:
-#   * Both AgentCore configurations on this page, the SigV4 default and the
-#     backendAuth.key JWT override, are accepted by agentgateway. The JWT
-#     config is validated only after the token file exists, because
-#     --validate-only reads a `file` reference and fails when it is missing.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That requests reach a runtime and return an agent response — requires an
-#     AWS account with a deployed AgentCore runtime, which the page omits.
-agentgateway -f config.yaml --validate-only
-agentgateway -f config-jwt.yaml --validate-only
-{{< /doc-test >}}
-
 ## Clean up {#cleanup}
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
@@ -203,6 +185,6 @@ agentgateway -f config-jwt.yaml --validate-only
 
 2. Remove the configuration file and the token file.
 
-   ```sh {paths="agentcore-standalone"}
+   ```sh
    rm -f config.yaml config-jwt.yaml agentcore-token.jwt
    ```

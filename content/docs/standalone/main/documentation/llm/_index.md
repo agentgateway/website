@@ -4,7 +4,6 @@ weight: 30
 description: Overview of LLM provider integration and consumption patterns
 prev: /configuration/security
 next: /docs/observability
-test: skip
 ---
 
 Agentgateway can act as a feature rich AI/LLM gateway, acting as a proxy between your applications and LLM providers.

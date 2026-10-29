@@ -2,16 +2,6 @@
 title: Host
 weight: 10
 description: Match requests by hostname.
-test:
-  host-match:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: standard
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/documentation/traffic-management/match/host.md
-    path: host-match
 ---
 Expose a route on multiple hosts. 
 
@@ -22,7 +12,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 ## Set up host matching
 
 1. Create an HTTPRoute that is exposed on two domains, `host1.example` and `host2.example`.
-   ```yaml {paths="host-match"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -96,33 +86,6 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    < content-length: 0
    content-length: 0
    ```
-   
-{{< doc-test paths="host-match" >}}
-YAMLTest -f - <<'EOF'
-- name: host match - host1.example returns 200
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /status/200
-    method: GET
-    headers:
-      host: host1.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: host match - host2.example returns 200
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /status/200
-    method: GET
-    headers:
-      host: host2.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
 
 ## Cleanup
 

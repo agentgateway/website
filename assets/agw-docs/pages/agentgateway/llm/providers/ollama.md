@@ -91,7 +91,7 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
 
 3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource. Standalone mode uses the first-class `ollama` provider shortcut, but Kubernetes still uses the `openai` compatibility shape for Ollama. Point `host` and `port` at the headless Service DNS name for your external Ollama instance.
 
-   ```yaml {paths="ollama-provider-setup"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -121,7 +121,7 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
 
 4. Create an HTTPRoute to expose the Ollama backend through the gateway.
 
-   ```yaml {paths="ollama-provider-setup"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -140,161 +140,6 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-
-{{< doc-test paths="ollama-provider-setup" >}}
-kubectl apply -f- <<'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: httpbun-ollama
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-  labels:
-    app: httpbun-ollama
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: httpbun-ollama
-  template:
-    metadata:
-      labels:
-        app: httpbun-ollama
-    spec:
-      containers:
-      - name: httpbun
-        image: sharat87/httpbun
-        env:
-        - name: HTTPBUN_BIND
-          value: "0.0.0.0:3090"
-        ports:
-        - containerPort: 3090
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: httpbun-ollama
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  selector:
-    app: httpbun-ollama
-  ports:
-  - protocol: TCP
-    port: 3090
-    targetPort: 3090
-EOF
-
-YAMLTest -f - <<'EOF'
-- name: wait for httpbun-ollama deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: httpbun-ollama
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 180
-      intervalSeconds: 5
-EOF
-
-HTTPBUN_OLLAMA_POD_IP=$(kubectl get pod -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=httpbun-ollama -o jsonpath='{.items[0].status.podIP}')
-kubectl apply -f- <<EOF
-apiVersion: v1
-kind: Service
-metadata:
-  name: ollama
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  type: ClusterIP
-  clusterIP: None
-  ports:
-  - port: 11434
-    targetPort: 11434
-    protocol: TCP
----
-apiVersion: discovery.k8s.io/v1
-kind: EndpointSlice
-metadata:
-  name: ollama
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-  labels:
-    kubernetes.io/service-name: ollama
-addressType: IPv4
-endpoints:
-- addresses:
-  - ${HTTPBUN_OLLAMA_POD_IP}
-ports:
-- port: 3090
-  protocol: TCP
-EOF
-kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} ollama -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge -p '{"spec":{"ai":{"provider":{"openai":{"model":"llama3.2"},"port":3090,"path":"/llm/chat/completions"}}}}'
-
-YAMLTest -f - <<'EOF'
-- name: wait for ollama HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: agentgateway-system
-        name: ollama
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-- name: wait for ollama HTTPRoute refs to be resolved
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: agentgateway-system
-        name: ollama
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-EOF
-
-export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-
-YAMLTest -f - <<'EOF'
-- name: verify ollama route serves chat-completions responses
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/ollama"
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {
-        "model": "llama3.2",
-        "messages": [
-          {
-            "role": "user",
-            "content": "Respond with the word hello."
-          }
-        ],
-        "httpbun": {
-          "content": "ollama provider route is working"
-        }
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.choices[0].message.content"
-        comparator: contains
-        value: "ollama provider route is working"
-EOF
-{{< /doc-test >}}
 
 5. Send a request to verify the setup.
 

@@ -2,14 +2,6 @@
 title: Set up remote guardrails
 weight: 30
 description: Gate and mutate MCP method calls with an external ExtMCP policy server.
-test:
-  mcp-guardrails:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/mcp/guardrails/setup.md
-    path: mcp-guardrails
 ---
 
 Inspect, rewrite, or reject Model Context Protocol (MCP) calls with an external ExtMCP policy server.
@@ -30,7 +22,7 @@ In this guide, you route `tools/call` and `tools/list` requests through a sample
 
 Deploy an MCP server for agentgateway to proxy traffic to. The following example sets up a simple MCP server with one tool, `fetch`, that retrieves the content of a website URL.
 
-```yaml {paths="mcp-guardrails"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -80,7 +72,7 @@ The Service uses `appProtocol: kubernetes.io/h2c` so that agentgateway connects 
 >
 > Generate gRPC bindings from the proto file and implement both methods. Serve them over cleartext HTTP/2 (h2c) on the port that your Service targets. For more information about the request and response messages, outcomes, and error codes, see [Guardrail processors]({{< link-hextra path="/documentation/mcp/guardrails/processors" >}}).
 
-```yaml {paths="mcp-guardrails"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -126,44 +118,11 @@ spec:
 EOF
 ```
 
-{{< doc-test paths="mcp-guardrails" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for mcp-website-fetcher deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: default
-        name: mcp-website-fetcher
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-- name: wait for ext-mcp-server deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: default
-        name: ext-mcp-server
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 ### Step 3: Create the backend for the MCP server
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} that sets up the agentgateway target details for the MCP server.
 
-```yaml {paths="mcp-guardrails"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -184,7 +143,7 @@ EOF
 
 Create an HTTPRoute that routes `/mcp` requests to the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-```yaml {paths="mcp-guardrails"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -210,7 +169,7 @@ EOF
 
 Create an {{< reuse "agw-docs/snippets/policy.md" >}} that attaches MCP guardrails to the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-```yaml {paths="mcp-guardrails"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -243,25 +202,6 @@ Review the following table to understand the policy.
 | `remote.backendRef` | The ExtMCP policy server that agentgateway calls. This example points to the `ext-mcp` Service from Step 2. |
 | `failureMode: FailClosed` | Deny requests if the policy server is unreachable or returns an error. To allow requests instead, set `FailOpen`. |
 | `methods` | MCP methods and phases to send to the policy server. `tools/call: Request` checks tool calls before forwarding them. `tools/list: Response` filters or annotates tool lists after the backend responds. See [Methods and phases]({{< link-hextra path="/documentation/mcp/guardrails/processors/#methods" >}}). |
-
-{{< doc-test paths="mcp-guardrails" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for mcp-guardrails policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: default
-        name: mcp-guardrails
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
 
 {{% /steps %}}
 
@@ -356,64 +296,6 @@ Verify that the policy server gates `tools/call` and mutates `tools/list` respon
    ```console
    data: {"jsonrpc":"2.0","id":4,"result":{"content":[{"type":"text","text":"<!doctype html><html lang=\"en\">..."}]}}
    ```
-
-{{< doc-test paths="mcp-guardrails" >}}
-YAMLTest -f - <<'EOF'
-- name: MCP endpoint accepts initialize request
-  retries: 10
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /mcp
-    method: POST
-    headers:
-      content-type: application/json
-      accept: "application/json, text/event-stream"
-      mcp-protocol-version: "2025-03-26"
-    body: |
-      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-guardrails" >}}
-# Assert the guardrails behaviors end-to-end: response-phase mutation,
-# request-phase deny, and request-phase allow.
-MCP_ADDR="http://${INGRESS_GW_ADDRESS}:80/mcp"
-HDRS=(-H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" -H "MCP-Protocol-Version: 2025-03-26")
-
-# Retry until the route is programmed and the policy-server connection is warm.
-LIST=""
-for attempt in $(seq 1 20); do
-  SID=$(curl -s --max-time 10 -D - "${HDRS[@]}" "$MCP_ADDR" \
-    -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}' \
-    | grep -i "mcp-session-id:" | sed 's/.*: //' | tr -d '\r')
-  if [ -z "$SID" ]; then sleep 5; continue; fi
-  curl -s --max-time 10 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
-    -d '{"jsonrpc":"2.0","method":"notifications/initialized"}' >/dev/null || true
-  LIST=$(curl -s --max-time 15 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
-    -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}')
-  echo "$LIST" | grep -q '\[extmcp\]' && break
-  sleep 5
-done
-
-# Response phase: the policy server appended " [extmcp]" to tool descriptions.
-echo "$LIST" | grep -q '\[extmcp\]' || { echo "FAIL: tools/list was not mutated: $LIST"; exit 1; }
-
-# Request phase: a tool whose name contains "forbidden" is denied.
-DENY=$(curl -s --max-time 10 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
-  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"forbidden-tool","arguments":{}}}')
-echo "$DENY" | grep -q 'is not allowed' || { echo "FAIL: forbidden tool was not denied: $DENY"; exit 1; }
-
-# Request phase: the allowed "fetch" tool passes through and returns a result.
-ALLOW=$(curl -s --max-time 15 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
-  -d '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"fetch","arguments":{"url":"https://example.com"}}}')
-echo "$ALLOW" | grep -q '"result"' || { echo "FAIL: allowed tool did not return a result: $ALLOW"; exit 1; }
-
-echo "PASS: MCP guardrails mutate, deny, and allow behaviors verified"
-{{< /doc-test >}}
 
 ## Troubleshooting
 

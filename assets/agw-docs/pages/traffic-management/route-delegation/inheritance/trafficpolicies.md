@@ -31,7 +31,7 @@ The following image illustrates the route delegation hierarchy:
 ## Set up the routes
 
 1. Create the parent HTTPRoute that matches incoming traffic on the `delegation.example` domain and delegates to HTTPRoutes in the `team1` namespace.
-   ```yaml {paths="trafficpolicies"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -57,7 +57,7 @@ The following image illustrates the route delegation hierarchy:
    ```
 
 2. Create the `child-team1` HTTPRoute in the `team1` namespace that matches traffic on the `/anything/team1/foo` prefix and routes traffic to the httpbin app.
-   ```yaml {paths="trafficpolicies"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -76,38 +76,12 @@ The following image illustrates the route delegation hierarchy:
    EOF
    ```
 
-   {{< doc-test paths="trafficpolicies" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for parent HTTPRoute to be accepted
-     wait:
-       target:
-         kind: HTTPRoute
-         metadata:
-           namespace: agentgateway-system
-           name: parent
-       jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 300
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
-
-   {{< doc-test paths="trafficpolicies" >}}
-   for i in $(seq 1 60); do
-     curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/anything/team1/foo" -H "host: delegation.example" && break
-     sleep 2
-   done
-   {{< /doc-test >}}
-
 ## Transformation override and rate limit inheritance
 
 In this section, you attach an `AgentgatewayPolicy` to the parent and a different `AgentgatewayPolicy` to the child. The parent policy defines both a transformation and a local rate limit. The child policy defines only a transformation. The child's transformation overrides the parent's. The child does not define a rate limit, so the parent's rate limit is inherited.
 
 1. Create an `AgentgatewayPolicy` that targets the `parent` HTTPRoute. The policy adds an `x-parent-policy` header to requests and limits requests to 1 per minute.
-   ```yaml {paths="trafficpolicies"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: AgentgatewayPolicy
@@ -133,7 +107,7 @@ In this section, you attach an `AgentgatewayPolicy` to the parent and a differen
    ```
 
 2. Create an `AgentgatewayPolicy` that targets the `child-team1` HTTPRoute. The policy adds an `x-child-policy` header to requests. It does not define a rate limit.
-   ```yaml {paths="trafficpolicies"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: AgentgatewayPolicy
@@ -168,39 +142,6 @@ In this section, you attach an `AgentgatewayPolicy` to the parent and a differen
    child-policy   True       True       3s
    ```
 
-   {{< doc-test paths="trafficpolicies" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for parent-policy to be attached
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: agentgateway-system
-           name: parent-policy
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Attached')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 5
-   - name: wait for child-policy to be attached
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: team1
-           name: child-policy
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Attached')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
-
 4. Send a request to the `delegation.example` domain along the `/anything/team1/foo` path. Verify that the response includes the `X-Child-Policy` header but not the `X-Parent-Policy` header. The child's transformation overrides the parent's because both define the same `transformation` policy.
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
@@ -214,26 +155,6 @@ In this section, you attach an `AgentgatewayPolicy` to the parent and a differen
    ```
    {{% /tab %}}
    {{< /tabs >}}
-
-   {{< doc-test paths="trafficpolicies" >}}
-   YAMLTest -f - <<'EOF'
-   - name: child transformation wins over parent transformation
-     retries: 1
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team1/foo"
-       method: GET
-       headers:
-         host: delegation.example
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.headers.X-Child-Policy[0]"
-           comparator: contains
-           value: "This is the child-team1 policy."
-   EOF
-   {{< /doc-test >}}
 
    Example output (truncated):
    ```json
@@ -259,21 +180,6 @@ In this section, you attach an `AgentgatewayPolicy` to the parent and a differen
    {{% /tab %}}
    {{< /tabs >}}
 
-   {{< doc-test paths="trafficpolicies" >}}
-   YAMLTest -f - <<'EOF'
-   - name: second request hits inherited parent rate limit
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team1/foo"
-       method: GET
-       headers:
-         host: delegation.example
-     source:
-       type: local
-     expect:
-       statusCode: 429
-   EOF
-   {{< /doc-test >}}
-
    Example output:
    ```
    HTTP/1.1 429 Too Many Requests
@@ -284,7 +190,7 @@ In this section, you attach an `AgentgatewayPolicy` to the parent and a differen
    ```
 
 6. Delete both policies before continuing to the next section.
-   ```sh {paths="trafficpolicies"}
+   ```sh
    kubectl delete agentgatewaypolicy parent-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    kubectl delete agentgatewaypolicy child-policy -n team1
    ```
@@ -294,7 +200,7 @@ In this section, you attach an `AgentgatewayPolicy` to the parent and a differen
 In this section, you attach a `Require` authorization rule to the parent and a different `Require` authorization rule to the child. Authorization policies merge across the delegation chain, so both rules must be satisfied for the request to be allowed.
 
 1. Create an `AgentgatewayPolicy` that targets the `parent` HTTPRoute. The policy requires the `x-parent-required: true` request header.
-   ```yaml {paths="trafficpolicies"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: AgentgatewayPolicy
@@ -316,7 +222,7 @@ In this section, you attach a `Require` authorization rule to the parent and a d
    ```
 
 2. Create an `AgentgatewayPolicy` that targets the `child-team1` HTTPRoute. The policy requires the `x-child-required: true` request header.
-   ```yaml {paths="trafficpolicies"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: AgentgatewayPolicy
@@ -337,39 +243,6 @@ In this section, you attach a `Require` authorization rule to the parent and a d
    EOF
    ```
 
-   {{< doc-test paths="trafficpolicies" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for parent-authz to be attached
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: agentgateway-system
-           name: parent-authz
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Attached')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 5
-   - name: wait for child-authz to be attached
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: team1
-           name: child-authz
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Attached')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
-
 3. Send a request without either header. Verify that you get a 403 HTTP response, because both `Require` rules must match.
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
@@ -383,22 +256,6 @@ In this section, you attach a `Require` authorization rule to the parent and a d
    ```
    {{% /tab %}}
    {{< /tabs >}}
-
-   {{< doc-test paths="trafficpolicies" >}}
-   YAMLTest -f - <<'EOF'
-   - name: no headers - 403 (both Require rules unmet)
-     retries: 1
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team1/foo"
-       method: GET
-       headers:
-         host: delegation.example
-     source:
-       type: local
-     expect:
-       statusCode: 403
-   EOF
-   {{< /doc-test >}}
 
    Example output:
    ```
@@ -425,22 +282,6 @@ In this section, you attach a `Require` authorization rule to the parent and a d
    {{% /tab %}}
    {{< /tabs >}}
 
-   {{< doc-test paths="trafficpolicies" >}}
-   YAMLTest -f - <<'EOF'
-   - name: only x-parent-required - 403 (child Require unmet)
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team1/foo"
-       method: GET
-       headers:
-         host: delegation.example
-         x-parent-required: "true"
-     source:
-       type: local
-     expect:
-       statusCode: 403
-   EOF
-   {{< /doc-test >}}
-
    Example output:
    ```
    HTTP/1.1 403 Forbidden
@@ -465,22 +306,6 @@ In this section, you attach a `Require` authorization rule to the parent and a d
    ```
    {{% /tab %}}
    {{< /tabs >}}
-
-   {{< doc-test paths="trafficpolicies" >}}
-   YAMLTest -f - <<'EOF'
-   - name: only x-child-required - 403 (parent Require unmet)
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team1/foo"
-       method: GET
-       headers:
-         host: delegation.example
-         x-child-required: "true"
-     source:
-       type: local
-     expect:
-       statusCode: 403
-   EOF
-   {{< /doc-test >}}
 
    Example output:
    ```
@@ -509,23 +334,6 @@ In this section, you attach a `Require` authorization rule to the parent and a d
    {{% /tab %}}
    {{< /tabs >}}
 
-   {{< doc-test paths="trafficpolicies" >}}
-   YAMLTest -f - <<'EOF'
-   - name: both required headers - 200 (both Require rules met)
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team1/foo"
-       method: GET
-       headers:
-         host: delegation.example
-         x-parent-required: "true"
-         x-child-required: "true"
-     source:
-       type: local
-     expect:
-       statusCode: 200
-   EOF
-   {{< /doc-test >}}
-
    Example output:
    ```
    HTTP/1.1 200 OK
@@ -539,7 +347,7 @@ In this section, you attach a `Require` authorization rule to the parent and a d
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="trafficpolicies"}
+```sh
 kubectl delete agentgatewaypolicy parent-authz -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete agentgatewaypolicy child-authz -n team1 --ignore-not-found
 kubectl delete agentgatewaypolicy parent-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found

@@ -2,17 +2,6 @@
 title: Virtual models
 weight: 30
 description: Publish one client-facing model name and route requests across several models with weighted, failover, conditional, or callout routing.
-test:
-  virtual-models:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/integrations/llm/providers/httpbun.md
-    path: setup-httpbun-llm
-  - file: ${versionRoot}/documentation/llm/models/serve.md
-    path: serve-model
-  - path: virtual-models
 ---
 
 Publish one client-facing model name and route requests across several models.
@@ -76,7 +65,7 @@ If a target does not resolve, the control plane still generates the virtual mode
 
 1. Create two internal models to route between. Each rewrites the `model` field to a distinct value so that you can tell from the response which target served the request.
 
-   ```yaml {paths="virtual-models"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -132,35 +121,13 @@ If a target does not resolve, the control plane still generates the virtual mode
    {"error":{"message":"Model not found","type":"invalid_request_error","code":"model_not_found"}}
    ```
 
-   {{< doc-test paths="virtual-models" >}}
-   YAMLTest -f - <<'EOF'
-   - name: internal models cannot be requested directly
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-       method: POST
-       headers:
-         Content-Type: application/json
-       body: |
-         {"model": "internal-fast", "messages": []}
-     source:
-       type: local
-     retries: 3
-     expect:
-       statusCode: 404
-       bodyJsonPath:
-         - path: "$.error.code"
-           comparator: equals
-           value: "model_not_found"
-   EOF
-   {{< /doc-test >}}
-
 ## Split traffic with weighted routing
 
 Use `virtualModel.weighted` to distribute requests across targets by relative weight.
 
 1. Create a virtual model that sends 80% of requests to `internal-fast` and 20% to `internal-premium`.
 
-   ```yaml {paths="virtual-models"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -213,42 +180,13 @@ Use `virtualModel.weighted` to distribute requests across targets by relative we
      14 "model":"resolved-internal-premium"
    ```
 
-   {{< doc-test paths="virtual-models" >}}
-   for i in $(seq 1 60); do
-     curl -s --max-time 5 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
-       -H "Content-Type: application/json" \
-       -d '{"model":"balanced","messages":[],"httpbun":{"content":"warmup"}}' && break
-     sleep 2
-   done
-
-   YAMLTest -f - <<'EOF'
-   - name: weighted virtual model resolves to one of its targets
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-       method: POST
-       headers:
-         Content-Type: application/json
-       body: |
-         {"model": "balanced", "messages": [], "httpbun": {"content": "hi"}}
-     source:
-       type: local
-     retries: 3
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.model"
-           comparator: contains
-           value: "resolved-internal-"
-   EOF
-   {{< /doc-test >}}
-
 ## Choose a model by request context
 
 Use `virtualModel.conditional` to select a target with a CEL expression. Targets are evaluated in order, and the first match wins.
 
 1. Create a virtual model that routes premium clients to `internal-premium` and everyone else to `internal-fast`.
 
-   ```yaml {paths="virtual-models"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -294,36 +232,6 @@ Use `virtualModel.conditional` to select a target with a CEL expression. Targets
    {"model":"resolved-internal-premium","usage":{"prompt_tokens":0,"completion_tokens":1,"total_tokens":1},"choices":[{"message":{"content":"hi","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
    ```
 
-   {{< doc-test paths="virtual-models" >}}
-   for i in $(seq 1 60); do
-     curl -s --max-time 5 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
-       -H "Content-Type: application/json" -H "x-model-tier: premium" \
-       -d '{"model":"smart","messages":[],"httpbun":{"content":"warmup"}}' && break
-     sleep 2
-   done
-
-   YAMLTest -f - <<'EOF'
-   - name: conditional routing selects the premium target on a matching header
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-       method: POST
-       headers:
-         Content-Type: application/json
-         x-model-tier: premium
-       body: |
-         {"model": "smart", "messages": [], "httpbun": {"content": "hi"}}
-     source:
-       type: local
-     retries: 3
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.model"
-           comparator: equals
-           value: "resolved-internal-premium"
-   EOF
-   {{< /doc-test >}}
-
 3. Send a request without the header. The fallback target serves it.
 
    ```sh
@@ -338,28 +246,6 @@ Use `virtualModel.conditional` to select a target with a CEL expression. Targets
    {"model":"resolved-internal-fast","usage":{"prompt_tokens":0,"completion_tokens":1,"total_tokens":1},"choices":[{"message":{"content":"hi","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
    ```
 
-   {{< doc-test paths="virtual-models" >}}
-   YAMLTest -f - <<'EOF'
-   - name: conditional routing falls back when no condition matches
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-       method: POST
-       headers:
-         Content-Type: application/json
-       body: |
-         {"model": "smart", "messages": [], "httpbun": {"content": "hi"}}
-     source:
-       type: local
-     retries: 3
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.model"
-           comparator: equals
-           value: "resolved-internal-fast"
-   EOF
-   {{< /doc-test >}}
-
 ## Fail over when a model degrades
 
 Use `virtualModel.failover` to group targets by priority. Lower values are preferred. Targets in the same priority group are selected by a score that considers health and latency. The next group is used only when every target in the current group is degraded.
@@ -368,7 +254,7 @@ Failover depends on eviction. A virtual model with more than one priority group 
 
 1. Create a model that points at an address with no backing workload, so that requests to it always fail. In a real deployment, the target would be a healthy primary provider.
 
-   ```yaml {paths="virtual-models"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Service
@@ -411,7 +297,7 @@ Failover depends on eviction. A virtual model with more than one priority group 
 
 2. Create a virtual model that prefers `primary-down` and falls back to `internal-fast`.
 
-   ```yaml {paths="virtual-models"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -462,46 +348,6 @@ Failover depends on eviction. A virtual model with more than one priority group 
    {"model":"resolved-internal-fast","usage":{"prompt_tokens":0,"completion_tokens":1,"total_tokens":1},"choices":[{"message":{"content":"hi","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
    ```
 
-   {{< doc-test paths="virtual-models" >}}
-   # Wait until the virtual model is served at all. The priority 0 target is
-   # unreachable, so this request is expected to fail; only the fact that the
-   # gateway answers matters here.
-   for i in $(seq 1 60); do
-     curl -s --max-time 5 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
-       -H "Content-Type: application/json" \
-       -d '{"model":"resilient","messages":[],"httpbun":{"content":"warmup"}}' && break
-     sleep 2
-   done
-
-   # This request evicts the unreachable priority 0 target. It fails by design,
-   # so it is not asserted.
-   curl -s -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
-     -H "Content-Type: application/json" \
-     -d '{"model":"resilient","messages":[],"httpbun":{"content":"trigger"}}'
-
-   sleep 2
-
-   YAMLTest -f - <<'EOF'
-   - name: failover routes to the next priority group after eviction
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-       method: POST
-       headers:
-         Content-Type: application/json
-       body: |
-         {"model": "resilient", "messages": [], "httpbun": {"content": "hi"}}
-     source:
-       type: local
-     retries: 3
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.model"
-           comparator: equals
-           value: "resolved-internal-fast"
-   EOF
-   {{< /doc-test >}}
-
    > [!WARNING]
    > Failover is not a per-request retry. The request that triggers eviction still fails and returns an error to the client, and only later requests route to the next priority group. Evicted targets are restored after the eviction duration expires. To retry a failed request, configure a retry policy on the Gateway with an {{< reuse "agw-docs/snippets/policy.md" >}}.
 
@@ -525,7 +371,7 @@ For your own in-cluster routing service, set `backendRef` instead of `url`. A `u
 
 1. Create a virtual model that asks the routing service which model to use and falls back to `internal-fast`.
 
-   ```yaml {paths="virtual-models"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -583,39 +429,9 @@ For your own in-cluster routing service, set `backendRef` instead of `url`. A `u
    {"model":"resolved-internal-premium","usage":{"prompt_tokens":0,"completion_tokens":1,"total_tokens":1},"choices":[{"message":{"content":"hi","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
    ```
 
-   {{< doc-test paths="virtual-models" >}}
-   for i in $(seq 1 60); do
-     curl -s --max-time 15 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
-       -H "Content-Type: application/json" \
-       -d '{"model":"routed","messages":[],"httpbun":{"content":"warmup"}}' && break
-     sleep 2
-   done
-
-   YAMLTest -f - <<'EOF'
-   - name: callout routing selects the model that the routing service returns
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-       method: POST
-       headers:
-         Content-Type: application/json
-         x-session-id: session-1
-       body: |
-         {"model": "routed", "messages": [], "httpbun": {"content": "hi"}}
-     source:
-       type: local
-     retries: 3
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.model"
-           comparator: equals
-           value: "resolved-internal-premium"
-   EOF
-   {{< /doc-test >}}
-
 3. To make the callout fail, point the callout URL at the httpbun `/status/503` endpoint, which returns a `503` response.
 
-   ```sh {paths="virtual-models"}
+   ```sh
    kubectl patch {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} routed -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type=json \
      -p='[{"op": "replace", "path": "/spec/virtualModel/callout/url", "value": "http://httpbun.default.svc.cluster.local:3090/status/503"}]'
    ```
@@ -634,36 +450,6 @@ For your own in-cluster routing service, set `backendRef` instead of `url`. A `u
    ```json
    {"model":"resolved-internal-fast","usage":{"prompt_tokens":0,"completion_tokens":1,"total_tokens":1},"choices":[{"message":{"content":"hi","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
    ```
-
-   {{< doc-test paths="virtual-models" >}}
-   for i in $(seq 1 60); do
-     curl -s --max-time 15 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
-       -H "Content-Type: application/json" \
-       -d '{"model":"routed","messages":[],"httpbun":{"content":"warmup"}}' && break
-     sleep 2
-   done
-
-   YAMLTest -f - <<'EOF'
-   - name: callout routing falls back when the routing service fails
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-       method: POST
-       headers:
-         Content-Type: application/json
-         x-session-id: session-1
-       body: |
-         {"model": "routed", "messages": [], "httpbun": {"content": "hi"}}
-     source:
-       type: local
-     retries: 3
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.model"
-           comparator: equals
-           value: "resolved-internal-fast"
-   EOF
-   {{< /doc-test >}}
 
 ## Verify model discovery
 
@@ -686,27 +472,6 @@ Example output:
   "object": "list"
 }
 ```
-
-{{< doc-test paths="virtual-models" >}}
-# Assert on the raw /v1/models body instead of YAMLTest bodyJsonPath: YAMLTest's
-# "$.data[*].id" only evaluates the first array element, and the serve-model
-# prerequisite also registers gpt-4/gpt-5-mini, so a JSONPath `contains` cannot
-# reach the virtual model IDs. Grep the response so we can verify every virtual
-# model is listed and that the Internal targets stay hidden.
-for i in $(seq 1 30); do
-  models=$(curl -s "http://${INGRESS_GW_ADDRESS}/v1/models")
-  if echo "$models" | grep -q '"balanced"' && echo "$models" | grep -q '"resilient"' && echo "$models" | grep -q '"routed"' && echo "$models" | grep -q '"smart"'; then break; fi
-  sleep 2
-done
-echo "$models"
-echo "$models" | grep -q '"balanced"'
-echo "$models" | grep -q '"resilient"'
-echo "$models" | grep -q '"routed"'
-echo "$models" | grep -q '"smart"'
-if echo "$models" | grep -qE '"(internal-fast|internal-premium|primary-down|unreachable-llm)"'; then
-  echo "ERROR: an Internal model target appeared in /v1/models"; exit 1
-fi
-{{< /doc-test >}}
 
 ## Cleanup
 

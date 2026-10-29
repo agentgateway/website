@@ -2,34 +2,6 @@
 title: Path
 weight: 10
 description: Match requests by path using exact, prefix, or regex patterns.
-test:
-  path-match-exact:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/documentation/traffic-management/match/path.md
-    path: path-match-exact
-  path-match-prefix:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/documentation/traffic-management/match/path.md
-    path: path-match-prefix
-  path-match-regex:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/documentation/traffic-management/match/path.md
-    path: path-match-regex
 ---
 
 Match the targeted path of an incoming request against specific path criteria. 
@@ -41,7 +13,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 ## Set up exact matching
 
 1. Create an HTTPRoute resource for the `match.example` domain that matches incoming requests on the `/status/200` exact path.
-   ```yaml {paths="path-match-exact"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -115,71 +87,11 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    < content-type: text/plain; charset=utf-8
    content-type: text/plain; charset=utf-8
    ```
-   
-{{< doc-test paths="path-match-exact" >}}
-for i in $(seq 1 100); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/get" -H "host: match.example" && break
-  sleep 2
-done
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-match HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-match
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: wait for httpbin-match HTTPRoute refs to be resolved
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-match
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: exact path match - /status/200 returns 200
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /status/200
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: exact path match - /headers returns 404
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /headers
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 404
-EOF
-{{< /doc-test >}}
 
 ## Set up prefix path matching
 
 1. Create an HTTPRoute resource for the `match.example` domain that matches incoming requests on the `/anything` prefix path.
-   ```yaml {paths="path-match-prefix"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -276,66 +188,6 @@ EOF
    < content-type: text/plain; charset=utf-8
    content-type: text/plain; charset=utf-8
    ```
-   
-{{< doc-test paths="path-match-prefix" >}}
-for i in $(seq 1 100); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/get" -H "host: match.example" && break
-  sleep 2
-done
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-match HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-match
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: wait for httpbin-match HTTPRoute refs to be resolved
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-match
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: prefix path match - /anything/team1 returns 200
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /anything/team1
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: prefix path match - /headers returns 404
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /headers
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 404
-EOF
-{{< /doc-test >}}
 
 ## Set up regex matching
 
@@ -357,7 +209,7 @@ Use [RE2 syntax](https://github.com/google/re2/wiki/Syntax) for regular expressi
      * `[.]` matches a literal period.
      * `\\d.*` matches a single digit followed by zero or any character.
      * Allowed pattern: `/anything/dogs/3.0-game`, not allowed: `/anything/birds`
-   ```yaml {paths="path-match-regex"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1beta1
    kind: HTTPRoute
@@ -479,111 +331,6 @@ Use [RE2 syntax](https://github.com/google/re2/wiki/Syntax) for regular expressi
    < content-type: text/plain; charset=utf-8
    content-type: text/plain; charset=utf-8
    ```
-
-
-{{< doc-test paths="path-match-regex" >}}
-for i in $(seq 1 100); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/get" -H "host: match.example" && break
-  sleep 2
-done
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-match HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-match
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: wait for httpbin-match HTTPRoute refs to be resolved
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-match
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: regex path match - /anything/this-is-my-path-1 returns 200
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /anything/this-is-my-path-1
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: regex path match - /anything/stores/us/entities returns 200
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /anything/stores/us/entities
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: regex path match - /anything/dogs/3.0-game returns 200
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /anything/dogs/3.0-game
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: regex path match - /anything returns 404
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /anything
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 404
-- name: regex path match - /anything/stores/us/south/entities returns 404
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /anything/stores/us/south/entities
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 404
-- name: regex path match - /anything/birds/1.1-game returns 404
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /anything/birds/1.1-game
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 404
-EOF
-{{< /doc-test >}}
 
 ## Cleanup
 

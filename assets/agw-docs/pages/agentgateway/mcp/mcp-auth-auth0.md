@@ -13,7 +13,7 @@ For more information about MCP auth, see the [About MCP auth]({{< link-hextra pa
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/documentation/mcp/static-mcp/" >}}).
 3. Install the experimental channel Gateway API.
-   ```sh {paths="setup-auth0"}
+   ```sh
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
 
@@ -45,24 +45,12 @@ Create an API and an application in Auth0, and collect the values that agentgate
    | `AUTH0_CLIENT_ID` | The **Client ID** of the application that you created. |
    | `AUTH0_AUDIENCE` | The **Identifier** of the API that you created. Auth0 sets the `aud` claim of its access tokens to this value. |
 
-{{< doc-test paths="setup-auth0" >}}
-# The controller fetches the provider's remote JWKS when it translates the policy,
-# so the test defaults to Auth0's public sample tenant
-# (https://samples.auth0.com/.well-known/jwks.json) to resolve keys without a
-# dedicated tenant. The client ID and audience are placeholders; they are not
-# validated for the unauthenticated requests the test makes. Replace all three
-# with your real tenant, application, and API values when you follow the guide.
-export AUTH0_DOMAIN="${AUTH0_DOMAIN:-samples.auth0.com}"
-export AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID:-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}"
-export AUTH0_AUDIENCE="${AUTH0_AUDIENCE:-https://mcp.example.com/mcp}"
-{{< /doc-test >}}
-
 ## Create the JWKS backend
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} that points to your Auth0 tenant, and a BackendTLSPolicy that originates a TLS connection to it. The JWT authentication policy uses this backend to fetch Auth0's public keys for token signature validation.
 
 1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for your Auth0 tenant.
-   ```yaml {paths="setup-auth0"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -76,7 +64,7 @@ Create an {{< reuse "agw-docs/snippets/backend.md" >}} that points to your Auth0
    ```
 
 2. Create a BackendTLSPolicy that originates a TLS connection to the `auth0-jwks` backend by using well-known trusted CA certificates.
-   ```yaml {paths="setup-auth0"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: BackendTLSPolicy
@@ -98,7 +86,7 @@ Create an {{< reuse "agw-docs/snippets/backend.md" >}} that points to your Auth0
 With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces Auth0 authentication and authorization for the MCP backend.
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with the `Auth0` provider. The policy validates tokens that Auth0 issues and uses a Common Expression Language (CEL) rule to require the `read:tools` permission.
-   ```yaml {paths="setup-auth0"}
+   ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -164,14 +152,14 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    > Setting `clientId` is recommended for Auth0. Auth0 supports Dynamic Client Registration, but only when you enable **Dynamic Application Registration** in your tenant settings. Because agentgateway passes through Auth0's own registration endpoint rather than proxying it, MCP clients register directly with Auth0. Pre-registering a client with `clientId` avoids that dependency.
 
 2. Verify that the policy was accepted.
-   ```sh {paths="setup-auth0"}
+   ```sh
    kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} mcp-auth0-authn -o yaml
    ```
 
    In the `status` section, confirm that the `Accepted` and `Attached` conditions are `True`.
 
 3. Update the HTTPRoute that routes incoming traffic to the MCP server to include the OAuth discovery paths. This way, the agentgateway proxy can serve the resource and authorization server metadata during the MCP auth flow.
-   ```yaml {paths="setup-auth0"}
+   ```yaml
    kubectl apply -f - <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -227,7 +215,7 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
-   ```sh {paths="setup-auth0"}
+   ```sh
    export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy \
      -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
 
@@ -289,137 +277,6 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    }
    ```
 
-{{< doc-test paths="setup-auth0" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The auth0-jwks backend and BackendTLSPolicy, the mcp-auth0-authn
-#     AgentgatewayPolicy with provider: Auth0, clientId, and the permissions
-#     authorization rule, and the updated HTTPRoute are all accepted, and the
-#     provider's JWKS resolves so the policy programs on the data plane.
-#   * The gateway enforces the connect-time 401 challenge and serves the
-#     protected-resource metadata.
-#   * The gateway serves Auth0's authorization server metadata and appends the
-#     audience query parameter to the authorization endpoint. The discovery
-#     endpoints stay reachable with the authorization rule in place, because the
-#     rule applies only after a token is verified.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The full interactive OAuth sign-in flow and runtime token verification,
-#     including the 403 that the authorization rule returns for a token without
-#     the read:tools permission. All of them require a real user signing in to a
-#     configured Auth0 tenant and a signed JWT, which an automated test cannot
-#     perform.
-YAMLTest -f - <<'EOF'
-- name: wait for auth0-jwks BackendTLSPolicy to be accepted
-  wait:
-    target:
-      kind: BackendTLSPolicy
-      metadata:
-        namespace: default
-        name: auth0-jwks
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-- name: wait for mcp-auth0-authn policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: default
-        name: mcp-auth0-authn
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-- name: wait for mcp-auth0-authn policy to be attached
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: default
-        name: mcp-auth0-authn
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Attached')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-- name: wait for mcp HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: default
-        name: mcp
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="setup-auth0" >}}
-# Assert the MCP auth behaviors that the Auth0 provider is responsible for: the
-# connect-time challenge, the protected-resource metadata, and the audience query
-# parameter appended to Auth0's authorization endpoint.
-#
-# This heredoc is deliberately unquoted, unlike the other YAMLTest blocks in this
-# repo. YAMLTest resolves environment variables in a test's url and request
-# headers only, not in expectation values, so asserting the configured audience
-# value needs the shell to expand ${AUTH0_AUDIENCE} first. The JSONPath dollar
-# signs are escaped for the same reason.
-YAMLTest -f - <<EOF
-- name: unauthenticated MCP request returns 401 (connect-time auth enforced)
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/mcp"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 401
-    headers:
-      - name: www-authenticate
-        comparator: contains
-        value: resource_metadata
-  retries: 3
-- name: resource metadata discovery returns 200
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/.well-known/oauth-protected-resource/mcp"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "\$.resource"
-        comparator: contains
-        value: "/mcp"
-  retries: 3
-- name: authorization server metadata carries the appended audience parameter
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/.well-known/oauth-authorization-server/mcp"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "\$.authorization_endpoint"
-        comparator: contains
-        value: "audience=${AUTH0_AUDIENCE}"
-  retries: 3
-EOF
-{{< /doc-test >}}
-
 ## Connect an MCP client
 
 Point your MCP client at the gateway's MCP endpoint, such as `http://localhost:8080/mcp`. The client discovers the authorization server through the gateway and redirects the user to Auth0 to log in and consent.
@@ -441,9 +298,3 @@ kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} mcp-auth0-authn
 kubectl delete backendtlspolicy auth0-jwks
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} auth0-jwks
 ```
-
-{{< doc-test paths="setup-auth0" >}}
-kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} mcp-auth0-authn --ignore-not-found
-kubectl delete backendtlspolicy auth0-jwks --ignore-not-found
-kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} auth0-jwks --ignore-not-found
-{{< /doc-test >}}

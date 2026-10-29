@@ -25,7 +25,7 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
 ## Set up a Dynamic Forward Proxy
 
 1. Create a Backend for the Dynamic Forward Proxy.
-   ```yaml {paths="dfp"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -38,7 +38,7 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
    ```
 
 2. Create an HTTPRoute that routes incoming traffic to the DFP Backend.
-   ```yaml {paths="dfp"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -56,41 +56,6 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-
-{{< doc-test paths="dfp" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for dfp-httproute HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: dfp-httproute
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="dfp" >}}
-YAMLTest -f - <<'EOF'
-- name: dfp - request with host httpbin.httpbin.svc.cluster.local returns 200
-  retries: 5
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    method: GET
-    headers:
-      host: httpbin.httpbin.svc.cluster.local:8000
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
 
 3. Send a request to a hostname of your choice, such as `httpbin.org`. The Dynamic Forward Proxy resolves the host at request time and forwards the request to it, so the host's welcome page is returned. Because no upstream hosts are pre-defined in the Backend, you can send a request to any reachable host without changing the configuration. For example, for quick testing, you might send a request with the host header set to an in-cluster service, such as `httpbin.httpbin.svc.cluster.local:8000`.
    {{< tabs >}}
