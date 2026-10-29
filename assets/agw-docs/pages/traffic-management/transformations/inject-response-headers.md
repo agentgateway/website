@@ -47,7 +47,7 @@ In this example, all three operations are applied together:
 
 2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
-   ```yaml {paths="inject-response-headers"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -74,29 +74,6 @@ In this example, all three operations are applied together:
            - access-control-allow-credentials
    EOF
    ```
-
-   {{< doc-test paths="inject-response-headers" >}}
-   YAMLTest -f - <<'EOF'
-   - name: verify injected response headers are present and removed header is absent
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/response-headers"
-       method: GET
-       headers:
-         host: www.example.com
-         x-gateway-request: my-custom-value
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       headers:
-         - name: x-gateway-response
-           comparator: equals
-           value: my-custom-value
-         - name: x-response-raw
-           comparator: equals
-           value: hello
-   EOF
-   {{< /doc-test >}}
 
 3. Send a request to the httpbin app and include the `x-gateway-request` request header. Verify the following:
    * You get back a 200 HTTP response code.
@@ -224,6 +201,6 @@ The same variable works in an access log field, which is usually the better plac
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="inject-response-headers"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin
 ```

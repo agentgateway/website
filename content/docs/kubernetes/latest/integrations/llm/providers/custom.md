@@ -2,7 +2,6 @@
 title: Custom providers
 weight: 22
 description: Configure unsupported, self-hosted, and non-standard LLM providers with explicit API formats, paths, and backend targets.
-test: skip
 ---
 
 Use custom providers for unsupported, self-hosted, or non-standard LLM

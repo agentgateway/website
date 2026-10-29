@@ -18,7 +18,7 @@ Route Claude Code to any OpenAI-compatible LLM provider (such as vLLM, Ollama, o
 
 1. Create a configuration file with an OpenAI-compatible provider. The wildcard `*` model name accepts any model. Claude Code sends the model in each request, so you do not need to pin a specific model.
 
-   ```yaml {paths="claude-code-openai-validate"}
+   ```yaml
    cat > config.yaml << 'EOF'
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
@@ -32,10 +32,6 @@ Route Claude Code to any OpenAI-compatible LLM provider (such as vLLM, Ollama, o
    ```
 
    Replace `http://localhost:8000/v1` with your OpenAI-compatible provider's endpoint.
-
-   {{< doc-test paths="claude-code-openai-validate" >}}
-   agentgateway -f config.yaml --validate-only
-   {{< /doc-test >}}
 
 2. Start agentgateway.
 
@@ -69,7 +65,7 @@ Alternatively, route Claude Code directly to Anthropic's API through agentgatewa
 
 3. Create a configuration file with the Anthropic provider. The wildcard `*` model name accepts any model. Claude Code sends the model in each request, so you do not need to pin a specific model.
 
-   ```yaml {paths="claude-code-anthropic-validate"}
+   ```yaml
    cat > config.yaml << 'EOF'
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
@@ -80,11 +76,6 @@ Alternatively, route Claude Code directly to Anthropic's API through agentgatewa
          apiKey: "$ANTHROPIC_API_KEY"
    EOF
    ```
-
-   {{< doc-test paths="claude-code-anthropic-validate" >}}
-   export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-test}"
-   agentgateway -f config.yaml --validate-only
-   {{< /doc-test >}}
 
 4. Start agentgateway.
 

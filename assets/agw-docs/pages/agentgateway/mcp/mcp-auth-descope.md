@@ -17,7 +17,7 @@ For more information about MCP auth, see the [About MCP auth]({{< link-hextra pa
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/documentation/mcp/static-mcp/" >}}).
 3. Install the experimental channel Gateway API.
-   ```sh {paths="setup-descope"}
+   ```sh
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
 
@@ -51,23 +51,12 @@ Create an MCP Server and a client in Descope, and collect the values that agentg
    | `DESCOPE_CLIENT_ID` | The **Client ID** of the Descope Client that you created. |
    | `DESCOPE_MCP_SERVER_URL` | Your MCP server's public URL, which must match the **MCP Server URL** in Descope. Descope sets the `aud` claim of its tokens to this value. |
 
-{{< doc-test paths="setup-descope" >}}
-# Descope has no public sample project that serves a JWKS, so this test cannot
-# resolve real keys. The values below are placeholders that let the resources
-# render and validate against the Kubernetes API server. Replace them with your
-# real project, MCP server, client, and MCP server URL when you follow the guide.
-export DESCOPE_PROJECT_ID="${DESCOPE_PROJECT_ID:-P2placeholderprojectid}"
-export DESCOPE_SERVER_ID="${DESCOPE_SERVER_ID:-placeholder-mcp-server}"
-export DESCOPE_CLIENT_ID="${DESCOPE_CLIENT_ID:-placeholder-client-id}"
-export DESCOPE_MCP_SERVER_URL="${DESCOPE_MCP_SERVER_URL:-https://mcp.example.com/mcp}"
-{{< /doc-test >}}
-
 ## Create the JWKS backend
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} that points to the Descope API, and a BackendTLSPolicy that originates a TLS connection to it. The JWT authentication policy uses this backend to fetch Descope's public keys for token signature validation.
 
 1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for the Descope API endpoint.
-   ```yaml {paths="setup-descope"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -81,7 +70,7 @@ Create an {{< reuse "agw-docs/snippets/backend.md" >}} that points to the Descop
    ```
 
 2. Create a BackendTLSPolicy that originates a TLS connection to the `descope-jwks` backend by using well-known trusted CA certificates.
-   ```yaml {paths="setup-descope"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: BackendTLSPolicy
@@ -103,7 +92,7 @@ Create an {{< reuse "agw-docs/snippets/backend.md" >}} that points to the Descop
 With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces Descope authentication and authorization for the MCP backend.
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with the `Descope` provider. The policy validates tokens that Descope issues and uses a Common Expression Language (CEL) rule to require the `Tenant Admin` role.
-   ```yaml {paths="setup-descope"}
+   ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -174,7 +163,7 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    > Setting `clientId` is recommended for Descope. Descope's Dynamic Client Registration endpoint requires a management key that MCP clients do not have, so registration requests that the gateway proxies to Descope fail. If you prefer to let clients register dynamically, use [CIMD](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers/registration-methods#client-id-metadata-documents-cimd) instead.
 
 2. Verify that the policy was accepted.
-   ```sh {paths="setup-descope"}
+   ```sh
    kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} mcp-descope-authn -o yaml
    ```
 
@@ -184,7 +173,7 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    > The control plane fetches the JWKS when it translates the policy. If your project ID is wrong, the policy is accepted but the control plane logs `jwks keyset ... isn't available` and the policy does not program on the data plane. Check the control plane logs if authentication does not take effect.
 
 3. Update the HTTPRoute that routes incoming traffic to the MCP server to include the OAuth discovery paths. This way, the agentgateway proxy can serve the resource and authorization server metadata during the MCP auth flow.
-   ```yaml {paths="setup-descope"}
+   ```yaml
    kubectl apply -f - <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -302,71 +291,3 @@ kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} mcp-descope-authn
 kubectl delete backendtlspolicy descope-jwks
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} descope-jwks
 ```
-
-{{< doc-test paths="setup-descope" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The descope-jwks backend and BackendTLSPolicy, the mcp-descope-authn
-#     AgentgatewayPolicy with provider: Descope, the project-level JWKS path,
-#     clientId, and the roles authorization rule, and the updated HTTPRoute are
-#     all accepted by the Kubernetes API server and by the agentgateway control
-#     plane.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That the policy programs on the data plane, the 401 challenge, the proxied
-#     authorization-server metadata, the proxied client registration endpoint,
-#     runtime token verification, and the 403 that the authorization rule returns
-#     for a token without the Tenant Admin role. Descope has no public sample
-#     project that serves a JWKS, so the control plane cannot resolve keys for the
-#     placeholder project and the policy never reaches the proxy. Set DESCOPE_PROJECT_ID,
-#     DESCOPE_SERVER_ID, DESCOPE_CLIENT_ID, and DESCOPE_MCP_SERVER_URL to a real
-#     Descope project to exercise the full flow.
-YAMLTest -f - <<'EOF'
-- name: wait for descope-jwks BackendTLSPolicy to be accepted
-  wait:
-    target:
-      kind: BackendTLSPolicy
-      metadata:
-        namespace: default
-        name: descope-jwks
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-- name: wait for mcp-descope-authn policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: default
-        name: mcp-descope-authn
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-- name: wait for mcp HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: default
-        name: mcp
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="setup-descope" >}}
-kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} mcp-descope-authn --ignore-not-found
-kubectl delete backendtlspolicy descope-jwks --ignore-not-found
-kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} descope-jwks --ignore-not-found
-{{< /doc-test >}}

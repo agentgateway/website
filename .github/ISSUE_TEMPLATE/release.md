@@ -16,7 +16,7 @@ assignees: ''
 - [ ] Rotate the version directories in `content/docs/kubernetes` and `content/docs/standalone`. agentgateway publishes only `n` as `latest` and `n+1` as `main` in development.
   - Move the old `latest` to a frozen `<version>` directory, such as `1.5.x`. Keep it unzipped: the archived directories still build, and the enterprise docs consume upstream archived versions. Older standalone versions are kept as `<version>.zip`.
   - Copy `main` to `latest`, and keep `main` for the next version. Copy only tracked files, such as with `git archive`, so that `.DS_Store` and other ignored files stay out.
-  - In the new `latest` trees, rewrite `/docs/<section>/main/` to `/docs/<section>/latest/`, and doc-test `content/docs/<section>/main/` file refs to `latest`. This covers `aliases`, `url` overrides, links, and front-matter comments that name the prefix without a trailing slash.
+  - In the new `latest` trees, rewrite `/docs/<section>/main/` to `/docs/<section>/latest/`. This covers `aliases`, `url` overrides, links, and front-matter comments that name the prefix without a trailing slash.
   - In the frozen `<version>` trees, rewrite `/docs/<section>/latest/` and `content/docs/<section>/latest/` to `<version>`, including links between the two frozen trees. Otherwise, their aliases collide with the new `latest` trees. Leave absolute `agentgateway.dev` URLs as they are.
 - [ ] For the _index.md pages of each version, update the version in the title. Move the PDF `outputs: [... "book"]` opt-in to the new `latest` pages, and remove it from the frozen `<version>` pages.
 - [ ] In the `hugo.yaml` file, update the `versions` to include the new minor version as main and the previous main as latest. The previous latest leaves the list.

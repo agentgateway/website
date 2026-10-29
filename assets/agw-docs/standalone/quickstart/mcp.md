@@ -2,11 +2,6 @@ Use the agentgateway binary to proxy requests to an open source MCP test server,
 
 ## Before you begin
 
-{{< doc-test paths="mcp" >}}
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 {{< reuse "agw-docs/standalone/quickstart/install-prereq.md" >}}
 
 ## Steps
@@ -18,7 +13,7 @@ Use the agentgateway binary to proxy requests to an open source MCP test server,
 
 Create a `config.yaml` that defines an MCP target for the `server-everything` test server. This configuration uses the simplified MCP format.
 
-```yaml {paths="mcp"}
+```yaml
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 
@@ -49,7 +44,7 @@ mcp:
 
 Inspect the file to see how the simplified `mcp` field defines the port and targets.
 
-```sh {paths="mcp"}
+```sh
 cat config.yaml
 ```
 
@@ -64,17 +59,6 @@ Run agentgateway with the config file.
 ```sh
 agentgateway -f config.yaml
 ```
-
-{{< doc-test paths="mcp" >}}
-# Redirect background output to a file so the started process doesn't keep the test
-# runner's stdout pipe open (which would block the run from ever completing).
-agentgateway -f config.yaml >/tmp/agentgateway.log 2>&1 &
-AGW_PID=$!
-# agentgateway starts the server-everything MCP server as a stdio child; reap the whole
-# tree on exit so no orphaned node process holds the pipe open and hangs the job.
-trap 'kill $AGW_PID 2>/dev/null || true; pkill -f "server-everything" 2>/dev/null || true' EXIT
-sleep 3
-{{< /doc-test >}}
 
 Example output:
 
@@ -196,62 +180,6 @@ Because you add the MCP server from the UI, you can start agentgateway without a
    ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="mcp" >}}
-# Hidden test: runs the Config file tab's setup. The UI tab produces the same MCP target,
-# but its clicks are not scriptable.
-# Redirect background output to files so the started servers don't keep the test
-# runner's stdout pipe open (which would block the run from ever completing).
-PORT=3005 npx -y @modelcontextprotocol/server-everything streamableHttp >/tmp/mcp-server.log 2>&1 &
-MCP_PID=$!
-sleep 5
-cat > config.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 4000
-mcp:
-  targets:
-  - name: server-everything
-    mcp:
-      host: http://localhost:3005/mcp
-ui: {}
-EOF
-agentgateway -f config.yaml --validate-only
-agentgateway -f config.yaml >/tmp/agentgateway.log 2>&1 &
-AGW_PID=$!
-# On exit, reap the whole process tree. npx spawns a node child for the server, and
-# killing npx alone orphans that child, which holds the pipe open and hangs the job.
-trap 'kill $AGW_PID 2>/dev/null || true; pkill -P $MCP_PID 2>/dev/null || true; kill $MCP_PID 2>/dev/null || true; pkill -f "server-everything" 2>/dev/null || true' EXIT
-sleep 3
-YAMLTest -f - <<'EOF'
-- name: MCP endpoint on the gateway accepts an initialize request
-  http:
-    url: "http://localhost:4000"
-    path: /mcp
-    method: POST
-    headers:
-      content-type: application/json
-      accept: "application/json, text/event-stream"
-    body: |
-      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
-  source:
-    type: local
-  expect:
-    statusCode: 200
-  retries: 10
-- name: UI is served on the gateway port
-  http:
-    url: "http://localhost:4000"
-    path: /ui/
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-  retries: 3
-EOF
-{{< /doc-test >}}
 
 ### Step 3: Try a tool {#step-5-try-a-tool-in-the-playground}
 

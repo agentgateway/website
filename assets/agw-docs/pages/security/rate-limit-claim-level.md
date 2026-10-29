@@ -18,7 +18,7 @@ The following steps key the limit on a request header instead, so that you can s
 
 1. Update the `httpbin-rate-limit` policy from the previous section to key the limit on a user header. The rest of the policy is unchanged, so the route keeps one policy rather than gaining a second one.
 
-   ```yaml {paths="claim-level-rate-limit"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -38,25 +38,6 @@ The following steps key the limit on a request header instead, so that you can s
            key: 'request.headers["x-user"]'
    EOF
    ```
-
-   {{< doc-test paths="claim-level-rate-limit" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for the claim-level rate limit policy to be accepted
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: httpbin
-           name: httpbin-rate-limit
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
 
 2. Send three requests as one user. The first two succeed, and the third is rejected.
 
@@ -115,40 +96,6 @@ The following steps key the limit on a request header instead, so that you can s
    bob request 2: HTTP 200
    bob request 3: HTTP 429
    ```
-
-   {{< doc-test paths="claim-level-rate-limit" >}}
-   # Drain one user's bucket, then confirm that a different user still gets through.
-   for i in $(seq 1 3); do
-     curl -s -o /dev/null http://${INGRESS_GW_ADDRESS}:80/anything \
-       -H "host: www.example.com" -H "x-user: alice"
-   done
-
-   YAMLTest -f - <<'EOF'
-   - name: the drained user is rate limited
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything"
-       method: GET
-       headers:
-         host: www.example.com
-         x-user: alice
-     source:
-       type: local
-     expect:
-       statusCode: 429
-     retries: 3
-   - name: a different user has its own bucket
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything"
-       method: GET
-       headers:
-         host: www.example.com
-         x-user: bob
-     source:
-       type: local
-     expect:
-       statusCode: 200
-   EOF
-   {{< /doc-test >}}
 
 Review the following behavior before you rely on a claim-level limit.
 

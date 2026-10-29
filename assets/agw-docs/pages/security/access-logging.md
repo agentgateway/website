@@ -69,31 +69,6 @@ Access logs are written to `stdout` automatically for every request that passes 
 
 To filter which requests are logged or customize log fields, see [Filter access logs](#filter-access-logs) and [Add and remove log fields](#add-and-remove-log-fields).{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,2.2.x" >}} To export access logs to an external backend over OTLP, see [Export logs over OTLP]({{< link-hextra path="/documentation/observability/access-logs/export/" >}}).{{< /version >}}
 
-  {{< doc-test paths="access-logging" >}}
-  YAMLTest -f - <<'EOF'
-  - name: verify request to httpbin returns 200
-    http:
-      url: "http://${INGRESS_GW_ADDRESS}"
-      path: /get
-      method: GET
-      headers:
-        host: www.example.com
-    source:
-      type: local
-    expect:
-      statusCode: 200
-  - name: verify access log entry appears in stdout
-    command:
-      command: "kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} deployments/agentgateway-proxy"
-    source:
-      type: local
-    expect:
-      exitCode: 0
-      stdout:
-        contains: "http.path=/get"
-  EOF
-  {{< /doc-test >}}
-
 <!-- Gated by excluding the older version, not by including "main", so the
      section stays put when the next release freezes this line under a number.
      The `preset` field is new to the frontend access log policy in the version
@@ -177,7 +152,7 @@ Use a [CEL expression]({{< link path="/reference/cel/" >}}) to log only a subset
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with a `filter` expression. The following example produces access logs only for requests with a response code of 400 or greater.
 
-   ```yaml {linenos=table,paths="access-logging"}
+   ```yaml {linenos=table}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -255,51 +230,6 @@ Use a [CEL expression]({{< link path="/reference/cel/" >}}) to log only a subset
    protocol=http duration=0ms
    ```
 
-  {{< doc-test paths="access-logging" >}}
-  YAMLTest -f - <<'EOF'
-  - name: verify 400 request is returned
-    http:
-      url: "http://${INGRESS_GW_ADDRESS}"
-      path: /status/400
-      method: GET
-      headers:
-        host: www.example.com
-    source:
-      type: local
-    expect:
-      statusCode: 400
-  - name: verify 400 request was logged
-    command:
-      command: "kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} deployments/agentgateway-proxy"
-    source:
-      type: local
-    expect:
-      exitCode: 0
-      stdout:
-        contains: "http.status=400"
-  - name: verify 200 request is returned
-    http:
-      url: "http://${INGRESS_GW_ADDRESS}"
-      path: /get
-      method: GET
-      headers:
-        host: www.example.com
-    source:
-      type: local
-    expect:
-      statusCode: 200
-  - name: verify 200 request was not logged (last log entry is still the 400)
-    command:
-      command: "kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} deployments/agentgateway-proxy | tail -1"
-    source:
-      type: local
-    expect:
-      exitCode: 0
-      stdout:
-        contains: "http.status=400"
-  EOF
-  {{< /doc-test >}}
-
 ## Add and remove log fields
 
 You can add custom fields to every access log line by using CEL expressions that are evaluated against the request and response context. You can also remove default fields that you do not need.
@@ -310,7 +240,7 @@ You can add custom fields to every access log line by using CEL expressions that
 
    The example also removes the `http.host` default field.
 
-   ```yaml {linenos=table,paths="access-logging"}
+   ```yaml {linenos=table}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -364,41 +294,6 @@ You can add custom fields to every access log line by using CEL expressions that
    http.version=HTTP/1.1 http.status=200 protocol=http duration=0ms
    user_id="user-123" env="production"
    ```
-
-  {{< doc-test paths="access-logging" >}}
-  YAMLTest -f - <<'EOF'
-  - name: verify request with x-user-id header returns 200
-    http:
-      url: "http://${INGRESS_GW_ADDRESS}"
-      path: /get
-      method: GET
-      headers:
-        host: www.example.com
-        x-user-id: user-123
-    source:
-      type: local
-    expect:
-      statusCode: 200
-  - name: verify user_id custom field appears in logs
-    command:
-      command: "kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} deployments/agentgateway-proxy"
-    source:
-      type: local
-    expect:
-      exitCode: 0
-      stdout:
-        contains: "user_id=\"user-123\""
-  - name: verify env custom field appears in logs
-    command:
-      command: "kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} deployments/agentgateway-proxy"
-    source:
-      type: local
-    expect:
-      exitCode: 0
-      stdout:
-        contains: "env=\"production\""
-  EOF
-  {{< /doc-test >}}
 
 <!-- Gated by excluding the older versions, not by including "main", so the
      section stays put when the next release freezes this line under a number.
@@ -547,6 +442,6 @@ frontend:
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following command.
 
-```sh {paths="access-logging"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

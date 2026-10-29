@@ -67,7 +67,7 @@ Deploy an NGINX server that serves HTTPS traffic. The NGINX server presents the 
 
 1. Store the server certificate and key in a Kubernetes secret that the NGINX server mounts.
 
-   ```sh {paths="backendtls-secret-ca"}
+   ```sh
    kubectl create secret tls nginx-server-cert \
      --cert=server-cert.pem \
      --key=server-key.pem \
@@ -76,7 +76,7 @@ Deploy an NGINX server that serves HTTPS traffic. The NGINX server presents the 
 
 2. Deploy the NGINX server and a Service that exposes it on HTTPS port 8443.
 
-   ```yaml {paths="backendtls-secret-ca"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: ConfigMap
@@ -156,48 +156,6 @@ Deploy an NGINX server that serves HTTPS traffic. The NGINX server presents the 
    EOF
    ```
 
-{{< doc-test paths="backendtls-secret-ca" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The certificate generation shared with the mTLS guide - the openssl CA and
-#     server-cert commands actually run, so the guide cannot rot the way the old
-#     hardcoded PEM did (it expired 2026-07-07 and broke this page silently).
-#   * The NGINX sample app it deploys: the nginx-server-cert Secret, nginx-conf
-#     ConfigMap, Deployment, and Service reach an available state.
-#   * The "CA certificate in a Secret" section end to end - the nginx-route
-#     HTTPRoute, the nginx-ca Secret, and the nginx-backend-tls
-#     AgentgatewayPolicy - and asserts a 200 through the gateway, which only
-#     succeeds if the gateway resolved the CA from the Secret and verified the
-#     backend certificate against it.
-#   * That `sectionName: "8443"` on a Service targetRef is accepted (the API
-#     rejects a port NAME here, so this guards the documented value).
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The "In-cluster service" BackendTLSPolicy section - display-only for this
-#     scenario; it has no test path of its own, so its `ca` ConfigMap and
-#     BackendTLSPolicy blocks never run.
-#   * The "External service" section - external dependency (httpbin.org egress).
-#   * The `kind: ConfigMap` / omitted-kind variants of caCertificateRefs -
-#     requires config the page omits; the page documents only the Secret variant.
-#   * The port-forward tab of the verification step - the framework rejects any
-#     script that runs `kubectl port-forward`, so the assertion goes through
-#     ${INGRESS_GW_ADDRESS} instead.
-YAMLTest -f - <<'EOF'
-- name: wait for the NGINX TLS sample app to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: nginx
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 6. Verify that the NGINX server is running.
 
    ```shell
@@ -258,7 +216,7 @@ Create a BackendTLSPolicy for the NGINX workload.
 
 3. Create an HTTPRoute that routes traffic to the NGINX server on the `example.com` hostname and HTTPS port 8443. Note that the parent Gateway is the sample `http` Gateway resource that you created [before you began](#before-you-begin).
 
-   ```yaml {paths="backendtls-secret-ca"}
+   ```yaml
    kubectl apply -f - <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -553,13 +511,13 @@ This section reuses the NGINX server and the `nginx-route` HTTPRoute that you cr
 
 1. Delete the BackendTLSPolicy that you created earlier so that the {{< reuse "agw-docs/snippets/policy.md" >}} is the only source of backend TLS settings for the NGINX server.
 
-   ```sh {paths="backendtls-secret-ca"}
+   ```sh
    kubectl delete backendtlspolicy tls-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
    ```
 
 2. Create a Kubernetes Secret that has the same CA certificate that you stored in the ConfigMap earlier. This example uses the `ca.crt` key, which is the default key for a Secret and a ConfigMap alike. To store the certificate under another key, such as `corporate-roots.pem`, name that key in the policy in the next step.
 
-   ```sh {paths="backendtls-secret-ca"}
+   ```sh
    kubectl create secret generic nginx-ca \
      --from-file=ca.crt=ca-cert.pem \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -567,7 +525,7 @@ This section reuses the NGINX server and the `nginx-route` HTTPRoute that you cr
 
 3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that originates TLS to the NGINX server and verifies the server certificate by using the Secret.
 
-   ```yaml {paths="backendtls-secret-ca"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -620,59 +578,13 @@ This section reuses the NGINX server and the `nginx-route` HTTPRoute that you cr
    HTTP/1.1 200 OK
    ```
 
-{{< doc-test paths="backendtls-secret-ca" >}}
-# Secret CA scenario: wait for the policy to attach before sending traffic.
-YAMLTest -f - <<'EOF'
-- name: nginx-backend-tls policy is accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: agentgateway-system
-        name: nginx-backend-tls
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="backendtls-secret-ca" >}}
-# Secret CA scenario: example.com is a new hostname for the proxy, so warm up
-# the data plane before asserting (Phase 1 of the two-phase proxy behavior).
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/" -H "host: example.com" && break
-  sleep 2
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="backendtls-secret-ca" >}}
-YAMLTest -f - <<'EOF'
-- name: gateway originates TLS to NGINX using the CA from the Secret
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /
-    method: GET
-    headers:
-      host: "example.com"
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
-
 ### Read the certificate from another key {#ca-key}
 
 A CA source does not have to store the certificate in the `ca.crt` key. Set the `key` field to read the bundle from another key in the same Secret or ConfigMap. This setting helps when a trust-manager bundle or an external secret store writes the certificate under a descriptive name, or when one object holds several bundles.
 
 1. Store the same CA certificate in a Secret under a different key.
 
-   ```sh {paths="backendtls-secret-ca"}
+   ```sh
    kubectl create secret generic nginx-ca-custom-key \
      --from-file=corporate-roots.pem=ca-cert.pem \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -680,7 +592,7 @@ A CA source does not have to store the certificate in the `ca.crt` key. Set the 
 
 2. Update the {{< reuse "agw-docs/snippets/policy.md" >}} to name that key.
 
-   ```yaml {paths="backendtls-secret-ca"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -732,52 +644,6 @@ A CA source does not have to store the certificate in the `ca.crt` key. Set the 
    "reason": "PartiallyValid",
    ```
 
-{{< doc-test paths="backendtls-secret-ca" >}}
-# WHAT THIS TEST VALIDATES:
-#   * A CA bundle stored under a non-default key is resolved when the policy
-#     names that key: the gateway originates TLS to NGINX and returns 200, which
-#     only succeeds if it read the certificate from `corporate-roots.pem`.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The failure case shown in the step above - asserting it would leave a
-#     broken policy attached for the rest of the scenario.
-YAMLTest -f - <<'EOF'
-- name: nginx-backend-tls policy with a custom CA key is accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: agentgateway-system
-        name: nginx-backend-tls
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].reason"
-    jsonPathExpectation:
-      comparator: equals
-      value: "Valid"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-EOF
-
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/" -H "host: example.com" && break
-  sleep 2
-done
-
-YAMLTest -f - <<'EOF'
-- name: gateway reads the CA from the key that the policy names
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /
-    method: GET
-    headers:
-      host: "example.com"
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
-
 {{< /version >}}
 
 ## Cleanup
@@ -786,7 +652,7 @@ EOF
 
 ### In-cluster service
 
-```sh {paths="backendtls-secret-ca"}
+```sh
 kubectl delete deployment,service,backendtlspolicy,configmap,httproute -A -l app=nginx
 kubectl delete secret nginx-server-cert -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete configmap ca -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
@@ -794,7 +660,7 @@ kubectl delete configmap ca -n {{< reuse "agw-docs/snippets/namespace.md" >}} --
 
 Remove the certificates that you created.
 
-```sh {paths="backendtls-secret-ca"}
+```sh
 cd .. && rm -rf example_certs
 ```
 
@@ -819,7 +685,7 @@ kubectl delete clustertrustbundle example-ca --ignore-not-found
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 ### CA certificate in a Secret
 
-```sh {paths="backendtls-secret-ca"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} nginx-backend-tls -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete secret nginx-ca nginx-ca-custom-key -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 ```

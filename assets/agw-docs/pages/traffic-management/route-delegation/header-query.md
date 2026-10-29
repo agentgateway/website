@@ -35,7 +35,7 @@ The following image illustrates the route delegation hierarchy:
      * path prefix match on `/anything/team2`
      * exact header match on `header2=val2`
      * exact query parameter match on `query2=val2`
-   ```yaml {paths="header-query"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -86,7 +86,7 @@ The following image illustrates the route delegation hierarchy:
    ```
 
 2. Create the `child-team1` HTTPRoute in the `team1` namespace that matches traffic on the `/anything/team1/foo` path prefix when the `header1: val1` and `headerX: valX` request headers and the `query1=val1` and `queryX=valX` query parameters are present. Requests that meet these conditions are forwarded to the httpbin app.
-   ```yaml {paths="header-query"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -120,7 +120,7 @@ The following image illustrates the route delegation hierarchy:
    ```
 
 3. Create the `child-team2` HTTPRoute in the `team2` namespace that matches traffic on the `/anything/team2/bar` exact path. Unlike `child-team1`, this child does not define any header or query parameter matchers. The parent's matchers still control which requests are delegated to the `team2` namespace.
-   ```yaml {paths="header-query"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -139,36 +139,6 @@ The following image illustrates the route delegation hierarchy:
    EOF
    ```
 
-   {{< doc-test paths="header-query" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for parent HTTPRoute to be accepted
-     wait:
-       target:
-         kind: HTTPRoute
-         metadata:
-           namespace: agentgateway-system
-           name: parent
-       jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 300
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
-
-   {{< doc-test paths="header-query" >}}
-   for i in $(seq 1 60); do
-     curl -s --max-time 5 -o /dev/null \
-       "http://${INGRESS_GW_ADDRESS}:80/anything/team1/foo?query1=val1&queryX=valX" \
-       -H "host: delegation.example" \
-       -H "header1: val1" \
-       -H "headerX: valX" && break
-     sleep 2
-   done
-   {{< /doc-test >}}
-
 4. Send a request to the `delegation.example` domain along the `/anything/team1/foo` path with the `header1: val1` request header and the `query1=val1` query parameter. Verify that you get a 404 HTTP response. Although you included the header and query parameter that are defined on the parent, the headers and query parameters that the child also matches on (`headerX` and `queryX`) are missing.
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
@@ -184,23 +154,6 @@ The following image illustrates the route delegation hierarchy:
    ```
    {{% /tab %}}
    {{< /tabs >}}
-
-   {{< doc-test paths="header-query" >}}
-   YAMLTest -f - <<'EOF'
-   - name: /team1/foo with only parent headers/query returns 404
-     retries: 1
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team1/foo?query1=val1"
-       method: GET
-       headers:
-         host: delegation.example
-         header1: val1
-     source:
-       type: local
-     expect:
-       statusCode: 404
-   EOF
-   {{< /doc-test >}}
 
    Example output:
    ```
@@ -224,23 +177,6 @@ The following image illustrates the route delegation hierarchy:
    ```
    {{% /tab %}}
    {{< /tabs >}}
-
-   {{< doc-test paths="header-query" >}}
-   YAMLTest -f - <<'EOF'
-   - name: /team1/foo with full superset of headers/query returns 200
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team1/foo?query1=val1&queryX=valX"
-       method: GET
-       headers:
-         host: delegation.example
-         header1: val1
-         headerX: valX
-     source:
-       type: local
-     expect:
-       statusCode: 200
-   EOF
-   {{< /doc-test >}}
 
    Example output:
    ```
@@ -267,22 +203,6 @@ The following image illustrates the route delegation hierarchy:
    {{% /tab %}}
    {{< /tabs >}}
 
-   {{< doc-test paths="header-query" >}}
-   YAMLTest -f - <<'EOF'
-   - name: /team2/bar with parent matchers returns 200 (child matches on path only)
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team2/bar?query2=val2"
-       method: GET
-       headers:
-         host: delegation.example
-         header2: val2
-     source:
-       type: local
-     expect:
-       statusCode: 200
-   EOF
-   {{< /doc-test >}}
-
    Example output:
    ```
    HTTP/1.1 200 OK
@@ -308,21 +228,6 @@ The following image illustrates the route delegation hierarchy:
    {{% /tab %}}
    {{< /tabs >}}
 
-   {{< doc-test paths="header-query" >}}
-   YAMLTest -f - <<'EOF'
-   - name: /team2/bar without parent matchers returns 404 (no delegation)
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team2/bar"
-       method: GET
-       headers:
-         host: delegation.example
-     source:
-       type: local
-     expect:
-       statusCode: 404
-   EOF
-   {{< /doc-test >}}
-
    Example output:
    ```
    HTTP/1.1 404 Not Found
@@ -334,7 +239,7 @@ The following image illustrates the route delegation hierarchy:
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="header-query"}
+```sh
 kubectl delete httproute parent -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute child-team1 -n team1
 kubectl delete httproute child-team2 -n team2

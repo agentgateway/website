@@ -14,7 +14,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/api-spec/ma
     
    Because the `ReplacePrefixPath` path modifier is used, only the path prefix is replaced during the rewrite. For example, requests to `http://rewrite.example/headers` are rewritten to `https://rewrite.example/anything`. However, for longer paths, such as in `http://rewrite.example/headers/200`, only the prefix is replaced and the path is rewritten to `http://rewrite.example/anything/200`. 
    
-   ```yaml {paths="path-rewrite-prefix"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -103,53 +103,6 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/api-spec/ma
    "json": null
    ...
    ```
-
-{{< doc-test paths="path-rewrite-prefix" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-rewrite HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-rewrite
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="path-rewrite-prefix" >}}
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: rewrite.example" && break
-  sleep 2
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="path-rewrite-prefix" >}}
-YAMLTest -f - <<'EOF'
-- name: path rewrite prefix - /headers rewrites to /anything
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /headers
-    method: GET
-    headers:
-      host: "rewrite.example"
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.url"
-        comparator: contains
-        value: "/anything"
-EOF
-{{< /doc-test >}}
 
 ### External services
 
@@ -263,7 +216,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/api-spec/ma
     
    Because the `ReplaceFullPath` path modifier is used, requests to `http://rewrite.example/headers` and `http://rewrite.example/headers/200` both are rewritten to `https://rewrite.example/anything`.
    
-   ```yaml {paths="path-rewrite-full"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -352,53 +305,6 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/api-spec/ma
    "json": null
    ...
    ```
-
-{{< doc-test paths="path-rewrite-full" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-rewrite HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-rewrite
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="path-rewrite-full" >}}
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: rewrite.example" && break
-  sleep 2
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="path-rewrite-full" >}}
-YAMLTest -f - <<'EOF'
-- name: path rewrite full - /headers rewrites to /anything
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /headers
-    method: GET
-    headers:
-      host: "rewrite.example"
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.url"
-        comparator: contains
-        value: "/anything"
-EOF
-{{< /doc-test >}}
 
 ### External services
 

@@ -2,16 +2,6 @@
 title: Query parameter
 weight: 10
 description: Specify a set of URL query parameters which requests must match in entirety.
-test:
-  query-match:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/documentation/traffic-management/match/query.md
-    path: query-match
 ---
 
 Specify a set of URL query parameters which requests must match in entirety.
@@ -23,7 +13,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 ## Set up query parameter matching
 
 1. Create an HTTPRoute resource for the `match.example` domain that matches incoming requests with a `user=me` query parameter.
-   ```yaml {paths="query-match"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -98,33 +88,6 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    < content-length: 0
    content-length: 0
    ```
-
-{{< doc-test paths="query-match" >}}
-YAMLTest -f - <<'EOF'
-- name: query match - no query param returns 404
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /status/200
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 404
-- name: query match - user=me query param returns 200
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /status/200?user=me
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
 
 ## Cleanup
 

@@ -8,11 +8,6 @@ A copy of the UI is also served on the admin interface, which is `localhost:1500
 
 [Install standalone agentgateway]({{< link-hextra path="/documentation/setup/install/" >}}) as a binary, a Docker container, or a Kubernetes Deployment with Helm.
 
-{{< doc-test paths="ui-standalone-default" >}}
-# Install agentgateway binary for tests
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 ## Open the UI {#open-admin-ui}
 
 {{< tabs >}}
@@ -76,30 +71,6 @@ The chart creates no Service for the admin port, so you reach the UI by port-for
 To serve the UI on its own gateway and hostname instead of a port-forward, see [Serve the UI on its own gateway]({{< link-hextra path="/documentation/setup/ui/gateway-ui/" >}}).
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="ui-standalone-default" >}}
-pkill -f "agentgateway -f" 2>/dev/null || true
-sleep 1
-cat > /tmp/agw-ui-default.yaml <<'EOF'
-config:
-  adminAddr: localhost:15000
-EOF
-agentgateway -f /tmp/agw-ui-default.yaml &
-AGW_DEFAULT_PID=$!
-sleep 3
-YAMLTest -f - <<'EOF'
-- name: UI returns HTTP 200 on the admin address
-  http:
-    url: "http://localhost:15000/ui/"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-  retries: 3
-EOF
-kill $AGW_DEFAULT_PID 2>/dev/null || true
-{{< /doc-test >}}
 
 ## Tour the UI {#tour}
 

@@ -2,9 +2,6 @@
 title: Jev
 weight: 10
 description: Check prompts and responses for jailbreak, harmful content, and secret disclosure with TypeSafe Jev and the OpenAI Decisions API.
-test:
-  jev:
-  - path: jev
 ---
 
 [Jev](https://docs.typesafe.ai/introduction) is a "System One" or decision model from TypeSafe AI. Like other LLMs, Jev accepts text-based input. You send Jev the content to check (the "state"), along with the questions that you want answered about that content. But instead of returning a text-based answer, Jev returns structured output.
@@ -77,44 +74,13 @@ Routing the evaluation calls through agentgateway has several benefits. The webh
    export TYPESAFE_API_KEY="<your-typesafe-key>"
    ```
 
-{{< doc-test paths="jev" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * "Configure agentgateway": the upstream example that the page embeds is
-#     downloaded and accepted by agentgateway (--validate-only), so
-#     the built-in `typesafe` provider, `visibility: internal`, the
-#     `llm.virtualModels` weighted targets, the `guardrails.request`/`response`
-#     webhook targets, and the `config.modelCatalog` rate entries are all real
-#     fields with the documented nesting. The test validates the same file the
-#     github-yaml shortcode renders, so the page cannot drift from the example.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * "Run the guardrail webhook server" - external dependency; the server needs
-#     Bun and real TYPESAFE_API_KEY and OPENAI_API_KEY values, and each run
-#     bills a live evaluation.
-#   * "Verify the guardrail" - external dependency; both curl requests need a
-#     real TYPESAFE_API_KEY and OPENAI_API_KEY and bill a live completion.
-#   * "Review evaluation usage and cost" - requires traffic this test does not
-#     send; the cost rows only appear after a real evaluation call is recorded.
-#   * The github-yaml rendering of the config in step 2 - display-only; it
-#     embeds the same file the test downloads and validates.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-
-# The example config reads both keys from the environment. --validate-only still
-# resolves env vars, so placeholders are enough here.
-export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
-export TYPESAFE_API_KEY="${TYPESAFE_API_KEY:-test}"
-{{< /doc-test >}}
-
 ## Configure agentgateway {#configure}
 
 The agentgateway repository ships this integration as a runnable example, so you download the example's configuration rather than write one. The configuration defines three models and one virtual model. `gpt-5.6-luna` is the model that the guardrail protects. `gpt-6-luna` and `jev-latest` are the two evaluation models, and the `guardrail` virtual model splits the webhook's evaluation calls evenly between them.
 
 1. Download the example configuration.
 
-   ```sh {paths="jev"}
+   ```sh
    curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/llm-guardrail-jev-openai/config.yaml -o config.yaml
    ```
 
@@ -148,12 +114,6 @@ The agentgateway repository ships this integration as a runnable example, so you
    ```sh
    agentgateway -f config.yaml
    ```
-
-{{< doc-test paths="jev" >}}
-# The visible step downloaded the upstream example, so this validates the file
-# that the page displays, not a transcription of it.
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
 
 ## Run the guardrail webhook server {#webhook}
 

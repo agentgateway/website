@@ -2,7 +2,6 @@
 title: API types
 weight: 12
 description: LLM API endpoint types and the route types that serve them.
-test: skip
 ---
 
 Serve clients that send a particular LLM API format.

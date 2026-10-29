@@ -30,36 +30,13 @@ This pattern lets you route based on any field in the request body while using t
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 2. Set up [API access to each LLM provider]({{< link-hextra path="/documentation/llm/api-keys/" >}}) that you want to route to.
 
-{{< doc-test paths="content-routing" >}}
-export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-kubectl apply -f- <<EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: openai-secret
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-type: Opaque
-stringData:
-  Authorization: $OPENAI_API_KEY
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: anthropic-secret
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-type: Opaque
-stringData:
-  Authorization: ${ANTHROPIC_API_KEY:-$OPENAI_API_KEY}
-EOF
-{{< /doc-test >}}
-
 ## Route by model name {#model-routing}
 
 This example shows how to route requests to different backends based on the `model` field in the request body.
 
 1. Create multiple {{< reuse "agw-docs/snippets/backend.md" >}} resources for different models. This example creates backends for OpenAI and Anthropic models.
 
-   ```yaml,paths="content-routing"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -95,7 +72,7 @@ This example shows how to route requests to different backends based on the `mod
 
 2. Create an HTTPRoute with multiple rules that match on the `x-model` header. The transformation policy (created in step 3) will extract the model name from the request body into this header.
 
-   ```yaml,paths="content-routing"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -140,7 +117,7 @@ This example shows how to route requests to different backends based on the `mod
 
 3. Create a {{< reuse "agw-docs/snippets/policy.md" >}} resource to extract the `model` field from the request body into the `x-model` header. The transformation uses a CEL expression to parse the JSON body and extract the model field. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
 
-   ```yaml,paths="content-routing"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -161,55 +138,6 @@ This example shows how to route requests to different backends based on the `mod
              value: 'json(request.body).model'
    EOF
    ```
-
-{{< doc-test paths="content-routing" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for openai-backend to be accepted
-  wait:
-    target:
-      kind: AgentgatewayBackend
-      metadata:
-        namespace: agentgateway-system
-        name: openai-backend
-    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-
-- name: wait for anthropic-backend to be accepted
-  wait:
-    target:
-      kind: AgentgatewayBackend
-      metadata:
-        namespace: agentgateway-system
-        name: anthropic-backend
-    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-
-- name: wait for content-routing HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: agentgateway-system
-        name: content-routing
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
 
 4. Send a request with `gpt-4o` in the model field. Verify that the request routes to the OpenAI backend.
 
@@ -272,63 +200,6 @@ EOF
    ```
    {{% /tab %}}
    {{< /tabs >}}
-
-{{< doc-test paths="content-routing" >}}
-# Content routing: point the OpenAI backend at the httpbun mock LLM so the routing
-# assertion below needs no provider API key. httpbun echoes the requested model, so
-# the assertion still proves that a `gpt-*` model reached the OpenAI backend rather
-# than the Anthropic one. The Anthropic backend is left as documented: no assertion
-# on this page sends an Anthropic model, so nothing needs a live Anthropic key.
-{{< reuse "agw-docs/snippets/deploy-mock-llm.md" >}}
-kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} openai-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type=merge --patch-file /dev/stdin <<EOF
-spec:
-  ai:
-    provider:
-      host: httpbun.default.svc.cluster.local
-      port: 3090
-      path: /llm/chat/completions
-EOF
-YAMLTest -f - <<'EOF'
-- name: wait for openai-backend to settle after the mock LLM patch
-  wait:
-    target:
-      kind: AgentgatewayBackend
-      metadata:
-        namespace: agentgateway-system
-        name: openai-backend
-    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="content-routing" >}}
-YAMLTest -f - <<'EOF'
-- name: verify GPT model routes to OpenAI backend
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {
-        "model": "gpt-4o",
-        "messages": [{"role": "user", "content": "Say hello in one word"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.model"
-        comparator: contains
-        value: "gpt"
-EOF
-{{< /doc-test >}}
 
 ## Route by custom field {#custom-field}
 

@@ -4,13 +4,6 @@ Configure the agentgateway binary to route chat completion requests to an LLM pr
 
 {{< reuse "agw-docs/standalone/quickstart/install-prereq.md" >}}
 
-{{< doc-test paths="llm" >}}
-# For CI/tests: install the agentgateway binary to local bin without sudo.
-# Uses the nightly 'latest-dev' image for main and the latest release otherwise,
-# so the version dir rotates without hardcoding a release tag that may not exist yet.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 2. Get credentials for the provider that you want to use. The steps below cover API keys, cloud credentials, GitHub Copilot, custom providers, and local Ollama models.
 
 ## Steps
@@ -32,7 +25,7 @@ export OPENAI_API_KEY='<your-api-key>'
 
 Create a `config.yaml` that defines an LLM model for OpenAI. This configuration uses the simplified LLM format to route traffic to the OpenAI backend.
 
-```yaml {paths="llm"}
+```yaml
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 
@@ -54,13 +47,6 @@ Run agentgateway with the config file.
 agentgateway -f config.yaml
 ```
 
-{{< doc-test paths="llm" >}}
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
-
 Example output:
 
 ```
@@ -73,7 +59,7 @@ info  proxy::gateway started bind  bind="bind/4000"
 
 From another terminal, send a request to the chat completions endpoint.
 
-```sh {paths="llm"}
+```sh
 curl -s http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{

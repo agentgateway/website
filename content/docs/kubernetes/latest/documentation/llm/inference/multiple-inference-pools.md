@@ -4,7 +4,6 @@ weight: 20
 description: Route inference requests to multiple InferencePools based on the model name in the request body.
 aliases:
   - ../multiple-inference-pools/
-test: skip
 ---
 
 Route requests to multiple Gateway API Inference Extension `InferencePool`

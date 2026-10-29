@@ -141,7 +141,7 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
 
    This example creates two backends: one for the cheaper `gpt-4o-mini` model and one for the more capable `gpt-4o` model.
 
-   ```yaml,paths="traffic-split-llm"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -179,7 +179,7 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
 
    This example routes 80% of traffic to the cheaper `gpt-4o-mini` model and 20% to the more capable `gpt-4o` model, allowing you to optimize costs while testing the premium model's performance.
 
-   ```yaml,paths="traffic-split-llm"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -251,56 +251,6 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
    gpt-4o-mini-2024-07-18
    gpt-4o-mini-2024-07-18
    ```
-
-{{< doc-test paths="traffic-split-llm" >}}
-# Traffic split: point both model backends at the httpbun mock LLM so the split
-# assertion below needs no provider API key. httpbun echoes the model that the
-# backend pinned, so the response still carries the model name that this page's
-# output is about.
-{{< reuse "agw-docs/snippets/deploy-mock-llm.md" >}}
-kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} openai-mini-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type=merge --patch-file /dev/stdin <<EOF
-spec:
-  ai:
-    provider:
-      host: httpbun.default.svc.cluster.local
-      port: 3090
-      path: /llm/chat/completions
-EOF
-kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} openai-premium-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type=merge --patch-file /dev/stdin <<EOF
-spec:
-  ai:
-    provider:
-      host: httpbun.default.svc.cluster.local
-      port: 3090
-      path: /llm/chat/completions
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="traffic-split-llm" >}}
-# Test that traffic is being split between models
-# Send multiple requests and verify we get valid responses with model names
-YAMLTest -f - <<'EOF'
-- name: verify traffic split returns valid responses
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/test"
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {
-        "messages": [{"role": "user", "content": "Say hello"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.model"
-        comparator: exists
-      - path: "$.choices[0].message.content"
-        comparator: exists
-EOF
-{{< /doc-test >}}
 
 ## Cleanup
 

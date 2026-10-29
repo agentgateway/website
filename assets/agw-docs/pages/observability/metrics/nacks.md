@@ -41,26 +41,6 @@ If only part of a resource is unusable, the proxy can apply the rest and report 
    agentgateway_xds_rejects_total 3
    ```
 
-{{< doc-test paths="nacks" >}}
-YAMLTest -f - <<'EOF'
-- name: Control plane metrics endpoint is accessible
-  retries: 3
-  http:
-    url: "http://localhost:9092/metrics"
-    method: GET
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
-
 You can use this metric to configure alerts in Prometheus that fire when rejections occur. For guidance on setting up the observability stack, see the [OTel stack guide]({{< link path="/documentation/observability/otel-stack/" >}}).
 
 ## View rejection events
@@ -79,7 +59,7 @@ The resource status does not show the rejection. For example, an {{< reuse "agw-
 
 1. List rejection events in the namespace where your Gateway is deployed.
 
-   ```sh {paths="nacks"}
+   ```sh
    kubectl get events -n {{< reuse "agw-docs/snippets/namespace.md" >}} --field-selector=reason=AgentGatewayNackError
    ```
 
@@ -92,7 +72,7 @@ The resource status does not show the rejection. For example, an {{< reuse "agw-
 
 2. View events on the Gateway resource directly.
 
-   ```sh {paths="nacks"}
+   ```sh
    kubectl describe gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 

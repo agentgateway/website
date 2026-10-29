@@ -2,7 +2,6 @@
 title: Rate limit token budgets
 weight: 20
 description: Cap LLM token usage with a token bucket, per user with a rate limit server or gateway-wide.
-test: skip
 ---
 
 Cap LLM token usage with a token bucket, per user or gateway-wide.

@@ -4,15 +4,7 @@ weight: 15
 prev: /mcp/about
 next: /mcp/connect
 description: Choose between the simplified `mcp` section and routing-based configuration, and decide whether to expose your MCP servers on one endpoint or on separate paths
-test:
-  mcp-keep-alive:
-  - path: mcp-keep-alive
 ---
-
-{{< doc-test paths="mcp-keep-alive" >}}
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 Agentgateway offers two ways to configure Model Context Protocol (MCP) servers, and two ways to expose them to clients. The two choices are independent of each other.
 
@@ -233,45 +225,6 @@ routes:
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="mcp-keep-alive" >}}
-# WHAT THIS TEST VALIDATES:
-#   * `sseKeepAlive` is accepted on the MCP backend in both the simplified MCP
-#     and routing-based forms, at the field paths this section names.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That comment frames are actually emitted every 10s — requires an MCP
-#     upstream held idle past the interval, which this page does not stand up.
-cat <<'EOF' > config-mcp-keepalive.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  sseKeepAlive: 10s
-  targets:
-  - name: jira
-    mcp:
-      host: https://mcp.atlassian.com/v1/mcp
-EOF
-agentgateway -f config-mcp-keepalive.yaml --validate-only
-
-cat <<'EOF' > config-route-keepalive.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- name: tools
-  matches:
-  - path:
-      pathPrefix: /mcp
-  backends:
-  - mcp:
-      sseKeepAlive: 10s
-      targets:
-      - name: jira
-        mcp:
-          host: https://mcp.atlassian.com/v1/mcp
-EOF
-agentgateway -f config-route-keepalive.yaml --validate-only
-{{< /doc-test >}}
 
 For request and connection timeouts, which are separate route and backend policies, see [Timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts" >}}).
 

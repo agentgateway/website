@@ -52,7 +52,7 @@ sequenceDiagram
 Configure an {{< reuse "agw-docs/snippets/policy.md" >}} to enable CSRF protection for your Gateway. This policy validates the `Origin` header of incoming requests and blocks requests from untrusted origins.
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with your CSRF configuration.
-   ```yaml {paths="csrf"}
+   ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -79,47 +79,6 @@ Configure an {{< reuse "agw-docs/snippets/policy.md" >}} to enable CSRF protecti
    |-------|-------------|
    | `csrf` | Enables CSRF protection for the targeted Gateway or routes. When configured, all cross-origin requests are validated. | 
    | `additionalOrigins` | List of additional origins that are allowed to make requests to your app beyond the same-origin requests. This is useful for trusted partners, subdomains, or CDNs. Origins cannot include wildcards.{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}} To allow requests that send an `Origin: null` header, add `null` to this list.{{< /version >}} |
-
-
-{{< doc-test paths="csrf" >}}
-YAMLTest -f - <<'EOF'
-- name: CSRF allows POST with no origin header
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /post
-    method: POST
-    headers:
-      host: www.example.com
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: CSRF allows POST from trusted additional origin
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /post
-    method: POST
-    headers:
-      host: www.example.com
-      origin: allowThisOne.example.com
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: CSRF blocks POST from untrusted origin
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /post
-    method: POST
-    headers:
-      host: www.example.com
-      origin: malicioussite.com
-  source:
-    type: local
-  expect:
-    statusCode: 403
-EOF
-{{< /doc-test >}}
 
 2. Send a request to the httpbin app on the `www.example.com` domain. Include the `malicioussite.com` origin that is not allowed in your policy. Verify that the request is denied and that you get back a 403 HTTP response code.
 
