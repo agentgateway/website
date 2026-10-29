@@ -4,6 +4,8 @@ Route the network traffic of [Devin Desktop](https://devin.ai/desktop), the AI-p
 
 Devin Desktop sends its model requests to Cognition's service. You cannot point Devin Desktop at your own LLM or at an LLM route in agentgateway. Instead, Devin Desktop can send all of its traffic through an HTTP proxy, which you set in its **Http: Proxy** setting.
 
+Use agentgateway as this proxy when you want to see and control where Devin Desktop connects. For example, your network might allow outbound traffic only through an approved proxy.
+
 When agentgateway is that proxy, it receives an HTTP `CONNECT` request for every destination that Devin Desktop connects to. Agentgateway can then require proxy credentials, log each destination, and restrict which destinations Devin Desktop can reach. The traffic stays encrypted end to end. For more information about the proxy modes, see [Egress proxy]({{< link-hextra path="/documentation/configuration/egress-proxy/" >}}).
 
 ## Before you begin
@@ -12,6 +14,8 @@ When agentgateway is that proxy, it receives an HTTP `CONNECT` request for every
 2. Install [Devin Desktop](https://devin.ai/desktop).
 
 ## Configure agentgateway as a proxy
+
+The following example sets up a proxy that Devin Desktop must log in to before it can reach any destination. To keep the example simple, basic auth is used with the example username `devin` and password `secretpw`. Basic auth sends the password base64-encoded, not encrypted, so use it only when Devin Desktop and agentgateway run on the same machine or a trusted network. For your own setup, replace the credentials or use the authentication method that your organization uses.
 
 1. Create a user database in htpasswd format for the proxy credentials that Devin Desktop uses.
    ```sh
