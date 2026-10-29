@@ -4,7 +4,6 @@ weight: 11
 description: Convert a LiteLLM proxy configuration into an agentgateway standalone configuration and review compatibility findings.
 prev: /configuration/overview
 next: /configuration/gateways
-test: skip
 ---
 
 Migrate from LiteLLM to agentgateway by importing your existing LiteLLM proxy configuration file. The agentgateway configuration importer converts supported settings into a valid agentgateway YAML configuration and reports how each source field was handled.

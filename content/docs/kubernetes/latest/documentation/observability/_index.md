@@ -4,7 +4,6 @@ weight: 700
 description: Review access logs, metrics, and traces for your agentgateway deployment and monitor resources in the agentgateway UI. 
 next: /operations
 prev: /integrations
-test: skip
 ---
 
 > [!NOTE]

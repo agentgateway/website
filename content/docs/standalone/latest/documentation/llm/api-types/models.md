@@ -2,7 +2,6 @@
 title: Models
 weight: 55
 description: List available models through agentgateway using the OpenAI-compatible Models API.
-test: skip
 ---
 
 The Models API (`/v1/models`) lists the models that clients can request through agentgateway. Clients can also use `/models` without the `/v1` prefix.

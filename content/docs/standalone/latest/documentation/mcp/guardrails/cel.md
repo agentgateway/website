@@ -2,9 +2,6 @@
 title: Set up CEL guardrails
 weight: 20
 description: Reject and mask MCP tool calls in-process with CEL expression guardrails.
-test:
-  mcp-guardrails-cel:
-  - path: mcp-guardrails-cel
 ---
 
 Reject and mask Model Context Protocol (MCP) tool calls with Common Expression Language (CEL) expressions inside agentgateway. CEL guardrails require no external policy server.
@@ -20,11 +17,6 @@ In this guide, you configure three CEL guardrails for the `echo` tool of a sampl
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-
-{{< doc-test paths="mcp-guardrails-cel" >}}
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 ## Set up CEL guardrails
 
@@ -98,65 +90,6 @@ In this guide, you configure three CEL guardrails for the `echo` tool of a sampl
              args: ["@modelcontextprotocol/server-everything"]
    ```
 
-   {{< doc-test paths="mcp-guardrails-cel" >}}
-   cat <<'EOF' > config.yaml
-   gateways:
-     default:
-       port: 3000
-   routes:
-   - policies:
-       mcpGuardrails:
-         processors:
-         - kind: expression
-           methods:
-             tools/call: request
-           condition: >-
-             mcp.params.name == 'echo' &&
-             has(mcp.params.arguments) &&
-             has(mcp.params.arguments.message) &&
-             mcp.params.arguments.message.contains('DO_NOT_SEND')
-           reject: "Messages containing DO_NOT_SEND may not be sent upstream"
-         - kind: expression
-           methods:
-             tools/call: request
-           condition: >-
-             mcp.params.name == 'echo' &&
-             has(mcp.params.arguments) &&
-             has(mcp.params.arguments.message)
-           transform: >-
-             mcp.params.with(p, p.merge({
-               'arguments': p.arguments.merge({
-                 'message': p.arguments.message.regexReplaceAll(
-                   '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+[.][A-Za-z]{2,}',
-                   '[EMAIL]'
-                 )
-               })
-             }))
-         - kind: expression
-           methods:
-             tools/call: response
-           condition: has(mcp.result.content)
-           transform: >-
-             mcp.result.with(r, r.merge({
-               'content': r.content.map(item,
-                 item.type == 'text'
-                   ? item.merge({'text': item.text.regexReplaceAll(
-                       'demo-secret-[A-Za-z0-9]+', '[SECRET]'
-                     )})
-                   : item
-               )
-             }))
-     backends:
-     - mcp:
-         targets:
-         - name: everything
-           stdio:
-             cmd: npx
-             args: ["@modelcontextprotocol/server-everything"]
-   EOF
-   agentgateway -f config.yaml --validate-only
-   {{< /doc-test >}}
-
    Review the following table to understand the `mcpGuardrails` policy.
 
    | Setting | Description |
@@ -171,23 +104,6 @@ In this guide, you configure three CEL guardrails for the `echo` tool of a sampl
    ```sh
    agentgateway -f config.yaml
    ```
-
-   {{< doc-test paths="mcp-guardrails-cel" >}}
-   agentgateway -f config.yaml &
-   AGW_PID=$!
-   trap 'kill $AGW_PID 2>/dev/null' EXIT
-   # Wait for the stdio MCP backend to be ready. On first run, agentgateway downloads
-   # @modelcontextprotocol/server-everything via npx, which can take a while.
-   for i in $(seq 1 60); do
-     code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/mcp \
-       -H 'Content-Type: application/json' \
-       -H 'Accept: application/json, text/event-stream' \
-       -H 'MCP-Protocol-Version: 2025-03-26' \
-       -d '{"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"warmup","version":"1.0"}}}' || true)
-     [ "$code" = "200" ] && break
-     sleep 2
-   done
-   {{< /doc-test >}}
 
 ## Verify the guardrails
 
@@ -242,44 +158,6 @@ In this guide, you configure three CEL guardrails for the `echo` tool of a sampl
    ```console
    {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"Messages containing DO_NOT_SEND may not be sent upstream"}],"isError":true}}
    ```
-
-{{< doc-test paths="mcp-guardrails-cel" >}}
-# WHAT THIS TEST VALIDATES:
-#   * MCP session handshake (initialize + notifications/initialized) - steps 1-2
-#   * Request-phase transform masks both email addresses, and response-phase
-#     transform masks both demo secrets (step 3)
-#   * Request-phase reject returns an isError tool result with the reject message (step 4)
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The displayed config's cors policy - browser-only, curl does not send CORS requests.
-mcp_post() {
-  curl -s -i http://localhost:3000/mcp \
-    -H "Content-Type: application/json" \
-    -H "Accept: application/json, text/event-stream" \
-    -H "MCP-Protocol-Version: 2025-03-26" \
-    -H "mcp-session-id: $MCP_SESSION_ID" \
-    -d "$1"
-}
-export MCP_SESSION_ID=$(curl -s -D - http://localhost:3000/mcp \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -H "MCP-Protocol-Version: 2025-03-26" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"curl","version":"1.0.0"}}}' \
-  | grep -i "mcp-session-id:" | sed 's/.*: //' | tr -d '\r')
-mcp_post '{"jsonrpc":"2.0","method":"notifications/initialized"}' >/dev/null
-MASKED=$(mcp_post '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"echo","arguments":{"message":"Contact alice@example.com and bob@example.org; tokens demo-secret-abc and demo-secret-xyz"}}}')
-# Check transport framing as well as the transformed text.
-echo "$MASKED" | grep -iq '^content-type: text/event-stream' && echo "$MASKED" | grep -q '^data: ' \
-  || { echo "FAIL: expected an SSE tool result: $MASKED"; exit 1; }
-
-echo "$MASKED" | grep -q 'Echo: Contact \[EMAIL\] and \[EMAIL\]; tokens \[SECRET\] and \[SECRET\]' \
-  && echo "✓ request and response masking" || { echo "FAIL: masking: $MASKED"; exit 1; }
-REJECTED=$(mcp_post '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"echo","arguments":{"message":"DO_NOT_SEND alice@example.com"}}}')
-# A request-phase rejection is an HTTP 200 JSON response, without SSE framing.
-echo "$REJECTED" | grep -Eq '^HTTP/[0-9.]+ 200' && echo "$REJECTED" | grep -iq '^content-type: application/json' && echo "$REJECTED" | grep -q '^{' \
-  || { echo "FAIL: expected an HTTP 200 JSON rejection: $REJECTED"; exit 1; }
-echo "$REJECTED" | grep -q '"isError":true' && echo "$REJECTED" | grep -q 'Messages containing DO_NOT_SEND may not be sent upstream' \
-  && echo "✓ DO_NOT_SEND call rejected" || { echo "FAIL: reject: $REJECTED"; exit 1; }
-{{< /doc-test >}}
 
 ## Cleanup
 

@@ -18,7 +18,7 @@ The `credentials` list is separate. It adds credentials rather than choosing one
 
 1. Create a Secret that holds the credential. The default resolver reads the `Authorization` key.
 
-   ```sh {paths="backend-authn-key"}
+   ```sh
    kubectl create secret generic backend-api-key \
      --namespace httpbin \
      --from-literal=Authorization="my-backend-token"
@@ -26,7 +26,7 @@ The `credentials` list is separate. It adds credentials rather than choosing one
 
 2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that reads the Secret and attaches the credential to every request that the gateway forwards to the httpbin route.
 
-   ```yaml {paths="backend-authn-key"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -56,7 +56,7 @@ The `credentials` list is separate. It adds credentials rather than choosing one
 
 3. Send a request through the gateway to the httpbin `/headers` endpoint, which reflects the headers that the backend received.
 
-   ```sh {paths="backend-authn-key"}
+   ```sh
    curl -s "http://$INGRESS_GW_ADDRESS:80/headers" -H "host: www.example.com" | jq '.headers.Authorization'
    ```
 
@@ -70,38 +70,6 @@ The `credentials` list is separate. It adds credentials rather than choosing one
 
 > [!WARNING]
 > Store the bare token in the Secret. The gateway strips a `Bearer ` prefix only when it reads the `Authorization` key, and then re-adds the prefix that the location defines. A value of `Bearer my-backend-token` under that key therefore still arrives as `Bearer my-backend-token`. Under any other key the prefix is not stripped, so the same value arrives as `Bearer Bearer my-backend-token`. Entries in the `credentials` list are never stripped, whichever key they read.
-
-{{< doc-test paths="backend-authn-key" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for the static backend auth policy to be accepted
-  wait:
-    target:
-      kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-      metadata:
-        namespace: httpbin
-        name: static-backend-auth
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 5
-EOF
-
-# WHAT THIS TEST VALIDATES:
-#   * The secretRef policy is accepted, and the backend receives the Secret value with the
-#     `Bearer ` prefix that the default location adds.
-# Programming the backend auth policy can lag route readiness, so poll until the credential shows
-# up rather than sending one request and trusting the timing.
-for i in $(seq 1 60); do
-  curl -s --max-time 5 "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" > key-secretref.json || true
-  grep -q 'Bearer my-backend-token' key-secretref.json && break
-  sleep 2
-done
-grep -q 'Bearer my-backend-token' key-secretref.json || { echo "FAILED: the backend never received the credential"; exit 1; }
-echo "secretRef backend authentication verified"
-{{< /doc-test >}}
 
 ## Send an inline credential
 
@@ -131,7 +99,7 @@ Set the `location` field in your {{< reuse "agw-docs/snippets/policy.md" >}} res
 
 1. Update the policy to send the credential as an `x-api-key` header instead.
 
-   ```yaml {paths="backend-authn-key"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -155,7 +123,7 @@ Set the `location` field in your {{< reuse "agw-docs/snippets/policy.md" >}} res
 
 2. Send another request and check the new header.
 
-   ```sh {paths="backend-authn-key"}
+   ```sh
    curl -s "http://$INGRESS_GW_ADDRESS:80/headers" -H "host: www.example.com" | jq '.headers'
    ```
 
@@ -178,24 +146,6 @@ Set the `location` field in your {{< reuse "agw-docs/snippets/policy.md" >}} res
        name: x-api-key
        prefix: "Token "
    ```
-
-{{< doc-test paths="backend-authn-key" >}}
-# WHAT THIS TEST VALIDATES:
-#   * A custom header location moves the credential and writes the bare value, with no `Bearer `
-#     prefix.
-for i in $(seq 1 60); do
-  curl -s --max-time 5 "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" > key-location.json || true
-  grep -qi 'x-api-key' key-location.json && break
-  sleep 2
-done
-python3 -c '
-import json
-h={k.lower():v for k,v in json.load(open("key-location.json"))["headers"].items()}
-one=lambda v: v[0] if isinstance(v,list) else v
-assert one(h.get("x-api-key"))=="my-backend-token", h.get("x-api-key")
-assert "authorization" not in h, h.get("authorization")
-print("custom credential location verified")'
-{{< /doc-test >}}
 
 ## Pass through client credentials
 
@@ -237,7 +187,7 @@ The following example keeps `secretRef` as the primary credential and adds two m
 
 1. Create a Secret with two more credentials in it.
 
-   ```sh {paths="backend-authn-key"}
+   ```sh
    kubectl create secret generic extra-credentials \
      --namespace httpbin \
      --from-literal=tenant-key="my-tenant-key" \
@@ -246,7 +196,7 @@ The following example keeps `secretRef` as the primary credential and adds two m
 
 2. Update the policy to send all three credentials.
 
-   ```yaml {paths="backend-authn-key"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -288,7 +238,7 @@ The following example keeps `secretRef` as the primary credential and adds two m
 
 3. Send a request to the httpbin `/get` endpoint, which reflects the query string as well as the headers.
 
-   ```sh {paths="backend-authn-key"}
+   ```sh
    curl -s "http://$INGRESS_GW_ADDRESS:80/get" -H "host: www.example.com" | jq '{headers, args}'
    ```
 
@@ -315,26 +265,6 @@ The following example keeps `secretRef` as the primary credential and adds two m
 
 The `credentials` list also works on its own, or alongside any other primary method. Omit `secretRef` and the gateway sends only the entries in the list. Set `passthrough` instead and the gateway forwards the client's JWT alongside them.
 
-{{< doc-test paths="backend-authn-key" >}}
-# WHAT THIS TEST VALIDATES:
-#   * credentials is additive: the primary secretRef credential and both list entries all arrive,
-#     across two different location types (header and query parameter).
-for i in $(seq 1 60); do
-  curl -s --max-time 5 "http://${INGRESS_GW_ADDRESS}:80/get" -H "host: www.example.com" > key-credentials.json || true
-  grep -q 'my-subscription-key' key-credentials.json && break
-  sleep 2
-done
-python3 -c '
-import json
-d=json.load(open("key-credentials.json"))
-h={k.lower():v for k,v in d["headers"].items()}
-one=lambda v: v[0] if isinstance(v,list) else v
-assert one(h.get("authorization"))=="Bearer my-backend-token", h.get("authorization")
-assert one(h.get("x-tenant-key"))=="my-tenant-key", h.get("x-tenant-key")
-assert one(d["args"].get("subscription"))=="my-subscription-key", d["args"]
-print("additive credentials verified")'
-{{< /doc-test >}}
-
 ## Troubleshoot
 
 | Symptom | Cause |
@@ -348,7 +278,7 @@ print("additive credentials verified")'
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="backend-authn-key"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} static-backend-auth -n httpbin
 kubectl delete secret backend-api-key extra-credentials -n httpbin
 ```

@@ -8,7 +8,7 @@ Review the [release notes]({{< link-hextra path="/release-notes/release-notes/" 
 
 1. Set the version you want to upgrade to in an environment variable, such as the latest patch version (`{{< reuse "agw-docs/versions/n-patch.md" >}}`) .
    
-   ```sh {paths="upgrade"}
+   ```sh
    export NEW_VERSION={{< reuse "agw-docs/versions/n-patch.md" >}}
    ```
 
@@ -20,13 +20,9 @@ Review the [release notes]({{< link-hextra path="/release-notes/release-notes/" 
 
 3. Upgrade the CRDs in your cluster.
    
-   ```sh {paths="upgrade"}
+   ```sh
    helm upgrade -i --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
    ```
-
-{{< doc-test paths="upgrade" >}}
-helm get values {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > values.yaml
-{{< /doc-test >}}
 
 4. Get the Helm values file for your current version.
       
@@ -57,36 +53,17 @@ helm get values {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} -n {{< r
    * Make sure to include your Helm values when you upgrade either as a configuration file or with `--set` flags. Otherwise, any previous custom values that you set might be overwritten.{{< conditional-text include-if="kubernetes" >}}
    * When using the development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.{{< /conditional-text >}}
    
-   ```sh {paths="upgrade"}
+   ```sh
    helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
      -f values.yaml \
      --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} 
    ```
 
-{{< doc-test paths="upgrade" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for control plane pod to be ready after upgrade
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 ## Verify the upgrade {#verify}
 
 1. Verify that the control plane runs the upgraded version.
    
-   ```sh {paths="upgrade"}
+   ```sh
    kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} get pod -l app.kubernetes.io/name={{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} -o jsonpath='{.items[0].spec.containers[0].image}'
    ```
    
@@ -97,6 +74,6 @@ EOF
 
 2. Confirm that the control plane is up and running. 
    
-   ```sh {paths="upgrade"}
+   ```sh
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```

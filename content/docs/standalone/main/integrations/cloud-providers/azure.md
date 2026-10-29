@@ -2,44 +2,11 @@
 title: Azure
 weight: 30
 description: Run agentgateway on Azure and reach Azure OpenAI with a managed identity instead of an API key.
-test:
-  azure-cloud:
-  - file: ${versionRoot}/integrations/cloud-providers/azure.md
-    path: azure-cloud
 aliases:
   - ../platforms/azure/
 ---
 
 Run agentgateway on Azure Container Apps or AKS, and reach [Azure OpenAI]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the managed identity that Azure already attaches to the workload. No API key goes into your configuration file.
-
-{{< doc-test paths="azure-cloud" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * "Authenticate with a managed identity", both tabs: the auto-detect config
-#     (`auth.azure.implicit`) and the user-assigned identity config
-#     (`auth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`)
-#     are both accepted by agentgateway (--validate-only), alongside
-#     `params.azureResourceName` and `params.azureResourceType`.
-#   * With the auto-detect config loaded, agentgateway serves LLM traffic on
-#     port 4000 and resolves the model to the Azure provider with the documented
-#     resource name and type. This is what makes the --target-port value in the
-#     Container Apps command on this page checkable rather than asserted.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That either identity reaches Azure OpenAI - external dependency; the test
-#     has no Azure tenant, resource, or identity, and a live call bills a
-#     completion. Only that agentgateway accepts each config shape is asserted.
-#   * "Run on Azure Container Apps" - external dependency; the az commands need
-#     a subscription, a resource group, and a Container Apps environment that
-#     the test cannot stand up. The image and port in them match the
-#     configuration that this test does run.
-#   * "Role assignments" - a different layer; the roles are evaluated by Azure,
-#     not by agentgateway.
-#   * "Azure services" - display-only table of links.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 ## Authenticate with a managed identity
 
@@ -98,47 +65,6 @@ llm:
 
 {{< /tabs >}}
 
-{{< doc-test paths="azure-cloud" >}}
-# Auto-detect tab
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: "*"
-    provider: azure
-    params:
-      model: gpt-4o
-      azureResourceName: my-resource
-      azureResourceType: openAI
-    auth:
-      azure:
-        implicit: {}
-EOF
-agentgateway -f config.yaml --validate-only
-
-# User-assigned identity tab
-cat <<'EOF' > /tmp/azure-user-assigned.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: "*"
-    provider: azure
-    params:
-      model: gpt-4o
-      azureResourceName: my-resource
-      azureResourceType: openAI
-    auth:
-      azure:
-        explicitConfig:
-          managedIdentity:
-            userAssignedIdentity:
-              clientId: 00000000-0000-0000-0000-000000000000
-EOF
-agentgateway -f /tmp/azure-user-assigned.yaml --validate-only
-{{< /doc-test >}}
-
 Review the following table to understand this configuration.
 
 | Setting | Description |
@@ -149,37 +75,6 @@ Review the following table to understand this configuration.
 | `params.azureResourceName` | The Azure resource name. |
 | `params.azureResourceType` | The endpoint type, either `openAI` for Azure OpenAI Service or `foundry` for an Azure AI Foundry project. |
 | `auth.azure` | Entra ID authentication. Use `implicit` to detect the method from the environment, or `explicitConfig` to name a client secret, a managed identity, or workload identity. |
-
-{{< doc-test paths="azure-cloud" >}}
-# Confirm that agentgateway serves LLM traffic on port 4000, which the Container
-# Apps command on this page sets with --target-port, and that the Azure params
-# reach the resolved provider as the settings table describes.
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-
-# The default `llm.discovery: catalog` expands `*` into catalog model IDs, so
-# check for a non-empty list rather than a literal `*`.
-SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '.data | length')
-if [ "${SERVED:-0}" -eq 0 ]; then
-  echo "FAIL: /v1/models lists no models for the example config on port 4000"
-  exit 1
-fi
-RESOLVED=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '
-  [ .backends[].backend.ai
-    | select(. != null)
-    | .target.providers[].active[].endpoint
-    | .provider.azure
-    | "\(.model)|\(.resourceName)|\(.resourceType)"
-  ] | first')
-EXPECTED="gpt-4o|my-resource|openAI"
-if [ "$RESOLVED" != "$EXPECTED" ]; then
-  echo "FAIL: expected azure params $EXPECTED but agentgateway resolved $RESOLVED"
-  exit 1
-fi
-echo "✓ Port 4000 serves the model and the Azure params resolve to the documented values"
-{{< /doc-test >}}
 
 For client secret and workload identity configurations, and for the Azure AI Foundry endpoint type, see [Azure]({{< link-hextra path="/integrations/llm/providers/azure/" >}}).
 

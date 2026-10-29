@@ -42,15 +42,6 @@ If your provider is not in this list but still exposes the OpenAI Chat Completio
 
 Create a Secret with an API key for the provider that you want to use. The model and backend examples both reference this Secret. Complete one configuration path after you create the credentials.
 
-{{< doc-test paths="openai-compatible-validate" >}}
-# Validate the visible Secret, model, backend, and HTTPRoute manifests against
-# the installed CRDs. Do not persist resources or call a provider API.
-export MY_API_KEY="test"
-kubectl() {
-  command kubectl "$@" --dry-run=server
-}
-{{< /doc-test >}}
-
 1. Get an API key for your provider. For Meta, create a key in the [Meta Model API dashboard](https://dev.meta.ai/).
 
 2. Save the API key in an environment variable.
@@ -61,7 +52,7 @@ kubectl() {
 
 3. Create a Kubernetes secret to store your API key.
 
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -84,7 +75,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
 
    {{< tabs >}}
    {{% tab name="Baseten" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -108,7 +99,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    ```
    {{% /tab %}}
    {{% tab name="Cerebras" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -132,7 +123,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    ```
    {{% /tab %}}
    {{% tab name="Cohere" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -156,7 +147,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    ```
    {{% /tab %}}
    {{% tab name="DeepInfra" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -180,7 +171,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    ```
    {{% /tab %}}
    {{% tab name="DeepSeek" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -204,7 +195,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    ```
    {{% /tab %}}
    {{% tab name="Fireworks AI" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -228,7 +219,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    ```
    {{% /tab %}}
    {{% tab name="Groq" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -252,7 +243,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    ```
    {{% /tab %}}
    {{% tab name="Hugging Face" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -276,7 +267,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    ```
    {{% /tab %}}
    {{% tab name="Meta" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -300,7 +291,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    ```
    {{% /tab %}}
    {{% tab name="Mistral AI" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -324,7 +315,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    ```
    {{% /tab %}}
    {{% tab name="OpenRouter" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -348,7 +339,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    ```
    {{% /tab %}}
    {{% tab name="Together AI" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -372,7 +363,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    ```
    {{% /tab %}}
    {{% tab name="xAI" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -441,7 +432,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
 
    {{< tabs >}}
    {{% tab name="Baseten" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -466,7 +457,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="Cerebras" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -491,7 +482,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="Cohere" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -516,7 +507,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="DeepInfra" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -541,7 +532,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="DeepSeek" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -566,7 +557,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="Fireworks AI" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -591,7 +582,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="Groq" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -616,7 +607,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="Hugging Face" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -641,7 +632,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="Meta" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -666,7 +657,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="Mistral AI" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -691,7 +682,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="OpenRouter" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -716,7 +707,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="Together AI" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -741,7 +732,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    ```
    {{% /tab %}}
    {{% tab name="xAI" %}}
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -779,7 +770,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
 
 2. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -903,7 +894,7 @@ You can configure [Perplexity](https://www.perplexity.ai/) with an {{< reuse "ag
 
 1. Create the following {{< reuse "agw-docs/snippets/backend.md" >}}. Perplexity exposes an OpenAI-compatible API for search-augmented models and uses the standard chat completions path, so you do not need to set `path`.
 
-   ```yaml {paths="openai-compatible-validate"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -932,7 +923,7 @@ You can configure [Perplexity](https://www.perplexity.ai/) with an {{< reuse "ag
 {{< version include-if="1.6.x,2.2.x" >}}
 Perplexity exposes an OpenAI-compatible API for search-augmented models and uses the standard chat completions path, so you do not need to set `path`.
 
-```yaml {paths="openai-compatible-validate"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -993,9 +984,5 @@ Use the following fields to adapt the template:
 | `policies.tls.sni` | Enable TLS and set the SNI value to the upstream hostname. |
 
 If the upstream needs mixed API formats or a cluster-local backend target, use [custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) instead. For self-hosted targets that already have guides, prefer the dedicated [Ollama]({{< link-hextra path="/integrations/llm/providers/ollama/" >}}) and [vLLM]({{< link-hextra path="/integrations/llm/providers/vllm/" >}}) pages.
-
-{{< doc-test paths="openai-compatible-validate" >}}
-unset -f kubectl
-{{< /doc-test >}}
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

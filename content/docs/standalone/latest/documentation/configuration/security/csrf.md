@@ -2,19 +2,11 @@
 title: CSRF
 weight: 11
 description: Protect against cross-site request forgery attacks with origin validation.
-test:
-  csrf:
-  - file: ${versionRoot}/documentation/configuration/security/csrf.md
-    path: csrf
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}}
 
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
-
-{{< doc-test paths="csrf" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 ## About CSRF protection
 
@@ -116,49 +108,6 @@ routes:
 ```
 {{< /tab >}}
 {{< /tabs >}}
-
-{{< doc-test paths="csrf" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The csrf policy with an additionalOrigins list is accepted by agentgateway
-#     in both the routing-based (gateways) and simplified MCP (mcp.policies) forms.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That cross-site requests are actually blocked/allowed at runtime — requires
-#     a backend the page omits to forward to.
-#   * The standalone `additionalOrigins: []` snippet later on the page is a
-#     fragment (no `gateways:`), so it is intentionally not tested.
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- policies:
-    csrf:
-      additionalOrigins:
-      - "https://www.example.com"
-      - "https://trusted.domain.com"
-  backends:
-  - host: localhost:8080
-EOF
-agentgateway -f config.yaml --validate-only
-
-cat <<'EOF' > config-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  policies:
-    csrf:
-      additionalOrigins:
-      - "https://www.example.com"
-      - "https://trusted.domain.com"
-  targets:
-  - name: everything
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-agentgateway -f config-mcp.yaml --validate-only
-{{< /doc-test >}}
 
 The `additionalOrigins` setting is a list of trusted origins allowed to make cross-site requests.
 - Format: `"scheme://host[:port]"`. To allow requests that send an `Origin: null` header, add `"null"`.

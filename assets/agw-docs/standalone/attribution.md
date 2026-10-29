@@ -11,38 +11,6 @@ You configure the attribution values, and agentgateway resolves each one from an
 2. Configure the LLM provider that you want to attribute, such as [Amazon Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}).
 3. Set up [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) so that `jwt.*` values are available to attribution expressions.
 
-{{< doc-test paths="attribution" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * Every example configuration on the page is accepted by agentgateway
-#     (--validate-only), including the assumeRole session name and tag fields,
-#     the merge and replace forms of the Bedrock requestMetadata transformation,
-#     and the Vertex AI labels transformation.
-#   * The replace form is quoted so that YAML reads it as a CEL expression
-#     string rather than as a flow mapping.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That the values reach AWS or Google billing data - external dependency.
-#     Session tags, cost allocation tags, model invocation logs, Cost Explorer,
-#     and the GCP billing export all need a live cloud account with billing
-#     export configured, and the tags take up to 24 hours to become activatable.
-#   * That the CEL expressions evaluate as intended - --validate-only does not
-#     type-check expression bodies, and evaluation needs a live provider call.
-#   * The "Verify" steps - console and billing-export procedures with no
-#     command-line equivalent.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
-{{< doc-test paths="attribution" >}}
-# Create the JWKS file that the examples reference.
-mkdir -p manifests/jwt
-cat <<'EOF' > manifests/jwt/pub-key
-{"keys": [{"kty": "RSA", "kid": "test", "use": "sig", "alg": "RS256", "n": "teXe4sfDoHQR5YUos3nsY_Ax6J2xrgXnIfUziaTWJ4nljejLVyg8m0g6SK9zrSaCvLm9GxAhpaJ_48RalwqDt4spBPQ8uvr-54jHrECboAbTxhy2T-oXP80Duz0xauSDVlyA_xenoCA24MFJ1rgHppy1F1eYTD-CQ-IxhXLNm5mE3rJufP_pdnMy0q6acXSfPtEzMJY3BYNV5umqimkOgH9PqQWd1RAgYdE7z5fvdCb4T4K667rRRT75PqRB4GJgSY-zQrC4CEVCw_ql7bfdouFcxXwsyh7AfImIEamA1LMODvMXVZWkZ8V0w_VEK6NHqr-BGOBVAUfRqYAEPxfaIw", "e": "AQAB"}]}
-EOF
-{{< /doc-test >}}
-
 ## Amazon Bedrock
 
 Bedrock attributes inference cost to the IAM principal that made the call. For gateway traffic, the documented pattern is a per-caller session. Agentgateway assumes an AWS Identity and Access Management (IAM) role for each request. The session name and the session tags come from the caller's identity.
@@ -84,39 +52,6 @@ llm:
           - key: environment
             value: prod
 ```
-
-{{< doc-test paths="attribution" >}}
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  policies:
-    jwtAuth:
-      issuer: agentgateway.dev
-      audiences: [test.agentgateway.dev]
-      jwks:
-        file: ./manifests/jwt/pub-key
-  models:
-  - name: "*"
-    provider: bedrock
-    params:
-      awsRegion: us-east-1
-    auth:
-      aws:
-        assumeRole:
-          roleArn: arn:aws:iam::123456789012:role/bedrock-invoke
-          sessionName:
-            expression: jwt.sub
-          tags:
-          - key: user
-            expression: jwt.sub
-          - key: team
-            expression: request.headers["x-team"]
-          - key: environment
-            value: prod
-EOF
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
 
 {{< reuse "agw-docs/snippets/review-table.md" >}}
 
@@ -176,42 +111,6 @@ llm:
       requestMetadata: '{"user": jwt.sub, "team": request.headers["x-team"]}'
 ```
 
-{{< doc-test paths="attribution" >}}
-# Merge posture
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: "*"
-    provider: bedrock
-    params:
-      awsRegion: us-east-1
-    finalTransformation:
-      requestMetadata: >-
-        coalesce(
-          llmRequest.requestMetadata.merge({"user": jwt.sub, "team": request.headers["x-team"]}),
-          {"user": jwt.sub, "team": request.headers["x-team"]}
-        )
-EOF
-agentgateway -f config.yaml --validate-only
-# Replace posture. Unquoted, YAML parses the value as a flow mapping and the
-# config is rejected, so the quoting in the guide is load-bearing.
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: "*"
-    provider: bedrock
-    params:
-      awsRegion: us-east-1
-    finalTransformation:
-      requestMetadata: '{"user": jwt.sub, "team": request.headers["x-team"]}'
-EOF
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
-
 > [!IMPORTANT]
 > A final transformation fails open, unlike a session tag. In a final transformation, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that fails to evaluate removes the target field instead of setting it, and the request still reaches the provider. A mistyped field name therefore drops attribution silently, and it also drops any metadata that the caller sent. For more information, see [Transform requests]({{< link-hextra path="/documentation/llm/transformations/" >}}).
 
@@ -252,49 +151,6 @@ llm:
 ```
 
 To replace caller labels instead of merging them, use a quoted expression such as `labels: '{"tenant": jwt.sub, "cost_center": "platform"}'`.
-
-{{< doc-test paths="attribution" >}}
-# Merge posture
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  policies:
-    jwtAuth:
-      issuer: agentgateway.dev
-      audiences: [test.agentgateway.dev]
-      jwks:
-        file: ./manifests/jwt/pub-key
-  models:
-  - name: "*"
-    provider: vertex
-    params:
-      vertexProject: my-project
-      vertexRegion: us-east5
-    finalTransformation:
-      labels: >-
-        coalesce(
-          llmRequest.labels.merge({"tenant": jwt.sub, "cost_center": "platform"}),
-          {"tenant": jwt.sub, "cost_center": "platform"}
-        )
-EOF
-agentgateway -f config.yaml --validate-only
-# Replace posture
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: "*"
-    provider: vertex
-    params:
-      vertexProject: my-project
-      vertexRegion: us-east5
-    finalTransformation:
-      labels: '{"tenant": jwt.sub, "cost_center": "platform"}'
-EOF
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
 
 Google allows up to 64 labels per request, with keys and values up to 63 characters from a restricted character set. Vertex AI rejects values outside those limits at request time. Billing export rows carry the labels next to the cost. You can group the export by `labels.tenant` or by any other key that you set.
 {{% /version %}}

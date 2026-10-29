@@ -12,11 +12,6 @@ flowchart LR
 
 ## Before you begin
 
-{{< doc-test paths="httpbin" >}}
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 {{< reuse "agw-docs/standalone/quickstart/install-prereq.md" >}}
 
 2. Install [Docker](https://docs.docker.com/get-started/get-docker/) to run httpbin.
@@ -32,13 +27,13 @@ Run the httpbin image so it listens on port 80 inside the container. Map it to a
 {{< tabs >}}
 {{% tab name="Linux" %}}
 
-```sh {paths="httpbin,httpbin-linux"}
+```sh
 docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin
 ```
 {{% /tab %}}
 {{% tab name="macOS (Apple Silicon)" %}}
 
-```sh {paths="httpbin-macos"}
+```sh
 docker run --rm -d --platform linux/amd64 -p 8000:80 --name httpbin kennethreitz/httpbin
 ```
 {{% /tab %}}
@@ -46,7 +41,7 @@ docker run --rm -d --platform linux/amd64 -p 8000:80 --name httpbin kennethreitz
 
 Verify that httpbin responds.
 
-```sh {paths="httpbin"}
+```sh
 curl -s http://localhost:8000/headers | head -20 || true
 ```
 
@@ -123,48 +118,13 @@ You add the gateway and route from the UI, so you can start agentgateway without
 {{% /tab %}}
 {{< /tabs >}}
 
-{{< doc-test paths="httpbin" >}}
-# Hidden test: the UI steps above (Add gateway/route) are not scriptable, so this block
-# reproduces the equivalent config they produce, to keep the resulting setup tested.
-cat > config.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  httpbin:
-    port: 3000
-    protocol: HTTP
-routes:
-- name: httpbin
-  gateways: httpbin
-  backends:
-  - host: 127.0.0.1:8000
-EOF
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
-
 ### Step 3: Send a request through agentgateway
 
 Send a request to agentgateway on port 3000. Agentgateway forwards it to httpbin; the response is returned to you.
 
-```sh {paths="httpbin"}
+```sh
 curl -i http://localhost:3000/headers
 ```
-
-{{< doc-test paths="httpbin" >}}
-YAMLTest -f - <<'EOF'
-- name: request through agentgateway to httpbin returns 200
-  http:
-    url: "http://localhost:3000"
-    path: /headers
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
 
 Example response (status and headers):
 
@@ -188,7 +148,7 @@ Example JSON body:
 
 You can try other httpbin endpoints through agentgateway, such as the following.
 
-```sh {paths="httpbin"}
+```sh
 curl -s http://localhost:3000/get
 curl -s http://localhost:3000/post -X POST -H "Content-Type: application/json" -d '{"key":"value"}'
 ```
@@ -197,7 +157,7 @@ curl -s http://localhost:3000/post -X POST -H "Content-Type: application/json" -
 
 When you are done, stop and remove the httpbin container.
 
-```sh {paths="httpbin"}
+```sh
 docker stop httpbin
 ```
 

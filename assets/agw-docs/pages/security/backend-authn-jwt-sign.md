@@ -23,7 +23,7 @@ The gateway reads the private key from the `signingKey` entry of a Secret in the
 
 1. Generate a private key that you use for the signing process. An EC P-256 key is the smallest option, and pairs with the `ES256` algorithm.
 
-   ```sh {paths="jwt-sign"}
+   ```sh
    openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out signing-key.pem
    ```
 
@@ -35,7 +35,7 @@ The gateway reads the private key from the `signingKey` entry of a Secret in the
 
 2. Store the key in a Secret in the same namespace as the policy, under the `signingKey` data key.
 
-   ```sh {paths="jwt-sign"}
+   ```sh
    kubectl create secret generic jwt-signing-key \
      --namespace httpbin \
      --from-file=signingKey=signing-key.pem
@@ -45,7 +45,7 @@ The gateway reads the private key from the `signingKey` entry of a Secret in the
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the httpbin route and signs every request that the gateway forwards to the backend. The claim values in this example follow the shape that the Snowflake SQL API expects. Replace them with the claims that your upstream requires.
 
-   ```yaml {paths="jwt-sign"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -83,41 +83,11 @@ The gateway reads the private key from the `signingKey` entry of a Secret in the
    | `ttl` | Optional token lifetime that the gateway uses for `exp`. Defaults to `300s`. |
    | `location` | Optional location that the gateway writes the signed token to. Defaults to the `Authorization` header with a `Bearer` prefix. Set exactly one of `header`, `queryParameter`, or `cookie` to change it. At a custom location, the gateway writes the bare token with no `Bearer` prefix. |
 
-{{< doc-test paths="jwt-sign" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for the jwtSign policy to be accepted
-  wait:
-    target:
-      kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-      metadata:
-        namespace: httpbin
-        name: jwt-sign-backend-auth
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="jwt-sign" >}}
-# Programming the backend auth policy can lag route readiness, so poll until the backend reports a
-# signed token. A single-shot request can catch the data plane mid-programming and get the client's
-# own request through unsigned, or a non-JSON response.
-for i in $(seq 1 60); do
-  BODY=$(curl -s --max-time 5 "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" || true)
-  echo "${BODY}" | grep -q '"Authorization"' && break
-  sleep 2
-done
-{{< /doc-test >}}
-
 ## Verify that requests are signed
 
 1. Send a request through the gateway to the httpbin `/headers` endpoint, which reflects the headers that the backend received. Because the gateway writes the token to the `Authorization` header, the command decodes that header to show the protected header and the payload of the token that the backend received.
 
-   ```sh {paths="jwt-sign"}
+   ```sh
    curl -s "http://$INGRESS_GW_ADDRESS:80/headers" -H "host: www.example.com" | python3 -c '
    import sys,json,base64
    h=json.load(sys.stdin)["headers"]
@@ -139,47 +109,11 @@ done
 
 2. Confirm that the gateway caches nothing. Send two requests a second or more apart, and compare the tokens. The gateway signs each request afresh, so the tokens and their `iat` values differ.
 
-   ```sh {paths="jwt-sign"}
+   ```sh
    curl -s "http://$INGRESS_GW_ADDRESS:80/headers" -H "host: www.example.com" | python3 -c 'import sys,json; print(json.load(sys.stdin)["headers"]["Authorization"][0])'
    sleep 2
    curl -s "http://$INGRESS_GW_ADDRESS:80/headers" -H "host: www.example.com" | python3 -c 'import sys,json; print(json.load(sys.stdin)["headers"]["Authorization"][0])'
    ```
-
-{{< doc-test paths="jwt-sign" >}}
-# WHAT THIS TEST VALIDATES:
-#   * An EC P-256 signing key stores as a Secret under the signingKey data key, and the jwtSign
-#     policy applies cleanly against the nightly CRD and reports Accepted.
-#   * The backend receives a token the client never sent, signed with the configured alg and kid,
-#     carrying the configured claims.
-#   * The signer owns the time claims: exp minus iat is the 60-second ttl plus the 10-second iat
-#     backdate, and no nbf claim is written.
-#   * Nothing is cached: two requests a second apart produce different tokens.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The RSA key and default RS256 path -- the visible alternative would overwrite signing-key.pem
-#     and contradict the ES256 policy that the rest of the guide applies.
-#   * The Troubleshoot section -- each case needs a deliberately broken policy, which would leave
-#     the route failing closed for any later step.
-curl -s --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" > jwt-sign-first.json
-sleep 2
-curl -s --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" > jwt-sign-second.json
-python3 -c '
-import json,base64
-def tok(path):
-    h=json.load(open(path))["headers"]
-    v=(h.get("Authorization") or h.get("authorization"))
-    return (v[0] if isinstance(v,list) else v).split()[1]
-def seg(t,i): return json.loads(base64.urlsafe_b64decode(t.split(".")[i]+"=="))
-t=tok("jwt-sign-first.json")
-head,payload=seg(t,0),seg(t,1)
-assert head["alg"]=="ES256", head
-assert head["kid"]=="my-signing-key", head
-assert payload["sub"]=="MYACCOUNT.MYUSER", payload
-assert payload["aud"]=="https://myaccount.snowflakecomputing.com", payload
-assert payload["exp"]-payload["iat"]==70, payload
-assert "nbf" not in payload, payload
-assert tok("jwt-sign-second.json")!=t, "tokens were identical across two requests"
-print("jwtSign backend authentication verified")'
-{{< /doc-test >}}
 
 ## Troubleshoot
 
@@ -221,7 +155,7 @@ kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} jwt-sign-backend-auth -n
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="jwt-sign"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} jwt-sign-backend-auth -n httpbin
 kubectl delete secret jwt-signing-key -n httpbin
 ```

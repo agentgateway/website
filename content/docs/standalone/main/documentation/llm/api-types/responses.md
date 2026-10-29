@@ -2,7 +2,6 @@
 title: Responses
 weight: 20
 description: Send requests through agentgateway using the OpenAI Responses API.
-test: skip
 ---
 
 The OpenAI Responses API (`/v1/responses`) is OpenAI's interface for stateful, multi-step model interactions.
