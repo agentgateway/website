@@ -51,8 +51,10 @@ In Kubernetes, configure `ai.provider.copilot` on an {{< reuse "agw-docs/snippet
        ai:
          routes:
            /v1/chat/completions: Completions
+           /v1/decisions: Decisions
            /v1/messages: Messages
            /v1/responses: Responses
+           /v1/systemone: SystemOne
        auth:
          secretRef:
            name: copilot-token
@@ -70,7 +72,7 @@ In Kubernetes, configure `ai.provider.copilot` on an {{< reuse "agw-docs/snippet
    | Field | Description |
    | -- | -- |
    | `ai.provider.copilot` | Selects the Copilot LLM provider. The default upstream is `api.githubcopilot.com:443`, with TLS verification. The example sets an empty object, so the provider uses the model from the request. To override the model, set `ai.provider.copilot.model`. |
-   | `policies.ai.routes` | Maps incoming paths to API formats. The example enables Chat Completions, Messages, and Responses. |
+   | `policies.ai.routes` | Maps incoming paths to API formats. The example enables Chat Completions, Decisions, Messages, Responses, and SystemOne. |
    | `policies.auth.secretRef.name` | Name of the credential Secret in the backend's namespace. |
 
    Copilot also works with an [{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}]({{< link-hextra path="/documentation/llm/models/" >}}). Set `provider: Copilot` and `parentRefs`, and supply the Secret through `spec.policies.auth.secretRef`.
@@ -98,10 +100,16 @@ In Kubernetes, configure `ai.provider.copilot` on an {{< reuse "agw-docs/snippet
            value: /v1/chat/completions
        - path:
            type: Exact
+           value: /v1/decisions
+       - path:
+           type: Exact
            value: /v1/messages
        - path:
            type: Exact
            value: /v1/responses
+       - path:
+           type: Exact
+           value: /v1/systemone
    EOF
    ```
 
@@ -145,7 +153,7 @@ In Kubernetes, configure `ai.provider.copilot` on an {{< reuse "agw-docs/snippet
      }'
    ```
 
-   The route also accepts `/v1/messages` and `/v1/responses` with their corresponding request bodies. Choose an API format that the model supports. Set `"stream": true` in the request body for streaming.
+   The route also accepts `/v1/decisions`, `/v1/messages`, `/v1/responses`, and `/v1/systemone` with their corresponding request bodies. Choose an API format that the model supports, such as `microsoft-decision-1` for `/v1/decisions` and `/v1/systemone`. Set `"stream": true` in the request body for streaming chat responses.
 
 The example uses the sample gateway's HTTP listener. Configure [client authentication and authorization]({{< link-hextra path="/documentation/security/" >}}) before exposing it to other callers. Copilot requests use the existing LLM policies, metrics, and tracing. Configure caller identity separately for per-user attribution.
 
@@ -197,7 +205,7 @@ kubectl get {{< reuse "agw-docs/snippets/backend.md" >}} copilot \
 | The condition message reports `secret <namespace>/<name> not found`. | The referenced Secret does not exist in the backend's namespace. Check `policies.auth.secretRef.name` and create the Secret in that namespace. |
 | The condition message reports `missing Authorization value`. | The Secret's `Authorization` key is missing, empty, or contains only the `Bearer` scheme. Supply a valid credential, or set `secretRef.key` to the key that holds it. |
 | The request fails with an unsupported conversion error. | The selected model does not accept the requested API format. Choose a model and request format that work together. |
-| The upstream rejects the request body. | The provider sends `content-type: application/json`. Send a JSON body in the format expected by `/v1/chat/completions`, `/v1/messages`, or `/v1/responses`. |
+| The upstream rejects the request body. | The provider sends `content-type: application/json`. Send a JSON body in the format expected by `/v1/chat/completions`, `/v1/decisions`, `/v1/messages`, `/v1/responses`, or `/v1/systemone`. |
 
 ## Clean up
 
