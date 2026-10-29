@@ -330,7 +330,25 @@ jobs:
           else
             echo "has_tests=false" >> $GITHUB_OUTPUT
           fi
-          MATRIX=$(echo "$TESTS" | jq -c '(length | [., 40] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | [.[] | "\(.test) (\(.file | split("/")[2:4] | join("/")))"] | join(", ") | if length > 80 then .[:77] + "..." else . end)})]}')
+          # Linux tests are spread over up to 40 shards. A scenario with
+          # `runner: macos` or `runner: windows` in docs-tests goes to one shard
+          # per OS, which runs on that OS's hosted runner (see run-test). A test
+          # with no `runner` field is a Linux test, so this also works with a
+          # docs-tests version that does not report runners.
+          MATRIX=$(echo "$TESTS" | jq -c '
+            def shardlabel: [.[] | "\(.test) (\(.file | split("/")[2:4] | join("/")))"] | join(", ") | if length > 80 then .[:77] + "..." else . end;
+            map(.runner = (.runner // "linux")) as $all
+            | ($all | map(select(.runner == "linux"))) as $linux
+            | ($linux | length | [., 40] | min) as $shards
+            | {include: (
+                [range($shards) | . as $i
+                  | ([$linux | to_entries[] | select(.key % $shards == $i) | .value] as $shard
+                  | {os: "ubuntu-latest", shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | shardlabel)})]
+                + [$all | map(select(.runner != "linux")) | group_by(.runner) | to_entries[] | .key as $k | .value as $shard
+                  | {os: "\($shard[0].runner)-latest", shard_index: (1000 + $k), test_count: ($shard | length), tests: ($shard | tojson),
+                     shard_name: ("[\($shard[0].runner)] " + ($shard | shardlabel))}]
+              )}
+          ')
           echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
           echo "Discovered $COUNT functional/live test case(s)"
 
@@ -553,13 +571,27 @@ jobs:
     name: "${{ matrix.shard_name }}"
     needs: discover
     if: needs.discover.outputs.has_tests == 'true'
-    runs-on: ubuntu-latest
+    # Linux unless the shard is for a `runner: macos` or `runner: windows`
+    # scenario. Those run with no cluster, so the kind steps below are
+    # Linux-only.
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     timeout-minutes: 45
+    defaults:
+      run:
+        # Every step is a bash script. On Windows this is Git Bash, not the
+        # default PowerShell.
+        shell: bash
 
     strategy:
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
       fail-fast: false
     steps:
+      # Windows checkouts convert line endings to CRLF by default, and the
+      # generated bash scripts then fail on the carriage returns.
+      - name: Keep LF line endings (Windows)
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+
       # persist-credentials: false on both checkouts, so the token is not left
       # in .git/config for the commands this job runs out of the changed pages.
       # Nothing here pushes or fetches after the checkouts.
@@ -582,6 +614,7 @@ jobs:
           python-version: '3.x'
 
       - name: Set up Go
+        if: runner.os == 'Linux'
         uses: actions/setup-go@v6
         with:
           go-version: 'stable'
@@ -604,11 +637,12 @@ jobs:
       # running them short.
       - name: Attach test annotations
         run: |
-          python3 docs-tests/scripts/annotations.py attach --repo . \
+          python docs-tests/scripts/annotations.py attach --repo . \
             --annotations docs-tests/products/agentgateway/annotations \
             --report out/annotations/attach-report.json
 
       - name: Install cloud-provider-kind
+        if: runner.os == 'Linux'
         # A release binary, not `go install ...@latest`. Building it pulls a few
         # hundred modules through proxy.golang.org, and on 2026-10-14 dropped
         # proxy streams failed shards before any test ran (website#920, #1250,
@@ -629,7 +663,10 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Install yamltest
-        run: npm install -g yamltest@latest
+        # The package links both `yamltest` and `YAMLTest`. On macOS's
+        # case-insensitive filesystem the second link collides with the first
+        # (EEXIST), so retry with --force there.
+        run: npm install -g yamltest@latest || npm install -g --force yamltest@latest
 
       # Redirect the development install snippets to the version resolved in `discover`.
       # Only rewrites the checkout used by this run; the committed docs still ship
@@ -655,6 +692,8 @@ jobs:
           # nightly release-binary-linux artifact from agentgateway/agentgateway.
           GH_TOKEN: ${{ github.token }}
           DOCS_TESTS_ROOT: ${{ github.workspace }}/docs-tests
+          # Git Bash on Windows. A bare `bash` can resolve to the WSL launcher.
+          DOC_TEST_BASH: ${{ runner.os == 'Windows' && 'C:\Program Files\Git\bin\bash.exe' || '' }}
         run: |
           FAILED=0
           TEST_INDEX=0
@@ -664,18 +703,20 @@ jobs:
           # remaining lines of this loop's input, so the shard would stop early
           # and silently skip its remaining tests while still exiting 0.
           while IFS=$'\t' read -r -u 3 file test; do
-            python3 docs-tests/scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
+            python docs-tests/scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
               --annotation-report out/annotations/attach-report.json \
               --report-file "out/tests/generated/shard/${TEST_INDEX}/test-results.yaml" \
               < /dev/null || FAILED=1
             TEST_INDEX=$((TEST_INDEX + 1))
-          done 3< <(echo "$SHARD_TESTS" | jq -r '.[] | "\(.file)\t\(.test)"')
-          python3 docs-tests/scripts/merge_test_results.py out/tests/generated/shard/ out/tests/generated/test-results.yaml
+          # `tr -d '\r'`: jq on Windows ends lines with CRLF, which would leave a
+          # carriage return on every test name.
+          done 3< <(echo "$SHARD_TESTS" | jq -r '.[] | "\(.file)\t\(.test)"' | tr -d '\r')
+          python docs-tests/scripts/merge_test_results.py out/tests/generated/shard/ out/tests/generated/test-results.yaml
 
           # Every assigned test must have produced a report. A missing report
           # means the loop above did not run it, which must fail the shard
           # rather than pass with a short result set.
-          EXPECTED=$(echo "$SHARD_TESTS" | jq 'length')
+          EXPECTED=$(echo "$SHARD_TESTS" | jq 'length' | tr -d '\r')
           if [ "$TEST_INDEX" -ne "$EXPECTED" ]; then
             echo "::error::Shard ran $TEST_INDEX of $EXPECTED assigned test(s)."
             FAILED=1
