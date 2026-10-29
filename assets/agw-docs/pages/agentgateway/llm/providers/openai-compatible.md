@@ -77,7 +77,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Baseten" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: llm-model
@@ -101,7 +101,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Cerebras" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: llm-model
@@ -125,7 +125,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Cohere" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: llm-model
@@ -149,7 +149,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="DeepInfra" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: llm-model
@@ -173,7 +173,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="DeepSeek" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: llm-model
@@ -197,7 +197,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Fireworks AI" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: llm-model
@@ -221,7 +221,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Groq" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: llm-model
@@ -245,7 +245,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Hugging Face" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: llm-model
@@ -269,7 +269,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Meta" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: llm-model
@@ -293,7 +293,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Mistral AI" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: llm-model
@@ -317,7 +317,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="OpenRouter" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: llm-model
@@ -341,7 +341,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Together AI" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: llm-model
@@ -365,7 +365,7 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="xAI" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: llm-model
@@ -843,7 +843,7 @@ You can configure [Perplexity](https://www.perplexity.ai/) with an {{< reuse "ag
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: perplexity

@@ -45,7 +45,7 @@ Store your TypeSafe API key in a Secret, and create a model that uses the `Types
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: typesafe
