@@ -369,7 +369,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    |---------|-------------|
    | `ai.provider.openai.model` | Optional upstream model override. Omit this parameter to pass the client-provided model through. |
    | `host` and `port` | The provider's API host and port. Use `443` for HTTPS endpoints. |
-   | `path` | The provider's chat completions path. Omit this parameter for providers that use the standard `/v1/chat/completions` path. |
+   | `path` | The provider's chat completions path. Set `path` even for providers that use the standard `/v1/chat/completions` path. When you set `host` without `path`, the provider receives the client's request path unchanged, such as `/llm` from the HTTPRoute in the next step. |
    | `policies.auth.secretRef` | References the secret that contains your provider API key. |
    | `policies.tls.sni` | Enables TLS and sets the SNI value to the upstream hostname. |
 
@@ -434,7 +434,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
 
 ### Perplexity example {#perplexity}
 
-[Perplexity](https://www.perplexity.ai/) exposes an OpenAI-compatible API for search-augmented models and uses the standard chat completions path, so you do not need to set `path`.
+[Perplexity](https://www.perplexity.ai/) exposes an OpenAI-compatible API for search-augmented models. The chat completions path is `/chat/completions`, without the `/v1` prefix that most providers use.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -450,6 +450,7 @@ spec:
         model: sonar
       host: api.perplexity.ai
       port: 443
+      path: /chat/completions
   policies:
     auth:
       secretRef:
@@ -491,7 +492,7 @@ Use the following fields to adapt the template:
 |---------|-------------|
 | `ai.provider.openai.model` | Optional upstream model override. Omit this parameter to pass the client-provided model through. |
 | `host` and `port` | Required target address for the external provider endpoint. |
-| `path` | The provider's chat completions path. Omit this parameter for the standard `/v1/chat/completions` path. |
+| `path` | The provider's chat completions path. Set this parameter even for the standard `/v1/chat/completions` path. When you set `host` without `path`, the provider receives the client's request path unchanged. |
 | `policies.auth` | Attach the provider API key secret to outbound requests. |
 | `policies.tls.sni` | Enable TLS and set the SNI value to the upstream hostname. |
 
