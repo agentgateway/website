@@ -72,6 +72,7 @@ Prompt and response bodies can contain sensitive data. Add these attributes only
 ```yaml
 frontendPolicies:
   tracing:
+    # ...
     attributes:
       llm.input_messages: >-
         flattenRecursive(llm.prompt.map(c, {"message": c}))
