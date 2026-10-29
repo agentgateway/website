@@ -789,7 +789,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
        backendRefs:
        - name: llm-backend
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```

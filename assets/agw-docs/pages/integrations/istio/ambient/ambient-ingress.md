@@ -150,7 +150,7 @@ metadata:
   name: ambient-ingress
   namespace: agentgateway-system
 spec:
-  gatewayClassName: agentgateway
+  gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
   listeners:
   - name: http
     port: 80

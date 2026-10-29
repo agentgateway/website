@@ -394,7 +394,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
        backendRefs:
        - name: llm-backend
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```

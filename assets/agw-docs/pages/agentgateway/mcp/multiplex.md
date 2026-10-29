@@ -174,7 +174,7 @@ Route to the federated MCP servers with agentgateway.
      rules:
        - backendRefs:
          - name: mcp
-           group: agentgateway.dev
+           group: {{< reuse "agw-docs/snippets/group.md" >}}
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
          matches:
          - path:

@@ -206,7 +206,7 @@ These steps are the same for both external and in-cluster vLLM.
      - backendRefs:
        - name: vllm
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
