@@ -11,11 +11,6 @@ Agentgateway extracts token usage from supported LLM APIs automatically. {{< ver
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-{{< doc-test paths="costs" >}}
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 ## Configure a model catalog
 
 {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
@@ -373,36 +368,3 @@ Usually, you do not need to write catalog JSON by hand. Use `agctl {{< reuse "ag
 
 {{< reuse "agw-docs/snippets/model-catalog-tags.md" >}}
 {{% /version %}}
-
-{{< doc-test paths="costs" >}}
-# Verify that agentgateway loads a catalog from a file source.
-cat > /tmp/costs-catalog.json <<'EOF'
-{
-  "providers": {
-    "openai": {
-      "models": {
-        "gpt-4o-mini": {
-          "rates": { "input": "0.15", "output": "0.6", "cacheRead": "0.075" }
-        }
-      }
-    }
-  }
-}
-EOF
-cat > /tmp/costs-config.yaml <<'EOF'
-config:
-  modelCatalog:
-  - file: /tmp/costs-catalog.json
-llm:
-  models:
-  - name: gpt-4o-mini
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-EOF
-agentgateway -f /tmp/costs-config.yaml > /tmp/costs-agw.log 2>&1 &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-grep -qE "model catalog (re)?loaded" /tmp/costs-agw.log
-{{< /doc-test >}}

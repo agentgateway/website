@@ -2,7 +2,6 @@
 title: Token count
 weight: 60
 description: Count tokens through agentgateway using the Anthropic Messages token-count API.
-test: skip
 ---
 
 The Anthropic token-count API (`/v1/messages/count_tokens`) estimates the number of input tokens in an Anthropic Messages request before sending it to a model.

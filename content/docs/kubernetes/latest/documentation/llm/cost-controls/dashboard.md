@@ -2,7 +2,6 @@
 title: Cost dashboard
 weight: 30
 description: View LLM spend, tokens, and traffic in the built-in UI when running agentgateway on Kubernetes.
-test: skip
 ---
 
 The built-in **UI** includes a cost dashboard: the same **LLM > Analytics** page available in standalone mode. It plots spend, tokens, and calls over time, broken down by model, provider, user, group, or user agent. It works in Kubernetes too, but unlike standalone it is not enabled by default. The proxy ships without a request-log database, so the dashboard has nothing to show until you configure one.

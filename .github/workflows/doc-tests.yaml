@@ -122,12 +122,13 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
-      # Test markup is moving out of these pages into docs-tests, as test
-      # annotations. Attach them before anything reads the pages. A page that
-      # still carries inline markup has it removed first, so the run tests
-      # exactly what the annotations say; pages without annotations are left
-      # alone. The report lists markup that did not attach, so the runner can
-      # skip those scenarios with a warning instead of running them short.
+      # Test markup lives in docs-tests as annotations, not in these pages.
+      # Attach them before anything reads the pages. The latest and main trees
+      # carry no inline markup; an older version tree that still does has it
+      # removed first wherever an annotation exists, so the run tests exactly
+      # what the annotations say. The report lists markup that did not attach,
+      # so the runner can skip those scenarios with a warning instead of
+      # running them short.
       - name: Attach test annotations
         run: |
           python3 docs-tests/scripts/annotations.py attach --repo . \
@@ -525,12 +526,13 @@ jobs:
           echo "KUBERNETES_VERSION=${KUBE}.0" >> "$GITHUB_ENV"
           echo "Gateway API v${GWAPI} (experimental), Kubernetes ${KUBE}.0 schemas via kubeconform ${KUBECONFORM_VERSION}."
 
-      # Test markup is moving out of these pages into docs-tests, as test
-      # annotations. Attach them before anything reads the pages. A page that
-      # still carries inline markup has it removed first, so the run tests
-      # exactly what the annotations say; pages without annotations are left
-      # alone. The report lists markup that did not attach, so the runner can
-      # skip those scenarios with a warning instead of running them short.
+      # Test markup lives in docs-tests as annotations, not in these pages.
+      # Attach them before anything reads the pages. The latest and main trees
+      # carry no inline markup; an older version tree that still does has it
+      # removed first wherever an annotation exists, so the run tests exactly
+      # what the annotations say. The report lists markup that did not attach,
+      # so the runner can skip those scenarios with a warning instead of
+      # running them short.
       - name: Attach test annotations
         run: |
           python3 docs-tests/scripts/annotations.py attach --repo . \
@@ -626,12 +628,13 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
-      # Test markup is moving out of these pages into docs-tests, as test
-      # annotations. Attach them before anything reads the pages. A page that
-      # still carries inline markup has it removed first, so the run tests
-      # exactly what the annotations say; pages without annotations are left
-      # alone. The report lists markup that did not attach, so the runner can
-      # skip those scenarios with a warning instead of running them short.
+      # Test markup lives in docs-tests as annotations, not in these pages.
+      # Attach them before anything reads the pages. The latest and main trees
+      # carry no inline markup; an older version tree that still does has it
+      # removed first wherever an annotation exists, so the run tests exactly
+      # what the annotations say. The report lists markup that did not attach,
+      # so the runner can skip those scenarios with a warning instead of
+      # running them short.
       - name: Attach test annotations
         run: |
           python docs-tests/scripts/annotations.py attach --repo . \
@@ -750,8 +753,8 @@ jobs:
   # always empty -- every OSS traffic-management test that reaches 'live' or beyond
   # needs a vendor this repo doesn't have; see the plan's Phase B/F notes on the Entra
   # tenant gap), so this job is a structural no-op today: `has_credentialed_tests` stays
-  # 'false' and it skips. It starts doing real work the moment a page declares
-  # `type: credentialed` in its front matter. A dedicated summary/Slack step for this
+  # 'false' and it skips. It starts doing real work the moment a scenario declares
+  # `type: credentialed` in docs-tests `tests.yaml`. A dedicated summary/Slack step for this
   # type is deliberately not built yet -- there's nothing to exercise it against; add
   # one alongside the first real credentialed test.
   run-test-credentialed:
@@ -800,12 +803,13 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
-      # Test markup is moving out of these pages into docs-tests, as test
-      # annotations. Attach them before anything reads the pages. A page that
-      # still carries inline markup has it removed first, so the run tests
-      # exactly what the annotations say; pages without annotations are left
-      # alone. The report lists markup that did not attach, so the runner can
-      # skip those scenarios with a warning instead of running them short.
+      # Test markup lives in docs-tests as annotations, not in these pages.
+      # Attach them before anything reads the pages. The latest and main trees
+      # carry no inline markup; an older version tree that still does has it
+      # removed first wherever an annotation exists, so the run tests exactly
+      # what the annotations say. The report lists markup that did not attach,
+      # so the runner can skip those scenarios with a warning instead of
+      # running them short.
       - name: Attach test annotations
         run: |
           python3 docs-tests/scripts/annotations.py attach --repo . \

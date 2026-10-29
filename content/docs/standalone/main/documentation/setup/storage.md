@@ -2,7 +2,6 @@
 title: Configuration storage
 weight: 30
 description: Choose whether agentgateway stores UI-managed configuration in your config file, in a database, or not at all.
-test: skip
 aliases:
   - ../../deployment/helm/storage/
 ---

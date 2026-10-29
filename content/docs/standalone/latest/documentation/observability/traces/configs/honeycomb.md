@@ -2,7 +2,6 @@
 title: Honeycomb
 weight: 40
 description: Export agentgateway traces to Honeycomb by using its OTLP ingestion endpoint.
-test: skip
 ---
 
 [Honeycomb](https://www.honeycomb.io/) is an observability platform. You can send traces directly to Honeycomb by setting your API key as a header on every export request.

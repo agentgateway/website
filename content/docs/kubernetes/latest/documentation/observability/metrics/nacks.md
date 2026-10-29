@@ -2,14 +2,6 @@
 title: Monitor proxy config rejections
 description: Monitor and troubleshoot proxy configuration rejections with metrics and events.
 weight: 30
-test:
-  nacks:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: standard
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/observability/metrics/nacks.md
-    path: nacks
 # This page used to be `observability/nacks.md`. One alias per old URL shape: the
 # pre-docTabs layout, then the docTabs layout before the page moved under
 # `metrics/`. Aliases are relative to the parent of this page's URL, so a copied

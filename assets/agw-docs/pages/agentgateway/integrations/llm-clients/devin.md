@@ -5,10 +5,6 @@ Configure [Devin Desktop](https://devin.ai/desktop), the AI-powered code editor 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. Install [Devin Desktop](https://devin.ai/desktop).
 
-{{< doc-test paths="devin-validate" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 ## Example agentgateway configuration
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
@@ -26,11 +22,6 @@ You can configure agentgateway in the UI or in your configuration file.
 {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 {{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/devin-config.md" >}}
 {{% /version %}}
-
-{{< doc-test paths="devin-validate" >}}
-export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
-agentgateway -f /tmp/test-devin.yaml --validate-only
-{{< /doc-test >}}
 
 ## Configure Devin Desktop
 
