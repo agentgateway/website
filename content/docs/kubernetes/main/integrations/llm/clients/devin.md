@@ -1,7 +1,7 @@
 ---
 title: Devin Desktop
 weight: 10
-description: Configure Devin Desktop AI code editor to use agentgateway running in Kubernetes
+description: Use agentgateway as an egress proxy for Devin Desktop
 aliases:
   - windsurf
 ---

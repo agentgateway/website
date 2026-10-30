@@ -245,6 +245,12 @@ Confirm that pod-to-pod traffic between the agentgateway ingress proxy and the h
      grep 'dst.namespace="httpbin"'
    ```
 
+   ztunnel writes an access log entry when a connection closes, not when it opens. The ingress proxy keeps its connection to httpbin open between requests, so the entry might not appear right away. If the command prints nothing, restart the proxy to close the connection, and then run the command again.
+   ```sh
+   kubectl -n agentgateway-system rollout restart deployment/ambient-ingress
+   kubectl -n agentgateway-system rollout status deployment/ambient-ingress
+   ```
+
 3. Confirm that `src.identity` and `dst.identity` are SPIFFE URIs and that `dst.hbone_addr` is set. Both fields must be present.
 
    Example output:
