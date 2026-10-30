@@ -106,14 +106,14 @@ routes:
 
 If your Phoenix keeps authentication on, agentgateway must send a Phoenix API key with every trace export. Otherwise, Phoenix rejects the traces.
 
-1. Start Phoenix. Phoenix 21.0 and later turn on authentication by default, so you do not need extra settings.
+1. Start Phoenix. Authentication is on by default. If the Phoenix instance from the quick start still runs, stop it first, because both instances use ports 6006 and 4317. Phoenix versions earlier than 21.0 also need the `PHOENIX_ENABLE_AUTH=true` and `PHOENIX_SECRET` environment variables.
    ```bash
    docker run -p 6006:6006 -p 4317:4317 arizephoenix/phoenix:latest
    ```
 2. Open Phoenix at [http://localhost:6006](http://localhost:6006), and log in as the default admin, `admin@localhost` with the password `admin`. Phoenix asks you to change the password on first login.
-3. Go to **Settings** > **API Keys**, and create a key in the **System API Keys** section. A system key belongs to Phoenix instead of a user account, so it keeps working if that user leaves.
+3. Go to **Settings** > **API Keys**, and create a key in the **System API Keys** section. A system key belongs to Phoenix instead of a user account, so it keeps working if the user who created it leaves.
 4. Save the key in an environment variable.
-   ```sh
+   ```bash
    export PHOENIX_API_KEY=<your-api-key>
    ```
 5. Add the key to the tracing policy with `backendAuth`. Agentgateway sends the key in the `Authorization: Bearer <key>` header, which is the header that Phoenix checks.
