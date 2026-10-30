@@ -28,7 +28,7 @@ For an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, use the case-sens
 | Meta | `Meta` | `api.meta.ai` | `/v1/chat/completions` |
 | Mistral AI | `Mistral` | `api.mistral.ai` | `/v1/chat/completions` |
 | OpenRouter | `Openrouter` | `openrouter.ai` | `/api/v1/chat/completions` |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
-| [Perplexity](#perplexity) | `Perplexity` | `api.perplexity.ai` | `/v1/chat/completions` |{{< /version >}}
+| [Perplexity](#perplexity) | `Perplexity` | `api.perplexity.ai` | `/chat/completions` |{{< /version >}}
 | Together AI | `TogetherAI` | `api.together.xyz` | `/v1/chat/completions` |
 | xAI | `XAI` | `api.x.ai` | `/v1/chat/completions` |
 
@@ -77,8 +77,8 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Baseten" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
    metadata:
      name: llm-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -101,8 +101,8 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Cerebras" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
    metadata:
      name: llm-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -125,8 +125,8 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Cohere" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
    metadata:
      name: llm-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -149,8 +149,8 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="DeepInfra" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
    metadata:
      name: llm-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -173,8 +173,8 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="DeepSeek" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
    metadata:
      name: llm-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -197,8 +197,8 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Fireworks AI" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
    metadata:
      name: llm-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -221,8 +221,8 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Groq" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
    metadata:
      name: llm-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -245,8 +245,8 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Hugging Face" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
    metadata:
      name: llm-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -269,8 +269,8 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Meta" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
    metadata:
      name: llm-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -293,8 +293,8 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Mistral AI" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
    metadata:
      name: llm-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -317,8 +317,8 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="OpenRouter" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
    metadata:
      name: llm-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -341,8 +341,8 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="Together AI" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
    metadata:
      name: llm-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -365,8 +365,8 @@ Use a provider preset to serve standard LLM APIs through the gateway. Each examp
    {{% tab name="xAI" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
    metadata:
      name: llm-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -764,7 +764,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    |---------|-------------|
    | `ai.provider.openai.model` | Optional upstream model override. Omit this parameter to pass the client-provided model through. |
    | `host` and `port` | The provider's API host and port. Use `443` for HTTPS endpoints. |
-   | `path` | The provider's chat completions path. Omit this parameter for providers that use the standard `/v1/chat/completions` path. |
+   | `path` | The provider's chat completions path. Set `path` even for providers that use the standard `/v1/chat/completions` path. When you set `host` without `path` or `pathPrefix`, the provider receives the client's request path unchanged, such as `/llm` from the HTTPRoute in the next step. |
    | `policies.auth.secretRef` | References the secret that contains your provider API key. |
    | `policies.tls.sni` | Enables TLS and sets the SNI value to the upstream hostname. |
 
@@ -789,7 +789,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
        backendRefs:
        - name: llm-backend
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -835,7 +835,7 @@ You can configure [Perplexity](https://www.perplexity.ai/) with an {{< reuse "ag
 | Approach | Requests that clients can send | Requests that fail |
 |----------|--------------------------------|--------------------|
 | {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} with `provider: Perplexity` | `/v1/responses`, sent to Perplexity unchanged. `/v1/messages`, converted to the Responses format. | `/v1/chat/completions`, embeddings, and rerank. Perplexity receives only Responses requests from this model. |
-| {{< reuse "agw-docs/snippets/backend.md" >}} with the `openai` provider | Chat Completions requests on the route path, such as `/llm`. | Requests in other formats. Perplexity receives Chat Completions requests at `https://api.perplexity.ai/v1/chat/completions`. |
+| {{< reuse "agw-docs/snippets/backend.md" >}} with the `openai` provider | Chat Completions requests on the route path, such as `/llm`. | Requests in other formats. Perplexity receives Chat Completions requests at `https://api.perplexity.ai/chat/completions`. |
 
 #### Responses requests with an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} {#perplexity-model}
 
@@ -843,8 +843,8 @@ You can configure [Perplexity](https://www.perplexity.ai/) with an {{< reuse "ag
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
    metadata:
      name: perplexity
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -892,7 +892,7 @@ You can configure [Perplexity](https://www.perplexity.ai/) with an {{< reuse "ag
 
 #### Chat Completions requests with an {{< reuse "agw-docs/snippets/backend.md" >}} {#perplexity-backend}
 
-1. Create the following {{< reuse "agw-docs/snippets/backend.md" >}}. Perplexity exposes an OpenAI-compatible API for search-augmented models and uses the standard chat completions path, so you do not need to set `path`.
+1. Create the following {{< reuse "agw-docs/snippets/backend.md" >}}. Perplexity exposes an OpenAI-compatible API for search-augmented models. Its chat completions path is `/chat/completions`, without the `/v1` prefix that most providers use.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -908,6 +908,7 @@ You can configure [Perplexity](https://www.perplexity.ai/) with an {{< reuse "ag
            model: sonar
          host: api.perplexity.ai
          port: 443
+         path: /chat/completions
      policies:
        auth:
          secretRef:
@@ -921,7 +922,7 @@ You can configure [Perplexity](https://www.perplexity.ai/) with an {{< reuse "ag
 {{< /version >}}
 
 {{< version include-if="1.6.x,2.2.x" >}}
-Perplexity exposes an OpenAI-compatible API for search-augmented models and uses the standard chat completions path, so you do not need to set `path`.
+Perplexity exposes an OpenAI-compatible API for search-augmented models. The chat completions path is `/chat/completions`, without the `/v1` prefix that most providers use.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -937,6 +938,7 @@ spec:
         model: sonar
       host: api.perplexity.ai
       port: 443
+      path: /chat/completions
   policies:
     auth:
       secretRef:
@@ -979,7 +981,7 @@ Use the following fields to adapt the template:
 |---------|-------------|
 | `ai.provider.openai.model` | Optional upstream model override. Omit this parameter to pass the client-provided model through. |
 | `host` and `port` | Required target address for the external provider endpoint. |
-| `path` | The provider's chat completions path. Omit this parameter for the standard `/v1/chat/completions` path. |
+| `path` | The provider's chat completions path. Set this parameter even for the standard `/v1/chat/completions` path. When you set `host` without `path` or `pathPrefix`, the provider receives the client's request path unchanged. To send each request format to its own path, such as Chat Completions requests to `/v1/chat/completions` and Responses requests to `/v1/responses`, set `pathPrefix: /v1` instead of `path`. |
 | `policies.auth` | Attach the provider API key secret to outbound requests. |
 | `policies.tls.sni` | Enable TLS and set the SNI value to the upstream hostname. |
 

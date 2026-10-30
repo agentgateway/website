@@ -96,7 +96,7 @@ spec:
   rules:
   - backendRefs:
       - name: mcp-backend
-        group: agentgateway.dev
+        group: {{< reuse "agw-docs/snippets/group.md" >}}
         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
     matches:
     - path:

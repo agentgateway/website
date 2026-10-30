@@ -67,12 +67,25 @@ Agentgateway emits standard `gen_ai.*` span attributes for LLM operation, provid
 
 ### Capture prompt and response content
 
-Prompt and response bodies can contain sensitive data. Add these attributes only when your data handling policy allows Braintrust to store message content.
+Prompt and response bodies can contain sensitive data. Add the `attributes` field to the tracing policy only when your data handling policy allows Braintrust to store message content.
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
   tracing:
-    # ...
+    host: api.braintrust.dev:443
+    protocol: http
+    path: /otel/v1/traces
+    randomSampling: true
+    clientSampling: true
+    policies:
+      backendTLS: {}
+      requestHeaderModifier:
+        set:
+          Authorization: "Bearer ${BRAINTRUST_API_KEY}"
+          x-bt-parent: "${BRAINTRUST_PARENT}"
+    resources:
+      service.name: '"agentgateway"'
     attributes:
       llm.input_messages: >-
         flattenRecursive(llm.prompt.map(c, {"message": c}))

@@ -177,6 +177,7 @@ These steps are the same for both external and in-cluster vLLM.
            model: meta-llama/Llama-3.1-8B-Instruct
          host: vllm.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
          port: 8000
+         path: /v1/chat/completions
    EOF
    ```
 
@@ -188,6 +189,7 @@ These steps are the same for both external and in-cluster vLLM.
    | `openai.model` | The model name as served by vLLM. This must match the `--model` argument used when starting vLLM. |
    | `host` | The in-cluster DNS name of the Service pointing to the vLLM instance. |
    | `port` | The port vLLM listens on. The default is `8000`. |
+   | `path` | The vLLM chat completions path. Without `path`, vLLM receives the client's request path unchanged, such as `/` from the request in step 3, and rejects the request. |
 
 2. Create an HTTPRoute to expose the vLLM backend through the gateway.
 
@@ -206,7 +208,7 @@ These steps are the same for both external and in-cluster vLLM.
      - backendRefs:
        - name: vllm
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```

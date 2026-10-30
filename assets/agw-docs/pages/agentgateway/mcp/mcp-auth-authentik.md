@@ -340,7 +340,7 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
            - Mcp-Session-Id
            maxAge: 86400
        backendRefs:
-       - group: agentgateway.dev
+       - group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
          name: mcp-backend
        matches:

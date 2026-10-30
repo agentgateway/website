@@ -136,7 +136,7 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
      - backendRefs:
        - name: ollama
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```

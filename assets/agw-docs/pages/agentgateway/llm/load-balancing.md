@@ -216,7 +216,7 @@ Create a backend with multiple providers in the same priority group to enable lo
          backendRefs:
            - name: loadbalanced-backend
              namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-             group: agentgateway.dev
+             group: {{< reuse "agw-docs/snippets/group.md" >}}
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -313,12 +313,12 @@ For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< 
          backendRefs:
            - name: stable-backend
              namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-             group: agentgateway.dev
+             group: {{< reuse "agw-docs/snippets/group.md" >}}
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
              weight: 80
            - name: canary-backend
              namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-             group: agentgateway.dev
+             group: {{< reuse "agw-docs/snippets/group.md" >}}
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
              weight: 20
    EOF
