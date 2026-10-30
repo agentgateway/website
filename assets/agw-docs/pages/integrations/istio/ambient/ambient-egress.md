@@ -139,7 +139,7 @@ metadata:
   annotations:
     agentgateway.dev/internal-ports: "80"
 spec:
-  gatewayClassName: agentgateway
+  gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
   infrastructure:
     parametersRef:
       group: agentgateway.dev

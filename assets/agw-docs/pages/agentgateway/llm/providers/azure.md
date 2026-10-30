@@ -270,7 +270,7 @@ To authenticate with Microsoft Entra Workload ID, prepare the AKS cluster and th
      - backendRefs:
        - name: azure
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -295,7 +295,7 @@ To authenticate with Microsoft Entra Workload ID, prepare the AKS cluster and th
        backendRefs:
        - name: azure
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```

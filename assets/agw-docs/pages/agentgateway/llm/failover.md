@@ -232,7 +232,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
        backendRefs:
        - name: model-failover
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -256,7 +256,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
-     - group: agentgateway.dev
+     - group: {{< reuse "agw-docs/snippets/group.md" >}}
        kind: {{< reuse "agw-docs/snippets/backend.md" >}}
        name: model-failover
      backend:
@@ -282,7 +282,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
-     - group: agentgateway.dev
+     - group: {{< reuse "agw-docs/snippets/group.md" >}}
        kind: {{< reuse "agw-docs/snippets/backend.md" >}}
        name: model-failover
      backend:
