@@ -344,6 +344,27 @@ jobs:
             cp "$CHANGED_FILES_LIST" out/selection/pages.txt
           fi
 
+      # The latest nightly run's merged results, kept 14 days, unlike the
+      # per-shard ones (1 day). Each test job reads them to tell a failure this
+      # PR caused from one that also happens on main. No nightly results means
+      # nothing is known to fail on main.
+      - name: Find the nightly results on main
+        if: github.event_name == 'pull_request' && steps.list.outputs.has_tests == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # `|| true`: an error here only means there is nothing to compare with.
+          RUN_ID=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow doc-tests.yaml \
+            --branch main --event schedule --status completed --limit 1 \
+            --json databaseId --jq '.[0].databaseId // empty' || true)
+          if [ -n "$RUN_ID" ] && gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" \
+              --name doc-test-results --dir "$RUNNER_TEMP/nightly"; then
+            cp "$RUNNER_TEMP/nightly/test-results.yaml" out/selection/nightly.yaml
+            echo "Comparing with nightly run $RUN_ID."
+          else
+            echo "::notice::No nightly doc test results to compare with."
+          fi
+
       - name: Upload the test selection
         if: github.event_name == 'pull_request' && steps.list.outputs.has_tests == 'true'
         uses: actions/upload-artifact@v7
@@ -710,11 +731,8 @@ jobs:
             exit 1
           fi
           [ "$FAILED" -eq 0 ] && exit 0
-          # A failed test on a PR is reported by "Aggregate results and report",
-          # which decides whether it is the PR's. Failing here as well would
-          # show a red mark for a failure that may not be the contributor's:
-          # a test that already fails on main, or a docs-tests check that is
-          # out of date.
+          # On a PR, "Check whether this change caused the failure" below
+          # decides whether this job goes red.
           echo "failed=true" >> "$GITHUB_OUTPUT"
           [ "${{ github.event_name }}" = pull_request ] || exit 1
 
@@ -738,11 +756,59 @@ jobs:
           retention-days: 1
           if-no-files-found: ignore
 
+      # On a PR, red means the author has something to fix, and green means
+      # they do not. Red only when the PR broke a step: a code block on a page
+      # the PR reaches failed, and main's nightly run did not already fail
+      # there. Anything else (a failure that also happens on main, a docs-tests
+      # check that is out of date, a step on a page the PR does not reach) is
+      # for the docs team, which sees it in the nightly run, so the job stays
+      # green and the run summary lists it. The rules
+      # are in docs-tests/scripts/classify_pr_results.py, which the solo-io/docs
+      # PRs use too. Last in the job, so the uploads above always run.
+      - name: Download the test selection
+        if: github.event_name == 'pull_request' && steps.run.outputs.failed == 'true'
+        uses: actions/download-artifact@v7
+        with:
+          name: doc-test-selection
+          path: selection/
+
+      - name: Check whether this change caused the failure
+        if: github.event_name == 'pull_request' && steps.run.outputs.failed == 'true'
+        env:
+          SHARD_TESTS: ${{ matrix.tests }}
+        run: |
+          set -euo pipefail
+          echo "$SHARD_TESTS" | jq -c 'map({file, test})' > shard-expected.json
+          ARGS=()
+          if [ -f selection/nightly.yaml ]; then
+            ARGS+=(--known-results selection/nightly.yaml)
+          fi
+          if [ -f selection/pages.txt ]; then
+            ARGS+=(--affected-pages selection/pages.txt)
+          fi
+          python docs-tests/scripts/classify_pr_results.py \
+            --results out/tests/generated/test-results.yaml \
+            --expected shard-expected.json "${ARGS[@]}" \
+            --output verdicts.json --summary "$GITHUB_STEP_SUMMARY"
+          jq -r '.[] | select(.conclusion == "failure") | "\n## Needs your fix: `\(.name)`\n\n\(.summary)\n"' verdicts.json \
+            >> "$GITHUB_STEP_SUMMARY"
+          if jq -e 'any(.[]; .conclusion == "failure")' verdicts.json > /dev/null; then
+            jq -r '.[] | select(.conclusion == "failure")
+              | "::error title=Your change broke a doc test::\(.name): \(.title). The run summary shows the step and its output."' verdicts.json
+            exit 1
+          fi
+
   report:
     name: Aggregate results and report
     needs: [discover, run-test, schema-check]
     if: always() && needs.discover.outputs.has_tests == 'true'
     runs-on: ubuntu-latest
+    # checks: write, for "Post the test update required check". This job runs
+    # none of the pages, only the docs-tests scripts on their results.
+    permissions:
+      contents: read
+      actions: read
+      checks: write
     steps:
       - name: Checkout website repo
         uses: actions/checkout@v6
@@ -827,13 +893,9 @@ jobs:
           path: out/tests/generated/
           retention-days: 14
 
-      # On a PR, a red result means "your change broke this", and nothing else.
-      # A failure that already happens on main, a docs-tests check that is out
-      # of date, or a step on a page the PR does not reach is listed in the run
-      # summary as "Test update required" and does not fail the job. The rules
-      # are in docs-tests/scripts/classify_pr_results.py, the same classifier
-      # the solo-io/docs PRs use. Unlike there, no separate checks are posted:
-      # a PR from a fork gets a read-only token, which cannot create checks.
+      # On a PR, each test job already decided whether its failures are the
+      # PR's, and is red only then. This adds the whole run's verdicts to the
+      # run summary, in one table.
       - name: Download the test selection
         if: github.event_name == 'pull_request'
         uses: actions/download-artifact@v7
@@ -841,33 +903,13 @@ jobs:
           name: doc-test-selection
           path: selection/
 
-      # The latest nightly run's merged results, kept 14 days, unlike the
-      # per-shard ones (1 day). No nightly results means nothing is known to
-      # fail on main, so every failure on a page the PR reaches is the PR's.
-      - name: Download the nightly results
-        if: github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          # `|| true`: an error here only means there is nothing to compare with.
-          RUN_ID=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow doc-tests.yaml \
-            --branch main --event schedule --status completed --limit 1 \
-            --json databaseId --jq '.[0].databaseId // empty' || true)
-          if [ -n "$RUN_ID" ] && gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" \
-              --name doc-test-results --dir nightly; then
-            echo "Comparing with nightly run $RUN_ID."
-          else
-            echo "::notice::No nightly doc test results to compare with."
-          fi
-
-      - name: Classify results
-        id: classify
+      - name: Add the verdicts to the run summary
         if: github.event_name == 'pull_request'
         run: |
           set -euo pipefail
           ARGS=()
-          if [ -f nightly/test-results.yaml ]; then
-            ARGS+=(--known-results nightly/test-results.yaml)
+          if [ -f selection/nightly.yaml ]; then
+            ARGS+=(--known-results selection/nightly.yaml)
           fi
           if [ -f selection/pages.txt ]; then
             ARGS+=(--affected-pages selection/pages.txt)
@@ -875,24 +917,35 @@ jobs:
           python3 docs-tests/scripts/classify_pr_results.py \
             --results out/tests/generated/test-results.yaml \
             --expected selection/expected.json "${ARGS[@]}" \
-            --output verdicts.json --summary "$GITHUB_STEP_SUMMARY"
-          jq -r '.[] | select(.conclusion == "failure")
-            | "::error title=Doc test broken by this change::\(.name): \(.title). See the run summary for the step and its output."' verdicts.json
-          jq -r '.[] | select(.conclusion == "failure") | "\n## Needs your fix: `\(.name)`\n\n\(.summary)\n"' verdicts.json \
-            >> "$GITHUB_STEP_SUMMARY"
-          UPDATE=$(jq '[.[] | select(.conclusion == "skipped")] | length' verdicts.json)
-          if [ "$UPDATE" -gt 0 ]; then
-            echo "::notice title=Doc tests::$UPDATE scenario(s) need a test update. They are not caused by this change, and the PR does not need to do anything."
-          fi
-          echo "broken=$(jq '[.[] | select(.conclusion == "failure")] | length' verdicts.json)" >> "$GITHUB_OUTPUT"
+            --output verdicts.json --groups groups.json --summary "$GITHUB_STEP_SUMMARY"
 
-      # On a PR, the failures are already judged above, so this step checks only
-      # that every scenario produced a result. Scheduled and manual runs fail on
-      # any failed test.
+      # Grey (skipped) "Doc tests: test update required": failures that are not
+      # the PR's, listed on the PR so nobody mistakes them for passes. Green
+      # when there are none, so a rerun on the same commit replaces an old grey
+      # one. Same check as the solo-io/docs PRs. Only for a PR from a branch in
+      # this repo: a fork's PR gets a read-only token, which cannot create
+      # checks, so there the list is only in the run summary. Not on a
+      # cancelled run, whose missing results would show up in the list.
+      - name: Post the test update required check
+        if: >-
+          !cancelled() && github.event_name == 'pull_request'
+          && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          jq -c --arg sha "$HEAD_SHA" --arg url "$RUN_URL" '.[] | select(.name == "Doc tests: test update required")
+            | {name, head_sha: $sha, status: "completed", conclusion, details_url: $url,
+               output: {title, summary, text: "**Full report:** the [summary page of the doc tests run](\($url)) lists every scenario and its result."}}' groups.json \
+            | gh api "repos/$GITHUB_REPOSITORY/check-runs" --input - --jq '"\(.name): \(.conclusion)"'
+
+      # On a PR, this job is red only when the tooling failed: a selected test
+      # produced no result. Whether the PR broke a test shows on that test's
+      # own job. Scheduled and manual runs fail on any failed test.
       - name: Fail if any test failed
         env:
           IS_PR: ${{ github.event_name == 'pull_request' }}
-          BROKEN: ${{ steps.classify.outputs.broken || '0' }}
           # Number of functional test cases the discover job found. The merged
           # report must account for all of them, otherwise a test that never ran
           # would be indistinguishable from one that passed.
@@ -923,9 +976,6 @@ jobs:
           missing = expected - len(sharded) - len(needs_update)
           if os.environ.get('IS_PR') == 'true':
               failed = []
-              if int(os.environ.get('BROKEN') or 0):
-                  print('This change broke a step in a doc test. See the run summary.', file=sys.stderr)
-                  sys.exit(1)
           if failed:
               print(f'{len(failed)} test(s) failed:', file=sys.stderr)
               for name in failed:
@@ -936,7 +986,7 @@ jobs:
           if failed or missing > 0:
               sys.exit(1)
           if os.environ.get('IS_PR') == 'true':
-              print('No doc test failure is caused by this change. The run summary lists every result.')
+              print('Every selected test produced a result. A test this change broke is red on its own job.')
           else:
               print(f'All {len(tests)} test(s) passed')
           "
