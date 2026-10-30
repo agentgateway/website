@@ -23,10 +23,10 @@ pip install arize-phoenix
 phoenix serve
 ```
 
-Or with Docker:
+Or with Docker. Publish port 4317 too, because agentgateway sends traces to Phoenix's gRPC port.
 
 ```bash
-docker run -p 6006:6006 arizephoenix/phoenix:latest
+docker run -p 6006:6006 -p 4317:4317 arizephoenix/phoenix:latest
 ```
 
 Access Phoenix at [http://localhost:6006](http://localhost:6006).

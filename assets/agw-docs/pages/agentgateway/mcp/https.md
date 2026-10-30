@@ -69,7 +69,7 @@ In this guide, you configure your agentgateway proxy to connect to the remote [G
                    value: "Bearer ${GH_PAT}"
          backendRefs:
          - name: github-mcp-backend
-           group: agentgateway.dev
+           group: {{< reuse "agw-docs/snippets/group.md" >}}
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
