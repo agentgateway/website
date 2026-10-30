@@ -210,42 +210,27 @@ jobs:
           # crash produced an empty list and the exact green-having-run-nothing
           # outcome the resolver was written to end.
           FILES=""
-          UNRESOLVED_LOG="${RUNNER_TEMP}/unresolved.txt"
-          : > "$UNRESOLVED_LOG"
+          RESOLVER_LOG="${RUNNER_TEMP}/resolver.txt"
+          : > "$RESOLVER_LOG"
 
-          # Redirecting stderr to a file is what lets the warning below name
-          # the files that reached no page, but on a crash it is exactly wrong:
-          # the traceback lands in the file, `-e` exits on the failed
-          # assignment, and nothing ever reads it. That step is loud in status
-          # and silent in content, which is half of what this job is being
-          # fixed for. So the log is printed on the way out of a failure too.
+          # On a crash, the traceback lands in the stderr file, `-e` exits on
+          # the failed assignment, and nothing ever reads it. That step is loud
+          # in status and silent in content, which is half of what this job is
+          # being fixed for. So the log is printed on the way out of a failure.
           # `if`, not a bare `cat`, because a non-zero test inside the handler
           # must not become the thing that reports.
           dump_resolver_log() {
-            if [ -s "$UNRESOLVED_LOG" ]; then
+            if [ -s "$RESOLVER_LOG" ]; then
               echo "::error::reuse_consumers.py failed. Its output was:"
-              cat "$UNRESOLVED_LOG"
+              cat "$RESOLVER_LOG"
             fi
           }
           trap dump_resolver_log ERR
 
           if [ -n "$CHANGED_MD" ]; then
             FILES=$(printf '%s\n' "$CHANGED_MD" \
-              | python3 docs-tests/scripts/reuse_consumers.py --repo-root . --stdin 2>"$UNRESOLVED_LOG" \
+              | python3 docs-tests/scripts/reuse_consumers.py --repo-root . --stdin 2>"$RESOLVER_LOG" \
               | tr '\n' ' ')
-          fi
-
-          # A changed file that reaches no page selects no tests. Usually
-          # right -- five snippets in the tree are orphans no page reuses any
-          # more -- but it is also what a genuine gap in the walk looks like,
-          # so it is surfaced as a warning on the PR rather than left in the
-          # log. NOT an error: an orphan edit is legitimate, and a check that
-          # cries wolf on legitimate edits gets ignored, which is how the
-          # original "No content candidates found" line went unread for so
-          # long.
-          if [ -s "$UNRESOLVED_LOG" ]; then
-            echo "::warning::Changed files with doc tests that reach no content page (no tests selected for them):"
-            cat "$UNRESOLVED_LOG"
           fi
 
           # NOT `xargs` for the trim: it re-wraps its output at ~4096 characters, so a
