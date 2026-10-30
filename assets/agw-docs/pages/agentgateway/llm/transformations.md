@@ -345,12 +345,6 @@ Parse the `model` field from the incoming request body and the upstream response
    x-actual-model: gpt-4o-mini
    ```
 
-   > [!NOTE]
-   > When sending traffic to the gateway with traffic compression enabled, such as `gzip` or `br`, the CEL expression could fail. If a header is missing from a response, try a different `accept-encoding` header in your request.
-   
-<!-- metadata not working issue: https://github.com/agentgateway/agentgateway/issues/1554 -->
-<!--
-
 ### Detect fallback with the llm context variables
 
 When the agentgateway proxy routes to an AI backend, the `llm` CEL context provides first-class variables that are parsed directly from the LLM protocol layer rather than from raw body strings:
@@ -358,41 +352,80 @@ When the agentgateway proxy routes to an AI backend, the `llm` CEL context provi
 * `llm.requestModel`: The model name from the original request.
 * `llm.responseModel`: The model name the upstream LLM provider reported in the response.
 
-Use the [`metadata`]({{< link-hextra path="/documentation/traffic-management/transformations/templating-language/#pre-compute-values-with-metadata" >}}) context variable to pre-compute LLM model data, and the `default()` function in the `set` expressions to fall back to parsing the raw body if the metadata context variable is unavailable. This approach computes each value once and keeps the `x-model-fallback` comparison readable:
+Use the [`metadata`]({{< link-hextra path="/documentation/traffic-management/transformations/templating-language/#pre-compute-values-with-metadata" >}}) context variable to pre-compute LLM model data, and the `default()` function in the `set` expressions to fall back to parsing the raw body if the metadata context variable is unavailable. This approach computes each value once and keeps the `x-model-fallback` comparison readable.
 
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-metadata:
-  name: llm-context-vars
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-  labels:
-    app: agentgateway
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: openai
-  traffic:
-    transformation:
-      response:
-        metadata:
-          requestedModel: 'llm.requestModel'
-          actualModel: 'llm.responseModel'
-        set:
-        - name: x-requested-model
-          value: 'default(metadata.requestedModel, string(json(request.body).model))'
-        - name: x-actual-model
-          value: 'default(metadata.actualModel, string(json(response.body).model))'
-        - name: x-model-fallback
-          value: 'default(metadata.requestedModel, string(json(request.body).model)) != default(metadata.actualModel, string(json(response.body).model)) ? "true" : "false"'
-EOF
-```
+1. Delete the `llm-model-headers` policy from the previous section. Both policies set the same response headers on the same HTTPRoute.
 
+   ```sh
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+   ```
 
-The `metadata` field pre-computes the `llm` context values once. The `default()` fallback in each `set` expression ensures the header is still populated even if the `llm` context variable is unavailable.
--->
+2. Create a {{< reuse "agw-docs/snippets/policy.md" >}} resource that pre-computes the model values with `metadata` and injects them as response headers.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: llm-context-vars
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app: agentgateway
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: openai
+     traffic:
+       transformation:
+         response:
+           metadata:
+             requestedModel: 'llm.requestModel'
+             actualModel: 'llm.responseModel'
+           set:
+           - name: x-requested-model
+             value: 'default(metadata.requestedModel, string(json(request.body).model))'
+           - name: x-actual-model
+             value: 'default(metadata.actualModel, string(json(response.body).model))'
+           - name: x-model-fallback
+             value: 'default(metadata.requestedModel, string(json(request.body).model)) != default(metadata.actualModel, string(json(response.body).model)) ? "true" : "false"'
+   EOF
+   ```
+
+   The `metadata` field pre-computes the `llm` context values once. The `default()` fallback in each `set` expression ensures the header is still populated even if the `llm` context variable is unavailable.
+
+3. Send a chat completion request through the gateway and inspect the response headers.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -vi "http://$INGRESS_GW_ADDRESS/v1/chat/completions" \
+    -H "Content-Type: application/json" \
+    -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -vi "http://localhost:8080/v1/chat/completions" \
+    -H "Content-Type: application/json" \
+    -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+   ```console {hl_lines=[2,4,6]}
+   < x-requested-model: gpt-4
+   x-requested-model: gpt-4
+   < x-actual-model: {{< reuse "agw-docs/snippets/openai-model.md" >}}-0125
+   x-actual-model: {{< reuse "agw-docs/snippets/openai-model.md" >}}-0125
+   < x-model-fallback: true
+   x-model-fallback: true
+   ...
+   ```
+
+   The `x-model-fallback` header compares the exact model strings. Because the provider can return a versioned model name, such as `{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125`, the header can be `true` even when no fallback occurred.
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
@@ -400,6 +433,7 @@ The `metadata` field pre-computes the `llm` context values once. The `default()`
 ```shell
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} cap-max-tokens -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} llm-context-vars -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 ```
 
 {{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
