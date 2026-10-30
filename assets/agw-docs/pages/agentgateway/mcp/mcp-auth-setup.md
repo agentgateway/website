@@ -132,8 +132,8 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
              maxAge: 86400
        # Route to the MCP backend
        backendRefs:
-       - group: agentgateway.dev
-         kind: AgentgatewayBackend
+       - group: {{< reuse "agw-docs/snippets/group.md" >}}
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
          name: mcp-backend
        # Match MCP and OAuth discovery paths
        matches:

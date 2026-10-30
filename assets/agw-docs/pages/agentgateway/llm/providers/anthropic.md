@@ -94,7 +94,7 @@ To add prompt-cache markers automatically, set `backend.ai.promptCaching` in an 
      - backendRefs:
        - name: anthropic
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -119,7 +119,7 @@ To add prompt-cache markers automatically, set `backend.ai.promptCaching` in an 
        backendRefs:
        - name: anthropic
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -144,7 +144,7 @@ To add prompt-cache markers automatically, set `backend.ai.promptCaching` in an 
        backendRefs:
        - name: anthropic
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -771,7 +771,7 @@ Example output:
        backendRefs:
        - name: anthropic-aws
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```

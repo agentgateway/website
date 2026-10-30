@@ -96,7 +96,7 @@ This example shows how to route requests to different backends based on the `mod
          backendRefs:
            - name: openai-backend
              namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-             group: agentgateway.dev
+             group: {{< reuse "agw-docs/snippets/group.md" >}}
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
        # Route Claude models to Anthropic
        - matches:
@@ -110,7 +110,7 @@ This example shows how to route requests to different backends based on the `mod
          backendRefs:
            - name: anthropic-backend
              namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-             group: agentgateway.dev
+             group: {{< reuse "agw-docs/snippets/group.md" >}}
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -274,7 +274,7 @@ This example shows routing based on a custom `priority` field in the request bod
          backendRefs:
            - name: high-priority-backend
              namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-             group: agentgateway.dev
+             group: {{< reuse "agw-docs/snippets/group.md" >}}
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
        - matches:
            - path:
@@ -289,7 +289,7 @@ This example shows routing based on a custom `priority` field in the request bod
          backendRefs:
            - name: standard-priority-backend
              namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-             group: agentgateway.dev
+             group: {{< reuse "agw-docs/snippets/group.md" >}}
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
