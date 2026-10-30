@@ -309,14 +309,14 @@ Parse the `model` field from the incoming request body and the upstream response
    ```sh
    curl -vi "http://$INGRESS_GW_ADDRESS/v1/chat/completions" \
     -H "Content-Type: application/json" \
-    -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
+    -d '{"model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}", "messages": [{"role": "user", "content": "Hi"}]}'
    ```
    {{% /tab %}}
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi "http://localhost:8080/v1/chat/completions" \
     -H "Content-Type: application/json" \
-    -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
+    -d '{"model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}", "messages": [{"role": "user", "content": "Hi"}]}'
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -327,8 +327,8 @@ Parse the `model` field from the incoming request body and the upstream response
    HTTP/1.1 200 OK
    < content-type: application/json
    content-type: application/json
-   < x-requested-model: gpt-4
-   x-requested-model: gpt-4
+   < x-requested-model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
+   x-requested-model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
    < x-actual-model: {{< reuse "agw-docs/snippets/openai-model.md" >}}-0125
    x-actual-model: {{< reuse "agw-docs/snippets/openai-model.md" >}}-0125
    ...
@@ -345,6 +345,7 @@ Parse the `model` field from the incoming request body and the upstream response
    x-actual-model: gpt-4o-mini
    ```
 
+{{% version exclude-if="1.0.x,1.1.x" %}}
 ### Detect fallback with the llm context variables
 
 When the agentgateway proxy routes to an AI backend, the `llm` CEL context provides first-class variables that are parsed directly from the LLM protocol layer rather than from raw body strings:
@@ -401,22 +402,22 @@ Use the [`metadata`]({{< link-hextra path="/documentation/traffic-management/tra
    ```sh
    curl -vi "http://$INGRESS_GW_ADDRESS/v1/chat/completions" \
     -H "Content-Type: application/json" \
-    -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
+    -d '{"model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}", "messages": [{"role": "user", "content": "Hi"}]}'
    ```
    {{% /tab %}}
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi "http://localhost:8080/v1/chat/completions" \
     -H "Content-Type: application/json" \
-    -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
+    -d '{"model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}", "messages": [{"role": "user", "content": "Hi"}]}'
    ```
    {{% /tab %}}
    {{< /tabs >}}
 
    Example output:
    ```console {hl_lines=[2,4,6]}
-   < x-requested-model: gpt-4
-   x-requested-model: gpt-4
+   < x-requested-model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
+   x-requested-model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
    < x-actual-model: {{< reuse "agw-docs/snippets/openai-model.md" >}}-0125
    x-actual-model: {{< reuse "agw-docs/snippets/openai-model.md" >}}-0125
    < x-model-fallback: true
@@ -424,7 +425,8 @@ Use the [`metadata`]({{< link-hextra path="/documentation/traffic-management/tra
    ...
    ```
 
-   The `x-model-fallback` header compares the exact model strings. Because the provider can return a versioned model name, such as `{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125`, the header can be `true` even when no fallback occurred.
+   In this example, `x-model-fallback` is `true` even though no fallback occurred. The header compares the exact model strings, and the provider answers a request for `{{< reuse "agw-docs/snippets/openai-model.md" >}}` with a versioned model name, `{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125`.
+{{% /version %}}
 
 ## Cleanup
 

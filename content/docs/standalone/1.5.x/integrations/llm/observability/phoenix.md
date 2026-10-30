@@ -75,15 +75,17 @@ If your Phoenix keeps authentication on, agentgateway must send a Phoenix API ke
    ```bash
    export PHOENIX_API_KEY=<your-api-key>
    ```
-5. Add the key to the `headers` of the tracing configuration. Header values are CEL expressions, so wrap the value in both single and double quotes to make it a string. Phoenix checks the `Authorization: Bearer <key>` header.
+5. Add the key to the tracing policy with `backendAuth`. Agentgateway sends the key in the `Authorization: Bearer <key>` header, which is the header that Phoenix checks.
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   config:
+   frontendPolicies:
      tracing:
-       otlpEndpoint: http://localhost:4317
+       host: localhost:4317
+       protocol: grpc
        randomSampling: true
-       headers:
-         authorization: '"Bearer $PHOENIX_API_KEY"'
+       policies:
+         backendAuth:
+           key: "$PHOENIX_API_KEY"
    gateways:
      default:
        port: 3000
