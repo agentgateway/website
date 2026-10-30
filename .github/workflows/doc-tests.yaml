@@ -210,42 +210,27 @@ jobs:
           # crash produced an empty list and the exact green-having-run-nothing
           # outcome the resolver was written to end.
           FILES=""
-          UNRESOLVED_LOG="${RUNNER_TEMP}/unresolved.txt"
-          : > "$UNRESOLVED_LOG"
+          RESOLVER_LOG="${RUNNER_TEMP}/resolver.txt"
+          : > "$RESOLVER_LOG"
 
-          # Redirecting stderr to a file is what lets the warning below name
-          # the files that reached no page, but on a crash it is exactly wrong:
-          # the traceback lands in the file, `-e` exits on the failed
-          # assignment, and nothing ever reads it. That step is loud in status
-          # and silent in content, which is half of what this job is being
-          # fixed for. So the log is printed on the way out of a failure too.
+          # On a crash, the traceback lands in the stderr file, `-e` exits on
+          # the failed assignment, and nothing ever reads it. That step is loud
+          # in status and silent in content, which is half of what this job is
+          # being fixed for. So the log is printed on the way out of a failure.
           # `if`, not a bare `cat`, because a non-zero test inside the handler
           # must not become the thing that reports.
           dump_resolver_log() {
-            if [ -s "$UNRESOLVED_LOG" ]; then
+            if [ -s "$RESOLVER_LOG" ]; then
               echo "::error::reuse_consumers.py failed. Its output was:"
-              cat "$UNRESOLVED_LOG"
+              cat "$RESOLVER_LOG"
             fi
           }
           trap dump_resolver_log ERR
 
           if [ -n "$CHANGED_MD" ]; then
             FILES=$(printf '%s\n' "$CHANGED_MD" \
-              | python3 docs-tests/scripts/reuse_consumers.py --repo-root . --stdin 2>"$UNRESOLVED_LOG" \
+              | python3 docs-tests/scripts/reuse_consumers.py --repo-root . --stdin 2>"$RESOLVER_LOG" \
               | tr '\n' ' ')
-          fi
-
-          # A changed file that reaches no page selects no tests. Usually
-          # right -- five snippets in the tree are orphans no page reuses any
-          # more -- but it is also what a genuine gap in the walk looks like,
-          # so it is surfaced as a warning on the PR rather than left in the
-          # log. NOT an error: an orphan edit is legitimate, and a check that
-          # cries wolf on legitimate edits gets ignored, which is how the
-          # original "No content candidates found" line went unread for so
-          # long.
-          if [ -s "$UNRESOLVED_LOG" ]; then
-            echo "::warning::Changed files with doc tests that reach no content page (no tests selected for them):"
-            cat "$UNRESOLVED_LOG"
           fi
 
           # NOT `xargs` for the trim: it re-wraps its output at ~4096 characters, so a
@@ -347,6 +332,46 @@ jobs:
           ')
           echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
           echo "Discovered $COUNT functional test case(s)"
+          # For "Aggregate results and report" on a PR: the scenarios this run
+          # selected, and the pages the PR reaches. A failed page step counts
+          # against the PR only on one of those pages. No pages file means the
+          # PR reaches no page (a workflow or CSS change), so every scenario
+          # ran and every page counts. Files, not job outputs: both lists can
+          # pass the 128 KiB cap on a single environment string.
+          mkdir -p out/selection
+          echo "$TESTS" | jq -c 'map({file, test})' > out/selection/expected.json
+          if [ -s "$CHANGED_FILES_LIST" ]; then
+            cp "$CHANGED_FILES_LIST" out/selection/pages.txt
+          fi
+
+      # The latest nightly run's merged results, kept 14 days, unlike the
+      # per-shard ones (1 day). Each test job reads them to tell a failure this
+      # PR caused from one that also happens on main. No nightly results means
+      # nothing is known to fail on main.
+      - name: Find the nightly results on main
+        if: github.event_name == 'pull_request' && steps.list.outputs.has_tests == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # `|| true`: an error here only means there is nothing to compare with.
+          RUN_ID=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow doc-tests.yaml \
+            --branch main --event schedule --status completed --limit 1 \
+            --json databaseId --jq '.[0].databaseId // empty' || true)
+          if [ -n "$RUN_ID" ] && gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" \
+              --name doc-test-results --dir "$RUNNER_TEMP/nightly"; then
+            cp "$RUNNER_TEMP/nightly/test-results.yaml" out/selection/nightly.yaml
+            echo "Comparing with nightly run $RUN_ID."
+          else
+            echo "::notice::No nightly doc test results to compare with."
+          fi
+
+      - name: Upload the test selection
+        if: github.event_name == 'pull_request' && steps.list.outputs.has_tests == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: doc-test-selection
+          path: out/selection/
+          retention-days: 1
 
 
       # Resolve an installable version for the development ("main"/experimental) install
@@ -661,6 +686,7 @@ jobs:
           echo "Pinned assets/agw-docs/versions/patch-dev.md to ${{ needs.discover.outputs.dev_version }} for this run."
 
       - name: Run doc tests
+        id: run
         env:
           SHARD_TESTS: ${{ matrix.tests }}
           DEBUG_MODE: true
@@ -702,9 +728,13 @@ jobs:
           EXPECTED=$(echo "$SHARD_TESTS" | jq 'length' | tr -d '\r')
           if [ "$TEST_INDEX" -ne "$EXPECTED" ]; then
             echo "::error::Shard ran $TEST_INDEX of $EXPECTED assigned test(s)."
-            FAILED=1
+            exit 1
           fi
-          exit $FAILED
+          [ "$FAILED" -eq 0 ] && exit 0
+          # On a PR, "Check whether this change caused the failure" below
+          # decides whether this job goes red.
+          echo "failed=true" >> "$GITHUB_OUTPUT"
+          [ "${{ github.event_name }}" = pull_request ] || exit 1
 
       # The run attempt is in the name so re-running a failed shard does not
       # upload a second artifact with the same name. merge_test_results.py
@@ -718,7 +748,7 @@ jobs:
           retention-days: 1
 
       - name: Upload test context (on failure)
-        if: failure()
+        if: failure() || steps.run.outputs.failed == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: test-context-${{ strategy.job-index }}
@@ -726,11 +756,59 @@ jobs:
           retention-days: 1
           if-no-files-found: ignore
 
+      # On a PR, red means the author has something to fix, and green means
+      # they do not. Red only when the PR broke a step: a code block on a page
+      # the PR reaches failed, and main's nightly run did not already fail
+      # there. Anything else (a failure that also happens on main, a docs-tests
+      # check that is out of date, a step on a page the PR does not reach) is
+      # for the docs team, which sees it in the nightly run, so the job stays
+      # green and the run summary lists it. The rules
+      # are in docs-tests/scripts/classify_pr_results.py, which the solo-io/docs
+      # PRs use too. Last in the job, so the uploads above always run.
+      - name: Download the test selection
+        if: github.event_name == 'pull_request' && steps.run.outputs.failed == 'true'
+        uses: actions/download-artifact@v7
+        with:
+          name: doc-test-selection
+          path: selection/
+
+      - name: Check whether this change caused the failure
+        if: github.event_name == 'pull_request' && steps.run.outputs.failed == 'true'
+        env:
+          SHARD_TESTS: ${{ matrix.tests }}
+        run: |
+          set -euo pipefail
+          echo "$SHARD_TESTS" | jq -c 'map({file, test})' > shard-expected.json
+          ARGS=()
+          if [ -f selection/nightly.yaml ]; then
+            ARGS+=(--known-results selection/nightly.yaml)
+          fi
+          if [ -f selection/pages.txt ]; then
+            ARGS+=(--affected-pages selection/pages.txt)
+          fi
+          python docs-tests/scripts/classify_pr_results.py \
+            --results out/tests/generated/test-results.yaml \
+            --expected shard-expected.json "${ARGS[@]}" \
+            --output verdicts.json --summary "$GITHUB_STEP_SUMMARY"
+          jq -r '.[] | select(.conclusion == "failure") | "\n## Needs your fix: `\(.name)`\n\n\(.summary)\n"' verdicts.json \
+            >> "$GITHUB_STEP_SUMMARY"
+          if jq -e 'any(.[]; .conclusion == "failure")' verdicts.json > /dev/null; then
+            jq -r '.[] | select(.conclusion == "failure")
+              | "::error title=Your change broke a doc test::\(.name): \(.title). The run summary shows the step and its output."' verdicts.json
+            exit 1
+          fi
+
   report:
     name: Aggregate results and report
     needs: [discover, run-test, schema-check]
     if: always() && needs.discover.outputs.has_tests == 'true'
     runs-on: ubuntu-latest
+    # checks: write, for "Post the test update required check". This job runs
+    # none of the pages, only the docs-tests scripts on their results.
+    permissions:
+      contents: read
+      actions: read
+      checks: write
     steps:
       - name: Checkout website repo
         uses: actions/checkout@v6
@@ -815,8 +893,59 @@ jobs:
           path: out/tests/generated/
           retention-days: 14
 
+      # On a PR, each test job already decided whether its failures are the
+      # PR's, and is red only then. This adds the whole run's verdicts to the
+      # run summary, in one table.
+      - name: Download the test selection
+        if: github.event_name == 'pull_request'
+        uses: actions/download-artifact@v7
+        with:
+          name: doc-test-selection
+          path: selection/
+
+      - name: Add the verdicts to the run summary
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          ARGS=()
+          if [ -f selection/nightly.yaml ]; then
+            ARGS+=(--known-results selection/nightly.yaml)
+          fi
+          if [ -f selection/pages.txt ]; then
+            ARGS+=(--affected-pages selection/pages.txt)
+          fi
+          python3 docs-tests/scripts/classify_pr_results.py \
+            --results out/tests/generated/test-results.yaml \
+            --expected selection/expected.json "${ARGS[@]}" \
+            --output verdicts.json --groups groups.json --summary "$GITHUB_STEP_SUMMARY"
+
+      # Grey (skipped) "Doc tests: test update required": failures that are not
+      # the PR's, listed on the PR so nobody mistakes them for passes. Green
+      # when there are none, so a rerun on the same commit replaces an old grey
+      # one. Same check as the solo-io/docs PRs. Only for a PR from a branch in
+      # this repo: a fork's PR gets a read-only token, which cannot create
+      # checks, so there the list is only in the run summary. Not on a
+      # cancelled run, whose missing results would show up in the list.
+      - name: Post the test update required check
+        if: >-
+          !cancelled() && github.event_name == 'pull_request'
+          && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          jq -c --arg sha "$HEAD_SHA" --arg url "$RUN_URL" '.[] | select(.name == "Doc tests: test update required")
+            | {name, head_sha: $sha, status: "completed", conclusion, details_url: $url,
+               output: {title, summary, text: "**Full report:** the [summary page of the doc tests run](\($url)) lists every scenario and its result."}}' groups.json \
+            | gh api "repos/$GITHUB_REPOSITORY/check-runs" --input - --jq '"\(.name): \(.conclusion)"'
+
+      # On a PR, this job is red only when the tooling failed: a selected test
+      # produced no result. Whether the PR broke a test shows on that test's
+      # own job. Scheduled and manual runs fail on any failed test.
       - name: Fail if any test failed
         env:
+          IS_PR: ${{ github.event_name == 'pull_request' }}
           # Number of functional test cases the discover job found. The merged
           # report must account for all of them, otherwise a test that never ran
           # would be indistinguishable from one that passed.
@@ -845,6 +974,8 @@ jobs:
           needs_update = report.get('skipped_needs_update') or {}
           expected = int(os.environ.get('EXPECTED_TESTS') or 0)
           missing = expected - len(sharded) - len(needs_update)
+          if os.environ.get('IS_PR') == 'true':
+              failed = []
           if failed:
               print(f'{len(failed)} test(s) failed:', file=sys.stderr)
               for name in failed:
@@ -854,5 +985,8 @@ jobs:
               print(f'  discovered {expected}, reported {len(sharded)}, skipped (needs update) {len(needs_update)}', file=sys.stderr)
           if failed or missing > 0:
               sys.exit(1)
-          print(f'All {len(tests)} test(s) passed')
+          if os.environ.get('IS_PR') == 'true':
+              print('Every selected test produced a result. A test this change broke is red on its own job.')
+          else:
+              print(f'All {len(tests)} test(s) passed')
           "

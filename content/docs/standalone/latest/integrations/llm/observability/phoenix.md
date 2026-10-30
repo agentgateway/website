@@ -16,17 +16,19 @@ description: Integrate agentgateway with Arize Phoenix for LLM tracing and evalu
 
 ## Quick start
 
+Phoenix 21.0 and later turn on authentication by default, and then reject traces that do not carry an API key. The following local quick start turns authentication off with the `PHOENIX_ENABLE_AUTH=false` environment variable, so you can try the integration without an API key. For a shared or production Phoenix, keep authentication on and [send an API key with your traces](#authentication).
+
 Run Phoenix locally:
 
 ```bash
 pip install arize-phoenix
-phoenix serve
+PHOENIX_ENABLE_AUTH=false phoenix serve
 ```
 
 Or with Docker. Publish port 4317 too, because agentgateway sends traces to Phoenix's gRPC port.
 
 ```bash
-docker run -p 6006:6006 -p 4317:4317 arizephoenix/phoenix:latest
+docker run -e PHOENIX_ENABLE_AUTH=false -p 6006:6006 -p 4317:4317 arizephoenix/phoenix:latest
 ```
 
 Access Phoenix at [http://localhost:6006](http://localhost:6006).
@@ -100,6 +102,47 @@ routes:
 {{% /tab %}}
 {{< /tabs >}}
 
+## Send traces with an API key {#authentication}
+
+If your Phoenix keeps authentication on, agentgateway must send a Phoenix API key with every trace export. Otherwise, Phoenix rejects the traces.
+
+1. Start Phoenix. Authentication is on by default. If the Phoenix instance from the quick start still runs, stop it first, because both instances use ports 6006 and 4317. Phoenix versions earlier than 21.0 also need the `PHOENIX_ENABLE_AUTH=true` and `PHOENIX_SECRET` environment variables.
+   ```bash
+   docker run -p 6006:6006 -p 4317:4317 arizephoenix/phoenix:latest
+   ```
+2. Open Phoenix at [http://localhost:6006](http://localhost:6006), and log in as the default admin, `admin@localhost` with the password `admin`. Phoenix asks you to change the password on first login.
+3. Go to **Settings** > **API Keys**, and create a key in the **System API Keys** section. A system key belongs to Phoenix instead of a user account, so it keeps working if the user who created it leaves.
+4. Save the key in an environment variable.
+   ```bash
+   export PHOENIX_API_KEY=<your-api-key>
+   ```
+5. Add the key to the tracing policy with `backendAuth`. Agentgateway sends the key in the `Authorization: Bearer <key>` header, which is the header that Phoenix checks.
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   frontendPolicies:
+     tracing:
+       host: localhost:4317
+       protocol: grpc
+       randomSampling: true
+       policies:
+         backendAuth:
+           key: "$PHOENIX_API_KEY"
+   gateways:
+     default:
+       port: 3000
+   routes:
+   - backends:
+     - ai:
+         name: openai
+         provider:
+           openAI:
+             model: gpt-4o-mini
+     policies:
+       backendAuth:
+         key: "$OPENAI_API_KEY"
+   ```
+6. Start agentgateway with the updated configuration, and send a request through it. The trace appears in the `default` project in Phoenix. If the key is missing or wrong, Phoenix rejects the export, and the agentgateway logs show a `BatchSpanProcessor.ExportError` error.
+
 ## Docker Compose example
 
 Agentgateway exports traces directly to Phoenix without needing an OTel Collector:
@@ -117,6 +160,8 @@ services:
 
   phoenix:
     image: arizephoenix/phoenix:latest
+    environment:
+      - PHOENIX_ENABLE_AUTH=false
     ports:
       - "6006:6006"
       - "4317:4317"
