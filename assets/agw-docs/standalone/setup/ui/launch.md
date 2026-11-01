@@ -181,7 +181,7 @@ Whether the UI can save the changes that you make depends on your storage mode. 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 The UI checks a change before it writes the configuration file. If the change is not valid, the save fails with an error and the file does not change.
 
-The forms mark required fields with an asterisk (`*`). Most of these markers come from the configuration schema. When you add a resource, the UI leaves out the fields that still have their schema default. For example, a new virtual model target does not get `weight: 1`, because `1` is the default weight.
+The forms mark required fields with an asterisk (`*`). Most of these markers come from the configuration schema. Dropdowns also show schema help for values that have descriptions, such as endpoint preferences or failure modes. When you add a resource, the UI leaves out the fields that still have their schema default. For example, a new virtual model target does not get `weight: 1`, because `1` is the default weight.
 
 If you edit the file outside the UI and agentgateway rejects the reload, the UI shows a **Configuration reload failed** banner. Agentgateway keeps running the previous valid configuration. The UI and `/api/config/effective` show the file on disk, including the rejected change. To retry the reload, fix the file and save it again.
 {{< /version >}}
