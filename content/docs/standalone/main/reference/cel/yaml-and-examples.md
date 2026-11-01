@@ -84,6 +84,20 @@ fields:
 
 ```
 
+#### Log outbound calls from access logs {#log-outbound-calls-from-access-logs}
+
+Access log expressions can use `upstreamCalls` to inspect outbound HTTP calls made during the request, including MCP target calls and policy callouts. The variable is populated only when an access log expression references it. `stdio` MCP targets do not add an `upstreamCalls` entry because they do not make an outbound HTTP call.
+
+The following example records the token audience that reaches each MCP target after backend authentication or token exchange. It also records a compact list of outbound call results. For failed outbound calls, use `upstreamCalls[].error`. The `upstreamCalls[].response.code` field is empty when no response came back.
+
+```yaml
+frontendPolicies:
+  accessLog:
+    add:
+      mcp_token_audiences: 'upstreamCalls.filter(c, c.subtype == "Mcp" && has(c.request.headers.authorization) && c.request.headers.authorization.startsWith("Bearer ")).map(c, unvalidatedJwtPayload(c.request.headers.authorization.split(" ")[1]).aud)'
+      upstream_call_statuses: 'upstreamCalls.map(c, {"kind": c.kind, "subtype": c.subtype, "target": c.target, "status": c.response.code})'
+```
+
 ### Authorization {#authorization}
 
 ```yaml

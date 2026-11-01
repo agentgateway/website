@@ -9,6 +9,12 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v18-new-features}
+
+### Observability {#v18-observability}
+
+- **Access logs can inspect outbound upstream calls**: Access log CEL expressions can use `upstreamCalls` to record outbound primary and policy HTTP calls, including MCP target calls after backend authentication or token exchange. For more information, see [Log outbound calls from access logs]({{< link-hextra path="/reference/cel/yaml-and-examples/#log-outbound-calls-from-access-logs" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4044 -->
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.
