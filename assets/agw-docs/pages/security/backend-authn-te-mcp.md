@@ -8,6 +8,10 @@ The configuration is the same `oauthTokenExchange` backend authentication method
 
 This guide uses an `echo` MCP server. Its `echo` tool returns the `input` that you send it, and with `includeHttpHeaders=true` it also returns the HTTP headers that it received, which makes the exchanged token directly observable in the tool response.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+If the incoming subject token is a JWT with an expired `exp` claim, the gateway rejects the request with `401` before the gateway calls the token endpoint. The MCP authentication challenge includes `invalid_token`, so clients can refresh and retry with a new token.
+{{< /version >}}
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq.md" >}}
@@ -275,7 +279,7 @@ Call the `echo` tool through the gateway and confirm that the `Authorization` he
 
 ## Next steps
 
-* **Validate the incoming token at the edge.** The exchange forwards the incoming token to the authorization server as received, without validating it first. Pair the policy with a route-level [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) or [MCP authentication]({{< link-hextra path="/documentation/security/jwt/mcp/" >}}) policy so that invalid tokens are rejected before any call to the token endpoint. Set `preserveToken: true` on it, or the exchange finds no `subject_token`; for a worked example, see [Validate the incoming token at the edge]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/#edge-validation" >}}).
+* **Validate the incoming token at the edge.** The exchange forwards the incoming token to the authorization server as received, without validating it first. Pair the policy with a route-level [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) or [MCP authentication]({{< link-hextra path="/documentation/security/jwt/mcp/" >}}) policy so that invalid tokens are rejected before any call to the token endpoint. Set `preserveToken: true` on it, or the exchange finds no `subject_token`; for a worked example, see [Validate the incoming token at the edge]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/#edge-validation" >}}).{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} The exchange still performs a local expiry check for JWT-shaped subject tokens. The expiry check is not a trust decision, and tokens without a numeric `exp` claim are still sent to the authorization server.{{< /version >}}
 * **Scope the exchanged token per MCP server.** Attach a separate policy to each MCP {{< reuse "agw-docs/snippets/backend.md" >}}, each with its own `audiences`, so every server receives a token that is valid only for itself.
 * **Restrict which tools each caller may reach.** Token exchange decides which token the gateway sends, not who is allowed through. Add an [MCP authorization]({{< link-hextra path="/documentation/security/authorization/" >}}) policy alongside it.
 

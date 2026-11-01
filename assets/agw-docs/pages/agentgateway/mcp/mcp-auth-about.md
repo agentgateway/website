@@ -44,6 +44,10 @@ The MCP OAuth flow that is facilitated by the agentgateway proxy includes the fo
 4. **Authentication**: The MCP client is redirected to the IdP for login. After successful login, the client receives a JWT access token. This authentication happens at "connect time" with agentgateway, not each "request time" when the client calls a tool. This type of connection is sometimes called "eager auth."
 5. **MCP server access**: The client uses the JWT token to access the MCP server and its tools.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+If a later MCP request presents an expired bearer token, the gateway returns a `401` challenge with `invalid_token` and the protected resource metadata URL. The client can refresh the token and retry the request.
+{{< /version >}}
+
 Review the following diagram to learn about the steps that are involved in each phase:
 
 ```mermaid

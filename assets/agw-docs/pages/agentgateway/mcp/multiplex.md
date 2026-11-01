@@ -140,6 +140,7 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
    > ```
    >
    > With `FailOpen`, if one MCP server is down, the gateway still serves tools from the remaining healthy servers. If all targets fail, the gateway returns an error.
+   > {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}Bearer-token rejections still reach the client. The gateway skips unavailable targets, but does not hide `401` challenges or `invalid_token` responses that let a client refresh and retry.{{< /version >}}
 
    > [!NOTE]
    > **Tool name prefixing**: When multiplexing, agentgateway namespaces tool and prompt names with the target name so that identical names from different servers do not collide. Resource URIs always retain target routing information and are unaffected. Control this behavior with the `prefixMode` field on the {{< reuse "agw-docs/snippets/backend.md" >}}:

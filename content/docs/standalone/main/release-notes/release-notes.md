@@ -9,6 +9,12 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🐛 Fixes {#v18-fixes}
+
+**MCP**
+
+- MCP routes now return a `401` challenge for expired OAuth subject tokens before token exchange, even when fail-open routing is enabled, so clients can refresh and retry. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4006 -->
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.

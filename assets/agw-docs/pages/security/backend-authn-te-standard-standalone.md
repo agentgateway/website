@@ -83,6 +83,10 @@ In this example, a user authenticates to Keycloak as one client, and the gateway
    }
    ```
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+The exchange performs a local expiry check for JWT-shaped subject tokens. If the token has an expired `exp` claim, the gateway returns `401` before the gateway calls the token endpoint. The expiry check is not a trust decision, and tokens without a numeric `exp` claim are still sent to the authorization server.
+{{< /version >}}
+
 ## More examples
 
 The [`traffic-token-exchange` examples](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-token-exchange) in the agentgateway repository also include an `extauthz` example that performs a token exchange by building the token request by hand with [external authorization]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}) and CEL, as an alternative to the built-in `oauthTokenExchange` method.
