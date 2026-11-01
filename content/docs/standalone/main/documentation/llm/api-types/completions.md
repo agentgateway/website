@@ -73,6 +73,10 @@ Chat Completions replies follow OpenAI usage conventions, even when agentgateway
 
 When a Gemini OpenAI-compatible response reports reasoning tokens separately from `usage.completion_tokens`, the normalized output count includes visible output and reasoning tokens. The converted Messages and Responses replies use this normalized output count in `usage.output_tokens`.
 
+## Usage in streamed replies {#usage-in-streamed-replies}
+
+When a Chat Completions request sets `"stream": true`, agentgateway requests usage data from the provider. This behavior applies even if the client sets `stream_options.include_usage` to `false`. The stream includes a final usage chunk before `data: [DONE]`. The final usage chunk has an empty `choices` array and reports the whole request in `usage`. Earlier chunks report `usage: null`.
+
 ## Using the API
 
 Using the Chat Completions API works exactly the same as consuming OpenAI directly, with only a change to the base URL. This allows you to continue using existing code and SDKs.

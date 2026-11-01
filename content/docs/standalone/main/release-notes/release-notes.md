@@ -140,6 +140,10 @@ Error responses that agentgateway generates now carry a generic message instead 
 - **Environment variables in hybrid mode**: In `hybrid` storage mode, `${VAR}` in resources that you save through the UI or API now stays literal, except in the `params.apiKey` field of an LLM provider or model. In 1.6, agentgateway expanded it. Enter literal values, or set these fields in the configuration file. For more information, see [`hybrid` mode]({{< link-hextra path="/documentation/setup/storage/#binary-hybrid" >}}).
 - **Filter validation**: Invalid filter settings now fail configuration validation instead of failing each request. For example, a configuration with a request mirror `percentage` outside `0.0` to `1.0`, such as `percentage: 50`, or a direct response with both `body` and `bodyExpression` no longer loads. Invalid header names or values and invalid redirect or rewrite paths are also rejected. For more information, see [Mirroring]({{< link-hextra path="/documentation/configuration/resiliency/mirroring/" >}}).
 
+### Chat Completions streams always include usage {#v17-chat-completions-streams-always-include-usage}
+
+Chat Completions streams now include a final usage chunk before `data: [DONE]`, even if the client sets `stream_options.include_usage` to `false`. Update stream parsers that assumed streamed chunks before `[DONE]` always carry content.
+
 ## 🌟 New features {#v17-new-features}
 
 ### LLM APIs and providers {#v17-llm}
