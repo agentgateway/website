@@ -9,6 +9,22 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🐛 Fixes {#v18-fixes}
+
+**Traffic management**
+
+- External processing response body streams stop reading from the upstream service when the downstream client disconnects. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4174 -->
+
+**LLM**
+
+- Bedrock conversion now sends inline OpenAI file content and base64 Anthropic document content as Bedrock document blocks. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4199 -->
+- Buffered Chat Completions responses that omit the top-level `model` field now keep the request model during parsing and format conversion. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4181 -->
+- Prompt-cache markers are preserved for GPT model names that use only a major version, such as `gpt-6-luna`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4249 -->
+
+**Operations**
+
+- The controller no longer panics when mesh configuration changes update the deployer view for a Gateway. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4195 -->
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.
@@ -286,6 +302,8 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 
 - CEL calls such as `contains(a, b)`, `startsWith`, `endsWith`, and `matches` now read the second argument. Previously, they ignored it, so `contains(x, y)` always returned `true`.
 - A policy that targets the endpoint picker (EPP) Service of an InferencePool now attaches, so you can raise the 10-second EPP timeout. For more information, see [Raise the endpoint picker timeout]({{< link-hextra path="/documentation/llm/inference/inference-routing/#epp-timeout" >}}).
+- External authorization and rate-limit trace logs no longer include response header, query-parameter, or body values that might contain credentials. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4139 -->
+- Substrate TLS passthrough egress that does not match an allowed destination is blocked at ClientHello instead of completing TLS and returning HTTP `403`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4093 -->
 
 **LLM**
 

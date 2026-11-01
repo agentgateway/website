@@ -332,8 +332,10 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 
 **Traffic management**
 
+- External authorization and rate-limit trace logs no longer include response header, query-parameter, or body values that might contain credentials. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4139 -->
 - External authorization with `includeRequestBody` and no `maxRequestBytes` no longer rejects every request that has a body with `413`. The limit defaults to 8192 bytes.
 - CEL calls such as `contains(a, b)`, `startsWith`, `endsWith`, and `matches` now read the second argument. Previously, they ignored it, so `contains(x, y)` always returned `true`.
+- Substrate TLS passthrough egress that does not match an allowed destination is blocked at ClientHello instead of completing TLS and returning HTTP `403`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4093 -->
 
 **LLM**
 
