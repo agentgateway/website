@@ -272,6 +272,10 @@ Create a BackendTLSPolicy for the NGINX workload.
 
    The HTTPRoute forwards the request to the NGINX server on port 8443, and the NGINX server accepts only TLS on that port. A 200 response means that the gateway proxy originated a TLS connection to the backend successfully. Without a valid BackendTLSPolicy and CA certificate, requests fail with `invalid peer certificate: UnknownIssuer`.
 
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+   If backend TLS settings cannot be built, requests to that backend fail with HTTP `503`. The fail-closed behavior applies to invalid certificates. The fail-closed behavior also applies when hostname or SAN settings cannot be used. The fail-closed behavior applies when the crypto provider does not allow a configured key exchange group. The proxy records a warning such as `invalid backend TLS policy, requests to the backend will fail: <error>`. The proxy does not send the request in plaintext. An invalid update to a previously working backend TLS policy also fails closed.
+   {{< /version >}}
+
    
 ## External service
 

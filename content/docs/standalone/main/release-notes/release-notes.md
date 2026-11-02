@@ -9,6 +9,8 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🔥 Breaking changes {#v18-breaking-changes}
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.
@@ -248,6 +250,10 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 - **MCP authentication with token passthrough**: MCP authentication now works with a JWT policy that sets `preserveToken: true`. For more information, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn/" >}}).
 - **Callouts through a proxy**: Send the requests that agentgateway makes on its own behalf, such as JWKS fetches, OIDC discovery, external authorization, and cloud provider credential fetches, through an HTTP proxy. Set `config.callouts.tunnel`, or use the standard proxy environment variables. For more information, see [Callout proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/" >}}).
 - **MCP authorization without an ID**: Agentgateway now rejects MCP requests other than `notifications/*` that have no usable JSON-RPC `id` with `400`. In 1.6, a `tools/call` without an `id` reached the MCP server without MCP authorization. For more information, see [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz/" >}}).
+
+### Invalid backend TLS policies fail closed
+
+Invalid backend TLS policies now make requests fail with HTTP `503` instead of allowing plaintext traffic or keeping the last accepted policy after a bad update. The proxy records a warning that the backend TLS policy is invalid. For more information, see {{< conditional-text include-if="standalone" >}}[Backend TLS]({{< link-hextra path="/documentation/configuration/security/backend-tls/" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[BackendTLS]({{< link-hextra path="/documentation/security/backendtls/" >}}){{< /conditional-text >}}.
 
 ### Observability {#v17-observability}
 
