@@ -5,6 +5,8 @@ description: Match requests by hostname.
 ---
 Expose a route on multiple hosts. 
 
+Host matching is case-insensitive. A request with `Host: HOST1.Example` can match `host1.example`, and the upstream request keeps the original `Host` header casing.
+
 For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/api-types/httproute/#matches).
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
