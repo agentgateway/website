@@ -7,6 +7,10 @@ Specify the number of times and duration for the gateway to try a connection to 
 
 A request retry is the number of times a request is retried if it fails. This setting can be useful to avoid your apps from failing if they are temporarily unavailable. With retries, calls are retried a certain number of times before they are considered failed. Retries can enhance your app's availability by making sure that calls don't fail permanently because of transient problems, such as a temporarily overloaded service or network.
 
+{{< version include-if="main" >}}
+When a request with a body is retried, the body is buffered so that it can be resent. Requests with a body larger than the frontend buffer limit are not retried. The default limit is 2 MiB, or 32 MiB for LLM requests. To retry larger requests, raise the limit in the `spec.frontend.http.maxBufferSize` field of an {{< reuse "agw-docs/snippets/policy.md" >}}.
+{{< /version >}}
+
 <!-- TO DO: Is the sample app needed since another is installed? -->
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
