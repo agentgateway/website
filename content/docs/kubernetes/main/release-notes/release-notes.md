@@ -9,6 +9,12 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v18-new-features}
+
+### MCP {#v18-mcp}
+
+- **MCP Apps UI URI delimiter is configurable**: You can set `AGENTGATEWAY_MCP_UI_URI_DELIMITER` to use `_`, `-`, `.`, or `~` between the target name and UI resource path when an MCP host rejects the default `+` delimiter. For more information, see [MCP Apps]({{< link-hextra path="/documentation/mcp/apps/" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4200 -->
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.
