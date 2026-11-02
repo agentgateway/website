@@ -60,3 +60,14 @@ llm:
 | `transformation.model` | Removes the `gemini/` prefix from the model name before the request is forwarded, so the provider receives its own model name. |
 {{% /tab %}}
 {{< /tabs >}}
+
+## Reasoning effort {#reasoning-effort}
+
+Set `reasoning_effort` in OpenAI-compatible Chat Completions requests to configure Gemini thinking. For Gemini 2.5 and older models, `reasoning_effort` maps to `thinkingConfig.thinkingBudget`. For Gemini 3, Gemini 4, and Gemma 4 models, `reasoning_effort` maps to `thinkingConfig.thinkingLevel`.
+
+| Model family | `reasoning_effort` behavior |
+|--------------|-----------------------------|
+| Gemini 2.5 and older | `minimal`, `low`, `medium`, `high`, `xhigh`, and `max` use `thinkingBudget` values. `none` omits `thinkingConfig`. |
+| Gemini 3 | `minimal`, `low`, `medium`, `high`, `xhigh`, and `max` use `thinkingLevel`. `none` omits `thinkingConfig`. |
+| Gemini 4 | `minimal` and `low` use `thinkingLevel: "low"`. `medium` uses `thinkingLevel: "medium"`. `high`, `xhigh`, and `max` use `thinkingLevel: "high"`. `none` omits `thinkingConfig`. |
+| Gemma 4 | `none`, `minimal`, and `low` use `thinkingLevel: "minimal"`. `medium`, `high`, `xhigh`, and `max` use `thinkingLevel: "high"`. |

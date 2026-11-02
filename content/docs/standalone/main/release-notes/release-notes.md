@@ -9,6 +9,12 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🐛 Fixes {#v18-fixes}
+
+**LLM**
+
+- Gemini and Vertex AI Chat Completions requests use `thinkingLevel` for Gemini 4 and Gemma 4 models, so `reasoning_effort` no longer returns Google thinking-budget errors. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4151 -->
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.
