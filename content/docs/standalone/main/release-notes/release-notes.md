@@ -9,6 +9,12 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v18-new-features}
+
+### LLM {#v18-llm}
+
+- **Nebius Token Factory provider preset**: You can use `provider: nebius` in standalone configuration and `spec.provider: Nebius` in Kubernetes AgentgatewayModel resources to route requests to Nebius Token Factory at `https://api.tokenfactory.nebius.com/v1`. The preset supports Chat Completions and Embeddings and adds Nebius model pricing to the catalog. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4225 -->
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.
