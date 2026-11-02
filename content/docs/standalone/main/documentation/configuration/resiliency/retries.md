@@ -20,6 +20,7 @@ mcp:
     retry:
       # Maximum number of retries after the original request.
       # Note: A value of 3 allows up to 3 retries after the initial attempt.
+      # Set attempts to 0 to disable retries. Omit attempts to use the default of 1 retry.
       attempts: 3
       # Optional; if set, a delay between each additional attempt
       backoff: 500ms
@@ -44,6 +45,7 @@ routes:
     retry:
       # Maximum number of retries after the original request.
       # Note: A value of 3 allows up to 3 retries after the initial attempt.
+      # Set attempts to 0 to disable retries. Omit attempts to use the default of 1 retry.
       attempts: 3
       # Optional; if set, a delay between each additional attempt
       backoff: 500ms
