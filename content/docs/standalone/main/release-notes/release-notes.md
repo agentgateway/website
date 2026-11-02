@@ -9,6 +9,12 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🐛 Fixes {#v18-fixes}
+
+**LLM**
+
+- Streaming LLM response transformations can read request-side CEL fields such as `llm.provider`, `llm.requestModel`, and `llm.streaming`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4241 -->
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.

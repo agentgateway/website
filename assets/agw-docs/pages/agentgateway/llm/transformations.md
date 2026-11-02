@@ -275,6 +275,10 @@ Parse the `model` field from the incoming request body and the upstream response
 >
 > If you need model information on streaming routes, avoid parsing `response.body` directly. Either scope this policy to non-streaming routes only, or extract the model name from the `llm.responseModel` [CEL context variable]({{< link-hextra path="/reference/cel/" >}}) instead, which is populated from the LLM protocol layer rather than by parsing the raw response body.
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+On streamed response transformations, response-side CEL can read request-side LLM fields such as `llm.provider`, `llm.requestModel`, and `llm.streaming`. Use those request-side fields when the transformation runs before stream parsing. `llm.responseModel` is unavailable until the stream is parsed.
+{{% /version %}}
+
 1. Create a {{< reuse "agw-docs/snippets/policy.md" >}} resource that targets the OpenAI provider's HTTPRoute and injects the model fields as response headers.
 
    ```yaml
