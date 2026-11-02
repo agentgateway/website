@@ -349,6 +349,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 **MCP**
 
 - Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+- Duplicate MCP target names now fail validation in standalone mode, and Kubernetes service selectors keep one target when multiple selected Services resolve to the same name. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4160 -->
 - MCP authentication derives JWKS URLs without a double slash when an issuer value ends with `/`.
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 - MCP responses now honor the `responseIdleTimeout` response idle timeout, which previously did not apply on MCP routes. A response, including an SSE stream, that sends no data for longer than the timeout is now ended.
