@@ -9,6 +9,12 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v18-new-features}
+
+### Observability {#v18-observability}
+
+- **Metrics scraping over HBONE**: Prometheus can scrape the proxy `/metrics` endpoint over HBONE when the stats listener is bound to all interfaces, such as `0.0.0.0:15020`. A loopback-only stats listener remains private to the proxy. For more information, see [metrics]({{< link-hextra path="/documentation/observability/metrics/" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4118 -->
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.

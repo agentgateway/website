@@ -13,6 +13,7 @@ Agentgateway is built to work with Prometheus out of the box:
 - It exposes a `/metrics` endpoint on port `15020` in the [OpenMetrics](https://openmetrics.io/) format, which Prometheus can scrape directly.
 - All metrics use the `agentgateway_` prefix and carry consistent route identifier labels so you can filter and aggregate by gateway, listener, and route without additional configuration.
 - On Kubernetes, the agentgateway chart annotates proxy pods with `prometheus.io/scrape: "true"` and `prometheus.io/port: "15020"` for Prometheus installs that use annotation-based discovery, and ships an optional `PodMonitor` for installs that run the Prometheus Operator.
+- If Prometheus reaches a standalone process from another workload, such as through an HBONE tunnel, bind `statsAddr` to a non-loopback address such as `0.0.0.0:15020`.
 
 ## Set up Prometheus
 

@@ -1,6 +1,10 @@
 
 The agentgateway proxy exposes a Prometheus-compatible metrics endpoint on port `15020`. Metrics are collected automatically for every request that passes through the gateway and follow the [OpenMetrics](https://openmetrics.io/) format. All agentgateway metrics use the `agentgateway_` prefix.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+In an Istio ambient mesh, Prometheus can scrape this endpoint through the proxy's HBONE listener when the stats listener is bound to all interfaces, such as `0.0.0.0:15020`. HBONE does not expose a loopback-only stats listener. Routes and policies do not apply to the metrics request.
+{{< /version >}}
+
 To set up automatic scraping of these metrics with Prometheus, see [Enable metrics scraping]({{< link path="/documentation/observability/metrics/overview/" >}}).
 
 ## View data plane metrics
