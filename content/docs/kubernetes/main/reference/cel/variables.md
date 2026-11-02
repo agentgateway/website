@@ -17,6 +17,8 @@ Each policy execution consistently gets the current view of the request and resp
 
 For the full list of fields and types on every top-level object, see the [Interactive CEL reference]({{< link-hextra path="/reference/cel/cel-context-interactive" >}}) page.
 
+For LLM requests, `llm.params.reasoning_effort` reports the reasoning effort that the client requested. The value can come from OpenAI `reasoning_effort` or `reasoning.effort`. The value can also come from Anthropic `output_config.effort` or Gemini `thinkingLevel`. If the request omits a reasoning setting, `llm.params.reasoning_effort` is unset and the provider default applies.
+
 When a policy can run against both directly addressed and Service backends, check `has(backend.endpoint)` before reading `backend.endpoint`. The field is populated only for directly addressed backends, such as static hostnames. Service backends leave `backend.endpoint` unset because workload endpoints are selected separately.
 
 > [!NOTE]

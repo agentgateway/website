@@ -9,6 +9,12 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v18-new-features}
+
+### LLM APIs and providers {#v18-llm-apis-and-providers}
+
+- **Reasoning effort in CEL**: CEL expressions on LLM traffic can read `llm.params.reasoning_effort` when an OpenAI, Anthropic, or Gemini request includes a reasoning setting. For more information, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4186 -->
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.
