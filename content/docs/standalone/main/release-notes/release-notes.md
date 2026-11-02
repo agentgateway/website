@@ -9,6 +9,12 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v18-new-features}
+
+### Observability {#v18-observability}
+
+- **MCP request outcome metric label**: MCP request metrics now include an `outcome` label with `success`, `tool_error`, `protocol_error`, `gateway_error`, or `unknown`, so monitoring can count tool failures that still return HTTP `200`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4182 -->
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.
