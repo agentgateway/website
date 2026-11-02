@@ -9,6 +9,8 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🔥 Breaking changes {#v18-breaking-changes}
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.
@@ -139,6 +141,10 @@ Error responses that agentgateway generates now carry a generic message instead 
 - **CSRF `Origin` checks**: For a request without a `Sec-Fetch-Site` header, the CSRF policy now rejects `Origin: null` unless `additionalOrigins` includes `null`. In 1.6, agentgateway treated `Origin: null` as a missing origin and allowed the request. The same-origin check now compares only the host and ignores the scheme, so a TLS-terminating proxy in front of agentgateway no longer causes false rejections. For more information, see [CSRF]({{< link-hextra path="/documentation/configuration/security/csrf/" >}}).
 - **Environment variables in hybrid mode**: In `hybrid` storage mode, `${VAR}` in resources that you save through the UI or API now stays literal, except in the `params.apiKey` field of an LLM provider or model. In 1.6, agentgateway expanded it. Enter literal values, or set these fields in the configuration file. For more information, see [`hybrid` mode]({{< link-hextra path="/documentation/setup/storage/#binary-hybrid" >}}).
 - **Filter validation**: Invalid filter settings now fail configuration validation instead of failing each request. For example, a configuration with a request mirror `percentage` outside `0.0` to `1.0`, such as `percentage: 50`, or a direct response with both `body` and `bodyExpression` no longer loads. Invalid header names or values and invalid redirect or rewrite paths are also rejected. For more information, see [Mirroring]({{< link-hextra path="/documentation/configuration/resiliency/mirroring/" >}}).
+
+### LLM model transformations now apply to path-based provider requests
+
+Model transformations now rewrite model IDs in Bedrock, Vertex, and Gemini request paths. A model that sets passthrough now keeps passthrough behavior even on a known LLM endpoint. For more information, see [Transform requests]({{< link-hextra path="/documentation/llm/transformations/" >}}).
 
 ## 🌟 New features {#v17-new-features}
 
