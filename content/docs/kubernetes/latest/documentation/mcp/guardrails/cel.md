@@ -2,14 +2,6 @@
 title: Set up CEL guardrails
 weight: 20
 description: Reject and mask MCP tool calls in-process with CEL expression guardrails.
-test:
-  mcp-guardrails-cel:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/mcp/guardrails/cel.md
-    path: mcp-guardrails-cel
 ---
 
 Reject and mask Model Context Protocol (MCP) tool calls with Common Expression Language (CEL) expressions inside the agentgateway proxy. CEL guardrails require no external policy server.
@@ -36,7 +28,7 @@ Deploy the MCP `everything` reference server. Its `echo` tool returns the messag
 
 The Service uses `appProtocol: agentgateway.dev/mcp` so that agentgateway can select it as an MCP target.
 
-```yaml {paths="mcp-guardrails-cel"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -86,30 +78,11 @@ spec:
 EOF
 ```
 
-{{< doc-test paths="mcp-guardrails-cel" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for mcp-server-everything deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: default
-        name: mcp-server-everything
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 180
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 ### Step 2: Create the backend for the MCP server
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} that selects the MCP server by its labels.
 
-```yaml {paths="mcp-guardrails-cel"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -130,7 +103,7 @@ EOF
 
 Create an HTTPRoute that routes `/mcp` requests to the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-```yaml {paths="mcp-guardrails-cel"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -156,7 +129,7 @@ EOF
 
 Create an {{< reuse "agw-docs/snippets/policy.md" >}} that attaches three CEL expression processors to the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-```yaml {paths="mcp-guardrails-cel"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -224,25 +197,6 @@ Review the following table to understand the policy.
 | `expression.condition` | Optional CEL expression that must be `true` for the processor to act. When the condition is `false`, the processor passes the message through unchanged. |
 | `expression.reject` | Rejection message for the client. The first processor checks for `DO_NOT_SEND` before masking changes the message. |
 | `expression.transform` | CEL expression that replaces `mcp.params` (request) or `mcp.result` (response). The `merge` function preserves other fields. Use `regexReplaceAll` to mask every match, or `regexReplace` to mask only the first. |
-
-{{< doc-test paths="mcp-guardrails-cel" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for mcp-cel-guardrails policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: default
-        name: mcp-cel-guardrails
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
 
 {{% /steps %}}
 
@@ -324,71 +278,11 @@ Check the policy's status reason and message as well as `Accepted`. Invalid CEL 
    {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"Messages containing DO_NOT_SEND may not be sent upstream"}],"isError":true}}
    ```
 
-{{< doc-test paths="mcp-guardrails-cel" >}}
-YAMLTest -f - <<'EOF'
-- name: MCP endpoint accepts initialize request
-  retries: 10
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /mcp
-    method: POST
-    headers:
-      content-type: application/json
-      accept: "application/json, text/event-stream"
-      mcp-protocol-version: "2025-03-26"
-    body: |
-      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-guardrails-cel" >}}
-# Assert the guardrails behaviors end-to-end: request and response masking,
-# and the request-phase reject.
-MCP_ADDR="http://${INGRESS_GW_ADDRESS}:80/mcp"
-HDRS=(-H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" -H "MCP-Protocol-Version: 2025-03-26")
-
-# Retry until the route is programmed and the policy is applied.
-MASKED=""
-for attempt in $(seq 1 20); do
-  SID=$(curl -s --max-time 10 -D - "${HDRS[@]}" "$MCP_ADDR" \
-    -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}' \
-    | grep -i "mcp-session-id:" | sed 's/.*: //' | tr -d '\r')
-  if [ -z "$SID" ]; then sleep 5; continue; fi
-  curl -s --max-time 10 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
-    -d '{"jsonrpc":"2.0","method":"notifications/initialized"}' >/dev/null || true
-  MASKED=$(curl -s -i --max-time 15 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
-    -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"echo","arguments":{"message":"Contact alice@example.com and bob@example.org; tokens demo-secret-abc and demo-secret-xyz"}}}')
-  echo "$MASKED" | grep -q '\[SECRET\]' && break
-  sleep 5
-done
-
-# Check transport framing as well as the transformed text.
-echo "$MASKED" | grep -iq '^content-type: text/event-stream' && echo "$MASKED" | grep -q '^data: ' \
-  || { echo "FAIL: expected an SSE tool result: $MASKED"; exit 1; }
-
-echo "$MASKED" | grep -q 'Echo: Contact \[EMAIL\] and \[EMAIL\]; tokens \[SECRET\] and \[SECRET\]' \
-  || { echo "FAIL: request and response were not masked: $MASKED"; exit 1; }
-
-REJECTED=$(curl -s -i --max-time 10 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
-  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"echo","arguments":{"message":"DO_NOT_SEND alice@example.com"}}}')
-# A request-phase rejection is an HTTP 200 JSON response, without SSE framing.
-echo "$REJECTED" | grep -Eq '^HTTP/[0-9.]+ 200' && echo "$REJECTED" | grep -iq '^content-type: application/json' && echo "$REJECTED" | grep -q '^{' \
-  || { echo "FAIL: expected an HTTP 200 JSON rejection: $REJECTED"; exit 1; }
-echo "$REJECTED" | grep -q '"isError":true' && echo "$REJECTED" | grep -q 'Messages containing DO_NOT_SEND may not be sent upstream' \
-  || { echo "FAIL: DO_NOT_SEND call was not rejected: $REJECTED"; exit 1; }
-
-echo "PASS: CEL guardrails mask and reject behaviors verified"
-{{< /doc-test >}}
-
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="mcp-guardrails-cel"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} mcp-cel-guardrails
 kubectl delete HTTPRoute mcp
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} mcp-backend

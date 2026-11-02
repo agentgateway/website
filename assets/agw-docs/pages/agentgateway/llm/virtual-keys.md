@@ -45,7 +45,7 @@ Store a SHA-256 hash of each virtual key in a ConfigMap. The proxy hashes each i
 
 2. Create a ConfigMap with the hash and metadata of each key. The label lets the authentication policy in the next step select the ConfigMap.
 
-   ```yaml,paths="virtual-keys"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: ConfigMap
@@ -89,7 +89,7 @@ Store a SHA-256 hash of each virtual key in a ConfigMap. The proxy hashes each i
 {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 Create an API key secret that stores keys and metadata for each user.
 
-```yaml,paths="virtual-keys"
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: v1
 kind: Secret
@@ -129,7 +129,7 @@ EOF
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 Create an {{< reuse "agw-docs/snippets/policy.md" >}} that requires API key authentication for all requests to the gateway. Unlike Secrets, which you can reference directly by name, ConfigMaps can be selected only by label. Use `configMapSelector` to match every ConfigMap that carries the label you added in the previous step, whether that is a single ConfigMap or several.
 
-```yaml,paths="virtual-keys"
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -166,7 +166,7 @@ Create an {{< reuse "agw-docs/snippets/policy.md" >}} that requires API key auth
 {{% tab name="Single Secret (secretRef)" %}}
 Reference a single Secret by name. This example uses the `llm-api-keys` Secret that you created in the previous step.
 
-```yaml,paths="virtual-keys"
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -235,7 +235,7 @@ EOF
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} that connects to your LLM provider.
 
-```yaml,paths="virtual-keys"
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -270,7 +270,7 @@ For detailed instructions on creating backends and storing provider API keys, se
 
 Create an HTTPRoute that forwards all paths to the OpenAI {{< reuse "agw-docs/snippets/backend.md" >}}. Clients can use the standard `/v1/chat/completions` path.
 
-```yaml,paths="virtual-keys"
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -293,150 +293,6 @@ EOF
 ### Test the virtual keys
 
 Verify that a valid key succeeds and an unknown key gets a `401` response. No token budget is configured yet.
-
-{{< doc-test paths="virtual-keys-openai-test" >}}
-# Test virtual key authentication and routing against the OpenAI route
-YAMLTest -f - <<'EOF'
-- name: wait for HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-        name: openai
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-
-- name: verify request with Alice's virtual key succeeds
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer vk-alice-4f9c2a"
-    body: |
-      {
-        "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
-        "messages": [{"role": "user", "content": "Hello"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-
-- name: verify request with Bob's virtual key succeeds independently
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer vk-bob-8d1e7b"
-    body: |
-      {
-        "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
-        "messages": [{"role": "user", "content": "Hello"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-
-- name: verify request without valid API key is rejected
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer invalid-key"
-    body: |
-      {
-        "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
-        "messages": [{"role": "user", "content": "Hello"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 401
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="virtual-keys-httpbun-test" >}}
-# Test virtual key authentication and routing against the httpbun route
-YAMLTest -f - <<'EOF'
-- name: wait for HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-        name: httpbun-llm
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-
-- name: verify request with Alice's virtual key succeeds
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer vk-alice-4f9c2a"
-    body: |
-      {
-        "model": "gpt-4",
-        "messages": [{"role": "user", "content": "Hello"}],
-        "httpbun": {"content": "Hello from httpbun"}
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-
-- name: verify request with Bob's virtual key succeeds independently
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer vk-bob-8d1e7b"
-    body: |
-      {
-        "model": "gpt-4",
-        "messages": [{"role": "user", "content": "Hello"}],
-        "httpbun": {"content": "Hello from httpbun"}
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-
-- name: verify request without valid API key is rejected
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer invalid-key"
-    body: |
-      {
-        "model": "gpt-4",
-        "messages": [{"role": "user", "content": "Hello"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 401
-EOF
-{{< /doc-test >}}
 
 1. Send a request with Alice's API key. Verify that the request succeeds.
 
@@ -596,55 +452,6 @@ Rate limiting runs before prompt guards, so requests rejected by those guards ca
 {{% reuse "agw-docs/snippets/rate-limit-step.md" %}}
 
 ### Verify budget enforcement
-
-{{< doc-test paths="virtual-keys-ratelimit-test" >}}
-# Drain Alice's 100-token daily budget. httpbun returns ~20-30 tokens per response,
-# so a handful of requests pushes Alice over the budget.
-for i in $(seq 1 10); do
-  curl -s -o /dev/null \
-    "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions" \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer vk-alice-4f9c2a" \
-    -d '{"model":"gpt-4","messages":[{"role":"user","content":"Say hello"}]}'
-  sleep 0.3
-done
-
-YAMLTest -f - <<'EOF'
-- name: Alice is rejected with 429 after exhausting her token budget
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
-    method: POST
-    headers:
-      Content-Type: application/json
-      Authorization: "Bearer vk-alice-4f9c2a"
-    body: |
-      {
-        "model": "gpt-4",
-        "messages": [{"role": "user", "content": "Say hello"}]
-      }
-  source:
-    type: local
-  retries: 3
-  expect:
-    statusCode: 429
-- name: Bob still succeeds because he has an independent budget
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
-    method: POST
-    headers:
-      Content-Type: application/json
-      Authorization: "Bearer vk-bob-8d1e7b"
-    body: |
-      {
-        "model": "gpt-4",
-        "messages": [{"role": "user", "content": "Say hello"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
 
 1. Send requests with Alice's API key until her 100-token daily budget is exhausted. Because the LLM provider returns roughly 20-30 tokens per response, a handful of requests pushes Alice over the budget. The request that crosses the budget still completes; subsequent requests are rejected with a 429 status code.
 

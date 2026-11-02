@@ -2,7 +2,6 @@
 title: Store logs in a database
 weight: 30
 description: Store agentgateway access logs in a SQLite or PostgreSQL database to power the UI analytics and enable historical log queries.
-test: skip
 aliases:
   - ../../../integrations/observability/database/
 ---

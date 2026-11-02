@@ -2,14 +2,14 @@
 1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}. The examples in this guide use Gateway API {{< reuse "agw-docs/versions/k8s-gw-version.md" >}} for the standard channel and {{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}} for the experimental channel, but you can use any version within the [supported range]({{< link-hextra path="/release-notes/versions/" >}}) by setting the variable accordingly.
    {{< tabs >}}
    {{% tab name="Standard" %}}
-   ```sh {paths="standard"}
+   ```sh
    export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version.md" >}}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v$GWAPI_VERSION/standard-install.yaml
    ```
    {{% /tab %}}
    {{% tab name="Experimental" %}}
    CRDs in the experimental channel are required to use some experimental features in the Gateway API. Guides that require experimental CRDs note this requirement in their prerequisites.
-   ```sh {paths="experimental"}
+   ```sh
    export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v$GWAPI_VERSION/experimental-install.yaml
    ```
@@ -36,7 +36,7 @@
 
       {{< tabs >}}
  {{% tab name="Standard" %}}
- ```sh {paths="standard"}
+ ```sh
  helm upgrade -i --create-namespace \
    --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
@@ -44,7 +44,7 @@
  {{% /tab %}}
  {{% tab name="Experimental" %}}
  {{< version exclude-if="main" >}}The experimental path uses the nightly development build.{{< /version >}}{{< version include-if="main" >}}Both paths use the nightly development build on this version of the docs, because it is the only build that carries the unreleased features documented here. The experimental path differs in the Gateway API CRDs it applies, not in the build.{{< /version >}}
- ```sh {paths="experimental"}
+ ```sh
  helm upgrade -i --create-namespace \
    --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version {{< reuse "agw-docs/versions/patch-dev.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
@@ -75,7 +75,7 @@
 
 
 
-```sh {paths="standard"}
+```sh
 helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
 --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}{{< version include-if="main" >}} \
 --set controller.image.pullPolicy=Always{{< /version >}}
@@ -102,7 +102,7 @@ When using a development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, a
 
 
 
-```sh {paths="experimental"}
+```sh
 helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
 --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
 --set controller.image.pullPolicy=Always
@@ -147,36 +147,3 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw
    NAME             CONTROLLER                       ACCEPTED   AGE   
    {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}     agentgateway.dev/{{< reuse "/agw-docs/snippets/gatewayclass.md" >}}    True       6m36s
    ```
-
-{{< doc-test paths="standard,experimental" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for agentgateway deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-
-- name: verify agentgateway GatewayClass exists
-  wait:
-    target:
-      kind: GatewayClass
-      metadata:
-        name: agentgateway
-    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}

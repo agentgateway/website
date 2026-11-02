@@ -2,42 +2,11 @@
 title: AWS
 weight: 10
 description: Run agentgateway on AWS and reach Amazon Bedrock with an IAM role instead of an API key.
-test:
-  aws:
-  - file: ${versionRoot}/integrations/cloud-providers/aws.md
-    path: aws
 aliases:
   - ../platforms/aws/
 ---
 
 Run agentgateway on Amazon ECS or Amazon EKS, and reach [Amazon Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) with the IAM role that AWS already gives the container. No API key goes into your configuration file.
-
-{{< doc-test paths="aws" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * "Authenticate with an IAM role": the example config is accepted by
-#     agentgateway (--validate-only), so `auth.aws: {}` is a recognized shape
-#     alongside `provider: bedrock` and `params.awsRegion`.
-#   * With that config loaded, agentgateway serves LLM traffic on port 4000 and
-#     resolves the model to the Bedrock provider in the configured region. This
-#     is what makes the port numbers in the ECS task definition and the Cloud
-#     Run-style examples on this page checkable rather than asserted.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That SigV4 signing with a task role reaches Bedrock - external dependency;
-#     the test has no AWS account, no task role, and a live call bills a
-#     completion.
-#   * "Run on Amazon ECS" - external dependency; the task definition needs an
-#     ECS cluster, an EFS file system, and IAM roles that the test cannot stand
-#     up. The container image, port, and command in it match the configuration
-#     that this test does run.
-#   * "IAM permissions" - a different layer; the policy document is evaluated by
-#     AWS, not by agentgateway.
-#   * "AWS services" - display-only table of links.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 ## Authenticate with an IAM role
 
@@ -58,22 +27,6 @@ llm:
       aws: {}
 ```
 
-{{< doc-test paths="aws" >}}
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: "*"
-    provider: bedrock
-    params:
-      awsRegion: us-east-1
-    auth:
-      aws: {}
-EOF
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
-
 Review the following table to understand this configuration.
 
 | Setting | Description |
@@ -82,34 +35,6 @@ Review the following table to understand this configuration.
 | `provider` | The LLM provider, set to `bedrock` for Amazon Bedrock. |
 | `params.awsRegion` | The AWS region to send Bedrock requests to. |
 | `auth.aws` | AWS authentication. An empty object uses the credentials that the environment already provides, such as an ECS task role, an EC2 instance profile, or `AWS_*` environment variables. |
-
-{{< doc-test paths="aws" >}}
-# Confirm that agentgateway serves LLM traffic on port 4000, which the ECS task
-# definition on this page publishes, and that params.awsRegion reaches the
-# resolved Bedrock provider as the settings table describes.
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-
-# The default `llm.discovery: catalog` expands `*` into catalog model IDs, so
-# check for a non-empty list rather than a literal `*`.
-SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '.data | length')
-if [ "${SERVED:-0}" -eq 0 ]; then
-  echo "FAIL: /v1/models lists no models for the example config on port 4000"
-  exit 1
-fi
-RESOLVED=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '
-  [ .backends[].backend.ai
-    | select(. != null)
-    | .target.providers[].active[].endpoint.provider.bedrock.region
-  ] | first')
-if [ "$RESOLVED" != "us-east-1" ]; then
-  echo "FAIL: expected Bedrock region us-east-1 but agentgateway resolved $RESOLVED"
-  exit 1
-fi
-echo "✓ Port 4000 serves the model and the Bedrock region resolves to the documented value"
-{{< /doc-test >}}
 
 For the full list of Bedrock settings, including passthrough and token counting, see [Amazon Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}).
 

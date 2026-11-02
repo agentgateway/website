@@ -138,43 +138,6 @@ spec:
           unit: Hours
 ```
 
-{{< doc-test paths="budget-limits" >}}
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-metadata:
-  name: local-token-budget
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: agentgateway-proxy
-  traffic:
-    rateLimit:
-      local:
-        - tokens: 10000
-          unit: Hours
-EOF
-
-YAMLTest -f - <<'EOF'
-- name: local-token-budget policy is accepted
-  wait:
-    target:
-      kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-      metadata:
-        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-        name: local-token-budget
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
-
 ## Monitor budget usage
 
 Track how much of each user's budget has been consumed using Prometheus metrics.

@@ -10,14 +10,14 @@ As of the 1.5 release the Standard path is also in the v1 / Gateway API 1.6 era,
 
    {{< tabs >}}
    {{% tab name="Standard" %}}
-   ```sh {paths="standard"}
+   ```sh
    export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version.md" >}}
    kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v$GWAPI_VERSION/standard-install.yaml
    ```
    {{% /tab %}}
    {{% tab name="Experimental" %}}
    CRDs in the experimental channel are required to use some experimental features in the Gateway API. Guides that require experimental CRDs note this requirement in their prerequisites.
-   ```sh {paths="experimental"}
+   ```sh
    export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}
    kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v$GWAPI_VERSION/experimental-install.yaml
    ```
@@ -28,7 +28,7 @@ As of the 1.5 release the Standard path is also in the v1 / Gateway API 1.6 era,
 
    {{< tabs >}}
    {{% tab name="Standard" %}}
-   ```sh {paths="standard"}
+   ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} \
    --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
@@ -37,7 +37,7 @@ As of the 1.5 release the Standard path is also in the v1 / Gateway API 1.6 era,
    {{% /tab %}}
    {{% tab name="Experimental" %}}
    The experimental path uses the nightly development build of the {{< reuse "agw-docs/snippets/kgateway.md" >}} CRDs.
-   ```sh {paths="experimental"}
+   ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} \
    --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
@@ -50,7 +50,7 @@ As of the 1.5 release the Standard path is also in the v1 / Gateway API 1.6 era,
 
    {{< tabs >}}
    {{% tab name="Standard" %}}
-   ```sh {paths="standard"}
+   ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
      --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
@@ -60,7 +60,7 @@ As of the 1.5 release the Standard path is also in the v1 / Gateway API 1.6 era,
    {{% /tab %}}
    {{% tab name="Experimental" %}}
    The experimental path uses the nightly development build.
-   ```sh {paths="experimental"}
+   ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
    --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \

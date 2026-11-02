@@ -39,7 +39,7 @@ Issuing and consuming an ID-JAG requires the experimental `identity-assertion-jw
 
 1. Deploy Keycloak and its Service into the `httpbin` namespace. The `KC_HOSTNAME` variable pins the token issuer to the in-cluster DNS name, so that the ID token you mint through a port-forward and the gateway's in-cluster exchange calls agree on the issuer (`iss`). The ID-JAG's issuer must be stable, because the resource authorization server validates it against the same issuer.
 
-   ```yaml {paths="cross-app-access"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -100,20 +100,20 @@ Issuing and consuming an ID-JAG requires the experimental `identity-assertion-jw
 
 2. Wait for Keycloak to be ready. The readiness probe reports the pod ready only after Keycloak serves requests, so this command returns when Keycloak is available to configure. Startup can take a few minutes.
 
-   ```sh {paths="cross-app-access"}
+   ```sh
    kubectl rollout status deployment/keycloak -n httpbin --timeout=300s
    ```
 
 3. Configure the `idjag-demo` realm with a script from the agentgateway repository. Clone the repository and go to the example setup scripts.
 
-   ```sh {paths="cross-app-access"}
+   ```sh
    git clone https://github.com/agentgateway/agentgateway.git
    cd agentgateway/examples/traffic-cross-app-access/keycloak
    ```
 
 4. Run the configuration script against the in-cluster Keycloak. The `KCADM` variable runs the Keycloak admin CLI inside the running pod, and `SERVER` points at the in-cluster hostname so that the realm's self-referential identity provider uses the same issuer as `KC_HOSTNAME`. The script creates the `idjag-demo` realm, the `alice`/`alice` user, an `agent-client` (the gateway's requesting client, which mints the ID-JAG through token exchange), and a `resource-client` (the resource authorization server client, which consumes the ID-JAG through the JWT-bearer grant).
 
-   ```sh {paths="cross-app-access"}
+   ```sh
    POD=$(kubectl get pod -n httpbin -l app=keycloak -o jsonpath='{.items[0].metadata.name}')
    KCADM="kubectl exec -i -n httpbin $POD -- /opt/keycloak/bin/kcadm.sh" \
    SERVER="http://keycloak.httpbin.svc.cluster.local:8080" \
@@ -138,7 +138,7 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
 
 1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for the token endpoint, pointing at the in-cluster Keycloak Service. Both legs of the exchange use the same Keycloak, so they share this {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-   ```yaml {paths="cross-app-access"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -154,7 +154,7 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
 
 2. Create Kubernetes Secrets with the two OAuth client secrets, one for each leg. These match the client secrets that the configuration script created.
 
-   ```yaml {paths="cross-app-access"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -178,7 +178,7 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
 
 3. Create a route-level {{< reuse "agw-docs/snippets/policy.md" >}} that validates the inbound OIDC ID token. The `audiences` value matches the `agent-client` that mints the user's ID token, and the validated token becomes the subject of the exchange.
 
-   ```yaml {paths="cross-app-access"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -212,7 +212,7 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
 
 4. Create a backend-level {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `crossAppAccess` method to the `httpbin` Service. The `identityProvider` leg authenticates as `agent-client` to mint the ID-JAG, and the `resourceAuthorizationServer` leg authenticates as `resource-client` to exchange the ID-JAG for a backend access token. The `audience` must equal the resource identifier that `resource-client` is registered with. The `subjectToken.source` reads the inbound ID token as the subject of the exchange. Because the route-level JWT policy validates and strips the `Authorization` header, this example reads the validated token from the `jwt.rawToken` CEL variable instead of the header.
 
-   ```yaml {paths="cross-app-access"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -325,94 +325,6 @@ Mint `alice`'s ID token, send a request through agentgateway with it, and verify
    bad token  -> 401
    ```
 
-{{< doc-test paths="cross-app-access" >}}
-# WHAT THIS TEST VALIDATES:
-#   * Keycloak (ceposta/keycloak:id-jag) deploys and the idjag-demo realm configures via the example script.
-#   * The AgentgatewayBackend, both client-secret Secrets, the route-level jwtAuthentication policy,
-#     and the backend-level crossAppAccess policy all apply cleanly against the nightly CRD.
-#   * End to end: a valid inbound OIDC ID token is exchanged, and the httpbin backend receives a
-#     different, backend-scoped Bearer token whose authorized party (azp) is resource-client.
-#   * jwtAuthentication rejects requests with no token and with an invalid token (HTTP 401).
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The forwarded local mint path in the visible steps -- local forwarding is unsupported in
-#     automated tests, so the hidden test mints alice's token through the gateway instead (a Keycloak
-#     HTTPRoute created below). The pinned KC_HOSTNAME keeps the issuer identical either way.
-#   * The PrivateKeyJwt example -- display-only snippet, needs an external IdP that requires it.
-
-# Expose the Keycloak token endpoint through the gateway so the token can be minted without a
-# port-forward. The issuer stays the pinned in-cluster hostname, so jwtAuthentication still matches.
-kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: keycloak
-  namespace: httpbin
-spec:
-  parentRefs:
-  - name: agentgateway-proxy
-    namespace: agentgateway-system
-  hostnames:
-  - "keycloak.local"
-  rules:
-  - backendRefs:
-    - name: keycloak
-      port: 8080
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="cross-app-access" >}}
-# Warm up the new keycloak.local virtual host (any HTTP response signals the data plane is ready).
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/realms/idjag-demo/protocol/openid-connect/token" -H "host: keycloak.local" && break
-  sleep 2
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="cross-app-access" >}}
-# Mint alice's OIDC ID token through the gateway, exchange it, and assert the backend received a
-# token whose azp is resource-client. Non-zero exit fails the test.
-ID_TOKEN=$(curl -s --max-time 15 -X POST "http://${INGRESS_GW_ADDRESS}:80/realms/idjag-demo/protocol/openid-connect/token" \
-  -H "host: keycloak.local" \
-  -d grant_type=password -d client_id=agent-client -d client_secret=agent-secret \
-  -d username=alice -d password=alice -d scope=openid | jq -r .id_token)
-test -n "$ID_TOKEN" -a "$ID_TOKEN" != "null" || { echo "FAILED: could not mint alice's ID token"; exit 1; }
-
-# The crossAppAccess exchange (remote JWKS fetch + backend policy programming) can lag route
-# readiness, so poll until the backend reports azp=resource-client. A single-shot request can catch
-# the data plane mid-programming and get an empty or non-JSON response, so this tolerates both.
-AZP=""
-RESP=""
-for i in $(seq 1 30); do
-  RESP=$(curl -s --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" \
-    -H "Authorization: Bearer $ID_TOKEN")
-  AZP=$(printf '%s' "$RESP" | python3 -c '
-import sys,json,base64
-try:
-    h=json.load(sys.stdin)["headers"]
-    tok=h.get("Authorization") or h.get("authorization")
-    tok=(tok[0] if isinstance(tok,list) else tok).split()[1]
-    print(json.loads(base64.urlsafe_b64decode(tok.split(".")[1]+"=="))["azp"])
-except Exception:
-    pass')
-  [ "$AZP" = "resource-client" ] && break
-  sleep 2
-done
-echo "backend token azp: $AZP"
-if [ "$AZP" != "resource-client" ]; then
-  CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers" \
-    -H "host: www.example.com" -H "Authorization: Bearer $ID_TOKEN")
-  echo "FAILED: expected azp=resource-client, got '$AZP' (last HTTP status: $CODE)"
-  echo "last response body (first 500 chars): $(printf '%s' "$RESP" | head -c 500)"
-  exit 1
-fi
-
-NO_TOKEN=$(curl -s -o /dev/null -w '%{http_code}' "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com")
-[ "$NO_TOKEN" = "401" ] || { echo "FAILED: expected 401 with no token, got $NO_TOKEN"; exit 1; }
-BAD_TOKEN=$(curl -s -o /dev/null -w '%{http_code}' "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" -H "Authorization: Bearer not.a.jwt")
-[ "$BAD_TOKEN" = "401" ] || { echo "FAILED: expected 401 with bad token, got $BAD_TOKEN"; exit 1; }
-echo "cross-app-access exchange verified"
-{{< /doc-test >}}
-
 ## Choose where the subject token is read from {#subject-token-source}
 
 The `subjectToken.source` field selects where the gateway reads the subject credential from. Set one of the following four forms. A policy that sets none of them, or several of them, is rejected when you apply it, with the message `exactly one of the fields in [header queryParameter cookie expression] must be set`.
@@ -508,7 +420,7 @@ The following parts of the Identity Assertion Authorization Grant draft are not 
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="cross-app-access"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} backend-cross-app-access jwt-idtoken -n httpbin
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} keycloak-token-endpoint -n httpbin
 kubectl delete secret agent-oauth-client resource-oauth-client -n httpbin

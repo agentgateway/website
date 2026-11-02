@@ -94,7 +94,7 @@ spec:
   frontend:
     tracing:
       backendRef:
-        group: agentgateway.dev
+        group: {{< reuse "agw-docs/snippets/group.md" >}}
         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
         name: braintrust-otlp
         port: 443

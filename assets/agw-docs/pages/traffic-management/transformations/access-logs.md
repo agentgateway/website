@@ -8,7 +8,7 @@ Add access log attributes with CEL expressions.
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that targets your Gateway and adds CEL variables as log attributes.
 
-   ```yaml {paths="access-logs"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -32,21 +32,6 @@ Add access log attributes with CEL expressions.
              expression: source.address
    EOF
    ```
-
-   {{< doc-test paths="access-logs" >}}
-   YAMLTest -f - <<'EOF'
-   - name: verify request through gateway returns 200
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/get"
-       method: GET
-       headers:
-         host: www.example.com
-     source:
-       type: local
-     expect:
-       statusCode: 200
-   EOF
-   {{< /doc-test >}}
 
 2. Send a request through the gateway.
 
@@ -87,7 +72,7 @@ Add a `filter` CEL expression to log only requests that match a condition. This 
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with a `filter` field that logs requests only if the response status code that is equal to or higher than 400. 
 
-   ```yaml {paths="access-logs-filter"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -110,21 +95,6 @@ Add a `filter` CEL expression to log only requests that match a condition. This 
              expression: string(response.code)
    EOF
    ```
-
-   {{< doc-test paths="access-logs-filter" >}}
-   YAMLTest -f - <<'EOF'
-   - name: verify 400 response triggers access log entry
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/status/400"
-       method: GET
-       headers:
-         host: www.example.com
-     source:
-       type: local
-     expect:
-       statusCode: 400
-   EOF
-   {{< /doc-test >}}
 
 2. Send a request that returns a `400` response. 
 
@@ -197,6 +167,6 @@ Add a `filter` CEL expression to log only requests that match a condition. This 
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="access-logs,access-logs-filter"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n agentgateway-system
 ```

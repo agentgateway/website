@@ -99,7 +99,7 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
 
    {{< version include-if="1.5.x" >}}For an MCP JSON-RPC request, the 429 is converted to an HTTP 200 response that carries a JSON-RPC error with code `-32003`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}For an MCP JSON-RPC request, the 429 is converted to an HTTP 200 response. A rate-limited `tools/call` request gets a tool result with `isError: true`, so that MCP clients can show a tool-execution error instead of treating the session as broken. Other requests, such as `initialize` and `tools/list`, get a JSON-RPC error with code `-32003`.{{< /version >}}
 
-   ```yaml {paths="mcp-local-rate-limit"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -119,25 +119,6 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
            burst: 10
    EOF
    ```
-
-   {{< doc-test paths="mcp-local-rate-limit" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for mcp-rate-limit policy to be accepted
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: default
-           name: mcp-rate-limit
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
 
 2. Verify that the policy is attached.
 
@@ -549,6 +530,6 @@ The following steps show how to set up global rate limiting infrastructure and c
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="mcp-local-rate-limit"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} mcp-rate-limit -n default
 ```

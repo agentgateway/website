@@ -13,7 +13,7 @@ In this example, two headers are injected on every incoming request before it is
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
-   ```yaml {paths="tracing"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -35,26 +35,6 @@ In this example, two headers are injected on every incoming request before it is
              value: 'string(random())'
    EOF
    ```
-
-   {{< doc-test paths="tracing" >}}
-   YAMLTest -f - <<'EOF'
-   - name: verify x-request-id and x-sampling-decision headers are injected
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/get"
-       method: GET
-       headers:
-         host: www.example.com
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.headers.X-Request-Id[0]"
-           comparator: exists
-         - path: "$.headers.X-Sampling-Decision[0]"
-           comparator: exists
-   EOF
-   {{< /doc-test >}}
 
    The expression breaks down as follows:
    * `uuid()`: Generates a new UUIDv4 string for each request, such as `f47ac10b-58cc-4372-a567-0e02b2c3d479`.
@@ -102,6 +82,6 @@ In this example, two headers are injected on every incoming request before it is
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="tracing"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin
 ```

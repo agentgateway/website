@@ -2,7 +2,6 @@
 title: Custom providers
 weight: 22
 description: Configure unsupported, self-hosted, and non-standard LLM providers with explicit API formats, paths, and backend targets.
-test: skip
 ---
 
 Use custom providers for unsupported, self-hosted, or non-standard LLM
@@ -409,7 +408,7 @@ spec:
         type: PathPrefix
         value: /v1/chat/completions
     backendRefs:
-    - group: agentgateway.dev
+    - group: {{< reuse "agw-docs/snippets/group.md" >}}
       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
       name: qwen-inferencepool
 ```

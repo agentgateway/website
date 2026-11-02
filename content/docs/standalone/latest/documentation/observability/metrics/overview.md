@@ -2,7 +2,6 @@
 title: View and customize metrics
 weight: 10
 description: View and monitor agentgateway metrics for traffic, LLM, MCP, and connection insights.
-test: skip
 ---
 
 Agentgateway exposes a Prometheus-compatible metrics endpoint on port 15020. Metrics are collected automatically for every request that passes through the gateway.

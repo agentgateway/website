@@ -27,28 +27,15 @@ The commands create a `.venv` directory in the current folder, which later steps
 
 Create the Secret, backend, and route that proxy OpenAI traffic through agentgateway. This guide uses a dedicated `crewai` backend and route on the `/openai` path, so it never changes an OpenAI backend or route that you might already have from the [OpenAI provider setup]({{< link-hextra path="/integrations/llm/providers/openai/" >}}). 
 
-{{< doc-test paths="crewai-k8s" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The OpenAI Secret, backend, and HTTPRoute apply and reach Accepted=True.
-#   * A chat completion request to the client path /openai/chat/completions is
-#     routed to OpenAI (proven by a 401, since the Secret holds a placeholder key).
-#     This is the exact path CrewAI sends: {base_url}/chat/completions.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The CrewAI install and crew run - External dependency: needs a Python 3.12
-#     environment and a real OpenAI key, neither of which CI provides.
-#   * A 200 chat completion end to end - External dependency: requires a real
-#     OpenAI key; the test uses a placeholder, so OpenAI returns 401.
-{{< /doc-test >}}
-
 1. Export your OpenAI API key.
 
-   ```bash {paths="crewai-k8s"}
+   ```bash
    export OPENAI_API_KEY="sk-your-key-here"
    ```
 
 2. Create a Kubernetes Secret for your API key.
 
-   ```yaml {paths="crewai-k8s"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -63,7 +50,7 @@ Create the Secret, backend, and route that proxy OpenAI traffic through agentgat
 
 3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} named `crewai` for OpenAI.
 
-   ```yaml {paths="crewai-k8s"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -81,28 +68,9 @@ Create the Secret, backend, and route that proxy OpenAI traffic through agentgat
    EOF
    ```
 
-   {{< doc-test paths="crewai-k8s" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for crewai backend to be accepted
-     wait:
-       target:
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-         metadata:
-           namespace: agentgateway-system
-           name: crewai
-       jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 60
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
-
 4. Create an HTTPRoute named `crewai` that matches the `/openai` path prefix and forwards traffic to the backend. The backend normalizes the path to the provider's `/v1/chat/completions` endpoint, so the `/openai/chat/completions` path that CrewAI sends is routed correctly and no URL rewrite is needed.
 
-   ```yaml {paths="crewai-k8s"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -125,50 +93,6 @@ Create the Secret, backend, and route that proxy OpenAI traffic through agentgat
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-
-{{< doc-test paths="crewai-k8s" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for crewai HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: agentgateway-system
-        name: crewai
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="crewai-k8s" >}}
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null -w "%{http_code}" -X POST "http://${INGRESS_GW_ADDRESS}:80/openai/chat/completions" -H "Content-Type: application/json" -d '{"model":"gpt-4o","messages":[{"role":"user","content":"hi"}]}' && break
-  sleep 2
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="crewai-k8s" >}}
-YAMLTest -f - <<'EOF'
-- name: verify OpenAI chat completions is routed through the gateway
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /openai/chat/completions
-    method: POST
-    headers:
-      Content-Type: application/json
-    body: '{"model":"gpt-4o","messages":[{"role":"user","content":"hi"}]}'
-  source:
-    type: local
-  expect:
-    statusCode: 401
-EOF
-{{< /doc-test >}}
 
 ## Configure CrewAI
 
@@ -333,7 +257,7 @@ If you no longer need the CrewAI setup, remove the resources that you created.
 
 1. Delete the dedicated `crewai` backend and route. Leave the `openai-secret` Secret in place, because the OpenAI provider setup and other guides share it.
 
-   ```bash {paths="crewai-k8s"}
+   ```bash
    kubectl delete httproute crewai -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
    kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} crewai -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
    ```

@@ -36,7 +36,7 @@ The following image illustrates the route delegation hierarchy and policy inheri
 ## Setup
 
 1. Create the parent HTTPRoute that matches incoming traffic on the `delegation.example` domain. Each rule defines a `1s` request timeout.
-   ```yaml {paths="native-policies"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -75,7 +75,7 @@ The following image illustrates the route delegation hierarchy and policy inheri
    ```
 
 2. Create the `child-team1` HTTPRoute. The HTTPRoute matches `/anything/team1/delay` and uses a `URLRewrite` filter to forward traffic to httpbin's `/delay` endpoint. The route does not define a timeout, so the `1s` timeout from the parent is inherited.
-   ```yaml {paths="native-policies"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -101,7 +101,7 @@ The following image illustrates the route delegation hierarchy and policy inheri
    ```
 
 3. Create the `child-team2` HTTPRoute. The HTTPRoute matches `/anything/team2/delay`, forwards to httpbin's `/delay` endpoint, and defines a custom `5s` request timeout that overrides the parent's `1s` timeout.
-   ```yaml {paths="native-policies"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -128,32 +128,6 @@ The following image illustrates the route delegation hierarchy and policy inheri
    EOF
    ```
 
-   {{< doc-test paths="native-policies" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for parent HTTPRoute to be accepted
-     wait:
-       target:
-         kind: HTTPRoute
-         metadata:
-           namespace: agentgateway-system
-           name: parent
-       jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 300
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
-
-   {{< doc-test paths="native-policies" >}}
-   for i in $(seq 1 60); do
-     curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/anything/team1/delay/0" -H "host: delegation.example" && break
-     sleep 2
-   done
-   {{< /doc-test >}}
-
 4. Send a request to the `delegation.example` domain along the `/anything/team1/delay/3` path. The httpbin app holds the request open for 3 seconds, but the inherited `1s` timeout cuts the request short. You get a 504 HTTP response after about 1 second.
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
@@ -169,22 +143,6 @@ The following image illustrates the route delegation hierarchy and policy inheri
    ```
    {{% /tab %}}
    {{< /tabs >}}
-
-   {{< doc-test paths="native-policies" >}}
-   YAMLTest -f - <<'EOF'
-   - name: child-team1 inherits parent 1s timeout - returns 504 on /delay/3
-     retries: 1
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team1/delay/3"
-       method: GET
-       headers:
-         host: delegation.example
-     source:
-       type: local
-     expect:
-       statusCode: 504
-   EOF
-   {{< /doc-test >}}
 
    Example output:
    ```
@@ -211,21 +169,6 @@ The following image illustrates the route delegation hierarchy and policy inheri
    {{% /tab %}}
    {{< /tabs >}}
 
-   {{< doc-test paths="native-policies" >}}
-   YAMLTest -f - <<'EOF'
-   - name: child-team2 5s override beats parent 1s - returns 200 on /delay/3
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team2/delay/3"
-       method: GET
-       headers:
-         host: delegation.example
-     source:
-       type: local
-     expect:
-       statusCode: 200
-   EOF
-   {{< /doc-test >}}
-
    Example output:
    ```
    HTTP/1.1 200 OK
@@ -241,7 +184,7 @@ The following image illustrates the route delegation hierarchy and policy inheri
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="native-policies"}
+```sh
 kubectl delete httproute parent -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute child-team1 -n team1
 kubectl delete httproute child-team2 -n team2

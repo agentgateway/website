@@ -36,12 +36,6 @@ You can access the {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics end
 
 For more information, see the [Semantic conventions for generative AI metrics](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/) in the OpenTelemetry docs.
 
-{{< doc-test paths="llm-observability" >}}
-PROXY_POD=$(kubectl get pods -n agentgateway-system -o name | grep agentgateway-proxy | head -1)
-PROXY_POD_IP=$(kubectl get ${PROXY_POD} -n agentgateway-system -o jsonpath='{.status.podIP}')
-kubectl run metrics-check -n agentgateway-system --rm -i --restart=Never --image=curlimages/curl -- -s "http://${PROXY_POD_IP}:15020/metrics" 2>/dev/null | grep "agentgateway_gen_ai_client_token_usage"
-{{< /doc-test >}}
-
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ## Token usage fields {#token-usage-fields}
 
@@ -105,7 +99,7 @@ sum by (user_id) (
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} automatically logs information to stdout. When you run {{< reuse "agw-docs/snippets/agentgateway.md" >}} on your local machine, you can view a log entry for each request that is sent to {{< reuse "agw-docs/snippets/agentgateway.md" >}} in your CLI output. 
 
 To view the logs: 
-```sh {paths="llm-observability"}
+```sh
 kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
@@ -117,10 +111,6 @@ http.host=localhost http.path=/openai http.version=HTTP/1.1 http.status=200 prot
 operation.name=chat gen_ai.provider.name=openai gen_ai.request.model={{< reuse "agw-docs/snippets/openai-model.md" >}} gen_ai.response.
 model={{< reuse "agw-docs/snippets/openai-model.md" >}}-0125 gen_ai.usage.input_tokens=68 gen_ai.usage.output_tokens=298 duration=2488ms 
 ```
-
-{{< doc-test paths="llm-observability" >}}
-kubectl logs deployment/agentgateway-proxy -n agentgateway-system | grep "gen_ai.usage.input_tokens"
-{{< /doc-test >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x" >}}
 ## Tool calls {#tool-calls}

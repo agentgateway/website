@@ -3,7 +3,6 @@ title: GitHub Copilot
 weight: 20
 icon: /integrations/providers/bw/copilot.svg
 description: Route agentgateway LLM traffic to models available through GitHub Copilot.
-test: skip
 ---
 
 Configure GitHub Copilot as an LLM provider in agentgateway.

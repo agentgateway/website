@@ -2,7 +2,6 @@
 title: Inference routing
 weight: 10
 description: Route AI inference requests to LLM workloads using the Kubernetes Gateway API Inference Extension.
-test: skip
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/inference.md" >}}
@@ -62,7 +61,7 @@ spec:
         type: PathPrefix
         value: /v1/chat/completions
     backendRefs:
-    - group: agentgateway.dev
+    - group: {{< reuse "agw-docs/snippets/group.md" >}}
       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
       name: qwen-inferencepool
     timeouts:

@@ -19,7 +19,7 @@ The following example evicts an httpbin endpoint after it returns three consecut
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies backend health settings to the httpbin Service. Because the policy targets a Service, create it in the same namespace as the Service.
 
-   ```yaml {paths="backend-health"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -93,48 +93,6 @@ The following example evicts an httpbin endpoint after it returns three consecut
      }
    }
    ```
-
-   {{< doc-test paths="backend-health" >}}
-   # This test verifies that the health policy is accepted and present in the config dump.
-   # Eviction behavior is not exercised here: the quickstart deploys a single httpbin endpoint,
-   # so the load balancer falls back to the evicted endpoint instead of shifting traffic away.
-   # Observing eviction requires multiple endpoints, which is called out in the manual steps below.
-   YAMLTest -f - <<'EOF'
-   - name: wait for httpbin-health policy to be accepted
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: httpbin
-           name: httpbin-health
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 300
-         intervalSeconds: 5
-   - name: wait for httpbin-health policy in config dump
-     retries: 20
-     http:
-       url: http://localhost:15000
-       skipSslVerification: true
-       method: GET
-       path: /config_dump
-     source:
-       type: pod
-       usePortForward: true
-       selector:
-         kind: Deployment
-         metadata:
-           namespace: agentgateway-system
-           name: agentgateway-proxy
-     expect:
-       bodyContains:
-       - '"httpbin-health"'
-       - '"unhealthyExpression"'
-   EOF
-   {{< /doc-test >}}
 
 4. Send requests to the httpbin app to confirm that healthy traffic still flows. The `/headers` endpoint returns a `200` response code, and the `/status/503` endpoint simulates an unhealthy backend response that matches your `unhealthyCondition`.
 

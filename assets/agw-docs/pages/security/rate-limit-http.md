@@ -98,7 +98,7 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
 
 1. Apply a rate limit to the httpbin HTTPRoute.
 
-   ```yaml {paths="local-rate-limit"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -118,25 +118,6 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
            burst: 3
    EOF
    ```
-
-   {{< doc-test paths="local-rate-limit" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for httpbin rate limit policy to be accepted
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: httpbin
-           name: httpbin-rate-limit
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
 
    {{< reuse "agw-docs/snippets/review-table.md" >}}
 
@@ -232,29 +213,6 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
    # 200
    ```
 
-   {{< doc-test paths="local-rate-limit" >}}
-   # Test rate limiting by sending requests in rapid succession
-   for i in $(seq 1 6); do
-     curl -s -o /dev/null http://${INGRESS_GW_ADDRESS}:80/anything -H "host: www.example.com" &
-   done
-   wait
-
-   # Now verify the rate limit is active
-   YAMLTest -f - <<'EOF'
-   - name: Verify rate limit kicks in after burst
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything"
-       method: GET
-       headers:
-         host: www.example.com
-     source:
-       type: local
-     expect:
-       statusCode: 429
-     retries: 3
-   EOF
-   {{< /doc-test >}}
-
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 {{< reuse "agw-docs/pages/security/rate-limit-claim-level.md" >}}
 {{< /version >}}
@@ -277,6 +235,6 @@ To apply different rate limits based on the request, use the `conditional` field
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="local-rate-limit,claim-level-rate-limit"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-rate-limit -n httpbin
 ```

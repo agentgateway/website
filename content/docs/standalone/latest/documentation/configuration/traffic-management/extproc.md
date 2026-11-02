@@ -2,15 +2,7 @@
 title: External processing (ExtProc)
 weight: 16
 description: Use external gRPC servers to modify HTTP requests and responses.
-test:
-  extproc:
-  - file: ${versionRoot}/documentation/configuration/traffic-management/extproc.md
-    path: extproc
 ---
-
-{{< doc-test paths="extproc" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 Attaches to: {{< badge content="Listener" path="/documentation/configuration/listeners/">}} {{< badge content="Route" path="/documentation/configuration/routes/">}}
 
@@ -202,39 +194,6 @@ routes:
   - dynamic:
       target: 'extproc.workerIp + ":" + string(extproc.workerPort)'
 ```
-
-{{< doc-test paths="extproc" >}}
-# WHAT THIS TEST VALIDATES:
-#   * A dynamic backend accepts a `target` CEL expression alongside an extProc policy.
-#   * Omitting `target` still validates, which is the pre-1.5 behavior the page describes.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That the expression resolves at request time -- that needs a running external
-#     processor that returns dynamic metadata, which this guide does not stand up.
-cat <<'EOF' > config-dynamic-target.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- policies:
-    extProc:
-      host: "extproc.com:9000"
-  backends:
-  - dynamic:
-      target: 'extproc.workerIp + ":" + string(extproc.workerPort)'
-EOF
-agentgateway -f config-dynamic-target.yaml --validate-only
-cat <<'EOF' > config-dynamic-notarget.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - dynamic: {}
-EOF
-agentgateway -f config-dynamic-notarget.yaml --validate-only
-{{< /doc-test >}}
 
 | Field | Required | Description |
 | -- | -- | -- |

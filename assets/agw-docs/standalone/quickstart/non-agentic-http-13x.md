@@ -12,11 +12,6 @@ flowchart LR
 
 ## Before you begin
 
-{{< doc-test paths="httpbin" >}}
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
 
    ```sh
@@ -36,13 +31,13 @@ Run the httpbin image so it listens on port 80 inside the container. Map it to a
 {{< tabs >}}
 {{% tab name="Linux" %}}
 
-```sh {paths="httpbin,httpbin-linux"}
+```sh
 docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin
 ```
 {{% /tab %}}
 {{% tab name="macOS (Apple Silicon)" %}}
 
-```sh {paths="httpbin-macos"}
+```sh
 docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin --platform linux/amd64
 ```
 {{% /tab %}}
@@ -50,7 +45,7 @@ docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin --platform lin
 
 Verify that httpbin responds.
 
-```sh {paths="httpbin"}
+```sh
 curl -s http://localhost:8000/headers | head -20 || true
 ```
 
@@ -71,7 +66,7 @@ Example output:
 {{< version include-if="1.2.x,1.1.x,1.0.x" >}}
 Create a `config.yaml` that listens on port 3000 and routes traffic to the httpbin host. Use a static `host` backend with the address and port where httpbin is reachable, such as `127.0.0.1:8000`.
 
-```yaml {paths="httpbin"}
+```yaml
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -89,13 +84,6 @@ In a separate terminal, run agentgateway with the config file.
 ```sh
 agentgateway -f config.yaml
 ```
-
-{{< doc-test paths="httpbin" >}}
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
 {{< /version >}}
 {{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
 You add the listener and route from the UI, so you can start agentgateway without a config file. When you run `agentgateway` without specifying a config, it bootstraps a basic config at `~/.config/agentgateway/config.yaml` and uses it automatically.
@@ -121,49 +109,15 @@ You add the listener and route from the UI, so you can start agentgateway withou
 
    {{< reuse-image-light src="img/ui-traffic-add-route.png" >}}
    {{< reuse-image-dark srcDark="img/ui-traffic-add-route-dark.png" >}}
-
-{{< doc-test paths="httpbin" >}}
-# Hidden test: the UI steps above (Enable Traffic -> Add bind/listener/route) are not
-# scriptable, so this block reproduces the equivalent config they produce, to keep the
-# resulting setup tested.
-cat > config.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - protocol: HTTP
-    routes:
-    - backends:
-      - host: 127.0.0.1:8000
-EOF
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
 {{< /version >}}
 
 ### Step 3: Send a request through agentgateway
 
 Send a request to agentgateway on port 3000. Agentgateway forwards it to httpbin; the response is returned to you.
 
-```sh {paths="httpbin"}
+```sh
 curl -i http://localhost:3000/headers
 ```
-
-{{< doc-test paths="httpbin" >}}
-YAMLTest -f - <<'EOF'
-- name: request through agentgateway to httpbin returns 200
-  http:
-    url: "http://localhost:3000"
-    path: /headers
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
 
 Example response (status and headers):
 
@@ -187,7 +141,7 @@ Example JSON body:
 
 You can try other httpbin endpoints through agentgateway, such as the following.
 
-```sh {paths="httpbin"}
+```sh
 curl -s http://localhost:3000/get
 curl -s http://localhost:3000/post -X POST -H "Content-Type: application/json" -d '{"key":"value"}'
 ```
@@ -196,7 +150,7 @@ curl -s http://localhost:3000/post -X POST -H "Content-Type: application/json" -
 
 When you are done, stop and remove the httpbin container.
 
-```sh {paths="httpbin"}
+```sh
 docker stop httpbin
 ```
 

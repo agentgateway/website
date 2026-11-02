@@ -2,7 +2,6 @@
 title: Chat completions
 weight: 10
 description: Send chat completion requests through agentgateway using the OpenAI Chat Completions API.
-test: skip
 ---
 
 The OpenAI Chat Completions API (`/v1/chat/completions`) is the primary interface for text generation and chat applications in agentgateway.

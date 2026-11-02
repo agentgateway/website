@@ -2,7 +2,6 @@
 title: Body buffering
 weight: 11
 description: Buffer request and response bodies before forwarding them.
-test: skip
 ---
 
 Use the `traffic.buffer` policy to buffer request or response bodies in the gateway proxy before the bodies are forwarded. By default, agentgateway streams bodies. When you configure `traffic.buffer`, the proxy accumulates the configured body direction in memory until the body is complete, and then forwards it.

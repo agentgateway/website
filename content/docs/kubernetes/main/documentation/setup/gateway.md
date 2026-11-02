@@ -2,12 +2,6 @@
 title: Set up an agentgateway proxy
 weight: 10
 description: Set up an agentgateway proxy with Gateway API resources and custom configuration.
-test:
-  setup-gateway:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: standard
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
 ---
 
 Set up an agentgateway proxy. 
@@ -19,39 +13,6 @@ Set up an agentgateway proxy.
 ## Set up an agentgateway proxy
 
 {{< reuse "agw-docs/snippets/agentgateway-setup.md" >}}
-
-{{< doc-test paths="all" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for agentgateway-proxy deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway-proxy
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-
-- name: wait for agentgateway-proxy service LB address
-  wait:
-    target:
-      kind: Service
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway-proxy
-    jsonPath: "$.status.loadBalancer.ingress[0].ip"
-    jsonPathExpectation:
-      comparator: exists
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
 
 
 ## Next

@@ -3974,6 +3974,7 @@ _Appears in:_
 | `Meta` |  |
 | `Perplexity` |  |
 | `Typesafe` |  |
+| `Nebius` |  |
 | `Custom` |  |
 
 

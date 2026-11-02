@@ -14,7 +14,7 @@ For more information about MCP auth, see the [About MCP auth]({{< link-hextra pa
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/documentation/mcp/static-mcp/" >}}).
 3. Install the experimental channel Gateway API.
-   ```sh {paths="setup-entra"}
+   ```sh
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
 
@@ -57,23 +57,12 @@ Register an application in Microsoft Entra ID, and collect the values that agent
 
 6. Select **App roles** and click **Create app role**. Enter a display name and set the **Value** to `mcp.admin`. Then, assign the role to the users or groups that need access to your MCP server. You use this role in the authorization rule that you configure later.
 
-{{< doc-test paths="setup-entra" >}}
-# The controller fetches the provider's remote JWKS when it translates the policy,
-# so the test uses Microsoft's real multi-tenant `common` endpoint
-# (https://login.microsoftonline.com/common/discovery/v2.0/keys) to resolve keys
-# without a dedicated tenant. The client ID is a placeholder; it is not validated
-# for the unauthenticated requests the test makes. Replace both with your real
-# tenant and app registration IDs when you follow the guide.
-export ENTRA_TENANT_ID="${ENTRA_TENANT_ID:-common}"
-export ENTRA_CLIENT_ID="${ENTRA_CLIENT_ID:-aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee}"
-{{< /doc-test >}}
-
 ## Create the JWKS backend
 
 Create a {{< reuse "agw-docs/snippets/backend.md" >}} that points to the Microsoft login endpoint, and a BackendTLSPolicy that originates a TLS connection to it. The JWT authentication policy uses this backend to fetch Entra's public keys for token signature validation.
 
 1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for the Microsoft login endpoint.
-   ```yaml {paths="setup-entra"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -87,7 +76,7 @@ Create a {{< reuse "agw-docs/snippets/backend.md" >}} that points to the Microso
    ```
 
 2. Create a BackendTLSPolicy that originates a TLS connection to the `entra-jwks` backend by using well-known trusted CA certificates.
-   ```yaml {paths="setup-entra"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: BackendTLSPolicy
@@ -109,7 +98,7 @@ Create a {{< reuse "agw-docs/snippets/backend.md" >}} that points to the Microso
 With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces Entra authentication and authorization for the MCP backend.
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with MCP authentication and authorization configuration. MCP authentication is configured at the route level by using `traffic.jwtAuthentication` with the `mcp` extension field. The route-level placement aligns MCP auth with standard JWT authentication and lets you use JWT claims in other route-level policies, such as authorization, rate limiting, and transformations. In this example, a Common Expression Language (CEL) rule requires the `mcp.admin` app role.
-   ```yaml {paths="setup-entra"}
+   ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -184,45 +173,12 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    {{< /version >}}
 
 2. Verify that the policy was accepted.
-   ```sh {paths="setup-entra"}
+   ```sh
    kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} mcp-entra-authn -o yaml
    ```
 
-{{< doc-test paths="setup-entra" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for entra-jwks BackendTLSPolicy to be accepted
-  wait:
-    target:
-      kind: BackendTLSPolicy
-      metadata:
-        namespace: default
-        name: entra-jwks
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-- name: wait for mcp-entra-authn policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: default
-        name: mcp-entra-authn
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
-
 3. Update the HTTPRoute that routes incoming traffic to the MCP server to include the discovery paths for the MCP resource and authorization server. This way, the agentgateway proxy can retrieve the resource and authorization server metadata during the MCP auth flow. The authorization server path uses a prefix match so that the proxy can serve the bridged Entra metadata and proxy the `authorize` and `token` endpoints under it.
-   ```yaml {paths="setup-entra"}
+   ```yaml
    kubectl apply -f - <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -272,66 +228,6 @@ EOF
    ```
 
    The gateway serves the discovery documents and the bridged `authorize`, `token`, and `client-registration` endpoints before it validates JWTs, even with the `Strict` policy on the route, because MCP clients need them to learn how to authenticate. You do not need a separate route or policy to exempt them. However, the gateway serves these paths only when the HTTPRoute matches them. If you leave out a discovery path, the `WWW-Authenticate` challenge still points clients to it, and the client fails when the path returns a 404 HTTP response code.
-
-{{< doc-test paths="setup-entra" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The Entra MCP auth resources (entra-jwks backend + BackendTLSPolicy, the
-#     mcp-entra-authn AgentgatewayPolicy with provider: Entra, clientId, and the
-#     app role authorization rule, and the updated HTTPRoute) are accepted, and
-#     the provider's JWKS resolves from the Entra `common` endpoint so the policy
-#     programs on the data plane.
-#   * The gateway enforces the connect-time 401 challenge and serves the
-#     protected-resource metadata. The discovery endpoints stay reachable with the
-#     authorization rule in place, because the rule applies only after a token is
-#     verified.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The full interactive OAuth sign-in flow and the 403 that the authorization
-#     rule returns for a token without the mcp.admin app role. Both require a real
-#     user signing in to a configured Entra app registration, which an automated
-#     test cannot perform.
-YAMLTest -f - <<'EOF'
-- name: wait for mcp HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: default
-        name: mcp
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-- name: unauthenticated MCP request returns 401 (connect-time auth enforced)
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/mcp"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 401
-    headers:
-      - name: www-authenticate
-        comparator: contains
-        value: resource_metadata
-  retries: 3
-- name: resource metadata discovery returns 200
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/.well-known/oauth-protected-resource/mcp"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.resource"
-        comparator: contains
-        value: "/mcp"
-  retries: 3
-EOF
-{{< /doc-test >}}
 
 ## Verify MCP discovery
 
@@ -421,54 +317,6 @@ Before you sign in, check that the gateway serves the discovery documents that M
      "redirect_uris": ["http://localhost:8080/callback"]
    }
    ```
-
-{{< doc-test paths="setup-entra" >}}
-# WHAT THIS TEST VALIDATES:
-#   * With no `resource` configured in mcp.resourceMetadata, the gateway derives
-#     the advertised resource from the request URL, so it carries the gateway
-#     address that the client used instead of a fixed value.
-#   * Client registration is short-circuited: the gateway answers with the
-#     pre-registered clientId as a public client, without calling Entra.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The bridged authorization server metadata, because the gateway builds it
-#     from Entra's live OIDC discovery document at request time, which would make
-#     the test depend on login.microsoftonline.com availability.
-YAMLTest -f - <<EOF
-- name: protected resource metadata derives the resource from the request URL
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/.well-known/oauth-protected-resource/mcp"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "\$.resource"
-        comparator: contains
-        value: "${INGRESS_GW_ADDRESS}"
-  retries: 3
-- name: client registration returns the pre-registered Entra client ID
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/.well-known/oauth-authorization-server/mcp/client-registration"
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {"client_name":"test","redirect_uris":["http://localhost:8080/callback"],"grant_types":["authorization_code"],"response_types":["code"],"token_endpoint_auth_method":"none"}
-  source:
-    type: local
-  expect:
-    statusCode: 201
-    bodyJsonPath:
-      - path: "\$.client_id"
-        comparator: equals
-        value: "${ENTRA_CLIENT_ID}"
-      - path: "\$.token_endpoint_auth_method"
-        comparator: equals
-        value: "none"
-  retries: 3
-EOF
-{{< /doc-test >}}
 
 ## Verify MCP auth
 

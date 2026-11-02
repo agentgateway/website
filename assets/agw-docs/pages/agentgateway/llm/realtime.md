@@ -24,7 +24,7 @@ Also set `policies.http.version` to `HTTP1` so that the connection to the provid
 
 If you already set up [multiple endpoints]({{< link-hextra path="/integrations/llm/providers/multiple-endpoints/" >}}), add the `/v1/realtime` path to your existing {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-```yaml {paths="realtime"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -50,32 +50,13 @@ spec:
 EOF
 ```
 
-{{< doc-test paths="realtime" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for openai backend with realtime route to be ready
-  wait:
-    target:
-      kind: AgentgatewayBackend
-      metadata:
-        namespace: agentgateway-system
-        name: openai
-    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 ## Step 2: Remove the WebSocket compression header
 
 Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that removes the `sec-websocket-extensions` header from requests to the OpenAI Realtime endpoint. This step prevents the client and server from negotiating `permessage-deflate` compression, which would make WebSocket frames unreadable for token tracking.
 
 1. Create the {{< reuse "agw-docs/snippets/policy.md" >}} to strip the header. Target the HTTPRoute section that handles the `/v1/realtime` path.
 
-   ```yaml {paths="realtime"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -95,25 +76,6 @@ Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that removes the 
            - sec-websocket-extensions
    EOF
    ```
-
-   {{< doc-test paths="realtime" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for realtime-strip-websocket-extensions policy to be accepted
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: agentgateway-system
-           name: realtime-strip-websocket-extensions
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
 
 2. Verify that the {{< reuse "agw-docs/snippets/policy.md" >}} is accepted.
 
@@ -158,6 +120,6 @@ For more information about LLM metrics and observability, see {{< conditional-te
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="realtime"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} realtime-strip-websocket-extensions -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

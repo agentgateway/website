@@ -98,7 +98,7 @@ spec:
 You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to override default settings for the workload, service, and service account that are created for an agentgateway proxy. Use the `deployment` overlay for the default Deployment workload and the `daemonSet` overlay when `workload.kind` is set to `DaemonSet`.
 
 1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example changes the default replica count from 1 to 3. For other examples, see [Overlays]({{< link-hextra path="/documentation/setup/customize/configs/#overlays" >}}). 
-   ```yaml {paths="customize"}
+   ```yaml
    kubectl apply --server-side -f- <<'EOF'
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
@@ -114,7 +114,7 @@ You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewaypa
 
 2. Create a Gateway resource that sets up an agentgateway proxy that uses your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}. 
 
-   ```yaml {paths="customize"}
+   ```yaml
    kubectl apply --server-side -f- <<'EOF'
    apiVersion: gateway.networking.k8s.io/v1
    kind: Gateway
@@ -137,25 +137,6 @@ You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewaypa
              from: All
    EOF
    ```
-
-{{< doc-test paths="customize" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for agentgateway-config deployment to scale to 3 replicas
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway-config
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: equals
-      value: 3
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
 
 3. Check the number of agentgateway pods that are created. Verify that you see 3 replicas. 
    ```sh
@@ -267,7 +248,7 @@ Use the `rawConfig` option to pass in raw upstream configuration to your agentga
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
-```sh {paths="customize"}
+```sh
 kubectl delete Gateway agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

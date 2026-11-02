@@ -1,4 +1,4 @@
-```yaml {paths="copilot-validate"}
+```yaml
 cat > /tmp/test-copilot.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:

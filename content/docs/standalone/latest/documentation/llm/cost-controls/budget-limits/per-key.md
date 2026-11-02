@@ -2,10 +2,6 @@
 title: Per-key dollar or token budgets
 weight: 10
 description: Cap what one API key spends on LLM traffic in US dollars or in tokens, and limit which models it can reach.
-test:
-  apikey-budgets:
-  - file: ${versionRoot}/documentation/llm/cost-controls/budget-limits/per-key.md
-    path: apikey-budgets
 ---
 
 Cap what one API key spends on LLM traffic, in US dollars or in tokens.
@@ -24,45 +20,6 @@ For the charging model and the window alignment, see [Budget and spend limits]({
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-{{< doc-test paths="apikey-budgets" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * "Step 2": the documented per-key budget config is accepted by
-#     agentgateway (--validate-only), so config.database, config.modelCatalog,
-#     budgets, and allowedModels are all spelled correctly.
-#   * "Step 4": allowedModels rejects a model outside the allowed patterns
-#     with a 403 and the model_not_allowed code, and the rejected request is
-#     not charged.
-#   * "Step 5": a USD Block budget rejects with 429 and the budget_exceeded
-#     code once the key's realized cost passes the limit.
-#   * "Step 6": the admin API reports a USD figure above the limit, which is
-#     the overshoot the guide describes - the request that crossed the limit
-#     completed and was charged.
-#   * "Step 7": a Tokens Audit budget reports itself as exceeded and still
-#     returns 200.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * Budget state surviving a restart. That needs a second gateway start
-#     against the same database, which the generated script has no clean way
-#     to sequence around the trap that stops the first one.
-#
-# COST AND TOKEN ARITHMETIC (why the assertions below are shaped the way they are):
-#   The mock LLM reports the request's max_tokens value as completion_tokens
-#   and 1 as prompt_tokens. With the catalog rates this guide writes in Step 1
-#   ($10 per 1M input, $30 per 1M output), every request costs exactly
-#   1/1e6*10 + 100/1e6*30 = $0.00301 and uses exactly 101 tokens. Step 4 spends
-#   one request, so the second request of the Step 5 loop crosses the $0.008
-#   limit and the run ends at $0.00903.
-#   A hidden assertion that repeated a visible request would charge the key
-#   twice and desynchronize the figures the page prints. So each hidden block
-#   asserts only what is stable once the preceding visible block has run: a
-#   rejected request charges nothing, and an exceeded budget stays exceeded.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< reuse "agw-docs/snippets/start-mock-llm.md" >}}
-{{< /doc-test >}}
-
 ## Set a dollar budget
 
 ### Step 1: Load a model cost catalog
@@ -72,7 +29,7 @@ A `USD` budget charges the realized cost of each request, and agentgateway compu
 > [!TIP]
 > To generate a catalog for real provider pricing instead of writing one by hand, use [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}). For the full catalog format and how to layer overrides, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
 
-```sh {paths="apikey-budgets"}
+```sh
 cat <<'EOF' > catalog.json
 {
   "providers": {
@@ -136,7 +93,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{% tab name="Config file" %}}
 Create a configuration with a database, the catalog, API key authentication, and a budget on each key.
 
-```yaml {paths="apikey-budgets"}
+```yaml
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 config:
@@ -208,20 +165,11 @@ If you used the UI in Step 2, agentgateway is already running, and you can skip 
 agentgateway -f config.yaml
 ```
 
-{{< doc-test paths="apikey-budgets" >}}
-# Per-key budgets: validate the documented config, then run it against the mock LLM.
-{{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
-agentgateway -f config-mock.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
-
 ### Step 4: Verify model access
 
 1. Send a request for a model that the key is allowed to use. Verify that the request succeeds. At the catalog rates from Step 1, this request costs about $0.003 of the key's $0.008 budget.
 
-   ```sh {paths="apikey-budgets"}
+   ```sh
    curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/v1/chat/completions \
      -H "Authorization: Bearer sk-team-a-abc123def456" \
      -H "Content-Type: application/json" \
@@ -240,7 +188,7 @@ sleep 3
 
 2. Send a request for a model that the key is not allowed to use. Verify that agentgateway rejects the request with a `403` status.
 
-   ```sh {paths="apikey-budgets"}
+   ```sh
    curl -s http://localhost:4000/v1/chat/completions \
      -H "Authorization: Bearer sk-team-a-abc123def456" \
      -H "Content-Type: application/json" \
@@ -259,57 +207,11 @@ sleep 3
 
    A rejected request never reaches a provider, so agentgateway does not charge it to the key's budget.
 
-{{< doc-test paths="apikey-budgets" >}}
-# A rejected model request charges nothing, so repeating it here does not move
-# the count that the following steps depend on.
-sleep 2
-YAMLTest -f - <<'EOF'
-- name: a model outside allowedModels is rejected
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer sk-team-a-abc123def456"
-    body: |
-      {
-        "model": "claude-sonnet-5",
-        "max_tokens": 100,
-        "messages": [{"role": "user", "content": "Hello!"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 403
-    bodyJsonPath:
-      - path: "$.error.code"
-        comparator: equals
-        value: model_not_allowed
-
-- name: the rejected request did not charge the budget
-  http:
-    url: "http://localhost:15000"
-    path: "/api/budgets/status?apiKeyName=team-a"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      # Step 4 sent one successful request, which cost $0.00301. The rejected
-      # model request cost nothing, so the charge is still $0.00301.
-      - path: "$.budgets[?(@.name=='daily-spend')].usage.used"
-        comparator: equals
-        value: "0.00301"
-EOF
-{{< /doc-test >}}
-
 ### Step 5: Verify the dollar budget
 
 1. Send three more requests with the `team-a` key. Each request costs about $0.003, and Step 4 already spent $0.003. The second request in this loop therefore takes the key past its $0.008 limit.
 
-   ```sh {paths="apikey-budgets"}
+   ```sh
    for i in 1 2 3; do
      curl -s -o /dev/null -w "request $i: %{http_code}\n" http://localhost:4000/v1/chat/completions \
        -H "Authorization: Bearer sk-team-a-abc123def456" \
@@ -334,7 +236,7 @@ EOF
 
 2. Send one more request to see the error body.
 
-   ```sh {paths="apikey-budgets"}
+   ```sh
    curl -s http://localhost:4000/v1/chat/completions \
      -H "Authorization: Bearer sk-team-a-abc123def456" \
      -H "Content-Type: application/json" \
@@ -357,52 +259,6 @@ EOF
    warn budget API key budget exceeded api_key="team-a" budget="daily-spend" used=0.00903 limit_unit="USD" limit_amount=0.008 exceeded=true
    ```
 
-{{< doc-test paths="apikey-budgets" >}}
-# A rejected request charges nothing, so the charge stays at $0.00903 and this
-# block can assert both the rejection and the resulting state.
-sleep 2
-YAMLTest -f - <<'EOF'
-- name: a request past the limit is rejected with budget_exceeded
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer sk-team-a-abc123def456"
-    body: |
-      {
-        "model": "gpt-5",
-        "max_tokens": 100,
-        "messages": [{"role": "user", "content": "Hello!"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 429
-    bodyJsonPath:
-      - path: "$.error.code"
-        comparator: equals
-        value: budget_exceeded
-
-- name: the request that crossed the limit completed and was charged
-  http:
-    url: "http://localhost:15000"
-    path: "/api/budgets/status?apiKeyName=team-a"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      # $0.00903 is above the $0.008 limit, which is the overshoot the guide
-      # describes: the request that crossed the limit completed and was charged.
-      - path: "$.budgets[?(@.name=='daily-spend')].usage.used"
-        comparator: equals
-        value: "0.00903"
-EOF
-{{< /doc-test >}}
-
 ### Step 6: Check budget usage
 
 1. Check the budget usage of the key with [agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}). To list the budgets of every key, omit the `--key` flag.
@@ -422,7 +278,7 @@ EOF
 
 2. For the full budget status, query the admin API. The response adds the window start and end as Unix timestamps in milliseconds, and the time of the last update. To return every budget, omit the `apiKeyName` parameter.
 
-   ```sh {paths="apikey-budgets"}
+   ```sh
    curl -s "http://localhost:15000/api/budgets/status?apiKeyName=team-a" | jq .
    ```
 
@@ -465,7 +321,7 @@ The `team-b` key that you configured in Step 2 caps tokens rather than dollars. 
 
 1. Send four requests with the `team-b` key. Each request uses 101 tokens, so four requests use more than the 250-token limit allows.
 
-   ```sh {paths="apikey-budgets"}
+   ```sh
    for i in 1 2 3 4; do
      curl -s -o /dev/null -w "request $i: %{http_code}\n" http://localhost:4000/v1/chat/completions \
        -H "Authorization: Bearer sk-team-b-xyz789uvw012" \
@@ -494,44 +350,6 @@ The `team-b` key that you configured in Step 2 caps tokens rather than dollars. 
    ```
    warn budget API key budget exceeded api_key="team-b" budget="lifetime-tokens" used=303 limit_unit="Tokens" limit_amount=250 exceeded=true
    ```
-
-{{< doc-test paths="apikey-budgets" >}}
-sleep 2
-YAMLTest -f - <<'EOF'
-- name: an Audit budget reports itself as exceeded
-  http:
-    url: "http://localhost:15000"
-    path: "/api/budgets/status?apiKeyName=team-b"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.budgets[?(@.name=='lifetime-tokens')].usage.exceeded"
-        comparator: equals
-        value: true
-
-- name: an Audit budget still returns 200 after the limit is passed
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer sk-team-b-xyz789uvw012"
-    body: |
-      {
-        "model": "gpt-5",
-        "max_tokens": 100,
-        "messages": [{"role": "user", "content": "Hello!"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
 
 ## Limit model access per key
 

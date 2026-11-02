@@ -2,7 +2,6 @@
 title: Advanced settings
 weight: 70
 description: Install agentgateway and related components.
-test: skip
 aliases:
   - ../../install/advanced/
 ---

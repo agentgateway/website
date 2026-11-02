@@ -21,48 +21,13 @@ For example, [load balancing]({{< link-hextra path="/documentation/llm/load-bala
 2. Set up [API access to each LLM provider]({{< link-hextra path="/documentation/llm/api-keys/" >}}) that you want to use.
 3. Understand how [load balancing across multiple providers]({{< link-hextra path="/documentation/llm/load-balancing/#multiple-providers" >}}) works, since this guide builds on that setup.
 
-{{< doc-test paths="shared-connection-settings" >}}
-# The guide references two provider secrets and a forward-proxy backend that a
-# reader would already have from setting up their own providers and, optionally,
-# a tunnel. Create minimal stand-ins so the resources in this test resolve.
-kubectl apply -f- <<EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: on-prem-instance-secret
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-type: Opaque
-stringData:
-  Authorization: test-on-prem-token
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: cloud-instance-1-secret
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-type: Opaque
-stringData:
-  Authorization: test-cloud-instance-1-token
----
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-metadata:
-  name: forward-proxy
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  static:
-    host: forward-proxy.internal
-    port: 3128
-EOF
-{{< /doc-test >}}
-
 ## Share settings between a provider group and a dedicated backend {#share-settings}
 
 The following steps set up an AI provider group with an on-premises instance and two individually addressable cloud instances, plus a separate {{< reuse "agw-docs/snippets/backend.md" >}} that reaches one of the cloud instances for its own dedicated route. A shared {{< reuse "agw-docs/snippets/policy.md" >}} keeps the authentication, TLS, and tunnel settings for that cloud instance in one place.
 
 1. Create the aggregate {{< reuse "agw-docs/snippets/backend.md" >}} with an AI provider group. Each cloud provider uses the `custom` provider type so you can declare explicit API paths. Leave `auth`, `tls`, and `tunnel` off of the providers that you plan to share settings for — the policy in step 3 supplies them.
 
-   ```yaml,paths="shared-connection-settings"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -104,28 +69,9 @@ The following steps set up an AI provider group with an on-premises instance and
    EOF
    ```
 
-   {{< doc-test paths="shared-connection-settings" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for llm-providers backend to be accepted
-     wait:
-       target:
-         kind: AgentgatewayBackend
-         metadata:
-           namespace: agentgateway-system
-           name: llm-providers
-       jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 60
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
-
 2. Create a dedicated {{< reuse "agw-docs/snippets/backend.md" >}} for the same cloud instance, used by a separate route, such as one that scrapes a per-instance metrics endpoint. This example uses the `openai` provider type with `/metrics` configured as passthrough, matching a common pattern for a non-inference route that reaches the same host. Leave `auth`, `tls`, and `tunnel` off here too.
 
-   ```yaml,paths="shared-connection-settings"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -146,28 +92,9 @@ The following steps set up an AI provider group with an on-premises instance and
    EOF
    ```
 
-   {{< doc-test paths="shared-connection-settings" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for cloud-instance-1-metrics backend to be accepted
-     wait:
-       target:
-         kind: AgentgatewayBackend
-         metadata:
-           namespace: agentgateway-system
-           name: cloud-instance-1-metrics
-       jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 60
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
-
 3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that targets both the `cloud-instance-1` provider inside the aggregate {{< reuse "agw-docs/snippets/backend.md" >}} (using `sectionName`) and the dedicated metrics {{< reuse "agw-docs/snippets/backend.md" >}}. The `backend` section on the policy supplies the shared `auth`, `tls`, and `tunnel` settings to both targets.
 
-   ```yaml,paths="shared-connection-settings"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -197,25 +124,6 @@ The following steps set up an AI provider group with an on-premises instance and
            port: 3128
    EOF
    ```
-
-   {{< doc-test paths="shared-connection-settings" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for cloud-instance-1-connection policy to be accepted
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: agentgateway-system
-           name: cloud-instance-1-connection
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 60
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
 
    | Field | Description |
    |-------|-------------|

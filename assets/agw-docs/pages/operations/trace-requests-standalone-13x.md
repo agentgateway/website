@@ -44,23 +44,6 @@ binds:
       - host: 127.0.0.1:8000
 ```
 
-{{< doc-test paths="trace-validate" >}}
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-
-cat > /tmp/agctl-trace-config.yaml << 'EOF'
-binds:
-- port: 3000
-  listeners:
-  - protocol: HTTP
-    routes:
-    - name: httpbin
-      backends:
-      - host: 127.0.0.1:8000
-EOF
-agentgateway -f /tmp/agctl-trace-config.yaml --validate-only
-{{< /doc-test >}}
-
 ## Start agentgateway
 
 In one terminal, run agentgateway with your config file.

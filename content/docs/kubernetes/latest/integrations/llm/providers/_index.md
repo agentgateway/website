@@ -2,7 +2,6 @@
 title: Providers
 weight: 10
 description: Configure agentgateway for first-class provider shortcuts and OpenAI-compatible fallbacks.
-test: skip
 ---
 
 Learn how to configure agentgateway for a particular LLM.

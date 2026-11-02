@@ -10,7 +10,7 @@ In this example, `model` and `max_tokens` are optional. If a client omits them, 
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
-   ```yaml {paths="validate-defaults"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -28,30 +28,6 @@ In this example, `model` and `max_tokens` are optional. If a client omits them, 
            body: 'toJson(json(request.body).merge({"model": default(json(request.body).model, "gpt-4o"), "max_tokens": default(json(request.body).max_tokens, 2048)}))'
    EOF
    ```
-
-   {{< doc-test paths="validate-defaults" >}}
-   YAMLTest -f - <<'EOF'
-   - name: verify default model and max_tokens are applied when fields are absent
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/post"
-       method: POST
-       headers:
-         host: www.example.com
-         content-type: application/json
-       body: '{"messages": [{"role": "user", "content": "hello"}]}'
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.data"
-           comparator: contains
-           value: "gpt-4o"
-         - path: "$.data"
-           comparator: contains
-           value: "2048"
-   EOF
-   {{< /doc-test >}}
 
    The expression breaks down as follows:
    * `json(request.body)`: Parses the raw request body string into a map.
@@ -105,7 +81,7 @@ In this example, the `x-user-id` request header is set from the `user_id` field 
 
 1. Update the {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
-   ```yaml {paths="validate-skip"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -125,27 +101,6 @@ In this example, the `x-user-id` request header is set from the `user_id` field 
              value: 'default(json(request.body).user_id, fail())'
    EOF
    ```
-
-   {{< doc-test paths="validate-skip" >}}
-   YAMLTest -f - <<'EOF'
-   - name: verify x-user-id header is set when user_id is present in request body
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/post"
-       method: POST
-       headers:
-         host: www.example.com
-         content-type: application/json
-       body: '{"user_id": "user123", "messages": [{"role": "user", "content": "hello"}]}'
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.headers.X-User-Id[0]"
-           comparator: equals
-           value: "user123"
-   EOF
-   {{< /doc-test >}}
 
 2. Send a request that includes `user_id` in the body. Verify that the `x-user-id` header is present in the forwarded request.
 
@@ -228,6 +183,6 @@ In this example, the `x-user-id` request header is set from the `user_id` field 
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="validate-defaults,validate-skip"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin
 ```

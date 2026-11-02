@@ -2,7 +2,6 @@
 title: Version 1.7.x
 weight: 460
 description: Use agentgateway in a Kubernetes environment. 
-test: skip
 # PDF export. This one page opting into `book` is the whole opt-in: the format
 # stitches this page plus its entire .Pages subtree into one print document, so
 # the PDF is scoped to this version tree by where the opt-in lives. The

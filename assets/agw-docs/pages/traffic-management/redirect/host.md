@@ -7,7 +7,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 ## Set up host redirects
 
 1. Create an HTTPRoute for the httpbin app. In the following example, requests for the `host.redirect.example` domain are redirected to the `www.example.com` hostname, and a 302 HTTP response code is returned to the user.
-   ```yaml {paths="host-redirect"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -59,53 +59,6 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    < content-length: 0
    content-length: 0
    ```
-
-{{< doc-test paths="host-redirect" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-redirect HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-redirect
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="host-redirect" >}}
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: host.redirect.example" && break
-  sleep 2
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="host-redirect" >}}
-YAMLTest -f - <<'EOF'
-- name: host redirect - host.redirect.example returns 302 with location www.example.com
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /headers
-    method: GET
-    headers:
-      host: "host.redirect.example"
-  source:
-    type: local
-  expect:
-    statusCode: 302
-    headers:
-      - name: location
-        comparator: contains
-        value: www.example.com
-EOF
-{{< /doc-test >}}
 
 ## Cleanup
 

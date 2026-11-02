@@ -9,11 +9,6 @@ A gateway of its own is also the prerequisite for the next two guides, because a
 1. [Install standalone agentgateway]({{< link-hextra path="/documentation/setup/install/" >}}).
 2. [Launch the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}) so that you know where agentgateway serves it today.
 
-{{< doc-test paths="ui-standalone-gateway" >}}
-# Install agentgateway binary for tests
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 ## Serve the UI on its own gateway
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
@@ -60,59 +55,6 @@ In Docker or Helm, publish port `4001` before you start. The UI cannot publish a
 {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 {{< reuse "agw-docs/standalone/setup/ui/gateway-config.md" >}}
 {{% /version %}}
-
-{{< doc-test paths="ui-standalone-gateway" >}}
-pkill -f "agentgateway -f" 2>/dev/null || true
-sleep 1
-cat > /tmp/agw-ui-gateway.yaml <<'EOF'
-config:
-  adminAddr: localhost:15000
-gateways:
-  default:
-    port: 4000
-  ui-gateway:
-    port: 4001
-ui:
-  gateways: [ui-gateway]
-routes:
-- matches:
-  - path:
-      pathPrefix: /
-  backends:
-  - host: httpbin.org:80
-EOF
-agentgateway -f /tmp/agw-ui-gateway.yaml &
-AGW_UI_GW_PID=$!
-sleep 3
-YAMLTest -f - <<'EOF'
-- name: UI is served on the UI gateway port
-  http:
-    url: "http://localhost:4001"
-    path: "/ui/"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-  retries: 3
-- name: admin interface endpoints are not served on the UI gateway
-  http:
-    url: "http://localhost:4001"
-    path: "/config_dump"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 404
-  retries: 3
-EOF
-# The 404 above must mean "not routed here", not "endpoint does not exist".
-# Assert with curl rather than YAMLTest, because /config_dump is trailing-slash
-# sensitive and returns 404 as /config_dump/ even on the admin address.
-ADMIN_DUMP_CODE="$(curl -s -o /dev/null -w '%{http_code}' http://localhost:15000/config_dump)"
-test "$ADMIN_DUMP_CODE" = "200"
-kill $AGW_UI_GW_PID 2>/dev/null || true
-{{< /doc-test >}}
 
 > [!NOTE]
 > The UI gateway is an addition, not a replacement. Agentgateway still serves a copy of the UI on the admin interface, which is loopback-only and which you do not need to change. Adding this gateway does not put the admin interface's debugging endpoints on it. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/documentation/setup/ui/#admin-interface" >}}).

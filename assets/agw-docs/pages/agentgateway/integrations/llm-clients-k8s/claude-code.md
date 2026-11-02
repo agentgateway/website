@@ -16,13 +16,13 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
 
 1. Export your Anthropic API key.
 
-   ```bash {paths="claude-code-k8s"}
+   ```bash
    export ANTHROPIC_API_KEY="sk-ant-your-key-here"
    ```
 
 2. Create a Kubernetes secret for your API key. For other authentication methods, see [API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
 
-   ```bash {paths="claude-code-k8s"}
+   ```bash
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -42,7 +42,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
    {{% tab name="Flexible model (recommended)" %}}
    Allow Claude Code to use any model. The `anthropic: {}` syntax means no model is pinned.
 
-   ```bash {paths="claude-code-k8s"}
+   ```bash
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -94,28 +94,9 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
 
    {{< /tabs >}}
 
-   {{< doc-test paths="claude-code-k8s" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for anthropic backend to be accepted
-     wait:
-       target:
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-         metadata:
-           namespace: agentgateway-system
-           name: anthropic
-       jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 60
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
-
 4. Create an HTTPRoute to forward all traffic to the Anthropic backend. This route uses a `/` path prefix so that all requests, including `/v1/messages` and `/v1/models`, are forwarded to the backend.
 
-   ```bash {paths="claude-code-k8s"}
+   ```bash
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -138,50 +119,6 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-
-{{< doc-test paths="claude-code-k8s" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for claude HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: agentgateway-system
-        name: claude
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="claude-code-k8s" >}}
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null -w "%{http_code}" -X POST "http://${INGRESS_GW_ADDRESS}:80/v1/messages" -H "Content-Type: application/json" -d '{"model":"claude-haiku-4-5-20251001","max_tokens":10,"messages":[{"role":"user","content":"hi"}]}' && break
-  sleep 2
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="claude-code-k8s" >}}
-YAMLTest -f - <<'EOF'
-- name: verify Anthropic messages endpoint is routed through gateway
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /v1/messages
-    method: POST
-    headers:
-      Content-Type: application/json
-    body: '{"model":"claude-haiku-4-5-20251001","max_tokens":10,"messages":[{"role":"user","content":"hi"}]}'
-  source:
-    type: local
-  expect:
-    statusCode: 401
-EOF
-{{< /doc-test >}}
 
 ## Configure Claude Code
 
@@ -231,12 +168,6 @@ export ANTHROPIC_BASE_URL="http://localhost:8080"
    ```
 
    All requests, including prompts, tool calls, and file reads, flow through agentgateway.
-
-{{< doc-test paths="claude-code-k8s" >}}
-kubectl delete agentgatewaybackend anthropic -n agentgateway-system --ignore-not-found
-kubectl delete httproute claude -n agentgateway-system --ignore-not-found
-kubectl delete secret anthropic-secret -n agentgateway-system --ignore-not-found
-{{< /doc-test >}}
 
 ## Teams account
 

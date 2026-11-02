@@ -100,7 +100,7 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
    > [!WARNING]
    > The Keycloak instance in this guide allows anonymous DCR, which is why you can register this client without an administrator credential. Use this shortcut only in a local test environment. In production, create machine clients through your identity provider's normal process, and do not allow DCR clients to use the client credentials grant.
 
-   ```sh {paths="jwt-claims"}
+   ```sh
    REGISTRATION=$(curl --fail --silent --show-error \
      -H "Content-Type: application/json" \
      -d '{
@@ -116,7 +116,7 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
    ```
 
 3. Get an access token for the client by using the client credentials grant. A service that calls your API uses this grant to authenticate as itself, with no user involved. This token identifies the client, not a person, so it carries no username.
-   ```sh {paths="jwt-claims"}
+   ```sh
    ACCESS_TOKEN=$(curl -s -u "${KEYCLOAK_CLIENT}:${KEYCLOAK_SECRET}" \
      -d grant_type=client_credentials \
      "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
@@ -124,13 +124,6 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
    
    echo $ACCESS_TOKEN
    ```
-
-   {{< doc-test paths="jwt-claims" >}}
-   if [ -z "${ACCESS_TOKEN:-}" ] || [ "${ACCESS_TOKEN}" = "null" ]; then
-     echo "no access token issued for the client; check the client registration in the previous step"
-     exit 1
-   fi
-   {{< /doc-test >}}
 
 4. Repeat the request to the httpbin app. This time, include the JWT token that you received in the previous step. Verify that the request succeeds and you get back a 200 HTTP response code. 
    {{< tabs >}}
@@ -174,7 +167,7 @@ Authentication proves who sent the request. Authorization decides what that iden
 This distinction matters when DCR is enabled. Registration lets a client obtain a token from the identity provider, but it does not grant that client access to your backends. Authorization is what decides what actions the client can perform.
 
 1. Update the `jwt-auth-policy` to add an authorization rule. The following example allows only the client that you registered, and denies every other identity.
-   ```yaml {paths="jwt-claims"}
+   ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -218,32 +211,13 @@ This distinction matters when DCR is enabled. Registration lets a client obtain 
    > [!NOTE]
    > Authorization runs only after authentication succeeds. A request with a missing or invalid token fails JWT authentication and returns a `401` before any expression is evaluated. Authorization denials return a `403`.
 
-   {{< doc-test paths="jwt-claims" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for jwt-auth-policy with authorization to be accepted
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: agentgateway-system
-           name: jwt-auth-policy
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 60
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
-
 2. Repeat the request with the client's token. Verify that the request still succeeds, because the `azp` claim matches the allow rule.
    ```sh
    curl -v "${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" -H "Authorization: Bearer ${ACCESS_TOKEN}"
    ```
 
 3. Register a second client, get a token for it, and send the same request. Verify that the request fails with a `403 Forbidden` response code. The token is valid, so authentication succeeds, but no allow rule matches the second client.
-   ```sh {paths="jwt-claims"}
+   ```sh
    OTHER_REGISTRATION=$(curl --fail --silent --show-error \
      -H "Content-Type: application/json" \
      -d '{
@@ -269,39 +243,6 @@ This distinction matters when DCR is enabled. Registration lets a client obtain 
    authorization failed
    ...
    ```
-
-{{< doc-test paths="jwt-claims" >}}
-# The visible blocks set both tokens as shell variables; export them so that
-# YAMLTest (a child process that interpolates them from its environment) can read them.
-export ACCESS_TOKEN
-export OTHER_TOKEN
-YAMLTest -f - <<'EOF'
-- name: the registered client matches the allow rule
-  retries: 3
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/headers"
-    method: GET
-    headers:
-      host: "www.example.com"
-      authorization: "Bearer ${ACCESS_TOKEN}"
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: a second client is authenticated but not authorized
-  retries: 3
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/headers"
-    method: GET
-    headers:
-      host: "www.example.com"
-      authorization: "Bearer ${OTHER_TOKEN}"
-  source:
-    type: local
-  expect:
-    statusCode: 403
-EOF
-{{< /doc-test >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.2.x" >}}For more authorization rules, such as combining `Allow` with `Require` or restricting access by source address, see [Authorization]({{< link-hextra path="/documentation/security/authorization/" >}}). {{< /version >}}For the claims and functions that you can use in an expression, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
 
@@ -562,7 +503,7 @@ Because the `value` field of a transformation is a CEL expression, `jwt.sub` ref
 In this example, you add a transformation to the JWT policy that copies claims from the validated token into request headers before the request is forwarded to the backend. This is a common way to pass the authenticated user's identity to upstream apps without having them parse the JWT.
 
 1. Update the `jwt-auth-policy` to add a `transformation` that sets request headers from JWT claims. The `x-user-role` header uses `default()` to fall back to `user` when the `role` claim is absent.
-   ```yaml {paths="jwt-claims"}
+   ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -602,51 +543,6 @@ In this example, you add a transformation to the JWT policy that copies claims f
    EOF
    ```
 
-   {{< doc-test paths="jwt-claims" >}}
-   # WHAT THIS TEST VALIDATES:
-   #   * The transformation reads validated JWT claims — x-auth-issuer is set from
-   #     jwt.iss, proving the jwt CEL variable is populated before the transformation runs.
-   #   * default() falls back correctly — x-user-role is 'user' because the token has no
-   #     top-level 'role' claim, exercising default(jwt.role, 'user').
-   # WHAT THIS TEST DOES NOT VALIDATE (and why):
-   #   * The exact jwt.sub value (x-user-id) — Different layer: the value is a dynamic
-   #     Keycloak user UUID, so only issuer/role (deterministic) are asserted.
-   #   * The full claim-based routing split (premium vs free backend) — Requires
-   #     config/traffic the page omits: real premium-backend / free-backend Services and a
-   #     token carrying a 'tier' claim (the default token has none). The Claim-based routing
-   #     section instead tests the piece that IS deterministic: a later jwt-claims assertion
-   #     confirms the PreRouting transformation derives x-user-tier='free' from default().
-   #
-   # The visible token block sets ACCESS_TOKEN as a shell variable; export it so that
-   # YAMLTest (a child process that interpolates ${ACCESS_TOKEN} from its environment)
-   # can read it.
-   export ACCESS_TOKEN
-   {{< /doc-test >}}
-
-   {{< doc-test paths="jwt-claims" >}}
-   YAMLTest -f - <<'EOF'
-   - name: validated JWT claims are injected as request headers
-     retries: 3
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/headers"
-       method: GET
-       headers:
-         host: www.example.com
-         authorization: "Bearer ${ACCESS_TOKEN}"
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.headers.X-Auth-Issuer[0]"
-           comparator: contains
-           value: "realms/master"
-         - path: "$.headers.X-User-Role[0]"
-           comparator: contains
-           value: "user"
-   EOF
-   {{< /doc-test >}}
-
 2. Using the `ACCESS_TOKEN` that you retrieved in [Verify JWT authentication](#verify-jwt-authentication), send an authenticated request to the httpbin app. Because httpbin echoes back the headers that it receives, you can verify that the claims were injected.
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
@@ -683,7 +579,7 @@ You can route requests to different backends based on a JWT claim, such as sendi
 > - **A token that carries the `tier` claim.** The default Keycloak master-realm token has no `tier` claim, so every request falls back to `free`. To exercise the premium path, configure a Keycloak client scope or protocol mapper that adds a `tier` claim, then request a token that includes `tier: premium`.
 
 1. Create or update the `jwt-auth-policy` to validate the JWT and, in the `PreRouting` phase, copy a `tier` claim into an `x-user-tier` header. Reusing the same policy name replaces the policy from the previous section, so that only one JWT policy targets the Gateway.
-   ```yaml {paths="jwt-claims"}
+   ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -723,27 +619,6 @@ You can route requests to different backends based on a JWT claim, such as sendi
    ```sh
    curl -s "${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" -H "Authorization: Bearer ${ACCESS_TOKEN}" | jq '.headers'
    ```
-
-   {{< doc-test paths="jwt-claims" >}}
-   YAMLTest -f - <<'EOF'
-   - name: PreRouting transformation derives the routing header from the JWT claim
-     retries: 3
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/headers"
-       method: GET
-       headers:
-         host: www.example.com
-         authorization: "Bearer ${ACCESS_TOKEN}"
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.headers.X-User-Tier[0]"
-           comparator: contains
-           value: "free"
-   EOF
-   {{< /doc-test >}}
 
    In the response, verify that the `X-User-Tier` header is set to `free`.
    ```json

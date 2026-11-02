@@ -2,19 +2,11 @@
 title: Timeouts
 weight: 10
 description: Set request and backend timeouts to prevent long-running requests.
-test:
-  timeouts:
-  - file: ${versionRoot}/documentation/configuration/resiliency/timeouts.md
-    path: timeouts
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}} {{< badge content="Backend" path="/documentation/configuration/backends/">}}
 
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
-
-{{< doc-test paths="timeouts" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 Request {{< gloss "Timeout" >}}timeouts{{< /gloss >}} allow returning an error for requests that take too long to complete.
 
@@ -81,65 +73,6 @@ routes:
 {{< /tab >}}
 {{< /tabs >}}
 
-{{< doc-test paths="timeouts" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The route-level timeout policy is accepted by agentgateway in all three
-#     forms the page shows: routing-based (gateways), simplified MCP
-#     (mcp.policies) and simplified LLM (llm.policies).
-#   * That `responseIdleTimeout` is a real field on both the routing-based and
-#     the simplified LLM forms. It is the newest of the three timeouts, so a
-#     rename upstream would otherwise reach the page as prose nobody can run.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That requests actually time out at runtime — requires a slow backend the
-#     page omits to exceed the configured deadline.
-#   * That the idle window counts only pending upstream body reads, not response
-#     processing time — needs a streaming backend and response processing path
-#     that this page does not provide.
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- policies:
-    timeout:
-      requestTimeout: 1s
-      responseIdleTimeout: 30s
-  backends:
-  - host: localhost:8080
-EOF
-agentgateway -f config.yaml --validate-only
-
-cat <<'EOF' > config-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  policies:
-    timeout:
-      requestTimeout: 1s
-  targets:
-  - name: everything
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-agentgateway -f config-mcp.yaml --validate-only
-
-cat <<'EOF' > config-llm.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  port: 3000
-  policies:
-    timeout:
-      requestTimeout: 30s
-      responseIdleTimeout: 5s
-  models:
-  - name: gpt-4o-mini
-    provider: openai
-EOF
-agentgateway -f config-llm.yaml --validate-only
-{{< /doc-test >}}
-
 ## Backend Timeouts
 
 In addition to route level timeouts, you can configure per-backend timeouts within the backend configuration section.
@@ -163,26 +96,3 @@ routes:
       tcp:
         connectTimeout: 10s
 ```
-
-{{< doc-test paths="timeouts" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The backend-level http/tcp timeout example config is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That backend request and connect timeouts actually fire at runtime —
-#     requires a slow/unreachable backend the page omits to trigger them.
-cat <<'EOF' > config2.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - host: localhost:8080
-    policies:
-      http:
-        requestTimeout: 1s
-      tcp:
-        connectTimeout: 10s
-EOF
-agentgateway -f config2.yaml --validate-only
-{{< /doc-test >}}

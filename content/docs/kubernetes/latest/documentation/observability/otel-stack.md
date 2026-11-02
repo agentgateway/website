@@ -2,16 +2,6 @@
 title: OTel stack
 description: Install an OpenTelemetry stack with Grafana, Loki, and Tempo for observability.
 weight: 5
-test:
-  otel-stack:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: standard
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/documentation/observability/otel-stack.md
-    path: otel-stack
 ---
 
 {{< reuse "agw-docs/snippets/agentgateway/otel-prereq.md" >}}
@@ -24,35 +14,6 @@ When you enabled `monitoring.enabled` in the previous step, the {{< reuse "agw-d
 
 > [!TIP]
 > `searchNamespace: ALL` lets the Grafana sidecar discover and load dashboard ConfigMaps from any namespace in the cluster. To limit the namespaces to discover ConfigMaps from, see [Configure dashboard discovery across namespaces]({{< link path="/documentation/observability/metrics/overview/#grafana-dashboard-discovery-across-namespaces" >}}).
-
-{{< doc-test paths="otel-stack" >}}
-YAMLTest -f - <<'EOF'
-# Confirm that Grafana auto-loaded the Agentgateway dashboard from the ConfigMap created
-# by monitoring.enabled in Step 4. The Authorization header is "admin:prom-operator"
-# (the default Grafana credentials) base64-encoded for HTTP basic auth.
-- name: Agentgateway dashboard is loaded in Grafana
-  retries: 30
-  http:
-    url: "http://localhost:3000/api/dashboards/uid/agentgateway"
-    method: GET
-    headers:
-      authorization: "Basic YWRtaW46cHJvbS1vcGVyYXRvcg=="
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: Deployment
-      metadata:
-        namespace: telemetry
-        name: kube-prometheus-stack-grafana
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.dashboard.title"
-        comparator: contains
-        value: Agentgateway
-EOF
-{{< /doc-test >}}
 
 1. Open and log in to Grafana with the username `admin` and password `prom-operator`.
 

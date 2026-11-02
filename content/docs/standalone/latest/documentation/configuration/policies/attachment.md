@@ -2,7 +2,6 @@
 title: Attachment points
 weight: 10
 description: Learn how to attach policies to different resources in agentgateway.
-test: skip
 ---
 
 You can attach policies at the gateway or {{< gloss "Listener" >}}listener{{< /gloss >}}, {{< gloss "Route" >}}route{{< /gloss >}}, or {{< gloss "Backend" >}}backend{{< /gloss >}} level to provide fine-grained control over traffic.

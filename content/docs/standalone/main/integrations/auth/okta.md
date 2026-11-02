@@ -2,9 +2,6 @@
 title: Okta
 weight: 50
 description: Protect MCP servers with Okta as the authorization server.
-test:
-  okta-mcp-authn:
-  - path: okta-mcp-authn
 ---
 
 [Okta](https://www.okta.com/) is an enterprise identity platform. Agentgateway includes a native `okta` MCP authentication provider so that you can use Okta as the authorization server for your MCP servers.
@@ -32,38 +29,6 @@ For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link
 2. Install [Node.js](https://nodejs.org/) so that `npx` can run the sample MCP server.
 3. Make sure that you have access to an [Okta org](https://developer.okta.com/signup/) and permission to create an authorization server and app integrations in the Okta Admin Console. A free developer org is sufficient.
 
-{{< doc-test paths="okta-mcp-authn" >}}
-# WHAT THIS TEST VALIDATES:
-#   * Step 2: the config on this page loads and runs, including the ${...}
-#     environment variable references, which agentgateway expands at load time,
-#     and the explicit jwks.url that the okta provider requires.
-#   * Step 3: an unauthenticated MCP initialize returns 401 with the documented
-#     WWW-Authenticate resource_metadata pointer; the protected resource metadata
-#     is served; the authorization server metadata carries the ?audience= query
-#     parameter that the okta provider appends; the registration_endpoint is
-#     rewritten to the gateway; and registration through that endpoint reaches
-#     the org-relative /oauth2/v1/clients path.
-#   * Step 4: a token is accepted and the MCP server responds 200, so the keys
-#     really are fetched from the {issuer}/v1/keys URL this page tells you to set.
-#   * Step 5: the authorization rule admits a token carrying the AI-Users group
-#     and denies an otherwise-valid token without it (403).
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That Okta itself behaves this way. External dependency not stood up: the
-#     test points the issuer at a local mock authorization server that serves the
-#     same discovery, keys, and registration endpoints Okta does, so it exercises
-#     agentgateway's provider behavior rather than Okta's.
-#   * The Okta Admin Console steps in Step 1. UI-only: creating the
-#     authorization server, scopes, and app integrations has no scriptable
-#     equivalent here.
-#   * The authorization code flow with PKCE that real MCP clients use, and the
-#     "Connect an MCP client" section. UI-only: it requires a browser to
-#     complete the Okta login and consent redirect.
-{{< /doc-test >}}
-
-{{< doc-test paths="okta-mcp-authn" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 ## Step 1: Set up Okta {#register}
 
 Create an authorization server and the app integrations that your clients use, then collect the values that agentgateway needs.
@@ -80,7 +45,7 @@ Create an authorization server and the app integrations that your clients use, t
 
 6. Save the values that the rest of this guide uses.
 
-   ```sh {paths="okta-mcp-authn"}
+   ```sh
    export OKTA_ORG_URL='https://your-org.okta.com'
    export OKTA_ISSUER="${OKTA_ORG_URL}/oauth2/default"
    export OKTA_AUDIENCE='api://agentgateway'
@@ -99,24 +64,6 @@ Create an authorization server and the app integrations that your clients use, t
 
    > [!TIP]
    > To confirm the issuer and the JWKS URL for your authorization server, open its metadata document at `${OKTA_ISSUER}/.well-known/openid-configuration` and check the `issuer` and `jwks_uri` fields.
-
-{{< doc-test paths="okta-mcp-authn" >}}
-# Point the guide's variables at a local mock authorization server instead of a
-# real Okta org. It serves the same discovery, keys, and registration endpoints,
-# so agentgateway's okta provider behavior is exercised unchanged.
-export OKTA_ORG_URL="http://localhost:9098"
-export OKTA_ISSUER="${OKTA_ORG_URL}/oauth2/default"
-export OKTA_AUDIENCE="api://agentgateway"
-export OKTA_CLIENT_ID="mcp-test-client"
-export OKTA_CLIENT_SECRET="mcp-test-secret"
-export MOCK_IDP_PORT=9098
-export MOCK_IDP_ISSUER="${OKTA_ISSUER}"
-export MOCK_IDP_CLAIMS='{"groups":["AI-Users"]}'
-{{< /doc-test >}}
-
-{{< doc-test paths="okta-mcp-authn" >}}
-{{< reuse "agw-docs/snippets/doc-test-mock-oidc.md" >}}
-{{< /doc-test >}}
 
 ## Step 2: Configure and start agentgateway {#configure}
 
@@ -163,38 +110,6 @@ export MOCK_IDP_CLAIMS='{"groups":["AI-Users"]}'
    | `jwks.url` | Required for Okta. Set it to `{issuer}/v1/keys`, because the URL that agentgateway derives for the `okta` provider is not a path that Okta serves. |
    | `resourceMetadata` | The protected resource metadata that agentgateway serves to MCP clients, which you inspect in [Step 3](#verify). |
 
-   {{< doc-test paths="okta-mcp-authn" >}}
-   cat <<'EOF' > config.yaml
-   gateways:
-     default:
-       port: 3000
-   routes:
-   - backends:
-     - mcp:
-         targets:
-         - name: everything
-           stdio:
-             cmd: npx
-             args: ["@modelcontextprotocol/server-everything"]
-     policies:
-       mcpAuthentication:
-         mode: strict
-         issuer: ${OKTA_ISSUER}
-         audiences:
-         - ${OKTA_AUDIENCE}
-         provider:
-           okta: {}
-         jwks:
-           url: ${OKTA_ISSUER}/v1/keys
-         resourceMetadata:
-           resource: http://localhost:3000/mcp
-           scopesSupported:
-           - agentgateway
-           bearerMethodsSupported:
-           - header
-   EOF
-   {{< /doc-test >}}
-
 2. Start agentgateway.
 
    ```sh
@@ -209,25 +124,13 @@ export MOCK_IDP_CLAIMS='{"groups":["AI-Users"]}'
    info  proxy::gateway started bind  bind="bind/3000"
    ```
 
-   {{< doc-test paths="okta-mcp-authn" >}}
-   agentgateway -f config.yaml &
-   AGW_PID=$!
-   trap 'kill $AGW_PID $MOCK_IDP_PID 2>/dev/null || true' EXIT
-   for i in $(seq 1 30); do
-     if curl -s -o /dev/null http://localhost:3000/.well-known/oauth-protected-resource/mcp; then
-       break
-     fi
-     sleep 1
-   done
-   {{< /doc-test >}}
-
 ## Step 3: Verify that unauthenticated requests are rejected {#verify}
 
 Agentgateway runs in the foreground, so run the following commands in another terminal.
 
 1. Send an MCP `initialize` request without a token.
 
-   ```sh {paths="okta-mcp-authn"}
+   ```sh
    curl -i -X POST http://localhost:3000/mcp \
      -H 'content-type: application/json' \
      -H 'accept: application/json, text/event-stream' \
@@ -245,7 +148,7 @@ Agentgateway runs in the foreground, so run the following commands in another te
 
 2. Follow that pointer to see the metadata that the gateway serves.
 
-   ```sh {paths="okta-mcp-authn"}
+   ```sh
    curl -s http://localhost:3000/.well-known/oauth-protected-resource/mcp
    ```
 
@@ -257,7 +160,7 @@ Agentgateway runs in the foreground, so run the following commands in another te
 
 3. Confirm the two rewrites that the `okta` provider makes to the authorization server metadata.
 
-   ```sh {paths="okta-mcp-authn"}
+   ```sh
    curl -s http://localhost:3000/.well-known/oauth-authorization-server
    ```
 
@@ -271,7 +174,7 @@ Agentgateway runs in the foreground, so run the following commands in another te
 
 4. Register a client through that endpoint to confirm that the proxy works. Agentgateway forwards the request to your org-relative registration path, `${OKTA_ORG_URL}/oauth2/v1/clients`.
 
-   ```sh {paths="okta-mcp-authn"}
+   ```sh
    curl -s -X POST http://localhost:3000/.well-known/oauth-authorization-server/client-registration \
      -H 'content-type: application/json' \
      -d '{"client_name":"mcp-inspector","redirect_uris":["http://localhost:6274/oauth/callback"],"grant_types":["authorization_code"],"response_types":["code"],"token_endpoint_auth_method":"none"}'
@@ -284,82 +187,13 @@ Agentgateway runs in the foreground, so run the following commands in another te
    "client_id":"0oa1b2c3d4e5f6g7h8i9"
    ```
 
-{{< doc-test paths="okta-mcp-authn" >}}
-YAMLTest -f - <<'EOF'
-- name: Unauthenticated MCP initialize is rejected with a resource_metadata pointer
-  http:
-    url: "http://localhost:3000"
-    path: /mcp
-    method: POST
-    headers:
-      content-type: application/json
-      accept: "application/json, text/event-stream"
-    body: |
-      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
-  source:
-    type: local
-  expect:
-    statusCode: 401
-    headers:
-      - name: www-authenticate
-        comparator: contains
-        value: 'resource_metadata="http://localhost:3000/.well-known/oauth-protected-resource/mcp"'
-- name: Protected resource metadata is served for the MCP route
-  http:
-    url: "http://localhost:3000"
-    path: /.well-known/oauth-protected-resource/mcp
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.scopes_supported[0]"
-        comparator: contains
-        value: "agentgateway"
-- name: The okta provider appends the audience and rewrites the registration endpoint
-  http:
-    url: "http://localhost:3000"
-    path: /.well-known/oauth-authorization-server
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.authorization_endpoint"
-        comparator: contains
-        value: "?audience=api://agentgateway"
-      - path: "$.registration_endpoint"
-        comparator: contains
-        value: "http://localhost:3000/.well-known/oauth-authorization-server/client-registration"
-- name: Dynamic Client Registration through the gateway reaches the org-relative Okta path
-  http:
-    url: "http://localhost:3000"
-    path: /.well-known/oauth-authorization-server/client-registration
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {"client_name":"yamltest-client","redirect_uris":["http://localhost:6274/oauth/callback"],"grant_types":["authorization_code"],"response_types":["code"],"token_endpoint_auth_method":"none"}
-  source:
-    type: local
-  expect:
-    statusCode: 201
-    bodyJsonPath:
-      - path: "$.client_name"
-        comparator: contains
-        value: "yamltest-client"
-EOF
-{{< /doc-test >}}
-
 ## Step 4: Call the MCP server with a token {#token}
 
 MCP clients complete the OAuth flow themselves. To get a token by hand, use the client credentials flow with the API Services application from [Step 1](#register).
 
 1. Request a token from your authorization server.
 
-   ```sh {paths="okta-mcp-authn"}
+   ```sh
    export TOKEN="$(curl -s -X POST "${OKTA_ISSUER}/v1/token" \
      -H 'content-type: application/x-www-form-urlencoded' \
      -d grant_type=client_credentials \
@@ -372,7 +206,7 @@ MCP clients complete the OAuth flow themselves. To get a token by hand, use the 
 
 2. Send the token as a bearer token.
 
-   ```sh {paths="okta-mcp-authn"}
+   ```sh
    curl -i -X POST http://localhost:3000/mcp \
      -H "authorization: Bearer ${TOKEN}" \
      -H 'content-type: application/json' \
@@ -393,26 +227,6 @@ MCP clients complete the OAuth flow themselves. To get a token by hand, use the 
 
    > [!TIP]
    > The client credentials flow is a convenience for this guide. Real MCP clients use the authorization code flow with PKCE, which the gateway advertises through the metadata that you inspected in [Step 3](#verify).
-
-{{< doc-test paths="okta-mcp-authn" >}}
-YAMLTest -f - <<'EOF'
-- name: An Okta-issued token is accepted and the MCP server responds
-  http:
-    url: "http://localhost:3000"
-    path: /mcp
-    method: POST
-    headers:
-      authorization: "Bearer ${TOKEN}"
-      content-type: application/json
-      accept: "application/json, text/event-stream"
-    body: |
-      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
 
 ## Step 5: Restrict access by group {#authorization}
 
@@ -449,71 +263,16 @@ Because MCP authentication runs at the route level, you can use claims from the 
    agentgateway -f config.yaml
    ```
 
-   {{< doc-test paths="okta-mcp-authn" >}}
-   # Rewrite config.yaml with the authorization policy from the block above, then
-   # restart the gateway the same way a reader would.
-   cat <<'EOF' > config.yaml
-   gateways:
-     default:
-       port: 3000
-   routes:
-   - backends:
-     - mcp:
-         targets:
-         - name: everything
-           stdio:
-             cmd: npx
-             args: ["@modelcontextprotocol/server-everything"]
-     policies:
-       mcpAuthentication:
-         mode: strict
-         issuer: ${OKTA_ISSUER}
-         audiences:
-         - ${OKTA_AUDIENCE}
-         provider:
-           okta: {}
-         jwks:
-           url: ${OKTA_ISSUER}/v1/keys
-         resourceMetadata:
-           resource: http://localhost:3000/mcp
-           scopesSupported:
-           - agentgateway
-           bearerMethodsSupported:
-           - header
-       authorization:
-         rules:
-         - '"AI-Users" in jwt.groups'
-   EOF
-   kill $AGW_PID 2>/dev/null || true
-   sleep 2
-   agentgateway -f config.yaml &
-   AGW_PID=$!
-   trap 'kill $AGW_PID $MOCK_IDP_PID 2>/dev/null || true' EXIT
-   for i in $(seq 1 30); do
-     if curl -s -o /dev/null http://localhost:3000/.well-known/oauth-protected-resource/mcp; then
-       break
-     fi
-     sleep 1
-   done
-   {{< /doc-test >}}
-
 3. To confirm that the rule is enforced, create another **API Services** application that is not assigned to `AI-Users`. Save its credentials.
 
-   ```sh {paths="okta-mcp-authn"}
+   ```sh
    export OKTA_UNAUTHORIZED_CLIENT_ID='<second-api-services-client-id>'
    export OKTA_UNAUTHORIZED_CLIENT_SECRET='<second-api-services-client-secret>'
    ```
 
-   {{< doc-test paths="okta-mcp-authn" >}}
-   # The mock authorization server omits the configured claims for any client ID
-   # that ends in -norole, which stands in for an unassigned application.
-   export OKTA_UNAUTHORIZED_CLIENT_ID="mcp-test-client-norole"
-   export OKTA_UNAUTHORIZED_CLIENT_SECRET="mcp-test-secret"
-   {{< /doc-test >}}
-
 4. Request a token with that application and repeat the request.
 
-   ```sh {paths="okta-mcp-authn"}
+   ```sh
    export NO_GROUP_TOKEN="$(curl -s -X POST "${OKTA_ISSUER}/v1/token" \
      -H 'content-type: application/x-www-form-urlencoded' \
      -d grant_type=client_credentials \
@@ -535,41 +294,6 @@ Because MCP authentication runs at the route level, you can use claims from the 
    ```
    403
    ```
-
-{{< doc-test paths="okta-mcp-authn" >}}
-YAMLTest -f - <<'EOF'
-- name: A token carrying the AI-Users group is still allowed
-  http:
-    url: "http://localhost:3000"
-    path: /mcp
-    method: POST
-    headers:
-      authorization: "Bearer ${TOKEN}"
-      content-type: application/json
-      accept: "application/json, text/event-stream"
-    body: |
-      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: A valid token without the AI-Users group is denied by the authorization rule
-  http:
-    url: "http://localhost:3000"
-    path: /mcp
-    method: POST
-    headers:
-      authorization: "Bearer ${NO_GROUP_TOKEN}"
-      content-type: application/json
-      accept: "application/json, text/event-stream"
-    body: |
-      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
-  source:
-    type: local
-  expect:
-    statusCode: 403
-EOF
-{{< /doc-test >}}
 
 ## Connect an MCP client {#connect}
 

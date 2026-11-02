@@ -2,7 +2,6 @@
 title: Embeddings
 weight: 35
 description: Send embedding requests through agentgateway using the OpenAI-compatible Embeddings API.
-test: skip
 ---
 
 The Embeddings API (`/v1/embeddings`) creates vector representations of text that you can use for search, retrieval, clustering, and other semantic workflows.

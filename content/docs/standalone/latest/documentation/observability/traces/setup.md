@@ -2,7 +2,6 @@
 title: Set up and customize traces
 weight: 10 
 description: "Configure tracing in agentgateway: enable OTLP export, set up authentication and TLS, control the sampling rate, filter spans, and customize span attributes."
-test: skip
 ---
 
 Agentgateway natively exports distributed traces over OTLP (OpenTelemetry Protocol). Traces include HTTP, MCP, and LLM spans with attributes that follow the [OpenTelemetry semantic conventions for generative AI](https://opentelemetry.io/docs/specs/semconv/gen-ai/).

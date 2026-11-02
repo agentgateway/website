@@ -2,7 +2,6 @@
 title: Providers
 weight: 10
 description: Configure agentgateway for first-class, OpenAI-compatible, and self-hosted LLM providers
-test: skip
 ---
 
 Learn how to configure agentgateway for a particular LLM {{< gloss "Provider" >}}provider{{< /gloss >}}.

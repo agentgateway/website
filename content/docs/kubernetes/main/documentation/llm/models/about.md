@@ -2,7 +2,6 @@
 title: About models
 weight: 10
 description: Learn how the AgentgatewayModel API provides a model-centric way to serve LLMs in Kubernetes.
-test: skip
 ---
 
 Learn how the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API provides a model-centric way to serve LLMs in Kubernetes.

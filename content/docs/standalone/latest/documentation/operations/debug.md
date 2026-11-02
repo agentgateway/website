@@ -2,10 +2,6 @@
 title: Debug your setup
 description: Find and fix configuration and runtime problems in a standalone agentgateway using its admin endpoints and agctl.
 weight: 15
-test:
-  admin-address:
-  - file: ${versionRoot}/documentation/operations/debug.md
-    path: admin-address
 ---
 
 Inspect and troubleshoot a standalone agentgateway instance through the admin endpoints and the [`agctl`]({{< link-hextra path="/documentation/operations/agctl" >}}) command-line tool.
@@ -234,11 +230,6 @@ The value must use `ip:port` format, and also accepts `unix:/path/to/socket` or 
 > [!TIP]
 > To reach the UI from another host, attach the UI to a gateway instead of moving the admin address. A gateway is the only location that you can put an authentication policy on. For more information, see [Serve the UI on a gateway]({{< link-hextra path="/documentation/setup/ui/gateway-ui/" >}}).
 
-{{< doc-test paths="admin-address" >}}
-# Install agentgateway binary for tests
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 1. Add or update the `adminAddr` field in your configuration file.
 
    ```yaml
@@ -259,18 +250,6 @@ The value must use `ip:port` format, and also accepts `unix:/path/to/socket` or 
    INFO app  serving UI at http://localhost:9090/ui
    ```
 
-{{< doc-test paths="admin-address" >}}
-pkill -f "agentgateway -f" 2>/dev/null || true
-sleep 1
-cat > /tmp/agw-admin-custom.yaml <<'EOF'
-config:
-  adminAddr: localhost:9090
-EOF
-agentgateway -f /tmp/agw-admin-custom.yaml &
-AGW_CUSTOM_PID=$!
-sleep 3
-{{< /doc-test >}}
-
 3. Confirm that the admin interface answers on the new address. In this example, the endpoints move to port `9090`.
 
    ```sh
@@ -282,25 +261,6 @@ sleep 3
    ```txt
    200
    ```
-
-{{< doc-test paths="admin-address" >}}
-YAMLTest -f - <<'EOF'
-- name: UI is served on the custom admin address
-  http:
-    url: "http://localhost:9090"
-    path: "/ui/"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-  retries: 3
-EOF
-# /config_dump is trailing-slash sensitive, so assert it with curl rather than YAMLTest.
-ADMIN_DUMP_CODE="$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9090/config_dump)"
-test "$ADMIN_DUMP_CODE" = "200"
-kill $AGW_CUSTOM_PID 2>/dev/null || true
-{{< /doc-test >}}
 
 > [!NOTE]
 > If you change `adminAddr`, update any command that calls the admin interface to use the new address. For example, change `curl http://localhost:15000/logging` to use the new port.

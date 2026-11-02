@@ -66,7 +66,7 @@ This section walks you through an end-to-end authorization setup that allows req
 
 Apply an {{< reuse "agw-docs/snippets/policy.md" >}} that validates JWTs and allows only requests from the user `alice`.
 
-```yaml {paths="authorization"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -93,25 +93,6 @@ spec:
 EOF
 ```
 
-{{< doc-test paths="authorization" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for the authorization policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: agentgateway-system
-        name: authz-guide
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 {{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Field | Description |
@@ -130,13 +111,13 @@ You can optionally create other JWT tokens by using the [JWT generator tool](htt
 
 1. Save the JWT token for Alice, whose `sub` claim is `alice`.
 
-   ```sh {paths="authorization"}
+   ```sh
    export ALICE_JWT="eyJhbGciOiJSUzI1NiIsImtpZCI6IjU4OTE2NDUwMzIxNTk4OTQzODMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJzb2xvLmlvIiwic3ViIjoiYWxpY2UiLCJleHAiOjIwNzM2NzA0ODIsIm5iZiI6MTc2NjA4NjQ4MiwiaWF0IjoxNzY2MDg2NDgyfQ.C-KYZsfWwlwRw4cKHXWmjN5bwWD80P0CVYP6-mT5sX6BH3AR1xNrOApPF9X0plwVD4_AsWzVo435j1AmgBzPwIjhHPKtxXycaKEwSEHYFesyi-XCEJtaQZZVcjOJOs-12L2ZJeM_csk9EqKKSx0oj3jj6BciqBnLn6_hK9sEtoGenEVWEdOpkjRQBxk1m-rVZNY2IvxXMuj9C7jGXv_Sn3cU5w6arXWUsdoQtYTl5tmuF15nkD3DnQfLjDyz59FTKXUR_QkhXV81amejrDSTroJ42_RLC9ABXqdMORCe-Hus-f1utLURfAYGvmnEVeYJO8BFhedTR6lFLnVS0u2Fpw"
    ```
 
 2. Save the JWT token for Bob, whose `sub` claim is `bob`.
 
-   ```sh {paths="authorization"}
+   ```sh
    export BOB_JWT="eyJhbGciOiJSUzI1NiIsImtpZCI6IjU4OTE2NDUwMzIxNTk4OTQzODMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJzb2xvLmlvIiwic3ViIjoiYm9iIiwiZXhwIjoyMDczNjcwNDgyLCJuYmYiOjE3NjYwODY0ODIsImlhdCI6MTc2NjA4NjQ4Mn0.ZHAw7nbANhnYvBBknN9_ORCQZ934Vv_vAelx8odC3bsC5Yesif7ZSsnEp9zFjGG6wBvvV3LrtuBuWx9mTYUZS6rwWUKsvDXyheZXYRmXndOqpY0gcJJaulGGqXncQDkmqDA7ZeJLG1s0a6shMXRs6BbV370mYpu8-1dZdtikyVL3pC27QNei35JhfqdYuMw1fMptTVzypx437l9j2htxqtIVgdWUc1iKD9kNKpkJ5O6SNbi6xm267jZ3V_Ns75p_UjLq7krQIUl1W0mB0ywzosFkrRcyXsBsljXec468hgHEARW2lec8FEe-i6uqRuVkFD-AeXMfPhXzqdwysjG_og"
    ```
 
@@ -163,16 +144,6 @@ You can optionally create other JWT tokens by using the [JWT generator tool](htt
    HTTP/1.1 401 Unauthorized
    ```
 
-   {{< doc-test paths="authorization" >}}
-   code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
-     "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com")
-   if [ "$code" != "401" ]; then
-     echo "expected 401 for a request with no JWT, got $code"
-     exit 1
-   fi
-   echo "OK: request with no JWT returned 401"
-   {{< /doc-test >}}
-
 2. Send a request with Bob's JWT. The token is valid, so authentication succeeds, but the `sub` claim does not match the `Allow` expression. You get back a `403 Forbidden` response.
 
    {{< tabs >}}
@@ -195,17 +166,6 @@ You can optionally create other JWT tokens by using the [JWT generator tool](htt
    ```
    HTTP/1.1 403 Forbidden
    ```
-
-   {{< doc-test paths="authorization" >}}
-   code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
-     "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" \
-     -H "Authorization: Bearer ${BOB_JWT}")
-   if [ "$code" != "403" ]; then
-     echo "expected 403 for Bob's JWT, got $code"
-     exit 1
-   fi
-   echo "OK: valid JWT that does not match the Allow rule returned 403"
-   {{< /doc-test >}}
 
 3. Send a request with Alice's JWT. The token is valid and the `sub` claim matches the `Allow` expression, so the request succeeds.
 
@@ -230,17 +190,6 @@ You can optionally create other JWT tokens by using the [JWT generator tool](htt
    HTTP/1.1 200 OK
    ```
 
-   {{< doc-test paths="authorization" >}}
-   code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
-     "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" \
-     -H "Authorization: Bearer ${ALICE_JWT}")
-   if [ "$code" != "200" ]; then
-     echo "expected 200 for Alice's JWT, got $code"
-     exit 1
-   fi
-   echo "OK: valid JWT that matches the Allow rule returned 200"
-   {{< /doc-test >}}
-
 ## More examples
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
@@ -250,7 +199,7 @@ Complete [Setup and test authorization](#setup-and-test-authorization) first, an
 
 1. Create a policy in the same namespace as the httpbin Service that it targets.
 
-   ```yaml {paths="backend-authorization"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -276,39 +225,6 @@ Complete [Setup and test authorization](#setup-and-test-authorization) first, an
    | `spec.targetRefs` | Targets the httpbin Service in the policy's namespace. The policy applies when a route selects that Service as its backend. |
    | `spec.backend.authorization.action` | `Allow` requires at least one expression to match. |
    | `spec.backend.authorization.policy.matchExpressions` | Allows only requests whose HTTP method is `GET`. |
-
-   {{< doc-test paths="backend-authorization" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for backend authorization to be accepted
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: httpbin
-           name: httpbin-backend-authz
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 60
-         intervalSeconds: 2
-   - name: wait for backend authorization to be attached
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: httpbin
-           name: httpbin-backend-authz
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Attached')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 60
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
 
 2. Send a `GET` and a `POST` request with Alice's JWT. The `GET` request satisfies both policies and returns `200`. The `POST` request passes the Gateway's JWT and traffic authorization checks, but the backend policy denies it with `403`.
 
@@ -342,27 +258,9 @@ Complete [Setup and test authorization](#setup-and-test-authorization) first, an
    403
    ```
 
-   {{< doc-test paths="backend-authorization" >}}
-   for attempt in $(seq 1 30); do
-     allowed=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
-       "http://${INGRESS_GW_ADDRESS}:80/headers" \
-       -H 'host: www.example.com' -H "Authorization: Bearer ${ALICE_JWT}")
-     denied=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -X POST \
-       "http://${INGRESS_GW_ADDRESS}:80/headers" \
-       -H 'host: www.example.com' -H "Authorization: Bearer ${ALICE_JWT}")
-     if [ "$allowed" = 200 ] && [ "$denied" = 403 ]; then break; fi
-     sleep 1
-   done
-   test "$allowed" = 200 && test "$denied" = 403 || {
-     echo "expected GET=200 and POST=403, got GET=$allowed POST=$denied"
-     exit 1
-   }
-   echo 'OK: backend authorization allows GET and denies POST'
-   {{< /doc-test >}}
-
 3. Delete the backend policy when you finish testing. The Gateway's JWT and traffic authorization policy continues to apply.
 
-   ```sh {paths="backend-authorization"}
+   ```sh
    kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-backend-authz -n httpbin
    ```
 

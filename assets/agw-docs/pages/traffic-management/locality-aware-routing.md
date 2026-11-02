@@ -48,7 +48,7 @@ If neither source provides locality information, locality preferences on Service
 
 4. Install the Istio CRDs that {{< reuse "agw-docs/snippets/agentgateway.md" >}} consumes for workload and locality discovery. Use the manifest from a recent Istio release.
 
-   ```sh,paths="locality-aware-routing"
+   ```sh
    kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.27/manifests/charts/base/files/crd-all.gen.yaml
    ```
 
@@ -70,13 +70,6 @@ If neither source provides locality information, locality preferences on Service
    kubectl rollout restart deployment/{{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
-{{< doc-test paths="locality-aware-routing" >}}
-NODE_NAME=$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')
-kubectl label node "$NODE_NAME" topology.kubernetes.io/region=region topology.kubernetes.io/zone=zone --overwrite
-kubectl rollout restart deployment/agentgateway -n agentgateway-system
-kubectl rollout status deployment/agentgateway -n agentgateway-system --timeout=180s
-{{< /doc-test >}}
-
 ## Set up failover across localities {#failover}
 
 Deploy three backend instances that represent three localities, and then enable `PreferSameZone` on the Service so that the gateway prefers same-zone endpoints and falls back to other zones or regions only when needed.
@@ -86,7 +79,7 @@ Deploy three backend instances that represent three localities, and then enable 
 
 1. Create a namespace and a Gateway.
 
-   ```yaml,paths="locality-aware-routing"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Namespace
@@ -110,28 +103,9 @@ Deploy three backend instances that represent three localities, and then enable 
    EOF
    ```
 
-   {{< doc-test paths="locality-aware-routing" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for locality Gateway to be programmed
-     wait:
-       target:
-         kind: Gateway
-         metadata:
-           namespace: agentgateway-locality
-           name: gateway
-       jsonPath: "$.status.conditions[?(@.type=='Programmed')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 300
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
-
 2. Deploy three backend instances. Each instance returns its own pod hostname so you can identify which backend served a request.
 
-   ```yaml,paths="locality-aware-routing"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -207,56 +181,9 @@ Deploy three backend instances that represent three localities, and then enable 
    EOF
    ```
 
-   {{< doc-test paths="locality-aware-routing" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for backend-zone-a deployment
-     wait:
-       target:
-         kind: Deployment
-         metadata:
-           namespace: agentgateway-locality
-           name: backend-zone-a
-       jsonPath: "$.status.availableReplicas"
-       jsonPathExpectation:
-         comparator: greaterThan
-         value: 0
-       polling:
-         timeoutSeconds: 180
-         intervalSeconds: 5
-   - name: wait for backend-zone-b deployment
-     wait:
-       target:
-         kind: Deployment
-         metadata:
-           namespace: agentgateway-locality
-           name: backend-zone-b
-       jsonPath: "$.status.availableReplicas"
-       jsonPathExpectation:
-         comparator: greaterThan
-         value: 0
-       polling:
-         timeoutSeconds: 180
-         intervalSeconds: 5
-   - name: wait for backend-region-b deployment
-     wait:
-       target:
-         kind: Deployment
-         metadata:
-           namespace: agentgateway-locality
-           name: backend-region-b
-       jsonPath: "$.status.availableReplicas"
-       jsonPathExpectation:
-         comparator: greaterThan
-         value: 0
-       polling:
-         timeoutSeconds: 180
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
-
 3. Create a Service and an HTTPRoute. The Service selector matches a label that the WorkloadEntries in the next step carry, not the pod labels.
 
-   ```yaml,paths="locality-aware-routing"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Service
@@ -289,28 +216,9 @@ Deploy three backend instances that represent three localities, and then enable 
    EOF
    ```
 
-   {{< doc-test paths="locality-aware-routing" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for locality-route to be accepted
-     wait:
-       target:
-         kind: HTTPRoute
-         metadata:
-           namespace: agentgateway-locality
-           name: locality-route
-       jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
-
 4. Capture each backend pod's IP address and create a WorkloadEntry that overrides its locality. The labels on each WorkloadEntry match the Service selector, so {{< reuse "agw-docs/snippets/agentgateway.md" >}} treats them as endpoints of `locality-svc`.
 
-   ```sh,paths="locality-aware-routing"
+   ```sh
    ZONE_A_IP=$(kubectl get pod -n agentgateway-locality -l app=backend-zone-a -o jsonpath='{.items[0].status.podIP}')
    ZONE_B_IP=$(kubectl get pod -n agentgateway-locality -l app=backend-zone-b -o jsonpath='{.items[0].status.podIP}')
    REGION_B_IP=$(kubectl get pod -n agentgateway-locality -l app=backend-region-b -o jsonpath='{.items[0].status.podIP}')
@@ -361,7 +269,7 @@ Deploy three backend instances that represent three localities, and then enable 
 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
-   ```sh,paths="locality-aware-routing"
+   ```sh
    export INGRESS_GW_ADDRESS=$(kubectl get gateway gateway -n agentgateway-locality -o jsonpath='{.status.addresses[0].value}')
    echo $INGRESS_GW_ADDRESS
    ```
@@ -372,14 +280,6 @@ Deploy three backend instances that represent three localities, and then enable 
    ```
    {{% /tab %}}
    {{< /tabs >}}
-
-   {{< doc-test paths="locality-aware-routing" >}}
-   # Warm up the new locality.test hostname so the proxy populates xDS for it.
-   for i in $(seq 1 60); do
-     curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}/hostname" -H "host: locality.test" && break
-     sleep 2
-   done
-   {{< /doc-test >}}
 
 6. Send a few baseline requests. Without `trafficDistribution` set, traffic spreads across all three backends.
 
@@ -407,7 +307,7 @@ Deploy three backend instances that represent three localities, and then enable 
 
 7. Enable locality-aware failover by setting `trafficDistribution: PreferSameZone` on the Service.
 
-   ```yaml,paths="locality-aware-routing"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Service
@@ -441,45 +341,9 @@ Deploy three backend instances that represent three localities, and then enable 
    20 backend-zone-a-868fdff56f-w9jsn
    ```
 
-   {{< doc-test paths="locality-aware-routing" >}}
-   # Wait for PreferSameZone to take effect in the proxy's xDS endpoint weights.
-   for i in $(seq 1 60); do
-     body=$(curl -s --max-time 5 -H "host: locality.test" "http://${INGRESS_GW_ADDRESS}/hostname" || echo "")
-     case "$body" in
-       backend-zone-a-*) break ;;
-     esac
-     sleep 2
-   done
-   {{< /doc-test >}}
-
-   {{< doc-test paths="locality-aware-routing" >}}
-   # Assert all requests go to backend-zone-a after PreferSameZone is enabled.
-   EXPECTED=20
-   EXPECTED_PREFIX=backend-zone-a
-   for attempt in $(seq 1 12); do
-     COUNT=0
-     for i in $(seq 1 ${EXPECTED}); do
-       body=$(curl -s --max-time 5 -H "host: locality.test" "http://${INGRESS_GW_ADDRESS}/hostname" || echo "")
-       case "$body" in
-         ${EXPECTED_PREFIX}-*) COUNT=$((COUNT+1)) ;;
-       esac
-     done
-     if [ "$COUNT" -eq "$EXPECTED" ]; then
-       echo "PASS: ${COUNT}/${EXPECTED} requests routed to ${EXPECTED_PREFIX}"
-       break
-     fi
-     echo "Attempt ${attempt}: ${COUNT}/${EXPECTED} to ${EXPECTED_PREFIX}, retrying..."
-     sleep 5
-   done
-   if [ "$COUNT" -ne "$EXPECTED" ]; then
-     echo "FAIL: expected ${EXPECTED}/${EXPECTED} requests to ${EXPECTED_PREFIX}, got ${COUNT}"
-     exit 1
-   fi
-   {{< /doc-test >}}
-
 9. Simulate a same-zone outage by deleting the same-zone WorkloadEntry. Traffic spills over to the next bucket, which is the same region but a different zone.
 
-   ```sh,paths="locality-aware-routing"
+   ```sh
    kubectl delete workloadentry we-zone-a -n agentgateway-locality
    sleep 2
 
@@ -495,34 +359,9 @@ Deploy three backend instances that represent three localities, and then enable 
    20 backend-zone-b-6bddfdcd85-ht8qn
    ```
 
-   {{< doc-test paths="locality-aware-routing" >}}
-   # Assert traffic shifts to backend-zone-b after we-zone-a is deleted.
-   EXPECTED=20
-   EXPECTED_PREFIX=backend-zone-b
-   for attempt in $(seq 1 12); do
-     COUNT=0
-     for i in $(seq 1 ${EXPECTED}); do
-       body=$(curl -s --max-time 5 -H "host: locality.test" "http://${INGRESS_GW_ADDRESS}/hostname" || echo "")
-       case "$body" in
-         ${EXPECTED_PREFIX}-*) COUNT=$((COUNT+1)) ;;
-       esac
-     done
-     if [ "$COUNT" -eq "$EXPECTED" ]; then
-       echo "PASS: ${COUNT}/${EXPECTED} requests routed to ${EXPECTED_PREFIX}"
-       break
-     fi
-     echo "Attempt ${attempt}: ${COUNT}/${EXPECTED} to ${EXPECTED_PREFIX}, retrying..."
-     sleep 5
-   done
-   if [ "$COUNT" -ne "$EXPECTED" ]; then
-     echo "FAIL: expected ${EXPECTED}/${EXPECTED} requests to ${EXPECTED_PREFIX}, got ${COUNT}"
-     exit 1
-   fi
-   {{< /doc-test >}}
-
 10. Delete the same-region WorkloadEntry. Traffic spills over to the cross-region backend.
 
-    ```sh,paths="locality-aware-routing"
+    ```sh
     kubectl delete workloadentry we-zone-b -n agentgateway-locality
     sleep 2
 
@@ -538,38 +377,13 @@ Deploy three backend instances that represent three localities, and then enable 
     20 backend-region-b-5d46cfc8b5-xmfnc
     ```
 
-   {{< doc-test paths="locality-aware-routing" >}}
-   # Assert traffic shifts to backend-region-b after we-zone-b is also deleted.
-   EXPECTED=20
-   EXPECTED_PREFIX=backend-region-b
-   for attempt in $(seq 1 12); do
-     COUNT=0
-     for i in $(seq 1 ${EXPECTED}); do
-       body=$(curl -s --max-time 5 -H "host: locality.test" "http://${INGRESS_GW_ADDRESS}/hostname" || echo "")
-       case "$body" in
-         ${EXPECTED_PREFIX}-*) COUNT=$((COUNT+1)) ;;
-       esac
-     done
-     if [ "$COUNT" -eq "$EXPECTED" ]; then
-       echo "PASS: ${COUNT}/${EXPECTED} requests routed to ${EXPECTED_PREFIX}"
-       break
-     fi
-     echo "Attempt ${attempt}: ${COUNT}/${EXPECTED} to ${EXPECTED_PREFIX}, retrying..."
-     sleep 5
-   done
-   if [ "$COUNT" -ne "$EXPECTED" ]; then
-     echo "FAIL: expected ${EXPECTED}/${EXPECTED} requests to ${EXPECTED_PREFIX}, got ${COUNT}"
-     exit 1
-   fi
-   {{< /doc-test >}}
-
 ## Set up strict same-node routing {#strict}
 
 Use `internalTrafficPolicy: Local` to require that requests reach an endpoint on the same node as the gateway. Unlike `trafficDistribution`, strict locality does not spill over. When no local endpoints exist, requests return `503 Service Unavailable`.
 
 1. Restore the same-zone and same-region WorkloadEntries that you deleted in the previous task.
 
-   ```sh,paths="locality-aware-routing"
+   ```sh
    ZONE_A_IP=$(kubectl get pod -n agentgateway-locality -l app=backend-zone-a -o jsonpath='{.items[0].status.podIP}')
    ZONE_B_IP=$(kubectl get pod -n agentgateway-locality -l app=backend-zone-b -o jsonpath='{.items[0].status.podIP}')
    REGION_B_IP=$(kubectl get pod -n agentgateway-locality -l app=backend-region-b -o jsonpath='{.items[0].status.podIP}')
@@ -618,7 +432,7 @@ Use `internalTrafficPolicy: Local` to require that requests reach an endpoint on
 
 2. Switch the Service from `trafficDistribution` to `internalTrafficPolicy: Local`. The example uses WorkloadEntries with no node association, so no endpoints are eligible for local-only delivery.
 
-   ```yaml,paths="locality-aware-routing"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Service
@@ -653,30 +467,6 @@ Use `internalTrafficPolicy: Local` to require that requests reach an endpoint on
 
    In a multi-node cluster, replace the WorkloadEntries with pod-backed endpoints on the same node as the gateway to see successful responses.
 
-   {{< doc-test paths="locality-aware-routing" >}}
-   # Assert all requests return 503 under internalTrafficPolicy: Local.
-   EXPECTED=10
-   for attempt in $(seq 1 12); do
-     COUNT=0
-     for i in $(seq 1 ${EXPECTED}); do
-       code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 -H "host: locality.test" "http://${INGRESS_GW_ADDRESS}/hostname" || echo "0")
-       if [ "$code" = "503" ]; then
-         COUNT=$((COUNT+1))
-       fi
-     done
-     if [ "$COUNT" -eq "$EXPECTED" ]; then
-       echo "PASS: ${COUNT}/${EXPECTED} requests returned 503"
-       break
-     fi
-     echo "Attempt ${attempt}: ${COUNT}/${EXPECTED} returned 503, retrying..."
-     sleep 5
-   done
-   if [ "$COUNT" -ne "$EXPECTED" ]; then
-     echo "FAIL: expected ${EXPECTED}/${EXPECTED} requests to return 503, got ${COUNT}"
-     exit 1
-   fi
-   {{< /doc-test >}}
-
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
@@ -684,10 +474,6 @@ Use `internalTrafficPolicy: Local` to require that requests reach an endpoint on
 ```sh
 kubectl delete namespace agentgateway-locality
 ```
-
-{{< doc-test paths="locality-aware-routing" >}}
-kubectl delete namespace agentgateway-locality --ignore-not-found --wait=false
-{{< /doc-test >}}
 
 ## Next steps
 

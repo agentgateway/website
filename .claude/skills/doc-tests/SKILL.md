@@ -12,14 +12,14 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
 
 ## Where tests live
 
-Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/docs-tests), not in these pages. **Never add `paths=` tags, `{{< doc-test >}}` blocks, or front matter `test:` to a page in this repo.** CI removes any markup it finds on a page and attaches the copy kept in docs-tests. The markup syntax in this skill is unchanged; only where you write it changed. See "Where tests live" in TEST_FRAMEWORK.md for details.
+Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/docs-tests), not in these pages. **Never add `paths=` tags, `{{< doc-test >}}` blocks, or front matter `test:` to a page in this repo.** The `latest` and `main` trees and `assets/agw-docs/` carry no test markup. CI attaches the markup kept in docs-tests to a copy of the pages before each run. The markup syntax in this skill is unchanged; only where you write it changed. See "Where tests live" in TEST_FRAMEWORK.md for details.
 
 - **Scenarios** (name, prerequisites, path label): edit `products/agentgateway/<kubernetes or standalone>/tests.yaml` in docs-tests.
 - **Code-block tags and hidden checks:** in docs-tests, run `make annotate PRODUCT=agentgateway PAGE=<page>`, edit the markup in the copy it writes to `out/annotate/<page>`, then run `make save` with the same arguments. Every markup example in this skill is written in that copy. Set `CONTENT_REPO=<path to this repo>` if this repo is not a sibling clone named `agentgateway-oss-website`.
 - **Run** from this repo with `make test-generate` and `make test-run`, which attach your docs-tests annotations to a copy of the site first (see step 9).
 - To test the docs-tests change in a content PR's own run, push it to a docs-tests branch with the **same name** as the content PR's branch. The PR's doc-tests workflow checks out that branch instead of docs-tests `main`, and says so in the job summary. Without a matching branch, the PR runs against `main`.
 - Merge the content PR here first, then the docs-tests PR.
-- Markup that is still on a page in this repo is ignored. Tests run only from docs-tests, and the daily refresh in docs-tests never copies a page's markup into the annotations. An edit to that markup does nothing; make the change in docs-tests instead.
+- Older frozen version trees (such as `1.6.x`) still carry inline markup. It is ignored wherever docs-tests has an annotation for the page, and the daily refresh in docs-tests never copies a page's markup into the annotations. Do not edit that markup; make the change in docs-tests instead.
 
 ---
 
@@ -33,7 +33,7 @@ Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/
 
 ## Core concepts
 
-1. **Test scenarios** live in docs-tests `tests.yaml` (see [Where tests live](#where-tests-live)). The runner still reads front matter `test:` on pages that `tests.yaml` does not cover, but do not add new front matter scenarios.
+1. **Test scenarios** live in docs-tests `tests.yaml` (see [Where tests live](#where-tests-live)). The runner still reads front matter `test:` on older frozen version trees, but the `latest` and `main` trees have none. Do not add front matter scenarios.
 2. **Path tags and hidden blocks** belong to the file that holds the code blocks, and are kept in that file's annotation in docs-tests. If the content page only has `{{< reuse "agw-docs/..." >}}`, the real body is in **assets**, so annotate the **asset** file (`make annotate PAGE=assets/agw-docs/...`), not the content wrapper.
    > **Critical**: Most Kubernetes topic pages (e.g. `content/docs/kubernetes/latest/resiliency/timeouts/request.md`) are thin wrappers that only contain `{{< reuse "agw-docs/pages/..." >}}`. **Always annotate the reuse file** (`assets/agw-docs/pages/...`), never the content wrapper. This way both `latest` and `main` versions automatically inherit the tests — you only need to add them once.
 3. **Extractor** resolves `{{< reuse "..." >}}` from `assets/`, so the script is built from the expanded content. A `tests.yaml` scenario names the asset with `source:`, which covers every version that reuses it; `page:` is the fallback for a page with its own body.
@@ -337,7 +337,7 @@ Run from this repo. The targets copy the working tree to `out/doc-tests-tree`, a
 
 - Generate: `make test-generate DOCS_TESTS_DIR=<path to docs-tests>`. Add `DOC_TESTS_ARGS='--file <content page>'` for one page, plus `--test <scenario>` for one scenario.
 - Check `out/annotations/attach-report.json`, or the attach summary line: every piece of your markup must attach. Markup that does not attach makes its scenarios skip with a warning.
-- Do **not** call `doc_test_run.py --repo-root .` directly. Without the attach step it reads only markup that is still on the pages.
+- Do **not** call `doc_test_run.py --repo-root .` directly. Without the attach step, the `latest` and `main` pages have no markup, so nothing runs.
 - Inspect `out/tests/generated/*.sh`: order of steps, no unresolved shortcodes, env vars and backgrounding correct.
 - Run a script manually, e.g. `bash out/tests/generated/<script-name>.sh` (standalone tests do not use a kind cluster; use `--generate-only` and run the script in an env that has the binary/Docker/etc.).
 

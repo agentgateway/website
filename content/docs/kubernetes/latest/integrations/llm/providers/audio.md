@@ -163,8 +163,8 @@ Create an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that serves t
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayModel
 metadata:
   name: voxtral-small
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}

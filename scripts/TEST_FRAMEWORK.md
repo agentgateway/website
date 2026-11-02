@@ -16,7 +16,7 @@ go install sigs.k8s.io/cloud-provider-kind@latest
 
 ## Where tests live
 
-Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/docs-tests). CI no longer reads the test markup on these pages: before each run, it removes the markup from a copy of the site and attaches the copy kept in docs-tests. The markup syntax in this guide is the same in both places.
+Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/docs-tests). The `latest` and `main` trees and `assets/agw-docs/` carry no test markup. Before each run, CI attaches the markup kept in docs-tests to a copy of the site. The markup syntax in this guide is the syntax you write in docs-tests.
 
 | What | Where it lives | How to change it |
 |---|---|---|
@@ -25,14 +25,14 @@ Doc tests for this site live in [solo-io/docs-tests](https://github.com/solo-io/
 
 **Do not add `paths=` tags, `{{< doc-test >}}` blocks, or front matter `test:` to pages in this repo.** Every markup example in this guide is written in the `make annotate` copy in docs-tests.
 
-- Markup that is still on a page in this repo is ignored. Tests run only from docs-tests, and the daily refresh in docs-tests never copies a page's markup into the annotations, so an edit to that markup does nothing. A front matter `test:` edit is reported by the refresh so that `tests.yaml` can be updated, but it is not applied.
+- Older frozen version trees (such as `1.6.x`) still carry inline markup. It is ignored wherever docs-tests has an annotation for the page, and the daily refresh in docs-tests never copies a page's markup into the annotations. Do not edit that markup; make the change in docs-tests instead.
 - When a content change needs a test change in docs-tests, push the test change to a docs-tests branch with the same name as the content PR's branch. The content PR's doc-tests run then uses that branch instead of docs-tests `main`, and the job summary says so. Merge the content PR here first, then the docs-tests PR.
 
 ---
 
 ## How it works
 
-1. A scenario in docs-tests `tests.yaml` (or, on pages that are not covered there, a `test:` block in a page's front matter) names a test and lists source files and path selectors — the pieces of shell and YAML to include.
+1. A scenario in docs-tests `tests.yaml` (or, in older frozen version trees, a `test:` block in a page's front matter) names a test and lists source files and path selectors — the pieces of shell and YAML to include.
 2. `annotations.py` attaches the docs-tests annotations to a copy of the pages. `doc_test_run.py` then reads the scenarios, chains the sources together, and produces a standalone bash script.
 3. The script is run inside a fresh `kind` cluster (with `cloud-provider-kind` for load balancer support).
 
@@ -82,9 +82,9 @@ The `paths=` attribute works identically to fenced blocks.
 
 ## Front matter test metadata
 
-> Scenarios for this site now live in docs-tests `tests.yaml` (see [Where tests live](#where-tests-live)). This section describes the front matter form, which the runner still reads for pages that `tests.yaml` does not cover. The `file`/`path` steps work the same way in both.
+> Scenarios for this site now live in docs-tests `tests.yaml` (see [Where tests live](#where-tests-live)). This section describes the front matter form, which the runner still reads in older frozen version trees. The `latest` and `main` trees have none. The `file`/`path` steps work the same way in both.
 
-Do not add front matter `test:` to new pages. On an older page that still has one, it lists named scenarios, each a list of `file`+`path` pairs. `file:` can use `${versionRoot}` (the page's version directory) or be omitted to mean the page itself.
+Do not add front matter `test:` to any page. On a page in an older tree that still has one, it lists named scenarios, each a list of `file`+`path` pairs. `file:` can use `${versionRoot}` (the page's version directory) or be omitted to mean the page itself.
 
 ### Typing scenarios
 
@@ -298,7 +298,7 @@ never rewritten. Results and generated scripts are copied back to `out/tests/`.
 `DOCS_TESTS_DIR` defaults to `../docs-tests`; set it if you cloned docs-tests elsewhere.
 
 Do not call `doc_test_run.py --repo-root .` on this repo directly. Without the attach
-step it reads only markup that is still on the pages.
+step, the `latest` and `main` pages have no markup, so nothing runs.
 
 ### Generate scripts only (no cluster)
 

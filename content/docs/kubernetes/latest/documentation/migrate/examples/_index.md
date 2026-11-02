@@ -2,7 +2,6 @@
 title: "Examples"
 description: Step-by-step migration examples for common Ingress NGINX configurations
 weight: 40
-test: skip
 ---
 
 This section contains step-by-step examples showing how to migrate common Ingress NGINX configurations to agentgateway using the `ingress2gateway` tool.

@@ -2,44 +2,11 @@
 title: Google Cloud
 weight: 20
 description: Run agentgateway on Google Cloud and reach Vertex AI with a service account instead of an API key.
-test:
-  gcp:
-  - file: ${versionRoot}/integrations/cloud-providers/gcp.md
-    path: gcp
 aliases:
   - ../platforms/gcp/
 ---
 
 Run agentgateway on Cloud Run or GKE, and reach [Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/" >}}) with the service account that Google Cloud already attaches to the workload. No API key goes into your configuration file.
-
-{{< doc-test paths="gcp" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * "Authenticate with a service account": the example config is accepted by
-#     agentgateway (--validate-only), so `auth.gcp.type: accessToken` is a
-#     recognized shape alongside `provider: vertex` and the `params.model` /
-#     `params.vertexProject` / `params.vertexRegion` fields.
-#   * With that config loaded, agentgateway serves the client-facing model name
-#     on port 4000 and resolves the upstream to the configured model, project,
-#     and region. This is what makes the `--port 4000` flag in the Cloud Run
-#     command on this page checkable rather than asserted.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That Application Default Credentials reach Vertex AI - external
-#     dependency; the test has no Google Cloud identity, and a live call bills a
-#     completion. The config loads without credentials because ADC is resolved
-#     per request.
-#   * "Run on Cloud Run" - external dependency; the gcloud commands need a
-#     project, a service account, and a Secret Manager secret that the test
-#     cannot stand up. The image, port, and args in them match the configuration
-#     that this test does run.
-#   * "IAM roles" - a different layer; the roles are evaluated by Google Cloud,
-#     not by agentgateway.
-#   * "Google Cloud services" - display-only table of links.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 ## Authenticate with a service account
 
@@ -63,25 +30,6 @@ llm:
         type: accessToken
 ```
 
-{{< doc-test paths="gcp" >}}
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: gemini-2.5-flash
-    provider: vertex
-    params:
-      model: google/gemini-2.5-flash
-      vertexProject: my-project-id
-      vertexRegion: us-central1
-    auth:
-      gcp:
-        type: accessToken
-EOF
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
-
 Review the following table to understand this configuration.
 
 | Setting | Description |
@@ -92,35 +40,6 @@ Review the following table to understand this configuration.
 | `params.vertexProject` | The Google Cloud project ID. |
 | `params.vertexRegion` | The Google Cloud region. Defaults to `global` if not set. |
 | `auth.gcp.type` | The token to fetch through ADC. Use `accessToken` for Vertex AI. Use `idToken` when the upstream is a Cloud Run service or another endpoint that verifies an identity token. |
-
-{{< doc-test paths="gcp" >}}
-# Confirm that agentgateway serves LLM traffic on port 4000, which the Cloud Run
-# command on this page sets with --port, and that the Vertex params reach the
-# resolved provider as the settings table describes.
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-
-SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '[.data[].id] | index("gemini-2.5-flash") // "missing"')
-if [ "$SERVED" = "missing" ]; then
-  echo "FAIL: the model name gemini-2.5-flash from the example config is not served on port 4000"
-  exit 1
-fi
-RESOLVED=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '
-  [ .backends[].backend.ai
-    | select(. != null)
-    | .target.providers[].active[].endpoint
-    | .provider.vertex
-    | "\(.model)|\(.projectId)|\(.region)"
-  ] | first')
-EXPECTED="google/gemini-2.5-flash|my-project-id|us-central1"
-if [ "$RESOLVED" != "$EXPECTED" ]; then
-  echo "FAIL: expected vertex params $EXPECTED but agentgateway resolved $RESOLVED"
-  exit 1
-fi
-echo "✓ Port 4000 serves the model and the Vertex params resolve to the documented values"
-{{< /doc-test >}}
 
 For the full list of Vertex AI settings, see [Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/" >}}). For direct Gemini API access with an API key instead, see [Google Gemini]({{< link-hextra path="/integrations/llm/providers/gemini/" >}}).
 

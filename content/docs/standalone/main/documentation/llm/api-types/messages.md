@@ -2,7 +2,6 @@
 title: Messages
 weight: 30
 description: Send requests through agentgateway using the Anthropic Messages API.
-test: skip
 ---
 
 The Anthropic Messages API (`/v1/messages`) is the native interface for Anthropic Claude models.

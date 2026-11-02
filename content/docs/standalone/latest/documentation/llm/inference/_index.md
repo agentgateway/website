@@ -4,7 +4,6 @@ weight: 50
 description: Configure Kubernetes Gateway API or standalone inference routing for AI workloads.
 aliases:
   - ../inference/
-test: skip
 ---
 
 Agentgateway supports the Kubernetes Gateway API Inference Extension in two

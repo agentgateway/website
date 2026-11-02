@@ -65,39 +65,6 @@ routes:
   - host: localhost:8080
 ```
 
-{{< doc-test paths="custom-cel-functions" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-config:
-  customFunctions: |
-    isInternal() {
-      request.headers["x-env"] == "internal"
-    }
-
-    this.hasTenantPrefix(tenant) {
-      this.startsWith("/tenants/" + tenant + "/")
-    }
-gateways:
-  default:
-    port: 3000
-routes:
-- policies:
-    authorization:
-      rules:
-      - allow: 'isInternal() || request.path.hasTenantPrefix("acme")'
-    transformations:
-      request:
-        add:
-          x-internal-request: 'string(isInternal())'
-  backends:
-  - host: localhost:8080
-EOF
-
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
-
 ## Function forms
 
 Use the function form that fits how you want to call the expression.

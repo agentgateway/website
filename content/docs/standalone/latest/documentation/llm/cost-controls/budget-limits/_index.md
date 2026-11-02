@@ -2,7 +2,6 @@
 title: Budget and spend limits
 weight: 40
 description: Cap LLM spend per API key in dollars or tokens, with per-key budgets or with rate limiting.
-test: skip
 ---
 
 Cap how much each API key can spend on LLM traffic, in US dollars or in tokens.

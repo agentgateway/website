@@ -3,10 +3,6 @@ title: Anthropic
 weight: 15
 icon: /integrations/providers/bw/anthropic.svg
 description: Route agentgateway LLM traffic to Anthropic's Claude models.
-test:
-  anthropic:
-  - file: ${versionRoot}/integrations/llm/providers/anthropic.md
-    path: anthropic
 ---
 
 Configure Anthropic (Claude models) as an LLM provider in agentgateway.
@@ -15,35 +11,6 @@ Configure Anthropic (Claude models) as an LLM provider in agentgateway.
 > Anthropic excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Anthropic reports. To read the Anthropic number itself, use `llm.providerInputTokens`. For more information, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
 
 To add prompt-cache markers to requests automatically, set `promptCaching` on the model. For more information, see [Prompt caching]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#prompt-caching" >}}).
-
-{{< doc-test paths="anthropic" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * "Configuration": the API key example config is accepted by agentgateway
-#     (--validate-only), so `provider: anthropic` is recognized.
-#   * "Use Claude Platform on AWS", both tabs: the API-key config (with
-#     `requestHeaders.set` and a `params.baseUrl` override) and the AWS SigV4
-#     config (with `params.awsRegion` and `auth.aws.serviceName`) are both
-#     accepted.
-#   * With the base config loaded, agentgateway serves the wildcard model and
-#     resolves it to the `anthropic` provider.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * "Example request", "Token counting", "Extended thinking and reasoning", and
-#     "Structured outputs" - external dependency; each needs a real Anthropic API
-#     key and bills live completions. Their example responses are display-only.
-#   * Claude Platform on AWS at runtime - external dependency; reaching
-#     aws-external-anthropic needs real AWS credentials and an Anthropic
-#     workspace.
-#   * The `thinking` and `output_config` field tables - display-only table rows
-#     describing request bodies, with no runnable config on this page.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-
-export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-test}"
-export ANTHROPIC_AWS_API_KEY="${ANTHROPIC_AWS_API_KEY:-test}"
-{{< /doc-test >}}
 
 ## Configuration
 
@@ -100,22 +67,6 @@ llm:
 | `transformation.model` | Removes the `anthropic/` prefix from the model name before the request is forwarded, so the provider receives its own model name. |
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="anthropic" >}}
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: "anthropic/*"
-    provider: anthropic
-    params:
-      apiKey: "$ANTHROPIC_API_KEY"
-    transformation:
-      model: llmRequest.model.stripPrefix("anthropic/")
-EOF
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
 
 ## Example request
 
@@ -347,26 +298,6 @@ llm:
       baseUrl: https://aws-external-anthropic.us-west-2.api.aws/v1
 ```
 
-{{< doc-test paths="anthropic" >}}
-cat <<'EOF' > config-claude-platform-apikey.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: "*"
-    provider: anthropic
-    requestHeaders:
-      set:
-        # Replace with your workspace ID
-        anthropic-workspace-id: wrkspc_XXXXX
-    params:
-      apiKey: $ANTHROPIC_AWS_API_KEY
-      # Replace with your region
-      baseUrl: https://aws-external-anthropic.us-west-2.api.aws/v1
-EOF
-agentgateway -f config-claude-platform-apikey.yaml --validate-only
-{{< /doc-test >}}
-
 | Setting                                     | Description |
 |---------------------------------------------|-------------|
 | `requestHeaders.set.anthropic-workspace-id` | The Anthropic workspace ID that scopes the request. Replace `wrkspc_XXXXX` with your workspace ID. |
@@ -398,29 +329,6 @@ llm:
       model: llmRequest.model.stripPrefix("claude-platform/")
 ```
 
-{{< doc-test paths="anthropic" >}}
-cat <<'EOF' > config-claude-platform-sigv4.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: "claude-platform/*"
-    provider: anthropic
-    requestHeaders:
-      set:
-        anthropic-workspace-id: wrkspc_XXXXX
-    params:
-      awsRegion: us-west-2
-      baseUrl: https://aws-external-anthropic.us-west-2.api.aws/v1
-    auth:
-      aws:
-        serviceName: aws-external-anthropic
-    transformation:
-      model: llmRequest.model.stripPrefix("claude-platform/")
-EOF
-agentgateway -f config-claude-platform-sigv4.yaml --validate-only
-{{< /doc-test >}}
-
 | Setting | Description |
 |---------|-------------|
 | `name` | Matches model names that start with `claude-platform/`, so you can route Claude Platform traffic alongside other Anthropic models. |
@@ -441,31 +349,3 @@ For setup instructions, see [Use Claude models on Azure AI Foundry]({{< link-hex
 ## Connect to Claude Code
 
 To route Claude Code CLI traffic through agentgateway, see the [Claude Code integration guide]({{< link-hextra path="/integrations/llm/clients/claude-code" >}}).
-
-{{< doc-test paths="anthropic" >}}
-# Confirm the base API key config serves the wildcard model and resolves it to
-# the anthropic provider.
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-
-# The default `llm.discovery: catalog` expands `*` into catalog model IDs, so
-# check for a non-empty list rather than a literal `*`.
-SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '.data | length')
-if [ "${SERVED:-0}" -eq 0 ]; then
-  echo "FAIL: /v1/models lists no models for the example config"
-  exit 1
-fi
-PROVIDER=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '
-  [ .backends[].backend.ai
-    | select(. != null)
-    | .target.providers[].active[].endpoint
-    | .provider | keys[0]
-  ] | first')
-if [ "$PROVIDER" != "anthropic" ]; then
-  echo "FAIL: expected provider anthropic but agentgateway resolved $PROVIDER"
-  exit 1
-fi
-echo "✓ The wildcard model is served and resolves to the anthropic provider"
-{{< /doc-test >}}

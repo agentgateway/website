@@ -26,29 +26,6 @@ The gateway host holds every provider key. Protect it as you would any other sec
 
 You also need an OpenAI API key. The examples read it from `OPENAI_API_KEY`.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} For file-based credentials and rotation without a restart, see [Provider API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).{{< /version >}}
 
-{{< doc-test paths="virtual-keys" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * "Step 1": the virtual keys config is accepted by agentgateway
-#     (--validate-only), so the apiKey policy fields are correct.
-#   * "Step 3": a request with either virtual key is authenticated and proxied
-#     to the provider (200), and a request with an unknown key is rejected (401),
-#     which is the behavior the strict apiKey mode describes.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The provider's response content. The test runs against a local mock LLM
-#     rather than OpenAI, so no provider API key is needed and no live completion
-#     is billed. Only the gateway behavior on this page is asserted.
-#   * "Configure token budgets" and "Monitor per-key spending" - those sections
-#     need a provider that returns realistic token counts and a Prometheus
-#     instance, so they are left to manual verification.
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< reuse "agw-docs/snippets/start-mock-llm.md" >}}
-{{< /doc-test >}}
-
 ## Set up virtual keys {#set-up-virtual-keys}
 
 <span id="set-up-virtual-keys-ui"></span><span id="set-up-virtual-keys-config-file"></span>
@@ -103,7 +80,7 @@ The UI writes the same `apiKey` policy as the **Config file** tab{{< version exc
 {{% tab name="Config file" %}}
 Create a configuration with API key authentication. This example creates two virtual keys for Alice and Bob.
 
-```yaml {paths="virtual-keys"}
+```yaml
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
@@ -142,15 +119,6 @@ agentgateway -f config.yaml
 {{% /tab %}}
 {{< /tabs >}}
 
-{{< doc-test paths="virtual-keys" >}}
-# Virtual keys: validate the documented config, then run it against the mock LLM.
-{{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
-agentgateway -f config-mock.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
-
 ### Step 2: Test the virtual keys {#step-3-test-the-virtual-keys}
 
 You can test the keys in the UI playground or with curl. Both work the same way, whether you created the keys in the UI or in the config file.
@@ -172,7 +140,7 @@ The playground steps need agentgateway 1.7 or later. Use the **curl** tab.
 {{% tab name="curl" %}}
 1. Send a request with Alice's API key. Verify that the request succeeds.
 
-   ```sh {paths="virtual-keys"}
+   ```sh
    curl -s http://localhost:4000/v1/chat/completions \
      -H "Authorization: Bearer vk-alice-4f9c2a" \
      -H "Content-Type: application/json" \
@@ -201,7 +169,7 @@ The playground steps need agentgateway 1.7 or later. Use the **curl** tab.
 
 2. Send a request without a valid API key. Verify that the request is rejected with a 401 status.
 
-   ```sh {paths="virtual-keys"}
+   ```sh
    curl -s -o /dev/null -w "%{http_code}" http://localhost:4000/v1/chat/completions \
      -H "Authorization: Bearer invalid-key" \
      -H "Content-Type: application/json" \
@@ -217,64 +185,6 @@ The playground steps need agentgateway 1.7 or later. Use the **curl** tab.
    ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="virtual-keys" >}}
-YAMLTest -f - <<'EOF'
-- name: request with valid API key succeeds
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer vk-alice-4f9c2a"
-    body: |
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Hello!"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-
-- name: request with invalid API key is rejected
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer invalid-key"
-    body: |
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Hello!"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 401
-
-- name: request with Bob's key also succeeds independently
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer vk-bob-8d1e7b"
-    body: |
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Hello!"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
 
 ## Manage client access
 

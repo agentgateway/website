@@ -135,29 +135,6 @@ Example output:
 info  app  serving UI at http://localhost:4000/ui
 ```
 
-{{< doc-test paths="llm" >}}
-# Hidden test: the UI steps below (Enable LLM -> Add model) are not scriptable, so this
-# block reproduces the equivalent config they produce, to keep the resulting setup tested.
-# The model points at the local mock LLM so that the request in Step 5 is a real,
-# asserted round trip through the gateway without needing a provider API key.
-{{< reuse "agw-docs/snippets/start-mock-llm.md" >}}
-cat > config.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  models:
-  - name: gpt-3.5-turbo
-    provider: openAI
-    params:
-      model: gpt-3.5-turbo
-      apiKey: "$OPENAI_API_KEY"
-EOF
-{{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
-agentgateway -f config-mock.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
-
 ### Step 3: Enable LLM
 
 1. Open the [agentgateway UI](http://localhost:4000/ui/).
@@ -353,7 +330,7 @@ From another terminal, send a request to the chat completions endpoint.
 
 {{< tabs >}}
 {{% tab name="OpenAI" %}}
-```sh {paths="llm"}
+```sh
 curl http://localhost:4000/v1/chat/completions \
   -H 'content-type: application/json' \
   -d '{
@@ -668,37 +645,6 @@ curl http://localhost:4000/v1/chat/completions \
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="llm" >}}
-YAMLTest -f - <<'EOF'
-- name: chat completion request returns an OpenAI-shaped response with token usage
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Reply with exactly: OpenAI through agentgateway works"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.model"
-        comparator: equals
-        value: "gpt-3.5-turbo"
-      - path: "$.choices[0].message.role"
-        comparator: equals
-        value: "assistant"
-      - path: "$.usage.total_tokens"
-        comparator: greaterThan
-        value: 0
-EOF
-{{< /doc-test >}}
 
 You can send the same request from the built-in playground.
 

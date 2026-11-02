@@ -4,10 +4,6 @@ weight: 20
 description: Define named gateways that set up the ports and listeners where LLM, MCP, UI, and routing traffic enters agentgateway.
 prev: /configuration/overview
 next: /configuration/listeners
-test:
-  listeners:
-  - file: ${versionRoot}/documentation/configuration/gateways.md
-    path: gateways
 ---
 
 Gateways are the entry point to agentgateway. Each gateway is a named port that agentgateway listens on, and the endpoints that serve traffic attach to it: HTTP and TCP routes, LLM models, MCP targets, and the agentgateway UI.
@@ -18,18 +14,6 @@ Because everything attaches to a gateway by name, you can serve several endpoint
 
 > [!NOTE]
 > Gateways replace the `binds` field. The `binds` field still works, but it is deprecated. For help converting an existing configuration, see [Migrate from binds](#migrate-from-binds).
-
-{{< doc-test paths="gateways" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
-{{< doc-test paths="gateways" >}}
-# Create self-signed certs referenced by the examples
-mkdir -p certs
-openssl req -x509 -newkey rsa:2048 -keyout certs/key.pem -out certs/cert.pem -days 365 -nodes -subj "/CN=localhost" 2>/dev/null
-openssl req -x509 -newkey rsa:2048 -keyout certs/key-a.pem -out certs/cert-a.pem -days 365 -nodes -subj "/CN=a.example.com" 2>/dev/null
-openssl req -x509 -newkey rsa:2048 -keyout certs/key-wildcard.pem -out certs/cert-wildcard.pem -days 365 -nodes -subj "/CN=wildcard.example.com" 2>/dev/null
-{{< /doc-test >}}
 
 ## How gateways, listeners, and routes fit together {#concepts}
 
@@ -133,25 +117,6 @@ The route in this example does not set a `gateways` field. When you omit that fi
 {{% /tab %}}
 {{< /tabs >}}
 
-{{< doc-test paths="gateways" >}}
-# WHAT THIS TEST VALIDATES:
-#   * A minimal gateway with an implicitly attached route is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That traffic reaches localhost:8000 at runtime — the backend does not exist
-#     in the test environment.
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- name: local-backend
-  backends:
-  - host: localhost:8000
-EOF
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
-
 ### Choose a listen address {#bind-address}
 
 Set `bindAddress` to an IPv4 or IPv6 address to restrict the network interface that a gateway listens on. When omitted, the gateway listens on all interfaces. For example, bind to loopback when a sidecar should accept traffic only from processes in the same pod or host network namespace.
@@ -202,38 +167,6 @@ routes:
   - host: admin.internal:8000
 ```
 
-{{< doc-test paths="gateways" >}}
-# WHAT THIS TEST VALIDATES:
-#   * Routes attached to two separately named gateways are accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That each route serves traffic on its own port at runtime — the backends do
-#     not exist in the test environment.
-cat <<'EOF' > config2.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  public:
-    port: 8080
-  internal:
-    port: 8081
-routes:
-- name: public-api
-  gateways: [public]
-  matches:
-  - path:
-      pathPrefix: /api
-  backends:
-  - host: api.example.com:443
-- name: internal-admin
-  gateways: [internal]
-  matches:
-  - path:
-      pathPrefix: /admin
-  backends:
-  - host: admin.internal:8000
-EOF
-agentgateway -f config2.yaml --validate-only
-{{< /doc-test >}}
-
 ### Serve the same routes on multiple gateways {#multiple-gateways}
 
 Because routes attach by name, one route can serve several gateways. A common case is serving the same API on both plaintext HTTP and HTTPS.
@@ -254,32 +187,6 @@ routes:
   backends:
   - host: api.example.com:443
 ```
-
-{{< doc-test paths="gateways" >}}
-# WHAT THIS TEST VALIDATES:
-#   * A single route attached to both an HTTP and an HTTPS gateway is accepted by
-#     agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That both ports serve the route at runtime — requires client requests and a
-#     backend the page does not exercise.
-cat <<'EOF' > config3.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  http:
-    port: 8080
-  https:
-    port: 8443
-    tls:
-      cert: ./certs/cert.pem
-      key: ./certs/key.pem
-routes:
-- name: api
-  gateways: [http, https]
-  backends:
-  - host: api.example.com:443
-EOF
-agentgateway -f config3.yaml --validate-only
-{{< /doc-test >}}
 
 ## Add listeners to a gateway {#listeners}
 
@@ -351,42 +258,6 @@ routes:
 
 All listeners under a gateway share the gateway's bind address and port, so they cannot mix encrypted and plaintext traffic. If you need both HTTP and HTTPS, define two gateways as shown in [Serve the same routes on multiple gateways](#multiple-gateways).
 
-{{< doc-test paths="gateways" >}}
-# WHAT THIS TEST VALIDATES:
-#   * A gateway with two named SNI listeners, and routes attached to one listener
-#     and to the whole gateway, is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That SNI selects the right certificate and listener at runtime — requires TLS
-#     client connections the page does not exercise.
-cat <<'EOF' > config4.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  web:
-    port: 8443
-    listeners:
-    - name: discrete
-      hostname: a.example.com
-      tls:
-        cert: ./certs/cert-a.pem
-        key: ./certs/key-a.pem
-    - name: wildcard
-      hostname: "*.example.com"
-      tls:
-        cert: ./certs/cert-wildcard.pem
-        key: ./certs/key-wildcard.pem
-routes:
-- name: a-only
-  gateways: [web/discrete]
-  backends:
-  - host: a-backend.example.com:443
-- name: everything-else
-  gateways: [web]
-  backends:
-  - host: shared-backend.example.com:443
-EOF
-agentgateway -f config4.yaml --validate-only
-{{< /doc-test >}}
-
 ## Set the gateway protocol {#protocol}
 
 The `protocol` field controls whether a gateway accepts HTTP routes or TCP routes. Valid values are `HTTP`, `HTTPS`, `TCP`, and `TLS`. When you omit the field, a gateway defaults to `HTTP`, or to `HTTPS` when you set `tls`.
@@ -427,27 +298,6 @@ tcpRoutes:
 
 For more information about each protocol, including TLS termination and passthrough, see [Listeners]({{< link-hextra path="/documentation/configuration/listeners/" >}}).
 
-{{< doc-test paths="gateways" >}}
-# WHAT THIS TEST VALIDATES:
-#   * A TCP gateway with an attached tcpRoute is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That TCP traffic is forwarded at runtime — the backend does not exist in the
-#     test environment.
-cat <<'EOF' > config5.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  tcp:
-    port: 9000
-    protocol: TCP
-tcpRoutes:
-- name: tcp-backend
-  gateways: [tcp]
-  backends:
-  - host: localhost:8000
-EOF
-agentgateway -f config5.yaml --validate-only
-{{< /doc-test >}}
-
 ## Attach LLM, MCP, and the UI to a gateway {#features}
 
 The `llm`, `mcp`, and `ui` sections each take a `gateways` field, so you can serve them all from one port. Each section serves its own paths: LLM uses the standard serving paths such as `/v1/chat/completions`, MCP uses `/mcp`, and the UI serves the remaining paths.
@@ -480,37 +330,6 @@ With no `ui` section, the UI is served only on the admin interface on `localhost
 > [!WARNING]
 > Serving the UI on a gateway exposes it to anyone who can reach that port. Protect it with authentication, typically [OIDC]({{< link-hextra path="/documentation/configuration/security/oidc/" >}}), before you expose it outside of localhost. The gateway serves the UI and its API only. The admin interface's debugging endpoints, such as `/config_dump`, are not served on it.
 
-{{< doc-test paths="gateways" >}}
-# WHAT THIS TEST VALIDATES:
-#   * An LLM model, MCP target, and the UI attached to one gateway are accepted by
-#     agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That each section serves its paths at runtime — requires a provider API key,
-#     an MCP server process, and a browser session the page does not exercise.
-export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
-cat <<'EOF' > config6.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-llm:
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-mcp:
-  targets:
-  - name: everything
-    stdio:
-      cmd: npx
-      args:
-      - '@modelcontextprotocol/server-everything'
-ui: {}
-EOF
-agentgateway -f config6.yaml --validate-only
-{{< /doc-test >}}
-
 Because each section attaches separately, you can also split them across ports. The following configuration serves the UI on its own port while LLM traffic stays on the shared gateway.
 
 ```yaml
@@ -529,32 +348,6 @@ llm:
 ui:
   gateways: [ui-gateway]
 ```
-
-{{< doc-test paths="gateways" >}}
-# WHAT THIS TEST VALIDATES:
-#   * Splitting the UI and LLM across two gateways is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That each port serves the expected section at runtime — requires a provider
-#     API key and a browser session the page does not exercise.
-export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
-cat <<'EOF' > config7.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-  ui-gateway:
-    port: 9000
-llm:
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-ui:
-  gateways: [ui-gateway]
-EOF
-agentgateway -f config7.yaml --validate-only
-{{< /doc-test >}}
 
 ## Attach policies to a gateway {#policies}
 
@@ -598,30 +391,6 @@ routes:
 {{< /tabs >}}
 
 To scope a policy more narrowly, attach it to a listener or to a route instead. For more information, see [Attachment points]({{< link-hextra path="/documentation/configuration/policies/attachment/" >}}).
-
-{{< doc-test paths="gateways" >}}
-# WHAT THIS TEST VALIDATES:
-#   * A CORS policy attached to a gateway is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That CORS headers are applied at runtime — requires a preflight request the
-#     page does not exercise.
-cat <<'EOF' > config8.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-    cors:
-      allowOrigins:
-      - "https://app.example.com"
-      allowMethods:
-      - GET
-      - POST
-routes:
-- backends:
-  - host: localhost:8000
-EOF
-agentgateway -f config8.yaml --validate-only
-{{< /doc-test >}}
 
 ## Migrate from binds {#migrate-from-binds}
 

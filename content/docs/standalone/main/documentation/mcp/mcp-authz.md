@@ -2,7 +2,6 @@
 title: MCP authorization
 weight: 40
 description: Control access to MCP tools and resources with CEL-based authorization rules
-test: skip
 ---
 
 MCP authorization controls which tools, prompts, and resources a client can reach, by using [CEL expressions]({{< link-hextra path="/reference/cel" >}}) that evaluate against MCP method invocations rather than against an HTTP request.

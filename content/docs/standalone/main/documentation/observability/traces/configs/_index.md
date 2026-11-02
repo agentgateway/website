@@ -2,7 +2,6 @@
 title: Sample tracing configs
 weight: 30
 description: Sample configurations for exporting agentgateway traces to common OTLP-compatible backends, including OpenTelemetry Collector, Jaeger, and SaaS platforms.
-test: skip
 aliases:
   - configs/saas/
 ---

@@ -2,7 +2,6 @@
 title: agctl CLI reference
 weight: 25
 description: Reference for the agctl command-line tool.
-test: skip
 aliases:
   - /docs/standalone/latest/reference/agctl/agctl-controller/
   - /docs/standalone/latest/reference/agctl/agctl-controller-log/

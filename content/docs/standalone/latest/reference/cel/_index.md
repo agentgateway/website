@@ -2,7 +2,6 @@
 title: CEL expressions
 weight: 10
 description: Use CEL (Common Expression Language) to write request-aware policies, transformations, and observability rules.
-test: skip
 ---
 
 Agentgateway uses the {{< gloss "CEL (Common Expression Language)" >}}CEL{{< /gloss >}} expression language throughout the project to enable flexibility. CEL allows writing simple expressions based on the request context that evaluate to some result.

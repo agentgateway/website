@@ -2,7 +2,6 @@
 title: Grafana Cloud
 weight: 50
 description: Export agentgateway traces to Grafana Cloud by using its OTLP ingestion endpoint.
-test: skip
 ---
 
 [Grafana Cloud](https://grafana.com/products/cloud/) is a managed observability platform. You can send traces directly to your Grafana Cloud OTLP endpoint by setting a Base64-encoded `Authorization` header on every export request.

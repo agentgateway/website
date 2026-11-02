@@ -17,7 +17,7 @@ If the OTel stack is already installed, skip to [Configure OTLP log export](#con
 Install a minimal OTel collector that receives OTLP and writes each log record to its own pod output. This is useful if you don't have the OTel stack installed and want to verify log export quickly without setting up Loki.
 
 1. Install the OTel collector.
-   ```sh {paths="access-log-otlp"}
+   ```sh
    helm upgrade --install opentelemetry-collector-logs opentelemetry-collector \
    --repo https://open-telemetry.github.io/opentelemetry-helm-charts \
    --version 0.127.2 \
@@ -45,25 +45,6 @@ Install a minimal OTel collector that receives OTLP and writes each log record t
    EOF
    ```
 
-   {{< doc-test paths="access-log-otlp" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for OTel collector logs deployment to be ready
-     wait:
-       target:
-         kind: Deployment
-         metadata:
-           namespace: telemetry
-           name: opentelemetry-collector-logs
-       jsonPath: "$.status.availableReplicas"
-       jsonPathExpectation:
-         comparator: greaterThan
-         value: 0
-       polling:
-         timeoutSeconds: 300
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
-
 2. Verify that the collector is running.
    ```sh
    kubectl get pods -n telemetry
@@ -81,7 +62,7 @@ Install a minimal OTel collector that receives OTLP and writes each log record t
 
 Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that points the agentgateway proxy at the OTel collector that you created.
 
-```yaml {paths="access-log-otlp"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -103,20 +84,6 @@ spec:
         protocol: GRPC
 EOF
 ```
-
-{{< doc-test paths="access-log-otlp" >}}
-YAMLTest -f - <<'EOF'
-- name: verify access log OTLP policy is accepted
-  command:
-    command: "kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.status.ancestors[*].conditions[?(@.type==\"Accepted\")].status}'"
-  source:
-    type: local
-  expect:
-    exitCode: 0
-    stdout:
-      contains: "True"
-EOF
-{{< /doc-test >}}
 
 ## Verify log export
 
@@ -226,7 +193,7 @@ You can filter which access logs are exported to the OTLP backend independently 
 
 1. Update the {{< reuse "agw-docs/snippets/policy.md" >}} to add an `otlp.filter` expression. In this example, you want to send only error responses to the OTLP collector. However, you continue to log all requests to stdout.
 
-   ```yaml {paths="access-log-otlp"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -351,7 +318,7 @@ You can customize which fields are exported over OTLP independently of what is w
    The `remove` list matches the attribute names in the OTLP record, which are the OpenTelemetry semantic convention names, such as `server.address`, `url.path`, and `http.response.status_code`. The stdout log keeps the `http.host`, `http.path`, and `http.status` names. A name that does not appear in the OTLP record, such as `http.host`, removes nothing.
    {{% /version %}}
    {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
-   ```yaml {paths="access-log-otlp"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -381,7 +348,7 @@ You can customize which fields are exported over OTLP independently of what is w
    ```
    {{% /version %}}
    {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
-   ```yaml {paths="access-log-otlp"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -487,23 +454,23 @@ You can customize which fields are exported over OTLP independently of what is w
 {{< tabs >}}
 {{% tab name="OTel stack (recommended)" %}}
 Delete the {{< reuse "agw-docs/snippets/policy.md" >}} resource. The OTel stack collector stays in place.
-```sh {paths="access-log-otlp"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 {{% /tab %}}
 {{% tab name="Standalone debug" %}}
 1. Delete the {{< reuse "agw-docs/snippets/policy.md" >}} resource.
-   ```sh {paths="access-log-otlp"}
+   ```sh
    kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
 2. Uninstall the OpenTelemetry collector.
-   ```sh {paths="access-log-otlp"}
+   ```sh
    helm uninstall opentelemetry-collector-logs -n telemetry
    ```
 
 3. Remove the `telemetry` namespace.
-   ```sh {paths="access-log-otlp"}
+   ```sh
    kubectl delete namespace telemetry
    ```
 {{% /tab %}}

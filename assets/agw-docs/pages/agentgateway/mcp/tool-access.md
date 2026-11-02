@@ -129,7 +129,7 @@ sequenceDiagram
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
-       - group: agentgateway.dev
+       - group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
          name: github-mcp-backend
      backend:

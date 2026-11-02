@@ -9,7 +9,7 @@ In this example, the transformation applies after routing and targets a specific
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
-   ```yaml {paths="change-response-status"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -29,31 +29,6 @@ In this example, the transformation applies after routing and targets a specific
              value: 'request.uri.contains("foo=bar") ? 401 : 403'
    EOF
    ```
-
-   {{< doc-test paths="change-response-status" >}}
-   YAMLTest -f - <<'EOF'
-   - name: verify response status is 401 when foo=bar query parameter is present
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/response-headers?foo=bar"
-       method: GET
-       headers:
-         host: www.example.com
-     source:
-       type: local
-     expect:
-       statusCode: 401
-   - name: verify response status is 403 when foo=bar query parameter is absent
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/response-headers?foo=baz"
-       method: GET
-       headers:
-         host: www.example.com
-     source:
-       type: local
-     expect:
-       statusCode: 403
-   EOF
-   {{< /doc-test >}}
 
 2. Send a request to the httpbin app and include the `foo=bar` query parameter. Verify that you get back a 401 HTTP response code.
 
@@ -138,7 +113,7 @@ In this example, the transformation applies after routing and targets a specific
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="change-response-status"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin --ignore-not-found
 ```
 

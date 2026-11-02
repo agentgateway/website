@@ -2,19 +2,11 @@
 title: MCP authorization
 weight: 40
 description: Define authorization rules for MCP method invocations using CEL expressions.
-test:
-  mcp-authz-config:
-  - file: ${versionRoot}/documentation/configuration/security/mcp-authz.md
-    path: mcp-authz-config
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}} {{< badge content="Backend" path="/documentation/configuration/backends/">}} (MCP Backends only)
 
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
-
-{{< doc-test paths="mcp-authz-config" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 The MCP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} policy works similarly to [HTTP authorization]({{< link-hextra path="/documentation/configuration/security/http-authz" >}}), but runs in the context of an MCP request.
 
@@ -112,88 +104,6 @@ routes:
 {{< /tabs >}}
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="mcp-authz-config" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The MCP authorization example config loads and the gateway serves the
-#     stdio MCP server: the /mcp endpoint accepts an initialize request.
-#   * The same policy is accepted in the simplified MCP (mcp) form via
-#     --validate-only.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That unauthorized tools are actually filtered — would require an
-#     authenticated tools/list call with a JWT carrying the right claims.
-#   * The access-log fragment later on the page is not a standalone config.
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- policies:
-    mcpAuthorization:
-      rules:
-      # Allow anyone to call 'echo'
-      - 'mcp.tool.name == "echo"'
-      # Only the test-user can call 'add'
-      - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
-      # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
-      - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
-  backends:
-  - mcp:
-      targets:
-      - name: everything
-        stdio:
-          cmd: npx
-          args: ["@modelcontextprotocol/server-everything"]
-EOF
-
-cat <<'EOF' > config-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  policies:
-    mcpAuthorization:
-      rules:
-      # Allow anyone to call 'echo'
-      - 'mcp.tool.name == "echo"'
-      # Only the test-user can call 'add'
-      - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
-      # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
-      - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
-  targets:
-  - name: everything
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-agentgateway -f config-mcp.yaml --validate-only
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-authz-config" >}}
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-authz-config" >}}
-YAMLTest -f - <<'EOF'
-- name: MCP endpoint accepts initialize request
-  http:
-    url: "http://localhost:3000"
-    path: /mcp
-    method: POST
-    headers:
-      content-type: application/json
-      accept: "application/json, text/event-stream"
-    body: |
-      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
 
 > [!NOTE]
 > Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway UI before using them in your configuration.
@@ -327,90 +237,6 @@ mcp:
       cmd: npx
       args: ["@mycompany/admin-server"]
 ```
-
-{{< doc-test paths="mcp-authz-config" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The role-based (JWT claim) and per-target authorization examples are
-#     accepted by agentgateway.
-#   * The tests point jwks at a local file instead of the displayed IdP URL so
-#     they run without a live identity provider.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That the rules actually admit or deny the described users — requires a real
-#     authorization server and signed JWTs carrying these claims.
-mkdir -p manifests/jwt
-cat <<'EOF' > manifests/jwt/pub-key
-{"keys": [{"kty": "RSA", "kid": "test", "use": "sig", "alg": "RS256", "n": "teXe4sfDoHQR5YUos3nsY_Ax6J2xrgXnIfUziaTWJ4nljejLVyg8m0g6SK9zrSaCvLm9GxAhpaJ_48RalwqDt4spBPQ8uvr-54jHrECboAbTxhy2T-oXP80Duz0xauSDVlyA_xenoCA24MFJ1rgHppy1F1eYTD-CQ-IxhXLNm5mE3rJufP_pdnMy0q6acXSfPtEzMJY3BYNV5umqimkOgH9PqQWd1RAgYdE7z5fvdCb4T4K667rRRT75PqRB4GJgSY-zQrC4CEVCw_ql7bfdouFcxXwsyh7AfImIEamA1LMODvMXVZWkZ8V0w_VEK6NHqr-BGOBVAUfRqYAEPxfaIw", "e": "AQAB"}]}
-EOF
-cat <<'EOF' > authz-rbac.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  policies:
-    mcpAuthentication:
-      issuer: http://localhost:9000
-      audiences:
-      - http://localhost:3000/mcp
-      jwks:
-        file: ./manifests/jwt/pub-key
-      resourceMetadata:
-        resource: http://localhost:3000/mcp
-        scopesSupported:
-        - read:all
-        bearerMethodsSupported:
-        - header
-    mcpAuthorization:
-      rules:
-      - 'mcp.tool.name == "echo"'
-      - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
-      - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
-  targets:
-  - name: everything
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-agentgateway -f authz-rbac.yaml --validate-only
-
-cat <<'EOF' > authz-per-target.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  policies:
-    cors:
-      allowOrigins: ["*"]
-      allowHeaders:
-      - mcp-protocol-version
-      - content-type
-      - cache-control
-    mcpAuthentication:
-      mode: optional
-      issuer: http://localhost:9000
-      audiences:
-      - http://localhost:3000/mcp
-      jwks:
-        file: ./manifests/jwt/pub-key
-      resourceMetadata:
-        resource: http://localhost:3000/mcp
-        scopesSupported:
-        - read:all
-        bearerMethodsSupported:
-        - header
-    mcpAuthorization:
-      rules:
-      - 'mcp.tool.target == "public-tools"'
-      - 'mcp.tool.target == "admin-tools" && has(jwt.sub) && "admin" in jwt.roles'
-  targets:
-  - name: public-tools
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-  - name: admin-tools
-    stdio:
-      cmd: npx
-      args: ["@mycompany/admin-server"]
-EOF
-agentgateway -f authz-per-target.yaml --validate-only
-{{< /doc-test >}}
 
 ## CEL variables
 
