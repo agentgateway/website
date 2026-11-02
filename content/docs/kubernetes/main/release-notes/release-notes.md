@@ -9,6 +9,12 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🐛 Fixes {#v18-fixes}
+
+**LLM**
+
+- Bedrock requests now keep the Anthropic `thinking.display` setting, so Claude models receive `summarized` or `omitted` thinking display preferences. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4211 -->
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.
