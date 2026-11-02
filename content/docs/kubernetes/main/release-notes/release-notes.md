@@ -9,6 +9,12 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v18-new-features}
+
+### LLM {#v18-llm}
+
+- **Original client model available in CEL and cost lookup**: CEL expressions can read `llm.originalModel`, the model name that the client sent before virtual model routing, aliases, provider overrides, or request body rewrites. Model cost lookup now tries the response model, then the request model, then `llm.originalModel`, so catalogs can price requests whose model was rewritten. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4215 -->
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.

@@ -16,6 +16,8 @@ Each policy execution consistently gets the current view of the request and resp
 
 For the full list of fields and types on every top-level object, see the [CEL reference]({{< link-hextra path="/reference/cel/cel-context" >}}) page. It is generated from the [agentgateway CEL schema](https://github.com/agentgateway/agentgateway/blob/main/schema/cel.md) and is the source of truth for nested fields (for example, `source.address` or `llm.inputTokens`).
 
+For LLM requests, `llm.originalModel` records the model name that the client sent before a virtual model, alias, provider override, or request body rewrite. Use `llm.originalModel` with `llm.requestModel` to compare the original client model with the model in the current request.
+
 When a policy can run against both directly addressed and Service backends, check `has(backend.endpoint)` before reading `backend.endpoint`. The field is populated only for directly addressed backends, such as static hostnames. Service backends leave `backend.endpoint` unset because workload endpoints are selected separately.
 
 > [!NOTE]
@@ -131,7 +133,7 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 
 [^7]: A key that reads a variable that is not bound where its rule runs cannot be evaluated, so the request counts against the rule's shared bucket instead. For more information, see [Per-key limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/#per-key" >}}).
 
-[^8]: For LLM requests, `llm.requestModel` holds the model requested by the client. `llmRequest` holds the parsed JSON request body. A `requests` rule keyed by `llm.requestModel` counts requests separately for each model.
+[^8]: For LLM requests, `llm.requestModel` holds the model in the current request. `llm.originalModel` holds the model that the client sent before model rewrites. `llmRequest` holds the parsed JSON request body. A `requests` rule keyed by `llm.requestModel` counts requests separately for each model.
 
     Policies in the gateway phase run before LLM parsing and cannot read these fields. When `llm` listens on its own `port`, this includes `llm.policies.authorization`, `llm.policies.apiKey`, and `llm.policies.jwtAuth`.
 

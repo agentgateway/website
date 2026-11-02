@@ -17,6 +17,8 @@ Each policy execution consistently gets the current view of the request and resp
 
 For the full list of fields and types on every top-level object, see the [Interactive CEL reference]({{< link-hextra path="/reference/cel/cel-context-interactive" >}}) page.
 
+For LLM requests, `llm.originalModel` records the model name that the client sent before a virtual model, alias, provider override, or request body rewrite. Use `llm.originalModel` with `llm.requestModel` to compare the original client model with the model in the current request.
+
 When a policy can run against both directly addressed and Service backends, check `has(backend.endpoint)` before reading `backend.endpoint`. The field is populated only for directly addressed backends, such as static hostnames. Service backends leave `backend.endpoint` unset because workload endpoints are selected separately.
 
 > [!NOTE]
@@ -92,7 +94,7 @@ Depending on the policy, different fields are accessible based on when in the re
 |Tracing| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`|
 |Metrics| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`|
 
-[^1]: For LLM requests, `llm.requestModel` holds the model requested by the client. `llmRequest` holds the parsed JSON request body. A `requests` limit keyed by `llm.requestModel` counts requests separately for each model.
+[^1]: For LLM requests, `llm.requestModel` holds the model in the current request. `llm.originalModel` holds the model that the client sent before model rewrites. `llmRequest` holds the parsed JSON request body. A `requests` limit keyed by `llm.requestModel` counts requests separately for each model.
 
     Policies with `traffic.phase: PreRouting` run before LLM parsing and cannot read these fields.
 
