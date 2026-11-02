@@ -121,7 +121,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{% tab name="Config file" %}}
 1. Create an agentgateway configuration file that serves the Petstore API as MCP tools.
 
-   ```yaml
+   ```sh
    cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    mcp:

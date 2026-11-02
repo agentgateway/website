@@ -198,7 +198,7 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
 4. Check the agentgateway logs. After a successful request, the logs show the Tailscale identity from the access log fields that you configured.
 
    ```
-   info request ... tailscale.node=your-machine-name tailscale.email=you@example.com
+   info request ... tailscale.node="your-machine-name" tailscale.email="you@example.com"
    ```
 
 <!--
