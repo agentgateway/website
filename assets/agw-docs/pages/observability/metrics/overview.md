@@ -129,7 +129,7 @@ Before you begin, make sure that you have the following:
 * Prometheus Operator v0.88.0 or later, which adds the `scrapeNativeHistograms` field to the ServiceMonitor and PodMonitor CRDs.
 
 > [!NOTE]
-> The [OTel stack guide]({{< link path="/documentation/observability/otel-stack/" >}}) installs `kube-prometheus-stack` version {{< reuse "agw-docs/versions/otel-stack-prometheus.md" >}}, which might include an older Prometheus Operator. Check the version of your Prometheus Operator before you continue. `kube-prometheus-stack` version 81.0.0 and later include Prometheus Operator v0.88.0 or later. With an older Prometheus Operator, the Kubernetes API server drops the `scrapeNativeHistograms` field from the ServiceMonitor and PodMonitor and Prometheus does not scrape native histograms.
+> The [OTel stack guide]({{< link path="/documentation/observability/otel-stack/" >}}) installs `kube-prometheus-stack` version {{< reuse "agw-docs/versions/otel-stack-prometheus.md" >}}, which includes Prometheus Operator v0.88.0 or later. With an older Prometheus Operator, the Kubernetes API server drops the `scrapeNativeHistograms` field from the ServiceMonitor and PodMonitor and Prometheus does not scrape native histograms.
 
 1. Make the proxies emit native and classic histograms. Add the following setting to the `rawConfig` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that your Gateway uses. For how to create and attach the resource, see [`rawConfig`]({{< link path="/documentation/setup/customize/customize/#rawconfig" >}}). The proxy reads this setting only at startup, so the proxy pods restart.
 
