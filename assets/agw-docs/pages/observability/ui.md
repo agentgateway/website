@@ -88,7 +88,7 @@ Use the **LLM** > **Client Setup** page to generate connection settings and snip
 
 1. Open the **LLM** > **Client Setup** page, such as [http://localhost:15000/ui/llm/client-setup](http://localhost:15000/ui/llm/client-setup).
 2. Enter the **Gateway base URL** that clients use to reach the proxy, including any route prefix. The field starts empty because the proxy does not know the external address of its Gateway, such as a load balancer hostname. The snippets appear only after you enter a URL.
-3. Select a model. The list includes public concrete models and virtual models from the proxy's configuration. Internal models are not listed, because clients cannot request them directly. If the model that you want is not listed, type its name. If you select a wildcard model, such as `gpt-*`, type the rest of the model name that the client requests.
+3. Select a model. The list includes public concrete models and virtual models from the proxy's configuration. Internal models are not listed, because clients cannot request them directly. If the model that you want is not listed, type its name. If you select a wildcard model, such as `gpt-*`, type the rest of the model name that the client requests.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} For a model with exact header matches, the page shows the required headers and adds them to generated snippets.{{< /version >}}
 4. Enter the API key that the client sends. The UI keeps the key in the browser and does not read it from a Kubernetes Secret.
 5. Select the client from the **Integration** dropdown and copy the generated settings or snippet.
 
