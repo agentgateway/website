@@ -136,6 +136,7 @@ Add attributes such as `model_id`, `model_version`, or `deployment.environment.n
 ```yaml
 frontendPolicies:
   tracing:
+    host: ${ARIZE_HOST}:443
     resources:
       service.name: '"agentgateway"'
       openinference.project.name: '"agentgateway"'
