@@ -56,8 +56,10 @@ routes:
 {{< /tab >}}
 {{< /tabs >}}
 
+## Retry requests with large bodies {#large-bodies}
+
 When a request has retries enabled and an HTTP body, the request body is buffered so that it can be resent.
-If the body is larger than the frontend buffer limit, the request is not retried. The default limit is 2 MiB, or 32 MiB for LLM requests.
+If the body is larger than the frontend buffer limit, the request is not retried. The default limit is 2 MiB or 32 MiB for LLM requests.
 To retry larger requests, raise the limit in the `frontendPolicies.http.maxBufferSize` field.
 
 ```yaml
