@@ -270,6 +270,16 @@ spec:
 
 Request guards do not have this limit. A request is buffered before it reaches the LLM provider, so both `Mask` and `Reject` apply to requests whether or not the client asks for a streamed response.
 
+### Streaming latency {#streaming-latency}
+
+When you set `streaming: Enabled` and configure at least one response guard, {{< reuse "agw-docs/snippets/agentgateway.md" >}} does not forward each streamed chunk when it arrives. The proxy holds the chunks until it collects 1024 bytes of response text or until the response ends. Then, the response guards check that text. If the guards pass, the proxy sends the held chunks to the client. This behavior applies to SSE responses and to the text deltas of OpenAI Realtime WebSocket traffic.
+
+Response guards change how a streamed response reaches the client in the following ways:
+
+- **A short response arrives as one chunk.** If the response has less than 1024 bytes of text, the client receives the full response at once when the response ends. This is expected behavior, not a bug.
+- **The time to first byte increases.** The client gets the first chunk only after the LLM generates 1024 bytes of text and the guards check it. Each check also adds the latency of the guard, such as a call to an external moderation service or a webhook.
+- **You cannot change the threshold.** No setting or environment variable changes the 1024-byte value. If your clients need the first tokens immediately, do not configure response guards on that route. Request guards do not hold streamed chunks.
+
 ## Choosing the right approach
 
 Use this table to decide which guardrail layer to use for your requirements:
