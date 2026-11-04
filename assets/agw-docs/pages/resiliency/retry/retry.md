@@ -16,6 +16,11 @@ A request retry is the number of times a request is retried if it fails. This se
 
 Set up retries to the sample app.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+> [!NOTE]
+> Requests with a body larger than the frontend buffer limit are not retried, because the body must be buffered so that it can be resent. The default limit is 2 MiB, or 32 MiB for LLM requests. To retry larger requests, raise the limit in the `spec.frontend.http.maxBufferSize` field of an {{< reuse "agw-docs/snippets/policy.md" >}}.
+{{< /version >}}
+
 1. Install the experimental Kubernetes Gateway API CRDs.
 
    ```sh
