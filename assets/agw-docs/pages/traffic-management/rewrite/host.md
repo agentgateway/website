@@ -235,6 +235,100 @@ When a rule splits traffic between backends that expect different hosts, rewrite
    ```
 {{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+## Set the host with a transformation
+
+For an {{< reuse "/agw-docs/snippets/backend.md" >}} that uses a hostname, such as a static backend or an MCP target, agentgateway automatically sets the `Host` header to the hostname of the backend. This automatic host rewrite runs after transformations. If a transformation policy sets the `:authority` or `Host` header, the automatic host rewrite replaces that value, even though the policy status shows `Attached`. To keep the value from the transformation, turn off the automatic host rewrite for the route by setting `hostRewrite.mode` to `None`.
+
+Kubernetes Service backends do not get an automatic host rewrite by default, so a transformation can set their `Host` header without this setting. The `URLRewrite` filter in the previous sections also turns off the automatic host rewrite.
+
+1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} that reaches the in-cluster httpbin app by its hostname.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: httpbin-static
+     namespace: httpbin
+   spec:
+     static:
+       host: httpbin.httpbin.svc.cluster.local
+       port: 8000
+   EOF
+   ```
+
+2. Create an HTTPRoute that matches traffic on the `transform-host.example` domain and forwards it to the {{< reuse "/agw-docs/snippets/backend.md" >}}.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: transform-host
+     namespace: httpbin
+   spec:
+     parentRefs:
+     - name: agentgateway-proxy
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     hostnames:
+       - transform-host.example
+     rules:
+       - backendRefs:
+         - name: httpbin-static
+           kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
+           group: agentgateway.dev
+   EOF
+   ```
+
+3. Create an {{< reuse "/agw-docs/snippets/policy.md" >}} that sets the `:authority` header with a transformation and turns off the automatic host rewrite for the route.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "/agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: transform-host
+     namespace: httpbin
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: transform-host
+     traffic:
+       hostRewrite:
+         mode: None
+       transformation:
+         request:
+           set:
+           - name: ":authority"
+             value: '"transformed.example"'
+   EOF
+   ```
+
+   |Setting|Description|
+   |--|--|
+   |`spec.traffic.hostRewrite.mode`| Set to `None` so that the automatic host rewrite does not replace the `:authority` header from the transformation. If you leave this setting out, the backend gets the `httpbin.httpbin.svc.cluster.local` host. This setting applies to the whole route. If the route has backends that do not set their own `:authority` header, those backends get the host that the client sent to the gateway. |
+   |`spec.traffic.transformation.request.set`| The `:authority` header to set on the request. The value is a CEL expression, so a fixed string needs quotes. A transformation in the `spec.backend` section of a policy for the {{< reuse "/agw-docs/snippets/backend.md" >}} also needs `hostRewrite.mode: None` on the route. |
+
+4. Send a request to the `transform-host.example` domain. Verify that the httpbin app receives the `transformed.example` host.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -s http://$INGRESS_GW_ADDRESS:80/headers -H "host: transform-host.example" | jq -c '.headers.Host'
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -s localhost:8080/headers -H "host: transform-host.example" | jq -c '.headers.Host'
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+   ```console
+   ["transformed.example"]
+   ```
+{{< /version >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
@@ -250,6 +344,14 @@ If you created the backend-specific host rewrite, delete its HTTPRoute.
 
 ```sh
 kubectl delete httproute backend-host-rewrite -n httpbin
+```
+
+If you set the host with a transformation, delete its resources.
+
+```sh
+kubectl delete {{< reuse "/agw-docs/snippets/policy.md" >}} transform-host -n httpbin
+kubectl delete httproute transform-host -n httpbin
+kubectl delete {{< reuse "/agw-docs/snippets/backend.md" >}} httpbin-static -n httpbin
 ```
 {{< /version >}}
 
