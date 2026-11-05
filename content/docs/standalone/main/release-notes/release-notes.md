@@ -36,7 +36,7 @@ If agentgateway generates a key during the upgrade, MCP sessions established bef
 **Actions to take**:
 
 * If you keep your configuration file in version control, set `SESSION_KEY` before you upgrade, so that agentgateway does not write a secret into the file.
-* If you install with the Helm chart in the default `readonly` mode, set `session.secretName` to encrypt session IDs. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
+* If you install with the Helm chart in the default `readonly` mode, set `session.secretName` to encrypt session IDs. For more information, see [Use an existing session key Secret]({{% upstream %}}{{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}{{% /upstream %}}{{% downstream %}}{{< link-hextra path="/documentation/setup/install/helm/" >}}{{% /downstream %}}).
 * To keep sessions unencrypted, set `SESSION_KEY` or `config.session.key` to `disabled`.
 
 For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
