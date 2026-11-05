@@ -1868,6 +1868,75 @@ _Appears in:_
 | `TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256` |  |
 
 
+#### Compression
+
+
+
+
+
+
+
+_Appears in:_
+- [Traffic](#traffic)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `response` _[CompressionResponse](#compressionresponse)_ | Compression applied to responses sent to the client. |  | Optional: \{\} <br /> |
+| `request` _[CompressionRequest](#compressionrequest)_ | Compression applied to requests received from the client. |  | Optional: \{\} <br /> |
+
+
+#### CompressionAlgorithm
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [RequestDecompression](#requestdecompression)
+- [ResponseCompression](#responsecompression)
+
+| Field | Description |
+| --- | --- |
+| `Gzip` |  |
+| `Brotli` |  |
+| `Deflate` |  |
+| `Zstd` |  |
+
+
+#### CompressionRequest
+
+
+
+
+
+
+
+_Appears in:_
+- [Compression](#compression)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `decompress` _[RequestDecompression](#requestdecompression)_ | Decompresses request bodies before route-level body-aware policies (rate limiting,<br />ext_proc, transformations) run and before forwarding to the backend. Authentication,<br />authorization and gateway-phase policies run first and observe the encoded body. |  | Optional: \{\} <br /> |
+
+
+#### CompressionResponse
+
+
+
+
+
+
+
+_Appears in:_
+- [Compression](#compression)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `compress` _[ResponseCompression](#responsecompression)_ | Compresses response bodies when the client advertises support in Accept-Encoding.<br />Only textual content types (JSON, HTML, CSS, JavaScript, XML, plain text, SVG) with a known<br />length of at least 32 bytes are compressed, so streamed responses are sent as-is.<br />Responses that are already encoded, partial (`Content-Range`), or marked `no-transform`<br />are never compressed. |  | Optional: \{\} <br /> |
+
+
 #### ConditionalModelRouting
 
 
@@ -1881,7 +1950,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `targets` _[ConditionalModelTarget](#conditionalmodeltarget) array_ | Concrete model targets evaluated in order. The first matching condition is<br />selected. One final target may omit when to act as the fallback. |  | MaxItems: 64 <br />MinItems: 1 <br />Required: \{\} <br /> |
+| `targets` _[ConditionalModelTarget](#conditionalmodeltarget) array_ | Model targets evaluated in order. The first matching condition is<br />selected. One final target may omit when to act as the fallback. Targets<br />may be concrete or virtual models. |  | MaxItems: 64 <br />MinItems: 1 <br />Required: \{\} <br /> |
 
 
 #### ConditionalModelTarget
@@ -1897,7 +1966,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `modelRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core)_ | Same-namespace AgentgatewayModel resource selected by this target. |  | Required: \{\} <br /> |
+| `modelRef` _[ModelObjectReference](#modelobjectreference)_ | Same-namespace model resource selected by this target. |  | Required: \{\} <br /> |
 | `model` _[LongString](#longstring)_ | Concrete model name selected through the referenced model. It is required<br />when modelRef points to a wildcard match.model. When omitted, the referenced<br />model's exact effective match.model is used. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `when` _[CELExpression](#celexpression)_ | CEL expression that must evaluate to true for this target to be selected.<br />Omit only on the final fallback target. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
@@ -2405,7 +2474,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `modelRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core)_ | Same-namespace AgentgatewayModel resource selected by this target. |  | Required: \{\} <br /> |
+| `modelRef` _[ModelObjectReference](#modelobjectreference)_ | Same-namespace model resource selected by this target. |  | Required: \{\} <br /> |
 | `model` _[LongString](#longstring)_ | Concrete model name selected through the referenced model. It is required<br />when modelRef points to a wildcard match.model. When omitted, the referenced<br />model's exact effective match.model is used. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `priority` _integer_ | Priority of this target. Lower values are preferred. Targets at the same<br />priority are selected using a score that considers health and latency. The<br />next priority is used only when every target at this priority is degraded.<br />Configure policies.health on concrete target models to customize<br />degradation and eviction behavior. |  | Maximum: 1e+06 <br />Minimum: 0 <br />Required: \{\} <br /> |
 
@@ -2589,6 +2658,27 @@ _Appears in:_
 | `http2KeepaliveTimeout` _[Duration](#duration)_ | Time to wait for a response to an `HTTP/2` keepalive ping before the connection is closed.<br />Only applies when `http2KeepaliveInterval` is set. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `maxConnectionDuration` _[Duration](#duration)_ | Maximum time a connection is allowed to remain open.<br />After this duration, the connection is gracefully closed after the current in-flight request completes.<br />Useful for ensuring even traffic distribution behind load balancers during scaling events. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `maxConcurrentRequests` _integer_ | Maximum number of in-flight HTTP requests across this gateway/port.<br />This includes HTTP/1 requests and HTTP/2 streams. Requests over the limit<br />are rejected immediately with a 503 response. Unset means unlimited. |  | Minimum: 1 <br />Optional: \{\} <br /> |
+| `normalize` _[FrontendHTTPNormalize](#frontendhttpnormalize) array_ | `normalize` defines path normalization rules applied before route matching.<br />The normalized path is used for routing, policies and the upstream request;<br />access logs keep the original path. Rules are applied in a fixed order<br />regardless of how they are listed: percent-decoding, then `MergeSlash`,<br />then `DotSegment`.<br />Malformed percent-encoding and `%00` are rejected with 400 whenever any rule<br />other than `MergeSlash` is set.<br />`MergeSlash` collapses repeated slashes into one, treating `\` as `/`.<br />`DotSegment` resolves `.` and `..` segments, treating `%2E` as `.`, `\` as `/`,<br />and ignoring parameters on dot segments (`..;x`).<br />`DecodeUnreserved` decodes percent-encoded unreserved characters (`A-Z a-z 0-9 - . _ ~`).<br />`RejectEscapedSlash` rejects requests whose path contains `%2F` or `%5C` with 400.<br />`UnescapeSlash` decodes `%2F` and `%5C` into `/`. |  | MaxItems: 5 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+
+
+#### FrontendHTTPNormalize
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [FrontendHTTP](#frontendhttp)
+
+| Field | Description |
+| --- | --- |
+| `MergeSlash` |  |
+| `DotSegment` |  |
+| `DecodeUnreserved` |  |
+| `RejectEscapedSlash` |  |
+| `UnescapeSlash` |  |
 
 
 #### FrontendProxyProtocol
@@ -3914,6 +4004,28 @@ _Appears in:_
 | `model` _[LongString](#longstring)_ | Model name matched against client requests. It may be exact, a suffix<br />wildcard such as `gpt-*`, a prefix wildcard such as `*-latest`, or `*`.<br />When omitted, the model matches metadata.name exactly. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
+#### ModelObjectReference
+
+
+
+References a same-namespace model resource. When group and kind are omitted,
+the reference selects a model of the referring model's own kind.
+
+
+
+_Appears in:_
+- [ConditionalModelTarget](#conditionalmodeltarget)
+- [FailoverModelTarget](#failovermodeltarget)
+- [ModelTargetReference](#modeltargetreference)
+- [WeightedModelTarget](#weightedmodeltarget)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `group` _[Group](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#group)_ | API group of the referenced model, such as `agentgateway.dev`. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Optional: \{\} <br /> |
+| `kind` _[Kind](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#kind)_ | Kind of the referenced model, such as `AgentgatewayModel`. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Optional: \{\} <br /> |
+| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | Name of the referenced model. |  | Required: \{\} <br /> |
+
+
 #### ModelPolicies
 
 
@@ -3994,7 +4106,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `modelRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core)_ | Same-namespace AgentgatewayModel resource selected by this target. |  | Required: \{\} <br /> |
+| `modelRef` _[ModelObjectReference](#modelobjectreference)_ | Same-namespace model resource selected by this target. |  | Required: \{\} <br /> |
 | `model` _[LongString](#longstring)_ | Concrete model name selected through the referenced model. It is required<br />when modelRef points to a wildcard match.model. When omitted, the referenced<br />model's exact effective match.model is used. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
@@ -4248,7 +4360,7 @@ _Appears in:_
 | `scopes` _string array_ | Scopes sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `resources` _string array_ | Resources sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `requestedTokenType` _[OAuthTokenType](#oauthtokentype)_ | RFC 8693 requested_token_type. Unlike subject/actor token types, only the<br />built-in values may be requested; custom URIs are not supported here. |  | Enum: [AccessToken Jwt IdToken IdJag] <br />Optional: \{\} <br /> |
-| `additionalParams` _object (keys:string, values:[CELExpression](#celexpression))_ | Extra form params; values are CEL expressions over the incoming request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
+| `additionalParams` _object (keys:string, values:[CELExpression](#celexpression))_ | Extra form params; values are CEL expressions over the incoming request.<br />Parameters set by the gateway itself (for example `scope`, `audience`, or `client_id`) may not be overridden. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `clientAuth` _[OAuthClientAuth](#oauthclientauth)_ | Client authentication for the token endpoint. When unset, none is sent. |  | Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where the exchanged token is written to the backend request.<br />Defaults to Authorization: Bearer. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
 | `cache` _[OAuthTokenCache](#oauthtokencache)_ | Response cache configuration. |  | Optional: \{\} <br /> |
@@ -4998,6 +5110,22 @@ _Appears in:_
 | `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 
 
+#### RequestDecompression
+
+
+
+
+
+
+
+_Appears in:_
+- [CompressionRequest](#compressionrequest)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `algorithms` _[CompressionAlgorithm](#compressionalgorithm) array_ | Algorithms decoded from request bodies. Bodies using any other (or more than one) encoding<br />are forwarded untouched.<br />If unset, defaults to Gzip. |  | MaxItems: 4 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+
+
 #### ResourceAdd
 
 
@@ -5013,6 +5141,22 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `name` _[ShortString](#shortstring)_ |  |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `expression` _[CELExpression](#celexpression)_ |  |  | MaxLength: 16384 <br />MinLength: 1 <br />Required: \{\} <br /> |
+
+
+#### ResponseCompression
+
+
+
+
+
+
+
+_Appears in:_
+- [CompressionResponse](#compressionresponse)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `algorithms` _[CompressionAlgorithm](#compressionalgorithm) array_ | Algorithms that may be negotiated with the client's Accept-Encoding header.<br />When the client accepts several equally, the first listed wins.<br />If unset, defaults to Gzip. |  | MaxItems: 4 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
 #### Retry
@@ -5322,6 +5466,7 @@ _Appears in:_
 | `apiKeyAuthentication` _[APIKeyAuthentication](#apikeyauthentication)_ | Authenticates users based on a configured API<br />key. |  | ExactlyOneOf: [secretRef secretSelector configMapSelector] <br />Optional: \{\} <br /> |
 | `directResponse` _[DirectResponseOrConditional](#directresponseorconditional)_ | Sends a direct response to the<br />client. |  | Optional: \{\} <br /> |
 | `buffer` _[Buffer](#buffer)_ | Buffers request and response bodies. Buffered bodies are accumulated in memory<br />by the proxy until completion before being forwarded. This changes the proxies default behavior, which streams bodies.<br />Warning: large bodies can lead to excessive memory usage in the proxy. Utilize with care, or with strict limits. |  | Optional: \{\} <br /> |
+| `compression` _[Compression](#compression)_ | Compresses responses sent to the client and decompresses request bodies before forwarding. |  | Optional: \{\} <br /> |
 | `delay` _[Delay](#delay)_ | Injects artificial latency before forwarding requests, for<br />fault-injection testing. |  | Optional: \{\} <br /> |
 
 
@@ -5508,7 +5653,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `targets` _[WeightedModelTarget](#weightedmodeltarget) array_ | Concrete model targets and their relative weights. |  | MaxItems: 64 <br />MinItems: 1 <br />Required: \{\} <br /> |
+| `targets` _[WeightedModelTarget](#weightedmodeltarget) array_ | Model targets and their relative weights. Targets may be concrete or<br />virtual models. |  | MaxItems: 64 <br />MinItems: 1 <br />Required: \{\} <br /> |
 
 
 #### WeightedModelTarget
@@ -5524,7 +5669,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `modelRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core)_ | Same-namespace AgentgatewayModel resource selected by this target. |  | Required: \{\} <br /> |
+| `modelRef` _[ModelObjectReference](#modelobjectreference)_ | Same-namespace model resource selected by this target. |  | Required: \{\} <br /> |
 | `model` _[LongString](#longstring)_ | Concrete model name selected through the referenced model. It is required<br />when modelRef points to a wildcard match.model. When omitted, the referenced<br />model's exact effective match.model is used. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `weight` _integer_ | Relative traffic weight. Defaults to 1. |  | Maximum: 1e+06 <br />Minimum: 1 <br />Optional: \{\} <br /> |
 
