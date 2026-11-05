@@ -9,6 +9,12 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
+## 🌟 New features {#v18-new-features}
+
+### Observability {#v18-observability}
+
+- **Active upstream request and connection metrics**: The data plane now emits `agentgateway_requests_active` and `agentgateway_upstream_connections_active` gauges with a `backend` label. Use them to monitor active backend requests and open upstream connections. For more information, see [Data plane metrics]({{< link-hextra path="/documentation/observability/metrics/dataplane/" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4187 -->
+
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.

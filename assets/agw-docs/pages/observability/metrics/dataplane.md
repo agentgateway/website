@@ -76,7 +76,8 @@ These metrics track communication with the agentgateway control plane over XDS. 
 | Metric | Type | Unit | Description |
 | --- | --- | --- | --- |
 | `agentgateway_request_duration_seconds` | Histogram | seconds | Duration of HTTP requests. |
-| `agentgateway_request_processing_seconds` | Histogram | seconds | Duration from receiving an HTTP request to sending the primary outbound call. |
+| `agentgateway_request_processing_seconds` | Histogram | seconds | Duration from receiving an HTTP request to sending the primary outbound call. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+| `agentgateway_requests_active` | Gauge | — | HTTP requests waiting for a complete backend response. |{{< /version >}}
 | `agentgateway_requests_shed_total` | Counter | — | Total downstream requests rejected by the in-flight request limit. |
 | `agentgateway_requests_total` | Counter | — | The total number of HTTP requests sent. |
 | `agentgateway_response_bytes_total` | Counter | bytes | Total HTTP response bytes received. |
@@ -92,7 +93,8 @@ These metrics track communication with the agentgateway control plane over XDS. 
 | `agentgateway_downstream_received_bytes_total` | Counter | bytes | Total TCP bytes received per connection labels. |
 | `agentgateway_downstream_sent_bytes_total` | Counter | bytes | Total TCP bytes transmitted per connection labels. |
 | `agentgateway_tls_handshake_duration_seconds` | Histogram | seconds | Duration to complete inbound TLS/HTTPS handshake. |
-| `agentgateway_upstream_connect_duration_seconds` | Histogram | seconds | Duration to establish upstream connection. |
+| `agentgateway_upstream_connect_duration_seconds` | Histogram | seconds | Duration to establish upstream connection. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+| `agentgateway_upstream_connections_active` | Gauge | — | Open upstream connections by backend. |{{< /version >}}
 
 ### MCP
 
@@ -199,4 +201,6 @@ Use these queries in Prometheus or as the basis for Grafana panels and alerts. T
 | Error rate | `rate(agentgateway_requests_total{status=~"5.."}[5m]) / rate(agentgateway_requests_total[5m])` |
 | LLM token usage (input) | `sum by (gen_ai_system, gen_ai_request_model) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[5m]))` |
 | Time to first token (p95) | `histogram_quantile(0.95, rate(agentgateway_gen_ai_server_time_to_first_token_bucket[5m]))` |
-| MCP tool call rate by tool | `sum by (server, resource) (rate(agentgateway_mcp_requests_total{method="tools/call"}[5m]))` |
+| MCP tool call rate by tool | `sum by (server, resource) (rate(agentgateway_mcp_requests_total{method="tools/call"}[5m]))` |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+| Active HTTP requests by backend | `sum by (backend) (agentgateway_requests_active)` |
+| Open upstream connections by backend | `sum by (backend) (agentgateway_upstream_connections_active)` |{{< /version >}}
