@@ -136,3 +136,33 @@ When using built in providers, default TLS settings are used.
 When using custom a `baseUrl`, the `https://` scheme will automatically use TLS.
 
 However, if you need advanced configurations such as client certificates or customized verification steps, you may set fields such as `root` for a trusted CA bundle, `hostname` and `subjectAltNames` for upstream identity checks, `cert` and `key` for client certificates.
+
+For standalone models that reference a named provider, set shared TLS configuration in `llm.providers[].defaults.tls`. Each model that references the provider uses those defaults unless it sets its own `tls`; a model-level `tls` replaces the provider's TLS configuration rather than merging with it. Certificate paths such as `root` must be available in the agentgateway process or container's filesystem.
+
+In this example, both models use the same provider and trusted CA bundle while sending different model names upstream:
+
+```yaml
+llm:
+  providers:
+  - name: local
+    provider:
+      custom:
+        formats:
+        - type: completions
+    params:
+      baseUrl: https://llm.example.test/v1
+    defaults:
+      tls:
+        root: /certs/trusted.crt
+  models:
+  - name: local/small
+    provider:
+      reference: local
+    params:
+      model: small
+  - name: local/large
+    provider:
+      reference: local
+    params:
+      model: large
+```
