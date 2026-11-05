@@ -24,7 +24,7 @@ on:
       slack_channel:
         description: 'Slack channel to notify'
         type: string
-        default: 'product-excellence-test-notifications'
+        default: 'doctopus-tests'
       docs_tests_ref:
         description: 'docs-tests branch or commit SHA to test with (default: main)'
         type: string
@@ -883,7 +883,7 @@ jobs:
           message: "Doc Test Results (agentgateway OSS)"
           blocks: ${{ steps.summary.outputs.slack_blocks }}
           thread_blocks: ${{ steps.summary.outputs.slack_thread_blocks }}
-          channel: ${{ github.event_name == 'workflow_dispatch' && inputs.slack_channel || 'product-excellence-test-notifications,doctopus-tests' }}
+          channel: ${{ github.event_name == 'workflow_dispatch' && inputs.slack_channel || 'doctopus-tests' }}
           token: ${{ secrets.SLACK_BOT_TOKEN }}
 
       - name: List untested docs
