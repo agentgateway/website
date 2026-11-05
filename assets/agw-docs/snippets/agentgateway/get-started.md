@@ -31,8 +31,7 @@ As of the 1.5 release the Standard path is also in the v1 / Gateway API 1.6 era,
    ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} \
    --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
-   --set controller.image.pullPolicy=Always
+   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
    ```
    {{% /tab %}}
    {{% tab name="Experimental" %}}
@@ -40,8 +39,7 @@ As of the 1.5 release the Standard path is also in the v1 / Gateway API 1.6 era,
    ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} \
    --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-   --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
-   --set controller.image.pullPolicy=Always
+   --version {{< reuse "agw-docs/versions/patch-dev.md" >}}
    ```
    {{% /tab %}}
    {{< /tabs >}}
