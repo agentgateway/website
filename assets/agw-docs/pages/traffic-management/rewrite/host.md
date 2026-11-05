@@ -235,12 +235,11 @@ When a rule splits traffic between backends that expect different hosts, rewrite
    ```
 {{< /version >}}
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
 ## Set the host with a transformation
 
-For an {{< reuse "/agw-docs/snippets/backend.md" >}} that uses a hostname, such as a static backend or an MCP target, agentgateway automatically sets the `Host` header to the hostname of the backend. This automatic host rewrite runs after transformations. If a transformation policy sets the `:authority` or `Host` header, the automatic host rewrite replaces that value, even though the policy status shows `Attached`. To keep the value from the transformation, turn off the automatic host rewrite for the route by setting `hostRewrite.mode` to `None`.
+For an {{< reuse "/agw-docs/snippets/backend.md" >}} that uses a hostname, such as a static backend or an MCP target, agentgateway automatically sets the `Host` header to the hostname of the backend. This automatic host rewrite runs after transformations. If a transformation policy sets the `:authority` or `Host` header, the automatic host rewrite replaces that value, even though the policy status shows `Attached`. To keep the value from the transformation, turn off the automatic host rewrite for the route by setting `hostRewrite.mode` to `None`. This setting is also required when the transformation is in the `spec.backend` section of a policy that targets the {{< reuse "/agw-docs/snippets/backend.md" >}}.
 
-Kubernetes Service backends do not get an automatic host rewrite by default, so a transformation can set their `Host` header without this setting. The `URLRewrite` filter in the previous sections also turns off the automatic host rewrite.
+Kubernetes Service backends do not get an automatic host rewrite by default, so a transformation can set their `Host` header without this setting. If you explicitly set `hostRewrite.mode` to `Auto`, agentgateway also rewrites the host for a Kubernetes Service backend, to the hostname of the Service. The `URLRewrite` filter in the previous sections also turns off the automatic host rewrite.
 
 1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} that reaches the in-cluster httpbin app by its hostname.
    ```yaml
@@ -305,8 +304,8 @@ Kubernetes Service backends do not get an automatic host rewrite by default, so 
 
    |Setting|Description|
    |--|--|
-   |`spec.traffic.hostRewrite.mode`| Set to `None` so that the automatic host rewrite does not replace the `:authority` header from the transformation. If you leave this setting out, the backend gets the `httpbin.httpbin.svc.cluster.local` host. This setting applies to the whole route. If the route has backends that do not set their own `:authority` header, those backends get the host that the client sent to the gateway. |
-   |`spec.traffic.transformation.request.set`| The `:authority` header to set on the request. The value is a CEL expression, so a fixed string needs quotes. A transformation in the `spec.backend` section of a policy for the {{< reuse "/agw-docs/snippets/backend.md" >}} also needs `hostRewrite.mode: None` on the route. |
+   |`spec.traffic.hostRewrite.mode`| Set to `None` so that the automatic host rewrite does not replace the `:authority` header from the transformation. If you leave this setting out, the backend gets the `httpbin.httpbin.svc.cluster.local` host. This setting applies to the whole route. Other hostname-based backends on the same route also lose the automatic host rewrite, so they get the host that the client sent, unless a transformation sets the host for them. |
+   |`spec.traffic.transformation.request.set`| The `:authority` header to set on the request. The value is a CEL expression, so a fixed string needs quotes. |
 
 4. Send a request to the `transform-host.example` domain. Verify that the httpbin app receives the `transformed.example` host.
 
@@ -327,7 +326,6 @@ Kubernetes Service backends do not get an automatic host rewrite by default, so 
    ```console
    ["transformed.example"]
    ```
-{{< /version >}}
 
 ## Cleanup
 
@@ -345,6 +343,7 @@ If you created the backend-specific host rewrite, delete its HTTPRoute.
 ```sh
 kubectl delete httproute backend-host-rewrite -n httpbin
 ```
+{{< /version >}}
 
 If you set the host with a transformation, delete its resources.
 
@@ -353,7 +352,6 @@ kubectl delete {{< reuse "/agw-docs/snippets/policy.md" >}} transform-host -n ht
 kubectl delete httproute transform-host -n httpbin
 kubectl delete {{< reuse "/agw-docs/snippets/backend.md" >}} httpbin-static -n httpbin
 ```
-{{< /version >}}
 
 
 
