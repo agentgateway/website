@@ -157,7 +157,7 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
    > ```
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
-Selected Services must resolve to unique MCP target names. If a selected Service resolves to the same name as a static target, the static target is used and the Service is ignored. For multiple selected Services with the same name, the first tie-breaker is whether the Service is in the same namespace as the {{< reuse "agw-docs/snippets/backend.md" >}}. The next tie-breaker is whether the Service omits the `agentgateway.dev/mcp-target-name` annotation. Service age breaks the next tie. If the Services have the same age, the namespace and Service name break the tie. For how selector target names are generated, see [Target conditions]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
+If two or more targets resolve to the same MCP target name, only one target is kept and the others are dropped with an error. The target to keep is chosen in the following order: a static target always wins over a selected Service. Among selected Services, a Service in the same namespace as the {{< reuse "agw-docs/snippets/backend.md" >}} wins, then a Service without the `agentgateway.dev/mcp-target-name` annotation, then the oldest Service. If the Services have the same age, the namespace and Service name break the tie. For how selector target names are generated, see [Target conditions]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
 {{< /version >}}
 
 ## Step 2: Route with agentgateway {#agentgateway}
