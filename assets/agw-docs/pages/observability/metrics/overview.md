@@ -33,7 +33,9 @@ You can inspect raw metrics directly from either endpoint without installing any
       curl http://localhost:15020/metrics
       ```
 
-Both endpoints return metrics in the [OpenMetrics](https://openmetrics.io/) format. All agentgateway metrics use the `agentgateway_` prefix. For the full list of available metrics, see [Control plane metrics]({{< link path="/documentation/observability/metrics/control-plane/" >}}) and [Data plane metrics]({{< link path="/documentation/observability/metrics/dataplane/" >}}).
+The data plane endpoint returns metrics in the [OpenMetrics](https://openmetrics.io/) format and the control plane endpoint returns metrics in the classic Prometheus text format. For more information about the data plane format, see [Metrics format]({{< link path="/documentation/observability/metrics/dataplane/#metrics-format" >}}).
+
+All agentgateway metrics use the `agentgateway_` prefix. For the full list of available metrics, see [Control plane metrics]({{< link path="/documentation/observability/metrics/control-plane/" >}}) and [Data plane metrics]({{< link path="/documentation/observability/metrics/dataplane/" >}}).
 
 ## Scrape metrics for querying and visualization
 
@@ -194,7 +196,7 @@ Before you begin, make sure that you have the following:
 
 ### Scrape additional proxy pods {#other-proxies}
 
-The {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm chart creates a single PodMonitor resource in the release namespace when `monitoring.enabled` is set to `true`. By default, the PodMonitor resource only finds proxy pods that are deployed to the same release namespace. Because gateway proxies run in the namespace of the Gateway resource that provisions them, proxies in other namespaces are not scraped automatically. To scape proxy pods in other namespaces, you must use the `namespaceSelector` field. 
+The {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm chart creates a single PodMonitor resource in the release namespace when `monitoring.enabled` is set to `true`. By default, the PodMonitor resource only finds proxy pods that are deployed to the same release namespace. Because gateway proxies run in the namespace of the Gateway resource that provisions them, proxies in other namespaces are not scraped automatically. To scrape proxy pods in other namespaces, you must use the `namespaceSelector` field. 
 
 **Scrape proxies in all namespaces**: 
 

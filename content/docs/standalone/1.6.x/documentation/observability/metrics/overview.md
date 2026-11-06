@@ -20,6 +20,10 @@ Metrics are grouped under the `agentgateway_` prefix and follow the [OpenMetrics
 
 For instructions on setting up Prometheus to scrape agentgateway metrics, see [Prometheus]({{< link-hextra path="/documentation/observability/metrics/prometheus/" >}}).
 
+## Metrics format {#metrics-format}
+
+{{< reuse "agw-docs/snippets/metrics-format.md" >}}
+
 ## Add custom metric labels
 
 You can enrich all metrics with custom labels that are computed from [CEL]({{< link-hextra path="/reference/cel/" >}}) expressions. Labels are added to every metric that carries the route identifier labels.
