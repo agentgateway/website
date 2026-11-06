@@ -296,8 +296,16 @@ The `memory_limiter` and `batch` processors come from the chart's default config
 5. In Kibana, verify each signal.
 
    - Go to **Observability** > **APM** > **Services**. Select the `agentgateway` service to see the service overview with throughput, latency, and error rate.
+
+     {{< reuse-image src="img/elastic-agentgateway-apm-services.jpg" srcDark="img/elastic-agentgateway-apm-services.jpg" alt="Kibana APM Services page showing the agentgateway service with latency, throughput, and error rate columns" caption="The agentgateway service appears in the APM Services list after the first traced request." >}}
+
    - Click **Transactions** to see individual traces. Find the trace that has the trace ID from step 4. Click it to open the trace waterfall.
+
+     {{< reuse-image src="img/elastic-agentgateway-transactions.jpg" srcDark="img/elastic-agentgateway-transactions.jpg" alt="Kibana APM Transactions page for the agentgateway service showing latency and throughput charts" caption="The Transactions tab shows latency distribution and throughput for the agentgateway service." >}}
    - Go to **Observability** > **APM** > **Traces** to browse all traces. The trace detail view shows span attributes including LLM input and output messages.
+
+     {{< reuse-image src="img/elastic-agentgateway-apm-traces.jpg" srcDark="img/elastic-agentgateway-apm-traces.jpg" alt="Kibana APM Traces page showing a POST /v1/chat/completions trace from the agentgateway service" caption="The Traces page lists top traces by impact. Click a trace to open its waterfall view." >}}
+
    - Go to **Observability** > **Metrics** or use **Discover** to query agentgateway metrics such as `agentgateway_gen_ai_client_token_usage`.
 
 Agentgateway and the collector batch their exports, so allow several seconds for new data to appear.
