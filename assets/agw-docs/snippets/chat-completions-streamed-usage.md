@@ -1,6 +1,6 @@
 ## Usage in streamed replies {#usage-in-streamed-replies}
 
-Streamed Chat Completions replies always include usage data, which is where the token counts come from. On a request with `"stream": true`, `stream_options.include_usage` is set to `true`, even if the client sets the field to `false`.
+Unlike calling OpenAI directly, streamed Chat Completions replies through agentgateway always include usage data, which is where the token counts come from. On a request with `"stream": true`, `stream_options.include_usage` is set to `true`, even if the client sets the field to `false`.
 
 As a result, every streamed reply ends with one extra chunk before `data: [DONE]`. That chunk has an empty `choices` array and a `usage` object with the token counts for the whole request. All earlier chunks have `usage: null`.
 
