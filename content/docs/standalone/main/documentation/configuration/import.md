@@ -10,6 +10,8 @@ Migrate from LiteLLM to agentgateway by importing your existing LiteLLM proxy co
 
 The importer currently supports LiteLLM proxy configuration files. Support for additional source gateways can be added to the same import command in future releases.
 
+To move application code from the LiteLLM Python SDK to agentgateway, see [Migrate from the LiteLLM SDK]({{< link-hextra path="/integrations/llm/clients/openai-sdk/#migrate-from-the-litellm-sdk" >}}).
+
 > [!WARNING]
 > An imported configuration can be valid without being behaviorally identical to the source configuration. Review every compatibility finding and test the generated configuration before using it in production.
 
