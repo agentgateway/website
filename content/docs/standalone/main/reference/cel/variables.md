@@ -113,9 +113,9 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 | External processing (ExtProc) | Request-phase rules: same as Transformation (request). Response-phase rules: same as Transformation (response). |
 | LLM policy | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `llmRequest`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — `llmRequest` is the raw JSON body during LLM request handling (not `mcp`). [^5] |
 | Virtual model callout | Same as LLM policy. `transformation` and `cache.ttl` can also read `callout`, the callout response, with `callout.headers` and the decoded JSON `callout.body`. |
-| Logging | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `upstreamCalls`[^9] [^6] |
-| Tracing | Same as Logging, except `upstreamCalls`. |
-| Metrics | Same as Logging, except `upstreamCalls`. |
+| Logging | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
+| Tracing | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
+| Metrics | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
 
 [^1]: Request-time transformation evaluation binds `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, and `metadata` when earlier filters have populated them. For AI requests, `llm.requestModel` is available before provider overrides. `llmRequest` is available for the parsed JSON body. `mcp` is populated only for MCP JSON-RPC requests to an MCP backend.
 
@@ -136,8 +136,6 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
     Policies in the gateway phase run before LLM parsing and cannot read these fields. When `llm` listens on its own `port`, this includes `llm.policies.authorization`, `llm.policies.apiKey`, and `llm.policies.jwtAuth`.
 
     The `llm.policies.localRateLimit` and `llm.policies.remoteRateLimit` fields can always read the LLM fields.
-
-[^9]: `upstreamCalls` lists the outbound HTTP calls made for the request, such as MCP target calls and policy callouts. The list is filled in only when an access log expression references `upstreamCalls`. For an example, see [Log outbound calls from access logs]({{< link-hextra path="/reference/cel/yaml-and-examples/#log-outbound-calls-from-access-logs" >}}).
 
 ### When `mcp` is available {#mcp-availability}
 

@@ -1,6 +1,6 @@
 #### Log outbound calls from access logs {#log-outbound-calls-from-access-logs}
 
-Access log expressions can use `upstreamCalls` to inspect the outbound HTTP calls made for a request, such as MCP target calls and policy callouts. The `upstreamCalls` list is filled in only when an access log expression references `upstreamCalls`. Calls to `stdio` MCP targets are not in the list, because a `stdio` target does not use HTTP.
+Access log expressions can use `upstreamCalls` to inspect the outbound HTTP calls made for a request, such as MCP target calls and policy callouts. The `upstreamCalls` list is filled in only when a logging, tracing, or metrics expression references `upstreamCalls`. Calls to `stdio` MCP targets are not in the list, because a `stdio` target does not use HTTP.
 
 The following example adds two fields to the access log:
 
@@ -12,9 +12,12 @@ The following example adds two fields to the access log:
 spec:
   frontend:
     accessLog:
-      add:
-        mcp_token_audiences: 'upstreamCalls.filter(c, c.subtype == "Mcp" && has(c.request.headers.authorization) && c.request.headers.authorization.startsWith("Bearer ")).map(c, unvalidatedJwtPayload(c.request.headers.authorization.split(" ")[1]).aud)'
-        upstream_call_statuses: 'upstreamCalls.map(c, {"kind": c.kind, "subtype": c.subtype, "target": c.target, "status": c.response.code})'
+      attributes:
+        add:
+        - name: mcp_token_audiences
+          expression: 'upstreamCalls.filter(c, c.subtype == "Mcp" && has(c.request.headers.authorization) && c.request.headers.authorization.startsWith("Bearer ")).map(c, unvalidatedJwtPayload(c.request.headers.authorization.split(" ")[1]).aud)'
+        - name: upstream_call_statuses
+          expression: 'upstreamCalls.map(c, {"kind": c.kind, "subtype": c.subtype, "target": c.target, "status": c.response.code})'
 ```
 {{< /conditional-text >}}
 {{< conditional-text include-if="standalone" >}}
