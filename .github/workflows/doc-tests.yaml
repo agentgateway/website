@@ -555,15 +555,24 @@ jobs:
         run: |
           mkdir -p out/tests/generated
           HELM_CHARTS=()
+          CRD_DIRS=()
           for tree in latest main; do
             for chart in agentgateway agentgateway-standalone agentgateway-crds; do
               HELM_CHARTS+=(--helm-chart "$tree=agentgateway-$tree/controller/install/helm/$chart")
             done
+            # agentgateway#4319 moved the CRD YAMLs from templates/ to
+            # files/crds/ and made templates/crds.yaml a Helm template.
+            # Releases cut before that change still use templates/.
+            crds="agentgateway-$tree/controller/install/helm/agentgateway-crds"
+            if [ -d "$crds/files/crds" ]; then
+              CRD_DIRS+=(--crd-dir "$tree=$crds/files/crds")
+            else
+              CRD_DIRS+=(--crd-dir "$tree=$crds/templates")
+            fi
           done
           python3 docs-tests/scripts/doc_test_schema_check.py \
             --repo-root . \
-            --crd-dir latest=agentgateway-latest/controller/install/helm/agentgateway-crds/templates \
-            --crd-dir main=agentgateway-main/controller/install/helm/agentgateway-crds/templates \
+            "${CRD_DIRS[@]}" \
             --crd-dir "$GATEWAY_API_CRDS" \
             --config-schema latest=agentgateway-latest/schema/config.json \
             --config-schema main=agentgateway-main/schema/config.json \
