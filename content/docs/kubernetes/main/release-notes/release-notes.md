@@ -9,8 +9,6 @@ Review the release notes for agentgateway on Kubernetes.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
-## 🔥 Breaking changes {#v18-breaking-changes}
-
 ## ✨ Highlights {#v17-highlights}
 
 With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.
@@ -228,10 +226,6 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 - **Callouts through a proxy**: You can now send the requests that the agentgateway proxy makes on its own behalf, such as external authorization requests, guardrail requests, and cloud provider credential fetches, through a forward proxy. For more information, see [Callout proxy]({{< link-hextra path="/documentation/setup/customize/callout-proxy/" >}}).
 - **Optional chart-created RBAC**: Set `rbac.create` to `false` in the controller Helm chart to skip the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the chart creates, for clusters that manage role-based access control (RBAC) outside of Helm. For more information, see [Chart-created RBAC resources]({{< link-hextra path="/documentation/install/advanced/#rbac-create" >}}).
 - **ClusterTrustBundle CA certificates**: A BackendTLSPolicy or a listener with `frontendValidation` can read CA certificates from an experimental ClusterTrustBundle, on Kubernetes 1.37 and later. If you set `rbac.create` to `false`, grant the controller `get`, `list`, and `watch` on `clustertrustbundles`. For more information, see [CA certificate in a ClusterTrustBundle]({{< link-hextra path="/documentation/security/backendtls/#clustertrustbundle-ca" >}}) and [Listener mTLS]({{< link-hextra path="/documentation/setup/listeners/mtls/#ca-sources" >}}).
-
-### Invalid backend TLS policies fail closed
-
-Invalid backend TLS policies now make requests fail with HTTP `503` instead of allowing plaintext traffic or keeping the last accepted policy after a bad update. The proxy records a warning that the backend TLS policy is invalid. For more information, see {{< conditional-text include-if="standalone" >}}[Backend TLS]({{< link-hextra path="/documentation/configuration/security/backend-tls/" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[BackendTLS]({{< link-hextra path="/documentation/security/backendtls/" >}}){{< /conditional-text >}}.
 
 ### Observability {#v17-observability}
 
