@@ -62,3 +62,5 @@ llm:
 {{< /tabs >}}
 
 {{< reuse "agw-docs/snippets/gemini-reasoning-effort.md" >}}
+
+For Gemma 4 models, `none`, `minimal`, and `low` use `thinkingLevel: "minimal"`, and `medium`, `high`, `xhigh`, and `max` use `thinkingLevel: "high"`.
