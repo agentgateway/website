@@ -10,6 +10,8 @@ Attaches to: {{< badge content="Route" path="/documentation/configuration/routes
 
 When a backend request fails, agentgateway can be configured to *{{< gloss "Retry" >}}retry{{< /gloss >}}* the request. Keep in mind that each retry goes to the same route backend as the original request. For LLM traffic, if you also want to configure failover so that an endpoint is marked as unhealthy and a request tried with a different endpoint, use [failover routing with virtual models]({{< link-hextra path="/documentation/llm/virtual-models/#failover-routing" >}}).
 
+If you omit `attempts`, a failed request is retried once. To disable retries, set `attempts` to `0`.
+
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
@@ -20,7 +22,6 @@ mcp:
     retry:
       # Maximum number of retries after the original request.
       # Note: A value of 3 allows up to 3 retries after the initial attempt.
-      # Set attempts to 0 to disable retries. Omit attempts to use the default of 1 retry.
       attempts: 3
       # Optional; if set, a delay between each additional attempt
       backoff: 500ms
@@ -45,7 +46,6 @@ routes:
     retry:
       # Maximum number of retries after the original request.
       # Note: A value of 3 allows up to 3 retries after the initial attempt.
-      # Set attempts to 0 to disable retries. Omit attempts to use the default of 1 retry.
       attempts: 3
       # Optional; if set, a delay between each additional attempt
       backoff: 500ms
