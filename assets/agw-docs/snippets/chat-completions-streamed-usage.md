@@ -14,4 +14,4 @@ data: {"id":"chatcmpl-123","model":"gpt-4o-mini","choices":[],"usage":{"prompt_t
 data: [DONE]
 ```
 
-If your client reads `choices[0]` from every chunk, skip chunks with an empty `choices` array.
+If your code reads `choices[0]` from each chunk, first check that the `choices` array is not empty.
