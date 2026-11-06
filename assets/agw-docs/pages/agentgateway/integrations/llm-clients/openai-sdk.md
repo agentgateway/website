@@ -1,4 +1,4 @@
-Call any LLM provider from your application code through agentgateway with the OpenAI SDK for Python, Node.js, or Go.
+Call configured LLM providers from your application code through agentgateway with the OpenAI SDK for Python, Node.js, or Go.
 
 Agentgateway exposes an OpenAI-compatible API. Point the SDK's base URL at agentgateway and send OpenAI Chat Completions requests. Agentgateway forwards each request to the provider that matches the `model` field and translates it when the provider uses a different API, such as Anthropic, Bedrock, or Gemini. For per-provider API support, see [About LLMs]({{< link-hextra path="/documentation/llm/about/" >}}).
 
@@ -134,6 +134,8 @@ client = OpenAI()  # picks up OPENAI_BASE_URL and OPENAI_API_KEY from env
 
 Add a model entry for each provider with a provider prefix. The SDK code stays the same; only the `model` value changes.
 
+Set `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` to your provider API keys in the environment that starts agentgateway. These are the real provider credentials; keep them separate from the placeholder API key used by the SDK examples. Start or restart agentgateway with the following configuration:
+
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
@@ -154,6 +156,7 @@ llm:
 ```
 
 ```python
+messages = [{"role": "user", "content": "Hello!"}]
 client.chat.completions.create(model="openai/gpt-4o-mini", messages=messages)
 client.chat.completions.create(model="anthropic/claude-sonnet-4-5", messages=messages)
 ```
@@ -162,7 +165,7 @@ Agentgateway strips the prefix and sends the request to the matching provider. F
 
 ## Migrate from the LiteLLM SDK
 
-The LiteLLM SDK and agentgateway's provider-prefix pattern use the same `provider/model` names, so you can keep your model strings. Replace the `litellm` call with the OpenAI SDK and move provider API keys from your application to the agentgateway configuration in [Call more than one provider](#call-more-than-one-provider).
+The configuration above accepts `openai/gpt-4o-mini` and `anthropic/claude-sonnet-4-5`, so you can keep those LiteLLM model strings. Other model strings need matching gateway configuration. This example migrates Chat Completions calls; review provider-specific parameters and other LiteLLM features separately. Replace the `litellm` call with the OpenAI SDK and move provider API keys from your application to the agentgateway configuration in [Call more than one provider](#call-more-than-one-provider).
 
 Before, with LiteLLM:
 
@@ -190,10 +193,12 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
+For asynchronous calls, import `AsyncOpenAI` from `openai` and initialize `async_client` with the same `base_url` and `api_key` as the synchronous client. Await the request inside an `async` function.
+
 | LiteLLM SDK | OpenAI SDK with agentgateway |
 |---|---|
 | `completion(...)` | `client.chat.completions.create(...)` |
-| `acompletion(...)` | `AsyncOpenAI(...).chat.completions.create(...)` |
+| `await acompletion(...)` | `await async_client.chat.completions.create(...)` |
 | `stream=True` | `stream=True` |
 | Provider keys, such as `ANTHROPIC_API_KEY`, in the application environment | `params.apiKey` on each model entry in the agentgateway configuration |
 
@@ -202,8 +207,21 @@ If you also run the LiteLLM proxy, convert its configuration with [Migrate from 
 
 ## Authenticate with a JWT
 
-If agentgateway validates JWTs with a [`jwtAuth` policy]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}), pass the token from your identity provider as the SDK API key. The SDK sends it in the `Authorization: Bearer` header.
+Configure a [`jwtAuth` policy]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) on agentgateway. Use `mode: strict` to require a valid token on every request.
+
+Obtain a JWT access token for your gateway API from your identity provider. The token must satisfy the policy's validation rules, including any configured issuer and audience requirements. Set `AGENTGATEWAY_JWT` in your application's environment to the raw token, without the `Bearer ` prefix.
+
+Pass that token as the SDK API key. The SDK sends `Authorization: Bearer <token>`.
 
 ```python
-client = OpenAI(base_url="http://localhost:3000/v1", api_key=id_token)
+import os
+from openai import OpenAI
+
+jwt_token = os.environ["AGENTGATEWAY_JWT"]
+client = OpenAI(
+    base_url="http://localhost:3000/v1",
+    api_key=jwt_token,
+)
 ```
+
+This token authenticates the caller to agentgateway. Keep the upstream provider API keys in the agentgateway configuration. Obtain a fresh token when it expires and update the SDK client before making more requests.
