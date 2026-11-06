@@ -96,13 +96,9 @@ These metrics track communication with the agentgateway control plane over XDS. 
 
 ### MCP
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
-The `agentgateway_mcp_requests_total` counter includes an `outcome` label. The possible values are `success`, `tool_error`, `protocol_error`, `gateway_error`, and `unknown`.
-{{< /version >}}
-
 | Metric | Type | Unit | Description |
 | --- | --- | --- | --- |
-| `agentgateway_mcp_requests_total` | Counter | — | Total number of MCP requests. |
+| `agentgateway_mcp_requests_total` | Counter | — | Total number of MCP requests.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} The `outcome` label is `success`, `tool_error`, `protocol_error`, `gateway_error`, or `unknown`.{{< /version >}} |
 
 ### LLM
 
