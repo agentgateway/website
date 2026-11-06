@@ -75,7 +75,9 @@ When a Gemini OpenAI-compatible response reports reasoning tokens separately fro
 
 ## Usage in streamed replies {#usage-in-streamed-replies}
 
-When a Chat Completions request sets `"stream": true`, agentgateway requests usage data from the provider. This behavior applies even if the client sets `stream_options.include_usage` to `false`. The stream includes a final usage chunk before `data: [DONE]`. The final usage chunk has an empty `choices` array and reports the whole request in `usage`. Earlier chunks report `usage: null`.
+Token counts for streamed replies come from the provider's usage data, so `stream_options.include_usage` is always set to `true` on a Chat Completions request that sets `"stream": true`, even if the client sets it to `false`.
+
+As a result, every streamed reply ends with one extra chunk before `data: [DONE]`. That chunk has an empty `choices` array and a `usage` object with the token counts for the whole request. All earlier chunks have `usage: null`. If your client reads `choices[0]` from every chunk, skip chunks with an empty `choices` array.
 
 ## Using the API
 
