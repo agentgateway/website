@@ -14,4 +14,4 @@ data: {"id":"chatcmpl-123","model":"gpt-4o-mini","choices":[],"usage":{"prompt_t
 data: [DONE]
 ```
 
-If your code reads `choices[0]` from each chunk, first check that the `choices` array is not empty.
+Reading `choices[0]` from the usage chunk fails, so check that the `choices` array is not empty before you read it.
