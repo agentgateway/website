@@ -117,6 +117,11 @@ Error responses that the agentgateway proxy generates now carry a generic messag
 - **GenAI operation name**: The `gen_ai.operation.name` attribute in access logs and traces now reflects the request type, such as `generate_content`, `embeddings`, `rerank`, `realtime`, `decisions`, or `count_tokens`. Requests on a route with the `Detect` route type record the operation that the request path implies, such as `ocr` or `image_generation`, or `unknown` for a path that agentgateway does not recognize. In 1.6, every request except Embeddings requests recorded `chat`. Update queries and dashboards that filter on `chat`. For more information, see [Operation names]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#operation-names" >}}).
 - **CSRF `Origin` checks**: For a request without a `Sec-Fetch-Site` header, the CSRF policy now rejects `Origin: null` unless `additionalOrigins` includes `null`. In 1.6, agentgateway treated `Origin: null` as a missing origin and allowed the request. The same-origin check now compares only the host and ignores the scheme, so a TLS-terminating proxy in front of agentgateway no longer causes false rejections. For more information, see [CSRF]({{< link-hextra path="/documentation/security/csrf/" >}}).
 
+<!-- Held for the 1.8 release cut, triaged as no entry. Restore or delete then:
+### Chat Completions streams always include usage {#v17-chat-completions-streams-always-include-usage}
+Chat Completions streams now include a final usage chunk before `data: [DONE]`, even if the client sets `stream_options.include_usage` to `false`. Update stream parsers that assumed streamed chunks before `[DONE]` always carry content. (ref: https://github.com/agentgateway/agentgateway/pull/4156)
+-->
+
 ## 🌟 New features {#v17-new-features}
 
 ### LLM APIs and providers {#v17-llm}
@@ -286,6 +291,11 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 
 - CEL calls such as `contains(a, b)`, `startsWith`, `endsWith`, and `matches` now read the second argument. Previously, they ignored it, so `contains(x, y)` always returned `true`.
 - A policy that targets the endpoint picker (EPP) Service of an InferencePool now attaches, so you can raise the 10-second EPP timeout. For more information, see [Raise the endpoint picker timeout]({{< link-hextra path="/documentation/llm/inference/inference-routing/#epp-timeout" >}}).
+- An {{< reuse "agw-docs/snippets/policy.md" >}} that sets retry `attempts: 0` now disables retries. Previously, an explicit `0` gave one retry. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4180 -->
+<!-- Held for the 1.8 release cut, not in the triage keep list. Restore or delete then:
+- External authorization and rate-limit trace logs no longer include response header, query-parameter, or body values that might contain credentials. (ref: https://github.com/agentgateway/agentgateway/pull/4139)
+- Substrate TLS passthrough egress that does not match an allowed destination is blocked at ClientHello instead of completing TLS and returning HTTP `403`. (ref: https://github.com/agentgateway/agentgateway/pull/4093)
+-->
 
 **LLM**
 
