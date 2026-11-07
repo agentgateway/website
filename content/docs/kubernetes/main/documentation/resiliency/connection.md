@@ -47,6 +47,8 @@ The `frontend` settings on this page tune the connections that clients open to t
    | `tcp.keepalive.retries` | Maximum number of keepalive probes to send before agentgateway drops the connection. The default is `9`. |
    | `http.requestTimeout` | Deadline for receiving a response from the backend. |
 
+   If no `backend.tcp.connectTimeout` policy applies, connection attempts use the process-wide default of 11 seconds. Policy merging replaces the more general `backend.tcp` block with the more specific one. For example, an HTTPRoute policy that sets only `backend.tcp.keepalive` does not inherit `connectTimeout` from a Service policy; the connection attempt falls back to the 11-second default.
+
 2. Port-forward the proxy admin port and verify the settings in the proxy configuration.
 
    ```sh
