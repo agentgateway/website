@@ -133,6 +133,10 @@ The following policy runs a credit card detector and OpenAI moderation, both in 
 > [!NOTE]
 > Audit mode changes only whether the gateway acts on the verdict. The guard still calls its provider, so an external guard in audit mode adds the same latency and the same provider cost as an enforcing guard.
 
+To record audit results in access logs, add the `guardrails` CEL variable to a frontend access log field. For the field shape and a Gateway-level logging policy, see [Log guardrail results]({{< link-hextra path="/documentation/security/access-logging/#guardrails" >}}).
+
+The proxy also records guardrail checks in the `agentgateway_guardrail_checks_total` Prometheus counter, with labels for the request or response phase and the action. A matching audit guard increments the audit action, while an audit guard that finds nothing records an allow action.
+
 ```yaml
 kubectl apply -f - <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
