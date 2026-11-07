@@ -162,6 +162,10 @@ Mint the incoming token, send a request through agentgateway with it, and verify
 
 The exchange presents the incoming token to the authorization server exactly as it arrived, and does not verify the signature first. Add a route-level `jwtAuthentication` policy so that an invalid or expired token is rejected at the gateway before any call to the token endpoint. The preceding steps leave it out so that the exchange is easy to follow on its own; add it before you use token exchange in production.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+The exchange also performs a local expiry check for JWT-shaped subject tokens. If the token has an expired `exp` claim, the gateway returns `401` before the gateway calls the token endpoint. The expiry check is not a trust decision, and tokens without a numeric `exp` claim are still sent to the authorization server.
+{{< /version >}}
+
 1. Create a second {{< reuse "agw-docs/snippets/policy.md" >}} that validates the incoming token against Keycloak's JWKS. This policy targets the `HTTPRoute`, not the Service, because validation belongs at the route.
 
    > [!IMPORTANT]
