@@ -73,6 +73,8 @@ Chat Completions replies follow OpenAI usage conventions, even when agentgateway
 
 When a Gemini OpenAI-compatible response reports reasoning tokens separately from `usage.completion_tokens`, the normalized output count includes visible output and reasoning tokens. The converted Messages and Responses replies use this normalized output count in `usage.output_tokens`.
 
+{{< reuse "agw-docs/snippets/chat-completions-streamed-usage.md" >}}
+
 ## Using the API
 
 Using the Chat Completions API works exactly the same as consuming OpenAI directly, with only a change to the base URL. This allows you to continue using existing code and SDKs.
