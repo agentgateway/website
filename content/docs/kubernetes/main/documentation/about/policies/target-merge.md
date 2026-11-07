@@ -20,7 +20,7 @@ The following table shows which resource types each policy section can target.
 | Policy section | Valid targets | sectionName | Notes |
 | -- | -- | -- | -- |
 | `frontend` | Gateway | Depends on the field. See [Frontend section restrictions](#frontend-restrictions) for more information. | Applies to all listeners on the targeted Gateway. A `targetRef` or `targetSelector` can also set `port` to scope the policy to a single listener port on the Gateway. |
-| `traffic` | Gateway, HTTPRoute, GRPCRoute, ListenerSet | Optional | When targeting a Gateway, the `sectionName` selects a specific listener. When targeting an HTTPRoute or GRPCRoute, the `sectionName` selects a specific route rule. |
+| `traffic` | Gateway, HTTPRoute, GRPCRoute, ListenerSet | Optional | When targeting a Gateway, the `sectionName` selects a specific listener. When targeting a ListenerSet, the `sectionName` selects a specific listener in that ListenerSet. When targeting an HTTPRoute or GRPCRoute, the `sectionName` selects a specific route rule. |
 | `backend` | Gateway, HTTPRoute, GRPCRoute, ListenerSet, Service, {{< reuse "agw-docs/snippets/backend.md" >}} | Optional | When targeting a Service, the `sectionName` selects a specific port. When targeting an {{< reuse "agw-docs/snippets/backend.md" >}}, the `sectionName` selects a specific sub-backend. |
 
 ### Frontend section restrictions {#frontend-restrictions}
@@ -77,7 +77,7 @@ Each policy section follows a different precedence order based on the specificit
 | Section | Precedence order (lowest to highest) |
 | -- | -- |
 | `frontend` | Gateway < Port < Listener |
-| `traffic` | Gateway < Listener < Route < Route rule |
+| `traffic` | Gateway < ListenerSet < ListenerSet listener < Listener < Route < Route rule |
 | `backend` | Gateway < Listener < Route (targetRef) < Route rule (targetRef) < Backend (targetRef) < Backend (inline on the backend object) < Route backend ref (inline on the route) |
 
 For a `frontend` policy, you can only apply the policy at the Listener level when the `frontend` policy field supports setting a `sectionName`. For more information about the fields that support the `sectionName` setting, see [Frontend section restrictions](#frontend-restrictions).
