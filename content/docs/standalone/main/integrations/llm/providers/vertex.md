@@ -67,6 +67,8 @@ llm:
 {{% /tab %}}
 {{< /tabs >}}
 
+{{< reuse "agw-docs/snippets/gemini-reasoning-effort.md" >}}
+
 ## Send file content by URI {#send-file-content-by-uri}
 
 In an OpenAI-compatible Chat Completions request, you can put a `gs://`, `http://`, or `https://` URI in a `file` content part's `file_data` or `file_id`. The request to Vertex AI uses `fileData`.
