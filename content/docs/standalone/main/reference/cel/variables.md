@@ -95,7 +95,7 @@ The `raw()` view always returns a list, even if the header is sent once, so `[0]
 
 ## Variables by policy type
 
-Depending on the policy, different top-level variables are bound when CEL runs. A variable is only non-null when it is populated for the current request (for example, `has(jwt.sub)` or `has(apiKey.key)`). The same name can refer to different snapshots depending on pipeline stage: early policies evaluate against the live HTTP request, while logging, tracing, and metrics run after the exchange and can include `response`, `mcp`, and full telemetry fields. Note that when using streaming responses, the evaluation of response body attributes or LLM response information can be inconsistent.
+Depending on the policy, different top-level variables are bound when CEL runs. A variable is only non-null when it is populated for the current request (for example, `has(jwt.sub)` or `has(apiKey.key)`). The same name can refer to different snapshots depending on pipeline stage. Early policies evaluate against the live HTTP request. Logging, tracing, and metrics run after the exchange and can include `response`, `mcp`, and full telemetry fields. On streamed LLM responses, response transformations can read request-side LLM fields such as `llm.provider`, `llm.requestModel`, and `llm.streaming`. Response body attributes and response-derived LLM fields can be unavailable until the stream is parsed.
 
 | Policy | Available top-level variables |
 |--------|------------------------------|
