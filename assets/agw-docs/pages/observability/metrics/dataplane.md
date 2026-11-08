@@ -100,7 +100,19 @@ These metrics track communication with the agentgateway control plane over XDS. 
 
 | Metric | Type | Unit | Description |
 | --- | --- | --- | --- |
-| `agentgateway_mcp_requests_total` | Counter | — | Total number of MCP requests. |
+| `agentgateway_mcp_requests_total` | Counter | — | Total number of MCP requests.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} The `outcome` label records how each request ended.{{< /version >}} |
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+
+The `outcome` label of the `agentgateway_mcp_requests_total` metric has one of the following values. Agentgateway checks the conditions in order and uses the first value that matches. For example, a response with a 5xx HTTP status that also carries a JSON-RPC error is counted as `gateway_error`, not `protocol_error`.
+
+1. `gateway_error`: Agentgateway returned an error for the request, or the response has a 4xx or 5xx HTTP status.
+2. `protocol_error`: The response is a JSON-RPC error.
+3. `tool_error`: The request is a `tools/call` request, and the tool result sets `isError: true`.
+4. `success`: The request is a `tools/call` request with a tool result that does not set `isError: true`, or the request uses any other method and the response has a 2xx HTTP status.
+5. `unknown`: The request does not match any of the previous conditions. For example, a `tools/call` request that has no tool result is counted as `unknown`, even if the response has a 2xx HTTP status.
+
+{{< /version >}}
 
 ### LLM
 
@@ -202,5 +214,6 @@ Use these queries in Prometheus or as the basis for Grafana panels and alerts. T
 | LLM token usage (input) | `sum by (gen_ai_system, gen_ai_request_model) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[5m]))` |
 | Time to first token (p95) | `histogram_quantile(0.95, rate(agentgateway_gen_ai_server_time_to_first_token_bucket[5m]))` |
 | MCP tool call rate by tool | `sum by (server, resource) (rate(agentgateway_mcp_requests_total{method="tools/call"}[5m]))` |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+| MCP tool call outcomes by tool | `sum by (server, resource, outcome) (rate(agentgateway_mcp_requests_total{method="tools/call"}[5m]))` |
 | Active HTTP requests by backend | `sum by (backend) (agentgateway_requests_active)` |
 | Open upstream connections by backend | `sum by (backend) (agentgateway_upstream_connections_active)` |{{< /version >}}
