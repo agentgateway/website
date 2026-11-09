@@ -52,6 +52,8 @@ For requests with a body, `FailOpen` applies only while no request body bytes ha
 
 A clean close from the ExtProc server is different from a failure. If the server finishes request processing and closes its gRPC stream, the gateway skips later ExtProc phases for that exchange. The request continues to the upstream application, and the upstream response is returned to the client even when `traffic.extProc.failureMode` is `FailClosed`.
 
+If the downstream client disconnects while the gateway waits for an ExtProc response, the gateway resets the gRPC stream to the ExtProc server. This behavior applies during a request or response phase. The reset lets the server release queued work for that exchange without waiting for the normal response path.
+
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up an ExtProc server

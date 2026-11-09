@@ -51,6 +51,8 @@ For requests with a body, `failOpen` applies only while no request body bytes ha
 
 A clean close from the external processing server is different from a failure. If the server finishes request processing and closes its gRPC stream, the gateway skips any later external processing phases for that exchange. The request continues to the backend, and the upstream response is returned to the client even when `extProc.failureMode` is `failClosed`.
 
+If the downstream client disconnects while the gateway waits for an external processing response, the gateway resets the gRPC stream to the external processing server. This behavior applies during a request or response phase. The reset lets the server release queued work for that exchange without waiting for the normal response path.
+
 ## Compatibility
 
 The [External Processing gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/ext_proc/v3/external_processor.proto) was designed for Envoy,
