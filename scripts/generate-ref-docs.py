@@ -384,10 +384,13 @@ def _freeze_dir(assets_path: str, link_version: str, doc_version: str, website_d
 # TODO: delete this post-process once findmetrics builds its constants map per package
 # instead of per file (parseFile() in controller/pkg/metrics/cmd/findmetrics/main.go).
 # Until then it re-resolves those identifiers across the package and renames the rows.
+# Label identifiers have the same problem: findmetrics prints the Go identifier
+# (gatewayLabel) instead of its value (gateway), so those are resolved too.
 # It reads Go with regexes, so every case it cannot resolve prints a warning instead of
 # passing silently.
 _METRIC_CALL_RE = re.compile(r"\bmetrics\.New(?:Counter|Gauge|Histogram)\(\s*metrics\.\w+Opts\{")
 _OPT_RE = re.compile(r'\b(Namespace|Subsystem|Name|Help)\s*:\s*("(?:[^"\\]|\\.)*"|\w+(?:\.\w+)?)')
+_LABELS_RE = re.compile(r"\s*,\s*\[\]string\{([^}]*)\}")
 # Package-level string constants only: a `const`/`var` line at the start of a line, or a
 # line inside a top-level `const (...)`/`var (...)` block. findmetrics also reads constants
 # declared inside functions, but no metric option uses one today.
@@ -422,7 +425,7 @@ def _opts_body(src: str, start: int) -> str:
 
 
 def fix_cross_file_metric_prefixes(md_content: str, controller_dir: str) -> str:
-    """Rename metrics whose Namespace or Subsystem constant lives in another file of the package."""
+    """Fix metrics whose Namespace, Subsystem, or label constants live in another file of the package."""
     package_consts: dict[str, dict[str, str]] = {}
     file_consts: dict[str, dict[str, str]] = {}
     sources: dict[str, str] = {}
@@ -438,10 +441,11 @@ def fix_cross_file_metric_prefixes(md_content: str, controller_dir: str) -> str:
             file_consts[path] = consts
             package_consts.setdefault(os.path.dirname(path), {}).update(consts)
 
-    renames: dict[tuple[str, str], str] = {}
+    renames: dict[tuple[str, str], tuple[str, dict[str, str]]] = {}
     for path, src in sources.items():
         for call in _METRIC_CALL_RE.finditer(src):
-            opts = dict(_OPT_RE.findall(_opts_body(src, call.end())))
+            body = _opts_body(src, call.end())
+            opts = dict(_OPT_RE.findall(body))
             if not opts.get("Name", "").startswith('"'):
                 continue
             name = opts["Name"].strip('"')
@@ -463,9 +467,21 @@ def fix_cross_file_metric_prefixes(md_content: str, controller_dir: str) -> str:
             fixed["Namespace"] = fixed["Namespace"] or _DEFAULT_METRIC_NAMESPACE
             wrong = _metric_full_name(found["Namespace"], found["Subsystem"], name)
             right = _metric_full_name(fixed["Namespace"], fixed["Subsystem"], name)
-            if wrong != right:
+            labels: dict[str, str] = {}
+            labels_match = _LABELS_RE.match(src, call.end() + len(body) + 1)
+            if labels_match:
+                for item in (i.strip() for i in labels_match.group(1).split(",")):
+                    if re.fullmatch(r"\w+", item) and item not in file_consts[path]:
+                        if item in package_consts[os.path.dirname(path)]:
+                            labels[item] = package_consts[os.path.dirname(path)][item]
+                        else:
+                            print(
+                                f"    Warning: cannot resolve label {item} for metric {name} "
+                                f"in {os.path.relpath(path, controller_dir)}"
+                            )
+            if wrong != right or labels:
                 # findmetrics trims only the quotes, so a Help with escapes still matches its cell.
-                renames[(wrong, opts.get("Help", "").strip('"'))] = right
+                renames[(wrong, opts.get("Help", "").strip('"'))] = (right, labels)
 
     if not renames:
         return md_content
@@ -476,13 +492,18 @@ def fix_cross_file_metric_prefixes(md_content: str, controller_dir: str) -> str:
     for row in rows:
         cells = row.split("|")
         key = (cells[0], "|".join(cells[3:])) if len(cells) >= 4 else None
-        new_name = renames.pop(key, None) if key else None
-        if new_name:
-            print(f"    ✓ Renamed metric {cells[0]} -> {new_name}")
-            cells[0] = new_name
+        fix = renames.pop(key, None) if key else None
+        if fix:
+            new_name, labels = fix
+            if new_name != cells[0]:
+                print(f"    ✓ Renamed metric {cells[0]} -> {new_name}")
+                cells[0] = new_name
+            if labels:
+                cells[2] = ", ".join(labels.get(label, label) for label in cells[2].split(", "))
+                print(f"    ✓ Resolved labels of {cells[0]}: {cells[2]}")
         fixed_rows.append("|".join(cells))
-    for wrong, right in renames.items():
-        print(f"    Warning: no row for {wrong[0]} in the findmetrics output; expected to rename it to {right}")
+    for wrong, (right, _) in renames.items():
+        print(f"    Warning: no row for {wrong[0]} in the findmetrics output; expected to fix it as {right}")
     # findmetrics sorts by full name, so restore that order after renaming.
     fixed_rows.sort(key=lambda r: r.split("|", 1)[0])
     return "\n".join(header + fixed_rows) + "\n"

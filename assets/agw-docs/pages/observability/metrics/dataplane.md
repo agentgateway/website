@@ -1,6 +1,10 @@
 
 The agentgateway proxy exposes a Prometheus-compatible metrics endpoint on port `15020`. Metrics are collected automatically for every request that passes through the gateway and follow the [OpenMetrics](https://openmetrics.io/) format. All agentgateway metrics use the `agentgateway_` prefix.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+When a gateway joins an Istio ambient mesh through the `spec.istio` section of its `AgentgatewayParameters` resource, a Prometheus instance in the mesh can scrape this endpoint over HBONE with no extra setup. Routes and policies do not apply to the metrics request.
+{{< /version >}}
+
 To set up automatic scraping of these metrics with Prometheus, see [Enable metrics scraping]({{< link path="/documentation/observability/metrics/overview/" >}}).
 
 ## View data plane metrics
@@ -76,7 +80,8 @@ These metrics track communication with the agentgateway control plane over XDS. 
 | Metric | Type | Unit | Description |
 | --- | --- | --- | --- |
 | `agentgateway_request_duration_seconds` | Histogram | seconds | Duration of HTTP requests. |
-| `agentgateway_request_processing_seconds` | Histogram | seconds | Duration from receiving an HTTP request to sending the primary outbound call. |
+| `agentgateway_request_processing_seconds` | Histogram | seconds | Duration from receiving an HTTP request to sending the primary outbound call. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+| `agentgateway_requests_active` | Gauge | — | HTTP requests waiting for a complete backend response. |{{< /version >}}
 | `agentgateway_requests_shed_total` | Counter | — | Total downstream requests rejected by the in-flight request limit. |
 | `agentgateway_requests_total` | Counter | — | The total number of HTTP requests sent. |
 | `agentgateway_response_bytes_total` | Counter | bytes | Total HTTP response bytes received. |
@@ -92,13 +97,26 @@ These metrics track communication with the agentgateway control plane over XDS. 
 | `agentgateway_downstream_received_bytes_total` | Counter | bytes | Total TCP bytes received per connection labels. |
 | `agentgateway_downstream_sent_bytes_total` | Counter | bytes | Total TCP bytes transmitted per connection labels. |
 | `agentgateway_tls_handshake_duration_seconds` | Histogram | seconds | Duration to complete inbound TLS/HTTPS handshake. |
-| `agentgateway_upstream_connect_duration_seconds` | Histogram | seconds | Duration to establish upstream connection. |
+| `agentgateway_upstream_connect_duration_seconds` | Histogram | seconds | Duration to establish upstream connection. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+| `agentgateway_upstream_connections_active` | Gauge | — | Open upstream connections by backend. |{{< /version >}}
 
 ### MCP
 
 | Metric | Type | Unit | Description |
 | --- | --- | --- | --- |
-| `agentgateway_mcp_requests_total` | Counter | — | Total number of MCP requests. |
+| `agentgateway_mcp_requests_total` | Counter | — | Total number of MCP requests.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} The `outcome` label records how each request ended.{{< /version >}} |
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+
+The `outcome` label of the `agentgateway_mcp_requests_total` metric has one of the following values. Agentgateway checks the conditions in order and uses the first value that matches. For example, a response with a 5xx HTTP status that also carries a JSON-RPC error is counted as `gateway_error`, not `protocol_error`.
+
+1. `gateway_error`: Agentgateway returned an error for the request, or the response has a 4xx or 5xx HTTP status.
+2. `protocol_error`: The response is a JSON-RPC error.
+3. `tool_error`: The request is a `tools/call` request, and the tool result sets `isError: true`.
+4. `success`: The request is a `tools/call` request with a tool result that does not set `isError: true`, or the request uses any other method and the response has a 2xx HTTP status.
+5. `unknown`: The request does not match any of the previous conditions. For example, a `tools/call` request that has no tool result is counted as `unknown`, even if the response has a 2xx HTTP status.
+
+{{< /version >}}
 
 ### LLM
 
@@ -199,4 +217,7 @@ Use these queries in Prometheus or as the basis for Grafana panels and alerts. T
 | Error rate | `rate(agentgateway_requests_total{status=~"5.."}[5m]) / rate(agentgateway_requests_total[5m])` |
 | LLM token usage (input) | `sum by (gen_ai_system, gen_ai_request_model) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[5m]))` |
 | Time to first token (p95) | `histogram_quantile(0.95, rate(agentgateway_gen_ai_server_time_to_first_token_bucket[5m]))` |
-| MCP tool call rate by tool | `sum by (server, resource) (rate(agentgateway_mcp_requests_total{method="tools/call"}[5m]))` |
+| MCP tool call rate by tool | `sum by (server, resource) (rate(agentgateway_mcp_requests_total{method="tools/call"}[5m]))` |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+| MCP tool call outcomes by tool | `sum by (server, resource, outcome) (rate(agentgateway_mcp_requests_total{method="tools/call"}[5m]))` |
+| Active HTTP requests by backend | `sum by (backend) (agentgateway_requests_active)` |
+| Open upstream connections by backend | `sum by (backend) (agentgateway_upstream_connections_active)` |{{< /version >}}

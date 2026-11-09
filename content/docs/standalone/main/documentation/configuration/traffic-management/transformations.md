@@ -151,6 +151,8 @@ routes:
 {{% /tab %}}
 {{< /tabs >}}
 
+For streamed LLM responses, response transformations can read request-side LLM fields such as `llm.provider`, `llm.requestModel`, and `llm.streaming`. Response-derived fields such as `llm.responseModel` are unavailable until the stream is parsed.
+
 #### Listener-level header transformation
 
 Transform headers before route selection by attaching the policy at the listener level:
