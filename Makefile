@@ -126,8 +126,8 @@ check-node-deps:
 PREVIEW ?= $(if $(CF_PAGES),$(filter-out main,$(CF_PAGES_BRANCH)))
 
 # pr-tracker-* branches come in batches and fill the Cloudflare build queue, so
-# their previews build only the version trees the branch changed, without the
-# search index. Try it locally with PREVIEW=1 CF_PAGES_BRANCH=pr-tracker-x.
+# their previews build only the version trees the branch changed (plus the first
+# listed version when it also changes shared files), without the search index. Try it locally with PREVIEW=1 CF_PAGES_BRANCH=pr-tracker-x.
 PR_TRACKER_PREVIEW ?= $(if $(PREVIEW),$(filter pr-tracker-%,$(CF_PAGES_BRANCH)))
 
 .PHONY: build

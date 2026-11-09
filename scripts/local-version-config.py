@@ -28,8 +28,13 @@ build. If git cannot work out what changed, everything builds.
 --only-changed narrows a --preview-base build further, for the many short-lived
 pr-tracker branches: of the listed trees, only the ones the branch changed
 build (standalone/main, for example, without kubernetes/main or latest). If the
-branch changed only shared files, the first listed version builds. Changing an
-unlisted tree still builds everything.
+branch also changed shared files, the first listed version builds in every
+section as well, because shared files feed all of them. Changing an unlisted
+tree still builds everything.
+
+Skipping a tree skips its content files only. The section content adapters
+(content/docs/<section>/_content.gotmpl) still generate their reference pages
+under it.
 
 If PyYAML is missing, the overlay is written empty and everything builds.
 """
@@ -86,6 +91,32 @@ def changed_files(base: str) -> list[str] | None:
     except (subprocess.CalledProcessError, FileNotFoundError) as err:
         print(f"Could not diff against {base} ({err}); building every version.")
         return None
+
+
+def tree_of(path: str) -> str | None:
+    """The "section/version" tree a repo path is inside, or None if it's shared."""
+    parts = path.split("/")
+    if len(parts) > 4 and parts[:2] == ["content", "docs"] and VERSION_DIR.match(parts[3]):
+        return f"{parts[2]}/{parts[3]}"
+    return None
+
+
+def only_changed_trees(files: list[str], built: list[str], entries: list[dict]) -> set[str]:
+    """The trees an --only-changed build keeps, out of `built`.
+
+    Every tree the branch changed directly, plus, if it also changed a shared
+    file (assets/, layouts/, a content adapter, hugo.yaml), the first listed
+    version in every section. Shared files feed every version, so a branch that
+    edits standalone/main and a Kubernetes snippet still renders kubernetes/main.
+    An empty diff also builds the first listed version, so there is something to
+    look at.
+    """
+    trees = {tree_of(f) for f in files}
+    keep = {t for t in built if t in trees}
+    if (None in trees or not keep) and entries:
+        first = str(entries[0].get("linkVersion") or entries[0].get("version"))
+        keep |= {t for t in built if t.split("/")[1] == first}
+    return keep
 
 
 def main() -> int:
@@ -170,14 +201,8 @@ def main() -> int:
             return 0
 
     if args.only_changed and files is not None:
-        changed = {s for s in built for f in files if f.startswith(f"content/docs/{s}/")}
-        if changed:
-            patterns, skipped, built = plan(lambda section, name: f"{section}/{name}" in changed)
-        elif entries:
-            # Only shared files changed (assets/, layouts/, snippets). Build the
-            # first listed version so there is still something to look at.
-            first = str(entries[0].get("linkVersion") or entries[0].get("version"))
-            patterns, skipped, built = plan(lambda section, name: name == first)
+        changed = only_changed_trees(files, built, entries)
+        patterns, skipped, built = plan(lambda section, name: f"{section}/{name}" in changed)
         keep = keep or ", ".join(built)
 
     body = "".join(f"  - '{p}'\n" for p in patterns)
@@ -189,10 +214,14 @@ def main() -> int:
     OUT.write_text(text, encoding="utf-8")
 
     if keep:
-        print(f"Building version {keep} only; skipping {', '.join(skipped) or 'nothing'}.")
+        print(
+            f"Building version {keep} only; skipping the content files of "
+            f"{', '.join(skipped) or 'nothing'} (generated reference pages still build)."
+        )
     elif skipped:
         print(
-            f"Skipping versions not in hugo.yaml: {', '.join(skipped)}. "
+            f"Skipping the content files of versions not in hugo.yaml: {', '.join(skipped)}. "
+            "Generated reference pages still build. "
             "Run with FULL=1 to build them."
         )
     return 0
