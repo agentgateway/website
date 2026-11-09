@@ -62,7 +62,7 @@ Agentgateway encrypts session IDs with an AES-256-GCM key, which is 32 random by
 If agentgateway has nowhere to save a generated key, it leaves session IDs unencrypted and logs a warning at startup. This happens in the following cases.
 
 * You use `readOnly` storage mode.
-* Agentgateway cannot write to the configuration file, such as a read-only Docker mount or the ConfigMap of a [Helm installation]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
+* Agentgateway cannot write to the configuration file, such as a read-only Docker mount or the ConfigMap of a [Helm installation]({{% upstream %}}{{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}{{% /upstream %}}{{% downstream %}}{{< link-hextra path="/documentation/setup/install/helm/" >}}{{% /downstream %}}).
 * You pass the configuration inline with `--config`.
 
 An unencrypted session ID is only base64-encoded, so a client can read the target names and upstream session IDs in it.
