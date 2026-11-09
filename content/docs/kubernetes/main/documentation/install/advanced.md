@@ -187,7 +187,7 @@ The controller image has no shell, so you cannot run commands in the controller 
    agentgateway-86bd4c7557-8nctr   2/2     Running   0          39s
    ```
 
-5. Run a command in the sidecar. For example, list the ports that the controller listens on. The output shows that the [controller admin server]({{< link-hextra path="/documentation/operations/debug/#control-plane" >}}) on port `9095` accepts connections only from inside the pod.
+5. Run a command in the sidecar. For example, list the ports that the controller listens on. The output shows that the [controller admin server]({{% upstream %}}{{< link-hextra path="/documentation/operations/debug/#control-plane" >}}{{% /upstream %}}{{% downstream %}}{{< link-hextra path="/documentation/operations/debug/" >}}{{% /downstream %}}) on port `9095` accepts connections only from inside the pod.
 
    ```sh
    kubectl exec -n {{< reuse "agw-docs/snippets/namespace.md" >}} deploy/{{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -c debug-shell -- netstat -tln
