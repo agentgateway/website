@@ -65,6 +65,39 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   }'
 ```
 
+To evaluate classification questions with `microsoft-decision-1`, send a [Decisions API]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}) request to `/v1/decisions` or a native SystemOne request to `/v1/systemone`. Agentgateway converts `/v1/decisions` requests and responses to and from Copilot's `/v1/systemone` endpoint, and forwards `/v1/systemone` requests unchanged.
+
+```bash
+curl -X POST http://localhost:4000/v1/decisions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "microsoft-decision-1",
+    "input": "I was charged twice for my subscription.",
+    "questions": [
+      {
+        "name": "billing",
+        "type": "predicate",
+        "instructions": "Is this a billing issue?"
+      }
+    ]
+  }'
+```
+
+```bash
+curl -X POST http://localhost:4000/v1/systemone \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "microsoft-decision-1",
+    "state": "I was charged twice for my subscription.",
+    "questions": {
+      "billing": {
+        "type": "noul",
+        "instructions": "Is this a billing issue?"
+      }
+    }
+  }'
+```
+
 ## Request formats
 
 Copilot models do not all accept the same API format. Agentgateway chooses the formats that it sends to Copilot from the model name, and it converts the client request when the client calls a different format.
@@ -75,11 +108,12 @@ Copilot models do not all accept the same API format. Agentgateway chooses the f
 | `gpt-3*`, `gpt-4*`, `gemini-*` | Chat Completions. |
 | `gpt-5.4`, `gpt-5-mini` | Chat Completions and Responses. |
 | Other `gpt-*`, `grok-*`, `mai-*` | Responses. |
+| `microsoft-decision-*` | SystemOne, which is sent to `/v1/systemone`. |
 | Any other name | Chat Completions. |
 
 Tags in the model catalog take precedence over these built-in rules.
 
-For example, a Responses request to `gpt-4.1` is converted to Chat Completions, and a Messages request to a `claude-*` model passes through. A Chat Completions request to a model that accepts only Responses, such as `gpt-5`, fails.
+For example, a Responses request to `gpt-4.1` is converted to Chat Completions, a Decisions request to `microsoft-decision-1` is converted to SystemOne, and a Messages request to a `claude-*` model passes through. A Chat Completions request to a model that accepts only Responses, such as `gpt-5`, or to `microsoft-decision-1`, fails.
 
 ## Troubleshoot
 
