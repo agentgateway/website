@@ -221,6 +221,35 @@ For what you can do from here, see [Launch the UI]({{< link-hextra path="/docume
 
 To save the configuration changes that you make in the UI, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}). In the Helm chart's default read-only storage mode, the UI shows the running configuration, but a save fails because the chart mounts the configuration file read-only.
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+## Serve behind a stripped path prefix {#path-prefix}
+
+If a reverse proxy or cloud load balancer serves the UI under a path prefix and removes that prefix before forwarding, set `ui.basePath` to the public prefix. The gateway listener still receives and serves `/ui` and `/api`. The browser receives the `ui.basePath` value in links, bundled assets, API calls, and login redirects.
+
+For example, if users open `https://agentgateway.example.com/team/agentgateway/ui/` and the proxy forwards the request to the UI gateway as `/ui/`, set `ui.basePath` to `/team/agentgateway`.
+
+```yaml
+ui:
+  basePath: /team/agentgateway
+  gateways: [ui-gateway]
+```
+
+The value must start with `/`. The value must not be `/` or end with `/`. Use only letters, digits, `/`, `-`, `.`, `_`, `~`, and percent-encoded characters.
+
+If you protect the UI with OIDC, use the same prefix in the public redirect URI. The OIDC callback matches after the proxy strips the prefix.
+
+```yaml
+ui:
+  basePath: /team/agentgateway
+  gateways: [ui-gateway]
+  policies:
+    oidc:
+      redirectURI: https://agentgateway.example.com/team/agentgateway/oauth/callback
+```
+
+After the proxy is in place, open the public UI URL. Deep links, page reloads, assets, API calls, and the OIDC login flow must stay under the public prefix.
+{{% /version %}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
