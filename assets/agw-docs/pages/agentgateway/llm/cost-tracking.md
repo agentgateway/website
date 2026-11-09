@@ -79,7 +79,7 @@ Check your LLM provider's pricing page for current rates. Most providers charge 
 
 - [OpenAI pricing](https://openai.com/api/pricing/)
 - [Anthropic pricing](https://claude.com/pricing)
-- [Google AI pricing](https://ai.google.dev/gemini-api/docs/pricing)
+- [Google AI pricing](https://aistudio.google.com/docs/pricing)
 - [AWS Bedrock pricing](https://aws.amazon.com/bedrock/pricing/)
 - [Azure OpenAI pricing](https://azure.microsoft.com/en-us/pricing/details/azure-openai/)
 

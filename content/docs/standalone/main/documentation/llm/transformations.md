@@ -10,7 +10,7 @@ Use the following table to choose the field for what you want to change.
 
 | What you want to change | Setting to use | Guide |
 | -- | -- | -- |
-| Fields in the LLM request body, by the names that the client sent | `transformation` | [Configure LLM request transformations](#configure-llm-request-transformations) |
+| Fields that the client sent in the LLM request body, or the model segment in a provider URL path | `transformation` | [Configure LLM request transformations](#configure-llm-request-transformations) |
 | Fields in the LLM request body, by the names that the provider receives after agentgateway converts the request | `finalTransformation` | [Transform requests after provider conversion](#transform-requests-after-provider-conversion) |
 | A header to a fixed value | `requestHeaders`, which needs no CEL | [Example: Set the Anthropic workspace header]({{< link-hextra path="/integrations/llm/providers/anthropic/#use-claude-platform-on-aws" >}}) |
 | A header to a value that is computed from the incoming request | `requestTransformation` | [Modify the HTTP request to the provider](#llm-request-transformation) |
@@ -77,7 +77,7 @@ To learn more about CEL, see the following resources:
 
       | Setting | Description |
       | -- | -- |
-      | `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use the `llmRequest` variable to access the original LLM request body. |
+      | `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set, and each value is a CEL expression evaluated against the original request. Use the `llmRequest` variable to access the original LLM request body. For URL-path model requests, such as Bedrock, Vertex, and Gemini requests, a transformation that changes `model` rewrites the path instead of adding a `model` field to the request body. |
 
       > [!NOTE]
       > Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.
@@ -158,7 +158,7 @@ EOF
 
 | Setting | Description |
 | -- | -- |
-| `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use `request.headers` to access incoming HTTP headers and `llmRequest` to access the original LLM request body. |
+| `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set, and each value is a CEL expression evaluated against the original request. Use `request.headers` to access incoming HTTP headers and `llmRequest` to access the original LLM request body. For URL-path model requests, a transformation that changes `model` rewrites the path. |
 
 If agentgateway is still running from the previous section, it reloads `config.yaml` automatically when you save the file. Otherwise, start agentgateway.
 

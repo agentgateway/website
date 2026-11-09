@@ -65,6 +65,9 @@ metadata:
   name: my-backend
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
+  static:
+    host: my-backend.example.com
+    port: 80
   policies:
     sessionAffinity:
       source: request.headers["x-session-id"]

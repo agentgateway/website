@@ -95,7 +95,7 @@ The `raw()` view always returns a list, even if the header is sent once, so `[0]
 
 ## Variables by policy type
 
-Depending on the policy, different top-level variables are bound when CEL runs. A variable is only non-null when it is populated for the current request (for example, `has(jwt.sub)` or `has(apiKey.key)`). The same name can refer to different snapshots depending on pipeline stage: early policies evaluate against the live HTTP request, while logging, tracing, and metrics run after the exchange and can include `response`, `mcp`, and full telemetry fields. Note that when using streaming responses, the evaluation of response body attributes or LLM response information can be inconsistent.
+Depending on the policy, different top-level variables are bound when CEL runs. A variable is only non-null when it is populated for the current request (for example, `has(jwt.sub)` or `has(apiKey.key)`). The same name can refer to different snapshots depending on pipeline stage. Early policies evaluate against the live HTTP request. Logging, tracing, and metrics run after the exchange and can include `response`, `mcp`, and full telemetry fields. On streamed LLM responses, response transformations can read request-side LLM fields such as `llm.provider`, `llm.requestModel`, and `llm.streaming`. Response body attributes and response-derived LLM fields can be unavailable until the stream is parsed.
 
 | Policy | Available top-level variables |
 |--------|------------------------------|
@@ -113,9 +113,9 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 | External processing (ExtProc) | Request-phase rules: same as Transformation (request). Response-phase rules: same as Transformation (response). |
 | LLM policy | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `llmRequest`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — `llmRequest` is the raw JSON body during LLM request handling (not `mcp`). [^5] |
 | Virtual model callout | Same as LLM policy. `transformation` and `cache.ttl` can also read `callout`, the callout response, with `callout.headers` and the decoded JSON `callout.body`. |
-| Logging | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` [^6] |
-| Tracing | Same as Logging. |
-| Metrics | Same as Logging. |
+| Logging | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
+| Tracing | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
+| Metrics | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
 
 [^1]: Request-time transformation evaluation binds `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, and `metadata` when earlier filters have populated them. For AI requests, `llm.requestModel` is available before provider overrides. `llmRequest` is available for the parsed JSON body. `mcp` is populated only for MCP JSON-RPC requests to an MCP backend.
 
@@ -131,7 +131,7 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 
 [^7]: A key that reads a variable that is not bound where its rule runs cannot be evaluated, so the request counts against the rule's shared bucket instead. For more information, see [Per-key limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/#per-key" >}}).
 
-[^8]: For LLM requests, `llm.requestModel` holds the model requested by the client. `llmRequest` holds the parsed JSON request body. A `requests` rule keyed by `llm.requestModel` counts requests separately for each model.
+[^8]: For LLM requests, `llm.requestModel` holds the model in the current request. `llm.originalModel` holds the model that the client sent before model rewrites. `llmRequest` holds the parsed JSON request body. A `requests` rule keyed by `llm.requestModel` counts requests separately for each model.
 
     Policies in the gateway phase run before LLM parsing and cannot read these fields. When `llm` listens on its own `port`, this includes `llm.policies.authorization`, `llm.policies.apiKey`, and `llm.policies.jwtAuth`.
 

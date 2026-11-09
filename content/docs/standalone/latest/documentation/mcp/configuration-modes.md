@@ -67,6 +67,8 @@ When you omit the `gateways` field, the `mcp` section attaches to the gateway na
 
 You can use both modes in the same file, but one mode is usually enough.
 
+Target names must be unique in any MCP target list. If two entries in the same target list use the same `name`, configuration validation fails with `duplicate mcp target name "<name>"`. This check applies to the top-level `mcp.targets` list, to each `backends[].mcp.targets` list, and to each `routes[].backends[].mcp.targets` list.
+
 ## One endpoint or separate paths {#topology}
 
 Independently of the configuration mode, you choose how many endpoints your clients connect to. What determines this is how you group targets into backends, not which section you write them in.
