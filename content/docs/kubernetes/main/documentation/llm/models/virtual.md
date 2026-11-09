@@ -8,7 +8,7 @@ Publish one client-facing model name and route requests across several models.
 
 ## About
 
-A virtual model is an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that sets `spec.virtualModel` instead of `spec.provider`. A virtual model has no provider of its own. Instead, it selects a concrete `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` at request time.
+A virtual model is an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that sets `spec.virtualModel` instead of `spec.provider`. A virtual model has no provider of its own. Instead, it selects another model at request time.
 
 Virtual models let you change which model serves a request without asking clients to change the model name they send. Use them to split traffic during a migration, fail over when a provider degrades, or pick a model based on request context. You can also delegate model selection to an HTTP service.
 
@@ -25,7 +25,9 @@ After a virtual model selects a target, the gateway rewrites the request so that
 
 To see which target served a request, check the access log or the trace span. The `agw.ai.original_model` attribute records the virtual model name that the client sent, and `gen_ai.request.model` records the model that the selected target sends to the provider. For more information, see [Generative AI attributes]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#generative-ai-attributes-llm" >}}).
 
-Targets are usually `Internal` models, so clients cannot request them directly and they stay out of `/v1/models`. For more on visibility, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
+Targets are usually `Internal` concrete models. Clients cannot request them directly, and they stay out of `/v1/models`. Weighted, conditional, and callout routing can select another virtual model before the request reaches a concrete model. Failover targets must be concrete models. For more on visibility, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
+
+Model discovery derives virtual model metadata from the available target metadata. Weighted, conditional, and failover virtual models combine metadata from their target sets. Failover reads targets in priority order. Because callout routing selects targets per request, `/v1/models` cannot derive target metadata for callout virtual models.
 
 {{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
 
@@ -156,7 +158,8 @@ Use `virtualModel.weighted` to distribute requests across targets by relative we
 
    | Field | Value | Description |
    |-------|-------|-------------|
-   | `targets[].modelRef.name` | `internal-fast` | An `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` in the same namespace. Cross-namespace references are not supported. |
+   | `targets[].modelRef.name` | `internal-fast` | A model in the same namespace. Cross-namespace references are not supported. |
+   | `targets[].modelRef.group` and `targets[].modelRef.kind` | Not set | Optional. Omit both fields to select a model of this virtual model's kind. Set both fields together to target another model kind. |
    | `targets[].weight` | `80` | Relative weight, not a percentage. Weights are normalized across targets. Defaults to `1`. |
 
    > [!NOTE]
@@ -327,6 +330,7 @@ Failover depends on eviction. A virtual model with more than one priority group 
    | Field | Value | Description |
    |-------|-------|-------------|
    | `targets[].modelRef.name` | `primary-down` | A concrete model in the same namespace. Failover targets cannot point to another virtual model. |
+   | `targets[].modelRef.group` and `targets[].modelRef.kind` | Not set | Optional. Omit both fields to select a model of this virtual model's kind. For an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`, failover targets must be `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources. |
    | `targets[].priority` | `0` | Lower values are preferred. Give several targets the same priority to load balance across them within a group. |
 
 3. Send three requests in a row.
@@ -407,7 +411,7 @@ For your own in-cluster routing service, set `backendRef` instead of `url`. A `u
    |-------|-------|-------------|
    | `url` | The httpbun `/mix` endpoint | The URL of the routing service, including the path. An `https` URL turns on TLS. In this guide, the URL encodes the response that httpbun returns: status `200`, an `application/json` `content-type` header, and the base64-encoded body `{"model":"internal-premium","reasoning_effort":"medium"}`. Set exactly one of `url` or `backendRef`. |
    | `body` | `{"messages": llmRequest.messages}` | A CEL expression that builds the callout request body. `llmRequest` is the client's JSON request body. A string or bytes value is sent as is, and any other value is sent as JSON. If you omit `body`, the routing service receives the original request body. |
-   | `transformation.model` | `callout.body.model` | Required. A CEL expression that returns the target model name as a string. `callout.body` is the decoded JSON response body and `callout.headers` holds the response headers. The routing service must return the model name that the target matches. That name is the target's `match.model` value or the target's resource name when `match.model` is not set. In this guide, the names are `internal-fast` and `internal-premium`. The target must be attached to the same parent as the virtual model. For a Bedrock, Vertex AI, or Gemini request that carries the model in the URL path, this expression rewrites the path. |
+   | `transformation.model` | `callout.body.model` | Required. A CEL expression that returns the target model name as a string. `callout.body` is the decoded JSON response body and `callout.headers` holds the response headers. The routing service must return the model name that the target matches. That name is the target's `match.model` value or the target's resource name when `match.model` is not set. In this guide, the names are `internal-fast` and `internal-premium`. The target can be a concrete or virtual model. The target must be attached to the same parent as the callout virtual model. For a Bedrock, Vertex AI, or Gemini request that carries the model in the URL path, this expression rewrites the path. |
    | `transformation.reasoning_effort` | `callout.body.reasoning_effort` | Optional. Each key other than `model` sets that field in the request body and overrides the client's value. If the expression fails, such as when the response does not contain the field, the field is removed from the request. These keys apply only to requests that carry the model in a JSON body. |
    | `fallback.modelRef.name` | `internal-fast` | Optional. A model in the same namespace that serves the request when the callout fails. A callout fails when the service cannot be reached or does not respond within 10 seconds, when the response is not `2xx` or not JSON, when the `model` expression fails, or when the selected model does not exist. The fallback model gets the request without the `transformation` changes. If you omit `fallback`, a failed callout returns a `503` response with the `virtual_model_callout_failed` error code. |
    | `fallback.model` | Not set | Optional. The concrete model name to use from the referenced model. Set `model` when `modelRef` points to a model with a wildcard `match.model`, such as `internal-*`. Without it, the virtual model reports `ResolvedRefs: False`, and a failed callout returns `503`. The name must match the referenced model's `match.model`. Otherwise, a failed callout returns `404` with the `virtual_model_target_not_found` error code instead of using the fallback. |
