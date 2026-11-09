@@ -46,6 +46,10 @@ Model transformations now rewrite the model ID in the request path of Bedrock, V
 
 - **GCP tokens in backend credential lists**: Backend authentication credential lists can now fetch a Google Cloud access token or ID token with `credentials[].gcp`. Use this field to send the generated Google token in a header such as `Proxy-Authorization` while another backend authentication method preserves the client's `Authorization` header. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4279 -->
 
+### Traffic management {#v18-traffic-management}
+
+- **Normalize request paths before matching**: Set `spec.frontend.http.normalize` on an {{< reuse "agw-docs/snippets/policy.md" >}} to normalize request paths before route matching, policy evaluation, and forwarding. Normalization rules can merge repeated slashes, resolve dot segments, decode unreserved characters, and reject or unescape escaped slashes. For more information, see [Normalize paths before matching]({{< link-hextra path="/documentation/traffic-management/match/path/#normalize-paths" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4253 -->
+
 <!-- Held for the 1.8 release cut, triaged as no entry. Restore or delete then:
 ### MCP {#v18-mcp}
 - **Configurable MCP Apps UI URI delimiter**: You can set `AGENTGATEWAY_MCP_UI_URI_DELIMITER` to use `_`, `-`, `.`, or `~` between the target name and UI resource path when an MCP host rejects the default `+` delimiter. For more information, see [MCP Apps](/documentation/mcp/apps/). (ref: https://github.com/agentgateway/agentgateway/pull/4200)
