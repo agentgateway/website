@@ -10,6 +10,10 @@ Attaches to: {{< badge content="Route" path="/documentation/configuration/routes
 
 When a backend request fails, agentgateway can be configured to *{{< gloss "Retry" >}}retry{{< /gloss >}}* the request. Keep in mind that each retry goes to the same route backend as the original request. For LLM traffic, if you also want to configure failover so that an endpoint is marked as unhealthy and a request tried with a different endpoint, use [failover routing with virtual models]({{< link-hextra path="/documentation/llm/virtual-models/#failover-routing" >}}).
 
+## Configure retries {#configure}
+
+Add a `retry` policy to an MCP listener or a route. If you omit `attempts`, a failed request is retried once. To disable retries, set `attempts` to `0`.
+
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
@@ -56,5 +60,16 @@ routes:
 {{< /tab >}}
 {{< /tabs >}}
 
-When a request has retries enabled and an HTTP body, the request body will be buffered.
-If the total body size exceeds a threshold size, retries are disabled.
+## Retry requests with large bodies {#large-bodies}
+
+When a request has retries enabled and an HTTP body, the request body is buffered so that it can be resent.
+If the body is larger than the frontend buffer limit, the request is not retried. The default limit is 2 MiB or 32 MiB for LLM requests.
+To retry larger requests, raise the limit in the `frontendPolicies.http.maxBufferSize` field.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  http:
+    # Maximum request or response body size to buffer, in bytes.
+    maxBufferSize: 10485760
+```

@@ -24,7 +24,7 @@ on:
       slack_channel:
         description: 'Slack channel to notify'
         type: string
-        default: 'product-excellence-test-notifications'
+        default: 'doctopus-tests'
       docs_tests_ref:
         description: 'docs-tests branch or commit SHA to test with (default: main)'
         type: string
@@ -547,16 +547,37 @@ jobs:
             --annotations docs-tests/products/agentgateway/annotations \
             --report out/annotations/attach-report.json
 
+      # Helm values a page sets (`--set`, `-f values.yaml`) are checked against
+      # the charts at the same two releases as the CRDs. The charts ship no
+      # values.schema.json, so the checker builds one from each chart's
+      # values.yaml and templates; see docs-tests' doc_test_helm_values.py.
       - name: Run schema checks
         run: |
           mkdir -p out/tests/generated
+          HELM_CHARTS=()
+          CRD_DIRS=()
+          for tree in latest main; do
+            for chart in agentgateway agentgateway-standalone agentgateway-crds; do
+              HELM_CHARTS+=(--helm-chart "$tree=agentgateway-$tree/controller/install/helm/$chart")
+            done
+            # agentgateway#4319 moved the CRD YAMLs from templates/ to
+            # files/crds/ and made templates/crds.yaml a Helm template.
+            # Releases cut before that change still use templates/.
+            crds="agentgateway-$tree/controller/install/helm/agentgateway-crds"
+            if [ -d "$crds/files/crds" ]; then
+              CRD_DIRS+=(--crd-dir "$tree=$crds/files/crds")
+            else
+              CRD_DIRS+=(--crd-dir "$tree=$crds/templates")
+            fi
+          done
           python3 docs-tests/scripts/doc_test_schema_check.py \
             --repo-root . \
-            --crd-dir latest=agentgateway-latest/controller/install/helm/agentgateway-crds/templates \
-            --crd-dir main=agentgateway-main/controller/install/helm/agentgateway-crds/templates \
+            "${CRD_DIRS[@]}" \
             --crd-dir "$GATEWAY_API_CRDS" \
             --config-schema latest=agentgateway-latest/schema/config.json \
             --config-schema main=agentgateway-main/schema/config.json \
+            "${HELM_CHARTS[@]}" \
+            --helm-overlay docs-tests/products/agentgateway/helm-values.yaml \
             --kubeconform "$KUBECONFORM" \
             --kubernetes-version "$KUBERNETES_VERSION" \
             --docs-tests-root docs-tests \
@@ -871,7 +892,7 @@ jobs:
           message: "Doc Test Results (agentgateway OSS)"
           blocks: ${{ steps.summary.outputs.slack_blocks }}
           thread_blocks: ${{ steps.summary.outputs.slack_thread_blocks }}
-          channel: ${{ github.event_name == 'workflow_dispatch' && inputs.slack_channel || 'product-excellence-test-notifications,doctopus-tests' }}
+          channel: ${{ github.event_name == 'workflow_dispatch' && inputs.slack_channel || 'doctopus-tests' }}
           token: ${{ secrets.SLACK_BOT_TOKEN }}
 
       - name: List untested docs
