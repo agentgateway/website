@@ -272,6 +272,10 @@ Create a BackendTLSPolicy for the NGINX workload.
 
    The HTTPRoute forwards the request to the NGINX server on port 8443, and the NGINX server accepts only TLS on that port. A 200 response means that the gateway proxy originated a TLS connection to the backend successfully. Without a valid BackendTLSPolicy and CA certificate, requests fail with `invalid peer certificate: UnknownIssuer`.
 
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+   For other errors that invalid TLS settings cause, see [Invalid backend TLS settings](#invalid-tls-settings).
+   {{< /version >}}
+
    
 ## External service
 
@@ -652,28 +656,28 @@ A CA source does not have to store the certificate in the `ca.crt` key. Set the 
 
 When backend TLS settings are invalid, the gateway proxy does not fall back to sending plaintext traffic to the backend. Instead, requests to the backend fail with a 503 HTTP response code. The errors that you see depend on whether the controller or the gateway proxy finds the invalid setting.
 
-### Settings that the proxy rejects {#proxy-rejected-settings}
+### Settings that the proxy marks as invalid {#proxy-invalid-settings}
 
-The controller passes some backend TLS settings to the gateway proxy without fully checking them. If the proxy cannot build a TLS configuration from these settings, it rejects the entire backend TLS policy. This rule applies to the `spec.backend.tls` section of an {{< reuse "agw-docs/snippets/policy.md" >}} and to the `spec.policies.tls` section of an {{< reuse "agw-docs/snippets/backend.md" >}}. The proxy rejects the policy in the following cases:
+The controller passes some backend TLS settings to the gateway proxy without fully checking them. If the proxy cannot build a TLS configuration from these settings, it marks the entire backend TLS policy as invalid and fails every request to that backend. This rule applies to the `spec.backend.tls` section of an {{< reuse "agw-docs/snippets/policy.md" >}} and to the `spec.policies.tls` section of an {{< reuse "agw-docs/snippets/backend.md" >}}. The proxy marks the policy as invalid in the following cases:
 
-* The Secret that the `mtlsCertificateRef` setting refers to has a `tls.crt`, `tls.key`, or `ca.crt` value that is not valid PEM. If a `ca.crt` PEM block decodes but does not hold a valid certificate, the proxy skips that certificate instead of rejecting the policy.
-* The `certificateSource` setting is `SPIFFE` and the `keyExchangeGroups` setting is also set. A SPIFFE certificate source cannot be combined with other certificate or verification settings.
-* An entry in the `verifySubjectAltNames` setting is neither a valid DNS name nor a URI.
+* The Secret that the `mtlsCertificateRef` setting refers to has a `tls.crt`, `tls.key`, or `ca.crt` value that is not valid PEM. If a `ca.crt` PEM block decodes but does not hold a valid certificate, the proxy skips that certificate instead of marking the policy as invalid.
+* The `certificateSource` setting is `SPIFFE` and the `keyExchangeGroups` setting is also set. A SPIFFE certificate source gets the client identity and trust roots from the SPIFFE Workload API and does not support custom key exchange groups.
+* An entry in the `verifySubjectAltNames` setting is not a valid DNS name, IP address, or URI.
 * The `insecureSkipVerify` setting is `Hostname`, but no CA certificate can be loaded, such as when every `caCertificateRefs` entry is invalid.
 * The TLS crypto provider of the proxy does not support an entry in the `keyExchangeGroups` setting.
 
 Every request to the backend fails until you fix the setting. This rule also applies when you update a working policy with an invalid setting, because the proxy does not keep the previous TLS settings for that backend.
 
-To find the error, check the proxy logs. The proxy reports the error as a warning when it rejects the configuration update from the controller, and again for each failed request.
+To find the error, check the proxy logs. The proxy logs a warning when it receives the invalid settings from the controller, and an error for each failed request. The log line for the warning shows `type=Nack`, but the proxy still applies the update, so requests to the backend fail.
 
 ```sh
 kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} deploy/agentgateway-proxy | grep -i "backend TLS policy"
 ```
 
-Example output for a Secret with an invalid `ca.crt` value:
+Example output for an {{< reuse "agw-docs/snippets/policy.md" >}} named `nginx-backend-tls` whose `mtlsCertificateRef` Secret has an invalid `ca.crt` value:
 
 ```
-... type=Nack error="[{\"key\":\"policy/default/nginx-tls:tls:default/nginx.default.svc.cluster.local\",\"warn\":\"invalid backend TLS policy, requests to the backend will fail: base64 decode error: InvalidCharacter(33)\"}]"
+... type=Nack error="[{\"key\":\"policy/agentgateway-system/nginx-backend-tls:tls:agentgateway-system/nginx.agentgateway-system.svc.cluster.local/8443\",\"warn\":\"invalid backend TLS policy, requests to the backend will fail: base64 decode error: InvalidCharacter(33)\"}]"
 ... http.status=503 protocol=http error="processing failed: backend TLS policy is invalid: base64 decode error: InvalidCharacter(33)" reason=Internal duration=0ms
 ```
 
