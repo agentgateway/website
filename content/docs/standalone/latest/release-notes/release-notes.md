@@ -139,6 +139,7 @@ Error responses that agentgateway generates now carry a generic message instead 
 - **CSRF `Origin` checks**: For a request without a `Sec-Fetch-Site` header, the CSRF policy now rejects `Origin: null` unless `additionalOrigins` includes `null`. In 1.6, agentgateway treated `Origin: null` as a missing origin and allowed the request. The same-origin check now compares only the host and ignores the scheme, so a TLS-terminating proxy in front of agentgateway no longer causes false rejections. For more information, see [CSRF]({{< link-hextra path="/documentation/configuration/security/csrf/" >}}).
 - **Environment variables in hybrid mode**: In `hybrid` storage mode, `${VAR}` in resources that you save through the UI or API now stays literal, except in the `params.apiKey` field of an LLM provider or model. In 1.6, agentgateway expanded it. Enter literal values, or set these fields in the configuration file. For more information, see [`hybrid` mode]({{< link-hextra path="/documentation/setup/storage/#binary-hybrid" >}}).
 - **Filter validation**: Invalid filter settings now fail configuration validation instead of failing each request. For example, a configuration with a request mirror `percentage` outside `0.0` to `1.0`, such as `percentage: 50`, or a direct response with both `body` and `bodyExpression` no longer loads. Invalid header names or values and invalid redirect or rewrite paths are also rejected. For more information, see [Mirroring]({{< link-hextra path="/documentation/configuration/resiliency/mirroring/" >}}).
+- **Chat Completions streams always include usage**: Streamed Chat Completions replies now always end with a usage chunk before `data: [DONE]`, and you cannot turn this chunk off. In 1.6, setting `stream_options.include_usage` to `false` turned off the usage chunk. Make sure that your client code handles the usage chunk. The usage chunk has an empty `choices` array, so code that reads `choices[0]` from every chunk throws an error when it reaches the usage chunk. For more information, see [Usage in streamed replies]({{< link-hextra path="/documentation/llm/api-types/completions/#usage-in-streamed-replies" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4156 -->
 
 ## 🌟 New features {#v17-new-features}
 
@@ -334,6 +335,11 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 
 - External authorization with `includeRequestBody` and no `maxRequestBytes` no longer rejects every request that has a body with `413`. The limit defaults to 8192 bytes.
 - CEL calls such as `contains(a, b)`, `startsWith`, `endsWith`, and `matches` now read the second argument. Previously, they ignored it, so `contains(x, y)` always returned `true`.
+- Retry policies can set `attempts: 0` to disable retries, and omitted retry attempts still default to one retry. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4180 -->
+<!-- Held for the 1.8 release cut, not in the triage keep list. Restore or delete then:
+- External authorization and rate-limit trace logs no longer include response header, query-parameter, or body values that might contain credentials. (ref: https://github.com/agentgateway/agentgateway/pull/4139)
+- Substrate TLS passthrough egress that does not match an allowed destination is blocked at ClientHello instead of completing TLS and returning HTTP `403`. (ref: https://github.com/agentgateway/agentgateway/pull/4093)
+-->
 
 **LLM**
 
@@ -349,6 +355,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 **MCP**
 
 - Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+- Duplicate MCP target names now fail configuration validation. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4160 -->
 - MCP authentication derives JWKS URLs without a double slash when an issuer value ends with `/`.
 - MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
 - MCP responses now honor the `responseIdleTimeout` response idle timeout, which previously did not apply on MCP routes. A response, including an SSE stream, that sends no data for longer than the timeout is now ended.
