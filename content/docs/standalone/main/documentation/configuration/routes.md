@@ -114,7 +114,7 @@ Routes are configured in the top-level `routes` or `tcpRoutes` section. The foll
 |-------|-------------|
 | `gateways` | The gateways that the route attaches to, in the form `<gateway-name>` or `<gateway-name>/<listener-name>`. When omitted, the route attaches to the gateway named `default`. |
 | `name` | An optional name for the route. |
-| `hostnames` | A list of hostnames that the route serves traffic on. |
+| `hostnames` | A list of hostnames that the route serves traffic on. For HTTP routes, the request `Host` header is matched without regard to case and is forwarded with its original casing. |
 | `matches` | Defines the matching rules for the route, including path, headers, methods, and query parameters. For more options, see the [Request matching]({{< link-hextra path="/documentation/configuration/traffic-management/matching/" >}}) guide. |
 | `backends` | Specifies the {{< gloss "Backend" >}}backend{{< /gloss >}} services to route traffic to. |
 | `policies` | Optional {{< gloss "Policy" >}}policies{{< /gloss >}} to apply to the route. |

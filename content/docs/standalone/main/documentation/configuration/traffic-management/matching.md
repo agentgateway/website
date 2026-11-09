@@ -417,6 +417,8 @@ For routes configured with [TCP listeners]({{< link-hextra path="/documentation/
 
 Match incoming requests based on the hostname included in the request. This is primarily used for TLS termination scenarios.
 
+Hostname matching is case-insensitive.
+
 {{< tabs >}}
 {{% tab name="UI" %}}
 The following steps assume that you have a TCP gateway named `database-proxy`. To add one, see [TCP listeners]({{< link-hextra path="/documentation/configuration/listeners/#tcp-listeners" >}}).
