@@ -44,7 +44,7 @@ These metrics track communication with an XDS management server. They are regist
 
 | Metric | Type | Unit | Description |
 | --- | --- | --- | --- |
-| `agentgateway_mcp_requests_total` | Counter | — | Total number of MCP requests. |
+| `agentgateway_mcp_requests_total` | Counter | — | Total number of MCP requests. The `outcome` label records how each request ended. For the values, see [MCP observability]({{< link-hextra path="/documentation/mcp/mcp-observability/#view-mcp-metrics" >}}). |
 
 ## LLM
 

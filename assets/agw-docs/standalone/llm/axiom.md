@@ -173,6 +173,7 @@ Add resource attributes to `frontendPolicies.tracing.resources` to help filter a
 ```yaml
 frontendPolicies:
   tracing:
+    host: ${AXIOM_DOMAIN}:443
     resources:
       service.name: '"agentgateway"'
       deployment.environment.name: '"production"'
