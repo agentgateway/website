@@ -25,6 +25,12 @@ everything builds. Shared files (assets/, layouts/, hugo.yaml) do not count, so
 a snippet change that breaks an older version shows up only in the production
 build. If git cannot work out what changed, everything builds.
 
+--only-changed narrows a --preview-base build further, for the many short-lived
+pr-tracker branches: of the listed trees, only the ones the branch changed
+build (standalone/main, for example, without kubernetes/main or latest). If the
+branch changed only shared files, the first listed version builds. Changing an
+unlisted tree still builds everything.
+
 If PyYAML is missing, the overlay is written empty and everything builds.
 """
 
@@ -89,7 +95,13 @@ def main() -> int:
         "--preview-base", default="", metavar="REF",
         help="build every version if this branch changed an unlisted version tree against REF",
     )
+    parser.add_argument(
+        "--only-changed", action="store_true",
+        help="with --preview-base, build only the listed version trees this branch changed",
+    )
     args = parser.parse_args()
+    if args.only_changed and not args.preview_base:
+        parser.error("--only-changed needs --preview-base")
 
     try:
         import yaml
@@ -116,23 +128,35 @@ def main() -> int:
                 f"(have: {', '.join(all_listed)})"
             )
 
-    patterns, skipped = [], []
-    for section_dir in sorted(p for p in DOCS.iterdir() if p.is_dir()):
-        section = section_dir.name
-        listed = {
-            str(e.get("linkVersion") or e.get("version"))
-            for e in entries
-            if not e.get("sections") or section in e["sections"]
-        }
-        if keep:
-            listed &= {keep}
-        for version_dir in sorted(p for p in section_dir.iterdir() if p.is_dir()):
-            name = version_dir.name
-            if VERSION_DIR.match(name) and name not in listed:
-                patterns.append(f"(^|/)content/docs/{re.escape(section)}/{re.escape(name)}/")
-                skipped.append(f"{section}/{name}")
+    def plan(builds) -> tuple[list[str], list[str], list[str]]:
+        """Skip patterns, skipped trees, and built trees ("section/version").
 
-    if args.preview_base and skipped:
+        A tree builds if its version is listed for its section and
+        builds(section, version) is true.
+        """
+        patterns, skipped, built = [], [], []
+        for section_dir in sorted(p for p in DOCS.iterdir() if p.is_dir()):
+            section = section_dir.name
+            listed = {
+                str(e.get("linkVersion") or e.get("version"))
+                for e in entries
+                if not e.get("sections") or section in e["sections"]
+            }
+            for version_dir in sorted(p for p in section_dir.iterdir() if p.is_dir()):
+                name = version_dir.name
+                if not VERSION_DIR.match(name):
+                    continue
+                if name in listed and builds(section, name):
+                    built.append(f"{section}/{name}")
+                else:
+                    patterns.append(f"(^|/)content/docs/{re.escape(section)}/{re.escape(name)}/")
+                    skipped.append(f"{section}/{name}")
+        return patterns, skipped, built
+
+    patterns, skipped, built = plan(lambda section, name: not keep or name == keep)
+
+    files = None
+    if args.preview_base and (skipped or args.only_changed):
         files = changed_files(args.preview_base)
         hits = (
             sorted({s for s in skipped for f in files if f.startswith(f"content/docs/{s}/")})
@@ -144,6 +168,17 @@ def main() -> int:
                 print(f"This branch changes {', '.join(hits)}; building every version.")
             OUT.write_text(HEADER + "ignoreFiles: []\n", encoding="utf-8")
             return 0
+
+    if args.only_changed and files is not None:
+        changed = {s for s in built for f in files if f.startswith(f"content/docs/{s}/")}
+        if changed:
+            patterns, skipped, built = plan(lambda section, name: f"{section}/{name}" in changed)
+        elif entries:
+            # Only shared files changed (assets/, layouts/, snippets). Build the
+            # first listed version so there is still something to look at.
+            first = str(entries[0].get("linkVersion") or entries[0].get("version"))
+            patterns, skipped, built = plan(lambda section, name: name == first)
+        keep = keep or ", ".join(built)
 
     body = "".join(f"  - '{p}'\n" for p in patterns)
     text = HEADER + ("ignoreFiles:\n" + body if body else "ignoreFiles: []\n")
