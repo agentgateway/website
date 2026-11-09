@@ -84,7 +84,7 @@ However, it can pass the request through to Bedrock itself following the [passth
 
 This can provide telemetry data for these requests.
 
-First, setup passthrough mode:
+Requests to the native Bedrock paths, such as `/model/{modelId}/converse` and `/model/{modelId}/invoke`, are passed through by default, and the token usage is still recorded. You do not need to set `passthrough` on the model:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -94,8 +94,10 @@ llm:
     provider: bedrock
     params:
       awsRegion: us-west-2
-    passthrough: detect
 ```
+
+> [!WARNING]
+> Do not set `passthrough` on a Bedrock model that also serves requests in another format, such as `/v1/chat/completions` or `/v1/messages`. The `passthrough` setting takes precedence over endpoint detection. For example, with `passthrough: detect`, a `/v1/chat/completions` request is forwarded to Bedrock unchanged instead of being converted to a Converse request. For more information, see [Passthrough and endpoint detection]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#llm-passthrough-precedence" >}}).
 
 Then, you can send native Converse and Invoke requests:
 
@@ -161,8 +163,21 @@ print(body)
 {{< /tabs >}}
 
 
-> [!NOTE]
-> With `passthrough: detect`, model transformations can still rewrite the model segment in Bedrock request paths. For example, a transformation can map a model match such as `aws/*` to the Bedrock model ID. Other passthrough traffic is forwarded without format conversion.
+To use a client-facing model name that differs from the Bedrock model ID, such as `aws/*`, add a `transformation` that changes `model`. Agentgateway rewrites the model ID in the request path and does not add a `model` field to the request body.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  models:
+  - name: aws/*
+    provider: bedrock
+    params:
+      awsRegion: us-west-2
+    transformation:
+      model: llmRequest.model.stripPrefix("aws/")
+```
+
+For example, a `client.converse(modelId='aws/us.anthropic.claude-sonnet-4-6', ...)` request reaches Bedrock at the `/model/us.anthropic.claude-sonnet-4-6/converse` path.
 
 ## Claude Platform on AWS
 
