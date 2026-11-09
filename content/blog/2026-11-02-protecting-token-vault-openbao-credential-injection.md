@@ -49,7 +49,7 @@ On a live request, the gateway logs in to OpenBao with the user's subject token,
 
 {{< reuse-image src="img/blog/cb4a/part3-design1.png" alt="Design 1: the gateway logs in to OpenBao as the user" >}}
 
-So who gets to call `auth/jwt/login`? That's the first thing to get right. A JWT login proves who the user is, not that they're making a request right now, and in agent egress the user may well be asleep while a machine replays their token. The controller has to hold the subject token (it's the [RFC 8693](https://www.rfc-editor.org/rfc/rfc8693) token-exchange input), so if it can reach the login path, a compromised controller can do this.
+So who gets to call `auth/jwt/login`? That's the first thing to get right. A JWT login proves who the user is, not that they're making a request right now, and in agent egress the user may well be asleep while a machine replays their token. The controller has to hold the subject token (it's the [RFC 8693](https://www.rfc-editor.org/rfc/rfc8693.html) token-exchange input), so if it can reach the login path, a compromised controller can do this.
 
 ```
 t=0      alice makes a real MCP call. The compromised controller keeps her subject JWT.
