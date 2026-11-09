@@ -74,7 +74,7 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
    ```sh
    docker logs otel-collector
    ```
-   Each proxied request appears as a `LogRecord` entry in the collector output. Look for a block that starts with `LogRecord #` and includes attributes such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope, which the collector prints in the `InstrumentationScope` line of the `ScopeLogs` block that contains the record.
+   Each proxied request appears as a `LogRecord` entry in the collector output. The record includes a timestamp and a body that combines the request method, path, and response status. Look for a block that starts with `LogRecord #`. The block includes attributes such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope. The collector prints the scope in the `InstrumentationScope` line of the `ScopeLogs` block.
 
 5. When you are done, remove the OTel Collector container.
    ```sh
@@ -142,7 +142,7 @@ Deploy the OTel Collector into your cluster by using the OpenTelemetry Helm char
    ```sh
    kubectl logs -n monitoring deployment/otel-collector
    ```
-   Each proxied request appears as a `LogRecord` entry. Look for a block that starts with `LogRecord #` and includes attributes such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope, which the collector prints in the `InstrumentationScope` line of the `ScopeLogs` block that contains the record.
+   Each proxied request appears as a `LogRecord` entry. The record includes a timestamp and a body that combines the request method, path, and response status. Look for a block that starts with `LogRecord #`. The block includes attributes such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope. The collector prints the scope in the `InstrumentationScope` line of the `ScopeLogs` block.
 
 8. When you are done, remove the OTel Collector and the monitoring namespace.
    ```sh
