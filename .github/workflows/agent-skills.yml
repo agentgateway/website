@@ -1,0 +1,67 @@
+name: OSS skill downloads
+
+on:
+  pull_request:
+    paths:
+      - 'skills/**'
+      - 'static/downloads/agent-skills/**'
+      - 'scripts/package-agent-skills.py'
+      - 'scripts/refresh-agent-skill-metadata.py'
+      - 'scripts/check-skill-*.py'
+      - 'scripts/tests/test_agent_skills.py'
+      - 'LICENSE'
+      - '.github/workflows/agent-skills.yml'
+  workflow_dispatch:
+    inputs:
+      run_clients:
+        description: 'Run authenticated, read-only Claude/Codex acceptance checks on the trusted agent-skills runner'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 'lts/*'
+      - name: Check current downloads against skill source
+        run: |
+          python3 scripts/refresh-agent-skill-metadata.py --check
+          python3 scripts/package-agent-skills.py --check
+      - name: Verify helper behavior and installed manifests
+        run: python3 -B -m unittest discover -s scripts/tests -v
+      - name: Exercise installer lifecycle in temporary projects
+        run: python3 scripts/check-skill-install.py
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: always()
+        with:
+          name: skill-install-evidence
+          path: out/skill-install-check.json
+
+  clients:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_clients
+    needs: check
+    runs-on: [self-hosted, agent-skills]
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 'lts/*'
+      - name: Claude Code discovery and constrained behavior
+        run: python3 scripts/check-skill-client.py --client claude --output out/client-claude
+      - name: Codex discovery and constrained behavior
+        if: success() || failure()
+        run: python3 scripts/check-skill-client.py --client codex --output out/client-codex
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: always()
+        with:
+          name: skill-client-evidence
+          path: |
+            out/client-claude
+            out/client-codex

@@ -7,4 +7,6 @@ aliases:
   - ../../../integrations/platforms/docker/
 ---
 
+{{< reuse "agw-docs/snippets/ai-assistant-quickstart.md" >}}
+
 {{< reuse "agw-docs/standalone/setup/docker.md" >}}

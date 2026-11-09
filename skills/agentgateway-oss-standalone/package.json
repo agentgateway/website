@@ -1,0 +1,26 @@
+{
+  "schema_version": 2,
+  "name": "agentgateway-oss-standalone",
+  "channel": "current",
+  "edition": "oss",
+  "mode": "standalone",
+  "python_requires": ">=3.10",
+  "source": {
+    "repository": "https://github.com/agentgateway/website",
+    "path": "skills/agentgateway-oss-standalone",
+    "commit": null,
+    "state": "content-addressed",
+    "content_sha256": "1fdac43fffd53d169421a86f254d96162c69820b335dc50caf13f16cf8f13744"
+  },
+  "documentation": "https://agentgateway.dev/docs/standalone/latest/",
+  "files_sha256": {
+    "SKILL.md": "371365b22e08a41cc92e7400d4e575181107b694a91c86c98c200c1eacde5b2c",
+    "agents/openai.yaml": "ec3b2b82c6ae2ee0d3ab25960ebedbc5186dcc3b5517c7f46e622f243e801cf3",
+    "references/edition-boundaries.md": "b17889c8be2c3ef40e319cd94e2e158e18c71a6495dbc7f62bc42049a01e8b98",
+    "references/llm-setup.md": "2f993f5ae82401096caac89264cd1565505f0d819b0ceeee9f23fa55593fe3f8",
+    "references/sources.md": "60aecfc6fcba4beef5047eba20a426c3f1de277a390d0ae649d8d597137756bf",
+    "references/verification-helpers.md": "bc60ca2b59394214ec4ce6ff10ca3ff922d4aa2666ce75345f0e4aa8c0ba4477",
+    "references/verification.md": "c03417cabbbd0c9cc021723433b46ac0ea5c9a055d8f1ab23047f646f464ec61",
+    "scripts/verify.py": "e3ed965f7a9709eca7a5aa1991ff11454f0cea0f747829ad7bb2c879a7ea2b89"
+  }
+}
