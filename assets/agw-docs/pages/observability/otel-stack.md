@@ -373,6 +373,8 @@ Deploy separate collectors for logs and traces so you can scale and tune each on
          - native-histograms
    grafana:
      enabled: true
+     adminUser: admin
+     adminPassword: prom-operator
      defaultDashboardsEnabled: true
      sidecar:
        dashboards:

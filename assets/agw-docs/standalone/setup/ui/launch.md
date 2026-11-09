@@ -99,7 +99,7 @@ The **Traffic** area holds the HTTP gateways and routes that are not LLM or MCP 
 
 The **LLM** area configures the models that clients can request and the policies that apply to all LLM traffic.
 
-* **Models**: Lists each model with its provider and the model name that the request uses with that provider. Click the play icon to try a model in the **Chat Playground**.{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}} When you add a virtual model, the UI selects the first model in the list for the first target.{{< /version >}}
+* **Models**: Lists each model with its provider and the model name that the request uses with that provider. Click the play icon to try a model in the **Chat Playground**.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} For models that set `llm.models[].displayName`, the UI shows the display name in lists and pickers. The match pattern and routing details remain secondary text. Matching still uses `llm.models[].name`. To set a display name, use the **Display name** field when you add or edit a model.{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}} When you add a virtual model, the UI selects the first model in the list for the first target.{{< /version >}}
 
   {{< reuse-image src="img/ui-tour-llm-models.png" srcDark="img/ui-tour-llm-models-dark.png" alt="LLM Models page with one gpt-4o-mini model from the OpenAI provider and play, edit, and delete icons" >}}
 
@@ -208,7 +208,7 @@ Client Setup fills in **Gateway base URL** from the gateway that serves LLM traf
 
 Client Setup does not create a route, model, authentication policy, or provider credential. It generates client-side values from the configuration that already exists. For client-specific prerequisites, see [LLM clients]({{< link-hextra path="/integrations/llm/clients/" >}}).
 
-The selected model appears only in recipes that accept a model setting. For example, the Claude Desktop recipe outputs a gateway URL and API key, but does not configure a model name in Claude Desktop.
+The selected model appears only in recipes that accept a model setting. For example, the Claude Desktop recipe outputs a gateway URL and API key, but does not configure a model name in Claude Desktop.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} For a model with exact header matches, Client Setup shows the required headers in the **Model** field and adds them as `-H` lines to the curl snippet.{{< /version >}}
 
 ## Next steps
 
