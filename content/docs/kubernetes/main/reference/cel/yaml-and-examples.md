@@ -85,6 +85,8 @@ fields:
 
 ```
 
+{{< reuse "agw-docs/snippets/cel-upstream-calls-access-log.md" >}}
+
 ### Authorization {#authorization}
 
 ```yaml

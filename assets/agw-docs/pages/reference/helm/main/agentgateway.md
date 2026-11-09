@@ -8,8 +8,6 @@
 | Key | Type | Description |
 |-----|------|-------------|
 | affinity | object | Set affinity rules for pod scheduling, such as 'nodeAffinity:'.<br/><br/>The default value is `{}`. |
-| agentgatewayModels | object | Configure the AgentgatewayModel API.<br/><br/>The default value is `{"enabled":true}`. |
-| agentgatewayModels.enabled | bool | Enable AgentgatewayModel support in the agentgateway controller.<br/><br/>The default value is `true`. |
 | commonLabels | object | Additional labels to add to all resources created by the Helm chart.<br/><br/>The default value is `{}`. |
 | controller | object | Configure the agentgateway control plane deployment.<br/><br/>The default value is `{"extraContainers":[],"extraEnv":{},"extraInitContainers":[],"extraVolumeMounts":[],"extraVolumes":[],"horizontalPodAutoscaler":{},"image":{"pullPolicy":"","registry":"","repository":"controller","tag":""},"logLevel":"info","podDisruptionBudget":{},"priorityClassName":"","replicaCount":1,"revisionHistoryLimit":null,"service":{"allocateLoadBalancerNodePorts":null,"annotations":{},"clusterIP":"","clusterIPs":[],"enabled":true,"externalIPs":[],"externalName":"","externalTrafficPolicy":"","extraLabels":{},"healthCheckNodePort":null,"internalTrafficPolicy":"","ipFamilies":[],"ipFamilyPolicy":"","loadBalancerClass":"","loadBalancerIP":"","loadBalancerSourceRanges":[],"ports":{"agwGrpc":9978,"health":9093,"metrics":9092},"publishNotReadyAddresses":false,"sessionAffinity":"","sessionAffinityConfig":{},"trafficDistribution":"","type":"ClusterIP"},"strategy":{},"verticalPodAutoscaler":{},"xds":{"mode":"tls"}}`. |
 | controller.extraContainers | list | Add extra sidecar containers to the controller pod.<br/><br/>The default value is `[]`. |
