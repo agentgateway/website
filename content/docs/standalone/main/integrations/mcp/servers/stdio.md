@@ -6,6 +6,8 @@ description: Run a local MCP server as a subprocess and expose it through agentg
 
 An MCP backend allows exposing MCP servers through the agentgateway using {{< gloss "STDIO (Standard Input/Output)" >}}STDIO{{< /gloss >}}.
 
+By default, each request to a `stdio` target waits up to 10 seconds for the subprocess to answer. To use a different per-request timeout, configure the backend request timeout. For more information, see [Timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts/" >}}).
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
