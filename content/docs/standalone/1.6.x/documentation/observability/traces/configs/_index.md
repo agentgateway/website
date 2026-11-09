@@ -12,6 +12,7 @@ Agentgateway exports traces to any OTLP-compatible backend. The `host` value in 
 | Install method | `host` value | Notes |
 |----------------|--------------|-------|
 | Binary | `localhost:4317` | Run the OTLP receiver as a separate process or Docker container on the same host. |
+| Docker | `host.docker.internal:4317` | Run agentgateway in a container and publish the OTLP receiver's port on the host. Inside the agentgateway container, `localhost` is the container itself. On Linux, start agentgateway with `--add-host=host.docker.internal:host-gateway`. |
 | Docker Compose | `<service-name>:4317` | Add the receiver as a service that runs alongside agentgateway. Use the Docker service name as the host. |
 | Kubernetes (Helm) | `<service>.<namespace>.svc.cluster.local:4317` | Deploy the OTLP receiver as a separate Helm release. For example, you can install the Jaeger Helm chart that includes an OTLP receiver and the Jaeger UI to view your traces. Use the Kubernetes service DNS name as your host. |
 

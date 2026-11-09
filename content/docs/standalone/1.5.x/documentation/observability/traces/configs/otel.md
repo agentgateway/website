@@ -56,6 +56,8 @@ Run the OTel Collector as a Docker container on the same host as agentgateway an
        randomSampling: true
    ```
 
+   {{< reuse "agw-docs/standalone/observability/docker-collector-host.md" >}}
+
 4. When you are done, remove the OTel Collector container.
    ```sh
    docker rm -f otel-collector
