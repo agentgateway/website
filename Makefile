@@ -125,11 +125,16 @@ check-node-deps:
 # build everything. PREVIEW=1 tries the preview build locally.
 PREVIEW ?= $(if $(CF_PAGES),$(filter-out main,$(CF_PAGES_BRANCH)))
 
+# pr-tracker-* branches come in batches and fill the Cloudflare build queue, so
+# their previews build only the version trees the branch changed, without the
+# search index. Try it locally with PREVIEW=1 CF_PAGES_BRANCH=pr-tracker-x.
+PR_TRACKER_PREVIEW ?= $(if $(PREVIEW),$(filter pr-tracker-%,$(CF_PAGES_BRANCH)))
+
 .PHONY: build
 build: check-node-deps
 	$(if $(PREVIEW),pip3 install -q pyyaml || true)
-	$(if $(PREVIEW),python3 scripts/local-version-config.py --preview-base origin/main)
-	hugo --gc --minify $(if $(PREVIEW),--config hugo.yaml$(COMMA)hugo-local-versions.yaml)
+	$(if $(PREVIEW),python3 scripts/local-version-config.py --preview-base origin/main $(if $(PR_TRACKER_PREVIEW),--only-changed))
+	$(if $(PR_TRACKER_PREVIEW),HUGO_PARAMS_SEARCH_ENABLE=false )hugo --gc --minify $(if $(PREVIEW),--config hugo.yaml$(COMMA)hugo-local-versions.yaml)
 
 # The local servers build only the versions listed in hugo.yaml's
 # `params.versions`. content/docs/ also holds every older version tree, which
