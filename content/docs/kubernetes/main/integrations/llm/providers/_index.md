@@ -21,7 +21,7 @@ Prefer the dedicated provider pages when the {{< reuse "agw-docs/snippets/backen
 
 ## OpenAI-compatible providers
 
-Many providers expose the OpenAI Chat Completions API but do not have a first-class type in the {{< reuse "agw-docs/snippets/backend.md" >}} API. Examples include Cohere, DeepSeek, Groq, Mistral, Nebius Token Factory, Perplexity, Together AI, and xAI. Configure these providers with the `ai.provider.openai` shape. For the list of supported hosts and paths, see [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}).
+Many providers expose the OpenAI Chat Completions API but do not have a first-class type in the {{< reuse "agw-docs/snippets/backend.md" >}} API. Examples include Cohere, DeepSeek, Groq, Mistral, [Nebius Token Factory]({{< link-hextra path="/integrations/llm/providers/nebius/" >}}), [Perplexity]({{< link-hextra path="/integrations/llm/providers/perplexity/" >}}), Together AI, and xAI. Configure these providers with the `ai.provider.openai` shape. For the list of supported hosts and paths, see [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}).
 
 ## Custom providers
 
