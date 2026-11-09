@@ -22,7 +22,7 @@ You can configure request buffering, response buffering, or both.
 | `policies.buffer.response.maxBytes` | Maximum number of response body bytes to buffer. | Uses the global proxy buffer setting, which defaults to 2 MiB. |
 | `policies.buffer.response.failureMode` | Behavior when the response body exceeds `maxBytes`: `failClosed` to reject the response, or `failOpen` to continue. | `failClosed` |
 
-The `maxBytes` value is a number of bytes, such as `65536` for 64 KiB. Large buffered bodies can increase proxy memory usage, so set strict limits for routes that receive untrusted or large payloads. When a body exceeds the applicable buffer limit, agentgateway rejects the body if possible. If response headers were already sent before the limit is exceeded, the proxy closes the connection.
+The `maxBytes` value is a number of bytes, such as `65536` for 64 KiB. Large buffered bodies can increase proxy memory usage, so set strict limits for routes that receive untrusted or large payloads. When a request body exceeds the applicable buffer limit, the proxy returns `413` with the response body `request body too large`. When a response body exceeds the applicable buffer limit before response headers are sent, the proxy returns `502` with the response body `upstream response too large`. If response headers were already sent before the limit is exceeded, the proxy closes the connection.
 
 ## Buffer request and response bodies
 
