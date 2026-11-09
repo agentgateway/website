@@ -356,7 +356,7 @@ Concrete models accept an inline `spec.policies` block that supports the followi
 |--------|---------|
 | `auth` | Credentials for authenticating to the provider. |
 | `authorization` | Rules that clients must satisfy to use the model. |
-| `transformations` | CEL transformations on fields in the provider request body. |
+| `transformations` | CEL transformations on fields in the provider request. For URL-path model requests, such as Bedrock, Vertex, and Gemini requests, a transformation that changes `model` rewrites the path instead of adding a `model` field to the request body. |
 | `promptGuard` | Guardrails on requests and responses. |
 | `health` | What counts as an unhealthy response, and when to evict. |
 | `tls` | TLS settings for connections to the provider. |
@@ -448,7 +448,7 @@ For examples of each strategy, see [Virtual models]({{< link-hextra path="/docum
 
 ## Model resolution order {#agentgatewaymodel-resolution}
 
-The model value is resolved before provider-specific routing, request conversion, token-count behavior, and response conversion. First, the request model selects an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} from `spec.match.model`. A virtual model can then select a concrete target model, and `spec.policies.transformations` on the concrete model can rewrite the `model` field. The final resolved model is used for provider-specific behavior, such as Azure Foundry Claude routing, Bedrock endpoint selection, and Vertex Gemini path selection.
+The model value is resolved before provider-specific routing, request conversion, token-count behavior, and response conversion. First, the request model selects an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} from `spec.match.model`. A virtual model can then select a concrete target model, and `spec.policies.transformations` on the concrete model can rewrite the `model` field. For URL-path model requests, a transformation that changes `model` rewrites the path. The final resolved model is used for provider-specific behavior, such as Azure Foundry Claude routing, Bedrock endpoint selection, and Vertex Gemini path selection.
 
 The following diagram shows how the request model resolves to the model that the provider receives.
 

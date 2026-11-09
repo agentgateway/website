@@ -39,7 +39,7 @@ To learn more about CEL, see the following resources:
    | Setting | Description |
    | -- | -- |
    | `backend.ai.transformations` | A list of LLM request field transformations. |
-   | `field` | The name of the LLM request field to set. Maximum 256 characters. |
+   | `field` | The name of the LLM request field to set. Maximum 256 characters. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}For URL-path model requests, such as Bedrock, Vertex, and Gemini requests, a transformation that sets `model` rewrites the path instead of adding a `model` field to the request body.{{< /version >}} |
    | `expression` | A CEL expression that computes the value for the field. Use the `llmRequest` variable to access the original LLM request body. Maximum 16,384 characters. |
 
    > [!NOTE]
