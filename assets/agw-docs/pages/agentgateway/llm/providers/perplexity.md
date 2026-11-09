@@ -72,7 +72,7 @@ The model attaches directly to the Gateway listener, so you do not create an {{<
 
    | Setting | Description |
    |---------|-------------|
-   | `spec.match.model` | The model name that clients send in requests. Perplexity model names include the vendor prefix, such as `perplexity/sonar`. |
+   | `spec.match.model` | The model name that clients send in requests. Perplexity's Responses API uses model names with a vendor prefix, such as `perplexity/sonar`. |
    | `spec.provider` | The `Perplexity` preset. The preset supplies the default URL, `https://api.perplexity.ai/v1`, and the Responses request format. |
    | `spec.policies.auth.secretRef` | The Secret that holds your Perplexity API key. |
 
@@ -99,7 +99,7 @@ The model attaches directly to the Gateway listener, so you do not create an {{<
 
 Use this approach to select the backend with an HTTPRoute.
 
-1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} that points the `openai` provider at Perplexity. Perplexity's chat completions path is `/chat/completions`, without the `/v1` prefix that most providers use.
+1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} that points the `openai` provider at Perplexity. Perplexity's chat completions path is `/chat/completions`, without the `/v1` prefix that most providers use. The Chat Completions API uses model names without the vendor prefix, such as `sonar` instead of the `perplexity/sonar` name that the Responses API uses.
 
    ```yaml
    kubectl apply -f- <<EOF
