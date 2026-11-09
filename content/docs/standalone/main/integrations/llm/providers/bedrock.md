@@ -84,7 +84,7 @@ If your applications directly use the AWS `Converse` or `Invoke` APIs, Agentgate
 > [!WARNING]
 > Do not set `passthrough` on a Bedrock model that also serves requests in another format, such as `/v1/chat/completions` or `/v1/messages`. The `passthrough` setting takes precedence over endpoint detection. For example, with `passthrough: detect`, a `/v1/chat/completions` request is forwarded to Bedrock unchanged instead of being converted to a Converse request. For more information, see [Passthrough and endpoint detection]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#llm-passthrough-precedence" >}}).
 
-1. Configure the Bedrock model. Requests to the native Bedrock paths, such as `/model/{modelId}/converse` and `/model/{modelId}/invoke`, are passed through by default, and the token usage is still recorded. You do not need to set `passthrough` on the model.
+1. Configure the Bedrock model. Requests to the native Bedrock paths, such as `/model/{modelId}/converse` and `/model/{modelId}/invoke`, are passed through by default, and agentgateway still records token usage when it can read it from the response. You do not need to set `passthrough` on the model.
 
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -159,7 +159,9 @@ If your applications directly use the AWS `Converse` or `Invoke` APIs, Agentgate
    {{% /tab %}}
    {{< /tabs >}}
 
-To use a client-facing model name that differs from the Bedrock model ID, such as `aws/*`, add a `transformation` that changes `model`. Agentgateway rewrites the model ID in the request path and does not add a `model` field to the request body.
+### Use a different client-facing model name {#passthrough-model-name}
+
+To let clients send a model name that differs from the Bedrock model ID, such as `aws/us.anthropic.claude-sonnet-4-6`, add a `transformation` that changes `model`. Agentgateway rewrites the model ID in the request path and does not add a `model` field to the request body. Use this configuration instead of the one in the previous steps.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -173,7 +175,14 @@ llm:
       model: llmRequest.model.stripPrefix("aws/")
 ```
 
-For example, a `client.converse(modelId='aws/us.anthropic.claude-sonnet-4-6', ...)` request reaches Bedrock at the `/model/us.anthropic.claude-sonnet-4-6/converse` path.
+{{< reuse "agw-docs/snippets/review-table.md" >}}
+
+| Setting | Description |
+|---------|-------------|
+| `name` | The model name to match in incoming requests. The `aws/*` pattern matches any model ID that starts with `aws/`. |
+| `transformation.model` | Removes the `aws/` prefix from the model ID in the request path, so that Bedrock receives its own model ID. |
+
+In the Converse and Invoke scripts from the previous steps, set `modelId` to the prefixed name, such as `modelId='aws/us.anthropic.claude-sonnet-4-6'`. The request reaches Bedrock at the `/model/us.anthropic.claude-sonnet-4-6/converse` path.
 
 ## Claude Platform on AWS
 
