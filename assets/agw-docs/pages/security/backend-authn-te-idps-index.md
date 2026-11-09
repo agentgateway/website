@@ -12,11 +12,13 @@ To exchange tokens at an authorization server that does not have a guide in this
 | Identity provider | Grant | Client authentication | Guide |
 | -- | -- | -- | -- |
 | Google Cloud Security Token Service, with Workload Identity Federation | Token exchange (RFC 8693) | None | [Google Cloud]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/idps/google/" >}}) |
+| Okta custom authorization server, On-Behalf-Of Token Exchange | Token exchange (RFC 8693) | Client secret | [Okta]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/idps/okta/" >}}) |
 | Microsoft Entra ID, on-behalf-of flow | JWT bearer (RFC 7523), with `requested_token_use=on_behalf_of` | Client secret or certificate | [Microsoft Entra on-behalf-of]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/jwt-bearer/#entra-obo" >}}) |
 {{< /conditional-text >}}
 {{< conditional-text include-if="standalone" >}}
 | Identity provider | Grant | Client authentication | Guide |
 | -- | -- | -- | -- |
 | Google Cloud Security Token Service, with Workload Identity Federation | Token exchange (RFC 8693) | None | [Google Cloud]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/idps/google/" >}}) |
+| Okta custom authorization server, On-Behalf-Of Token Exchange | Token exchange (RFC 8693) | Client secret | [Okta]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/idps/okta/" >}}) |
 | Microsoft Entra ID, on-behalf-of flow | JWT bearer (RFC 7523), with `requested_token_use=on_behalf_of` | Client secret or certificate | [Microsoft Entra on-behalf-of]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/jwt-bearer/#entra-obo" >}}) |
 {{< /conditional-text >}}
