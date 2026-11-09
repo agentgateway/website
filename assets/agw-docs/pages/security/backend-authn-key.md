@@ -265,6 +265,35 @@ The following example keeps `secretRef` as the primary credential and adds two m
 
 The `credentials` list also works on its own, or alongside any other primary method. Omit `secretRef` and the gateway sends only the entries in the list. Set `passthrough` instead and the gateway forwards the client's JWT alongside them.
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+
+You can also use the `credentials` list to send a Google Cloud token to one header while the primary backend authentication method sends another credential. Use this pattern for a backend behind Google Cloud Identity-Aware Proxy (IAP). The backend can receive the client's JWT in `Authorization` and the Google ID token in `Proxy-Authorization`.
+
+```yaml
+backend:
+  auth:
+    passthrough: {}
+    credentials:
+    - location:
+        header:
+          name: Proxy-Authorization
+          prefix: "Bearer "
+      gcp:
+        type: IdToken
+        audience: iap-client-id
+```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}}
+
+| Field | Description |
+| -- | -- |
+| `credentials[].gcp` | Fetches a Google Cloud access token or ID token and writes it to `credentials[].location`. Set exactly one of `credentials[].secretRef` or `credentials[].gcp`. |
+| `credentials[].gcp.type` | Google token type to fetch. Use `AccessToken` for most Google services, or `IdToken` for IAP and Cloud Run. |
+| `credentials[].gcp.audience` | Audience for the ID token. Set `credentials[].gcp.audience` when `credentials[].gcp.type` is `IdToken`. |
+| `credentials[].gcp.secretRef.name` | Secret that contains ADC-compatible Google credential JSON. Optional. Omit `secretRef` to use the ambient credentials of the gateway workload. |
+
+{{% /version %}}
+
 ## Troubleshoot
 
 | Symptom | Cause |
