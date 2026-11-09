@@ -273,7 +273,11 @@ Parse the `model` field from the incoming request body and the upstream response
 > [!WARNING]
 > `json(response.body)` requires buffering and parsing the entire upstream response body before the transformation can run. On routes that can return streaming (SSE) responses, such as chat completions sent with `stream: true`, this buffering prevents the gateway from flushing response chunks to the client as they arrive. In practice, an incremental, token-by-token stream can turn into a single delayed burst delivered all at once.
 >
-> If you need model information on streaming routes, avoid parsing `response.body` directly. Either scope this policy to non-streaming routes only, or extract the model name from the `llm.responseModel` [CEL context variable]({{< link-hextra path="/reference/cel/" >}}) instead, which is populated from the LLM protocol layer rather than by parsing the raw response body.
+> On a streamed response, a response header cannot carry the model that served the request because the headers are sent before the model is known. Avoid parsing `response.body` on streaming routes. Instead, scope this policy to non-streaming routes only, or record the served model in the access log.
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+On streamed responses, response transformations can read request-side LLM [CEL context variables]({{< link-hextra path="/reference/cel/" >}}) such as `llm.provider`, `llm.requestModel`, and `llm.streaming`. To return the model that the client requested in a response header, use `llm.requestModel`. Response-derived fields such as `llm.responseModel` are not set.
+{{% /version %}}
 
 1. Create a {{< reuse "agw-docs/snippets/policy.md" >}} resource that targets the OpenAI provider's HTTPRoute and injects the model fields as response headers.
 
