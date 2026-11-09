@@ -22,6 +22,9 @@ spec:
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 spec:
+  static:
+    host: my-backend.example.com
+    port: 80
   policies:
     auth:
       secretRef:
