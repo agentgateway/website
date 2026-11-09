@@ -96,6 +96,8 @@ Adding the route kind turns on the listener's built-in LLM paths. At first the l
 
 A listener can allow both `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` and `HTTPRoute`, so LLM endpoints and ordinary HTTP routes coexist on the same port. When you set `allowedRoutes.kinds`, the listener accepts only the kinds that you list, so include every kind that you need. Models that attach through an `HTTPRoute` parent need only the `HTTPRoute` kind, because the route is what attaches to the listener.
 
+An installation might include another model API that integrates with agentgateway. If a listener allows any registered model kind, the listener admits all registered model kinds. The listener status reports every model kind that can attach.
+
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -137,7 +139,7 @@ An `HTTPRoute` is a valid parent for an `{{< reuse "agw-docs/snippets/agentgatew
 | Parent kind is `HTTPRoute` | Set `kind: HTTPRoute` and `group: gateway.networking.k8s.io` in the model's `spec.parentRefs` entry. |
 | The route is in the model's namespace | Cross-namespace references from a model to a route are not supported. |
 | One rule is selected | Set `sectionName` on the model's `parentRefs` entry to the `name` of the route rule. You can omit `sectionName` only when the route has exactly one rule. |
-| The rule has exactly one `backendRef` | The `backendRef` must set `group: agentgateway.dev`, `kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`, and `name: "*"`. This backend is what opts the rule in as a model router. A rule cannot mix it with other backends. |
+| The rule has exactly one `backendRef` | The `backendRef` must select a registered model kind and set `name: "*"`. For the built-in model API, set `group: agentgateway.dev` and `kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`. The wildcard backend opts the rule in as a model router. A rule cannot mix the model-router backend with other backends. |
 | The `backendRef` sets no port, weight other than 1, or filters | Omit `port`. Omit `weight`, or set it to `1`. Omit `filters`. If you set `namespace`, it must be the route's own namespace. |
 | Path matches use `PathPrefix` | An `Exact` or `RegularExpression` path match is rejected, because the router serves a set of paths under the prefix. A rule can have several matches as long as every path match uses `PathPrefix`. |
 | No `URLRewrite` or `RequestRedirect` filter on the rule | Agentgateway rewrites the prefix itself so that the provider receives the standard LLM path. Other rule-level filters, such as `RequestHeaderModifier`, and rule-level `timeouts` and `retry` are supported. |
@@ -442,7 +444,7 @@ For examples of each strategy, see [Virtual models]({{< link-hextra path="/docum
 
 ### Constraints
 
-- Model targets must be `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources in the same namespace. Cross-namespace model references are not supported.
+- Model targets must be model resources in the same namespace. If a target omits `modelRef.group` and `modelRef.kind`, the target selects a model of the referring model's own kind. To select a model from another registered model API, set both fields. Cross-namespace model references are not supported.
 - Virtual models must be `Public`. The restriction stops virtual models from targeting each other, which could otherwise create routing loops.
 - Virtual models cannot set `spec.policies`. Configure policies on the concrete target models instead.
 
