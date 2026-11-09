@@ -102,6 +102,8 @@ frontendPolicies:
 {{% /tab %}}
 {{< /tabs >}}
 
+In a PostgreSQL request-log database, text and JSON fields cannot preserve a NUL character (`U+0000`). If a request prompt, completion, or custom attribute contains `U+0000`, the database stores `U+FFFD` in that position. The database still stores the rest of the log record.
+
 ## Schema migrations {#schema-migrations}
 
 At startup, agentgateway migrates the request log database that `config.logging.database` configures, or the database that `config.database` configures if you omit `config.logging.database`.
