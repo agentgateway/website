@@ -16,7 +16,7 @@ Review the release notes for agentgateway standalone.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4185 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4188 -->
 
-A model that sets `passthrough` now always passes requests through, even on a known LLM endpoint. Previously, `passthrough` controlled only how agentgateway handled unknown paths. Model transformations also rewrite the model ID in the request path of Bedrock, Vertex AI, and Gemini requests, instead of applying only to the `model` field in the request body. For more information, see [Transform requests]({{< link-hextra path="/documentation/llm/transformations/" >}}).
+A model that sets `passthrough` now always passes requests through, even on a known LLM endpoint. Previously, `passthrough` controlled only how agentgateway handled unknown paths. Model transformations also rewrite the model ID in the request path of Bedrock, Vertex AI, and Gemini requests, instead of applying only to the `model` field in the request body. For more information, see [Passthrough and endpoint detection]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#llm-passthrough-precedence" >}}).
 
 ## 🌟 New features {#v18-new-features}
 
