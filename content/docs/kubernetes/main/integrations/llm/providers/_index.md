@@ -8,7 +8,7 @@ Learn how to configure agentgateway for a particular LLM.
 
 ## First-class providers
 
-Prefer the dedicated provider pages for upstreams that have a built-in preset or provider type. These providers include built-in host, path, and request-format defaults.
+Prefer the dedicated provider pages when the {{< reuse "agw-docs/snippets/backend.md" >}} API has a first-class provider type for the upstream, with built-in host, path, and request-format defaults.
 
 - [OpenAI]({{< link-hextra path="/integrations/llm/providers/openai/" >}})
 - [Anthropic]({{< link-hextra path="/integrations/llm/providers/anthropic/" >}})
@@ -17,12 +17,11 @@ Prefer the dedicated provider pages for upstreams that have a built-in preset or
 - [Gemini]({{< link-hextra path="/integrations/llm/providers/gemini/" >}})
 - [GitHub Copilot]({{< link-hextra path="/integrations/llm/providers/copilot/" >}})
 - [Vertex AI]({{< link-hextra path="/integrations/llm/providers/vertex/" >}})
-- [Nebius Token Factory]({{< link-hextra path="/integrations/llm/providers/nebius/" >}})
 - [Ollama]({{< link-hextra path="/integrations/llm/providers/ollama/" >}})
 
 ## OpenAI-compatible providers
 
-Many providers expose the OpenAI Chat Completions API but do not have a first-class type in the {{< reuse "agw-docs/snippets/backend.md" >}} API. Examples include Cohere, DeepSeek, Groq, Mistral, Perplexity, Together AI, and xAI. Configure these providers with the `ai.provider.openai` shape. For the list of supported hosts and paths, see [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}).
+Many providers expose the OpenAI Chat Completions API but do not have a first-class type in the {{< reuse "agw-docs/snippets/backend.md" >}} API. Examples include Cohere, DeepSeek, Groq, Mistral, Nebius Token Factory, Perplexity, Together AI, and xAI. Configure these providers with the `ai.provider.openai` shape. For the list of supported hosts and paths, see [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}).
 
 ## Custom providers
 

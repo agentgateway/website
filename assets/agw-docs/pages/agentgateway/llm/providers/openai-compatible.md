@@ -26,7 +26,8 @@ For an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, use the case-sens
 | Groq | `Groq` | `api.groq.com` | `/openai/v1/chat/completions` |
 | Hugging Face | `Huggingface` | `router.huggingface.co` | `/v1/chat/completions` |
 | Meta | `Meta` | `api.meta.ai` | `/v1/chat/completions` |
-| Mistral AI | `Mistral` | `api.mistral.ai` | `/v1/chat/completions` |
+| Mistral AI | `Mistral` | `api.mistral.ai` | `/v1/chat/completions` |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+| [Nebius Token Factory](#nebius) | `Nebius` | `api.tokenfactory.nebius.com` | `/v1/chat/completions` |{{< /version >}}
 | OpenRouter | `Openrouter` | `openrouter.ai` | `/api/v1/chat/completions` |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 | [Perplexity](#perplexity) | `Perplexity` | `api.perplexity.ai` | `/chat/completions` |{{< /version >}}
 | Together AI | `TogetherAI` | `api.together.xyz` | `/v1/chat/completions` |
@@ -826,6 +827,141 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
    {{< /tabs >}}
 
 ## Other OpenAI-compatible providers
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+### Nebius Token Factory example {#nebius}
+
+You can configure [Nebius Token Factory](https://tokenfactory.nebius.com/) with an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} or an {{< reuse "agw-docs/snippets/backend.md" >}}. The `Nebius` model preset sends Chat Completions and Embeddings requests to Nebius. The {{< reuse "agw-docs/snippets/backend.md" >}} approach sends Chat Completions requests only. Nebius model names include the vendor prefix, such as `openai/gpt-oss-120b`.
+
+#### Chat Completions and Embeddings requests with an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} {#nebius-model}
+
+1. Create the following {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} resources. The `nebius-chat` model serves `openai/gpt-oss-120b`, and the `nebius-embeddings` model serves `Qwen/Qwen3-Embedding-8B`. Both models attach to the `http` listener and use the `llm-provider-secret` Secret from [Set up provider credentials](#set-up-provider-credentials).
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
+   metadata:
+     name: nebius-chat
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: openai/gpt-oss-120b
+     provider: Nebius
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   ---
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayModel
+   metadata:
+     name: nebius-embeddings
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     match:
+       model: Qwen/Qwen3-Embedding-8B
+     provider: Nebius
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+   EOF
+   ```
+
+   | Setting | Description |
+   |---------|-------------|
+   | `spec.match.model` | The model name that clients send in requests. The model forwards the same name to Nebius. |
+   | `spec.provider` | The `Nebius` preset. The preset supplies the default URL, `https://api.tokenfactory.nebius.com/v1`, and the Chat Completions and Embeddings request formats. |
+
+2. Send a Chat Completions request to the `openai/gpt-oss-120b` model.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl "http://$INGRESS_GW_ADDRESS/v1/chat/completions" \
+     -H 'Content-Type: application/json' \
+     -d '{
+       "model": "openai/gpt-oss-120b",
+       "messages": [{"role": "user", "content": "Explain retrieval-augmented generation in one sentence."}]
+     }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   Use the port-forward from the listener setup guide.
+
+   ```sh
+   curl http://localhost:8080/v1/chat/completions \
+     -H 'Content-Type: application/json' \
+     -d '{
+       "model": "openai/gpt-oss-120b",
+       "messages": [{"role": "user", "content": "Explain retrieval-augmented generation in one sentence."}]
+     }' | jq
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+3. Send an Embeddings request to the `Qwen/Qwen3-Embedding-8B` model.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl "http://$INGRESS_GW_ADDRESS/v1/embeddings" \
+     -H 'Content-Type: application/json' \
+     -d '{"model": "Qwen/Qwen3-Embedding-8B", "input": "Retrieval-augmented generation"}' | jq
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   Use the port-forward from the listener setup guide.
+
+   ```sh
+   curl http://localhost:8080/v1/embeddings \
+     -H 'Content-Type: application/json' \
+     -d '{"model": "Qwen/Qwen3-Embedding-8B", "input": "Retrieval-augmented generation"}' | jq
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+#### Chat Completions requests with an {{< reuse "agw-docs/snippets/backend.md" >}} {#nebius-backend}
+
+1. Create the following {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: nebius
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: openai/gpt-oss-120b
+         host: api.tokenfactory.nebius.com
+         port: 443
+         path: /v1/chat/completions
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+       tls:
+         sni: api.tokenfactory.nebius.com
+   EOF
+   ```
+
+2. Create an HTTPRoute to the {{< reuse "agw-docs/snippets/backend.md" >}} and send a Chat Completions request, as described in [Configure an AgentgatewayBackend](#set-up-access-to-an-openai-compatible-provider). In those steps, replace `llm-backend` with `nebius`.
+{{< /version >}}
 
 ### Perplexity example {#perplexity}
 
