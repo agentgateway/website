@@ -1,7 +1,7 @@
 ---
 title: Traffic management
 weight: 50
-description: Control traffic with matching, redirects, body buffering, rewrites, and transformations.
+description: Control traffic with matching, redirects, body buffering, compression, rewrites, and transformations.
 prev: /configuration/backends
 next: /configuration/resiliency
 ---
