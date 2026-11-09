@@ -162,7 +162,7 @@ print(body)
 
 
 > [!NOTE]
-> Model translations are not supported with passthrough, so avoid using a model match like `aws/*`, as it cannot be transformed.
+> With `passthrough: detect`, model transformations can still rewrite the model segment in Bedrock request paths. For example, a transformation can map a model match such as `aws/*` to the Bedrock model ID. Other passthrough traffic is forwarded without format conversion.
 
 ## Claude Platform on AWS
 

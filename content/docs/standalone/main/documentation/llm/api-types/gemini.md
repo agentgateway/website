@@ -8,7 +8,7 @@ The native Gemini API (`models/{model}:generateContent`) is the wire format that
 
 ## About
 
-The [Gemini API](https://ai.google.dev/api/generate-content) addresses a model through the request path rather than the request body, as `models/{model}:generateContent`. A client that is built on the Gemini or Vertex AI SDK sends this format directly, so pointing that client at agentgateway needs no OpenAI-compatible shim.
+The [Gemini API](https://aistudio.google.com/api-reference/generate-content) addresses a model through the request path rather than the request body, as `models/{model}:generateContent`. A client that is built on the Gemini or Vertex AI SDK sends this format directly, so pointing that client at agentgateway needs no OpenAI-compatible shim.
 
 Two route types carry the format:
 

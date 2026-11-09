@@ -140,6 +140,7 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
    > ```
    >
    > With `FailOpen`, if one MCP server is down, the gateway still serves tools from the remaining healthy servers. If all targets fail, the gateway returns an error.
+   > {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}`FailOpen` does not skip a target that rejects the client's token. If a target's [token exchange]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/" >}}) rejects an expired token, any call that reaches that target, including `tools/list`, returns the `401` so that the client can refresh the token and retry.{{< /version >}}
 
    > [!NOTE]
    > **Tool name prefixing**: When multiplexing, agentgateway namespaces tool and prompt names with the target name so that identical names from different servers do not collide. Resource URIs always retain target routing information and are unaffected. Control this behavior with the `prefixMode` field on the {{< reuse "agw-docs/snippets/backend.md" >}}:
@@ -155,6 +156,10 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
    >     targets:
    >       ...
    > ```
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+If two or more targets resolve to the same MCP target name, only one target is kept and the others are dropped with an error. The target to keep is chosen in the following order: a static target always wins over a selected Service. Among selected Services, a Service in the same namespace as the {{< reuse "agw-docs/snippets/backend.md" >}} wins, then a Service without the `agentgateway.dev/mcp-target-name` annotation, then the oldest Service. If the Services have the same age, the namespace and Service name break the tie. For how selector target names are generated, see [Target conditions]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
+{{< /version >}}
 
 ## Step 2: Route with agentgateway {#agentgateway}
 

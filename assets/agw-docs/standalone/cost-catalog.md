@@ -184,6 +184,8 @@ When a request matches an entry in the catalog, agentgateway populates these CEL
 
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}When an Anthropic Messages response reports `usage.iterations`, the request cost uses a separate calculation for each iteration. If an iteration names a `model` with an exact catalog match, the tokens for that iteration use that model's catalog entry. Otherwise, the iteration uses the response model. The request cost is the sum of those iteration costs.{{< /version >}}
 
+{{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}When a response reports a model, cost lookup uses the response model first. If the catalog has no matching entry, lookup uses the request model, then `llm.originalModel`. The lookup order helps a catalog price traffic whose model was rewritten by virtual models, aliases, provider overrides, or request body transformations.{{< /version >}}
+
 {{< version exclude-if="1.5.x" >}}For page-billed document models, `llm.cost.pages` reports the page-cost component, and `llm.costRates.perPage` reports the USD-per-page rate that was applied.{{< /version >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}For audio models that bill by duration, `llm.cost.audioDuration` reports the audio-duration cost component, and `llm.costRates.perAudioMinute` reports the USD-per-minute rate that was applied. For transcription and translation requests, `llm.audioSeconds` holds the audio duration in seconds that the provider reported, even when the model cannot be priced. For an example, see [Audio]({{< link-hextra path="/documentation/llm/api-types/audio/" >}}).{{< /version >}}

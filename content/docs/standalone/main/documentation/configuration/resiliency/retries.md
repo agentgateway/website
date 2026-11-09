@@ -12,7 +12,7 @@ When a backend request fails, agentgateway can be configured to *{{< gloss "Retr
 
 ## Configure retries {#configure}
 
-Add a `retry` policy to an MCP listener or a route.
+Add a `retry` policy to an MCP listener or a route. If you omit `attempts`, a failed request is retried once. To disable retries, set `attempts` to `0`.
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
