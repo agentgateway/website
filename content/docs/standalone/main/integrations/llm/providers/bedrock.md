@@ -79,89 +79,85 @@ llm:
 
 ## Passthrough
 
-If your applications directly use the AWS `Converse` or `Invoke` APIs, Agentgateway cannot translate these APIs to other providers.
-However, it can pass the request through to Bedrock itself following the [passthrough]({{< link-hextra path="/documentation/llm/api-types/passthrough/" >}}) approach.
-
-This can provide telemetry data for these requests.
-
-Requests to the native Bedrock paths, such as `/model/{modelId}/converse` and `/model/{modelId}/invoke`, are passed through by default, and the token usage is still recorded. You do not need to set `passthrough` on the model:
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  models:
-  - name: us.anthropic*
-    provider: bedrock
-    params:
-      awsRegion: us-west-2
-```
+If your applications directly use the AWS `Converse` or `Invoke` APIs, Agentgateway cannot translate these APIs to other providers. However, it can pass the request through to Bedrock itself following the [passthrough]({{< link-hextra path="/documentation/llm/api-types/passthrough/" >}}) approach. This approach can also provide telemetry data for these requests.
 
 > [!WARNING]
 > Do not set `passthrough` on a Bedrock model that also serves requests in another format, such as `/v1/chat/completions` or `/v1/messages`. The `passthrough` setting takes precedence over endpoint detection. For example, with `passthrough: detect`, a `/v1/chat/completions` request is forwarded to Bedrock unchanged instead of being converted to a Converse request. For more information, see [Passthrough and endpoint detection]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#llm-passthrough-precedence" >}}).
 
-Then, you can send native Converse and Invoke requests:
+1. Configure the Bedrock model. Requests to the native Bedrock paths, such as `/model/{modelId}/converse` and `/model/{modelId}/invoke`, are passed through by default, and the token usage is still recorded. You do not need to set `passthrough` on the model.
 
-{{< tabs >}}
-{{% tab name="Converse" %}}
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: us.anthropic*
+       provider: bedrock
+       params:
+         awsRegion: us-west-2
+   ```
 
-```python
-import json
+2. Send native Converse or Invoke requests.
 
-import boto3
+   {{< tabs >}}
+   {{% tab name="Converse" %}}
 
-client = boto3.client(
-    'bedrock-runtime',
-    region_name='us-west-2',
-    endpoint_url='http://localhost:4000',
-)
-response = client.converse(
-    modelId='us.anthropic.claude-sonnet-4-6',
-    messages=[
-        {
-            'role': 'user',
-            'content': [{'text': 'give 1 word answer'}]
-        }
-    ]
-)
-print('converse response:')
-print(response)
-```
+   ```python
+   import json
 
-{{% /tab %}}
-{{% tab name="Invoke" %}}
+   import boto3
 
-```python
-import json
+   client = boto3.client(
+       'bedrock-runtime',
+       region_name='us-west-2',
+       endpoint_url='http://localhost:4000',
+   )
+   response = client.converse(
+       modelId='us.anthropic.claude-sonnet-4-6',
+       messages=[
+           {
+               'role': 'user',
+               'content': [{'text': 'give 1 word answer'}]
+           }
+       ]
+   )
+   print('converse response:')
+   print(response)
+   ```
 
-import boto3
+   {{% /tab %}}
+   {{% tab name="Invoke" %}}
 
-client = boto3.client(
-    'bedrock-runtime',
-    region_name='us-west-2',
-    endpoint_url='http://localhost:4000',
-)
-response = client.invoke_model(
-    modelId='us.anthropic.claude-sonnet-4-6',
-    body=json.dumps({
-        'anthropic_version': 'bedrock-2023-05-31',
-        'max_tokens': 10,
-        'messages': [
-            {
-                'role': 'user',
-                'content': [{'type': 'text', 'text': 'give 1 word answer'}],
-            }
-        ],
-    }),
-)
-body = json.loads(response['body'].read())
+   ```python
+   import json
 
-print('invoke response:')
-print(body)
-```
+   import boto3
 
-{{% /tab %}}
-{{< /tabs >}}
+   client = boto3.client(
+       'bedrock-runtime',
+       region_name='us-west-2',
+       endpoint_url='http://localhost:4000',
+   )
+   response = client.invoke_model(
+       modelId='us.anthropic.claude-sonnet-4-6',
+       body=json.dumps({
+           'anthropic_version': 'bedrock-2023-05-31',
+           'max_tokens': 10,
+           'messages': [
+               {
+                   'role': 'user',
+                   'content': [{'type': 'text', 'text': 'give 1 word answer'}],
+               }
+           ],
+       }),
+   )
+   body = json.loads(response['body'].read())
 
+   print('invoke response:')
+   print(body)
+   ```
+
+   {{% /tab %}}
+   {{< /tabs >}}
 
 To use a client-facing model name that differs from the Bedrock model ID, such as `aws/*`, add a `transformation` that changes `model`. Agentgateway rewrites the model ID in the request path and does not add a `model` field to the request body.
 
