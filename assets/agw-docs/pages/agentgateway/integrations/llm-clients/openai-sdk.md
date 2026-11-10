@@ -1,6 +1,6 @@
 Call configured LLM providers from your application code through agentgateway with the OpenAI SDK for Python, Node.js, or Go.
 
-Agentgateway exposes an OpenAI-compatible API. Point the SDK's base URL at agentgateway and send OpenAI Chat Completions requests. Agentgateway forwards each request to the provider that matches the `model` field and translates it when the provider uses a different API, such as Anthropic, Bedrock, or Gemini. For per-provider API support, see [About LLMs]({{< link-hextra path="/documentation/llm/about/" >}}).
+Agentgateway exposes an OpenAI-compatible API. Point the SDK's base URL at agentgateway and send OpenAI Chat Completions requests. Agentgateway forwards each request to the provider that matches the `model` field and translates it when the provider uses a different API, such as Anthropic, Amazon Bedrock, or Vertex AI. For per-provider API support, see [About LLMs]({{< link-hextra path="/documentation/llm/about/" >}}).
 
 ## Before you begin
 
@@ -222,7 +222,7 @@ asyncio.run(main())
 | `completion_cost(...)` | Agentgateway prices each request from its [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) and records the USD cost in access logs, traces, and metrics. |
 | Provider keys, such as `ANTHROPIC_API_KEY`, in the application environment | `params.apiKey` on each model entry in the agentgateway configuration |
 
-With LiteLLM fallbacks, the failed request moves to the next model. With agentgateway failover, the request that triggers eviction returns an error, and later requests go to the next priority group. To retry the failed request, set `max_retries` on the client or a retry policy on agentgateway.
+With LiteLLM fallbacks, the failed request moves to the next model. With agentgateway failover, the request that triggers eviction returns an error, and later requests go to the next priority group. The OpenAI Python SDK retries that error twice by default (`max_retries=2`), and the retry reaches a model in that group. If you set `max_retries=0`, configure a retry policy on agentgateway instead.
 
 If you also run the LiteLLM proxy, convert its configuration with [Migrate from LiteLLM]({{< link-hextra path="/documentation/configuration/import/" >}}).
 {{% /version %}}
