@@ -134,7 +134,7 @@ Create an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} for each provid
      name: agentgateway-proxy
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
-     gatewayClassName: agentgateway
+     gatewayClassName: {{< reuse "agw-docs/snippets/agw-gatewayclass.md" >}}
      listeners:
      - name: http
        port: 80
