@@ -65,3 +65,7 @@ routes:
 
 > [!NOTE]
 > To use TLS for a custom prompt guard webhook, set `target.policies.backendTLS` on the webhook target instead. For more information, see [Configure webhook backend policies]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/#configure-webhook-backend-policies" >}}).
+
+## Invalid backend TLS settings {#invalid-backend-tls-settings}
+
+If a `backendTLS` block is invalid, such as when the `root` file does not contain valid PEM, agentgateway rejects the configuration instead of sending requests to the backend without TLS. At startup, agentgateway exits with code `1` and an error such as `Error: base64 decode error: InvalidCharacter(33)`. When you edit the configuration file of a running agentgateway, agentgateway logs `Failed to reload config` with the error and keeps using the previous configuration.

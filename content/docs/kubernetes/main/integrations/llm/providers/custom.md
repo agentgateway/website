@@ -28,8 +28,8 @@ For first-class providers such as OpenAI, Anthropic, Gemini, Vertex AI, Azure,
 Bedrock, and Ollama, use the dedicated provider page unless you need explicit
 format or backend target control. Some providers expose the standard OpenAI API
 shape but have no first-class {{< reuse "agw-docs/snippets/backend.md" >}} type,
-such as Cohere, DeepSeek, Groq, Mistral, Perplexity, Together AI, and xAI. For
-these providers, use [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}) before using a custom provider.
+such as Cohere, DeepSeek, Groq, Mistral, Nebius Token Factory, Perplexity,
+Together AI, and xAI. For these providers, use [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}) before using a custom provider.
 
 For TypeSafe Jev with an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}},
 set `spec.provider: Typesafe` unless you need custom target control. Use

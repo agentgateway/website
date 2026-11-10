@@ -280,3 +280,7 @@ Use the following request body with the route that you created.
 }
 ```
 {{% /version %}}
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+{{< reuse "agw-docs/snippets/gemini-reasoning-effort.md" >}}
+{{% /version %}}

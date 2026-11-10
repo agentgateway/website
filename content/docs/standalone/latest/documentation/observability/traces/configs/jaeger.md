@@ -50,6 +50,9 @@ Run a Jaeger container on the same host as agentgateway.
    {{% /tab %}}
    {{< /tabs >}}
 
+   > [!NOTE]
+   > {{< reuse "agw-docs/standalone/observability/docker-collector-host.md" >}}
+
 3. Open the Jaeger UI at [http://localhost:16686](http://localhost:16686) to view traces.
 
 4. When you are done, remove the Jaeger container.

@@ -70,6 +70,9 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
    {{% /tab %}}
    {{< /tabs >}}
 
+   > [!NOTE]
+   > {{< reuse "agw-docs/standalone/observability/docker-collector-host.md" >}}
+
 4. Send a request through agentgateway, then check the collector output to verify that log records are arriving.
    ```sh
    docker logs otel-collector
