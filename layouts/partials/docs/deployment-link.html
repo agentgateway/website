@@ -1,0 +1,41 @@
+{{- /*
+  Link equivalent Kubernetes and standalone pages when they share the same
+  version and relative URL. `site.GetPage` keeps this deliberately small and
+  safe: pages whose documentation structure differs render no link instead of
+  sending readers to a guessed destination or a 404.
+*/ -}}
+{{- $segments := split .RelPermalink "/" -}}
+{{- if and (ge (len $segments) 5) (eq (index $segments 1) "docs") -}}
+  {{- $currentSection := index $segments 2 -}}
+  {{- $targetSection := "" -}}
+  {{- $targetLabel := "" -}}
+  {{- $currentLabel := "" -}}
+  {{- if eq $currentSection "kubernetes" -}}
+    {{- $currentLabel = "Kubernetes" -}}
+    {{- $targetSection = "standalone" -}}
+    {{- $targetLabel = "Standalone" -}}
+  {{- else if eq $currentSection "standalone" -}}
+    {{- $currentLabel = "Standalone" -}}
+    {{- $targetSection = "kubernetes" -}}
+    {{- $targetLabel = "Kubernetes" -}}
+  {{- end -}}
+
+  {{- with $targetSection -}}
+    {{- $version := index $segments 3 -}}
+    {{- $relativePath := delimit (after 4 $segments) "/" -}}
+    {{- $targetPath := printf "/docs/%s/%s/%s" . $version $relativePath -}}
+    {{- with site.GetPage $targetPath -}}
+      {{- /* Below `lg`, chrome-top reserves 40px for a 69px fixed mobile nav.
+           The extra margin clears that nav; `lg` already reserves 80px. */ -}}
+      <nav aria-label="Deployment documentation" class="docs-deployment-link mt-8 border-y border-gray-200 dark:border-white/10 hx:print:hidden lg:mt-0">
+        <div class='mx-auto flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-6 py-2 text-sm text-gray-600 dark:text-gray-400 {{ partial "utils/page-width" . }}'>
+          <span>Viewing {{ $currentLabel }} docs</span>
+          <span aria-hidden="true">&middot;</span>
+          <a class="font-semibold text-violet-700 hover:text-violet-900 dark:text-violet-400 dark:hover:text-violet-300" href="{{ $targetPath }}">
+            View this topic for {{ $targetLabel }} <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+      </nav>
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
