@@ -24,7 +24,15 @@ Keycloak uses the standard RFC 8693 grant, so you configure it with the generic 
 
 4. Get admin access to a Keycloak server, version 26.2 or later. The gateway and your machine must reach Keycloak at the same URL, because Keycloak rejects an incoming token whose `iss` claim does not match the URL that the gateway calls. For Keycloak in the cluster, pin the issuer with the `KC_HOSTNAME` environment variable, as the [standard token exchange guide]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/" >}}) does.
 
-5. Install [`jq`](https://jqlang.org/download/), and get the `kcadm.sh` admin CLI from the `bin` directory of the [Keycloak distribution](https://www.keycloak.org/downloads), version {{< reuse "agw-docs/versions/keycloak.md" >}}.
+5. Install [`jq`](https://jqlang.org/download/).
+6. Download the Keycloak distribution and extract its `bin` directory, which has the [`kcadm.sh` admin CLI](https://www.keycloak.org/docs/latest/server_admin/#admin-cli). Then, add the directory to your `PATH`. The admin CLI requires Java 17 or later.
+
+   ```sh
+   export KEYCLOAK_VERSION={{< reuse "agw-docs/versions/keycloak.md" >}}
+   curl -sL https://github.com/keycloak/keycloak/releases/download/$KEYCLOAK_VERSION/keycloak-$KEYCLOAK_VERSION.tar.gz \
+     | tar xz keycloak-$KEYCLOAK_VERSION/bin
+   export PATH="$PWD/keycloak-$KEYCLOAK_VERSION/bin:$PATH"
+   ```
 
 ## Step 1: Configure the realm {#realm}
 
@@ -110,6 +118,8 @@ The backend received the exchanged token, for the `backend` audience with `agent
 }
 ```
 
+## Next steps
+
 The exchange does not validate the incoming token itself; Keycloak does. To reject an invalid or expired token at the gateway before it calls Keycloak, add a JWT authentication policy, as described in [Validate the incoming token at the edge]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/#edge-validation" >}}). Set `preserveToken: true` on that policy, so that the token is still in the request when the exchange runs.
 
 ## Troubleshooting {#troubleshooting}
@@ -147,4 +157,10 @@ The change lasts until the proxy restarts. Look for a message such as `oauth tok
 
    ```sh
    kcadm.sh delete realms/$REALM
+   ```
+
+4. Optional: Remove the Keycloak distribution that you downloaded.
+
+   ```sh
+   rm -rf keycloak-$KEYCLOAK_VERSION
    ```

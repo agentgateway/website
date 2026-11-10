@@ -1,12 +1,14 @@
 Standard token exchange needs a few settings in the realm: a confidential client for the gateway with token exchange turned on, the gateway in the audience of the user's token, the backend's audience available to the gateway, and optionally client scopes to down-scope the exchanged token. The following steps use the [`kcadm.sh` admin CLI](https://www.keycloak.org/docs/latest/server_admin/#admin-cli), which is in the `bin` directory of the Keycloak distribution. Each step also names the matching setting in the Admin Console.
 
-1. Save the URL of your Keycloak server and the name of your realm in environment variables, and log in to the admin CLI. The command prompts for the admin password.
+1. Save the URL of your Keycloak server and the name of your realm in environment variables, and log in to the admin CLI.
 
    ```sh
    export KEYCLOAK_URL=http://localhost:7080
    export REALM=agentgateway
    kcadm.sh config credentials --server $KEYCLOAK_URL --realm master --user admin
    ```
+
+   When prompted, enter the admin password, such as `admin`.
 
 2. Optional: If you do not have a realm to try the exchange in, create a test realm. The realm has a client that issues user tokens, `agent`, with direct access grants so that you can get a token with `curl`, a client that represents the backend API, `backend`, and a user, `testuser`. If you use your own realm, replace `agent`, `backend`, and the user in the following steps.
 

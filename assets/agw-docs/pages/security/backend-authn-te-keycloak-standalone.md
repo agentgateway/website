@@ -31,7 +31,15 @@ Keycloak uses the standard RFC 8693 grant, so you configure it with the generic 
      quay.io/keycloak/keycloak:{{< reuse "agw-docs/versions/keycloak.md" >}} start-dev
    ```
 
-3. Install [`jq`](https://jqlang.org/download/), and get the `kcadm.sh` admin CLI from the `bin` directory of the [Keycloak distribution](https://www.keycloak.org/downloads). For the local Keycloak container, you can run the CLI inside the container instead, with `docker exec keycloak /opt/keycloak/bin/kcadm.sh`.
+3. Install [`jq`](https://jqlang.org/download/).
+4. Download the Keycloak distribution and extract its `bin` directory, which has the [`kcadm.sh` admin CLI](https://www.keycloak.org/docs/latest/server_admin/#admin-cli). Then, add the directory to your `PATH`. The admin CLI requires Java 17 or later.
+
+   ```sh
+   export KEYCLOAK_VERSION={{< reuse "agw-docs/versions/keycloak.md" >}}
+   curl -sL https://github.com/keycloak/keycloak/releases/download/$KEYCLOAK_VERSION/keycloak-$KEYCLOAK_VERSION.tar.gz \
+     | tar xz keycloak-$KEYCLOAK_VERSION/bin
+   export PATH="$PWD/keycloak-$KEYCLOAK_VERSION/bin:$PATH"
+   ```
 
 ## Step 1: Configure the realm {#realm}
 
@@ -104,6 +112,8 @@ The backend received the exchanged token, for the `backend` audience with `agent
 }
 ```
 
+## Next steps
+
 The exchange does not validate the incoming token itself; Keycloak does. To reject an invalid or expired token at the gateway before it calls Keycloak, add a [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) policy to the route. Set `preserveToken: true` on that policy, so that the token is still in the request when the exchange runs.
 
 ## Troubleshooting {#troubleshooting}
@@ -125,4 +135,10 @@ When Keycloak rejects the exchange, the gateway returns `400` with the body `inv
    ```sh
    kcadm.sh delete realms/$REALM
    docker rm -f keycloak
+   ```
+
+3. Optional: Remove the Keycloak distribution that you downloaded.
+
+   ```sh
+   rm -rf keycloak-$KEYCLOAK_VERSION
    ```
