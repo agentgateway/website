@@ -16,13 +16,13 @@ Review the release notes for agentgateway standalone.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4185 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4188 -->
 
-A model that sets `passthrough` now always passes requests through, even on a known LLM endpoint. Previously, `passthrough` controlled only how agentgateway handled unknown paths. Model transformations also rewrite the model ID in the request path of Bedrock, Vertex AI, and Gemini requests, instead of applying only to the `model` field in the request body. For more information, see [Transform requests]({{< link-hextra path="/documentation/llm/transformations/" >}}).
+A model that sets `passthrough` now always passes requests through, even on a known LLM endpoint. Previously, `passthrough` controlled only how agentgateway handled unknown paths. Model transformations also rewrite the model ID in the request path of Bedrock, Vertex AI, and Gemini requests, instead of applying only to the `model` field in the request body. For more information, see [Passthrough and endpoint detection]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#llm-passthrough-precedence" >}}).
 
 ## 🌟 New features {#v18-new-features}
 
 ### LLM {#v18-llm}
 
-- **Nebius Token Factory provider**: Set `provider: nebius` to route requests to Nebius Token Factory at `https://api.tokenfactory.nebius.com/v1`. The preset supports Chat Completions and Embeddings, and the built-in model catalog includes Nebius pricing. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4225 -->
+- **Nebius Token Factory provider**: Set `provider: nebius` to route requests to Nebius Token Factory at `https://api.tokenfactory.nebius.com/v1`. The preset supports Chat Completions and Embeddings, and the built-in model catalog includes Nebius pricing. For more information, see [Nebius Token Factory]({{< link-hextra path="/integrations/llm/providers/nebius/" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4225 -->
 - **Original client model**: CEL expressions can read `llm.originalModel`, the model name that the client sent before virtual model routing, aliases, provider overrides, or request body rewrites. Cost lookup now also falls back to `llm.originalModel` when the catalog has no price for the response or request model, so requests whose model was rewritten are still priced. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4215 -->
 
 ### Observability {#v18-observability}
