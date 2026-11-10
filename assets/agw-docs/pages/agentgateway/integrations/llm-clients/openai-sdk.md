@@ -134,7 +134,7 @@ client = OpenAI()  # picks up OPENAI_BASE_URL and OPENAI_API_KEY from env
 
 Add a model entry for each provider with a provider prefix. The SDK code stays the same; only the `model` value changes.
 
-Set `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` to your provider API keys in the environment that starts agentgateway. These are the real provider credentials; keep them separate from the placeholder API key used by the SDK examples. Start or restart agentgateway with the following configuration:
+In the following agentgateway configuration file, set `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` to your actual provider API keys. The SDK examples use placeholder values for the API keys.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
