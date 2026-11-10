@@ -10,14 +10,15 @@
   },
   "packages": {
     "agentgateway-oss-standalone.zip": {
-      "sha256": "1042d8bc3462eee263d5a6f6836ec67910de539eb8220a0d4ac9fe0c0353ceaf",
+      "sha256": "055440bbfddda986d81a6c1db5e51ea9f7d8b656208082c3a20b5b3272610133",
       "files": {
         "agentgateway-oss-standalone/LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
-        "agentgateway-oss-standalone/SKILL.md": "371365b22e08a41cc92e7400d4e575181107b694a91c86c98c200c1eacde5b2c",
+        "agentgateway-oss-standalone/SKILL.md": "63481369458386c46e2dde3b331f02bb4acd98225565299c56a67c03c77dbf77",
         "agentgateway-oss-standalone/agents/openai.yaml": "ec3b2b82c6ae2ee0d3ab25960ebedbc5186dcc3b5517c7f46e622f243e801cf3",
-        "agentgateway-oss-standalone/package.json": "fd89a8e74cb602467d5c821f0685cb511c88251b8d0e3ed7eda82d2433da750a",
+        "agentgateway-oss-standalone/package.json": "0d971f7e1f092f57829ec4d982f339acb0e0a1781eed584c2504062345ce40c6",
         "agentgateway-oss-standalone/references/edition-boundaries.md": "b17889c8be2c3ef40e319cd94e2e158e18c71a6495dbc7f62bc42049a01e8b98",
         "agentgateway-oss-standalone/references/llm-setup.md": "2f993f5ae82401096caac89264cd1565505f0d819b0ceeee9f23fa55593fe3f8",
+        "agentgateway-oss-standalone/references/native-config.md": "10db7734c46fc48c91750c82b45c3152e2423357734d1465746cebbb9f4088e3",
         "agentgateway-oss-standalone/references/sources.md": "60aecfc6fcba4beef5047eba20a426c3f1de277a390d0ae649d8d597137756bf",
         "agentgateway-oss-standalone/references/verification-helpers.md": "bc60ca2b59394214ec4ce6ff10ca3ff922d4aa2666ce75345f0e4aa8c0ba4477",
         "agentgateway-oss-standalone/references/verification.md": "c03417cabbbd0c9cc021723433b46ac0ea5c9a055d8f1ab23047f646f464ec61",
