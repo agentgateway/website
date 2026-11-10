@@ -22,7 +22,7 @@ Keycloak uses the standard RFC 8693 grant, so you configure it with the generic 
 
 {{< reuse "agw-docs/snippets/prereq.md" >}}
 
-4. Get admin access to a Keycloak server, version 26.2 or later. The gateway and your machine must reach Keycloak at the same URL, because Keycloak rejects an incoming token whose `iss` claim does not match the URL that the gateway calls. For Keycloak in the cluster, pin the issuer with the `KC_HOSTNAME` environment variable, as the [standard token exchange guide]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/" >}}) does.
+4. Get admin access to a Keycloak server, version 26.2 or later. The gateway and your machine must reach Keycloak at the same URL, because Keycloak rejects an incoming token with an `iss` claim that does not match the URL that the gateway calls. If you run Keycloak in the cluster, set the issuer with the `KC_HOSTNAME` environment variable. For an example, see the [standard token exchange guide]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/" >}}).
 
 5. Install [`jq`](https://jqlang.org/download/).
 6. Download the Keycloak distribution and extract its `bin` directory, which has the [`kcadm.sh` admin CLI](https://www.keycloak.org/docs/latest/server_admin/#admin-cli). Then, add the directory to your `PATH`. The admin CLI requires Java 17 or later.
@@ -96,7 +96,7 @@ Keycloak uses the standard RFC 8693 grant, so you configure it with the generic 
 
 ## Step 3: Verify the exchange {#verify}
 
-Send a request to the httpbin `/headers` endpoint through the gateway, with the user's token, and decode the token that httpbin received. If more than 5 minutes passed since you got the user token in Step 1, get a new one first.
+Send a request to the httpbin `/headers` endpoint through the gateway, with the user's token, and decode the token that httpbin received. If more than 5 minutes passed since you saved the token in the `$INBOUND_TOKEN` environment variable, get a new token by repeating step 7 of the realm setup.
 
 ```sh
 curl -s http://$INGRESS_GW_ADDRESS/headers \

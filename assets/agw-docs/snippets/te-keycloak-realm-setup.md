@@ -1,4 +1,4 @@
-Standard token exchange needs a few settings in the realm: a confidential client for the gateway with token exchange turned on, the gateway in the audience of the user's token, the backend's audience available to the gateway, and optionally client scopes to down-scope the exchanged token. The following steps use the [`kcadm.sh` admin CLI](https://www.keycloak.org/docs/latest/server_admin/#admin-cli), which is in the `bin` directory of the Keycloak distribution. Each step also names the matching setting in the Admin Console.
+Standard token exchange needs a few settings in the realm: a confidential client for the gateway with token exchange turned on, the gateway in the audience of the user's token, the backend's audience available to the gateway, and a client scope to down-scope the exchanged token. The following steps use the [`kcadm.sh` admin CLI](https://www.keycloak.org/docs/latest/server_admin/#admin-cli), which is in the `bin` directory of the Keycloak distribution. Each step also names the matching setting in the Admin Console.
 
 1. Save the URL of your Keycloak server and the name of your realm in environment variables, and log in to the admin CLI.
 
@@ -10,7 +10,7 @@ Standard token exchange needs a few settings in the realm: a confidential client
 
    When prompted, enter the admin password, such as `admin`.
 
-2. Optional: If you do not have a realm to try the exchange in, create a test realm. The realm has a client that issues user tokens, `agent`, with direct access grants so that you can get a token with `curl`, a client that represents the backend API, `backend`, and a user, `testuser`. If you use your own realm, replace `agent`, `backend`, and the user in the following steps.
+2. Optional: If you do not have a realm to try the exchange in, create a test realm, and set up the required clients and user. The realm has a client that issues user tokens, `agent`, with direct access grants so that you can get a token with `curl`, a client that represents the backend API, `backend`, and a user, `testuser`. If you use your own realm, replace `agent`, `backend`, and the user in the following steps.
 
    ```sh
    kcadm.sh create realms -s realm=$REALM -s enabled=true
@@ -32,7 +32,7 @@ Standard token exchange needs a few settings in the realm: a confidential client
    export GATEWAY_CLIENT_SECRET=$(kcadm.sh get clients/$GATEWAY_ID/client-secret -r $REALM --fields value --format csv --noquotes)
    ```
 
-4. Add the gateway to the audience of the user's token. Keycloak exchanges a token only for a client that is in the token's `aud` claim. Create a client scope with an audience mapper for `agentgateway`, and make it a default client scope of the `agent` client, which issues the user's token. In the Admin Console, the mapper is an **Audience** mapper with **Included Client Audience** set to `agentgateway`.
+4. Make the user's token name the gateway as a recipient. Keycloak exchanges a token only if the client that asks for the exchange, `agentgateway`, is in the token's `aud` claim. Create a client scope with an audience mapper for `agentgateway`, and make it a default client scope of the `agent` client, which issues the user's token. In the Admin Console, the mapper is an **Audience** mapper with **Included Client Audience** set to `agentgateway`. Tokens from `agent` now include `agentgateway` in `aud`.
 
    ```sh
    SCOPE_ID=$(kcadm.sh create client-scopes -r $REALM -s name=agentgateway-audience \
@@ -44,7 +44,7 @@ Standard token exchange needs a few settings in the realm: a confidential client
    kcadm.sh update clients/$AGENT_ID/default-client-scopes/$SCOPE_ID -r $REALM
    ```
 
-5. Make the backend's audience available to the gateway. The `audience` of an exchange must be an audience that the gateway's client can get in its own tokens. Create a client scope with an audience mapper for `backend`, and make it a default client scope of the `agentgateway` client.
+5. Allow the gateway to request a token for the backend. Keycloak issues the exchanged token only for an audience that the gateway's client can get in its own tokens. Create a client scope with an audience mapper for `backend`, and make it a default client scope of the `agentgateway` client. This step is the counterpart to step 4, which covers the incoming token.
 
    ```sh
    SCOPE_ID=$(kcadm.sh create client-scopes -r $REALM -s name=backend-audience \
@@ -55,14 +55,14 @@ Standard token exchange needs a few settings in the realm: a confidential client
    kcadm.sh update clients/$GATEWAY_ID/default-client-scopes/$SCOPE_ID -r $REALM
    ```
 
-6. Optional: Create a client scope that the gateway can request in the exchange, such as `backend.read`, and make it an optional client scope of the `agentgateway` client. When the gateway sends the scope, Keycloak adds it to the `scope` claim of the exchanged token.
+6. Create a client scope that the gateway can request in the exchange, such as `backend.read`, and make it an optional client scope of the `agentgateway` client. When the gateway sends the scope, Keycloak adds it to the `scope` claim of the exchanged token. The scope limits what the exchanged token allows, so the backend can check the `scope` claim and grant the request only read access. The gateway configuration in this guide requests `backend.read`.
 
    ```sh
    SCOPE_ID=$(kcadm.sh create client-scopes -r $REALM -s name=backend.read -s protocol=openid-connect -i)
    kcadm.sh update clients/$GATEWAY_ID/optional-client-scopes/$SCOPE_ID -r $REALM
    ```
 
-7. Get an access token for the test user from the `agent` client, and save it in an environment variable. Keycloak access tokens expire after 5 minutes by default, so get a new one if you come back to this guide later.
+7. Get an access token for the test user from the `agent` client, and save it in an environment variable. You use this token as the incoming token that a real client would send to the gateway. Keycloak access tokens expire after 5 minutes by default, so get a new one if you come back to this guide later.
 
    ```sh
    export INBOUND_TOKEN=$(curl -s $KEYCLOAK_URL/realms/$REALM/protocol/openid-connect/token \
@@ -93,3 +93,5 @@ Standard token exchange needs a few settings in the realm: a confidential client
      "scope": "backend.read profile email"
    }
    ```
+
+   The output confirms that the realm is ready for the gateway. The `aud` claim is `backend`, the `azp` claim is `agentgateway`, and the `sub` claim is the same user as in the incoming token. The `scope` claim includes `backend.read`, plus the default client scopes of the `agentgateway` client. If the exchange fails, Keycloak returns an error instead, such as `Client is not within the token audience`. For more errors, see [Troubleshooting](#troubleshooting).

@@ -91,7 +91,7 @@ Keycloak uses the standard RFC 8693 grant, so you configure it with the generic 
 
 ## Step 3: Verify the exchange {#verify}
 
-In the first terminal, send a request to the httpbin `/headers` endpoint through the gateway, with the user's token, and decode the token that httpbin received. If more than 5 minutes passed since you got the user token in Step 1, get a new one first.
+In the first terminal, send a request to the httpbin `/headers` endpoint through the gateway, with the user's token, and decode the token that httpbin received. If more than 5 minutes passed since you saved the token in the `$INBOUND_TOKEN` environment variable, get a new token by repeating step 7 of the realm setup.
 
 ```sh
 curl -s http://localhost:3000/headers \

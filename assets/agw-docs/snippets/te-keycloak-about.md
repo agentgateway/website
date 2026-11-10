@@ -2,7 +2,7 @@ Keycloak implements the RFC 8693 token exchange grant as [standard token exchang
 
 ```mermaid
 sequenceDiagram
-    participant Client
+    participant Client as Client (agent)
     participant AGW as agentgateway
     participant KC as Keycloak
     participant API as Backend
@@ -14,5 +14,16 @@ sequenceDiagram
     API-->>AGW: Response
     AGW-->>Client: Response
 ```
+
+The guide uses three Keycloak clients.
+
+- `agent` is the caller. It signs in the user and gets the user's token, called the incoming token. In the test realm, you play this client yourself and use `curl` to get the token.
+- `agentgateway` is the gateway. It sends the incoming token to Keycloak and gets the exchanged token back.
+- `backend` represents the backend API. Keycloak issues the exchanged token for this audience, and the gateway sends the token to the backend.
+
+Keycloak checks two audiences during the exchange.
+
+- The incoming token must list `agentgateway` in its `aud` claim.
+- `agentgateway` must be allowed to get `backend` in its own tokens.
 
 The {{% conditional-text exclude-if="standalone" %}}[standard token exchange guide]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/" >}}){{% /conditional-text %}}{{% conditional-text include-if="standalone" %}}[standard token exchange guide]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/standard/" >}}){{% /conditional-text %}} runs this exchange end to end against a sample Keycloak realm that comes preconfigured. This guide shows the realm settings that make the exchange work, so that you can set up your own realm.

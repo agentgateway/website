@@ -4,7 +4,7 @@ In this guide, agentgateway is the service app. The client sends the user's Okta
 
 ```mermaid
 sequenceDiagram
-    participant Client
+    participant Client as Client (agentgateway-test-client)
     participant AGW as agentgateway
     participant Okta as Okta custom authorization server
     participant API as Backend
@@ -16,5 +16,11 @@ sequenceDiagram
     API-->>AGW: Response
     AGW-->>Client: Response
 ```
+
+The guide uses three Okta resources.
+
+- `agentgateway-test-client` is the caller. It signs in the user and gets the user's token, called the incoming token. In this guide, you play this app yourself and use `curl` to get the token.
+- `agentgateway` is the gateway, an API Services app. It sends the incoming token to Okta and gets the exchanged token back.
+- `agentgateway-backend` is the custom authorization server for the backend API. It issues both the incoming token and the exchanged token, with its audience, `api://agentgateway-backend`, in the `aud` claim.
 
 Unlike the Google Security Token Service, Okta authenticates the caller of the exchange. The gateway needs the client ID and client secret of an Okta API Services app that has the Token Exchange grant.

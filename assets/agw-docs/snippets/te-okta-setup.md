@@ -21,7 +21,7 @@ Create a custom authorization server for the backend, an API Services app for th
    export AUTH_SERVER_ID=<authorization-server-id>
    ```
 
-4. On the **Scopes** tab of the authorization server, click **Add Scope**, and create a scope named `backend.read`. The exchanged token can carry only scopes that exist on the authorization server.
+4. On the **Scopes** tab of the authorization server, click **Add Scope**, and create a scope named `backend.read`. The gateway requests this scope in the exchange, so that the exchanged token grants only read access to the backend. The backend can check the `scp` claim of the token to enforce it. The exchanged token can carry only scopes that exist on the authorization server.
 
 5. Create the API Services app that the gateway authenticates as. Go to **Applications** > **Applications**, click **Create App Integration**, select **API Services**, and name the app `agentgateway`.
    1. In the **General Settings** section, click **Edit**. In the **Grant type** section, expand **Advanced**, select **Token Exchange**, and save. Keep **Client Credentials** selected. Okta requires it for an API Services app.
@@ -58,7 +58,7 @@ Create a custom authorization server for the backend, an API Services app for th
 {{% tab name="Okta API" %}}
 1. Open the Okta Admin Console. Sign in to your Okta org, such as `https://<your-org>.okta.com`, and click **Admin** in the upper-right corner. You can also go to the Admin Console URL directly, `https://<your-org>-admin.okta.com`.
 
-2. Go to **Security** > **API** > **Tokens**, and click **Create token**. an API token for the [Okta management API](https://developer.okta.com/docs/api/). The API token for the [Okta management API](https://developer.okta.com/docs/api/) has the permissions of the admin who creates it, so create it as a super administrator, who can manage authorization servers, apps, users, and authentication policies. Okta shows the token value only once.
+2. Create an API token for the [Okta management API](https://developer.okta.com/docs/api/). Go to **Security** > **API** > **Tokens**, and click **Create token**. The API token has the permissions of the admin who creates it, so create it as a super administrator, who can manage authorization servers, apps, users, and authentication policies. Okta shows the token value only once.
 
 3. Save your Okta domain and the API token in environment variables. Use the domain without the `https://` scheme or the `-admin` suffix of the Admin Console URL.
 
@@ -86,7 +86,7 @@ Create a custom authorization server for the backend, an API Services app for th
    abc123...
    ```
 
-5. Create the `backend.read` scope on the authorization server. The exchanged token can carry only scopes that exist on the authorization server.
+5. Create the `backend.read` scope on the authorization server. The gateway requests this scope in the exchange, so that the exchanged token grants only read access to the backend. The backend can check the `scp` claim of the token to enforce it. The exchanged token can carry only scopes that exist on the authorization server.
 
    ```sh
    curl -s -X POST https://$OKTA_DOMAIN/api/v1/authorizationServers/$AUTH_SERVER_ID/scopes \

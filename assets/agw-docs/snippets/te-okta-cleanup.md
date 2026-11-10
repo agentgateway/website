@@ -1,6 +1,6 @@
 {{< tabs >}}
 {{% tab name="Admin Console" %}}
-In the Okta Admin Console, delete the resources that you created: the `agentgateway-test-password-only` authentication policy, the `agentgateway-backend` authorization server, the `agentgateway` and `agentgateway-test-client` apps, and the test user. Deactivate each app and the user before you delete them.
+In the Okta Admin Console, delete the resources that you created, including the `agentgateway-test-password-only` authentication policy, the `agentgateway-backend` authorization server, the `agentgateway` and `agentgateway-test-client` apps, and the test user. Deactivate each app and the user before you delete them.
 {{% /tab %}}
 {{% tab name="Okta API" %}}
 Delete the Okta resources that you created. Okta deletes only deactivated apps, users, and authorization servers, so each resource is deactivated first. Each delete command returns `204`.
