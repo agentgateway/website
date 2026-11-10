@@ -1,4 +1,4 @@
 {{% upstream %}}
 > [!TIP]
-> Prefer to work with an AI coding assistant? [Set up with an AI assistant]({{< link-hextra path="/documentation/quickstart/ai-assistant/" >}}) explains how to install the optional OSS skill, configure your gateway, and verify the result.
+> Want your AI coding assistant to set up agentgateway for you? Install the [skill for AI assistants]({{< link-hextra path="/documentation/quickstart/ai-assistant/" >}}), which teaches Claude Code, Codex, and other assistants how to install, configure, and verify agentgateway.
 {{% /upstream %}}

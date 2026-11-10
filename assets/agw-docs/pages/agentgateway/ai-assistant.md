@@ -1,4 +1,6 @@
-Use an AI coding assistant to configure, deploy, and troubleshoot agentgateway with instructions for your edition and deployment mode. The skill reads current public documentation, inspects your actual runtime, and verifies the requested behavior.
+Let your AI coding assistant set up agentgateway for you. Unlike the other getting-started guides, this guide does not route traffic through agentgateway to an AI backend. Instead, you install a skill: a packaged set of instructions that teaches your assistant, such as Claude Code or Codex, how to install, configure, and troubleshoot agentgateway for your edition and deployment mode.
+
+After you install the skill, your assistant reads the current public documentation, inspects your actual runtime, and verifies the behavior that you request.
 
 {{% conditional-text include-if="standalone" %}}
 **Target: OSS standalone configuration.** Run agentgateway on your selected reachable host, VM, server, or container environment. A laptop is one possible target. Standalone Helm hosting also uses this configuration model. For Gateway API and controller-managed resources, use the [Kubernetes skill guide](/docs/kubernetes/latest/documentation/quickstart/ai-assistant/).
@@ -8,7 +10,7 @@ Use an AI coding assistant to configure, deploy, and troubleshoot agentgateway w
 {{% /conditional-text %}}
 
 > [!NOTE]
-> These skills are a preview. Review generated changes and verify them in your environment. The [manual quickstarts]({{< link-hextra path="/documentation/quickstart/" >}}) remain available.
+> These skills are a preview. Review generated changes and verify them in your environment. To set up agentgateway yourself instead, follow the other [getting-started guides]({{< link-hextra path="/documentation/quickstart/" >}}).
 
 ## Why use a skill?
 

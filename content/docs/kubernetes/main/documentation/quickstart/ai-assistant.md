@@ -1,8 +1,8 @@
 ---
-title: Set up with an AI assistant
-linkTitle: AI assistant
-weight: 14
-description: Use Claude Code or Codex with an OSS skill to configure, run, and verify agentgateway with the Kubernetes controller.
+title: Skill for AI assistants
+linkTitle: Skill for AI assistants
+weight: 5
+description: Install a skill that teaches your AI coding assistant, such as Claude Code or Codex, to set up, configure, and verify agentgateway on Kubernetes for you.
 skillName: agentgateway-oss-kubernetes
 skillDownload: /downloads/agent-skills/current/agentgateway-oss-kubernetes.zip
 ---
