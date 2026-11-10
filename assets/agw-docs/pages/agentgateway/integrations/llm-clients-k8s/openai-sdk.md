@@ -123,9 +123,8 @@ Create an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} for each provid
 
 1. Allow the {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} kind on the Gateway listener. Keep `HTTPRoute` in the list to keep HTTPRoutes on other paths, such as `/openai`.
 
-   {{< callout type="warning" >}}
-   After you allow {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, the listener serves LLM paths such as `/v1/chat/completions` from its models instead of from HTTPRoutes. A request for a model name with no matching model, such as `gpt-4o-mini` without a prefix, returns a model-not-found error.
-   {{< /callout >}}
+   > [!WARNING]
+   > After you allow {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}, the listener serves LLM paths such as `/v1/chat/completions` from its models instead of from HTTPRoutes. A request for a model name with no matching model, such as `gpt-4o-mini` without a prefix, returns a model-not-found error.
 
    ```yaml
    kubectl apply -f- <<EOF
