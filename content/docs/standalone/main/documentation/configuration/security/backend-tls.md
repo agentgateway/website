@@ -68,10 +68,4 @@ routes:
 
 ## Invalid backend TLS settings {#invalid-backend-tls-settings}
 
-If a backend TLS policy cannot be built, requests that use that backend fail with HTTP `503`. This fail-closed behavior applies in the following cases:
-
-* The certificate files are invalid.
-* The hostname or Subject Alternative Name (SAN) settings cannot be used.
-* The crypto provider does not allow a configured key exchange group.
-
-The proxy records a warning such as `invalid backend TLS policy, requests to the backend will fail: <error>`. The proxy does not connect to the backend in plaintext. An invalid update to a previously working backend TLS policy also fails closed.
+If a `backendTLS` block is invalid, such as when the `root` file does not contain valid PEM, agentgateway rejects the configuration instead of sending requests to the backend without TLS. At startup, agentgateway exits with code `1` and an error such as `Error: base64 decode error: InvalidCharacter(33)`. When you edit the configuration file of a running agentgateway, agentgateway logs `Failed to reload config` with the error and keeps using the previous configuration.
