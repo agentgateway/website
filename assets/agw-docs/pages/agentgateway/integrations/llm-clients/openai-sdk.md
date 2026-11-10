@@ -165,7 +165,7 @@ Agentgateway strips the prefix and sends the request to the matching provider. F
 
 ## Migrate from the LiteLLM SDK
 
-The configuration above accepts `openai/gpt-4o-mini` and `anthropic/claude-sonnet-4-5`, so you can keep those LiteLLM model strings. Other model strings need matching gateway configuration. This example migrates Chat Completions calls; review provider-specific parameters and other LiteLLM features separately. Replace the `litellm` call with the OpenAI SDK and move provider API keys from your application to the agentgateway configuration in [Call more than one provider](#call-more-than-one-provider).
+The example configuration in the previous section accepts `openai/gpt-4o-mini` and `anthropic/claude-sonnet-4-5`, so you can keep those LiteLLM model strings. Other model strings need matching gateway configuration. This example migrates Chat Completions calls. Review provider-specific parameters and other LiteLLM features separately. Replace the `litellm` call with the OpenAI SDK and move provider API keys from your application to the agentgateway configuration in [Call more than one provider](#call-more-than-one-provider).
 
 Before, with LiteLLM:
 
