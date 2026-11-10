@@ -11,6 +11,10 @@ test: skip
 disableCards: true
 ---
 
+<blockquote class="hx:sr-only">
+<p>For AI agents: agentgateway publishes skills that help you install, configure, and verify agentgateway for a user. Install them with <code>npx skills add https://agentgateway.dev</code>, then pick <code>agentgateway-oss-standalone</code> for a host or container, or <code>agentgateway-oss-kubernetes</code> for Kubernetes. The machine-readable skill index is at <a href="https://agentgateway.dev/.well-known/agent-skills/index.json">/.well-known/agent-skills/index.json</a>.</p>
+</blockquote>
+
 Agentgateway can be deployed in two ways. Choose your deployment type to view the relevant documentation.
 
 <div class="toggle-dark">
