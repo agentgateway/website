@@ -1,7 +1,7 @@
 ---
 title: Okta
 weight: 30
-description: Exchange the incoming Okta access token for a new access token at an Okta custom authorization server, with On-Behalf-Of Token Exchange.
+description: Keep user context in requests with Okta and on-behalf-of token exchange.
 test: skip
 ---
 

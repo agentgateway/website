@@ -10,7 +10,7 @@ Okta uses the standard RFC 8693 grant, so you configure it with the generic `oau
 
 | Field | Value for Okta |
 | -- | -- |
-| `host`, `path` | `OKTA_DOMAIN:443` and `/oauth2/AUTH_SERVER_ID/v1/token`, the token endpoint of a custom authorization server. Okta supports On-Behalf-Of Token Exchange on custom authorization servers only. The org authorization server, at `/oauth2/v1/token`, does not accept this exchange. |
+| `host`, `path` | `OKTA_DOMAIN:443` and `/oauth2/AUTH_SERVER_ID/v1/token`, the token endpoint of a custom authorization server. Okta supports on-behalf-of token exchange on custom authorization servers only. The org authorization server, at `/oauth2/v1/token`, does not accept this exchange. |
 | `policies.backendTLS` | `{}`. A `host` port of `443` does not enable TLS by itself, so set `backendTLS` to originate TLS to Okta. |
 | `grantType` | `tokenExchange`, the default. |
 | `subjectToken.tokenType` | `urn:ietf:params:oauth:token-type:access_token`, the default. The subject token is a user's access token from the same custom authorization server, or from another custom authorization server in the same org that this server lists as a trusted server. |
@@ -23,7 +23,7 @@ Okta uses the standard RFC 8693 grant, so you configure it with the generic `oau
 
 1. [Install the agentgateway binary]({{< link-hextra path="/documentation/setup/install/binary/" >}}).
 2. Install [Docker](https://docs.docker.com/get-started/get-docker/) to run a sample backend.
-3. Get administrator access to an Okta org that supports On-Behalf-Of Token Exchange. Okta requires the NHI Authentication Tokens SKU for the exchange, which the free Okta Integrator plan does not include.
+3. Get administrator access to an Okta org that supports on-behalf-of token exchange. Okta requires the NHI Authentication Tokens SKU for the exchange, which the free Okta Integrator plan does not include.
 4. Install [`jq`](https://jqlang.org/download/).
 
 ## Step 1: Set up Okta {#okta}
@@ -139,7 +139,7 @@ When Okta rejects the exchange, the gateway returns `400` with the body `invalid
 | -- | -- |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 | `502` with `backend authentication failed` | The gateway connects to Okta over plain HTTP, and Okta resets the connection. The gateway logs show `Connection reset by peer`. Set `policies.backendTLS: {}` on the `oauthTokenExchange` method. |{{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 | `502` with `Connection reset by peer` | The gateway connects to Okta over plain HTTP. Set `policies.backendTLS: {}` on the `oauthTokenExchange` method. |{{< /version >}}
-| `invalid_grant`: The NHI Authentication Tokens SKU is not enabled. | Your Okta org does not have the SKU that On-Behalf-Of Token Exchange requires. Contact Okta to enable it. |
+| `invalid_grant`: The NHI Authentication Tokens SKU is not enabled. | Your Okta org does not have the SKU that on-behalf-of token exchange requires. Contact Okta to enable it. |
 | `invalid_request`: The required parameter 'actor_token' is missing. | The `path` points to the org authorization server, `/oauth2/v1/token`, or the configuration has no `audiences`. Use the token endpoint of a custom authorization server, and set `audiences` to the server's audience. |
 | `invalid_scope`: One or more scopes are not configured for the authorization server resource. | A value in `scopes` does not exist on the custom authorization server. |
 | `unauthorized_client`: The client is not authorized to use the provided grant type. | The app that `clientId` names does not have the Token Exchange grant. Edit the app's general settings, and select **Token Exchange** in the **Advanced** grant types. |

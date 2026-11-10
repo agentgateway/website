@@ -10,7 +10,7 @@ Okta uses the standard RFC 8693 grant, so you configure it with the generic `oau
 
 | Field | Value for Okta |
 | -- | -- |
-| `url` | `https://OKTA_DOMAIN/oauth2/AUTH_SERVER_ID/v1/token`, the token endpoint of a custom authorization server. Okta supports On-Behalf-Of Token Exchange on custom authorization servers only. The org authorization server, at `/oauth2/v1/token`, does not accept this exchange. Because the scheme is `https`, the gateway originates TLS to Okta. |
+| `url` | `https://OKTA_DOMAIN/oauth2/AUTH_SERVER_ID/v1/token`, the token endpoint of a custom authorization server. Okta supports on-behalf-of token exchange on custom authorization servers only. The org authorization server, at `/oauth2/v1/token`, does not accept this exchange. Because the scheme is `https`, the gateway originates TLS to Okta. |
 | `grantType` | `TokenExchange`, the default. |
 | `subjectToken.tokenType` | `AccessToken`, the default. The subject token is a user's access token from the same custom authorization server, or from another custom authorization server in the same org that this server lists as a trusted server. |
 | `requestedTokenType` | Omit. Okta returns an access token. |
@@ -24,7 +24,7 @@ Okta uses the standard RFC 8693 grant, so you configure it with the generic `oau
 
 {{< reuse "agw-docs/snippets/prereq.md" >}}
 
-4. Get administrator access to an Okta org that supports On-Behalf-Of Token Exchange. Okta requires the NHI Authentication Tokens SKU for the exchange, which the free Okta Integrator plan does not include.
+4. Get administrator access to an Okta org that supports on-behalf-of token exchange. Okta requires the NHI Authentication Tokens SKU for the exchange, which the free Okta Integrator plan does not include.
 
 5. Install [`jq`](https://jqlang.org/download/).
 
@@ -162,7 +162,7 @@ The change lasts until the proxy restarts. Look for a message such as `oauth tok
 
 | Error from Okta | Cause |
 | -- | -- |
-| `invalid_grant`: The NHI Authentication Tokens SKU is not enabled. | Your Okta org does not have the SKU that On-Behalf-Of Token Exchange requires. Contact Okta to enable it. |
+| `invalid_grant`: The NHI Authentication Tokens SKU is not enabled. | Your Okta org does not have the SKU that on-behalf-of token exchange requires. Contact Okta to enable it. |
 | `invalid_request`: The required parameter 'actor_token' is missing. | The `url` points to the org authorization server, `/oauth2/v1/token`, or the policy has no `audiences`. Use the token endpoint of a custom authorization server, and set `audiences` to the server's audience. |
 | `invalid_scope`: One or more scopes are not configured for the authorization server resource. | A value in `scopes` does not exist on the custom authorization server. |
 | `unauthorized_client`: The client is not authorized to use the provided grant type. | The app that `clientId` names does not have the Token Exchange grant. Edit the app's general settings, and select **Token Exchange** in the **Advanced** grant types. |

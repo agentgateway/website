@@ -1,7 +1,7 @@
 ---
 title: Keycloak
 weight: 40
-description: Exchange the incoming Keycloak access token for a new access token for the backend, with Keycloak standard token exchange.
+description: Keep user context in requests with Keycloak standard token exchange.
 test: skip
 ---
 
