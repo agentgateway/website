@@ -249,14 +249,37 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-For asynchronous calls, import `AsyncOpenAI` from `openai` and initialize `async_client` with the same `base_url` and `api_key` as the synchronous client. Await the request inside an `async` function.
+For asynchronous calls, replace `acompletion` with `AsyncOpenAI`:
+
+```python
+import asyncio
+import os
+from openai import AsyncOpenAI
+
+async_client = AsyncOpenAI(base_url=f"http://{os.environ['INGRESS_GW_ADDRESS']}/v1", api_key="anything")
+
+async def main():
+    response = await async_client.chat.completions.create(
+        model="anthropic/claude-sonnet-4-5",
+        messages=[{"role": "user", "content": "Hello!"}],
+    )
+    print(response.choices[0].message.content)
+
+asyncio.run(main())
+```
 
 | LiteLLM SDK | OpenAI SDK with agentgateway |
 |---|---|
 | `completion(...)` | `client.chat.completions.create(...)` |
 | `await acompletion(...)` | `await async_client.chat.completions.create(...)` |
 | `stream=True` | `stream=True` |
+| `embedding(...)` | `client.embeddings.create(...)` |
+| `num_retries=3` | `OpenAI(..., max_retries=3)` on the client, or a [retry policy]({{< link-hextra path="/documentation/resiliency/retry/retry/" >}}) on the gateway |
+| `Router(..., fallbacks=[...])` | A [virtual model with failover routing]({{< link-hextra path="/documentation/llm/models/virtual/#fail-over-when-a-model-degrades" >}}). The client sends the virtual model name. |
+| `completion_cost(...)` | Agentgateway prices each request from its [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) and records the USD cost in access logs, traces, and metrics. |
 | Provider keys, such as `ANTHROPIC_API_KEY`, in the application environment | A Kubernetes secret referenced by each {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} |
+
+With LiteLLM fallbacks, the failed request moves to the next model. With agentgateway failover, the request that triggers eviction returns an error, and later requests go to the next priority group. To retry the failed request, set `max_retries` on the client or a retry policy on the gateway.
 {{% /version %}}
 
 ## Authenticate with a JWT

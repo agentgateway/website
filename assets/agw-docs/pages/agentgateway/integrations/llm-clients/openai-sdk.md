@@ -193,14 +193,36 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-For asynchronous calls, import `AsyncOpenAI` from `openai` and initialize `async_client` with the same `base_url` and `api_key` as the synchronous client. Await the request inside an `async` function.
+For asynchronous calls, replace `acompletion` with `AsyncOpenAI`:
+
+```python
+import asyncio
+from openai import AsyncOpenAI
+
+async_client = AsyncOpenAI(base_url="http://localhost:3000/v1", api_key="anything")
+
+async def main():
+    response = await async_client.chat.completions.create(
+        model="anthropic/claude-sonnet-4-5",
+        messages=[{"role": "user", "content": "Hello!"}],
+    )
+    print(response.choices[0].message.content)
+
+asyncio.run(main())
+```
 
 | LiteLLM SDK | OpenAI SDK with agentgateway |
 |---|---|
 | `completion(...)` | `client.chat.completions.create(...)` |
 | `await acompletion(...)` | `await async_client.chat.completions.create(...)` |
 | `stream=True` | `stream=True` |
+| `embedding(...)` | `client.embeddings.create(...)`. See [Embeddings]({{< link-hextra path="/documentation/llm/api-types/embeddings/" >}}). |
+| `num_retries=3` | `OpenAI(..., max_retries=3)` on the client, or a [retry policy]({{< link-hextra path="/documentation/configuration/resiliency/retries/" >}}) on agentgateway |
+| `Router(..., fallbacks=[...])` | A [virtual model with failover routing]({{< link-hextra path="/documentation/llm/virtual-models/#failover-routing" >}}). The client sends the virtual model name. |
+| `completion_cost(...)` | Agentgateway prices each request from its [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) and records the USD cost in access logs, traces, and metrics. |
 | Provider keys, such as `ANTHROPIC_API_KEY`, in the application environment | `params.apiKey` on each model entry in the agentgateway configuration |
+
+With LiteLLM fallbacks, the failed request moves to the next model. With agentgateway failover, the request that triggers eviction returns an error, and later requests go to the next priority group. To retry the failed request, set `max_retries` on the client or a retry policy on agentgateway.
 
 If you also run the LiteLLM proxy, convert its configuration with [Migrate from LiteLLM]({{< link-hextra path="/documentation/configuration/import/" >}}).
 {{% /version %}}
