@@ -184,7 +184,7 @@ params:
     issueRepo: agentgateway/website
 
   llms:
-    docsIntro: agentgateway is an open source proxy and gateway that unifies HTTP, gRPC, LLM, MCP, and A2A traffic in one data plane.
+    docsIntro: agentgateway is an open source proxy and gateway that unifies HTTP, gRPC, LLM, MCP, and A2A traffic in one data plane. AI agents can install skills that set up agentgateway with `npx skills add https://agentgateway.dev` (index at https://agentgateway.dev/.well-known/agent-skills/index.json).
 
   editURL:
     enable: false

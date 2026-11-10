@@ -5,6 +5,7 @@ on:
     paths:
       - 'skills/**'
       - 'static/downloads/agent-skills/**'
+      - 'static/.well-known/agent-skills/**'
       - 'scripts/package-agent-skills.py'
       - 'scripts/refresh-agent-skill-metadata.py'
       - 'scripts/check-skill-*.py'

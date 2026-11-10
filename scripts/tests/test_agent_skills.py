@@ -186,5 +186,30 @@ class Masking(unittest.TestCase):
             self.assertEqual(json.loads(run.stdout)['verdict'], 'inconclusive')
 
 
+class WellKnownDiscovery(unittest.TestCase):
+    """The /.well-known/agent-skills index that `npx skills add https://agentgateway.dev` reads."""
+    INDEX = Path(__file__).resolve().parents[2] / 'static/.well-known/agent-skills/index.json'
+
+    def test_index_matches_archives(self):
+        import hashlib
+        import zipfile
+        index = json.loads(self.INDEX.read_text())
+        self.assertEqual(index['$schema'], 'https://schemas.agentskills.io/discovery/0.2.0/schema.json')
+        self.assertTrue(index['skills'])
+        for entry in index['skills']:
+            with self.subTest(skill=entry['name']):
+                self.assertEqual(entry['type'], 'archive')
+                self.assertLessEqual(len(entry['description']), 1024)
+                archive = self.INDEX.parent / entry['url'].removeprefix('/.well-known/agent-skills/')
+                data = archive.read_bytes()
+                self.assertEqual(entry['digest'], 'sha256:' + hashlib.sha256(data).hexdigest())
+                with zipfile.ZipFile(archive) as bundle:
+                    names = bundle.namelist()
+                    # Discovery clients read SKILL.md from the archive root, not a wrapper folder.
+                    self.assertIn('SKILL.md', names)
+                    self.assertFalse(any(n.startswith('/') or '..' in n.split('/') for n in names))
+                    self.assertIn(f"name: {entry['name']}", bundle.read('SKILL.md').decode())
+
+
 if __name__ == '__main__':
     unittest.main()
