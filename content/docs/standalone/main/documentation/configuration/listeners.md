@@ -35,7 +35,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{% tab name="Config file" %}}
 For example:
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   http:
     port: 3000
@@ -68,7 +68,7 @@ The certificate and key files must exist when you save. Relative paths resolve f
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   https:
     port: 443
@@ -120,7 +120,7 @@ The UI leaves out `protocol: HTTPS` on each listener, because setting `tls` impl
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   web:
     port: 443
@@ -187,7 +187,7 @@ TCP listeners are useful when serving traffic that is not HTTP based.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   tcp:
     port: 9000
@@ -234,7 +234,7 @@ A TLS listener without a certificate passes TLS through. A TLS listener with a c
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   tls:
     port: 8443

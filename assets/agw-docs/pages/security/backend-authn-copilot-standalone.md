@@ -12,7 +12,7 @@ The `copilot` backend authentication method sends a GitHub Copilot token and the
 The `copilot` method takes no settings. Write the method name on its own, as a string rather than a map.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

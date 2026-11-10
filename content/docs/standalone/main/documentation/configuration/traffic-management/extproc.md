@@ -74,7 +74,7 @@ If any incompatibility causes issues for your external processing server, open a
 External processing is applied at the route level.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -114,7 +114,7 @@ By default, ExtProc sends request headers, response headers, request trailers, a
 The following example sends headers and trailers, buffers request bodies up to the body buffer limit, skips response bodies, and allows the external processor to override later processing phases after a matching header response.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -144,7 +144,7 @@ routes:
 You can also set `processingOptions` inside a conditional ExtProc policy. Each conditional policy entry can use different phase settings.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -182,7 +182,7 @@ A dynamic backend dials whatever destination the request itself names, taken fro
 An external processor can already return Envoy's standard `dynamic_metadata` alongside its verdict, and agentgateway exposes that metadata to CEL as `extproc.*`. Set a `target` expression on the dynamic backend to dial the destination directly from that metadata, rather than making the processor rewrite the request authority to communicate it.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

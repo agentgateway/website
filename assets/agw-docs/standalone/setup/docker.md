@@ -28,7 +28,7 @@ The `--user` flag lets the container read and write the mounted directory as you
 The generated configuration looks like this:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   database:
     url: sqlite:///config/data.db
@@ -50,7 +50,7 @@ Mount your configuration file and pass the file with `-f`. Include the database 
 
    ```sh
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      database:
        url: sqlite:///data/data.db

@@ -57,7 +57,7 @@ By default, the UI binds to `localhost:15000`. To use a different address or por
 1. Add or update the `adminAddr` field in your config file. The value must use `ip:port` format.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      adminAddr: localhost:9090
    ```
@@ -93,7 +93,7 @@ By default, the UI is served on the local admin interface (`localhost:15000`) wi
 2. Add a `ui` section to your config file that attaches to a gateway and applies an `oidc` policy. The following example serves the UI on the `default` gateway on port 3000 and redirects unauthenticated users to the OIDC provider to log in. The optional `authorization` policy further restricts access to users whose email address ends in `@example.com`.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000

@@ -23,7 +23,7 @@ Configure an OpenAI model and a virtual key for OpenCode. Agentgateway replaces 
 
    ```yaml
    cat > config.yaml << 'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      policies:
        apiKey:

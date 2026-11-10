@@ -27,7 +27,7 @@ The following steps add the same `mcpAuthorization` policy as the **Simplified (
 
 1. Create a configuration with an MCP target, but no authorization policy. You add the policy in the UI.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      targets:
@@ -57,7 +57,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -78,7 +78,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -121,7 +121,7 @@ When you combine MCP authorization with [MCP authentication]({{< link-hextra pat
 {{% tab name="UI" %}}
 1. Start agentgateway with a configuration that has an MCP target, but no policies. You add the policies in the UI.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      targets:
@@ -153,7 +153,7 @@ For more information about the authentication form, see [MCP authentication]({{<
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -198,7 +198,7 @@ When you multiplex several MCP servers behind a single agentgateway listener, yo
 > Per-target rules filter tools after each target responds. Agentgateway still initializes `admin-tools` and lists its tools for clients without the admin role. Add a [target condition]({{< link-hextra path="/integrations/mcp/servers/virtual/#target-conditions" >}}) to exclude the target for those clients. See [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}) to compare the options.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:

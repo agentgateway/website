@@ -40,7 +40,7 @@ Phoenix accepts OpenTelemetry traces natively on port 4317 (gRPC) and port 6006 
 Configure agentgateway to send traces directly to Phoenix:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   tracing:
     otlpEndpoint: http://localhost:4317
@@ -77,7 +77,7 @@ If your Phoenix keeps authentication on, agentgateway must send a Phoenix API ke
    ```
 5. Add the key to the tracing policy with `backendAuth`. Agentgateway sends the key in the `Authorization: Bearer <key>` header, which is the header that Phoenix checks.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      tracing:
        host: localhost:4317

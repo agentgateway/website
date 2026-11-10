@@ -74,7 +74,7 @@ Review the following configuration example and descriptions.
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -104,7 +104,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -171,7 +171,7 @@ Adding support for a new provider requires minimal code changes. To contribute s
 #     proxied authorization-server metadata — require a real IdP and a signed JWT
 #     the page does not stand up.
 cat <<'EOF' > proxy-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -201,7 +201,7 @@ EOF
 agentgateway -f proxy-mcp.yaml --validate-only
 
 cat <<'EOF' > proxy-routing.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -251,7 +251,7 @@ Agentgateway acts solely as a resource server, validating tokens issued by an ex
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -277,7 +277,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -325,7 +325,7 @@ routes:
 #   * The permissive-mode snippet below is a focused field-reference fragment, not
 #     a standalone config, so it is not tested here.
 cat <<'EOF' > rsonly-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -351,7 +351,7 @@ EOF
 agentgateway -f rsonly-mcp.yaml --validate-only
 
 cat <<'EOF' > rsonly-routing.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -422,7 +422,7 @@ By default, agentgateway requires the `exp` (expiration) claim to be present in 
 Some identity providers issue tokens without an `exp` claim. To accept those tokens, set `requiredClaims` to an empty list.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -447,7 +447,7 @@ mcp:
 To require additional claims, such as `aud` and `sub` alongside `exp`, list each one.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -482,7 +482,7 @@ mcp:
 #   * That a token missing exp is actually accepted or rejected — requires a real
 #     authorization server and signed JWTs the page does not stand up.
 cat <<'EOF' > claims-empty.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -506,7 +506,7 @@ EOF
 agentgateway -f claims-empty.yaml --validate-only
 
 cat <<'EOF' > claims-required.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:

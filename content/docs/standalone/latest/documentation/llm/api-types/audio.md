@@ -44,7 +44,7 @@ The audio duration is available as `llm.audioSeconds` in CEL expressions and as 
 
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      modelCatalog:
      - file: ./audio-costs.json
