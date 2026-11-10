@@ -79,90 +79,110 @@ llm:
 
 ## Passthrough
 
-If your applications directly use the AWS `Converse` or `Invoke` APIs, Agentgateway cannot translate these APIs to other providers.
-However, it can pass the request through to Bedrock itself following the [passthrough]({{< link-hextra path="/documentation/llm/api-types/passthrough/" >}}) approach.
+If your applications directly use the AWS `Converse` or `Invoke` APIs, Agentgateway cannot translate these APIs to other providers. However, it can pass the request through to Bedrock itself following the [passthrough]({{< link-hextra path="/documentation/llm/api-types/passthrough/" >}}) approach. This approach can also provide telemetry data for these requests.
 
-This can provide telemetry data for these requests.
+> [!WARNING]
+> Do not set `passthrough` on a Bedrock model that also serves requests in another format, such as `/v1/chat/completions` or `/v1/messages`. The `passthrough` setting takes precedence over endpoint detection. For example, with `passthrough: detect`, a `/v1/chat/completions` request is forwarded to Bedrock unchanged instead of being converted to a Converse request. For more information, see [Passthrough and endpoint detection]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#llm-passthrough-precedence" >}}).
 
-First, setup passthrough mode:
+1. Configure the Bedrock model. Requests to the native Bedrock paths, such as `/model/{modelId}/converse` and `/model/{modelId}/invoke`, are passed through by default, and agentgateway still records token usage when it can read it from the response. You do not need to set `passthrough` on the model.
+
+   ```yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: us.anthropic*
+       provider: bedrock
+       params:
+         awsRegion: us-west-2
+   ```
+
+2. Send native Converse or Invoke requests.
+
+   {{< tabs >}}
+   {{% tab name="Converse" %}}
+
+   ```python
+   import json
+
+   import boto3
+
+   client = boto3.client(
+       'bedrock-runtime',
+       region_name='us-west-2',
+       endpoint_url='http://localhost:4000',
+   )
+   response = client.converse(
+       modelId='us.anthropic.claude-sonnet-4-6',
+       messages=[
+           {
+               'role': 'user',
+               'content': [{'text': 'give 1 word answer'}]
+           }
+       ]
+   )
+   print('converse response:')
+   print(response)
+   ```
+
+   {{% /tab %}}
+   {{% tab name="Invoke" %}}
+
+   ```python
+   import json
+
+   import boto3
+
+   client = boto3.client(
+       'bedrock-runtime',
+       region_name='us-west-2',
+       endpoint_url='http://localhost:4000',
+   )
+   response = client.invoke_model(
+       modelId='us.anthropic.claude-sonnet-4-6',
+       body=json.dumps({
+           'anthropic_version': 'bedrock-2023-05-31',
+           'max_tokens': 10,
+           'messages': [
+               {
+                   'role': 'user',
+                   'content': [{'type': 'text', 'text': 'give 1 word answer'}],
+               }
+           ],
+       }),
+   )
+   body = json.loads(response['body'].read())
+
+   print('invoke response:')
+   print(body)
+   ```
+
+   {{% /tab %}}
+   {{< /tabs >}}
+
+### Use a different client-facing model name {#passthrough-model-name}
+
+To let clients send a model name that differs from the Bedrock model ID, such as `aws/us.anthropic.claude-sonnet-4-6`, add a `transformation` that changes `model`. Agentgateway rewrites the model ID in the request path and does not add a `model` field to the request body. Use this configuration instead of the one in the previous steps.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
   models:
-  - name: us.anthropic*
+  - name: aws/*
     provider: bedrock
     params:
       awsRegion: us-west-2
-    passthrough: detect
+    transformation:
+      model: llmRequest.model.stripPrefix("aws/")
 ```
 
-Then, you can send native Converse and Invoke requests:
+{{< reuse "agw-docs/snippets/review-table.md" >}}
 
-{{< tabs >}}
-{{% tab name="Converse" %}}
+| Setting | Description |
+|---------|-------------|
+| `name` | The model name to match in incoming requests. The `aws/*` pattern matches any model ID that starts with `aws/`. |
+| `transformation.model` | Removes the `aws/` prefix from the model ID in the request path, so that Bedrock receives its own model ID. |
 
-```python
-import json
-
-import boto3
-
-client = boto3.client(
-    'bedrock-runtime',
-    region_name='us-west-2',
-    endpoint_url='http://localhost:4000',
-)
-response = client.converse(
-    modelId='us.anthropic.claude-sonnet-4-6',
-    messages=[
-        {
-            'role': 'user',
-            'content': [{'text': 'give 1 word answer'}]
-        }
-    ]
-)
-print('converse response:')
-print(response)
-```
-
-{{% /tab %}}
-{{% tab name="Invoke" %}}
-
-```python
-import json
-
-import boto3
-
-client = boto3.client(
-    'bedrock-runtime',
-    region_name='us-west-2',
-    endpoint_url='http://localhost:4000',
-)
-response = client.invoke_model(
-    modelId='us.anthropic.claude-sonnet-4-6',
-    body=json.dumps({
-        'anthropic_version': 'bedrock-2023-05-31',
-        'max_tokens': 10,
-        'messages': [
-            {
-                'role': 'user',
-                'content': [{'type': 'text', 'text': 'give 1 word answer'}],
-            }
-        ],
-    }),
-)
-body = json.loads(response['body'].read())
-
-print('invoke response:')
-print(body)
-```
-
-{{% /tab %}}
-{{< /tabs >}}
-
-
-> [!NOTE]
-> With `passthrough: detect`, model transformations can still rewrite the model segment in Bedrock request paths. For example, a transformation can map a model match such as `aws/*` to the Bedrock model ID. Other passthrough traffic is forwarded without format conversion.
+In the Converse and Invoke scripts from the previous steps, set `modelId` to the prefixed name, such as `modelId='aws/us.anthropic.claude-sonnet-4-6'`. The request reaches Bedrock at the `/model/us.anthropic.claude-sonnet-4-6/converse` path.
 
 ## Claude Platform on AWS
 
