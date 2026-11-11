@@ -436,4 +436,4 @@ kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
-To remove the rate limit server, follow the [cleanup steps]({{< link-hextra path="/documentation/security/rate-limit-global#cleanup" >}}) in the global rate limiting guide.
+To remove the rate limit server, follow the {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[cleanup steps]({{< link-hextra path="/documentation/security/rate-limit/global#cleanup" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[cleanup steps]({{< link-hextra path="/documentation/security/rate-limit-global#cleanup" >}}){{< /version >}} in the global rate limiting guide.

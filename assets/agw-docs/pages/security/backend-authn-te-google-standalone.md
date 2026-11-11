@@ -215,7 +215,7 @@ Google requires the issuer to be an `https://` URL. Keycloak in this example run
    invalid request 400
    ```
 
-The exchange does not validate the incoming token itself; Google does. To reject an invalid or expired token at the gateway before it calls the STS, add a [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) policy to the route. Set `preserveToken: true` on that policy, so that the token is still in the request when the exchange runs.
+The exchange does not validate the incoming token itself; Google does. To reject an invalid or expired token at the gateway before it calls the STS, add a {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}){{< /version >}} policy to the route. Set `preserveToken: true` on that policy, so that the token is still in the request when the exchange runs.
 
 ## Troubleshooting {#troubleshooting}
 

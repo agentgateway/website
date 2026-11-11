@@ -284,7 +284,7 @@ With LiteLLM fallbacks, the failed request moves to the next model. With agentga
 
 ## Authenticate with a JWT
 
-Configure an {{< reuse "agw-docs/snippets/policy.md" >}} with [`jwtAuthentication`]({{< link-hextra path="/documentation/security/jwt/" >}}) on the gateway. Use `mode: Strict` to require a valid token on every request.
+Configure an {{< reuse "agw-docs/snippets/policy.md" >}} with {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[`jwtAuthentication`]({{< link-hextra path="/documentation/security/extauth/jwt/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[`jwtAuthentication`]({{< link-hextra path="/documentation/security/jwt/" >}}){{< /version >}} on the gateway. Use `mode: Strict` to require a valid token on every request.
 
 Obtain a JWT access token for your gateway API from your identity provider. The token must satisfy the policy's validation rules, including any configured issuer and audience requirements. Set `AGENTGATEWAY_JWT` in your application's environment to the raw token, without the `Bearer ` prefix.
 

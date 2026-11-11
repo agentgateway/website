@@ -41,7 +41,7 @@
    ```
 
    > [!TIP]
-   > For the full list of `oidc` policy fields and a complete runnable Keycloak setup, see [OIDC browser authentication]({{< link-hextra path="/documentation/configuration/security/oidc" >}}) and the [`traffic-unified-gateway` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-unified-gateway) in the agentgateway repository.
+   > For the full list of `oidc` policy fields and a complete runnable Keycloak setup, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[OIDC browser authentication]({{< link-hextra path="/documentation/configuration/security/authentication/oidc" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[OIDC browser authentication]({{< link-hextra path="/documentation/configuration/security/oidc" >}}){{< /version >}} and the [`traffic-unified-gateway` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-unified-gateway) in the agentgateway repository.
 
 4. Start agentgateway with the updated config.
 

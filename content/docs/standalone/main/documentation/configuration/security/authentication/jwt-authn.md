@@ -1,7 +1,9 @@
 ---
 title: JWT authentication
-weight: 15
+weight: 40
 description: Verify JWT tokens from incoming requests using JWKS and configured issuers.
+aliases:
+  - ../jwt-authn/
 ---
 
 Attaches to: {{< badge content="Listener" path="/documentation/configuration/listeners/">}} {{< badge content="Route" path="/documentation/configuration/routes/">}}

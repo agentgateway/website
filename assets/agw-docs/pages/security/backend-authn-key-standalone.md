@@ -64,7 +64,7 @@ backendAuth:
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 ## Compute the key from the request {#key-expression}
 
-Instead of a fixed value, you can compute the credential for each request with a [CEL]({{< link-hextra path="/reference/cel/" >}}) expression. Set `expression` instead of `value`. For example, an [external authorization]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}) policy can return a token for the backend as metadata, and the expression reads the token from the `extauthz` variable.
+Instead of a fixed value, you can compute the credential for each request with a [CEL]({{< link-hextra path="/reference/cel/" >}}) expression. Set `expression` instead of `value`. For example, an {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[external authorization]({{< link-hextra path="/documentation/configuration/security/authorization/external-authz/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[external authorization]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}){{< /version >}} policy can return a token for the backend as metadata, and the expression reads the token from the `extauthz` variable.
 
 ```yaml
 backendAuth:
@@ -126,14 +126,14 @@ backendAuth:
 
 ## Pass through client credentials
 
-Any form of incoming authentication removes the original credential from the request by default, before agentgateway forwards it to the backend. That applies to [JWT]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}), [API key]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}), and [basic auth]({{< link-hextra path="/documentation/configuration/security/basic-authn/" >}}). To send the original credential on to the backend, use the `passthrough` method.
+Any form of incoming authentication removes the original credential from the request by default, before agentgateway forwards it to the backend. That applies to {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}){{< /version >}}, {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[API key]({{< link-hextra path="/documentation/configuration/security/authentication/apikey-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[API key]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}){{< /version >}}, and {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[basic auth]({{< link-hextra path="/documentation/configuration/security/authentication/basic-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[basic auth]({{< link-hextra path="/documentation/configuration/security/basic-authn/" >}}){{< /version >}}. To send the original credential on to the backend, use the `passthrough` method.
 
 ```yaml
 backendAuth:
   passthrough: {}
 ```
 
-The method forwards a JWT only. It re-sends the token that a [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) policy validated on the route. An API key or basic auth credential is still stripped, and `passthrough` does not add it back.
+The method forwards a JWT only. It re-sends the token that a {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}){{< /version >}} policy validated on the route. An API key or basic auth credential is still stripped, and `passthrough` does not add it back.
 
 The `passthrough` method has no field for where to read the credential from, because agentgateway does not read it from the request at all. It re-sends the token that the `jwtAuth` policy already validated. The source is therefore wherever that policy's own `location` field reads from, which is the `Authorization` header by default.
 

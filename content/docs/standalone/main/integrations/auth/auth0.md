@@ -17,7 +17,7 @@ When you set `provider.auth0`, agentgateway bridges this gap as follows:
 - Appends your first configured audience to Auth0's authorization endpoint as an `audience` query parameter, so that Auth0 issues a JWT for your API rather than an opaque token. You verify this in [Step 3](#verify).
 - Fetches keys from `{issuer}/.well-known/jwks.json` after removing the trailing slash from the issuer value.
 
-For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}).
+For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/authentication/mcp-authn" >}}).
 
 ## Before you begin {#before-you-begin}
 
@@ -202,7 +202,7 @@ MCP clients complete the OAuth flow themselves. To get a token by hand, use the 
 
 ## Step 5: Restrict access by permission {#authorization}
 
-Because MCP authentication runs at the route level, you can use claims from the validated Auth0 token in an [authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}) policy. Auth0 puts the permissions that you grant to an application in the `permissions` claim when the API has **Add Permissions in the Access Token** enabled, which you did in [Step 1](#register).
+Because MCP authentication runs at the route level, you can use claims from the validated Auth0 token in an [authorization]({{< link-hextra path="/documentation/configuration/security/authorization/mcp-authz" >}}) policy. Auth0 puts the permissions that you grant to an application in the `permissions` claim when the API has **Add Permissions in the Access Token** enabled, which you did in [Step 1](#register).
 
 1. Add an `authorization` policy alongside `mcpAuthentication` in your `config.yaml` that requires the `read:tools` permission.
 
@@ -270,5 +270,5 @@ Point your MCP client at the gateway's MCP endpoint, `http://localhost:3000/mcp`
 ## Learn more
 
 - [Auth0 documentation](https://auth0.com/docs)
-- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}})
-- [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}})
+- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/authentication/mcp-authn" >}})
+- [MCP authorization]({{< link-hextra path="/documentation/configuration/security/authorization/mcp-authz" >}})

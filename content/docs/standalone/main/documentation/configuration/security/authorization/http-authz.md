@@ -1,7 +1,9 @@
 ---
 title: HTTP authorization
-weight: 12
+weight: 10
 description: Define allow, deny, and require rules using CEL expressions.
+aliases:
+  - ../http-authz/
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}}

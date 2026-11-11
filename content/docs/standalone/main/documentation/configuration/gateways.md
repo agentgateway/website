@@ -328,7 +328,7 @@ ui: {}
 With no `ui` section, the UI is served only on the admin interface on `localhost:15000`, which is loopback-only. Setting the `ui` section serves it on a gateway, which is how you reach it from anywhere else. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/documentation/setup/ui/#admin-interface" >}}).
 
 > [!WARNING]
-> Serving the UI on a gateway exposes it to anyone who can reach that port. Protect it with authentication, typically [OIDC]({{< link-hextra path="/documentation/configuration/security/oidc/" >}}), before you expose it outside of localhost. The gateway serves the UI and its API only. The admin interface's debugging endpoints, such as `/config_dump`, are not served on it.
+> Serving the UI on a gateway exposes it to anyone who can reach that port. Protect it with authentication, typically [OIDC]({{< link-hextra path="/documentation/configuration/security/authentication/oidc/" >}}), before you expose it outside of localhost. The gateway serves the UI and its API only. The admin interface's debugging endpoints, such as `/config_dump`, are not served on it.
 
 Because each section attaches separately, you can also split them across ports. The following configuration serves the UI on its own port while LLM traffic stays on the shared gateway.
 

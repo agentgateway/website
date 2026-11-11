@@ -1,14 +1,16 @@
 ---
 title: MCP authorization
-weight: 40
+weight: 30
 description: Define authorization rules for MCP method invocations using CEL expressions.
+aliases:
+  - ../mcp-authz/
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}} {{< badge content="Backend" path="/documentation/configuration/backends/">}} (MCP Backends only)
 
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
-The MCP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} policy works similarly to [HTTP authorization]({{< link-hextra path="/documentation/configuration/security/http-authz" >}}), but runs in the context of an MCP request.
+The MCP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} policy works similarly to [HTTP authorization]({{< link-hextra path="/documentation/configuration/security/authorization/http-authz" >}}), but runs in the context of an MCP request.
 
 > [!NOTE]
 > {{< reuse "agw-docs/snippets/mcp-policy-note.md" >}}
@@ -110,7 +112,7 @@ routes:
 
 ## Role-based access with JWT claims
 
-When you combine MCP authorization with [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}), you can write rules that reference JWT claims. The following configuration restricts tools based on the authenticated user's identity and role:
+When you combine MCP authorization with [MCP authentication]({{< link-hextra path="/documentation/configuration/security/authentication/mcp-authn" >}}), you can write rules that reference JWT claims. The following configuration restricts tools based on the authenticated user's identity and role:
 
 - The MCP authentication policy validates JWTs against a local authorization server, such as Keycloak, running on port 9000.
 - Any authenticated user can call the `echo` tool.
@@ -149,7 +151,7 @@ When you combine MCP authorization with [MCP authentication]({{< link-hextra pat
    3. `mcp.tool.name == "printEnv" && jwt.nested.key == "value"`
 4. Click **Save policy**.
 
-For more information about the authentication form, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}).
+For more information about the authentication form, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/authentication/mcp-authn" >}}).
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
@@ -256,7 +258,7 @@ The following MCP-specific CEL variables are available in authorization rules:
 
 Request-time variables are available during authorization and can be used in `mcpAuthorization` rules. Post-request variables are available in access log CEL expressions. Route-level HTTP policies, such as `authorization` and `localRateLimit`, can also read `mcp.sessionId` and `mcp.tool.arguments` when the request arrives. For more information, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables" >}}).
 
-When you also configure [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}), claims from the validated JWT are available to your rules as well:
+When you also configure [MCP authentication]({{< link-hextra path="/documentation/configuration/security/authentication/mcp-authn" >}}), claims from the validated JWT are available to your rules as well:
 
 | Variable | Type | Availability | Description |
 |----------|------|-------------|-------------|
