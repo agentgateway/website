@@ -35,7 +35,7 @@ description: Front Open WebUI with agentgateway to centralize auth, audit, and r
 Create a `config.yaml` that exposes an OpenAI-compatible endpoint on port 3000 and forwards requests to OpenAI.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   port: 3000

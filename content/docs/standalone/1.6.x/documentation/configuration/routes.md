@@ -73,7 +73,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 The following configuration creates the `http-backend` route.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   http-proxy:
     port: 8080
@@ -95,7 +95,7 @@ routes:
 
 {{< doc-test paths="routes" >}}
 cat <<'EOF' > config-http.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   http-proxy:
     port: 8080
@@ -126,7 +126,7 @@ Keep in mind that TCP routes do not support HTTP features such as path, header, 
 Example configuration:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   postgres-proxy:
     port: 5432
@@ -141,7 +141,7 @@ tcpRoutes:
 
 {{< doc-test paths="routes" >}}
 cat <<'EOF' > config-tcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   postgres-proxy:
     port: 5432
@@ -187,7 +187,7 @@ For more advanced backend configurations, such as MCP servers and LLM providers,
 The following example shows a route with CORS policy configuration:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -213,7 +213,7 @@ routes:
 
 {{< doc-test paths="routes" >}}
 cat <<'EOF' > config-policies.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

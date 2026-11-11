@@ -22,7 +22,7 @@ Agentgateway exports LLM telemetry via OpenTelemetry, which can be forwarded to 
 Enable OpenTelemetry tracing with LLM-specific attributes.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   tracing:
     otlpEndpoint: http://localhost:4317

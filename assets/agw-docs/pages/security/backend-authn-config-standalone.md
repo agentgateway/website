@@ -3,7 +3,7 @@
 In the standalone binary, backend authentication is the `backendAuth` policy. Attach it to one backend, or to a route so that it covers every backend on that route.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

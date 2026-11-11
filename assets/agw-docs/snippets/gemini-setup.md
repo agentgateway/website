@@ -44,7 +44,7 @@
    | Setting     | Description |
    |-------------|-------------|
    | `ai.provider.gemini` | Define the Gemini provider. |
-   | `gemini.model`     | The model to use to generate responses. In this example, you use the `gemini-2.5-flash-lite` model. For more models, see the [Google AI docs](https://ai.google.dev/gemini-api/docs/models).                                             |
+   | `gemini.model`     | The model to use to generate responses. In this example, you use the `gemini-2.5-flash-lite` model. For more models, see the [Google AI docs](https://aistudio.google.com/docs/models).                                             |
    | `policies.auth` | The authentication token to use to authenticate to the LLM provider. The example refers to the secret that you created in the previous step.   |
 
 4. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.

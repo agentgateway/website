@@ -24,7 +24,7 @@ Configure `auth.aws.assumeRole` on the model. Each tag, and the session name, is
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   policies:
@@ -77,7 +77,7 @@ Set the metadata with a `finalTransformation` on the model. Agentgateway applies
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -99,7 +99,7 @@ Callers can send their own metadata in the `x-bedrock-metadata` header, so two p
 - **Replace**. Your values are the only ones that reach Bedrock, and any caller metadata is dropped. Quote the expression so that YAML reads it as a string rather than as a mapping.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -127,7 +127,7 @@ Configure [Google Vertex AI]({{< link-hextra path="/integrations/llm/providers/v
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   policies:

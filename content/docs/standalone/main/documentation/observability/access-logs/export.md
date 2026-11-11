@@ -61,7 +61,7 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
    {{% /tab %}}
    {{% tab name="Config file" %}}
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      accessLog:
        otlp:
@@ -69,6 +69,9 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
    ```
    {{% /tab %}}
    {{< /tabs >}}
+
+   > [!NOTE]
+   > {{< reuse "agw-docs/standalone/observability/docker-collector-host.md" >}}
 
 4. Send a request through agentgateway, then check the collector output to verify that log records are arriving.
    ```sh
@@ -172,7 +175,7 @@ The following example sends only error responses to the OTLP collector while log
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     otlp:
@@ -185,7 +188,7 @@ frontendPolicies:
 The following example logs only error responses to stdout, the database, and the OTLP collector. Because no `otlp.filter` is set, the top-level filter applies to all three backends.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     filter: 'response.code >= 400'
@@ -196,7 +199,7 @@ frontendPolicies:
 The following example logs only error responses to stdout and the database, but sends all requests to the OTLP collector. To override the top-level filter for OTLP, set `otlp.filter` explicitly.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     filter: 'response.code >= 400'
@@ -214,7 +217,7 @@ The `remove` list matches the attribute names in the OTLP record, which are the 
 The UI has no field for `otlp.fields`, so set it in your configuration file.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     otlp:
