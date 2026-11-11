@@ -40,7 +40,7 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
    {{< tabs >}}
    {{% tab name="Linux" %}}
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      accessLog:
        add:
@@ -80,7 +80,7 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
    {{% /tab %}}
    {{% tab name="macOS" %}}
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      accessLog:
        add:

@@ -190,7 +190,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
 
    ```yaml
    cat > config.yaml << 'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 4001

@@ -70,7 +70,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{% tab name="Config file" %}}
 ```yaml
 cat > /tmp/test-custom-provider.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "custom/*"

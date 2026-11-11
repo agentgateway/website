@@ -19,7 +19,7 @@ In the simplified `llm` configuration, any path that does not match a known endp
 To pass all traffic through without interpretation, set `passthrough: opaque` on the model in the simplified `llm` configuration.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -32,7 +32,7 @@ llm:
 To configure passthrough as a fallback for unmatched paths in the `gateways` and `routes` format, map the `*` wildcard path to the `passthrough` route type.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 4000
@@ -56,7 +56,7 @@ routes:
 To pass requests through while still extracting token usage and rate-limit data when possible, set `passthrough: detect`. This inspects the request and response to record telemetry, but does not apply guardrails.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"

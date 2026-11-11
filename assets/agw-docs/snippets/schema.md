@@ -1,0 +1,1 @@
+https&#58;//agentgateway.dev/schema/config

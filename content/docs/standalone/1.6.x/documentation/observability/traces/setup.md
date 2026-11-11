@@ -12,7 +12,7 @@ Agentgateway natively exports distributed traces over OTLP (OpenTelemetry Protoc
 To enable tracing in agentgateway, add a `tracing` block under the `frontendPolicies` section and point agentgateway to your OTLP-compatible backend. For sample tracing backend setups, see [Sample tracing configurations]({{< link-hextra path="/documentation/observability/traces/configs/" >}}).
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317
@@ -29,7 +29,7 @@ frontendPolicies:
 When connecting to an OTLP backend that requires authentication, such as a SaaS observability platform, use the `policies.requestHeaderModifier` section to add required authentication headers and `policies.backendTLS` to enable TLS for the connection.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: <your-otlp-endpoint>.com:443
@@ -64,7 +64,7 @@ Only one setting applies to each request. Because `clientSampling` defaults to `
 In the following example, you want to sample 10% of requests.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317
@@ -78,7 +78,7 @@ Use the `filter` field to write a [CEL]({{< link-hextra path="/reference/cel/" >
 The following example exports only spans for requests with an HTTP response code of 400 or greater. 
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317
@@ -111,7 +111,7 @@ Use the `resources` field to describe the agentgateway process itself. Resource 
 The following example sets a custom service name and deployment environment in `resources`, and adds the user ID and request path to each individual span by using `attributes`. 
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317
@@ -131,7 +131,7 @@ Use the `remove` field to drop attributes from spans before your `attributes` ex
 The following example removes the HTTP protocol version and client address from the span. The `remove` list matches the attribute names on the request span, as listed in [Default span attributes]({{< link-hextra path="/documentation/observability/traces/attribute-reference/" >}}). A name that is not on the span, such as the earlier `src.addr` or `http.version`, removes nothing.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317

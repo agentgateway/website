@@ -24,7 +24,7 @@ For LLM traffic, the log line automatically includes `gen_ai.*` fields. For MCP 
 You can change the default log format to JSON by setting the `config.logging.format` field. 
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   logging:
     format: json
@@ -35,7 +35,7 @@ config:
 The field names in the previous example are short and human-oriented. To rename the built-in HTTP fields to their [OpenTelemetry semantic convention](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) equivalents, such as `url.path` instead of `http.path`, set `preset: otel` on the access log policy.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     preset: otel
@@ -94,7 +94,7 @@ To view access logs in the UI:
 Use a [CEL]({{< link-hextra path="/reference/cel/" >}}) expression to log only a subset of requests. Requests that do not match the expression are not logged. The following example produces access logs only for requests with a response code of 400 or greater.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     filter: 'response.code >= 400'
@@ -110,7 +110,7 @@ The following example adds 3 fields to every access log entry:
 - `cost`: Converts the LLM request cost to a string and logs it.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     add:
@@ -126,7 +126,7 @@ For the full list of available fields, see the [CEL variables reference]({{< lin
 Use `backend.endpoint` to record the resolved destination of a directly addressed backend, such as a static hostname, including its port for a network endpoint. This complements `backend.name`, which identifies the configured backend. Service backends leave `backend.endpoint` unset because their workload endpoints are selected separately. The endpoint is available only after the target is resolved, so guard the lookup for Service backends and requests rejected earlier in processing.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     add:
@@ -142,7 +142,7 @@ When a request guard rejects an LLM request before the provider call, the access
 The following filter includes all requests with guardrail results, even when every guard allows the content.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     filter: guardrails.size() > 0
@@ -167,7 +167,7 @@ An ExtMCP request-phase guardrail can return dynamic metadata with a `Pass` or m
 The metadata keys depend on the ExtMCP server response. The following example records the `decision` key when the policy server returns metadata such as `{"decision":"allow"}`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     add:
@@ -179,7 +179,7 @@ frontendPolicies:
 Remove fields from access log lines. The following example removes the source address and HTTP path that are included by default. 
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     remove:

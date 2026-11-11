@@ -27,7 +27,7 @@ Create a `config.yaml` that defines an LLM model for OpenAI. This configuration 
 
 ```yaml
 cat > config.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:

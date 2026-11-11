@@ -50,7 +50,7 @@ Version 1.6 had no Decisions or SystemOne route type. With the `llm` configurati
 With the simplified `llm` configuration, no route setup is needed. Agentgateway maps `/v1/decisions` to `decisions` and `/v1/systemone` to `systemOne`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -62,7 +62,7 @@ llm:
 For a `custom` provider, declare the upstream format as `decisions` or `systemOne`. Agentgateway appends `/decisions` or `/systemone` to `baseUrl`. This example uses `decisions`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: decisions-model
@@ -80,7 +80,7 @@ For explicit routing, use the `gateways` and `routes` configuration. Map `/v1/de
 Without this map, requests default to `completions`. A Decisions request then fails with `failed to parse Completions request`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 4000

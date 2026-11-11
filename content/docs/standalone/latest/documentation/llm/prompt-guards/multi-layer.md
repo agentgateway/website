@@ -11,7 +11,7 @@ Shared guardrails under `llm.policies.guardrails` apply to every model. Model-sp
 Example configuration that combines shared and model-specific guardrails:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     guardrails:

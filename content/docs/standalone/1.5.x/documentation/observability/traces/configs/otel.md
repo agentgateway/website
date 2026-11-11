@@ -49,7 +49,7 @@ Run the OTel Collector as a Docker container on the same host as agentgateway an
 
 3. Configure agentgateway to send traces to the collector.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      tracing:
        host: localhost:4317

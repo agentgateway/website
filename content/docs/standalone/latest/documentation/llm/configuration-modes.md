@@ -51,7 +51,7 @@ The benefits of this approach are:
 ### Example
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -64,7 +64,7 @@ llm:
 ### Advanced example with policies and matching
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   policies:
@@ -109,7 +109,7 @@ Use the gateway's `tls` field to serve LLM traffic over TLS.
 - Other advanced TLS tuning options include `cipherSuites`, `minTLSVersion`, `maxTLSVersion`, and `keyExchangeGroups`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 8443
@@ -154,7 +154,7 @@ The benefits of this approach are:
 ### Example
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 gateways:
   default:
@@ -175,7 +175,7 @@ routes:
 ### Advanced example with HTTP routing
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 gateways:
   default:
