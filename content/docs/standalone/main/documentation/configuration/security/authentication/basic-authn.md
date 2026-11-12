@@ -1,7 +1,9 @@
 ---
 title: Basic authentication
-weight: 16
+weight: 10
 description: Configure simple username and password authentication for your routes.
+aliases:
+  - ../basic-authn/
 ---
 
 Attaches to: {{< badge content="Listener" path="/documentation/configuration/listeners/">}} {{< badge content="Route" path="/documentation/configuration/routes/">}}

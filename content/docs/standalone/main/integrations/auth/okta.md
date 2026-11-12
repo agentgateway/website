@@ -21,7 +21,7 @@ When you set `provider.okta`, agentgateway bridges these gaps as follows:
 > [!IMPORTANT]
 > Unlike the other providers, Okta requires you to set `jwks` explicitly. Okta publishes its keys at `{issuer}/v1/keys`, but agentgateway derives `{issuer}/.well-known/jwks.json` for the `okta` provider, which Okta does not serve. If you omit `jwks`, token validation fails because agentgateway cannot fetch the signing keys.
 
-For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}).
+For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/authentication/mcp-authn" >}}).
 
 ## Before you begin {#before-you-begin}
 
@@ -230,7 +230,7 @@ MCP clients complete the OAuth flow themselves. To get a token by hand, use the 
 
 ## Step 5: Restrict access by group {#authorization}
 
-Because MCP authentication runs at the route level, you can use claims from the validated Okta token in an [authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}) policy. Okta includes a user's group memberships in the `groups` claim when you add the groups claim to your authorization server, which you did in [Step 1](#register).
+Because MCP authentication runs at the route level, you can use claims from the validated Okta token in an [authorization]({{< link-hextra path="/documentation/configuration/security/authorization/mcp-authz" >}}) policy. Okta includes a user's group memberships in the `groups` claim when you add the groups claim to your authorization server, which you did in [Step 1](#register).
 
 1. Add an `authorization` policy alongside `mcpAuthentication` in your `config.yaml` that requires membership in the `AI-Users` group.
 
@@ -302,5 +302,5 @@ Point your MCP client at the gateway's MCP endpoint, `http://localhost:3000/mcp`
 ## Learn more
 
 - [Okta developer documentation](https://developer.okta.com/)
-- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}})
-- [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}})
+- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/authentication/mcp-authn" >}})
+- [MCP authorization]({{< link-hextra path="/documentation/configuration/security/authorization/mcp-authz" >}})

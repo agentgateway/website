@@ -1,6 +1,6 @@
 ---
 title: CSRF
-weight: 11
+weight: 60
 description: Protect against cross-site request forgery attacks with origin validation.
 ---
 

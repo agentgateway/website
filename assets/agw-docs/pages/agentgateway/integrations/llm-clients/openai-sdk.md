@@ -229,7 +229,7 @@ If you also run the LiteLLM proxy, convert its configuration with [Migrate from 
 
 ## Authenticate with a JWT
 
-Configure a [`jwtAuth` policy]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) on agentgateway. Use `mode: strict` to require a valid token on every request.
+Configure a {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[`jwtAuth` policy]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[`jwtAuth` policy]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}){{< /version >}} on agentgateway. Use `mode: strict` to require a valid token on every request.
 
 Obtain a JWT access token for your gateway API from your identity provider. The token must satisfy the policy's validation rules, including any configured issuer and audience requirements. Set `AGENTGATEWAY_JWT` in your application's environment to the raw token, without the `Bearer ` prefix.
 

@@ -221,7 +221,7 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
 
 Local rate limiting runs independently on each proxy replica. If you run multiple agentgateway replicas and need a shared quota across the fleet, use global rate limiting backed by an external service such as [Envoy's rate limit service](https://github.com/envoyproxy/ratelimit).
 
-For detailed instructions on setting up global rate limiting with descriptors and an external rate limit service, see the [Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}).
+For detailed instructions on setting up global rate limiting with descriptors and an external rate limit service, see the {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit/global" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}){{< /version >}}.
 
 {{< version exclude-if="1.1.x" >}}
 

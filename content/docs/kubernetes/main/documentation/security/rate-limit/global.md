@@ -1,7 +1,9 @@
 ---
 title: Global rate limiting
-weight: 45
+weight: 20
 description: Apply distributed rate limits across multiple agentgateway replicas using an external rate limit service.
+aliases:
+  - ../rate-limit-global/
 ---
 
 {{< reuse "agw-docs/pages/security/rate-limit-global.md" >}}

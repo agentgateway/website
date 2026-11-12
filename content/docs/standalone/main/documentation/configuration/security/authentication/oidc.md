@@ -1,7 +1,9 @@
 ---
 title: OIDC browser authentication
-weight: 40
+weight: 60
 description: Enable browser-based OpenID Connect authentication with encrypted session cookies.
+aliases:
+  - ../oidc/
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}}
@@ -409,4 +411,4 @@ frontendPolicies:
 
 - [Keycloak integration]({{< link-hextra path="/integrations/auth/keycloak" >}})
 - [Auth0 integration]({{< link-hextra path="/integrations/auth/auth0" >}})
-- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}) for MCP-specific OAuth flows
+- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/authentication/mcp-authn" >}}) for MCP-specific OAuth flows

@@ -1,7 +1,9 @@
 ---
 title: Local rate limiting
-weight: 40
+weight: 10
 description: Apply local and global rate limits to HTTP traffic to protect your backend services from overload.
+aliases:
+  - ../rate-limit-http/
 ---
 
 {{< reuse "agw-docs/pages/security/rate-limit-http.md" >}}
@@ -42,5 +44,5 @@ In this example, a client can send 10 requests per second, and no more than 100 
 > [!IMPORTANT]
 > In version 1.4 and earlier, the Kubernetes controller sent only the first entry of the list to the proxy, so a second and later entry was accepted but never enforced. Version 1.5 enforces every entry. If you already have a policy with more than one entry, review it before you upgrade, because a limit that had no effect starts rejecting traffic. Standalone mode enforced every entry in earlier versions as well.
 
-Each entry is independent, and each keeps its own counter. Local rate limits run per proxy replica, so the effective limit across a deployment is the configured limit multiplied by the replica count. To share counters across replicas, use [global rate limiting]({{< link-hextra path="/documentation/security/rate-limit-global/" >}}) instead.
+Each entry is independent, and each keeps its own counter. Local rate limits run per proxy replica, so the effective limit across a deployment is the configured limit multiplied by the replica count. To share counters across replicas, use [global rate limiting]({{< link-hextra path="/documentation/security/rate-limit/global/" >}}) instead.
 

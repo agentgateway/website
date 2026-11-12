@@ -472,4 +472,4 @@ llm:
 ## Next steps
 
 - Learn about [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) for advanced expression logic.
-- Set up [authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) to use JWT claims in transformations.
+- Set up [authentication]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}) to use JWT claims in transformations.

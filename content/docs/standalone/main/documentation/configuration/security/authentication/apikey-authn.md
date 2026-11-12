@@ -1,7 +1,9 @@
 ---
-title: API Key authentication
-weight: 17
+title: API key authentication
+weight: 20
 description: Authenticate requests using API keys with configurable validation modes.
+aliases:
+  - ../apikey-authn/
 ---
 
 Attaches to: {{< badge content="Listener" path="/documentation/configuration/listeners/">}} {{< badge content="Route" path="/documentation/configuration/routes/">}}
@@ -11,7 +13,7 @@ Attaches to: {{< badge content="Listener" path="/documentation/configuration/lis
 {{< gloss "API Key" >}}API key{{< /gloss >}} {{< gloss "Authentication (AuthN)" >}}authentication{{< /gloss >}} enables authenticating requests based on a user-provided API key.
 
 > [!TIP]
-> This policy is about authenticating incoming requests. For attaching API keys to outgoing requests, see [Backend Authentication](../backend-authn).
+> This policy is about authenticating incoming requests. For attaching API keys to outgoing requests, see [Backend authentication]({{< link-hextra path="/documentation/configuration/security/backend-authn/" >}}).
 >
 > Agentgateway removes validated API keys before forwarding requests. For LLM traffic, give clients virtual keys and keep provider keys on the gateway. See [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
 

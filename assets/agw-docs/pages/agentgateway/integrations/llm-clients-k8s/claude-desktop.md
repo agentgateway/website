@@ -461,7 +461,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    discovery-document URL, which ends in `/.well-known/openid-configuration`,
    as the issuer.
 
-   For more detail on JWT validation, see [JWT auth]({{< link-hextra path="/documentation/security/jwt/setup/" >}}).
+   For more detail on JWT validation, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT auth]({{< link-hextra path="/documentation/security/extauth/jwt/setup/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT auth]({{< link-hextra path="/documentation/security/jwt/setup/" >}}){{< /version >}}.
 
 5. Give the backend its own credential. Interactive sign-in puts the identity provider token in the `Authorization` header, so the proxy must supply the LLM provider credential itself rather than pass a user token upstream. Follow [Anthropic provider]({{< link-hextra path="/integrations/llm/providers/anthropic/" >}}) to create a secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 

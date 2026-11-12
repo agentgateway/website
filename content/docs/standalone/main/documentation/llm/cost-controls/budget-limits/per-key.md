@@ -484,4 +484,4 @@ This behavior is expected. Set the limit below the ceiling that you want. Size t
 
 - Cap tokens with a bucket instead, with [rate limit token budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/rate-limit/" >}}).
 - Price your traffic with a [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
-- Review the API key policy fields in [API key authentication]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}).
+- Review the API key policy fields in [API key authentication]({{< link-hextra path="/documentation/configuration/security/authentication/apikey-authn/" >}}).

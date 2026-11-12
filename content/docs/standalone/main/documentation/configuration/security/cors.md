@@ -1,6 +1,6 @@
 ---
 title: CORS
-weight: 11
+weight: 50
 description: Configure Cross-Origin Resource Sharing policies to control cross-domain requests.
 ---
 

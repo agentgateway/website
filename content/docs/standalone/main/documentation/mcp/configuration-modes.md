@@ -107,7 +107,7 @@ mcp:
 | `mcp.targets[].condition` | Boolean CEL expression that selects this target. An omitted condition always includes the target. Conditions require at least two configured targets. |
 | `mcp.targets[].mcp.host` | Upstream MCP endpoint, contacted only when its condition allows it. |
 
-In routing-based configuration, set the same fields under `routes[].backends[].mcp.targets[]`. Conditions can also use authenticated request context, such as JWT claims populated by a [JWT policy]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}). A client-supplied selection header by itself does not establish the client's identity.
+In routing-based configuration, set the same fields under `routes[].backends[].mcp.targets[]`. Conditions can also use authenticated request context, such as JWT claims populated by a [JWT policy]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}). A client-supplied selection header by itself does not establish the client's identity.
 
 If every condition is false, agentgateway presents an empty virtual MCP server. For evaluation timing and error behavior, see [Target conditions]({{< link-hextra path="/integrations/mcp/servers/virtual/#target-conditions" >}}). Use [MCP authorization]({{< link-hextra path="/documentation/mcp/mcp-authz/" >}}) to filter individual tools and resources from the selected servers. See [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}) to compare the options.
 

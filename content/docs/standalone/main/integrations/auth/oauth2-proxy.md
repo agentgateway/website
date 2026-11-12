@@ -4,7 +4,7 @@ weight: 25
 description: Add user authentication with GitHub, Google, Azure AD, and other OAuth providers by integrating agentgateway with OAuth2 Proxy.
 ---
 
-Agentgateway can integrate with [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/) to add user authentication through GitHub, Google, Azure AD, and other OAuth providers. Agentgateway uses an [external authorization (`extAuthz`)]({{< link-hextra path="/documentation/configuration/security/external-authz" >}}) policy to delegate authentication checks to OAuth2 Proxy, which redirects unauthenticated users to the provider's login page.
+Agentgateway can integrate with [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/) to add user authentication through GitHub, Google, Azure AD, and other OAuth providers. Agentgateway uses an [external authorization (`extAuthz`)]({{< link-hextra path="/documentation/configuration/security/authorization/external-authz" >}}) policy to delegate authentication checks to OAuth2 Proxy, which redirects unauthenticated users to the provider's login page.
 
 This guide uses GitHub as the example provider. For other providers, see [Use other OAuth providers](#other-providers).
 
@@ -264,7 +264,7 @@ For production deployments, consider the following.
 ## Learn more
 
 {{< cards >}}
-  {{< card path="/documentation/configuration/security/external-authz" title="External authorization" subtitle="ExtAuthz configuration reference" >}}
+  {{< card path="/documentation/configuration/security/authorization/external-authz" title="External authorization" subtitle="ExtAuthz configuration reference" >}}
   {{< card path="/documentation/configuration/security/" title="Security configuration" subtitle="Complete security options" >}}
   {{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-oauth2-proxy" title="traffic-oauth2-proxy example" subtitle="Agentgateway config example to start an OAuth2 proxy with Docker Compose" >}}
 {{< /cards >}}
