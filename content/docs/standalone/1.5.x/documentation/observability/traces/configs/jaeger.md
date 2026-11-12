@@ -28,7 +28,7 @@ Run a Jaeger container on the same host as agentgateway.
 
 2. Point agentgateway at the Jaeger endpoint. 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      tracing:
        host: localhost:4317
@@ -114,7 +114,7 @@ Run agentgateway and Jaeger together as a single Docker Compose stack. Jaeger is
 
 2. In your agentgateway config file, set the Jaeger service name as the tracing host.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      tracing:
        host: jaeger:4317

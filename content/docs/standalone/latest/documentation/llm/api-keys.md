@@ -25,7 +25,7 @@ You can set the provider API key in the UI or in your configuration file.
 
    ```sh
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models: []
    EOF
@@ -59,7 +59,7 @@ You can provide your API key directly in the agentgateway configuration. This op
 1. Configure the agentgateway proxy and enter your key in the `params.apiKey` field directly.
    ```yaml
    cat <<EOF > config.yaml
-   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "openai/*"
@@ -82,7 +82,7 @@ You can provide your API key directly in the agentgateway configuration. This op
 2. Configure the agentgateway proxy to refer to that environment variable. Agentgateway automatically replaces the value of the variable with the value that is stored in the environment.
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "openai/*"
@@ -108,7 +108,7 @@ Store the key in a file on the gateway host. Agentgateway watches the file for c
 2. Configure agentgateway to read the file. Relative paths resolve from the directory where you start agentgateway. Use an absolute path in production.
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "openai/*"

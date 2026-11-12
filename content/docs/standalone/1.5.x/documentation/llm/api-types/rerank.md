@@ -18,7 +18,7 @@ Agentgateway also recognizes `/v1/rerank` as a rerank route, but `/v2/rerank` is
 In the simplified `llm` configuration, agentgateway automatically maps `/v2/rerank` requests to the `rerank` route type, so no explicit route configuration is required.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -30,7 +30,7 @@ llm:
 To configure the route type explicitly, use the `gateways` and `routes` format and set the `rerank` route type in the `policies.ai.routes` map.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 4000

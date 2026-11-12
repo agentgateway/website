@@ -50,7 +50,7 @@ By default, agentgateway proxies streamable HTTP in **stateful** mode, as descri
 To use stateless mode, set `statefulMode` to `stateless` on the MCP configuration.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   statefulMode: stateless
@@ -82,7 +82,7 @@ When you send an `initialize` request through agentgateway in stateless mode, th
 
 {{< doc-test paths="mcp-stateless" >}}
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   statefulMode: stateless
@@ -140,7 +140,7 @@ A browser page on any origin can resolve a hostname it controls to `127.0.0.1` a
 Agentgateway is usually a proxy in front of other servers rather than a browser-facing localhost server, so this check is off by default. Turn it on with `dnsRebindingProtection` when you run agentgateway on a developer machine and a browser can reach the MCP port.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   dnsRebindingProtection: true
@@ -178,7 +178,7 @@ A request that fails any rule receives a `403` response with the body `MCP DNS r
 2. Create a configuration for your agentgateway to connect to your MCP server. Make sure to expose the `Mcp-Session-Id` header in the CORS configuration for session persistence.
    ```yaml
    cat <<EOF > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      policies:

@@ -28,7 +28,7 @@ The following examples are equivalent. Each one exposes two MCP servers on port 
 {{< tabs >}}
 {{% tab name="Simplified (MCP)" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   targets:
   - name: jira
@@ -41,7 +41,7 @@ mcp:
 {{% /tab %}}
 {{% tab name="Routing-based" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -107,7 +107,7 @@ Multiplexing changes what authentication options you have, so decide the topolog
 When you hold the credentials, set them **per target** with `policies.backendAuth`. Each target gets its own credential, so a token for one MCP server is never sent to another.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   targets:
   - name: jira
