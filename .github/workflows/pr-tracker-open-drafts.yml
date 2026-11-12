@@ -78,6 +78,7 @@ env:
 
 jobs:
   find:
+    if: github.repository == 'agentgateway/website'
     name: Sort draft branches into new and already-open
     runs-on: ubuntu-latest
     permissions:
