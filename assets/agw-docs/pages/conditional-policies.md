@@ -31,7 +31,7 @@ Route to one of two external authorization servers based on the request path. Re
 
 {{< conditional-text include-if="standalone" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

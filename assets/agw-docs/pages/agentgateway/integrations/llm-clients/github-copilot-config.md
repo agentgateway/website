@@ -1,6 +1,6 @@
 ```yaml
 cat > /tmp/test-copilot.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   port: 3000
   models:

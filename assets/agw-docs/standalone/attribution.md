@@ -9,7 +9,7 @@ You configure the attribution values, and agentgateway resolves each one from an
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. Configure the LLM provider that you want to attribute, such as [Amazon Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}).
-3. Set up [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) so that `jwt.*` values are available to attribution expressions.
+3. Set up {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}){{< /version >}} so that `jwt.*` values are available to attribution expressions.
 
 ## Amazon Bedrock
 
@@ -24,7 +24,7 @@ Configure `auth.aws.assumeRole` on the model. Each tag, and the session name, is
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   policies:
@@ -77,7 +77,7 @@ Set the metadata with a `finalTransformation` on the model. Agentgateway applies
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -99,7 +99,7 @@ Callers can send their own metadata in the `x-bedrock-metadata` header, so two p
 - **Replace**. Your values are the only ones that reach Bedrock, and any caller metadata is dropped. Quote the expression so that YAML reads it as a string rather than as a mapping.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -127,7 +127,7 @@ Configure [Google Vertex AI]({{< link-hextra path="/integrations/llm/providers/v
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   policies:

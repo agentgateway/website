@@ -1,7 +1,7 @@
 1. Add a `tls` section to the gateway that the UI is attached to. Agentgateway reads the certificate and key from the file system, and setting `tls` also switches the gateway protocol to HTTPS. Use the certificate for the hostname that you created a DNS record for.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 4000

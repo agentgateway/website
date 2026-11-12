@@ -1,7 +1,9 @@
 ---
 title: JWT authentication
-weight: 15
+weight: 40
 description: Verify JWT tokens from incoming requests using JWKS and configured issuers.
+aliases:
+  - ../jwt-authn/
 ---
 
 Attaches to: {{< badge content="Listener" path="/documentation/configuration/listeners/">}} {{< badge content="Route" path="/documentation/configuration/routes/">}}
@@ -44,7 +46,7 @@ The following steps add the same `jwtAuth` policy as the **Simplified (LLM)** ex
 1. Save your JWKS to a file on the gateway host, such as `./manifests/jwt/pub-key`. The file must exist before you save the policy. Otherwise, the save fails with a `failed to load JWKS` error.
 2. Create a configuration with an LLM model, but no JWT policy. You add the policy in the UI.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"
@@ -75,7 +77,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     jwtAuth:
@@ -94,7 +96,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -114,7 +116,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -155,7 +157,7 @@ In **MCP** > **Policies**, add the same two policies. For the **Routing-based** 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     jwtAuth:
@@ -176,7 +178,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -198,7 +200,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

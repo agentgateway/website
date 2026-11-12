@@ -206,7 +206,7 @@ Traces always include the full breakdown:
 As these are loaded into the CEL context, they can be explicitly emitted as well.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     add:
@@ -264,7 +264,7 @@ To set the rates and log the cost of 1-hour cache writes, follow these steps.
 2. Add the cost of 1-hour cache writes as an access log field. The expression checks for the key first, so requests without 1-hour writes log `0`.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      accessLog:
        add:
@@ -301,7 +301,7 @@ For Bedrock tier requests and the response header used to detect the tier, see [
 To record the tier in the access log, add `llm.serviceTier` as a field.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     add:

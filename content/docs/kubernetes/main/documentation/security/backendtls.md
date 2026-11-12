@@ -1,6 +1,6 @@
 ---
 title: BackendTLS
-weight: 10
+weight: 20
 description: Originate one-way TLS connections from the Gateway to backend services.
 ---
 

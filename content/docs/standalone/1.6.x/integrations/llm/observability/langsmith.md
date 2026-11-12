@@ -24,7 +24,7 @@ description: Integrate agentgateway with LangSmith for LLM debugging and monitor
 LangSmith accepts OpenTelemetry traces directly. Configure agentgateway to export traces directly to LangSmith:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: api.smith.langchain.com:443

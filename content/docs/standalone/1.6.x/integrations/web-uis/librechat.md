@@ -35,7 +35,7 @@ description: Front LibreChat with agentgateway to centralize LLM credentials, au
 Create a `config.yaml`:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   port: 3000

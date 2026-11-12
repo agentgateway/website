@@ -28,7 +28,7 @@ Configure the `guardrails` field under `llm.models[]` in your agentgateway confi
 
 ```yaml
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"

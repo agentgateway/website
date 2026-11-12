@@ -52,7 +52,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 1. Create a configuration that routes LLM traffic, and start agentgateway.
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -91,7 +91,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: cloud.langfuse.com:443

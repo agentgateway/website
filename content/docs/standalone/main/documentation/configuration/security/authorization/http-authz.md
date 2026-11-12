@@ -1,7 +1,9 @@
 ---
 title: HTTP authorization
-weight: 12
+weight: 10
 description: Define allow, deny, and require rules using CEL expressions.
+aliases:
+  - ../http-authz/
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}}
@@ -36,7 +38,7 @@ The following steps add the same `authorization` policy as the **Simplified (LLM
 
 1. Create a configuration with an LLM model, but no authorization policy. You add the policy in the UI.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"
@@ -69,7 +71,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     authorization:
@@ -88,7 +90,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -108,7 +110,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -183,7 +185,7 @@ The following steps add the model-level rules from the **Config file** tab to th
 
 1. Create a configuration with the `gpt-4` model, but no authorization rules, and start agentgateway with it.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: gpt-4

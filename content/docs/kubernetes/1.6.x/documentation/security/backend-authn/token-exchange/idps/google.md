@@ -1,7 +1,7 @@
 ---
 title: Google Cloud
 weight: 20
-description: Exchange the incoming token for a Google Cloud access token at the Google Security Token Service, with Workload Identity Federation.
+description: Keep user context in requests with Google Workload Identity Federation.
 test: skip
 ---
 

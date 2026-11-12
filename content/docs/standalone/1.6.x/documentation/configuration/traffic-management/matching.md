@@ -40,7 +40,7 @@ If no path match is specified, the default is to match all paths (`/`).
 {{< tabs >}}
 {{< tab name="Exact path matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -55,7 +55,7 @@ routes:
 {{< /tab >}}
 {{< tab name="Prefix path matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -70,7 +70,7 @@ routes:
 {{< /tab >}}
 {{< tab name="Regex path matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -99,7 +99,7 @@ Match incoming requests based on HTTP headers included in the request.
 {{< tabs >}}
 {{< tab name="Exact header matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -118,7 +118,7 @@ routes:
 {{< /tab >}}
 {{< tab name="Regex header matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -137,7 +137,7 @@ routes:
 {{< /tab >}}
 {{< tab name="Multiple header matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -172,7 +172,7 @@ Optionally restrict matches to specific HTTP methods.
 {{< tabs >}}
 {{< tab name="GET method matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -188,7 +188,7 @@ routes:
 {{< /tab >}}
 {{< tab name="POST method matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -204,7 +204,7 @@ routes:
 {{< /tab >}}
 {{< tab name="Multiple methods with different backends" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -241,7 +241,7 @@ Match on query parameters, either by exact value or regex.
 {{< tabs >}}
 {{< tab name="Exact query parameter matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -260,7 +260,7 @@ routes:
 {{< /tab >}}
 {{< tab name="Regex query parameter matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -279,7 +279,7 @@ routes:
 {{< /tab >}}
 {{< tab name="Multiple query parameters" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -306,7 +306,7 @@ routes:
 You can combine multiple matching conditions to create a more specific route, such as the following example.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -337,7 +337,7 @@ routes:
 #   * The other match-type variants on this page (exact/prefix/regex path,
 #     header, method, query) are structurally analogous and not individually tested.
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -370,7 +370,7 @@ For routes configured with [TCP listeners]({{< link-hextra path="/documentation/
 Match incoming requests based on the hostname included in the request. This is primarily used for TLS termination scenarios.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   database-proxy:
     port: 5432
@@ -395,7 +395,7 @@ In the following example, traffic is load balanced across the three backends in 
 If no weight is specified, the default is 1. Backends with a weight of 0 receive no traffic. Each incoming TCP connection maintains a 1:1 mapping with an outgoing backend connection; once a connection is established, it remains bound to its assigned backend for the lifetime of that connection.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   redis-proxy:
     port: 6379
@@ -421,7 +421,7 @@ tcpRoutes:
 #   * The hostname-matching TCP variant on this page is structurally analogous
 #     and not individually tested.
 cat <<'EOF' > config2.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   redis-proxy:
     port: 6379

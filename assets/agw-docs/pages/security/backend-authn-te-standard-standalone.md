@@ -85,7 +85,7 @@ In this example, a user authenticates to Keycloak as one client, and the gateway
 
 ## More examples
 
-The [`traffic-token-exchange` examples](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-token-exchange) in the agentgateway repository also include an `extauthz` example that performs a token exchange by building the token request by hand with [external authorization]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}) and CEL, as an alternative to the built-in `oauthTokenExchange` method.
+The [`traffic-token-exchange` examples](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-token-exchange) in the agentgateway repository also include an `extauthz` example that performs a token exchange by building the token request by hand with {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[external authorization]({{< link-hextra path="/documentation/configuration/security/authorization/external-authz/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[external authorization]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}){{< /version >}} and CEL, as an alternative to the built-in `oauthTokenExchange` method.
 
 ### Custom headers
 
@@ -142,7 +142,7 @@ backendAuth:
 ## Next steps
 
 - Read the [Shielding AI agents from sensitive credentials](https://agentgateway.dev/blog/2026-07-12-agentgateway-token-exchange-jwt-assertion-entra-obo/) blog post for a walkthrough of token exchange, JWT assertion, and Entra on-behalf-of.
-- Validate incoming JWTs with the [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) policy.
+- Validate incoming JWTs with the {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}){{< /version >}} policy.
 
 ## Cleanup
 

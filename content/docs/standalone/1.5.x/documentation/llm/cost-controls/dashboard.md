@@ -24,7 +24,7 @@ Two pieces of configuration power the dashboard:
 1. Add `database` and `modelCatalog` to the `config` section of your config file. The `adminAddr` field controls where the UI is served (default `localhost:15000`).
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      adminAddr: localhost:15000
      database:
@@ -109,7 +109,7 @@ JSON
 
 # Config with database + modelCatalog (mode=rwc so SQLite creates the file).
 cat > config.yaml <<'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   adminAddr: localhost:15000
   database:

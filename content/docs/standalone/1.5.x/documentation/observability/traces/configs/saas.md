@@ -27,7 +27,7 @@ Keep the encoded string — you will use it as the `Authorization` header value.
 Add the following tracing configuration to your `config.yaml`. Replace `<base64-encoded-credentials>` with the string you generated above.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: us.cloud.langfuse.com:443

@@ -1,7 +1,9 @@
 ---
 title: OIDC browser authentication
-weight: 40
+weight: 60
 description: Enable browser-based OpenID Connect authentication with encrypted session cookies.
+aliases:
+  - ../oidc/
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}}
@@ -88,7 +90,7 @@ The following steps add the same `oidc` policy as the **Simplified (LLM)** examp
 
 1. Create a configuration with an LLM model, but no OIDC policy. You add the policy in the UI.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"
@@ -119,7 +121,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     oidc:
@@ -139,7 +141,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -160,7 +162,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -192,7 +194,7 @@ Review the following example for a Keycloak IdP.
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     oidc:
@@ -212,7 +214,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -233,7 +235,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -409,4 +411,4 @@ frontendPolicies:
 
 - [Keycloak integration]({{< link-hextra path="/integrations/auth/keycloak" >}})
 - [Auth0 integration]({{< link-hextra path="/integrations/auth/auth0" >}})
-- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}) for MCP-specific OAuth flows
+- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/authentication/mcp-authn" >}}) for MCP-specific OAuth flows

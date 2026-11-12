@@ -10,7 +10,7 @@ Agentgateway always reads a configuration file at startup. To control how config
 Set the mode in the `config.storage.mode` field of your configuration file. The mode values are `file`, `hybrid`, and `readOnly`, which are the literal values that the field accepts. Because the field is in the `config` section, agentgateway applies it at startup only, so a change to it takes effect after a restart.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   storage:
     mode: hybrid          # file, hybrid, or readOnly
@@ -123,7 +123,7 @@ Use `file` mode when you want the UI to save your changes into the same configur
 3. Review your configuration file. Agentgateway added the server, and created the `mcp` section because the file did not have one.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 4000
@@ -161,7 +161,7 @@ Use `hybrid` mode when you want the configuration file to stay exactly as you wr
    The example also adds an empty `mcp` section. In `hybrid` mode agentgateway treats your file as a read-only baseline, so the UI cannot add a section to it, only resources within a section that already exists. For more information, see [Sections must exist in the file](#sections-must-exist).
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      storage:
        mode: hybrid
@@ -250,7 +250,7 @@ Use `hybrid` mode when you want the configuration file to stay exactly as you wr
    Example output:
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      storage:
        mode: hybrid
@@ -296,7 +296,7 @@ Use `readOnly` mode when your configuration file is the only source of truth and
 1. Set the mode in your configuration file.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      storage:
        mode: readOnly

@@ -1,12 +1,14 @@
 ---
 title: Network authorization
-weight: 13
+weight: 20
 description: Enforce access control at the L4 level using CEL expressions.
+aliases:
+  - ../network-authz/
 ---
 
 Attaches to: {{< badge content="Frontend" path="/documentation/configuration/overview/">}}
 
-Network authorization enforces access control at the L4 (transport) level, before HTTP processing. You can enforce policies for non-HTTP traffic such as raw TCP and TLS connections, and layer L4+L7 controls when you combine policies with [HTTP authorization]({{< link-hextra path="/documentation/configuration/security/http-authz/" >}}).
+Network authorization enforces access control at the L4 (transport) level, before HTTP processing. You can enforce policies for non-HTTP traffic such as raw TCP and TLS connections, and layer L4+L7 controls when you combine policies with [HTTP authorization]({{< link-hextra path="/documentation/configuration/security/authorization/http-authz/" >}}).
 
 Network authorization uses [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) evaluated against the connection's source and destination context.
 
@@ -15,7 +17,7 @@ Network authorization uses [CEL expressions]({{< link-hextra path="/reference/ce
 Configure network authorization as a frontend policy under `frontendPolicies.networkAuthorization`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   networkAuthorization:
     rules:

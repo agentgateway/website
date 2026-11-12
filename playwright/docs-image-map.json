@@ -350,67 +350,67 @@
       "dark": "assets/img/ui-llm-policy-cors-bottom-dark.png"
     },
     "ui-llm-policy-jwt-auth.png": {
-      "$note": "content/docs/standalone/main/documentation/configuration/security/jwt-authn.md, first UI tab, steps 5-7: the LLM JWT auth drawer with a local JWKS file, the agentgateway.dev issuer, and the test.agentgateway.dev audience. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "$note": "content/docs/standalone/main/documentation/configuration/security/authentication/jwt-authn.md, first UI tab, steps 5-7: the LLM JWT auth drawer with a local JWKS file, the agentgateway.dev issuer, and the test.agentgateway.dev audience. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
       "light": "assets/img/ui-llm-policy-jwt-auth.png",
       "dark": "assets/img/ui-llm-policy-jwt-auth-dark.png"
     },
     "ui-llm-policy-jwt-authorization.png": {
-      "$note": "content/docs/standalone/main/documentation/configuration/security/jwt-authn.md, second UI tab, step 3: the LLM Authorization drawer with the one allow rule for /admin and the admins group. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "$note": "content/docs/standalone/main/documentation/configuration/security/authentication/jwt-authn.md, second UI tab, step 3: the LLM Authorization drawer with the one allow rule for /admin and the admins group. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
       "light": "assets/img/ui-llm-policy-jwt-authorization.png",
       "dark": "assets/img/ui-llm-policy-jwt-authorization-dark.png"
     },
     "ui-llm-policy-oidc.png": {
-      "$note": "content/docs/standalone/main/documentation/configuration/security/oidc.md, Configuration UI tab, steps 4-6: the LLM OIDC drawer scrolled to the client ID, secret, redirect URI, and the profile and email scopes. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "$note": "content/docs/standalone/main/documentation/configuration/security/authentication/oidc.md, Configuration UI tab, steps 4-6: the LLM OIDC drawer scrolled to the client ID, secret, redirect URI, and the profile and email scopes. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
       "light": "assets/img/ui-llm-policy-oidc.png",
       "dark": "assets/img/ui-llm-policy-oidc-dark.png"
     },
     "ui-llm-policy-authorization.png": {
-      "$note": "content/docs/standalone/main/documentation/configuration/security/http-authz.md, first UI tab, step 4: the LLM Authorization drawer with the four allow, deny, require, and allow rules. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "$note": "content/docs/standalone/main/documentation/configuration/security/authorization/http-authz.md, first UI tab, step 4: the LLM Authorization drawer with the four allow, deny, require, and allow rules. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
       "light": "assets/img/ui-llm-policy-authorization.png",
       "dark": "assets/img/ui-llm-policy-authorization-dark.png"
     },
     "ui-llm-model-authorization.png": {
-      "$note": "content/docs/standalone/main/documentation/configuration/security/http-authz.md, LLM authorization UI tab, step 4: the gpt-4 Edit model drawer's Model policies > Authorization section with the require, deny, and allow rules. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "$note": "content/docs/standalone/main/documentation/configuration/security/authorization/http-authz.md, LLM authorization UI tab, step 4: the gpt-4 Edit model drawer's Model policies > Authorization section with the require, deny, and allow rules. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
       "light": "assets/img/ui-llm-model-authorization.png",
       "dark": "assets/img/ui-llm-model-authorization-dark.png"
     },
     "ui-llm-policy-ext-authz-grpc.png": {
-      "$note": "content/docs/standalone/main/documentation/configuration/security/external-authz.md, gRPC External Authorization UI tab, step 6: the External authz drawer's gRPC details with the dev.agentgateway.jwt metadata entry. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "$note": "content/docs/standalone/main/documentation/configuration/security/authorization/external-authz.md, gRPC External Authorization UI tab, step 6: the External authz drawer's gRPC details with the dev.agentgateway.jwt metadata entry. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
       "light": "assets/img/ui-llm-policy-ext-authz-grpc.png",
       "dark": "assets/img/ui-llm-policy-ext-authz-grpc-dark.png"
     },
     "ui-llm-policy-ext-authz-http.png": {
-      "$note": "content/docs/standalone/main/documentation/configuration/security/external-authz.md, HTTP External Authorization UI tab, steps 3-4: the External authz drawer with the HTTP protocol and the cookie request header. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "$note": "content/docs/standalone/main/documentation/configuration/security/authorization/external-authz.md, HTTP External Authorization UI tab, steps 3-4: the External authz drawer with the HTTP protocol and the cookie request header. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
       "light": "assets/img/ui-llm-policy-ext-authz-http.png",
       "dark": "assets/img/ui-llm-policy-ext-authz-http-dark.png"
     },
     "ui-llm-policy-ext-authz-http-details.png": {
-      "$note": "content/docs/standalone/main/documentation/configuration/security/external-authz.md, HTTP External Authorization UI tab, steps 5-6: the HTTP details with the path expression and the x-auth-request-user response header. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "$note": "content/docs/standalone/main/documentation/configuration/security/authorization/external-authz.md, HTTP External Authorization UI tab, steps 5-6: the HTTP details with the path expression and the x-auth-request-user response header. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
       "light": "assets/img/ui-llm-policy-ext-authz-http-details.png",
       "dark": "assets/img/ui-llm-policy-ext-authz-http-details-dark.png"
     },
     "ui-mcp-policy-authn-keycloak.png": {
-      "$note": "content/docs/standalone/main/documentation/configuration/security/mcp-authn.md, Authorization Server Proxy UI tab, steps 5-6: the MCP authentication drawer with the Keycloak JWKS URL, issuer, and audience. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "$note": "content/docs/standalone/main/documentation/configuration/security/authentication/mcp-authn.md, Authorization Server Proxy UI tab, steps 5-6: the MCP authentication drawer with the Keycloak JWKS URL, issuer, and audience. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
       "light": "assets/img/ui-mcp-policy-authn-keycloak.png",
       "dark": "assets/img/ui-mcp-policy-authn-keycloak-dark.png"
     },
     "ui-mcp-policy-authn-keycloak-metadata.png": {
-      "$note": "content/docs/standalone/main/documentation/configuration/security/mcp-authn.md, Authorization Server Proxy UI tab, step 7: the same drawer scrolled to the resource metadata YAML. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "$note": "content/docs/standalone/main/documentation/configuration/security/authentication/mcp-authn.md, Authorization Server Proxy UI tab, step 7: the same drawer scrolled to the resource metadata YAML. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
       "light": "assets/img/ui-mcp-policy-authn-keycloak-metadata.png",
       "dark": "assets/img/ui-mcp-policy-authn-keycloak-metadata-dark.png"
     },
     "ui-mcp-policy-authn-resource-server.png": {
-      "$note": "content/docs/standalone/main/documentation/configuration/security/mcp-authn.md, Resource Server Only UI tab, steps 5-6: the MCP authentication drawer with the localhost:9000 JWKS URL, issuer, and audience. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "$note": "content/docs/standalone/main/documentation/configuration/security/authentication/mcp-authn.md, Resource Server Only UI tab, steps 5-6: the MCP authentication drawer with the localhost:9000 JWKS URL, issuer, and audience. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
       "light": "assets/img/ui-mcp-policy-authn-resource-server.png",
       "dark": "assets/img/ui-mcp-policy-authn-resource-server-dark.png"
     },
     "ui-mcp-policy-authn-resource-server-metadata.png": {
-      "$note": "content/docs/standalone/main/documentation/configuration/security/mcp-authn.md, Resource Server Only UI tab, step 7: the same drawer scrolled to the resource metadata YAML. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "$note": "content/docs/standalone/main/documentation/configuration/security/authentication/mcp-authn.md, Resource Server Only UI tab, step 7: the same drawer scrolled to the resource metadata YAML. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
       "light": "assets/img/ui-mcp-policy-authn-resource-server-metadata.png",
       "dark": "assets/img/ui-mcp-policy-authn-resource-server-metadata-dark.png"
     },
     "ui-mcp-policy-authorization.png": {
-      "$note": "content/docs/standalone/main/documentation/configuration/security/mcp-authz.md, first UI tab, step 4: the MCP authorization drawer with the three allow rules for echo, add, and printEnv. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
+      "$note": "content/docs/standalone/main/documentation/configuration/security/authorization/mcp-authz.md, first UI tab, step 4: the MCP authorization drawer with the three allow rules for echo, add, and printEnv. Never saved. Captured by tests/ui-tabs-a.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml.",
       "light": "assets/img/ui-mcp-policy-authorization.png",
       "dark": "assets/img/ui-mcp-policy-authorization-dark.png"
     },
