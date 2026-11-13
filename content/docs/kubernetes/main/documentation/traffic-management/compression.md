@@ -10,6 +10,10 @@ Use `traffic.compression` in an {{< reuse "agw-docs/snippets/policy.md" >}} for 
 
 {{< reuse "agw-docs/snippets/compression-about.md" >}}
 
+{{< reuse "agw-docs/snippets/compression-behavior.md" >}}
+
+Policies in the `PreRouting` phase also see encoded request bodies.
+
 ## Compression settings
 
 The `traffic.compression` field takes a `response` block, a `request` block, or both.
@@ -167,12 +171,6 @@ Use an {{< reuse "agw-docs/snippets/policy.md" >}} to configure compression for 
      }
    }
    ```
-
-## Compression behavior
-
-{{< reuse "agw-docs/snippets/compression-behavior.md" >}}
-
-Policies in the `PreRouting` phase also see encoded request bodies.
 
 ## Cleanup
 
