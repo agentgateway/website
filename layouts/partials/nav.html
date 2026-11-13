@@ -596,6 +596,17 @@
                 {{- end -}}
                 <a href="{{ $href }}" class="px-4 py-3 block text-left">{{ .dropdown }}</a>
               {{- end -}}
+              {{- /* Fixed-URL entries from params.relatedDocs (the "Previous
+                     releases" PDF archive link). The mobile version chips come
+                     from the docs-theme-extras sidebar, which already reads
+                     relatedDocs; this keeps the desktop dropdown in step. */ -}}
+              {{- range site.Params.relatedDocs -}}
+                {{- range .versions -}}
+                  {{- if and .url (ne (trim (.label | default "") " ") "") -}}
+                <a href="{{ .url }}" class="px-4 py-3 block text-left border-t border-gray-200 dark:border-gray-700">{{ .label }}</a>
+                  {{- end -}}
+                {{- end -}}
+              {{- end -}}
             </div>
           </div>
         {{- end -}}
