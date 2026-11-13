@@ -33,7 +33,7 @@ You can inspect raw metrics directly from either endpoint without installing any
       curl http://localhost:15020/metrics
       ```
 
-The data plane endpoint returns metrics in the [OpenMetrics](https://openmetrics.io/) format and the control plane endpoint returns metrics in the classic Prometheus text format. For more information about the data plane format, see [Metrics format]({{< link path="/documentation/observability/metrics/dataplane/#metrics-format" >}}).
+The data plane endpoint returns metrics in the [OpenMetrics](https://openmetrics.io/) format. The control plane endpoint returns metrics in the classic Prometheus text format. For more information about the data plane format, see [Metrics format]({{< link path="/documentation/observability/metrics/dataplane/#metrics-format" >}}).
 
 All agentgateway metrics use the `agentgateway_` prefix. For the full list of available metrics, see [Control plane metrics]({{< link path="/documentation/observability/metrics/control-plane/" >}}) and [Data plane metrics]({{< link path="/documentation/observability/metrics/dataplane/" >}}).
 
