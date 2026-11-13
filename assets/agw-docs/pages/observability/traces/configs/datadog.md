@@ -2,15 +2,15 @@
 from {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Choose the setup that
 matches what you want to observe.
 
-| Setup | Telemetry | When to use it |
+| Setup | Telemetry | When to use |
 | --- | --- | --- |
-| Complete example | Proxy and controller metrics, LLM traces, and a dashboard | Evaluate the integration end to end or use it as a production reference |
+| Complete example | Proxy and controller metrics, LLM traces, and a dashboard | Evaluate the integration end to end or use the example as a production reference |
 | Direct trace export | LLM traces | Add tracing to an existing Kubernetes deployment with the fewest components |
 
 The complete example is the recommended starting point. The Datadog Agent
 collects proxy and controller metrics through OpenMetrics Autodiscovery and
-receives OpenTelemetry Protocol (OTLP) traces over HTTP directly from the proxy. The direct setup sends only
-traces from the proxy to the Agent.
+receives OpenTelemetry Protocol (OTLP) traces over HTTP directly from the
+proxy. The direct setup sends only traces from the proxy to the Agent.
 
 ## Before you begin
 
@@ -25,7 +25,7 @@ For the complete example, you also need:
 
 - An existing {{< reuse "agw-docs/snippets/agentgateway.md" >}} installation, including the custom
   resource definitions (CRDs), the controller, and the `agentgateway`
-  GatewayClass. To install it, see
+  GatewayClass. To install {{< reuse "agw-docs/snippets/agentgateway.md" >}}, see
   [Install with Helm]({{< link-hextra path="/documentation/install/helm/" >}}).
 - `curl`.
 - Free loopback ports `13000` and `18520` for the port-forwards.
@@ -46,7 +46,8 @@ installs the Datadog Agent and adds OpenMetrics Autodiscovery annotations to the
 controller and proxy. The example also deploys a Gateway that routes to the
 HomeHub demo model. HomeHub returns fixed OpenAI-compatible responses, so the example does
 not call a paid model or need a provider API key. A tracing policy sends the
-proxy's traces to the Datadog Agent on the same node.
+proxy's traces to the Datadog Agent on the same node. Traces from the example
+omit prompt and completion content.
 
 > [!NOTE]
 > The example pins the Datadog Helm chart and Agent versions in `versions.env`.
@@ -64,7 +65,7 @@ proxy's traces to the Datadog Agent on the same node.
    ```
 
 2. Export your Datadog API key and site. The example creates the Kubernetes
-   Secret for you; do not add the key to a manifest.
+   Secret for you, so do not add the key to a manifest.
 
    ```sh
    export DD_API_KEY="replace-with-your-datadog-api-key"
@@ -83,8 +84,8 @@ proxy's traces to the Datadog Agent on the same node.
    `gateway.yaml` and update the other files to refer to your Gateway.
 
    The proxy check in `proxy-parameters.yaml` sets `use_latest_spec: true` so
-   that the Agent parses the proxy's output as OpenMetrics. Version 1.6 and
-   earlier need this setting, or the Agent drops every counter. The controller
+   that the Agent parses the proxy's output as OpenMetrics. {{< reuse "agw-docs/snippets/agentgateway.md" >}} 1.6
+   and earlier need this setting, or the Agent drops every counter. The controller
    check in `controller-annotations.yaml` sets `use_latest_spec: false`, because
    the controller serves the classic Prometheus text format.
 
@@ -159,8 +160,6 @@ proxy's traces to the Datadog Agent on the same node.
    until the corresponding traffic is present. HomeHub has no real provider
    pricing, so estimated-cost widgets can be empty or show **Cost unavailable**.
 
-Traces from the example omit prompt and completion content.
-
 The example collects all proxy and controller metric families. The
 `agentgateway.mcp.requests.count` metric's `resource` tag can contain tool names
 or resource URIs. Review custom-metric usage, tag cardinality, and resource
@@ -230,8 +229,8 @@ This direct path does not configure OpenMetrics collection or a dashboard.
 
 ### Metrics are missing
 
-A healthy OpenMetrics service check proves that the endpoint responded; it does
-not prove that counter samples reached Datadog. Run traffic between scrape
+A healthy OpenMetrics service check means that the endpoint responded. The
+service check does not prove that counter samples reached Datadog. Run traffic between scrape
 intervals, repeat the check with `--check-rate`, allow several minutes for
 indexing, and confirm that `DD_SITE` selects the organization that owns the API
 key.
@@ -250,12 +249,13 @@ Keep management ports private outside troubleshooting.
 
 ### Gauges appear but counters are missing
 
-In version 1.6 and earlier, confirm that the `openmetrics` check for the proxy
-sets `use_latest_spec: true`. Without this setting, the Agent parses the proxy's
-OpenMetrics output as classic Prometheus text and drops every counter without an
-error, while gauges and histograms still arrive. In every version, keep
-`use_latest_spec: false` for the controller check, because the controller serves
-classic Prometheus text.
+In {{< reuse "agw-docs/snippets/agentgateway.md" >}} 1.6 and earlier, confirm that the `openmetrics` check for
+the proxy sets `use_latest_spec: true`. Without this setting, the Agent parses
+the proxy's OpenMetrics output as classic Prometheus text. The Agent then drops
+every counter without an error, but gauges and histograms still arrive.
+
+In every version, keep `use_latest_spec: false` for the controller check,
+because the controller serves classic Prometheus text.
 
 ### An OpenMetrics check is missing
 

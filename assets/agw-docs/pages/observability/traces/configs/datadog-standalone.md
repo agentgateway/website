@@ -2,12 +2,12 @@
 from {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Choose the setup that
 matches what you want to observe.
 
-| Setup | Telemetry | When to use it |
+| Setup | Telemetry | When to use |
 | --- | --- | --- |
-| Complete example | Proxy metrics, LLM traces, and a dashboard | Evaluate the integration end to end or use it as a production reference |
+| Complete example | Proxy metrics, LLM traces, and a dashboard | Evaluate the integration end to end or use the example as a production reference |
 | Direct trace export | LLM traces | Add tracing to an existing deployment with the fewest components |
 
-The complete example is the recommended starting point. It runs the Datadog
+The complete example is the recommended starting point. The example runs the Datadog
 Agent and a demo model with Docker Compose next to your {{< reuse "agw-docs/snippets/agentgateway.md" >}}
 installation. The Agent scrapes proxy metrics and receives OpenTelemetry
 Protocol (OTLP) traces over HTTP directly from the proxy. The direct setup sends
@@ -18,11 +18,11 @@ traces from the proxy to Datadog's hosted OTLP endpoint.
 For the complete example, you need:
 
 - A running {{< reuse "agw-docs/snippets/agentgateway.md" >}} installation on the Docker host, with metrics
-  on the default port `15020`. If you have not installed it, see
+  on the default port `15020`. To install {{< reuse "agw-docs/snippets/agentgateway.md" >}}, see
   [Install]({{< link-hextra path="/documentation/setup/install/" >}}).
 - [Docker](https://docs.docker.com/get-started/get-docker/) with
   [Docker Compose](https://docs.docker.com/compose/install/) v2, and `curl`.
-- Free loopback ports `3000` for the agentgateway LLM listener, `18080` for the
+- Free loopback ports `3000` for the {{< reuse "agw-docs/snippets/agentgateway.md" >}} LLM listener, `18080` for the
   demo model, and `4318` for OTLP ingestion.
 - A Datadog organization, API key, and the correct
   [Datadog site](https://docs.datadoghq.com/getting_started/site/).
@@ -42,6 +42,7 @@ uses Docker Compose to run the Datadog Agent and the HomeHub demo model. HomeHub
 returns fixed OpenAI-compatible responses, so the example does not call a paid
 model or need a provider API key. You merge the example's `config.yaml` into
 your {{< reuse "agw-docs/snippets/agentgateway.md" >}} configuration to add the demo model and trace export.
+Traces from the example omit prompt and completion content.
 
 > [!NOTE]
 > The example pins the Datadog Agent and HomeHub versions in `versions.env`.
@@ -76,24 +77,23 @@ your {{< reuse "agw-docs/snippets/agentgateway.md" >}} configuration to add the 
    chmod 600 .env
    ```
 
-4. Start the Datadog Agent and HomeHub.
+4. Start the Datadog Agent and HomeHub. The example's `openmetrics.yaml` check
+   sets `use_latest_spec: true` so that the Agent parses the proxy's output as
+   OpenMetrics. {{< reuse "agw-docs/snippets/agentgateway.md" >}} 1.6 and earlier need this setting, or the Agent
+   drops every counter.
 
    ```sh
    docker compose --env-file versions.env --env-file .env up -d
    ```
 
-   The example's `openmetrics.yaml` check sets `use_latest_spec: true` so that
-   the Agent parses the proxy's output as OpenMetrics. Version 1.6 and earlier
-   need this setting, or the Agent drops every counter.
-
 5. Merge the example's
    [`config.yaml`](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/standalone/config.yaml)
    into your {{< reuse "agw-docs/snippets/agentgateway.md" >}} configuration. The file adds the `homehub-support`
    model on port `3000` and exports traces to the Agent at `localhost:4318`.
-   Adjust the port and backend addresses to match your deployment.
+   To match your deployment, adjust the port and backend addresses.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      tracing:
        host: localhost:4318
@@ -152,15 +152,13 @@ your {{< reuse "agw-docs/snippets/agentgateway.md" >}} configuration to add the 
    - `agentgateway.gen_ai.token.usage.sum`
 
 10. In **Dashboards**, import the example's
-   [`dashboard.json`](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/dashboard.json)
+    [`dashboard.json`](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/dashboard.json)
     and set the `env` template variable to `datadog-dev`. Enable percentile
     aggregations in Metrics Summary for the latency distributions before you use
     the p95 widgets. The controller widgets stay empty in standalone mode. The
     streaming timing, MCP, and guardrail widgets stay empty until the
     corresponding traffic is present. HomeHub has no real provider pricing, so
     estimated-cost widgets can be empty or show **Cost unavailable**.
-
-Traces from the example omit prompt and completion content.
 
 Review redaction, sampling, access controls, and custom-metric cardinality
 before you adapt the example for production.
@@ -177,7 +175,7 @@ site if needed.
 Add this tracing policy to your `config.yaml`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: otlp.datadoghq.com:443
@@ -240,21 +238,22 @@ docker compose --env-file versions.env --env-file .env \
 ```
 
 Do not share `docker compose config`, container inspection output, or the local
-`.env` file; those outputs can contain credentials.
+`.env` file. These outputs can contain credentials.
 
 ### Metrics are missing
 
-A healthy `agentgateway.openmetrics.health` service check proves that the
-endpoint responded; it does not prove that counter samples reached Datadog.
+A healthy `agentgateway.openmetrics.health` service check means that the
+endpoint responded. The service check does not prove that counter samples
+reached Datadog.
 Run traffic between scrape intervals, repeat the check with `--check-rate`,
 allow several minutes for indexing, and search by the exact metric name.
 
 ### Gauges appear but counters are missing
 
-In version 1.6 and earlier, confirm that the `openmetrics` check sets
-`use_latest_spec: true`. Without this setting, the Agent parses the proxy's
-OpenMetrics output as classic Prometheus text and drops every counter without an
-error, while gauges and histograms still arrive.
+In {{< reuse "agw-docs/snippets/agentgateway.md" >}} 1.6 and earlier, confirm that the `openmetrics` check
+sets `use_latest_spec: true`. Without this setting, the Agent parses the proxy's
+OpenMetrics output as classic Prometheus text. The Agent then drops every counter
+without an error, but gauges and histograms still arrive.
 
 ### Traces are missing
 
