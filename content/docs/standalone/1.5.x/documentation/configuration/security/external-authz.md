@@ -33,7 +33,7 @@ When an ExtAuthz server returns header modifications, agentgateway uses `insert`
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     extAuthz:
@@ -53,7 +53,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -74,7 +74,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -105,7 +105,7 @@ routes:
 #   * The bare `extAuthz:` snippets later on the page are focused fragments
 #     (no `gateways:`), so they are not tested.
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -125,7 +125,7 @@ EOF
 agentgateway -f config.yaml --validate-only
 
 cat <<'EOF' > config-llm.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     extAuthz:
@@ -145,7 +145,7 @@ EOF
 agentgateway -f config-llm.yaml --validate-only
 
 cat <<'EOF' > config-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -328,7 +328,7 @@ Configure connection-level authorization under the `frontendPolicies.networkExtA
 > The `networkExtAuthz` policy calls the authorization service over HTTP only, so you must set `protocol.http` explicitly. The `protocol` field defaults to `grpc`, which means that a configuration that omits it fails to start with `frontendPolicies.networkExtAuthz only supports protocol.http`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   networkExtAuthz:
     host: localhost:9000
@@ -346,7 +346,7 @@ routes:
 Because the policy runs before protocol handling, it also applies to a gateway that carries non-HTTP traffic.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   networkExtAuthz:
     host: localhost:9000

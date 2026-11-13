@@ -5,7 +5,7 @@ Add a second gateway to your configuration and point the `ui` section at it. The
 1. Add a gateway for the UI to your configuration file, and point the `ui` section at it. The following example serves proxy traffic on port `4000` of the `default` gateway and the UI on port `4001` of the `ui-gateway`.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 4000
@@ -63,7 +63,7 @@ The container must publish the new UI port, so this change needs a container res
 1. Add a gateway for the UI to the configuration file that you mount, and point the `ui` section at it. The following example serves proxy traffic on port `4000` of the `default` gateway and the UI on port `4001` of the `ui-gateway`.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 4000

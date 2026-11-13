@@ -100,7 +100,9 @@ With `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources, clients
    Desktop users.
 
 3. Create an `{{< reuse "agw-docs/snippets/policy.md" >}}` to raise the body
-   buffer limit to 10 MB for Claude Desktop and Cowork requests.
+   buffer limit to 10 MB, which Claude Desktop and Cowork requests need. The
+   `frontend` settings can target only a Gateway, so the limit applies to every
+   route on the `agentgateway-proxy` Gateway.
 
    ```bash
    kubectl apply -f- <<EOF
@@ -112,8 +114,8 @@ With `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources, clients
    spec:
      targetRefs:
      - group: gateway.networking.k8s.io
-       kind: HTTPRoute
-       name: claude-desktop
+       kind: Gateway
+       name: agentgateway-proxy
      frontend:
        http:
          maxBufferSize: 10485760
@@ -121,7 +123,7 @@ With `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources, clients
    ```
 
    > [!NOTE]
-   > Claude Code automatically sends the `anthropic-beta: oauth-2025-04-20` header required for OAuth-based authentication. Claude Desktop might require this header to be set as well depending on your client version. If requests fail with a 400 error, add a request transformation to the {{< reuse "agw-docs/snippets/policy.md" >}} that injects the header.
+   > Claude Code automatically sends the `anthropic-beta: oauth-2025-04-20` header required for OAuth-based authentication. Claude Desktop might require this header to be set as well depending on your client version. If requests fail with a 400 error, create a separate {{< reuse "agw-docs/snippets/policy.md" >}} that targets the `claude-desktop` HTTPRoute and injects the header with a request transformation. Keep it out of the buffer policy, which applies to every route on the Gateway.
    >
    > ```yaml
    > backend:
@@ -132,7 +134,7 @@ With `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources, clients
    >         value: oauth-2025-04-20
    > ```
 
-4. Create an `HTTPRoute` that matches the `/claude` path prefix and rewrites it to `/` before forwarding to the backend. Because the policy in the previous step targets this route, create both resources before you check the policy status.
+4. Create an `HTTPRoute` that matches the `/claude` path prefix and rewrites it to `/` before forwarding to the backend.
 
    ```bash
    kubectl apply -f- <<EOF
@@ -459,7 +461,7 @@ The following steps use Microsoft Entra ID as the example identity provider. Any
    discovery-document URL, which ends in `/.well-known/openid-configuration`,
    as the issuer.
 
-   For more detail on JWT validation, see [JWT auth]({{< link-hextra path="/documentation/security/jwt/setup/" >}}).
+   For more detail on JWT validation, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT auth]({{< link-hextra path="/documentation/security/extauth/jwt/setup/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT auth]({{< link-hextra path="/documentation/security/jwt/setup/" >}}){{< /version >}}.
 
 5. Give the backend its own credential. Interactive sign-in puts the identity provider token in the `Authorization` header, so the proxy must supply the LLM provider credential itself rather than pass a user token upstream. Follow [Anthropic provider]({{< link-hextra path="/integrations/llm/providers/anthropic/" >}}) to create a secret and reference it from `policies.auth` on the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 

@@ -44,7 +44,7 @@ Agentgateway is already running with the new configuration, so skip Step 2.
 Create a `config.yaml`:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   port: 3000
   models:

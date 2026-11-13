@@ -12,7 +12,7 @@ A callout is any request that agentgateway sends for itself rather than for a cl
 
 * Remote JSON Web Key Set (JWKS) fetches for JSON Web Token (JWT) authentication.
 * OpenID Connect (OIDC) discovery, including for MCP authentication.
-* [External authorization]({{< link-hextra path="/documentation/configuration/security/external-authz" >}}), external processing, and remote rate limit requests.
+* [External authorization]({{< link-hextra path="/documentation/configuration/security/authorization/external-authz" >}}), external processing, and remote rate limit requests.
 * Guardrail requests, such as webhooks, OpenAI moderation, AWS Bedrock Guardrails, Google Model Armor, and Azure AI Content Safety.
 * Virtual model callout routing requests.
 * Credential fetches from cloud providers, such as AWS, Azure, and Google Cloud Platform (GCP).
@@ -105,7 +105,7 @@ Configure JWT authentication with a remote JWKS, and send callouts through the f
 1. Create a configuration file that fetches a remote JWKS and sends callouts through the forward proxy.
    ```yaml
    cat <<EOF > callout-proxy.yaml
-   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      callouts:
        tunnel:

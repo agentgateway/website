@@ -19,7 +19,7 @@ You can add the MCP server in the UI or in a configuration file.
 1. Create a configuration with an empty `mcp` section, and start agentgateway. You add the MCP server in the UI.
    ```sh
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      targets: []

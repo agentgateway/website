@@ -32,7 +32,7 @@ The following steps add the same `extAuthz` policy as the **Simplified (LLM)** e
 
 1. Create a configuration with an LLM model, but no external authorization policy. You add the policy in the UI.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"
@@ -58,7 +58,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     extAuthz:
@@ -78,7 +78,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -99,7 +99,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -282,7 +282,7 @@ Configure connection-level authorization under the `frontendPolicies.networkExtA
 > The `networkExtAuthz` policy calls the authorization service over HTTP only, so you must set `protocol.http` explicitly. The `protocol` field defaults to `grpc`, which means that a configuration that omits it fails to start with `frontendPolicies.networkExtAuthz only supports protocol.http`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   networkExtAuthz:
     host: localhost:9000
@@ -300,7 +300,7 @@ routes:
 Because the policy runs before protocol handling, it also applies to a gateway that carries non-HTTP traffic.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   networkExtAuthz:
     host: localhost:9000

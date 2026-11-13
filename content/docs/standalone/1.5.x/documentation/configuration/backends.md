@@ -24,7 +24,7 @@ export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
 The simplest form of backend is a static hostname or IP address. Static hosts are a routing-based backend, so they are configured in a `routes` entry; the simplified `llm` and `mcp` modes model only LLM providers and MCP targets. For example:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -44,7 +44,7 @@ routes:
 #   * That traffic is actually routed/weighted to the hosts at runtime — requires
 #     reachable backends the page omits.
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -68,7 +68,7 @@ See the [MCP connectivity guide]({{< link-hextra path="/documentation/mcp/" >}})
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   targets:
@@ -83,7 +83,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -110,7 +110,7 @@ routes:
 #   * That the MCP targets actually start/connect at runtime — requires the npx
 #     command and remote server the page does not stand up.
 cat <<'EOF' > config2.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -129,7 +129,7 @@ EOF
 agentgateway -f config2.yaml --validate-only
 
 cat <<'EOF' > config2-simplified.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   targets:
@@ -151,7 +151,7 @@ By default, MCP backends use stateful session routing, where the gateway tracks 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   statefulMode: stateless
@@ -165,7 +165,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -191,7 +191,7 @@ routes:
 #   * That stateless wrapping actually occurs at runtime — requires the OpenAPI
 #     upstream and live MCP traffic the page omits.
 cat <<'EOF' > config3.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -209,7 +209,7 @@ EOF
 agentgateway -f config3.yaml --validate-only
 
 cat <<'EOF' > config3-simplified.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   statefulMode: stateless
@@ -232,7 +232,7 @@ See the [LLM consumption guide]({{< link-hextra path="/documentation/llm/" >}}) 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: openai
@@ -244,7 +244,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -270,7 +270,7 @@ routes:
 #   * That requests are actually proxied to OpenAI at runtime — requires a real
 #     OPENAI_API_KEY and live LLM traffic the page omits.
 cat <<'EOF' > config4.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -288,7 +288,7 @@ EOF
 agentgateway -f config4.yaml --validate-only
 
 cat <<'EOF' > config4-simplified.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: openai
@@ -334,7 +334,7 @@ When a backend resolves to more than one endpoint, agentgateway load balances ac
 A `source` CEL expression selects the value. Agentgateway hashes it and maps the hash to an endpoint with weighted rendezvous hashing, so each replica picks the same endpoint for the same value without sharing any state with the other replicas.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -356,7 +356,7 @@ routes:
 #     configures a single endpoint, and proving the mapping needs several backend
 #     replicas and a way to identify which one answered.
 cat <<'EOF' > config-affinity.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

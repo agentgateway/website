@@ -1,7 +1,7 @@
 ---
-title: OpenAI SDK
+title: SDKs (Python, Node.js, Go)
 weight: 10
-description: Use the OpenAI Python and Node.js SDKs with agentgateway running in Kubernetes
+description: Use the OpenAI SDK in Python, Node.js, or Go to call configured LLM providers through agentgateway in Kubernetes, and migrate from the LiteLLM SDK.
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients-k8s/openai-sdk.md" >}}

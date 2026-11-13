@@ -63,7 +63,7 @@ In this example, a parent route matches the `/anything/team1` prefix and delegat
 
    ```sh
    cat > config.yaml <<'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -129,7 +129,7 @@ In this example, a parent route matches `/anything/team1` only when the `x-team`
 
    ```sh
    cat > config.yaml <<'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -211,7 +211,7 @@ In this example, a parent route delegates `/api` to a route group. One child han
 
    ```sh
    cat > config.yaml <<'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -288,7 +288,7 @@ In this example, a parent route sets a `requestHeaderModifier` policy that adds 
 
    ```sh
    cat > config.yaml <<'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -355,7 +355,7 @@ Agentgateway does not allow cyclic delegation. If route group A delegates to B, 
 
    ```sh
    cat > config-cycle.yaml <<'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -409,7 +409,7 @@ If a route references a `routeGroup` that does not exist, agentgateway returns a
 
    ```sh
    cat > config-missing-group.yaml <<'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000

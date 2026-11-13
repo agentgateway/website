@@ -41,7 +41,7 @@ Use this pattern when you need to restrict outbound HTTPS by hostname and the tr
 1. Create a configuration file that accepts CONNECT requests on port 3000 and allowlists destinations by hostname.
    ```yaml
    cat <<EOF > egress.yaml
-   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
    binds:
    - port: 3000
      tunnelProtocol: connect
@@ -131,7 +131,7 @@ Use this pattern when only known clients may use the proxy. Route mode sends the
 2. Create a configuration file that enables route mode and requires credentials.
    ```yaml
    cat <<EOF > egress-auth.yaml
-   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      connect:
        mode: route
@@ -234,7 +234,7 @@ Use this pattern when most destinations must stay encrypted end to end, but agen
 2. Create a configuration file that terminates TLS for two hostnames and passes every other allowed hostname through.
    ```yaml
    cat <<EOF > egress-conditional.yaml
-   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
    binds:
    - port: 3000
      tunnelProtocol: connect
@@ -327,7 +327,7 @@ Use this pattern when agentgateway must apply HTTP policies to every outbound re
 1. Create a configuration file that terminates every HTTPS stream with a dynamic certificate.
    ```yaml
    cat <<EOF > egress-inspect.yaml
-   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
    binds:
    - port: 3000
      tunnelProtocol: connect

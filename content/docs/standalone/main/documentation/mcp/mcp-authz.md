@@ -6,7 +6,7 @@ description: Control access to MCP tools and resources with CEL-based authorizat
 
 MCP authorization controls which tools, prompts, and resources a client can reach, by using [CEL expressions]({{< link-hextra path="/reference/cel" >}}) that evaluate against MCP method invocations rather than against an HTTP request.
 
-For the policy reference, including rule syntax, the CEL variables available at request time and in access logs, role-based access with JWT claims, and per-target rules, see [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}).
+For the policy reference, including rule syntax, the CEL variables available at request time and in access logs, role-based access with JWT claims, and per-target rules, see [MCP authorization]({{< link-hextra path="/documentation/configuration/security/authorization/mcp-authz" >}}).
 
 ## Related
 

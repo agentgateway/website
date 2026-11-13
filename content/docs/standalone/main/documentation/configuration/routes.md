@@ -41,7 +41,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 The following configuration creates the `http-backend` route.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   http-proxy:
     port: 8080
@@ -89,7 +89,7 @@ The UI leaves out the default `weight: 1`, and writes `gateways` as a single val
 Example configuration:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   postgres-proxy:
     port: 5432
@@ -114,7 +114,7 @@ Routes are configured in the top-level `routes` or `tcpRoutes` section. The foll
 |-------|-------------|
 | `gateways` | The gateways that the route attaches to, in the form `<gateway-name>` or `<gateway-name>/<listener-name>`. When omitted, the route attaches to the gateway named `default`. |
 | `name` | An optional name for the route. |
-| `hostnames` | A list of hostnames that the route serves traffic on. |
+| `hostnames` | A list of hostnames that the route serves traffic on. For HTTP routes, the request `Host` header is matched without regard to case and is forwarded with its original casing. |
 | `matches` | Defines the matching rules for the route, including path, headers, methods, and query parameters. For more options, see the [Request matching]({{< link-hextra path="/documentation/configuration/traffic-management/matching/" >}}) guide. |
 | `backends` | Specifies the {{< gloss "Backend" >}}backend{{< /gloss >}} services to route traffic to. |
 | `policies` | Optional {{< gloss "Policy" >}}policies{{< /gloss >}} to apply to the route. |
@@ -135,7 +135,7 @@ For more advanced backend configurations, such as MCP servers and LLM providers,
 The following example shows a route with CORS policy configuration:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

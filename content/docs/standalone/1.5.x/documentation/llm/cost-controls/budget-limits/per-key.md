@@ -92,7 +92,7 @@ Create a configuration with a database, the catalog, API key authentication, and
 
 ```yaml {paths="apikey-budgets"}
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 config:
   database:

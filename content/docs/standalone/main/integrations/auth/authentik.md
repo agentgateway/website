@@ -19,7 +19,7 @@ MCP clients follow the [MCP authorization specification](https://modelcontextpro
 > [!IMPORTANT]
 > Setting `clientId` is required for open source authentik. Because those builds do not support Dynamic Client Registration, the pre-registered client in `clientId` is the only way for MCP clients to complete registration. If you omit it, registration requests fail.
 
-For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}).
+For the underlying `mcpAuthentication` fields, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/authentication/mcp-authn" >}}).
 
 ## Before you begin {#before-you-begin}
 
@@ -244,7 +244,7 @@ Real MCP clients get a token by sending the user through a browser login. To kee
 1. Create a `config.yaml` that exposes a sample MCP server on port 3000 and protects it with the `authentik` provider. Substitute the client ID from [Step 2](#register) for `<YOUR_CLIENT_ID>`.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      policies:
@@ -378,7 +378,7 @@ Agentgateway runs in the foreground, so run the following commands in another te
 
 ## Step 7: Restrict access by group {#authorization}
 
-authentik includes the user's groups in the token when the request asks for the `profile` scope. Combine those claims with agentgateway [authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}) rules.
+authentik includes the user's groups in the token when the request asks for the `profile` scope. Combine those claims with agentgateway [authorization]({{< link-hextra path="/documentation/configuration/security/authorization/mcp-authz" >}}) rules.
 
 1. Add an `authorization` policy alongside `mcpAuthentication` in your `config.yaml` that requires the `mcp-agent` group.
 
@@ -449,5 +449,5 @@ docker compose down -v
 ## Learn more
 
 - [authentik documentation](https://docs.goauthentik.io/)
-- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}})
-- [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}})
+- [MCP authentication]({{< link-hextra path="/documentation/configuration/security/authentication/mcp-authn" >}})
+- [MCP authorization]({{< link-hextra path="/documentation/configuration/security/authorization/mcp-authz" >}})
