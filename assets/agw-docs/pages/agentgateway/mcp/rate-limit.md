@@ -84,7 +84,7 @@ Review the following table for example use cases and configuration guidance.
 Also, check out the rate limiting guides for other use cases:
 
 - [LLM rate limiting by token expenses]({{< link-hextra path="/documentation/llm/rate-limit" >}}).
-- [HTTP rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http" >}}).
+- {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[HTTP rate limiting]({{< link-hextra path="/documentation/security/rate-limit/local" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[HTTP rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http" >}}){{< /version >}}.
 
 ## Before you begin
 
@@ -237,7 +237,7 @@ spec:
 EOF
 ```
 
-Size a keyed limit the same way as a shared one: the bucket counts HTTP requests, not tool calls, so each client still spends roughly 3 to 5 requests per tool call session. Reading `jwt` claims requires [MCP authentication]({{< link-hextra path="/documentation/mcp/auth/" >}}) on the same traffic. Clients whose key cannot be evaluated, such as unauthenticated callers, share one bucket. {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For more information about keyed limits, see [Claim-level budget limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}).
+Size a keyed limit the same way as a shared one: the bucket counts HTTP requests, not tool calls, so each client still spends roughly 3 to 5 requests per tool call session. Reading `jwt` claims requires [MCP authentication]({{< link-hextra path="/documentation/mcp/auth/" >}}) on the same traffic. Clients whose key cannot be evaluated, such as unauthenticated callers, share one bucket. {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For more information about keyed limits, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Claim-level budget limits]({{< link-hextra path="/documentation/security/rate-limit/local/#claim-level" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Claim-level budget limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}){{< /version >}}.
 {{< /version >}}
 
 ## Per-tool rate limits with CEL descriptors {#global-per-tool}
@@ -245,7 +245,7 @@ Size a keyed limit the same way as a shared one: the bucket counts HTTP requests
 Local rate limiting treats every POST to `/mcp` identically. But some tools are more expensive than others, and so they deserve tighter limits. Global rate limiting with CEL descriptors lets you look inside the MCP request body and apply different ceilings per tool name.
 
 > [!NOTE]
-> Global rate limiting requires an external [Envoy Rate Limit service](https://github.com/envoyproxy/ratelimit) backed by Redis. For a complete guide on global rate limiting architecture and setup, see the [Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}).
+> Global rate limiting requires an external [Envoy Rate Limit service](https://github.com/envoyproxy/ratelimit) backed by Redis. For a complete guide on global rate limiting architecture and setup, see the {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit/global" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}){{< /version >}}.
 
 The following steps show how to set up global rate limiting infrastructure and configure per-tool rate limits using CEL expressions.
 

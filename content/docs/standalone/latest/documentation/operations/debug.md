@@ -233,7 +233,7 @@ The value must use `ip:port` format, and also accepts `unix:/path/to/socket` or 
 1. Add or update the `adminAddr` field in your configuration file.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      adminAddr: localhost:9090
    ```
@@ -276,7 +276,7 @@ The default admin address binds to the container's own loopback interface, so pu
    > Binding the admin address to `0.0.0.0` publishes unauthenticated shutdown and configuration-dump endpoints to every network that the host is attached to. Never do this on a shared or production host. Attach the UI to a gateway instead.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      adminAddr: 0.0.0.0:15000
    gateways:

@@ -142,7 +142,7 @@ Mint the incoming token, send a request through agentgateway with it, and verify
    curl -s http://$INGRESS_GW_ADDRESS:80/headers \
      -H "host: www.example.com" \
      -H "authorization: Bearer $INBOUND_TOKEN" \
-     | jq -r '.headers.Authorization | sub("^Bearer ";"")' \
+     | jq -r '.headers.Authorization[0] | sub("^Bearer ";"")' \
      | cut -d. -f2 \
      | jq -R 'gsub("-";"+") | gsub("_";"/") | . + ("=" * ((4 - (length % 4)) % 4)) | @base64d | fromjson'
    ```
@@ -165,7 +165,7 @@ The exchange presents the incoming token to the authorization server exactly as 
 1. Create a second {{< reuse "agw-docs/snippets/policy.md" >}} that validates the incoming token against Keycloak's JWKS. This policy targets the `HTTPRoute`, not the Service, because validation belongs at the route.
 
    > [!IMPORTANT]
-   > Set `preserveToken: true`. By default the gateway removes the JWT after it validates it, so the exchange finds no `subject_token` and every request fails with a `400` and the message `invalid request`. For more information, see [`preserveToken`]({{< link-hextra path="/documentation/security/jwt/setup/" >}}).
+   > Set `preserveToken: true`. By default the gateway removes the JWT after it validates it, so the exchange finds no `subject_token` and every request fails with a `400` and the message `invalid request`. For more information, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[`preserveToken`]({{< link-hextra path="/documentation/security/extauth/jwt/setup/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[`preserveToken`]({{< link-hextra path="/documentation/security/jwt/setup/" >}}){{< /version >}}.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -339,7 +339,7 @@ Make sure the incoming token's issuer matches the token endpoint's issuer as the
 This guide uses a demo Keycloak and the httpbin sample app. To use token exchange in production:
 
 * **Point at your own authorization server.** Create an {{< reuse "agw-docs/snippets/backend.md" >}} for your IdP (such as Keycloak, Microsoft Entra, Okta, Auth0, or ZITADEL). Use port `443` for automatic backend TLS. Replace the demo realm, client IDs, audiences, and Kubernetes Secret with your own.
-* **Attach the policy to the backends that need scoped tokens.** Target the {{< reuse "agw-docs/snippets/policy.md" >}} at the Services or {{< reuse "agw-docs/snippets/backend.md" >}}s that require their own credential, such as MCP servers, upstream APIs, or LLM providers. Pair it with route-level [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) to validate the incoming token first.
+* **Attach the policy to the backends that need scoped tokens.** Target the {{< reuse "agw-docs/snippets/policy.md" >}} at the Services or {{< reuse "agw-docs/snippets/backend.md" >}}s that require their own credential, such as MCP servers, upstream APIs, or LLM providers. Pair it with route-level {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/security/extauth/jwt/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}){{< /version >}} to validate the incoming token first.
 * **Use token exchange to preserve agent and user identity.** Token exchange lets the gateway hand each backend a narrowly scoped, per-backend token while preserving the caller's identity end-to-end. In agentic flows, the exchange can carry an agent acting on behalf of a user, so every downstream call keeps an auditable, least-privilege identity chain instead of sharing one broad credential.
 
 ## Cleanup

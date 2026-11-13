@@ -98,7 +98,7 @@ Then, connect agentgateway to the Petstore server. You can use the UI or a confi
 1. From the directory with the `openapi.json` file, create a configuration with an empty `mcp` section, and start agentgateway. You add the OpenAPI server in the UI.
    ```sh
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      targets: []
@@ -123,7 +123,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 
    ```sh
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      policies:
@@ -314,7 +314,7 @@ Fetch the OpenAPI schema from a remote URL. Agentgateway retrieves the schema at
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -351,7 +351,7 @@ The UI saves the document as a multi-line string in the `schema` field, as in th
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -396,7 +396,7 @@ mcp:
 By default, operation paths use the path from the OpenAPI schema's server URL. To replace that prefix without editing the schema, set a non-root path in the target's `host` URI. If the target uses `host`/`port`/`path` or `backend`, set `path` instead.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   targets:

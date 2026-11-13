@@ -54,7 +54,7 @@ Azure supplies credentials to the container through a managed identity on Contai
 Use `auth.azure.implicit` to detect the method from the environment. Agentgateway uses workload identity on Kubernetes, managed identity on Azure compute, and local developer tools on a workstation.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -76,7 +76,7 @@ llm:
 When more than one identity is attached to the container, name the one to use by its client ID. `objectId` and `resourceId` are accepted in place of `clientId`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -101,7 +101,7 @@ llm:
 {{< doc-test paths="azure-cloud" >}}
 # Auto-detect tab
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -119,7 +119,7 @@ agentgateway -f config.yaml --validate-only
 
 # User-assigned identity tab
 cat <<'EOF' > /tmp/azure-user-assigned.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:

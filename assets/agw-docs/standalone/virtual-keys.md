@@ -40,7 +40,7 @@ Turn on API key authentication, and create two virtual keys, one for Alice and o
 
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"
@@ -82,7 +82,7 @@ Create a configuration with API key authentication. This example creates two vir
 
 ```yaml
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     apiKey:
@@ -388,7 +388,7 @@ Generate, restrict, update, and revoke virtual keys from the command line with `
 
    ```yaml
    cat <<'EOF' > config-agctl.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      database:
        url: sqlite://virtual-keys.db

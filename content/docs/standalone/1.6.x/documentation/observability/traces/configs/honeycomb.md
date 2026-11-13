@@ -13,7 +13,7 @@ test: skip
 Add the following tracing configuration to your `config.yaml`. Replace `<your-honeycomb-api-key>` with your Honeycomb API key.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: api.honeycomb.io:443

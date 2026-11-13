@@ -25,7 +25,7 @@ The following example sets up a proxy that Devin Desktop must log in to before i
 2. Create a configuration file that accepts `CONNECT` requests on port 3000 and requires proxy credentials.
    ```yaml
    cat <<EOF > devin-proxy.yaml
-   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      connect:
        mode: route

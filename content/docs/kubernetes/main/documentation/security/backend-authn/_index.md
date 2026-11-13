@@ -1,6 +1,6 @@
 ---
 title: Backend authentication
-weight: 10
+weight: 30
 description: Attach the gateway's own credential to requests that it forwards to a backend.
 ---
 

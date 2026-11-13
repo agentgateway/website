@@ -38,7 +38,7 @@ Sign up at [langfuse.com](https://langfuse.com/) and get your API keys.
 Langfuse accepts OpenTelemetry traces directly. Configure agentgateway to export traces directly to your Langfuse deployment:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: cloud.langfuse.com:443

@@ -100,7 +100,8 @@
 /docs/:section/:version/agent* /docs/:section/:version/documentation/agent:splat 301
 /docs/:section/:version/configuration* /docs/:section/:version/documentation/configuration:splat 301
 /docs/:section/:version/install* /docs/:section/:version/documentation/install:splat 301
-/docs/:section/:version/llm* /docs/:section/:version/documentation/llm:splat 301
+/docs/:section/:version/llm /docs/:section/:version/documentation/llm 301
+/docs/:section/:version/llm/* /docs/:section/:version/documentation/llm/:splat 301
 /docs/:section/:version/mcp* /docs/:section/:version/documentation/mcp:splat 301
 /docs/:section/:version/migrate* /docs/:section/:version/documentation/migrate:splat 301
 /docs/:section/:version/observability* /docs/:section/:version/documentation/observability:splat 301

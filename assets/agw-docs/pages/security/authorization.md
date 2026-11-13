@@ -97,7 +97,7 @@ EOF
 
 | Field | Description |
 |---|---|
-| `jwtAuthentication` | Validates the JWT on the incoming request. Authorization expressions that reference `jwt` require this section, because the `jwt` context exists only after a token is verified. In this example, a local JWKS is provided inline. For more options, see [JWT auth]({{< link-hextra path="/documentation/security/jwt/" >}}). |
+| `jwtAuthentication` | Validates the JWT on the incoming request. Authorization expressions that reference `jwt` require this section, because the `jwt` context exists only after a token is verified. In this example, a local JWKS is provided inline. For more options, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT auth]({{< link-hextra path="/documentation/security/extauth/jwt/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT auth]({{< link-hextra path="/documentation/security/jwt/" >}}){{< /version >}}. |
 | `authorization.action` | The authorization action to take. Use `Allow` for allowlisting. |
 | `authorization.policy.matchExpressions` | A list of CEL expressions. For an `Allow` action, at least one expression must match (OR logic). For a `Require` action, all expressions must evaluate to `true` (AND logic). |
 
@@ -500,7 +500,7 @@ To use JWT claims in authorization policies, you first need to configure JWT aut
 
 After the gateway validates a JWT, the decoded claims are available in CEL expressions as top-level fields on `jwt`, such as `jwt.sub` or `jwt.group`.
 
-For setup instructions and examples, see [JWT auth]({{< link-hextra path="/documentation/security/jwt/" >}}).
+For setup instructions and examples, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT auth]({{< link-hextra path="/documentation/security/extauth/jwt/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT auth]({{< link-hextra path="/documentation/security/jwt/" >}}){{< /version >}}.
 
 For a list of available JWT variables, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables/" >}}).
 

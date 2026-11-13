@@ -19,6 +19,10 @@ Metrics are grouped under the `agentgateway_` prefix and follow the [OpenMetrics
 
 For instructions on setting up Prometheus to scrape agentgateway metrics, see [Prometheus]({{< link-hextra path="/documentation/observability/metrics/prometheus/" >}}).
 
+## Metrics format {#metrics-format}
+
+{{< reuse "agw-docs/snippets/metrics-format.md" >}}
+
 ## Add custom metric labels
 
 You can enrich all metrics with custom labels that are computed from [CEL]({{< link-hextra path="/reference/cel/" >}}) expressions. Labels are added to every metric that carries the route identifier labels.
@@ -28,7 +32,7 @@ The following example adds two labels to all metrics:
 - `user_id: 'request.headers["x-user-id"]'`: Adds a dynamic label. The CEL expression reads the `x-user-id` header from the incoming request, so `user_id` in the metric reflects whoever made the request.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   metrics:
     fields:
@@ -43,7 +47,7 @@ config:
 To reduce cardinality or storage, you can exclude specific metrics by name:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   metrics:
     remove:

@@ -70,7 +70,7 @@ For user and group breakdowns, time buckets, and exports, see [CLI analytics]({{
 2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent.
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      tracing:
        host: localhost:4317

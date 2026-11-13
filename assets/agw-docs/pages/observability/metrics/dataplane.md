@@ -23,6 +23,10 @@ To set up automatic scraping of these metrics with Prometheus, see [Enable metri
 
 3. Enable metrics scraping for data plane metrics with the OTel stack so that you can export and visualize metrics in monitoring tools, such as Prometheus and Grafana. For more information, see [Scrape metrics for querying and visualization]({{< link path="/documentation/observability/metrics/overview/" >}}).
 
+## Metrics format {#metrics-format}
+
+{{< reuse "agw-docs/snippets/metrics-format.md" >}}
+
 ## Add custom metric labels
 
 You can enrich all metrics with custom labels computed from [CEL]({{< link path="/reference/cel/" >}}) expressions by using an {{< reuse "agw-docs/snippets/policy.md" >}}. Labels are added to every metric that carries route identifier labels.

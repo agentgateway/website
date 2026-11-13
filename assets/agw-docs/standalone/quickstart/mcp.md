@@ -15,7 +15,7 @@ Create a `config.yaml` that defines an MCP target for the `server-everything` te
 
 ```yaml
 cat > config.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 mcp:
   port: 3000
@@ -154,7 +154,7 @@ Because you add the MCP server from the UI, you can start agentgateway without a
 
    ```yaml
    cat > config.yaml << 'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 4000
