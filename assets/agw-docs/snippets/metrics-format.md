@@ -23,4 +23,4 @@ Scrapers that rely on the `Content-Type` header then parse the response as class
 
 ### Prometheus protobuf format {#prometheus-protobuf-format}
 
-In version 1.5 and later, the endpoint returns metrics in the Prometheus protobuf format when the scraper requests protobuf, such as Prometheus with native histograms enabled. The proxy sets the `Content-Type` header to `application/vnd.google.protobuf`, so the scraper needs no extra configuration.
+The endpoint returns metrics in the Prometheus protobuf format when the scraper requests protobuf, such as Prometheus with native histograms enabled. The proxy sets the `Content-Type` header to `application/vnd.google.protobuf`, so the scraper needs no extra configuration.
