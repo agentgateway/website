@@ -52,6 +52,7 @@ jobs:
       test_count: ${{ steps.list.outputs.test_count }}
       dev_version: ${{ steps.dev-version.outputs.dev_version }}
       docs_tests_ref: ${{ steps.docs-tests-ref.outputs.sha }}
+      pages: ${{ steps.changed-files.outputs.files }}
     steps:
       - name: Checkout website repo
         uses: actions/checkout@v6
@@ -552,10 +553,18 @@ jobs:
       # values.schema.json, so the checker builds one from each chart's
       # values.yaml and templates; see docs-tests' doc_test_helm_values.py.
       - name: Run schema checks
+        env:
+          PAGES: ${{ needs.discover.outputs.pages }}
         run: |
           mkdir -p out/tests/generated
           HELM_CHARTS=()
           CRD_DIRS=()
+          # On a PR, check only the pages it reaches, as kgateway.dev does. docs-tests
+          # also checks any of them that has no test yet. Otherwise, the full suite.
+          FILE_ARGS=()
+          if [ -n "$PAGES" ]; then
+            FILE_ARGS=(--file $PAGES)
+          fi
           for tree in latest main; do
             for chart in agentgateway agentgateway-standalone agentgateway-crds; do
               HELM_CHARTS+=(--helm-chart "$tree=agentgateway-$tree/controller/install/helm/$chart")
@@ -581,6 +590,7 @@ jobs:
             --kubeconform "$KUBECONFORM" \
             --kubernetes-version "$KUBERNETES_VERSION" \
             --docs-tests-root docs-tests \
+            "${FILE_ARGS[@]}" \
             --annotation-report out/annotations/attach-report.json \
             --report-file out/tests/generated/test-results.yaml \
             --verbose
