@@ -12,10 +12,6 @@ Use the `policies.compression` policy for response compression and request decom
 
 {{< reuse "agw-docs/snippets/compression-about.md" >}}
 
-{{< reuse "agw-docs/snippets/compression-behavior.md" >}}
-
-Gateway-phase policies (`phase: gateway`) also see encoded request bodies.
-
 ## Compression settings
 
 The `compression` policy takes a `response` block, a `request` block, or both.
