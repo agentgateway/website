@@ -33,17 +33,17 @@ Identify the cluster context, gateway and controller namespaces, and existing He
 
 ## Install and load the skill
 
-From your project directory, use a current Node.js LTS and Git to install the selected skill. Review the installer's proposed changes. The commands follow the repository's current skill content; there is no skill or gateway version to bump.
+From your project directory, use a current Node.js LTS to install the selected skill from agentgateway.dev. Review the installer's proposed changes. The commands follow the website's current skill content; there is no skill or gateway version to bump. You can also install from [the source repository](https://github.com/agentgateway/website/tree/main/skills) when working on the skill itself.
 
 {{< tabs >}}
 {{< tab name="Claude Code" >}}
 ```sh
-npx skills add agentgateway/website --skill {{< param skillName >}} --agent claude-code
+npx skills add https://agentgateway.dev --skill {{< param skillName >}} --agent claude-code
 ```
 {{< /tab >}}
 {{< tab name="Codex CLI" >}}
 ```sh
-npx skills add agentgateway/website --skill {{< param skillName >}} --agent codex
+npx skills add https://agentgateway.dev --skill {{< param skillName >}} --agent codex
 ```
 {{< /tab >}}
 {{< tab name="Other assistants" >}}

@@ -4,7 +4,7 @@ These folders are the publishing source for the two OSS skills. Enterprise packa
 
 ## Distribution
 
-Use `npx skills add agentgateway/website --skill NAME --agent CLIENT` after publication, or replace the repository with an absolute local source directory during review. Default project installation uses the shared skill directory and client links. `npx skills update NAME --project` follows that source. Keep ZIP extraction as the no-Node alternative. Use a current Node.js LTS for the installer.
+Use `npx skills add https://agentgateway.dev --skill NAME --agent CLIENT` after publication, or replace the website URL with an absolute local source directory during review. The repository source `agentgateway/website` is also available for contributors. Default project installation uses the shared skill directory and client links. `npx skills update NAME --project` follows the source recorded at installation. Keep ZIP extraction as the no-Node alternative. Use a current Node.js LTS for the installer.
 
 Current ZIPs live at `static/downloads/agent-skills/current/NAME.zip`. The package and download manifests identify exact contents with SHA-256. Updating content regenerates the current downloads; previous review artifacts remain historical evidence and are not linked as the customer default. Repository or archive installation must include the whole skill folder.
 

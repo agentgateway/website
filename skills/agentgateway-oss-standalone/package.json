@@ -10,15 +10,15 @@
     "path": "skills/agentgateway-oss-standalone",
     "commit": null,
     "state": "content-addressed",
-    "content_sha256": "2ffd7202e3c2aca6029922fc2235ebd6fbe062fbaaabdc41a2570b707cfe5610"
+    "content_sha256": "73efc21dea2b09008f032a6774e2fca92c7194a3583ff77829905746d5dcece9"
   },
   "documentation": "https://agentgateway.dev/docs/standalone/latest/",
   "files_sha256": {
-    "SKILL.md": "63481369458386c46e2dde3b331f02bb4acd98225565299c56a67c03c77dbf77",
+    "SKILL.md": "edd9502c171b3b9e0e065ebd4b19ac54c6e24c41333fc912ce6ce73fff1ca40f",
     "agents/openai.yaml": "ec3b2b82c6ae2ee0d3ab25960ebedbc5186dcc3b5517c7f46e622f243e801cf3",
     "references/edition-boundaries.md": "b17889c8be2c3ef40e319cd94e2e158e18c71a6495dbc7f62bc42049a01e8b98",
     "references/llm-setup.md": "2f993f5ae82401096caac89264cd1565505f0d819b0ceeee9f23fa55593fe3f8",
-    "references/native-config.md": "10db7734c46fc48c91750c82b45c3152e2423357734d1465746cebbb9f4088e3",
+    "references/native-config.md": "7ebec1276aee6009fb72aac79f71b726ac011e0055949cf89b8b778f22a5eeb1",
     "references/sources.md": "60aecfc6fcba4beef5047eba20a426c3f1de277a390d0ae649d8d597137756bf",
     "references/verification-helpers.md": "bc60ca2b59394214ec4ce6ff10ca3ff922d4aa2666ce75345f0e4aa8c0ba4477",
     "references/verification.md": "c03417cabbbd0c9cc021723433b46ac0ea5c9a055d8f1ab23047f646f464ec61",

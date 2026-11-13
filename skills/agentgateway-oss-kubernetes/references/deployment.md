@@ -18,6 +18,8 @@ Read [UI](https://agentgateway.dev/docs/kubernetes/latest/documentation/observab
 
 Discover the actual proxy workload and admin port, start a loopback port-forward in a persistent task-owned session, and verify the host URL before returning it. The documented example uses proxy port 15000 and `/ui/`; do not assume that deployment name, namespace, or local port is free. The port-forward must remain running for the URL to work. Client Setup generates client settings and does not create routing or credentials. No Enterprise management chart is needed for the OSS diagnostic UI.
 
+This diagnostic UI has no separate per-user admin RBAC. Recommend restricting `pods/portforward` and proxy/admin access to the intended operator group through Kubernetes RBAC and the customer's access controls. If a shared browser URL is needed, verify an IdP and role checks at a trusted access layer for the selected release; do not expose the unauthenticated admin port or call every authenticated viewer an administrator. Keep gateway traffic authorization separate from operator UI access.
+
 
 ## Configure and verify the resource chain
 

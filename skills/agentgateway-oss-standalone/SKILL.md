@@ -35,6 +35,8 @@ curl -fsSL https://agentgateway.dev/docs/standalone/latest/llms.txt
 
 Read the relevant pages linked by the index, not just the index or search snippets. For provider setup with virtual keys, dollar budgets, or UI delivery, read [llm-setup.md](references/llm-setup.md); it maps those requirements directly to public docs and describes how to prove completion. If public retrieval fails, use supplied version-matched material or report the evidence gap rather than inventing syntax.
 
+For substantial documentation research, suggest the optional public [Solo Docs MCP server](https://search.solo.io) at `https://search.solo.io/mcp` if the customer's assistant supports MCP. Direct HTTPS retrieval is sufficient. Configure it only if the customer asks, following the client's current instructions. It is separate from internal SupportAgentTools.
+
 ## Keep edition, configuration mode, and runtime explicit
 
 At the start of substantive work, state the selected context in one line. For example:

@@ -38,6 +38,8 @@ def main():
         project.mkdir()
         downloads = workspace / 'downloads'
         downloads.mkdir()
+        zip_downloads = workspace / 'zip-downloads'
+        zip_downloads.mkdir()
         repository = workspace / 'repository'
         repository.mkdir()
 
@@ -57,11 +59,14 @@ def main():
         server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), functools.partial(QuietHandler, directory=str(downloads)))
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
+        zip_server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), functools.partial(QuietHandler, directory=str(zip_downloads)))
+        zip_thread = threading.Thread(target=zip_server.serve_forever, daemon=True)
+        zip_thread.start()
 
-        def run(*arguments):
-            proc = subprocess.run(cli + list(arguments), cwd=project, env=environment,
+        def run(*arguments, cwd=None):
+            proc = subprocess.run(cli + list(arguments), cwd=cwd or project, env=environment,
                                   capture_output=True, text=True, timeout=120)
-            events.append({'arguments': arguments, 'exit_code': proc.returncode,
+            events.append({'arguments': arguments, 'cwd': str(cwd or project), 'exit_code': proc.returncode,
                            'stdout': proc.stdout, 'stderr': proc.stderr})
             args.output.write_text(json.dumps({'status': 'running', 'events': events}, indent=2) + '\n')
             if proc.returncode:
@@ -84,9 +89,45 @@ def main():
             resolved_installer = run('--version').strip()
             listing = run('add', str(args.skills_root.resolve()), '--list')
             assert all(name in listing for name in names), 'Source discovery missed a skill'
-            archive(downloads / 'current.zip', 'one')
-            shutil.copyfile(downloads / 'current.zip', downloads / 'pinned.zip')
-            url = f'http://127.0.0.1:{server.server_port}/current.zip'
+            # Exercise the website's advertised origin, including tracked updates.
+            well_known = downloads / '.well-known/agent-skills'
+            shutil.copytree(ROOT / 'static/.well-known/agent-skills', well_known)
+            website_project = workspace / 'website-project'
+            website_project.mkdir()
+            site_url = f'http://127.0.0.1:{server.server_port}'
+            website_listing = run('add', site_url, '--list', cwd=website_project)
+            assert all(name in website_listing for name in names), 'Website discovery missed a skill'
+            run('add', site_url, '--skill', *names, '--agent', 'claude-code', 'codex', '--yes', cwd=website_project)
+            for name in names:
+                with zipfile.ZipFile(well_known / f'{name}.zip') as source:
+                    for client in ('.agents', '.claude'):
+                        for member in source.namelist():
+                            assert (website_project / client / 'skills' / name / member).read_bytes() == source.read(member)
+            website_installations = json.loads(run('list', '--json', cwd=website_project))
+            assert all(item['sourceType'] == 'well-known' and item['status'] == 'tracked'
+                       for item in website_installations), 'Website installations were not tracked'
+            selected_website, sibling_website = names
+            original_sibling = (website_project / '.agents/skills' / sibling_website / 'SKILL.md').read_bytes()
+            selected_archive = well_known / f'{selected_website}.zip'
+            with zipfile.ZipFile(selected_archive) as source:
+                members = {member: source.read(member) for member in source.namelist()}
+            update_marker = b'\n<!-- installer website update fixture -->\n'
+            members['SKILL.md'] += update_marker
+            with zipfile.ZipFile(selected_archive, 'w', zipfile.ZIP_DEFLATED) as output:
+                for member, data in sorted(members.items()):
+                    output.writestr(member, data)
+            index_file = well_known / 'index.json'
+            index = json.loads(index_file.read_text())
+            next(item for item in index['skills'] if item['name'] == selected_website)['digest'] = (
+                'sha256:' + hashlib.sha256(selected_archive.read_bytes()).hexdigest())
+            index_file.write_text(json.dumps(index))
+            run('update', selected_website, '--project', '--yes', cwd=website_project)
+            assert (website_project / '.agents/skills' / selected_website / 'SKILL.md').read_bytes().endswith(update_marker)
+            assert (website_project / '.claude/skills' / selected_website / 'SKILL.md').read_bytes().endswith(update_marker)
+            assert (website_project / '.agents/skills' / sibling_website / 'SKILL.md').read_bytes() == original_sibling
+            archive(zip_downloads / 'current.zip', 'one')
+            shutil.copyfile(zip_downloads / 'current.zip', zip_downloads / 'pinned.zip')
+            url = f'http://127.0.0.1:{zip_server.server_port}/current.zip'
             run('add', url, '--skill', *names, '--agent', 'claude-code', 'codex', '--yes')
             for client in ('.claude', '.agents'):
                 for name in names:
@@ -140,6 +181,7 @@ def main():
             assert 'fixture revision one' in (project / '.agents/skills' / selected / 'SKILL.md').read_text()
             report = {'status': 'passed', 'installer': 'skills', 'resolved_installer_version': resolved_installer, 'skills': names,
                       'clients': ['claude-code', 'codex'], 'source_discovery': True,
+                      'website_discovery_install_and_selected_update': True,
                       'complete_folders_installed': True, 'selected_update_only': True,
                       'default_link_mode_updates_both_clients': True,
                       'backup_preserved_local_changes': True, 'installer_preserved_local_edit': local_edit_preserved,
@@ -153,6 +195,8 @@ def main():
         finally:
             server.shutdown()
             server.server_close()
+            zip_server.shutdown()
+            zip_server.server_close()
 
 
 if __name__ == '__main__':

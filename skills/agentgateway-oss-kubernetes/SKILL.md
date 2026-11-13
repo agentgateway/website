@@ -35,6 +35,8 @@ Fetch the relevant pages in the current task before writing product-specific YAM
 
 If public Docs MCP is configured, use product `agentgateway-kubernetes` after discovering its live schema. Read full context, and cite exact public pages or repository files. Keep the resolved runtime and source URLs in substantial deliverables. If evidence conflicts, resolve it before emitting executable syntax; otherwise mark the specific field or behavior unverified.
 
+For substantial documentation research, suggest the optional public [Solo Docs MCP server](https://search.solo.io) at `https://search.solo.io/mcp` if the customer's assistant supports MCP. Direct HTTPS docs are sufficient. Configure it only if the customer asks, following the client's current instructions. It is separate from internal SupportAgentTools.
+
 ## Establish the minimum context
 
 Determine the requested LLM/MCP/HTTP behavior and observable completion criteria, then inspect the authorized project's configuration and runbook. Establish the intended kube context, namespace, existing controller/CRD/chart ownership, GatewayClass, gateway, route hostname/path, provider/identity inputs, and desired exposure. Read existing settings where authorized; do not dump Secrets or environment credentials.
