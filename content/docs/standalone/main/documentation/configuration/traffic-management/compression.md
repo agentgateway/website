@@ -6,49 +6,19 @@ description: Compress responses to clients and decompress encoded request bodies
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/" >}}
 
-Use the `policies.compression` policy to compress responses to clients and to decode encoded request bodies. Response compression reduces bandwidth for large JSON, HTML, or text responses. Request decompression lets later policies and the backend read bodies that clients send encoded. You can configure one direction or both on the same route.
+Use the `policies.compression` policy for response compression and request decompression. You can configure either feature or both on the same route.
 
 ## About compression
 
-The compression policy works in two directions.
-
-* **Response compression** (`response.compress`): The proxy compresses an eligible response with an algorithm that the client lists in the `Accept-Encoding` request header. If the client does not send `Accept-Encoding`, or accepts none of the configured algorithms, the proxy sends the response uncompressed.
-* **Request decompression** (`request.decompress`): The proxy decodes a request body that the client sent with a `Content-Encoding` header, such as `Content-Encoding: gzip`. Later policies and the backend receive the decoded body.
-
-You can choose from the following algorithms: `gzip`, `brotli`, `deflate`, and `zstd`. If you omit `algorithms`, the policy uses `gzip`. Each algorithm uses the `Accept-Encoding` and `Content-Encoding` token of the same name, except Brotli, which uses `br`.
-
-### Response compression
-
-The proxy compresses a response only when all the following conditions are true:
-
-* The response has a body. The proxy does not compress responses with a `1xx`, `204`, or `304` status code.
-* The response does not already have a `Content-Encoding` header.
-* The response is not a partial response with a `Content-Range` header.
-* The response does not have a `Cache-Control: no-transform` header.
-* The response has a known length of at least 32 bytes. The proxy sends streamed responses without a known length, such as server-sent events, as-is.
-* The response has one of the following media types: `application/javascript`, `application/json`, `application/xml`, `application/xhtml+xml`, `image/svg+xml`, `text/css`, `text/html`, `text/javascript`, `text/plain`, or `text/xml`. Media types with a `+json` or `+xml` suffix, such as `application/problem+json`, also qualify. The proxy sends responses with any other media type, or with no `Content-Type` header, as-is.
-
-To choose the algorithm, the proxy compares the configured `algorithms` list with the client's `Accept-Encoding` header. The algorithm with the highest quality value (`q`) wins. If the client accepts more than one algorithm equally, the first algorithm in your `algorithms` list wins. A `*` entry in `Accept-Encoding` applies to every configured algorithm that the client does not list by name. If the client gives `identity` a higher quality value than every configured algorithm, the proxy sends the response uncompressed.
-
-The proxy makes the following header changes to every response that the proxy compresses:
-
-* Sets `Content-Encoding` to the chosen algorithm, such as `gzip` or `br`.
-* Removes the `Content-Length` and `Accept-Ranges` headers.
-* Changes a strong `ETag` to a weak `ETag`, such as `W/"abc"`, because the bytes that the proxy sends no longer match the original body.
-
-For every eligible response, the proxy also adds a `Vary: accept-encoding` header, even when the client receives the uncompressed response. The `Vary` header tells caches that the response depends on the `Accept-Encoding` request header.
-
-Response compression runs after every other response policy, so policies such as transformations see the uncompressed body. If access logs record the response body, the access logs record the uncompressed body. The proxy reads the client's `Accept-Encoding` header before request header modifiers run. If you remove the `Accept-Encoding` header from requests to the backend, the client still gets a compressed response.
-
-### Request decompression
-
-The proxy decodes a request body only when the `Content-Encoding` header names a single algorithm that is in your `algorithms` list. The proxy forwards request bodies with any other encoding, or with more than one layer of encoding, such as `Content-Encoding: gzip, br`, unchanged. After decoding the body, the proxy removes the `Content-Encoding` and `Content-Length` headers from the request.
-
-Decompression runs after route-level authentication and authorization, so a denied request is never decoded. Route-level authentication and authorization, and policies with `phase: gateway`, see the encoded body. Backend authorization runs later and sees the decoded body. Route-level policies that read the body, such as rate limiting, external processing, and transformations, see the decoded body.
+{{< reuse "agw-docs/snippets/compression-about.md" >}}
 
 ## Compression settings
 
-The `compression` policy takes a `response` block, a `request` block, or both. The following example compresses responses with `gzip` or `brotli` and decodes request bodies with the default algorithm.
+The `compression` policy takes a `response` block, a `request` block, or both.
+
+Choose from `gzip`, `brotli`, `deflate`, and `zstd`. If you omit `algorithms`, the default is `gzip`. The HTTP encoding token for Brotli is `br`.
+
+The following example compresses responses with `gzip` or `brotli` and decodes `gzip` request bodies.
 
 ```yaml
 policies:
@@ -62,19 +32,19 @@ policies:
 
 | Field | Description | Default |
 | -- | -- | -- |
-| `policies.compression.response.compress.algorithms` | The algorithms that the proxy can choose from, based on the client's `Accept-Encoding` header. Possible values are `gzip`, `brotli`, `deflate`, and `zstd`. If the client accepts more than one algorithm equally, the first algorithm in the list wins. If you set the field, the list must contain at least one value. To use the default, omit the field. An empty list, such as `algorithms: []`, fails validation. | `[gzip]` |
-| `policies.compression.request.decompress.algorithms` | The algorithms that the proxy decodes from request bodies. Possible values are `gzip`, `brotli`, `deflate`, and `zstd`. The proxy forwards request bodies with any other encoding unchanged. If you set the field, the list must contain at least one value. To use the default, omit the field. | `[gzip]` |
+| `policies.compression.response.compress.algorithms` | Algorithms for response compression, in preference order. Omit the field to use the default. An empty list fails validation. | `[gzip]` |
+| `policies.compression.request.decompress.algorithms` | Algorithms to decode from request bodies. Omit the field to use the default. An empty list fails validation. | `[gzip]` |
 
 For the full list of fields, see the [configuration reference]({{< link-hextra path="/reference/configuration/" >}}).
 
 ## Before you begin
 
-1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+1. Install a [nightly agentgateway binary]({{< link-hextra path="/documentation/setup/install/binary/#binary" >}}). On the installation page, select **Nightly build**. Compression is not available in v1.7.0.
 2. {{< reuse "agw-docs/snippets/prereq-docker.md" >}}
 
 ## Compress responses and decompress requests
 
-The following steps start a sample httpbin app as the backend, configure a route with a compression policy, and send requests to verify each direction.
+The following steps start a sample httpbin app as the backend, configure a route with a compression policy, and test response compression and request decompression.
 
 1. Start the httpbin sample app in Docker. The app listens on port 8000 on your machine.
 
@@ -186,6 +156,12 @@ The following steps start a sample httpbin app as the backend, configure a route
      }
    }
    ```
+
+## Compression behavior
+
+{{< reuse "agw-docs/snippets/compression-behavior.md" >}}
+
+Gateway-phase policies (`phase: gateway`) also see encoded request bodies.
 
 ## Cleanup
 
