@@ -357,6 +357,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 
 ## 🐛 Fixes {#v17-fixes}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3940 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3721 -->
@@ -425,3 +426,4 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 
 - Standalone configuration reloads now track files that agentgateway reads during parsing, such as `backendTLS.root` certificate files, `params.apiKey` files, htpasswd files, GCP credentials, and OAuth client credentials, so later file changes are picked up without a process restart.
 - `/config_dump` now redacts database URLs, which previously showed the password.
+- The metrics endpoint now sets the `Content-Type` header to `application/openmetrics-text` by default. Previously, scrapers that did not request OpenMetrics received `Content-Type: text/plain` and could parse the response as classic Prometheus text. For example, the Datadog Agent without `use_latest_spec: true` dropped every counter metric without an error. Browsers still receive `text/plain` so that they display the metrics. For more information, see [Metrics format]({{< link-hextra path="/documentation/observability/metrics/overview/#metrics-format" >}}).
